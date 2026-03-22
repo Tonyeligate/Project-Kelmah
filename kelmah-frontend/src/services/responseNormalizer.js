@@ -60,6 +60,30 @@ export const isTimeoutError = (error) =>
   error?.name === 'TimeoutError' ||
   /timeout/i.test(error?.message || '');
 
+const isLikelyCorsError = (error) => {
+  if (!error || error?.response || !error?.request) {
+    return false;
+  }
+
+  const message = String(error?.message || '');
+  if (/cors/i.test(message)) {
+    return true;
+  }
+
+  const baseUrl = String(error?.config?.baseURL || '');
+  if (!baseUrl || typeof window === 'undefined' || !window.location?.origin) {
+    return false;
+  }
+
+  try {
+    const requestOrigin = new URL(baseUrl, window.location.origin).origin;
+    const appOrigin = window.location.origin;
+    return requestOrigin !== appOrigin && /network error|failed to fetch/i.test(message);
+  } catch (_) {
+    return false;
+  }
+};
+
 export const isContractMismatchError = (error) => {
   const status = error?.response?.status || error?.status;
   const code = error?.code || error?.response?.data?.error?.code;
@@ -68,6 +92,10 @@ export const isContractMismatchError = (error) => {
 
 export const isRetryableError = (error) => {
   const status = error?.response?.status || error?.status;
+
+  if (isLikelyCorsError(error)) {
+    return false;
+  }
 
   if (error?.isBackendSleeping || isTimeoutError(error)) {
     return true;
@@ -99,6 +127,10 @@ export const toUserMessage = (error, { fallback = 'Something went wrong. Please 
 
   if (isContractMismatchError(error)) {
     return 'A temporary service mismatch was detected. Please retry shortly.';
+  }
+
+  if (isLikelyCorsError(error)) {
+    return 'Connection to the gateway was blocked by browser security policy. Please refresh after backend CORS allowlist is updated.';
   }
 
   return error?.response?.data?.error?.message || error?.response?.data?.message || error?.message || fallback;

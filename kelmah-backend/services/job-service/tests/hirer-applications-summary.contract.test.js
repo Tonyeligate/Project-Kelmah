@@ -101,6 +101,52 @@ describe('hirer applications summary sort aliases', () => {
     jest.clearAllMocks();
   });
 
+  it('includes standard jobs when bidStatus is open but biddingEnabled is false', async () => {
+    const standardJobId = new mongoose.Types.ObjectId();
+    const { Job, Application } = require('../models');
+    const { getHirerApplicationsSummary } = require('../controllers/job.controller');
+
+    Job.find.mockReturnValue(createFindChain([
+      {
+        _id: standardJobId,
+        hirer: 'hirer-1',
+        title: 'Plumbing Repair',
+        biddingEnabled: false,
+        bidding: {
+          bidStatus: 'open',
+          currentBidders: 0,
+        },
+      },
+    ]));
+
+    Application.aggregate.mockImplementationOnce(() => ({
+      option: jest.fn().mockResolvedValue([]),
+    }));
+
+    Application.countDocuments.mockReturnValue(createCountChain(0));
+
+    const req = {
+      id: 'req-legacy-default-bidstatus',
+      user: { id: 'hirer-1', role: 'hirer' },
+      query: {
+        page: '1',
+        limit: '10',
+      },
+      headers: {},
+    };
+    const res = createResponse();
+    const next = jest.fn();
+
+    await getHirerApplicationsSummary(req, res, next);
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.data.jobs).toHaveLength(1);
+    expect(res.body.data.jobs[0].title).toBe('Plumbing Repair');
+    expect(res.body.data.summary.totalJobs).toBe(1);
+    expect(next).not.toHaveBeenCalled();
+  });
+
   test.each([
     ['latest', 'newest', { createdAt: -1, _id: -1 }],
     ['rating', 'highest-rated', { workerRatingSort: -1, createdAt: -1, _id: -1 }],

@@ -285,9 +285,11 @@ app.use(helmet());
 app.use(compression());
 // ✅ ENHANCED: Improved CORS with Vercel preview URL support and env allowlist
 const corsOriginHandler = (origin, callback) => {
+  const normalizeOrigin = (value) => String(value || '').trim().replace(/\/+$/, '').toLowerCase();
+
   const envAllow = (process.env.CORS_ALLOWLIST || '')
     .split(',')
-    .map((s) => s.trim())
+    .map((s) => normalizeOrigin(s))
     .filter(Boolean);
   const allowedOrigins = [
     'http://localhost:5173',
@@ -295,7 +297,7 @@ const corsOriginHandler = (origin, callback) => {
     'https://project-kelmah.vercel.app',
     'https://kelmah-frontend-cyan.vercel.app',
     ...envAllow,
-  ];
+  ].map((entry) => normalizeOrigin(entry));
   if (process.env.NODE_ENV === 'production' && allowedOrigins.length === 0) {
     logger.error('CORS_ALLOWLIST must not be empty in production');
     return callback(new Error('CORS not configured'));
@@ -303,9 +305,9 @@ const corsOriginHandler = (origin, callback) => {
 
   // Allow Vercel preview URLs — restricted to Kelmah project deployments only
   const vercelPatterns = [
-    /^https:\/\/kelmah-frontend(-[a-z0-9]+)?\.vercel\.app$/,
-    /^https:\/\/kelmah-frontend-[a-z0-9]+-kelmahs-projects\.vercel\.app$/,
-    /^https:\/\/project-kelmah(-[a-z0-9]+)?\.vercel\.app$/
+    /^https:\/\/kelmah-frontend(?:-[a-z0-9-]+)?\.vercel\.app$/,
+    /^https:\/\/kelmah-frontend-[a-z0-9-]+-kelmahs-projects\.vercel\.app$/,
+    /^https:\/\/project-kelmah(?:-[a-z0-9-]+)?\.vercel\.app$/
   ];
 
   // Allow LocalTunnel / ngrok domains only in non-production
@@ -316,18 +318,20 @@ const corsOriginHandler = (origin, callback) => {
 
   if (!origin) return callback(null, true); // Allow no origin (mobile apps, etc.)
 
-  if (allowedOrigins.includes(origin)) {
+  const normalizedOrigin = normalizeOrigin(origin);
+
+  if (allowedOrigins.includes(normalizedOrigin)) {
     logger.info(`✅ API Gateway CORS allowed exact match: ${origin}`);
     return callback(null, true);
   }
 
-  const isVercelPreview = vercelPatterns.some(pattern => pattern.test(origin));
+  const isVercelPreview = vercelPatterns.some(pattern => pattern.test(normalizedOrigin));
   if (isVercelPreview) {
     logger.info(`✅ API Gateway CORS allowed Vercel preview: ${origin}`);
     return callback(null, true);
   }
 
-  const isLocalTunnel = localtunnelPatterns.some(pattern => pattern.test(origin));
+  const isLocalTunnel = localtunnelPatterns.some(pattern => pattern.test(normalizedOrigin));
   if (isLocalTunnel) {
     logger.info(`✅ API Gateway CORS allowed tunnel: ${origin}`);
     return callback(null, true);

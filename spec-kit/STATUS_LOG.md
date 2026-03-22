@@ -1,3 +1,64 @@
+### Application Page View-Mode Flicker Fix March 22 2026 ✅ COMPLETED
+
+**Date**: March 22, 2026  
+**Scope**: Stop Applications page from unexpectedly switching between All Jobs and single-job display modes while user stays on the page.
+
+**Files touched**
+- kelmah-frontend/src/modules/hirer/pages/ApplicationManagementPage.jsx
+- spec-kit/STATUS_LOG.md
+
+**Root cause**
+- The page auto-selected the first job with applications on every no-`jobId` load path, which forced an implicit mode change from All Jobs to single-job context.
+
+**Implementation summary**
+- Removed implicit first-job auto-selection in `loadApplicationsView`.
+- View mode is now user-driven and URL-driven only:
+  - stays in All Jobs when no `jobId` is present
+  - switches to single-job view only when user selects a job or URL contains `jobId`.
+
+**Verification outcomes**
+- PASS: `npm run build` in `kelmah-frontend` (Vite production build succeeded; 13,969 modules transformed).
+
+### API Gateway CORS Stabilization For Applications Page March 22 2026 ✅ COMPLETED
+
+**Date**: March 22, 2026  
+**Scope**: Eliminate production CORS-origin mismatches causing unstable Applications page behavior when frontend calls the hosted gateway directly.
+
+**Files touched**
+- kelmah-backend/api-gateway/server.js
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Hardened CORS origin matching in gateway:
+  - added origin normalization (trim, trailing-slash removal, lowercase)
+  - normalized env allowlist entries before comparison
+  - normalized static allowlist entries before comparison
+  - broadened Kelmah Vercel regexes to accept hyphenated suffix variants for preview/branch deployments.
+
+**Verification outcomes**
+- PASS: `node --check api-gateway/server.js` (syntax validation passed).
+
+### Applications Page Stability Investigation March 22 2026 ✅ COMPLETED
+
+**Date**: March 22, 2026  
+**Scope**: Investigate unstable behavior on hirer applications page and harden frontend behavior when production gateway requests are blocked by CORS.
+
+**Files touched**
+- kelmah-frontend/src/services/responseNormalizer.js
+- spec-kit/STATUS_LOG.md
+
+**Findings summary**
+- Browser console shows CORS blocks to gateway origin from frontend origin (`Access-Control-Allow-Origin` missing).
+- CORS-blocked requests were being treated as retryable generic network errors, which can trigger repeated retry cycles and make page state feel unstable.
+
+**Implementation summary**
+- Added `isLikelyCorsError` detection in API error normalizer.
+- Updated retry classification to mark likely CORS failures as non-retryable.
+- Added explicit user-facing message for CORS-blocked gateway calls to reduce ambiguous failure handling.
+
+**Validation outcomes**
+- PASS: `npm run build` in `kelmah-frontend` (Vite production build succeeded; 13,969 modules transformed).
+
 ### Applications Visibility + UX Recovery March 22 2026 ✅ COMPLETED
 
 **Date**: March 22, 2026  
@@ -29,6 +90,12 @@
 **Validation outcomes**
 - PASS: `npx jest --runTestsByPath services/job-service/tests/hirer-applications-summary.contract.test.js --runInBand` (1 suite, 3 tests passed).
 - PASS: `npm run build` in `kelmah-frontend` (Vite production build succeeded; 13,969 modules transformed).
+
+**Regression lock added**
+- Added backend contract test in `hirer-applications-summary.contract.test.js` to verify legacy-default bidding metadata does not hide standard jobs:
+  - scenario: `bidding.bidStatus = "open"` with `biddingEnabled = false`
+  - expected: job remains visible in applications summary.
+- PASS: `npx jest --runTestsByPath services/job-service/tests/hirer-applications-summary.contract.test.js --runInBand` (1 suite, 4 tests passed).
 
 ### Frontend Delta Backlog Theme 13 Map Interaction Ergonomics March 22 2026 ✅ COMPLETED
 

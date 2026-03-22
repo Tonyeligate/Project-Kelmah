@@ -408,15 +408,8 @@ function ApplicationManagementPage() {
           setCurrentPage(nextPagination.currentPage);
         }
 
-        if (!urlJobId && !selectedJobId) {
-          const firstWithApps = summaryJobs.find((job) => {
-            return Number(job?.applicationCounts?.total) > 0;
-          });
-          if (firstWithApps) {
-            const fid = firstWithApps.id || firstWithApps._id;
-            setSelectedJobId(fid);
-          }
-        }
+        // Keep view mode stable: do not auto-switch from "All Jobs" to a
+        // single-job view unless the user explicitly selects a job or URL has jobId.
       } catch (loadError) {
         if (isCancelled()) return;
         setJobs([]);
