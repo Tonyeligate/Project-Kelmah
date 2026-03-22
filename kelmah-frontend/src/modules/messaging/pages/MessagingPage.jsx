@@ -30,7 +30,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  CircularProgress,
   Skeleton,
   Alert,
   Snackbar,
@@ -203,6 +202,10 @@ const EnhancedMessagingPage = () => {
     ),
     [selectedFiles],
   );
+  const canSendMessage = messageText.trim().length > 0 || selectedFiles.length > 0;
+  const attachmentGuidance = selectedFiles.length > 0
+    ? `${selectedFiles.length} attachment${selectedFiles.length > 1 ? 's' : ''} ready to send`
+    : 'Add photos, video, or documents (10MB max each)';
 
   // Revoke preview blob URLs when selectedFiles change or on unmount
   useEffect(() => {
@@ -719,6 +722,66 @@ const EnhancedMessagingPage = () => {
     }
   };
 
+  const ConversationListLoadingSkeleton = ({ rows = 6 }) => (
+    <Box sx={{ p: 2 }} aria-hidden="true">
+      {Array.from({ length: rows }).map((_, index) => (
+        <Box
+          key={`conversation-loading-${index}`}
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1.5,
+            py: 1.2,
+            px: 1,
+            borderRadius: 2,
+            mb: 1,
+            border: `1px solid ${theme.palette.divider}`,
+          }}
+        >
+          <Skeleton variant="circular" width={44} height={44} />
+          <Box sx={{ flex: 1 }}>
+            <Skeleton variant="text" width="40%" height={24} />
+            <Skeleton variant="text" width="82%" height={20} />
+          </Box>
+          <Skeleton variant="circular" width={18} height={18} />
+        </Box>
+      ))}
+    </Box>
+  );
+
+  const MessagePaneLoadingSkeleton = ({ rows = 4 }) => (
+    <Box sx={{ width: '100%', py: 1 }} aria-hidden="true">
+      {Array.from({ length: rows }).map((_, index) => {
+        const isOwnRow = index % 2 === 1;
+        return (
+          <Box
+            key={`message-loading-${index}`}
+            sx={{
+              display: 'flex',
+              justifyContent: isOwnRow ? 'flex-end' : 'flex-start',
+              mb: 2,
+            }}
+          >
+            <Box
+              sx={{
+                width: { xs: '76%', sm: '62%' },
+                p: 1.25,
+                borderRadius: 2,
+                border: `1px solid ${theme.palette.divider}`,
+                bgcolor: isOwnRow
+                  ? alpha(theme.palette.primary.main, 0.06)
+                  : alpha(theme.palette.background.paper, 0.7),
+              }}
+            >
+              <Skeleton variant="text" width="86%" height={20} />
+              <Skeleton variant="text" width="62%" height={20} />
+            </Box>
+          </Box>
+        );
+      })}
+    </Box>
+  );
+
   // Enhanced Conversation List Component
   const EnhancedConversationList = () => (
     <Paper
@@ -1093,14 +1156,10 @@ const EnhancedMessagingPage = () => {
               borderRadius: 3,
             }}
           >
-            <Box textAlign="center">
-              <CircularProgress size={48} sx={{ color: 'primary.main', mb: 3 }} />
-              <Typography variant="h6" sx={{ color: 'primary.main', fontWeight: 600, mb: 1 }}>
-                Starting conversation...
-              </Typography>
-              <Typography variant="body2" sx={{ color: 'text.disabled', maxWidth: 300, mx: 'auto' }}>
-                Connecting to the messaging service. This may take a moment if the service is warming up.
-              </Typography>
+            <Box sx={{ width: '100%', maxWidth: 560, px: 3, py: 3 }}>
+              <Skeleton variant="text" width="48%" height={34} sx={{ mx: 'auto', mb: 1 }} />
+              <Skeleton variant="text" width="72%" height={24} sx={{ mx: 'auto', mb: 3 }} />
+              <MessagePaneLoadingSkeleton rows={4} />
             </Box>
           </Paper>
         );
@@ -1353,9 +1412,7 @@ const EnhancedMessagingPage = () => {
           }}
         >
           {loadingMessages ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-              <CircularProgress size={32} sx={{ color: 'primary.main' }} />
-            </Box>
+            <MessagePaneLoadingSkeleton rows={5} />
           ) : (messages || []).length === 0 ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
               <Typography variant="body2" sx={{ color: 'text.disabled' }}>
@@ -1627,6 +1684,17 @@ const EnhancedMessagingPage = () => {
           {/* File Preview */}
           {selectedFiles.length > 0 && (
             <Box sx={{ mb: 2 }}>
+              <Typography
+                variant="caption"
+                sx={{
+                  display: 'block',
+                  mb: 0.75,
+                  color: 'text.secondary',
+                  fontWeight: 600,
+                }}
+              >
+                {attachmentGuidance}
+              </Typography>
               <Stack
                 direction="row"
                 spacing={1}
@@ -1714,6 +1782,16 @@ const EnhancedMessagingPage = () => {
           )}
 
           {/* Input Row */}
+          <Typography
+            variant="caption"
+            sx={{
+              display: 'block',
+              mb: 1,
+              color: 'text.secondary',
+            }}
+          >
+            {attachmentGuidance}. Press Enter to send, Shift+Enter for a new line.
+          </Typography>
           <Stack direction="row" alignItems="flex-end" spacing={1}>
             <input
               ref={fileInputRef}
@@ -1725,7 +1803,7 @@ const EnhancedMessagingPage = () => {
               onChange={handleFileSelect}
             />
 
-            <Tooltip title="Attach files">
+            <Tooltip title="Attach photos, videos, or documents">
               <IconButton
                 onClick={() => fileInputRef.current?.click()}
                 aria-label={`Attach files${selectedFiles.length > 0 ? `, ${selectedFiles.length} selected` : ''}`}
@@ -1745,7 +1823,7 @@ const EnhancedMessagingPage = () => {
               fullWidth
               multiline
               maxRows={4}
-              placeholder="Type a message..."
+              placeholder="Type your message. Include timing, budget, or location when relevant."
               value={messageText}
               inputProps={{ 'aria-label': 'Type a new chat message' }}
               onChange={(e) => {
@@ -1784,9 +1862,9 @@ const EnhancedMessagingPage = () => {
             <Tooltip title="Send message">
               <IconButton
                 onClick={handleSendMessage}
-                disabled={!messageText.trim() && selectedFiles.length === 0}
+                disabled={!canSendMessage}
                 aria-label={
-                  messageText.trim() || selectedFiles.length > 0
+                  canSendMessage
                     ? 'Send message'
                     : 'Send message unavailable until you type text or add an attachment'
                 }
@@ -1977,11 +2055,8 @@ const EnhancedMessagingPage = () => {
               )}
 
               {deepLinkLoading && (
-                <Box sx={{ textAlign: 'center', py: 6 }}>
-                  <CircularProgress size={40} sx={{ color: 'primary.main', mb: 2 }} />
-                  <Typography variant="body1" sx={{ color: 'text.secondary', fontWeight: 500 }}>
-                    Starting conversation...
-                  </Typography>
+                <Box sx={{ py: 1 }}>
+                  <ConversationListLoadingSkeleton rows={4} />
                 </Box>
               )}
 
@@ -2256,9 +2331,7 @@ const EnhancedMessagingPage = () => {
               }}
             >
               {loadingMessages && (
-                <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-                  <CircularProgress size={32} sx={{ color: 'primary.main' }} />
-                </Box>
+                <MessagePaneLoadingSkeleton rows={4} />
               )}
               {!loadingMessages && messages.length === 0 && (
                 <Box sx={{ textAlign: 'center', py: 6 }}>
@@ -2327,7 +2400,11 @@ const EnhancedMessagingPage = () => {
               }}
             >
               {selectedFiles.length > 0 && (
-                <Stack direction="row" spacing={1} sx={{ mb: 1.25, overflowX: 'auto', pb: 0.5 }}>
+                <>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                    {attachmentGuidance}
+                  </Typography>
+                  <Stack direction="row" spacing={1} sx={{ mb: 1.25, overflowX: 'auto', pb: 0.5 }}>
                   {selectedFiles.map((file, index) => (
                     <Paper
                       key={`${file.name}-${index}`}
@@ -2360,12 +2437,16 @@ const EnhancedMessagingPage = () => {
                       </IconButton>
                     </Paper>
                   ))}
-                </Stack>
+                  </Stack>
+                </>
               )}
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.75 }}>
+                {attachmentGuidance}. Tap send when your message is ready.
+              </Typography>
               <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                 <IconButton
                   onClick={() => fileInputRef.current?.click()}
-                  aria-label="Attach a file"
+                  aria-label={`Attach a file${selectedFiles.length > 0 ? `, ${selectedFiles.length} selected` : ''}`}
                   sx={{
                     bgcolor: 'background.paper',
                     border: `1px solid ${theme.palette.divider}`,
@@ -2416,8 +2497,12 @@ const EnhancedMessagingPage = () => {
                 />
                 <IconButton
                   onClick={handleSendMessage}
-                  disabled={!messageText.trim() && selectedFiles.length === 0}
-                  aria-label="Send message"
+                  disabled={!canSendMessage}
+                  aria-label={
+                    canSendMessage
+                      ? 'Send message'
+                      : 'Send message unavailable until you type text or add an attachment'
+                  }
                   sx={{
                     backgroundColor: 'primary.main',
                     color: theme.palette.primary.contrastText,

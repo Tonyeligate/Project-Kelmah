@@ -140,7 +140,15 @@ export const ActionButton = styled(IconButton)(({ theme }) => ({
       ? `1px solid rgba(255, 215, 0, 0.2)`
       : `1px solid rgba(0, 0, 0, 0.2)`,
   margin: theme.spacing(0, 0.5),
+  minWidth: 44,
+  minHeight: 44,
+  width: 44,
+  height: 44,
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  '&:focus-visible': {
+    outline: `3px solid ${theme.palette.mode === 'dark' ? BRAND_COLORS.gold : theme.palette.primary.main}`,
+    outlineOffset: '2px',
+  },
   [theme.breakpoints.down('sm')]: {
     margin: theme.spacing(0, 0.5),
     padding: theme.spacing(1),

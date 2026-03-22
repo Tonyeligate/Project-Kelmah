@@ -57,6 +57,11 @@ const StyledBottomNavigationAction = styled(BottomNavigationAction)(
     minWidth: 44,
     padding: '6px 4px 8px',
     transition: 'all 0.2s ease',
+    '&:focus-visible': {
+      outline: `3px solid ${theme.palette.mode === 'dark' ? BRAND_COLORS.gold : theme.palette.primary.main}`,
+      outlineOffset: '2px',
+      borderRadius: 10,
+    },
     '&.Mui-selected': {
       color: theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
       '& .MuiBottomNavigationAction-label': {
@@ -91,6 +96,7 @@ const StyledBottomNavigationAction = styled(BottomNavigationAction)(
     },
     '@media (max-width:360px)': {
       padding: '6px 2px 8px',
+      minHeight: 52,
       '& .MuiBottomNavigationAction-label': {
         fontSize: '0.64rem',
       },

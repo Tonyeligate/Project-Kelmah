@@ -38,6 +38,11 @@ import { checkApiHealth } from '../../../common/utils/apiUtils';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 import { toUserMessage } from '@/services/responseNormalizer';
+import {
+  getDefaultRouteByRole,
+  getRequestedPathFromLocation,
+  resolveLoginRedirectPath,
+} from '@/utils/authRedirect';
 
 const normalizeErrorMessage = (value) => {
   if (typeof value === 'string') {
@@ -156,31 +161,13 @@ const Login = () => {
     window.location.assign(buildSocialAuthUrl(authPath));
   }, [buildSocialAuthUrl]);
 
-  const getDefaultRouteByRole = (role) => {
-    if (role === 'worker') return '/worker/dashboard';
-    if (role === 'hirer') return '/hirer/dashboard';
-    if (role === 'admin') return '/admin/skills-management';
-    return '/dashboard';
-  };
+  const getRequestedPath = () => getRequestedPathFromLocation(location);
 
-  const getRequestedPath = () => {
-    const queryFrom = new URLSearchParams(location.search).get('from');
-    return location.state?.from || location.state?.redirectTo || queryFrom;
-  };
-
-  const resolveLoginRedirect = (user) => {
-    const requestedPath = getRequestedPath();
-    if (
-      typeof requestedPath === 'string' &&
-      requestedPath.startsWith('/') &&
-      !requestedPath.startsWith('//') &&
-      !requestedPath.startsWith('/login') &&
-      !requestedPath.startsWith('/register')
-    ) {
-      return requestedPath;
-    }
-    return getDefaultRouteByRole(user?.role);
-  };
+  const resolveLoginRedirect = (user) =>
+    resolveLoginRedirectPath({
+      location,
+      user,
+    });
 
   const handleSubmit = async (e) => {
     e.preventDefault();

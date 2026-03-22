@@ -1,7 +1,7 @@
 // Kelmah Service Worker for Ghana Market
 // Optimized for poor network conditions and offline functionality
 
-const CACHE_NAME = 'kelmah-v1.0.7-chunk-recovery';
+const CACHE_NAME = 'kelmah-v1.0.8-chunk-recovery';
 const OFFLINE_URL = '/offline.html';
 const HEALTHY_GATEWAY_DB = 'kelmah-gateway-db';
 const HEALTHY_GATEWAY_STORE = 'healthyGatewayStore';
@@ -22,6 +22,56 @@ const swWarn = (...args) => {
 const swError = (...args) => {
   if (SW_DEBUG) console.error(...args);
 };
+
+const OFFLINE_HTML_FALLBACK = `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Kelmah Offline</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 0; background: #0f1115; color: #f5f7fb; }
+      .wrap { max-width: 560px; margin: 10vh auto; padding: 24px; }
+      h1 { margin-bottom: 8px; font-size: 1.4rem; }
+      p { opacity: 0.92; line-height: 1.45; }
+      button { margin-top: 16px; min-height: 44px; border: 0; border-radius: 8px; padding: 0 16px; background: #f2c230; color: #1a1a1a; font-weight: 700; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>You are offline</h1>
+      <p>Kelmah could not reach the network right now. You can still browse cached pages and retry when your connection is back.</p>
+      <button onclick="location.reload()">Retry</button>
+    </div>
+  </body>
+</html>`;
+
+const buildApiFallbackResponse = ({ message, code, status = 503, fallbackSource = 'service-worker' }) =>
+  new Response(
+    JSON.stringify({
+      success: false,
+      error: {
+        message,
+        code,
+      },
+    }),
+    {
+      status,
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Service-Worker-Fallback': fallbackSource,
+      },
+    },
+  );
+
+const buildOfflineDocumentResponse = () =>
+  new Response(OFFLINE_HTML_FALLBACK, {
+    status: 200,
+    headers: {
+      'Content-Type': 'text/html; charset=utf-8',
+      'X-Service-Worker-Fallback': 'offline-inline',
+    },
+  });
 
 async function openGatewayDb() {
   return new Promise((resolve, reject) => {
@@ -98,7 +148,7 @@ async function fetchAndCacheGatewayStatus() {
 }
 // Critical resources to cache immediately (avoid CRA-specific paths)
 const PRECACHE_URLS = [
-  '/',
+  '/index.html',
   '/offline.html',
   '/manifest.json',
 ];
@@ -266,13 +316,14 @@ self.addEventListener('fetch', (event) => {
 // Handle document requests (HTML pages)
 async function handleDocumentRequest(request) {
   try {
-    // Try network first
-    const response = await fetch(request);
+    // Always request the latest HTML shell to prevent stale chunk references.
+    const response = await fetch(request, { cache: 'no-store' });
 
     // Cache successful responses
     if (response.status === 200) {
       const cache = await caches.open(CACHE_NAME);
       cache.put(request, response.clone());
+      cache.put('/index.html', response.clone());
     }
 
     return response;
@@ -285,8 +336,14 @@ async function handleDocumentRequest(request) {
       return cachedResponse;
     }
 
+    const cachedIndex = await caches.match('/index.html');
+    if (cachedIndex) {
+      return cachedIndex;
+    }
+
     // Final fallback to offline page
-    return caches.match(OFFLINE_URL);
+    const offlineResponse = await caches.match(OFFLINE_URL);
+    return offlineResponse || buildOfflineDocumentResponse();
   }
 }
 
@@ -322,6 +379,25 @@ async function handleStaticAssetRequest(request) {
   try {
     const response = await fetch(request);
 
+    if (response.status === 404 && isChunkAsset(request.url)) {
+      swWarn('[SW] Missing hashed chunk detected. Clearing runtime caches.', request.url);
+      await clearRuntimeCaches();
+
+      if (request.destination === 'script') {
+        return buildChunkRecoveryScriptResponse();
+      }
+
+      if (request.destination === 'style') {
+        return new Response('/* chunk missing - forcing app shell reload */', {
+          status: 200,
+          headers: {
+            'Content-Type': 'text/css; charset=utf-8',
+            'X-Service-Worker-Fallback': 'chunk-recovery-style',
+          },
+        });
+      }
+    }
+
     if (response.status === 200) {
       const cache = await caches.open(CACHE_NAME);
       cache.put(request, response.clone());
@@ -332,6 +408,36 @@ async function handleStaticAssetRequest(request) {
     swError('Failed to fetch static asset:', request.url);
     throw error;
   }
+}
+
+function isChunkAsset(url) {
+  const parsed = new URL(url, self.location.origin);
+  return /\/assets\/.test(parsed.pathname) && /\.(js|css)$/.test(parsed.pathname);
+}
+
+function buildChunkRecoveryScriptResponse() {
+  return new Response(
+    `(() => {
+      try {
+        if (window && window.sessionStorage) {
+          const attemptsKey = 'kelmah_chunk_recovery_attempts';
+          const attempts = Number(window.sessionStorage.getItem(attemptsKey) || '0');
+          if (attempts < 2) {
+            window.sessionStorage.setItem(attemptsKey, String(attempts + 1));
+            window.location.reload();
+            return;
+          }
+        }
+      } catch (_) {}
+    })();`,
+    {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/javascript; charset=utf-8',
+        'X-Service-Worker-Fallback': 'chunk-recovery-script',
+      },
+    },
+  );
 }
 
 // Network first strategy
@@ -405,6 +511,19 @@ async function handleNetworkOnlyRequest(request) {
     return response;
   } catch (error) {
     clearTimeout(timeoutId);
+
+    if (isAPIRequest(request.url)) {
+      const isTimeout = error?.name === 'AbortError';
+      return buildApiFallbackResponse({
+        message: isTimeout
+          ? 'This request timed out before the server responded.'
+          : 'Unable to reach the server while offline.',
+        code: isTimeout ? 'REQUEST_TIMEOUT' : 'NETWORK_FAILURE',
+        status: isTimeout ? 504 : 503,
+        fallbackSource: 'network-only',
+      });
+    }
+
     throw error;
   }
 }
@@ -435,7 +554,21 @@ async function handleStaleWhileRevalidate(request) {
   }
 
   // No cache, wait for network
-  return networkResponsePromise;
+  const networkResponse = await networkResponsePromise;
+  if (networkResponse) {
+    return networkResponse;
+  }
+
+  if (isAPIRequest(request.url)) {
+    return buildApiFallbackResponse({
+      message: 'Cached data is unavailable and the network request failed.',
+      code: 'OFFLINE_DATA_UNAVAILABLE',
+      status: 503,
+      fallbackSource: 'stale-while-revalidate',
+    });
+  }
+
+  throw new Error('Network unavailable and no cached response available');
 }
 
 // Update cache in background

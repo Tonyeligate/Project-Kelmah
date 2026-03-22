@@ -56,40 +56,68 @@ const Footer = () => {
     {
       title: 'For Workers',
       links: [
-        { label: 'Find Work', href: '/jobs' },
-        { label: 'Create Profile', href: '/register' },
-        { label: 'How It Works', href: '/' },
-        { label: 'Payments', href: '/payments' },
-        { label: 'Skills Assessment', href: '/worker/skills' },
+        { label: 'Find Work', href: '/jobs', intent: 'Browse available jobs' },
+        { label: 'Create Profile', href: '/register', intent: 'Register as a worker or hirer' },
+        {
+          label: 'How Kelmah Works',
+          href: '/support/help-center',
+          intent: 'Learn how hiring and job applications work',
+        },
+        {
+          label: 'Payments & Wallet',
+          href: '/payments',
+          intent: 'View payments, wallet, and transaction tools',
+        },
+        {
+          label: 'Skills Assessment',
+          href: '/worker/skills',
+          intent: 'Take skills assessments and view progress',
+        },
       ],
     },
     {
       title: 'For Hirers',
       links: [
-        { label: 'Find Talent', href: '/search' },
-        { label: 'Post a Job', href: '/hirer/jobs/post' },
-        { label: 'How It Works', href: '/' },
-        { label: 'Pricing', href: '/pricing' },
-        { label: 'Enterprise', href: '/support' },
+        { label: 'Find Talent', href: '/search', intent: 'Search and discover skilled workers' },
+        { label: 'Post a Job', href: '/hirer/jobs/post', intent: 'Create a new job posting' },
+        {
+          label: 'Hiring Guide',
+          href: '/support/help-center',
+          intent: 'Learn the step-by-step hiring process',
+        },
+        { label: 'Pricing', href: '/pricing', intent: 'Review premium and pricing options' },
+        {
+          label: 'Business Support',
+          href: '/support',
+          intent: 'Get help for teams and business workflows',
+        },
       ],
     },
     {
       title: 'Resources',
       links: [
-        { label: 'Help & Support', href: '/support' },
-        { label: 'Safety Centre', href: '/support/help-center' },
-        { label: 'Community', href: '/community' },
-        { label: 'Blog', href: '/docs' },
+        { label: 'Help & Support', href: '/support', intent: 'Get support and troubleshooting help' },
+        {
+          label: 'Safety Centre',
+          href: '/support/help-center',
+          intent: 'Read safety guidance for workers and hirers',
+        },
+        { label: 'Community', href: '/community', intent: 'Explore community discussions and updates' },
+        { label: 'Guides & Docs', href: '/docs', intent: 'Read guides and platform documentation' },
       ],
     },
     {
       title: 'Company',
       links: [
-        { label: 'About Us', href: '/about' },
-        { label: 'Contact', href: '/contact' },
-        { label: 'Privacy Policy', href: '/privacy' },
-        { label: 'Terms of Service', href: '/terms' },
-        { label: 'Careers', href: '/community' },
+        { label: 'About Us', href: '/about', intent: 'Learn about Kelmah mission and values' },
+        { label: 'Contact', href: '/contact', intent: 'Contact the Kelmah team' },
+        { label: 'Privacy Policy', href: '/privacy', intent: 'Review privacy and data handling policy' },
+        { label: 'Terms of Service', href: '/terms', intent: 'Review service terms and user responsibilities' },
+        {
+          label: 'Careers & Community',
+          href: '/community',
+          intent: 'See community updates and opportunities',
+        },
       ],
     },
   ];
@@ -299,6 +327,8 @@ const Footer = () => {
                         key={link.label}
                         component={RouterLink}
                         to={link.href}
+                        aria-label={`${link.label} - ${link.intent}`}
+                        title={link.intent}
                         sx={{
                           color: 'rgba(255,255,255,0.5)',
                           textDecoration: 'none',
@@ -333,6 +363,8 @@ const Footer = () => {
               <Link
                 component={RouterLink}
                 to="/privacy"
+                aria-label="Privacy Policy - Review privacy and data handling policy"
+                title="Review privacy and data handling policy"
                 sx={{
                   color: 'rgba(255,255,255,0.4)',
                   textDecoration: 'none',
@@ -345,6 +377,8 @@ const Footer = () => {
               <Link
                 component={RouterLink}
                 to="/terms"
+                aria-label="Terms of Service - Review service terms and user responsibilities"
+                title="Review service terms and user responsibilities"
                 sx={{
                   color: 'rgba(255,255,255,0.4)',
                   textDecoration: 'none',

@@ -52,12 +52,14 @@ const ProtectedRoute = ({
 
   // Redirect if not authenticated or not authorized
   if (!isAuthenticated) {
+    const intendedPath = `${location.pathname || '/'}${location.search || ''}${location.hash || ''}`;
     return (
       <Navigate
         to={redirectPath}
         replace
         state={{
-          from: `${location.pathname || '/'}${location.search || ''}`,
+          from: intendedPath,
+          redirectTo: intendedPath,
           message: 'Please sign in to continue.',
         }}
       />
@@ -65,12 +67,14 @@ const ProtectedRoute = ({
   }
 
   if (!computedAllowance) {
+    const intendedPath = `${location.pathname || '/'}${location.search || ''}${location.hash || ''}`;
     return (
       <Navigate
         to={getRoleHomePath(user)}
         replace
         state={{
-          from: `${location.pathname || '/'}${location.search || ''}`,
+          from: intendedPath,
+          redirectTo: intendedPath,
           message: 'You do not have access to that page.',
         }}
       />

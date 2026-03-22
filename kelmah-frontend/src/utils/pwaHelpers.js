@@ -10,6 +10,35 @@ const HEALTHY_GATEWAY_STORE = 'healthyGatewayStore';
 const HEALTHY_GATEWAY_KEY = 'lastHealthyGateway';
 const BOOTSTRAP_GATEWAY_SESSION_KEY = 'kelmah:bootstrapGateway';
 const BOOTSTRAP_TTL_MS = 1000 * 60 * 60 * 6; // 6 hours
+const PWA_DEBUG_FLAG_KEY = 'kelmah:pwaDebug';
+
+const shouldDebugPwa = () => {
+  if (typeof import.meta !== 'undefined' && import.meta.env?.DEV) {
+    return true;
+  }
+
+  if (typeof window === 'undefined') {
+    return false;
+  }
+
+  try {
+    return window.localStorage.getItem(PWA_DEBUG_FLAG_KEY) === '1';
+  } catch {
+    return false;
+  }
+};
+
+const pwaLog = (...args) => {
+  if (shouldDebugPwa()) console.log(...args);
+};
+
+const pwaWarn = (...args) => {
+  if (shouldDebugPwa()) console.warn(...args);
+};
+
+const pwaError = (...args) => {
+  if (shouldDebugPwa()) console.error(...args);
+};
 
 const openGatewayDb = () => {
   if (typeof indexedDB === 'undefined') {
@@ -43,7 +72,7 @@ const saveHealthyGateway = async (origin) => {
       HEALTHY_GATEWAY_KEY,
     );
   } catch (error) {
-    if (import.meta.env.DEV) console.warn('[PWA] Failed to persist healthy gateway:', error);
+    pwaWarn('[PWA] Failed to persist healthy gateway:', error);
   } finally {
     db?.close();
   }
@@ -68,7 +97,7 @@ const readHealthyGateway = async () => {
     });
   } catch (error) {
     db?.close();
-    if (import.meta.env.DEV) console.warn('[PWA] Failed to read healthy gateway cache:', error);
+    pwaWarn('[PWA] Failed to read healthy gateway cache:', error);
     return null;
   }
 };
@@ -103,21 +132,33 @@ const requestCachedGatewayFromSW = () => {
 // Service Worker Registration with Ghana-specific optimizations
 export const registerServiceWorker = async () => {
   if ('serviceWorker' in navigator) {
+    const useExistingRegistration = async () => {
+      try {
+        const existing = await navigator.serviceWorker.getRegistration('/');
+        if (existing) {
+          pwaLog('[PWA] Reusing existing service worker registration');
+          return existing;
+        }
+      } catch (error) {
+        pwaWarn('[PWA] Could not read existing service worker registration:', error);
+      }
+
+      return null;
+    };
+
     // Skip SW registration if the script isn't present (e.g., Vercel without public asset)
     try {
       const headCheck = await fetch('/sw.js', { method: 'HEAD' });
       if (!headCheck.ok) {
-        if (import.meta.env.DEV) console.warn(
-          'ServiceWorker script not found at /sw.js, skipping registration',
-        );
-        return null;
+        pwaWarn('ServiceWorker script not found at /sw.js, checking existing registration');
+        return useExistingRegistration();
       }
     } catch (error) {
-      if (import.meta.env.DEV) console.warn(
-        'ServiceWorker script HEAD check failed, skipping registration',
-        error,
-      );
-      return null;
+      pwaWarn('ServiceWorker script HEAD check failed, checking existing registration', error);
+      const existing = await useExistingRegistration();
+      if (existing) {
+        return existing;
+      }
     }
     try {
       const registration = await navigator.serviceWorker.register('/sw.js', {
@@ -125,7 +166,7 @@ export const registerServiceWorker = async () => {
         updateViaCache: 'none', // Always check for updates
       });
 
-      if (import.meta.env.DEV) console.log('ServiceWorker registered successfully:', registration.scope);
+      pwaLog('ServiceWorker registered successfully:', registration.scope);
 
       // Handle service worker updates
       registration.addEventListener('updatefound', () => {
@@ -151,7 +192,7 @@ export const registerServiceWorker = async () => {
 
       return registration;
     } catch (error) {
-      if (import.meta.env.DEV) console.error('ServiceWorker registration failed:', error);
+      pwaError('ServiceWorker registration failed:', error);
       return null;
     }
   }
@@ -159,6 +200,29 @@ export const registerServiceWorker = async () => {
 };
 
 const fetchRuntimeHints = async () => {
+  const readSessionBootstrapHint = () => {
+    if (typeof window === 'undefined' || !window.sessionStorage) {
+      return null;
+    }
+
+    try {
+      const raw = window.sessionStorage.getItem(BOOTSTRAP_GATEWAY_SESSION_KEY);
+      if (!raw) return null;
+
+      const parsed = JSON.parse(raw);
+      if (!parsed?.origin) return null;
+
+      const age = Date.now() - Number(parsed.updatedAt || 0);
+      if (Number.isFinite(age) && age > BOOTSTRAP_TTL_MS) {
+        return null;
+      }
+
+      return parsed;
+    } catch {
+      return null;
+    }
+  };
+
   try {
     const response = await fetch('/runtime-config.json', {
       method: 'GET',
@@ -178,10 +242,7 @@ const fetchRuntimeHints = async () => {
               }),
             );
           } catch (error) {
-            if (import.meta.env.DEV) console.warn(
-              '[PWA] Failed to cache bootstrap gateway hint:',
-              error,
-            );
+            pwaWarn('[PWA] Failed to cache bootstrap gateway hint:', error);
           }
         }
         navigator.serviceWorker?.controller?.postMessage({
@@ -192,8 +253,15 @@ const fetchRuntimeHints = async () => {
       return config;
     }
   } catch (error) {
-    if (import.meta.env.DEV) console.warn('[PWA] Runtime config fetch failed:', error);
+    pwaWarn('[PWA] Runtime config fetch failed:', error);
   }
+
+  const cachedHint = readSessionBootstrapHint();
+  if (cachedHint?.origin) {
+    pwaLog('[PWA] Using cached bootstrap gateway hint after runtime-config fetch failure');
+    return { apiGatewayUrl: cachedHint.origin };
+  }
+
   return null;
 };
 
@@ -262,7 +330,7 @@ export const applyPwaUpdate = async () => {
   try {
     return await updatePWA();
   } catch (error) {
-    if (import.meta.env.DEV) console.warn('PWA update failed:', error);
+    pwaWarn('PWA update failed:', error);
     return false;
   }
 };
@@ -282,7 +350,7 @@ let deferredPrompt = null;
 // Listen for install prompt
 if (typeof window !== 'undefined') {
   window.addEventListener('beforeinstallprompt', (e) => {
-    if (import.meta.env.DEV) console.log('PWA install prompt triggered');
+    pwaLog('PWA install prompt triggered');
     e.preventDefault();
     deferredPrompt = e;
 
@@ -300,7 +368,7 @@ export const requestPwaInstall = async () => {
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
 
-    if (import.meta.env.DEV) console.log('PWA install outcome:', outcome);
+    pwaLog('PWA install outcome:', outcome);
 
     if (outcome === 'accepted') {
       // Track installation success
@@ -352,9 +420,9 @@ const trackPWAInstall = (outcome) => {
     }
 
     // Log for debugging
-    if (import.meta.env.DEV) console.log('PWA install tracked:', outcome);
+    pwaLog('PWA install tracked:', outcome);
   } catch (error) {
-    if (import.meta.env.DEV) console.error('Failed to track PWA install:', error);
+    pwaError('Failed to track PWA install:', error);
   }
 };
 
@@ -386,26 +454,26 @@ export const optimizeForGhanaNetworks = () => {
       case '2g':
         // Ultra-lite mode for 2G networks
         document.documentElement.classList.add('network-2g');
-        if (import.meta.env.DEV) console.log('2G network detected - enabling ultra-lite mode');
+        pwaLog('2G network detected - enabling ultra-lite mode');
         break;
 
       case '3g':
         // Balanced mode for 3G
         document.documentElement.classList.add('network-3g');
-        if (import.meta.env.DEV) console.log('3G network detected - enabling balanced mode');
+        pwaLog('3G network detected - enabling balanced mode');
         break;
 
       case '4g':
         // Full experience for 4G
         document.documentElement.classList.add('network-4g');
-        if (import.meta.env.DEV) console.log('4G network detected - enabling full experience');
+        pwaLog('4G network detected - enabling full experience');
         break;
     }
 
     // Save data mode
     if (networkInfo.saveData) {
       document.documentElement.classList.add('save-data');
-      if (import.meta.env.DEV) console.log('Data saver mode detected');
+      pwaLog('Data saver mode detected');
     }
   }
 };
@@ -419,10 +487,10 @@ export const registerBackgroundSync = async (tag) => {
     try {
       const registration = await navigator.serviceWorker.ready;
       await registration.sync.register(tag);
-      if (import.meta.env.DEV) console.log('Background sync registered:', tag);
+      pwaLog('Background sync registered:', tag);
       return true;
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Background sync registration failed:', error);
+      pwaError('Background sync registration failed:', error);
       return false;
     }
   }
@@ -447,7 +515,7 @@ export const setupPushNotifications = async () => {
           ),
         });
 
-        if (import.meta.env.DEV) console.log('Push notification subscription:', subscription);
+        pwaLog('Push notification subscription:', subscription);
 
         // Send subscription to server
         await sendSubscriptionToServer(subscription);
@@ -455,7 +523,7 @@ export const setupPushNotifications = async () => {
         return subscription;
       }
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Push notification setup failed:', error);
+      pwaError('Push notification setup failed:', error);
     }
   }
 
@@ -479,10 +547,10 @@ const urlBase64ToUint8Array = (base64String) => {
 const sendSubscriptionToServer = async (subscription) => {
   try {
     await api.post('/notifications/push/subscribe', subscription);
-    if (import.meta.env.DEV) console.log('Subscription sent to server successfully');
+    pwaLog('Subscription sent to server successfully');
     return { success: true };
   } catch (error) {
-    if (import.meta.env.DEV) console.warn(
+    pwaWarn(
       'Push subscription send failed (non-blocking):',
       error?.message || error,
     );
@@ -494,7 +562,7 @@ const sendSubscriptionToServer = async (subscription) => {
 export const handleAppLifecycle = () => {
   // App install event
   window.addEventListener('appinstalled', () => {
-    if (import.meta.env.DEV) console.log('PWA was installed');
+    pwaLog('PWA was installed');
     trackPWAInstall('installed');
 
     // Hide any install prompts
@@ -507,10 +575,10 @@ export const handleAppLifecycle = () => {
   // Visibility change (app backgrounded/foregrounded)
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
-      if (import.meta.env.DEV) console.log('App backgrounded');
+      pwaLog('App backgrounded');
       // Pause non-critical operations
     } else {
-      if (import.meta.env.DEV) console.log('App foregrounded');
+      pwaLog('App foregrounded');
       // Resume operations, check for updates
       checkForUpdates();
     }
@@ -532,14 +600,14 @@ const checkForUpdates = async () => {
         await registration.update();
       }
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Failed to check for updates:', error);
+      pwaError('Failed to check for updates:', error);
     }
   }
 };
 
 // Initialize PWA features
 export const initializePWA = async () => {
-  if (import.meta.env.DEV) console.log('Initializing PWA features for Ghana 🇬🇭');
+  pwaLog('Initializing PWA features for Ghana 🇬🇭');
 
   const isDev =
     typeof import.meta !== 'undefined' &&
@@ -565,7 +633,7 @@ export const initializePWA = async () => {
           }),
         );
       } catch (error) {
-        if (import.meta.env.DEV) console.warn('[PWA] Failed to prime bootstrap gateway hint:', error);
+        pwaWarn('[PWA] Failed to prime bootstrap gateway hint:', error);
       }
     }
   }
@@ -578,7 +646,7 @@ export const initializePWA = async () => {
   if (!isDev) {
     await registerServiceWorker();
   } else {
-    if (import.meta.env.DEV) console.log('[PWA] DEV mode detected: skipping Service Worker registration');
+    pwaLog('[PWA] DEV mode detected: skipping Service Worker registration');
   }
 
   // Optimize for Ghana networks
@@ -597,7 +665,7 @@ export const initializePWA = async () => {
     await registerBackgroundSync('kelmah-background-sync');
   }
 
-  if (import.meta.env.DEV) console.log('PWA initialization complete');
+  pwaLog('PWA initialization complete');
 };
 
 // No window-level exports needed (avoid inline handlers for better security)

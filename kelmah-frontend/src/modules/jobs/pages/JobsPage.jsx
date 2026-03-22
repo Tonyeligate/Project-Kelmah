@@ -401,6 +401,13 @@ const getCategoryIcon = (category) => {
   return CATEGORY_ICON_MAP[category] || WorkIcon;
 };
 
+const SORT_LABELS = {
+  relevance: 'Most Relevant',
+  newest: 'Newest First',
+  budget_high: 'Budget: High to Low',
+  budget_low: 'Budget: Low to High',
+};
+
 const tradeCategories = tradeCategoriesData.map((category) => ({
   ...category,
   icon: CATEGORY_ICON_MAP[category.value] || WorkIcon,
@@ -1073,6 +1080,7 @@ function JobsResultsHeader({
   budgetFilterActive,
   budgetRange,
   quickFilters,
+  sortBy,
   onClearSearch,
   onClearCategory,
   onClearLocation,
@@ -1096,6 +1104,9 @@ function JobsResultsHeader({
       <Box>
         <Typography variant="h5" sx={{ color: 'var(--k-gold)', fontWeight: 'bold', mb: 1 }}>
           {selectedCategory ? `${selectedCategory} Jobs` : 'Featured Opportunities'}
+        </Typography>
+        <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1.25 }}>
+          Sorted by {SORT_LABELS[sortBy] || SORT_LABELS.relevance}. Compare jobs quickly using budget, payment type, and applicant count on each card.
         </Typography>
         {hasActiveFilters && (
           <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -1201,6 +1212,11 @@ function JobsGridStatePanels({
   effectiveSearch,
   selectedCategory,
   selectedLocation,
+  budgetFilterActive,
+  onClearSearch,
+  onClearCategory,
+  onClearLocation,
+  onClearBudget,
   clearAllFilters,
 }) {
   return (
@@ -1356,6 +1372,38 @@ function JobsGridStatePanels({
                 ? 'Try removing one filter or changing your search words.'
                 : 'No jobs are available right now. Check back soon for new work.'}
             </Typography>
+            {(effectiveSearch || selectedCategory || selectedLocation || budgetFilterActive) && (
+              <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ mb: 2, justifyContent: 'center' }}>
+                {effectiveSearch && (
+                  <Chip
+                    label={`Remove search: "${effectiveSearch}"`}
+                    onDelete={onClearSearch}
+                    sx={{ bgcolor: 'var(--k-accent-soft-strong)', color: 'var(--k-gold)' }}
+                  />
+                )}
+                {selectedCategory && (
+                  <Chip
+                    label={`Remove category: ${selectedCategory}`}
+                    onDelete={onClearCategory}
+                    sx={{ bgcolor: 'var(--k-accent-soft-strong)', color: 'var(--k-gold)' }}
+                  />
+                )}
+                {selectedLocation && (
+                  <Chip
+                    label={`Remove location: ${selectedLocation}`}
+                    onDelete={onClearLocation}
+                    sx={{ bgcolor: 'var(--k-accent-soft-strong)', color: 'var(--k-gold)' }}
+                  />
+                )}
+                {budgetFilterActive && (
+                  <Chip
+                    label="Remove budget filter"
+                    onDelete={onClearBudget}
+                    sx={{ bgcolor: 'var(--k-accent-soft-strong)', color: 'var(--k-gold)' }}
+                  />
+                )}
+              </Stack>
+            )}
             <Box
               sx={{
                 display: 'flex',
@@ -1576,6 +1624,9 @@ function JobsFiltersPanel({
                 },
               }}
             >
+              <MenuItem value="">
+                <Typography variant="body2">All Categories</Typography>
+              </MenuItem>
               {tradeCategories.map((category) => (
                 <MenuItem key={category.value} value={category.value}>
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -1636,6 +1687,9 @@ function JobsFiltersPanel({
                 },
               }}
             >
+              <MenuItem value="">
+                <Typography variant="body2">All Locations</Typography>
+              </MenuItem>
               {ghanaLocations.map((location) => (
                 <MenuItem key={location.value} value={location.value}>
                   <Typography variant="body2">{location.label}</Typography>
@@ -2608,6 +2662,7 @@ const JobsPage = () => {
               budgetFilterActive={budgetFilterActive}
               budgetRange={budgetRange}
               quickFilters={quickFilters}
+              sortBy={sortBy}
               onClearSearch={() => {
                 setSearchQuery('');
                 setSubmittedSearch(null);
@@ -2632,6 +2687,17 @@ const JobsPage = () => {
               effectiveSearch={effectiveSearch}
               selectedCategory={selectedCategory}
               selectedLocation={selectedLocation}
+              budgetFilterActive={budgetFilterActive}
+              onClearSearch={() => {
+                setSearchQuery('');
+                setSubmittedSearch(null);
+              }}
+              onClearCategory={() => setSelectedCategory('')}
+              onClearLocation={() => setSelectedLocation('')}
+              onClearBudget={() => {
+                setBudgetFilterActive(false);
+                setBudgetRange([0, 100000]);
+              }}
               clearAllFilters={clearAllFilters}
             />
 

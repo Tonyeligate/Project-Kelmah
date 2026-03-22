@@ -10,6 +10,7 @@ import {
     toUserMessage,
 } from './responseNormalizer';
 import { captureContractMismatch, captureRecoverableApiError } from './errorTelemetry';
+import { normalizeRequestedPath } from '../utils/authRedirect';
 
 let uuidFallbackCounter = 0;
 
@@ -46,6 +47,8 @@ const pendingUnauthorizedRequests = [];
 let hasTriggeredAuthRedirect = false;
 let refreshBlockedUntil = 0;
 let isForceLogoutInProgress = false;
+const AUTH_SYNC_STORAGE_KEY = 'kelmah_auth_sync';
+let authSyncListenersInitialized = false;
 
 // Create axios instance
 const apiClient = axios.create({
@@ -125,7 +128,11 @@ const buildLoginRedirectUrl = () => {
         return '/login';
     }
 
-    const intendedPath = `${pathname}${search}${hash}`;
+    const intendedPath = normalizeRequestedPath(`${pathname}${search}${hash}`);
+    if (!intendedPath) {
+        return '/login';
+    }
+
     return `/login?from=${encodeURIComponent(intendedPath)}`;
 };
 
@@ -179,6 +186,50 @@ const forceLogoutAndRedirect = (error) => {
     processUnauthorizedQueue(error || new Error('Unauthorized'), null);
     redirectToLogin();
 };
+
+const initializeCrossTabAuthSync = () => {
+    if (
+        authSyncListenersInitialized ||
+        typeof window === 'undefined'
+    ) {
+        return;
+    }
+
+    authSyncListenersInitialized = true;
+
+    const handleLogoutSignal = () => {
+        forceLogoutAndRedirect(new Error('Session ended in another tab'));
+    };
+
+    try {
+        const channel = new BroadcastChannel('kelmah_auth');
+        channel.onmessage = (event) => {
+            const payload = event?.data;
+            if (payload?.type === 'LOGOUT') {
+                handleLogoutSignal();
+            }
+        };
+    } catch (_) {
+        // BroadcastChannel may be unavailable; storage-event fallback below covers this.
+    }
+
+    window.addEventListener('storage', (event) => {
+        if (event.key !== AUTH_SYNC_STORAGE_KEY || !event.newValue) {
+            return;
+        }
+
+        try {
+            const payload = JSON.parse(event.newValue);
+            if (payload?.type === 'LOGOUT') {
+                handleLogoutSignal();
+            }
+        } catch {
+            // Ignore malformed payloads.
+        }
+    });
+};
+
+initializeCrossTabAuthSync();
 
 // Request interceptor
 apiClient.interceptors.request.use(

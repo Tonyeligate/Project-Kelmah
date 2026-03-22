@@ -331,12 +331,14 @@ const SmartNavigation = () => {
               variant="outlined"
               size="small"
               onClick={handleRestore}
+              aria-label="Show quick navigation shortcuts"
               sx={{
                 borderColor: 'rgba(212,175,55,0.5)',
                 color: '#D4AF37',
                 backgroundColor: 'rgba(26,26,26,0.85)',
                 textTransform: 'none',
-                fontSize: '0.75rem',
+                fontSize: '0.82rem',
+                minHeight: 44,
               }}
             >
               Show Quick Navigation
@@ -527,11 +529,14 @@ const SmartNavigation = () => {
         <Button
           size="small"
           onClick={handleHide}
+          aria-label="Hide quick navigation panel"
           sx={{
             mt: 2,
             color: 'rgba(255,255,255,0.5)',
-            fontSize: '0.7rem',
+            fontSize: '0.8rem',
             textTransform: 'none',
+            minHeight: 44,
+            px: 1.5,
           }}
         >
           Hide for now

@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { normalizeUser } from '../../../utils/userUtils';
 import {
-  Box, Container, Typography, TextField, Button, Grid, Paper, Divider, MenuItem, FormControl, InputLabel, Select, Chip, OutlinedInput, Avatar, IconButton, Alert, Snackbar, Card, CardContent, InputAdornment, useTheme, Autocomplete, Switch, FormControlLabel, Skeleton, Tooltip } from '@mui/material';
+  Box, Container, Typography, TextField, Button, Grid, Paper, Divider, MenuItem, FormControl, InputLabel, Select, Chip, OutlinedInput, Avatar, IconButton, Alert, Snackbar, Card, CardContent, InputAdornment, useTheme, Autocomplete, Switch, FormControlLabel, Skeleton, Tooltip, Accordion, AccordionSummary, AccordionDetails } from '@mui/material';
 import {
   Save as SaveIcon,
   Cancel as CancelIcon,
@@ -18,6 +18,7 @@ import {
   Description as DescriptionIcon,
   Build as SkillsIcon,
   Person as PersonIcon, // Fix: Added missing PersonIcon import
+  ExpandMore as ExpandMoreIcon,
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import {
@@ -179,6 +180,11 @@ const WorkerProfileEditPage = () => {
   const [newLanguage, setNewLanguage] = useState({
     language: '',
     proficiency: 'Beginner',
+  });
+  const [expandedOptionalSections, setExpandedOptionalSections] = useState({
+    education: false,
+    languages: false,
+    portfolio: false,
   });
 
   // Profile completeness
@@ -612,6 +618,38 @@ const WorkerProfileEditPage = () => {
     }));
   };
 
+  const toggleOptionalSection = (section) => (_, isExpanded) => {
+    setExpandedOptionalSections((prev) => ({
+      ...prev,
+      [section]: isExpanded,
+    }));
+  };
+
+  const checklistItems = [
+    {
+      label: 'Full name',
+      done: Boolean(formData.firstName.trim() && formData.lastName.trim()),
+    },
+    {
+      label: 'Professional title',
+      done: Boolean(formData.title.trim()),
+    },
+    {
+      label: 'Short bio',
+      done: Boolean(formData.bio.trim().length >= 60),
+    },
+    {
+      label: 'At least 3 skills',
+      done: Array.isArray(formData.skills) && formData.skills.length >= 3,
+    },
+    {
+      label: 'Location and phone',
+      done: Boolean(formData.location.trim() && formData.phone.trim()),
+    },
+  ];
+
+  const completedChecklistCount = checklistItems.filter((item) => item.done).length;
+
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
       <Helmet><title>Edit Profile | Kelmah</title></Helmet>
@@ -634,6 +672,11 @@ const WorkerProfileEditPage = () => {
         <Typography variant="body1" color="text.secondary">
           Complete your profile details, then save to help hirers trust your experience.
         </Typography>
+        <Alert severity="info" sx={{ mt: 2 }}>
+          Complete these core fields first ({completedChecklistCount}/{checklistItems.length}):{' '}
+          {checklistItems.map((item) => `${item.done ? '✓' : '○'} ${item.label}`).join('  |  ')}.
+          Optional sections are collapsed below to keep this form faster to finish.
+        </Alert>
       </Box>
 
       <Snackbar
@@ -937,6 +980,7 @@ const WorkerProfileEditPage = () => {
                 value={formData.location}
                 onChange={handleInputChange}
                 placeholder="City, State/Province, Country"
+                helperText="Add your main service area so nearby hirers can find you quickly."
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -982,6 +1026,7 @@ const WorkerProfileEditPage = () => {
                 onChange={handleInputChange}
                 placeholder="e.g. 50"
                 inputProps={{ inputMode: 'decimal' }}
+                helperText="Set a realistic starting rate. You can still negotiate later."
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -1000,6 +1045,7 @@ const WorkerProfileEditPage = () => {
                 value={formData.experience}
                 onChange={handleInputChange}
                 inputProps={{ inputMode: 'numeric' }}
+                helperText="Hirers trust profiles more when experience is clearly stated."
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -1055,6 +1101,7 @@ const WorkerProfileEditPage = () => {
                 onChange={(e) => setNewSkill(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleAddSkill()}
                 placeholder="e.g. Plumbing, Electrical Installation, Carpentry"
+                helperText="Add at least 3 core skills. Press Enter or click Add skill."
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -1096,14 +1143,29 @@ const WorkerProfileEditPage = () => {
         </Paper>
 
         {/* Education */}
-        <Paper elevation={3} sx={{ p: { xs: 2, md: 3 }, mb: 4, borderRadius: 2 }}>
-          <Typography
-            variant="h6"
-            gutterBottom
-            sx={{ color: theme.palette.primary.main }}
+        <Accordion
+          disableGutters
+          elevation={3}
+          expanded={expandedOptionalSections.education}
+          onChange={toggleOptionalSection('education')}
+          sx={{ mb: 4, borderRadius: 2, overflow: 'hidden' }}
+        >
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            aria-controls="optional-education-content"
+            id="optional-education-header"
+            sx={{ px: { xs: 2, md: 3 } }}
           >
-            Education & Certifications
-          </Typography>
+            <Box>
+              <Typography variant="h6" sx={{ color: theme.palette.primary.main }}>
+                Education & Certifications (Optional)
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Add credentials that boost trust after core profile fields are complete.
+              </Typography>
+            </Box>
+          </AccordionSummary>
+          <AccordionDetails sx={{ px: { xs: 2, md: 3 }, pb: { xs: 2, md: 3 } }}>
 
           <Grid container spacing={2} sx={{ mb: 2 }}>
             <Grid item xs={12} sm={5}>
@@ -1197,17 +1259,33 @@ const WorkerProfileEditPage = () => {
                 ))}
             </Box>
           )}
-        </Paper>
+          </AccordionDetails>
+        </Accordion>
 
         {/* Languages */}
-        <Paper elevation={3} sx={{ p: { xs: 2, md: 3 }, mb: 4, borderRadius: 2 }}>
-          <Typography
-            variant="h6"
-            gutterBottom
-            sx={{ color: theme.palette.primary.main }}
+        <Accordion
+          disableGutters
+          elevation={3}
+          expanded={expandedOptionalSections.languages}
+          onChange={toggleOptionalSection('languages')}
+          sx={{ mb: 4, borderRadius: 2, overflow: 'hidden' }}
+        >
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            aria-controls="optional-languages-content"
+            id="optional-languages-header"
+            sx={{ px: { xs: 2, md: 3 } }}
           >
-            Languages
-          </Typography>
+            <Box>
+              <Typography variant="h6" sx={{ color: theme.palette.primary.main }}>
+                Languages (Optional)
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Include languages you can work in to widen your job opportunities.
+              </Typography>
+            </Box>
+          </AccordionSummary>
+          <AccordionDetails sx={{ px: { xs: 2, md: 3 }, pb: { xs: 2, md: 3 } }}>
 
           <Grid container spacing={2} sx={{ mb: 2 }}>
             <Grid item xs={12} sm={6}>
@@ -1299,21 +1377,33 @@ const WorkerProfileEditPage = () => {
                 ))}
             </Box>
           )}
-        </Paper>
+          </AccordionDetails>
+        </Accordion>
 
         {/* Portfolio */}
-        <Paper elevation={3} sx={{ p: { xs: 2, md: 3 }, mb: 4, borderRadius: 2 }}>
-          <Typography
-            variant="h6"
-            gutterBottom
-            sx={{ color: theme.palette.primary.main }}
+        <Accordion
+          disableGutters
+          elevation={3}
+          expanded={expandedOptionalSections.portfolio}
+          onChange={toggleOptionalSection('portfolio')}
+          sx={{ mb: 4, borderRadius: 2, overflow: 'hidden' }}
+        >
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            aria-controls="optional-portfolio-content"
+            id="optional-portfolio-header"
+            sx={{ px: { xs: 2, md: 3 } }}
           >
-            Portfolio
-          </Typography>
-
-          <Typography variant="body2" color="text.secondary" gutterBottom>
-            Add photos or samples of past work so hirers can trust your experience.
-          </Typography>
+            <Box>
+              <Typography variant="h6" sx={{ color: theme.palette.primary.main }}>
+                Portfolio (Optional)
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Add photos or samples of past work to increase hirer confidence.
+              </Typography>
+            </Box>
+          </AccordionSummary>
+          <AccordionDetails sx={{ px: { xs: 2, md: 3 }, pb: { xs: 2, md: 3 } }}>
 
           <Button
             variant="outlined"
@@ -1433,7 +1523,8 @@ const WorkerProfileEditPage = () => {
                 </Grid>
               ))}
           </Grid>
-        </Paper>
+          </AccordionDetails>
+        </Accordion>
 
         {/* Action buttons */}
         <Box sx={{ display: 'flex', flexDirection: { xs: 'column-reverse', sm: 'row' }, justifyContent: 'space-between', gap: 2, mt: 4 }}>

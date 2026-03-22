@@ -247,6 +247,7 @@ const AppointmentCard = ({
                 startIcon={<VideoCallIcon />}
                 sx={{
                   borderWidth: 2,
+                  minHeight: 44,
                   // ✅ MOBILE-AUDIT P4: removed decorative boxShadow
                 }}
                 onClick={(e) => {
@@ -268,6 +269,7 @@ const AppointmentCard = ({
                 startIcon={<LocationIcon />}
                 sx={{
                   borderWidth: 2,
+                  minHeight: 44,
                   // ✅ MOBILE-AUDIT P4: removed decorative boxShadow
                 }}
                 onClick={(e) => {
@@ -852,6 +854,7 @@ const SchedulingPage = ({
                 '& .MuiToggleButton-root': {
                   textTransform: 'none',
                   fontWeight: 600,
+                  minHeight: 44,
                 },
               }}
             >

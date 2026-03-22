@@ -1,3 +1,248 @@
+### Frontend Delta Backlog Theme 12 Review Credibility Surfaces March 22 2026 ✅ COMPLETED
+
+**Date**: March 22, 2026  
+**Scope**: Continue generated backlog execution with review credibility improvements focused on explicit verification cues, recency context, and moderation transparency.
+
+**Files touched**
+- kelmah-frontend/src/modules/reviews/pages/ReviewsPage.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Added review credibility context in filter area:
+  - explicit active filter and sort chips (`Filter: ...`, `Sort: ...`)
+  - credibility snapshot chips for verified-reviewer count and recent-review count (last 30 days)
+  - moderation note clarifying where to report suspicious reviews.
+- Improved per-card trust cues without changing review data flow:
+  - added clear reviewer identity status chip (`Identity verified` / `Unverified reviewer`)
+  - added explicit `Posted ...` recency chip near reviewer metadata.
+- Added moderation transparency caption to card footer:
+  - clarifies helpful-vote signal origin and report path via review menu.
+
+**Validation outcomes**
+- PASS: `npx jest --runInBand --testPathPattern="routed-paths\.smoke|critical-path-happy-flow|critical-path-gateway-contract"` (3 suites, 29 tests passed).
+- PASS: `npm run build` (Vite production build succeeded; 13,969 modules transformed).
+
+### Frontend Delta Backlog Theme 11 Messaging Input Usability March 22 2026 ✅ COMPLETED
+
+**Date**: March 22, 2026  
+**Scope**: Continue generated backlog execution with messaging composer usability improvements for clearer attachment handling and stronger send affordances.
+
+**Files touched**
+- kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Improved compose guidance on desktop and mobile chat panes:
+  - added contextual guidance line for attachments and send shortcuts
+  - clarified supported attachment expectation (`10MB max each`) in composer context.
+- Improved attachment visibility before send:
+  - added explicit attachment readiness text when files are selected.
+- Strengthened send affordance and accessibility:
+  - unified `canSendMessage` state for disabled/enabled behavior
+  - improved disabled send `aria-label` explanation on mobile to match desktop behavior
+  - clarified attach tooltip copy and composer placeholder guidance.
+
+**Validation outcomes**
+- PASS: `npx jest --runInBand --testPathPattern="routed-paths\.smoke|critical-path-happy-flow|critical-path-gateway-contract"` (3 suites, 29 tests passed).
+- PASS: `npm run build` (Vite production build succeeded; 13,969 modules transformed).
+
+### Frontend Delta Backlog Theme 10 Hirer Application Triage March 22 2026 ✅ COMPLETED
+
+**Date**: March 22, 2026  
+**Scope**: Continue generated backlog execution with desktop hirer application triage improvements by increasing information density while preserving scanability.
+
+**Files touched**
+- kelmah-frontend/src/modules/hirer/pages/ApplicationManagementPage.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Added a compact desktop triage snapshot bar above the 3-column review surface:
+  - total applications in current scope
+  - pending-review count (when on pending tab)
+  - average proposed rate for visible applications
+  - rated-profile count
+  - newly-applied-in-48-hours count.
+- Improved list footer scanability context:
+  - added explicit `Sorted by ...` and `N per page` summary beneath the visible-range text.
+- Kept all existing triage workflows and actions unchanged (job selection, tabs, detail panel, status update, messaging).
+
+**Validation outcomes**
+- PASS: `npx jest --runInBand --testPathPattern="routed-paths\.smoke|critical-path-happy-flow|critical-path-gateway-contract"` (3 suites, 29 tests passed).
+- PASS: `npm run build` (Vite production build succeeded; 13,969 modules transformed).
+
+### Frontend Delta Backlog Theme 9 Job Discovery Quality March 22 2026 ✅ COMPLETED
+
+**Date**: March 22, 2026  
+**Scope**: Continue generated backlog execution with job discovery quality improvements focused on filter clarity, card comparability guidance, and search feedback loops.
+
+**Files touched**
+- kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Improved results clarity and comparability guidance:
+  - added explicit sort-context messaging in results header (`Sorted by ...`)
+  - added concise comparison guidance for budget, payment type, and applicant count visibility.
+- Improved filter clarity in desktop controls:
+  - added explicit `All Categories` and `All Locations` options to desktop filter dropdowns for clearer reset behavior.
+- Improved search feedback loop in empty-state:
+  - added targeted removable chips in no-results state to remove only the constraining filter (`search`, `category`, `location`, `budget`) instead of forcing full reset
+  - preserved existing global `Clear filters` and `Refresh Jobs` actions.
+
+**Validation outcomes**
+- PASS: `npx jest --runInBand --testPathPattern="routed-paths\.smoke|critical-path-happy-flow|critical-path-gateway-contract"` (3 suites, 29 tests passed).
+- PASS: `npm run build` (Vite production build succeeded; 13,969 modules transformed).
+
+### Frontend Delta Backlog Theme 8 Worker Profile Completion UX March 22 2026 ✅ COMPLETED
+
+**Date**: March 22, 2026  
+**Scope**: Continue generated backlog execution with worker profile completion UX improvements using progressive disclosure and clearer field-level guidance.
+
+**Files touched**
+- kelmah-frontend/src/modules/worker/pages/WorkerProfileEditPage.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Added progressive completion guidance at the top of profile edit:
+  - introduced a live checklist alert showing core profile essentials and current completion count
+  - prioritized core trust fields (name, title, bio, skills, location/phone) before optional content.
+- Improved field guidance clarity in core form sections:
+  - added explicit helper text for location, hourly rate, years of experience, and skills entry behavior.
+- Implemented progressive disclosure for optional sections:
+  - converted Education, Languages, and Portfolio sections into collapsed-by-default accordions
+  - preserved all existing add/remove workflows while reducing initial cognitive load on first edit.
+
+**Validation outcomes**
+- PASS: `npx jest --runInBand --testPathPattern="routed-paths\.smoke|critical-path-happy-flow|critical-path-gateway-contract"` (3 suites, 29 tests passed).
+- PASS: `npm run build` (Vite production build succeeded; 13,969 modules transformed).
+
+### Frontend Delta Backlog Theme 7 Footer Trust Navigation March 22 2026 ✅ COMPLETED
+
+**Date**: March 22, 2026  
+**Scope**: Continue generated backlog execution with footer trust and navigation clarity by ensuring destination intent is explicit for desktop footer links.
+
+**Files touched**
+- kelmah-frontend/src/modules/layout/components/Footer.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Clarified footer destination intent while preserving valid route mapping:
+  - updated ambiguous labels to explicit destination-purpose labels (for example, `How Kelmah Works`, `Hiring Guide`, `Guides & Docs`, `Careers & Community`)
+  - added per-link intent metadata for desktop footer sections
+  - surfaced link intent to users with `aria-label` and `title` attributes on desktop footer links.
+- Added intent-oriented accessibility metadata for bottom legal links (`Privacy Policy`, `Terms of Service`).
+
+**Validation outcomes**
+- PASS: `npx jest --runInBand --testPathPattern="routed-paths\.smoke|critical-path-happy-flow|critical-path-gateway-contract"` (3 suites, 29 tests passed).
+- PASS: `npm run build` (Vite production build succeeded; 13,969 modules transformed).
+
+### Frontend Delta Backlog Theme 5 Storage Session Hardening March 22 2026 ✅ COMPLETED
+
+**Date**: March 22, 2026  
+**Scope**: Continue generated backlog execution with shared storage/session hardening focused on auth-scoped cleanup and cross-tab logout consistency.
+
+**Files touched**
+- kelmah-frontend/src/utils/secureStorage.js
+- kelmah-frontend/src/services/apiClient.js
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Preserved auth-scoped cleanup behavior while improving cross-tab propagation reliability:
+  - `secureStorage.notifyLogoutAcrossTabs()` now broadcasts logout on both channels:
+    - `BroadcastChannel('kelmah_auth')`
+    - `localStorage` storage-event fallback (`kelmah_auth_sync` ping)
+- Added cross-tab auth sync listeners in api client:
+  - listens for BroadcastChannel `LOGOUT` message
+  - listens for storage-event fallback payload (`kelmah_auth_sync`)
+  - on either signal: performs force logout cleanup + login redirect for sibling tabs.
+
+**Validation outcomes**
+- PASS: `npx jest --runInBand --testPathPattern="routed-paths\.smoke|critical-path-happy-flow|critical-path-gateway-contract"` (3 suites, 29 tests passed).
+- PASS: `npm run build` (Vite production build succeeded; 13,969 modules transformed).
+
+### Frontend Delta Backlog Theme 4 Auth Redirect Continuity March 22 2026 ✅ COMPLETED
+
+**Date**: March 22, 2026  
+**Scope**: Continue generated backlog execution with auth redirect continuity hardening across protected-route handoff, login resolution, and API client unauthorized redirect behavior.
+
+**Files touched**
+- kelmah-frontend/src/utils/authRedirect.js
+- kelmah-frontend/src/modules/auth/components/login/Login.jsx
+- kelmah-frontend/src/modules/auth/components/mobile/MobileLogin.jsx
+- kelmah-frontend/src/modules/auth/components/common/ProtectedRoute.jsx
+- kelmah-frontend/src/services/apiClient.js
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Added shared redirect utility (`authRedirect.js`) to centralize:
+  - safe requested-path normalization
+  - role-based default route resolution
+  - consistent post-login destination resolution.
+- Unified desktop/mobile login redirect logic to use the shared resolver and preserve intended destination consistently.
+- Hardened redirect safety rules:
+  - blocks malformed protocol-relative paths (`//...`)
+  - blocks auth-loop destinations (`/login`, `/register`, etc.).
+- Enhanced ProtectedRoute continuity payload by including full intended URL (`pathname + search + hash`) and dual keys (`from`, `redirectTo`) for backward compatibility.
+- Aligned apiClient forced-login redirect URL building with the shared safe path normalizer.
+
+**Validation outcomes**
+- PASS: `npx jest --runInBand --testPathPattern="routed-paths\.smoke|critical-path-happy-flow|critical-path-gateway-contract"` (3 suites, 29 tests passed).
+- PASS: `npm run build` (Vite production build succeeded; 13,969 modules transformed).
+- NOTE: `RegisterPage.test.jsx` fails independently in current repo due to an existing Jest alias resolution issue (`Cannot find module '@/hooks/useResponsive'`), unrelated to this tranche.
+
+### Frontend Delta Backlog Theme 3 Shared Loading States March 22 2026 ✅ COMPLETED
+
+**Date**: March 22, 2026  
+**Scope**: Continue generated backlog execution with Theme 3 shared loading states by replacing spinner-only messaging waits with layout-matching skeleton states.
+
+**Files touched**
+- kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Added reusable messaging skeleton surfaces to mirror real UI layout:
+  - `ConversationListLoadingSkeleton`
+  - `MessagePaneLoadingSkeleton`
+- Replaced spinner-only loading in desktop and mobile messaging flows:
+  - deep-link conversation startup state
+  - message-pane loading states
+  - mobile conversation startup state.
+- Removed now-unused `CircularProgress` import after skeleton migration.
+
+**Validation outcomes**
+- PASS: `npx jest --runInBand --testPathPattern="routed-paths\.smoke|critical-path-happy-flow|critical-path-gateway-contract"` (3 suites, 29 tests passed).
+- PASS: `npm run build` (Vite production build succeeded; 13,968 modules transformed).
+
+### Frontend Delta Backlog Slice March 22 2026 ✅ COMPLETED
+
+**Date**: March 22, 2026  
+**Scope**: Start implementing post-Top-50 generated backlog fixes with focus on mobile touch targets and desktop action accessibility (Themes 1-2 aligned evidence files).
+
+**Files touched**
+- kelmah-frontend/src/modules/layout/components/MobileBottomNav.jsx
+- kelmah-frontend/src/modules/layout/components/header/HeaderStyles.js
+- kelmah-frontend/src/components/common/SmartNavigation.jsx
+- kelmah-frontend/src/modules/scheduling/pages/SchedulingPage.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Mobile bottom navigation hardening:
+  - added explicit `:focus-visible` outlines for keyboard users
+  - kept touch targets stable and improved compact-screen minimum action height.
+- Header icon action controls hardening:
+  - standardized action-button hit areas to 44x44 across breakpoints
+  - added visible focus ring for keyboard navigation.
+- Desktop smart navigation accessibility:
+  - increased small action controls (`Show Quick Navigation`, `Hide for now`) to minimum 44px height
+  - added explicit aria labels to restore/hide actions.
+- Scheduling page control touch-target pass:
+  - raised Join Meeting and View on Map button minimum heights
+  - enforced 44px minimum height for view-mode toggle buttons.
+
+**Validation outcomes**
+- PASS: `npx jest --runInBand --testPathPattern="critical-path-gateway-contract|critical-path-happy-flow|routed-paths\.smoke"` (3 suites, 29 tests passed).
+- PASS: `npm run build` (Vite production build succeeded; 13,968 modules transformed).
+
 ### Frontend Track E Item 50 Gateway Contract Smoke Extension March 21 2026 ✅ COMPLETED
 
 **Date**: March 21, 2026  
@@ -21505,6 +21750,19 @@ Full visual and structural redesign of `kelmah-frontend/src/modules/jobs/pages/J
 - Investigated production crash on /jobs: ReferenceError categoryData is not defined in JobsPage render path.
 - Root cause: JobsCategoryBrowseGrid received categoryData prop from undefined variable in JobsPage scope.
 - Fix: added stable categoryData binding via useMemo using ghanaTradeCategories (expected shape {name, icon, color}).
+- Validation: PASS 
+  - npm run build (vite build success)
+  - npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx --runInBand (17/17).
+
+### [MAR 22, 2026] PWA CHUNK 404 RECOVERY HARDENING (COMPLETED)
+- Investigated production blank-screen with 404 on hashed bundles (index-*.js and shared-api-*.js).
+- Root cause pattern: stale app-shell/cache references to non-existent chunk filenames after deployment rotation.
+- Service worker hardening applied in public/sw.js:
+  - bumped cache version to force cache migration (v1.0.8).
+  - precache switched from '/' to '/index.html'.
+  - document fetch now uses cache:'no-store' and also refreshes '/index.html' cache key.
+  - added fallback to cached '/index.html' when route cache misses offline.
+  - added hashed chunk 404 recovery path that clears runtime caches and returns safe recovery responses for missing script/style chunks.
 - Validation: PASS 
   - npm run build (vite build success)
   - npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx --runInBand (17/17).

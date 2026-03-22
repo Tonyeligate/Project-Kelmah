@@ -104,6 +104,22 @@ const EnhancedReviewsPage = () => {
     message: '',
     severity: 'success',
   });
+  const REVIEW_FILTER_LABELS = {
+    all: 'All Reviews',
+    '5-star': '5 Star Reviews',
+    '4-star': '4 Star Reviews',
+    recent: 'Recent (Last 7 days)',
+    verified: 'Verified Reviewers',
+    'with-reply': 'With Reply',
+    'needs-reply': 'Needs Reply',
+  };
+  const REVIEW_SORT_LABELS = {
+    newest: 'Newest First',
+    oldest: 'Oldest First',
+    'highest-rated': 'Highest Rated',
+    'lowest-rated': 'Lowest Rated',
+    'most-helpful': 'Most Helpful',
+  };
 
   const overallStats = useMemo(
     () => ({
@@ -232,6 +248,21 @@ const EnhancedReviewsPage = () => {
 
     setFilteredReviews(filtered);
   }, [reviews, searchQuery, selectedFilter, selectedSort]);
+
+  const reviewCredibilitySummary = useMemo(() => {
+    const now = Date.now();
+    const recentWindowMs = 30 * 24 * 60 * 60 * 1000;
+    const verifiedCount = filteredReviews.filter((review) => review?.reviewer?.isVerified).length;
+    const recentCount = filteredReviews.filter((review) => {
+      const createdAt = review?.createdAt ? new Date(review.createdAt).getTime() : 0;
+      return createdAt && now - createdAt <= recentWindowMs;
+    }).length;
+    return {
+      verifiedCount,
+      recentCount,
+      withReplyCount: filteredReviews.filter((review) => review?.hasReply).length,
+    };
+  }, [filteredReviews]);
 
   const handleReply = async () => {
     if (!replyText.trim() || !selectedReview || replySubmitting) return;
@@ -580,6 +611,21 @@ const EnhancedReviewsPage = () => {
                     </Tooltip>
                   )}
                 </Stack>
+                <Stack direction="row" spacing={0.75} sx={{ mb: 0.75, flexWrap: 'wrap' }}>
+                  <Chip
+                    size="small"
+                    label={review.reviewer?.isVerified ? 'Identity verified' : 'Unverified reviewer'}
+                    color={review.reviewer?.isVerified ? 'info' : 'default'}
+                    variant={review.reviewer?.isVerified ? 'filled' : 'outlined'}
+                    sx={{ height: 22, fontWeight: 600 }}
+                  />
+                  <Chip
+                    size="small"
+                    label={`Posted ${safeFormatRelative(review.createdAt)}`}
+                    variant="outlined"
+                    sx={{ height: 22 }}
+                  />
+                </Stack>
                 <Stack direction="row" alignItems="center" spacing={2}>
                   <Rating
                     value={review.rating}
@@ -853,6 +899,11 @@ const EnhancedReviewsPage = () => {
             )}
           </Stack>
         </CardActions>
+        <Box sx={{ px: 3, pb: 2.25 }}>
+          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+            Helpful votes come from signed-in users. Use the menu to report a review when details look suspicious.
+          </Typography>
+        </Box>
       </Card>
     );
   };
@@ -1095,6 +1146,33 @@ const EnhancedReviewsPage = () => {
             <Typography variant="body2" sx={{ color: 'text.secondary' }}>
               {filteredReviews.length} review
               {filteredReviews.length !== 1 ? 's' : ''} found
+            </Typography>
+            <Stack direction="row" spacing={1} sx={{ mt: 1.25, flexWrap: 'wrap', gap: 1 }}>
+              <Chip
+                size="small"
+                variant="outlined"
+                label={`Filter: ${REVIEW_FILTER_LABELS[selectedFilter] || 'All Reviews'}`}
+              />
+              <Chip
+                size="small"
+                variant="outlined"
+                label={`Sort: ${REVIEW_SORT_LABELS[selectedSort] || 'Newest First'}`}
+              />
+              <Chip
+                size="small"
+                color="info"
+                variant="outlined"
+                label={`${reviewCredibilitySummary.verifiedCount} verified reviewer${reviewCredibilitySummary.verifiedCount === 1 ? '' : 's'}`}
+              />
+              <Chip
+                size="small"
+                color="success"
+                variant="outlined"
+                label={`${reviewCredibilitySummary.recentCount} recent in 30 days`}
+              />
+            </Stack>
+            <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 1 }}>
+              Moderation note: report suspicious reviews from the card menu so support can investigate.
             </Typography>
           </Paper>
 

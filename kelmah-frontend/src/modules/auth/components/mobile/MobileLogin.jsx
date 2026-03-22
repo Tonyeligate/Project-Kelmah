@@ -34,6 +34,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, Link as RouterLink, useLocation } from 'react-router-dom';
 import logoIcon from '../../../../assets/images/logo.png';
+import { resolveLoginRedirectPath } from '../../../../utils/authRedirect';
 
 const MobileLogin = ({ registrationSuccess = false }) => {
   const navigate = useNavigate();
@@ -44,30 +45,11 @@ const MobileLogin = ({ registrationSuccess = false }) => {
   const dispatch = useDispatch();
   const { loading: authLoading } = useSelector((state) => state.auth);
 
-  const getDefaultRouteByRole = (role) => {
-    if (role === 'worker') return '/worker/dashboard';
-    if (role === 'hirer') return '/hirer/dashboard';
-    if (role === 'admin') return '/admin/skills-management';
-    return '/dashboard';
-  };
-
-  const getRequestedPath = () => {
-    const queryFrom = new URLSearchParams(location.search).get('from');
-    return location.state?.from || location.state?.redirectTo || queryFrom;
-  };
-
-  const resolveLoginRedirect = (user) => {
-    const requestedPath = getRequestedPath();
-    if (
-      typeof requestedPath === 'string' &&
-      requestedPath.startsWith('/') &&
-      !requestedPath.startsWith('/login') &&
-      !requestedPath.startsWith('/register')
-    ) {
-      return requestedPath;
-    }
-    return getDefaultRouteByRole(user?.role);
-  };
+  const resolveLoginRedirect = (user) =>
+    resolveLoginRedirectPath({
+      location,
+      user,
+    });
 
   // Form state
   const [email, setEmail] = useState('');

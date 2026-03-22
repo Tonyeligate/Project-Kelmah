@@ -507,6 +507,28 @@ function ApplicationManagementPage() {
     ? (selectedJob?.applicationCounts?.total || 0)
     : (summary?.totalApplications || 0);
 
+  const triageSummary = useMemo(() => {
+    const withRate = filteredApps.filter((app) => Number.isFinite(Number(app?.proposedRate)));
+    const avgRate = withRate.length
+      ? Math.round(withRate.reduce((sum, app) => sum + Number(app.proposedRate), 0) / withRate.length)
+      : null;
+
+    const ratedProfiles = filteredApps.filter((app) => app?.workerRating !== null && app?.workerRating !== undefined).length;
+
+    const recent48h = filteredApps.filter((app) => {
+      if (!app?.createdAt) return false;
+      const createdAtMs = new Date(app.createdAt).getTime();
+      if (!Number.isFinite(createdAtMs)) return false;
+      return Date.now() - createdAtMs <= 48 * 60 * 60 * 1000;
+    }).length;
+
+    return {
+      avgRate,
+      ratedProfiles,
+      recent48h,
+    };
+  }, [filteredApps]);
+
   // Auto-select first filtered app when job or tab changes
   useEffect(() => {
     if (!initialLoading) {
@@ -677,6 +699,39 @@ function ApplicationManagementPage() {
           </Button>
         )}
       </Box>
+
+      {!isMobile && (
+        <Paper
+          variant="outlined"
+          sx={{
+            mb: 1.5,
+            px: 1.5,
+            py: 1,
+            borderRadius: 2,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 1,
+            flexWrap: 'wrap',
+            bgcolor: alpha(theme.palette.primary.main, 0.03),
+          }}
+        >
+          <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>
+            Triage Snapshot
+          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
+            <Chip size="small" variant="outlined" label={`${selectedScopeTotal} in scope`} />
+            {activeTab === 'pending' && (
+              <Chip size="small" color="warning" variant="outlined" label={`${filteredApps.length} pending review`} />
+            )}
+            {triageSummary.avgRate !== null && (
+              <Chip size="small" variant="outlined" label={`Avg offer GH₵${triageSummary.avgRate.toLocaleString()}`} />
+            )}
+            <Chip size="small" variant="outlined" label={`${triageSummary.ratedProfiles} rated profiles`} />
+            <Chip size="small" variant="outlined" label={`${triageSummary.recent48h} new in 48h`} />
+          </Box>
+        </Paper>
+      )}
 
       {/* ── 3-column layout ───────────────────────────────────── */}
       <Paper
@@ -892,6 +947,7 @@ function ApplicationsListFooter({
   onPageChange,
 }) {
   const theme = useTheme();
+  const sortLabel = APPLICATION_SORT_OPTIONS.find((option) => option.value === sortBy)?.label || 'Newest First';
 
   return (
     <Box
@@ -914,6 +970,9 @@ function ApplicationsListFooter({
           {selectedScopeTotal > 0
             ? `Showing ${visibleRange.start}-${visibleRange.end} of ${pagination.totalItems || selectedScopeTotal} ${selectedJobId ? 'applications' : 'applications in this view'}`
             : 'No applications to show'}
+        </Typography>
+        <Typography variant="caption" color="text.disabled" display="block" sx={{ mt: 0.25 }}>
+          Sorted by {sortLabel} • {pageSize} per page
         </Typography>
         <Box
           sx={{
