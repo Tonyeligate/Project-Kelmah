@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, FormControl, InputLabel, Select, MenuItem, Grid, IconButton, Box, SwipeableDrawer, Typography, useTheme } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, FormControl, InputLabel, Select, MenuItem, Grid, IconButton, Box, SwipeableDrawer, Typography, useTheme, InputAdornment } from '@mui/material';
 import { Close } from '@mui/icons-material';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 
@@ -24,6 +24,10 @@ function JobFilters({ open, onClose, filters, onApply }) {
   const theme = useTheme();
   const isMobile = useBreakpointDown('sm');
   const [localFilters, setLocalFilters] = useState(filters);
+
+  useEffect(() => {
+    setLocalFilters(filters);
+  }, [filters]);
 
   const handleChange = (field) => (event) => {
     setLocalFilters({
@@ -53,7 +57,15 @@ function JobFilters({ open, onClose, filters, onApply }) {
 
   // Shared filter field content
   const filterFields = (
-    <Grid container spacing={2}>
+    <Grid
+      container
+      spacing={2}
+      sx={{
+        '& .MuiInputBase-root': {
+          minHeight: 44,
+        },
+      }}
+    >
       <Grid item xs={12}>
         <FormControl fullWidth>
           <InputLabel>Category</InputLabel>
@@ -97,7 +109,12 @@ function JobFilters({ open, onClose, filters, onApply }) {
           type="number"
           value={localFilters.min_budget}
           onChange={handleChange('min_budget')}
-          InputProps={{ startAdornment: 'GH₵' }}
+          inputProps={{ inputMode: 'decimal' }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">GH₵</InputAdornment>
+            ),
+          }}
         />
       </Grid>
 
@@ -108,7 +125,12 @@ function JobFilters({ open, onClose, filters, onApply }) {
           type="number"
           value={localFilters.max_budget}
           onChange={handleChange('max_budget')}
-          InputProps={{ startAdornment: 'GH₵' }}
+          inputProps={{ inputMode: 'decimal' }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">GH₵</InputAdornment>
+            ),
+          }}
         />
       </Grid>
     </Grid>
@@ -123,6 +145,7 @@ function JobFilters({ open, onClose, filters, onApply }) {
         onClose={onClose}
         onOpen={() => {}}
         disableSwipeToOpen
+        aria-label="Job filters"
         PaperProps={{
           sx: {
             borderTopLeftRadius: 16,
@@ -145,7 +168,7 @@ function JobFilters({ open, onClose, filters, onApply }) {
             <Button fullWidth variant="outlined" color="inherit" onClick={handleReset} sx={{ minHeight: 44 }}>
               Reset
             </Button>
-            <Button fullWidth variant="contained" color="primary" onClick={handleApply} sx={{ minHeight: 44 }}>
+            <Button fullWidth variant="contained" color="primary" onClick={handleApply} aria-label="Apply selected job filters" sx={{ minHeight: 44 }}>
               Apply Filters
             </Button>
           </Box>
@@ -156,10 +179,10 @@ function JobFilters({ open, onClose, filters, onApply }) {
 
   // Desktop: standard Dialog
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth aria-labelledby="job-filters-title">
       <DialogTitle>
         <Box display="flex" justifyContent="space-between" alignItems="center">
-          Filter Jobs
+          <span id="job-filters-title">Filter Jobs</span>
           <IconButton onClick={onClose} size="small" aria-label="Close filters">
             <Close />
           </IconButton>
@@ -171,10 +194,10 @@ function JobFilters({ open, onClose, filters, onApply }) {
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={handleReset} color="inherit">
+        <Button onClick={handleReset} color="inherit" sx={{ minHeight: 44 }}>
           Reset
         </Button>
-        <Button onClick={handleApply} variant="contained" color="primary">
+        <Button onClick={handleApply} variant="contained" color="primary" aria-label="Apply selected job filters" sx={{ minHeight: 44 }}>
           Apply Filters
         </Button>
       </DialogActions>

@@ -21,8 +21,8 @@ const colors = {
   },
   text: {
     primary: '#ffffff',
-    secondary: 'rgba(255,255,255,0.7)',
-    disabled: 'rgba(255,255,255,0.5)',
+    secondary: 'rgba(255,255,255,0.84)',
+    disabled: 'rgba(255,255,255,0.68)',
   },
   success: {
     main: '#4CAF50',
@@ -116,14 +116,36 @@ const breakpoints = {
 
 // Component-specific theme overrides
 const components = {
+  MuiCssBaseline: {
+    styleOverrides: {
+      '@media (forced-colors: active)': {
+        '*': {
+          forcedColorAdjust: 'auto',
+        },
+      },
+      '@media (prefers-contrast: more)': {
+        'a, button, [role="button"], input, textarea, select': {
+          outlineWidth: '2px',
+          outlineStyle: 'solid',
+          outlineColor: '#FFD700',
+          outlineOffset: '2px',
+        },
+      },
+    },
+  },
   MuiButton: {
     styleOverrides: {
       root: {
         borderRadius: 8,
         padding: '8px 16px',
+        minHeight: 44,
         fontWeight: 600,
         textTransform: 'none',
         transition: 'all 0.2s ease-in-out',
+        '&:focus-visible': {
+          outline: '3px solid rgba(255, 215, 0, 0.9)',
+          outlineOffset: 2,
+        },
         '&:hover': {
           transform: 'translateY(-1px)',
           boxShadow: '0 4px 12px rgba(212,175,55,0.3)',
@@ -241,6 +263,29 @@ const components = {
         color: '#ffffff',
         border: '1px solid rgba(212,175,55,0.3)',
         fontSize: '0.75rem',
+      },
+    },
+  },
+  MuiIconButton: {
+    styleOverrides: {
+      root: {
+        minWidth: 44,
+        minHeight: 44,
+        '&:focus-visible': {
+          outline: '3px solid rgba(255, 215, 0, 0.9)',
+          outlineOffset: 2,
+        },
+      },
+    },
+  },
+  MuiLink: {
+    styleOverrides: {
+      root: {
+        '&:focus-visible': {
+          outline: '2px solid rgba(255, 215, 0, 0.9)',
+          outlineOffset: 2,
+          borderRadius: 2,
+        },
       },
     },
   },

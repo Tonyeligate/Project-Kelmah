@@ -94,6 +94,7 @@ const ConversationContainer = styled(Paper)(({ theme }) => ({
 
 const ConversationItem = styled(ListItem)(({ theme, selected }) => ({
   padding: theme.spacing(2),
+  minHeight: 56,
   backgroundColor: selected
     ? alpha(theme.palette.secondary.main, 0.1)
     : 'transparent',
@@ -103,6 +104,10 @@ const ConversationItem = styled(ListItem)(({ theme, selected }) => ({
   transition: 'all 0.2s ease',
   '&:hover': {
     backgroundColor: alpha(theme.palette.secondary.main, 0.05),
+  },
+  '&:focus-visible': {
+    outline: `3px solid ${theme.palette.primary.main}`,
+    outlineOffset: 2,
   },
 }));
 
@@ -161,6 +166,8 @@ const SearchField = styled(TextField)(({ theme }) => ({
 const ActionButton = styled(Button)(({ theme }) => ({
   color: theme.palette.secondary.main,
   borderColor: alpha(theme.palette.secondary.main, 0.5),
+  minHeight: 44,
+  lineHeight: 1.3,
   '&:hover': {
     borderColor: theme.palette.secondary.main,
     backgroundColor: alpha(theme.palette.secondary.main, 0.1),
@@ -169,6 +176,11 @@ const ActionButton = styled(Button)(({ theme }) => ({
 
 const StyledTab = styled(Tab)(({ theme }) => ({
   color: theme.palette.text.secondary,
+  minHeight: 44,
+  '&:focus-visible': {
+    outline: `3px solid ${theme.palette.primary.main}`,
+    outlineOffset: 2,
+  },
   '&.Mui-selected': {
     color: theme.palette.secondary.main,
   },
@@ -178,8 +190,15 @@ const StyledListItem = styled(ListItem)(({ theme, active }) => ({
   borderRadius: theme.shape.borderRadius,
   transition: 'background-color 0.2s ease',
   cursor: 'pointer',
+  minHeight: 56,
+  paddingLeft: theme.spacing(1.5),
+  paddingRight: theme.spacing(1.5),
   marginBottom: theme.spacing(0.5),
   backgroundColor: active ? theme.palette.action.selected : 'transparent',
+  '&:focus-visible': {
+    outline: `3px solid ${theme.palette.primary.main}`,
+    outlineOffset: 2,
+  },
   '&:hover': {
     backgroundColor: active
       ? theme.palette.action.selected
@@ -268,7 +287,7 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
         });
         if (active) setUserOptions(results.data || results.results || results);
       } catch (err) {
-        if (import.meta.env.DEV) console.error('Error searching users:', err);
+        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error searching users:', err);
       } finally {
         if (active) setUsersLoading(false);
       }
@@ -452,7 +471,7 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
       setShowNewConversationDialog(false);
       onSelectConversation(convo);
     } catch (err) {
-      if (import.meta.env.DEV) console.error('Error creating conversation:', err);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error creating conversation:', err);
     }
   };
 
@@ -479,6 +498,10 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
                 color: alpha(theme.palette.secondary.main, 0.7),
                 width: 44,
                 height: 44,
+                '&:focus-visible': {
+                  outline: `3px solid ${theme.palette.primary.main}`,
+                  outlineOffset: '2px',
+                },
               })}
               onClick={handleFilterMenuOpen}
             >
@@ -494,6 +517,10 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
                 ml: 1,
                 width: 44,
                 height: 44,
+                '&:focus-visible': {
+                  outline: `3px solid ${theme.palette.primary.main}`,
+                  outlineOffset: '2px',
+                },
               })}
               onClick={handleNewConversationClick}
             >
@@ -528,6 +555,15 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
                 onClick={clearSearch}
                 edge="end"
                 aria-label="Clear conversation search"
+                sx={{
+                  width: 44,
+                  height: 44,
+                  '&:focus-visible': {
+                    outline: '3px solid',
+                    outlineColor: 'primary.main',
+                    outlineOffset: '2px',
+                  },
+                }}
               >
                 <Clear />
               </IconButton>
@@ -576,6 +612,14 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
                   <StyledListItem
                     active={isSelected ? 1 : 0}
                     onClick={() => handleSelectConversation(conversation)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        handleSelectConversation(conversation);
+                      }
+                    }}
+                    tabIndex={0}
+                    role="button"
                     aria-label={`Open conversation with ${conversation.name || 'Unknown user'}`}
                   >
                     <ListItemAvatar>

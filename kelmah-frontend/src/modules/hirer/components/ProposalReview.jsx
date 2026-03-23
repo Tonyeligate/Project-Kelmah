@@ -310,7 +310,7 @@ const ProposalReview = () => {
         handleDialogClose();
         await refresh();
       } catch (err) {
-        if (import.meta.env.DEV) console.error(`Failed to update proposal ${proposalId}`, {
+        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error(`Failed to update proposal ${proposalId}`, {
           requestId,
           error: err,
         });

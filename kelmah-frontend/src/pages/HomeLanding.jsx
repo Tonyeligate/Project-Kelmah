@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Container, Typography, Grid, Stack, Button, Card, Chip, Avatar, Rating, Divider, useTheme } from '@mui/material';
+import { Box, Container, Typography, Grid, Stack, Button, Card, Chip, Avatar, Rating, Divider, Alert, useTheme } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowForward as ArrowForwardIcon,
@@ -100,7 +100,7 @@ const HomeLanding = () => {
         if (isMounted) {
           setStatsError('Unable to load live platform metrics. Showing estimated values.');
         }
-        if (import.meta.env.DEV) console.warn('HomeLanding platform stats fetch failed:', error);
+        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('HomeLanding platform stats fetch failed:', error);
       });
 
     return () => {
@@ -133,7 +133,7 @@ const HomeLanding = () => {
             prev || 'Some platform statistics are currently unavailable.',
           );
         }
-        if (import.meta.env.DEV) console.warn('HomeLanding trade stats fetch failed:', error);
+        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('HomeLanding trade stats fetch failed:', error);
       });
 
     return () => {
@@ -158,10 +158,10 @@ const HomeLanding = () => {
   };
 
   return (
-    <Box sx={{ bgcolor: 'background.default', color: 'text.primary' }}>
+    <Box sx={{ bgcolor: 'background.default', color: 'text.primary', overflowX: 'clip' }}>
       {statsError && (
         <Box sx={{ px: { xs: 2, md: 0 }, pt: 2 }}>
-          <Alert severity="warning" sx={{ mx: 'auto', maxWidth: 960 }}>
+          <Alert severity="warning" role="status" aria-live="polite" sx={{ mx: 'auto', maxWidth: 960 }}>
             {statsError}
           </Alert>
         </Box>
@@ -193,8 +193,8 @@ const HomeLanding = () => {
         }}
       >
         <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1, py: { xs: 2.5, md: 7 } }}>
-          <Grid container spacing={{ xs: 3, md: 4 }} alignItems="center">
-            <Grid item xs={12} md={7}>
+          <Grid container spacing={{ xs: 3, md: 4 }} alignItems="center" sx={{ minWidth: 0 }}>
+            <Grid item xs={12} md={7} sx={{ minWidth: 0 }}>
               <Box>
                 <Chip
                   label="Ghana's #1 trades marketplace"
@@ -204,7 +204,8 @@ const HomeLanding = () => {
                     bgcolor: goldAlpha(0.14),
                     color: '#FFD700',
                     fontWeight: 600,
-                    fontSize: '0.75rem',
+                    fontSize: { xs: '0.76rem', sm: '0.8rem' },
+                    lineHeight: 1.35,
                   }}
                 />
 
@@ -213,8 +214,9 @@ const HomeLanding = () => {
                   component="h1"
                   sx={{
                     fontWeight: 800,
-                    fontSize: { xs: '1.85rem', sm: '2.6rem', md: '3.25rem' },
-                    lineHeight: 1.12,
+                    fontSize: { xs: '1.8rem', sm: '2.55rem', md: '3.25rem' },
+                    lineHeight: 1.15,
+                    letterSpacing: '-0.012em',
                     mb: 2,
                     fontFamily: 'Montserrat, sans-serif',
                   }}
@@ -228,9 +230,9 @@ const HomeLanding = () => {
                 <Typography
                   variant="body1"
                   sx={{
-                    maxWidth: 540,
-                    fontSize: { xs: '0.95rem', md: '1.1rem' },
-                    lineHeight: 1.65,
+                    maxWidth: 560,
+                    fontSize: { xs: '0.98rem', md: '1.08rem' },
+                    lineHeight: 1.72,
                     opacity: 0.92,
                     mb: 3.5,
                   }}
@@ -254,11 +256,16 @@ const HomeLanding = () => {
                       fontWeight: 700,
                       textTransform: 'none',
                       minHeight: 54,
-                      fontSize: '1rem',
+                      fontSize: { xs: '0.98rem', sm: '1rem' },
+                      lineHeight: 1.3,
                       px: 4,
                       borderRadius: 2,
                       boxShadow: '0 4px 16px rgba(255,215,0,0.25)',
                       '&:hover': { bgcolor: '#F5C800', boxShadow: '0 6px 24px rgba(255,215,0,0.35)' },
+                      '&:focus-visible': {
+                        outline: '3px solid rgba(255,255,255,0.95)',
+                        outlineOffset: 2,
+                      },
                     }}
                   >
                     Find a worker
@@ -275,13 +282,18 @@ const HomeLanding = () => {
                       fontWeight: 600,
                       textTransform: 'none',
                       minHeight: 54,
-                      fontSize: '1rem',
+                      fontSize: { xs: '0.98rem', sm: '1rem' },
+                      lineHeight: 1.3,
                       px: 4,
                       borderRadius: 2,
                       '&:hover': {
                         borderColor: '#FFD700',
                         color: '#FFD700',
                         bgcolor: goldAlpha(0.06),
+                      },
+                      '&:focus-visible': {
+                        outline: '3px solid #FFD700',
+                        outlineOffset: 2,
                       },
                     }}
                   >
@@ -299,12 +311,20 @@ const HomeLanding = () => {
                     size="small"
                     startIcon={<WorkIcon />}
                     onClick={() => navigate('/register?role=worker')}
+                    aria-label="Register as worker"
                     sx={{
                       justifyContent: { xs: 'flex-start', sm: 'center' },
                       color: '#FFD700',
                       textTransform: 'none',
                       fontWeight: 700,
                       minHeight: 48,
+                      fontSize: { xs: '0.9rem', sm: '0.95rem' },
+                      lineHeight: 1.35,
+                      '&:focus-visible': {
+                        outline: '3px solid #FFD700',
+                        outlineOffset: 2,
+                        borderRadius: 8,
+                      },
                     }}
                   >
                     I need work
@@ -314,12 +334,20 @@ const HomeLanding = () => {
                     size="small"
                     startIcon={<SearchIcon />}
                     onClick={() => navigate('/register?role=hirer')}
+                    aria-label="Register as hirer"
                     sx={{
                       justifyContent: { xs: 'flex-start', sm: 'center' },
                       color: '#FFD700',
                       textTransform: 'none',
                       fontWeight: 700,
                       minHeight: 48,
+                      fontSize: { xs: '0.9rem', sm: '0.95rem' },
+                      lineHeight: 1.35,
+                      '&:focus-visible': {
+                        outline: '3px solid #FFD700',
+                        outlineOffset: 2,
+                        borderRadius: 8,
+                      },
                     }}
                   >
                     I want to hire
@@ -347,7 +375,15 @@ const HomeLanding = () => {
                   ].map((badge) => (
                     <Stack key={badge.key} direction="row" spacing={0.75} alignItems="center">
                       {React.cloneElement(badge.icon, { sx: { color: '#FFD700', fontSize: 18 } })}
-                      <Typography variant="body2" sx={{ opacity: 0.85, fontSize: '0.78rem', whiteSpace: 'nowrap' }}>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          opacity: 0.88,
+                          fontSize: { xs: '0.8rem', sm: '0.84rem' },
+                          lineHeight: 1.4,
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
                         {badge.text}
                       </Typography>
                     </Stack>
@@ -357,7 +393,7 @@ const HomeLanding = () => {
             </Grid>
 
             {/* ── right card — what Kelmah does ── */}
-            <Grid item xs={12} md={5}>
+            <Grid item xs={12} md={5} sx={{ minWidth: 0 }}>
               <Box>
                 <Card
                   role="region"
@@ -371,7 +407,11 @@ const HomeLanding = () => {
                     border: '1px solid rgba(255,215,0,0.18)',
                   }}
                 >
-                  <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
+                  <Typography
+                    variant="h6"
+                    fontWeight={700}
+                    sx={{ mb: 2, fontSize: { xs: '1.02rem', sm: '1.1rem' }, lineHeight: 1.35 }}
+                  >
                     What Kelmah does for you
                   </Typography>
                   <Stack spacing={2}>
@@ -385,8 +425,19 @@ const HomeLanding = () => {
                           {item.icon}
                         </Avatar>
                         <Box>
-                          <Typography fontWeight={600} variant="body1">{item.title}</Typography>
-                          <Typography variant="body2" sx={{ opacity: 0.75 }}>{item.desc}</Typography>
+                          <Typography
+                            fontWeight={600}
+                            variant="body1"
+                            sx={{ fontSize: { xs: '0.95rem', sm: '1rem' }, lineHeight: 1.4 }}
+                          >
+                            {item.title}
+                          </Typography>
+                          <Typography
+                            variant="body2"
+                            sx={{ opacity: 0.82, lineHeight: 1.55, fontSize: { xs: '0.88rem', sm: '0.93rem' } }}
+                          >
+                            {item.desc}
+                          </Typography>
                         </Box>
                       </Stack>
                     ))}
@@ -669,6 +720,10 @@ const HomeLanding = () => {
                       fontSize: '1rem',
                       borderRadius: 2,
                       '&:hover': { bgcolor: '#F5C800' },
+                      '&:focus-visible': {
+                        outline: '3px solid #111',
+                        outlineOffset: 2,
+                      },
                     }}
                   >
                     Start getting jobs
@@ -730,6 +785,10 @@ const HomeLanding = () => {
                       fontSize: '1rem',
                       borderRadius: 2,
                       '&:hover': { bgcolor: '#157a40' },
+                      '&:focus-visible': {
+                        outline: '3px solid #FFD700',
+                        outlineOffset: 2,
+                      },
                     }}
                   >
                     Find a worker now
@@ -1073,6 +1132,10 @@ const HomeLanding = () => {
                   borderRadius: 2,
                   boxShadow: `0 4px 20px ${goldAlpha(0.3)}`,
                   '&:hover': { bgcolor: '#F5C800', boxShadow: `0 6px 28px ${goldAlpha(0.4)}` },
+                  '&:focus-visible': {
+                    outline: '3px solid rgba(255,255,255,0.95)',
+                    outlineOffset: 2,
+                  },
                 }}
               >
                 Sign up free
@@ -1091,12 +1154,16 @@ const HomeLanding = () => {
                   px: 5,
                   borderRadius: 2,
                   '&:hover': { borderColor: '#FFD700', color: '#FFD700' },
+                  '&:focus-visible': {
+                    outline: '3px solid #FFD700',
+                    outlineOffset: 2,
+                  },
                 }}
               >
                 Log in
               </Button>
             </Stack>
-            <Typography variant="body2" sx={{ opacity: 0.55, mt: 2, fontSize: '0.8rem' }}>
+            <Typography variant="body2" sx={{ opacity: 0.8, mt: 2, fontSize: '0.8rem' }}>
               No credit card required &middot; Free for workers
             </Typography>
           </Box>

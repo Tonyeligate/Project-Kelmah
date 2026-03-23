@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { usePayments } from '../contexts/PaymentContext';
 import BillPage from './BillPage';
 import PaymentMethodsPage from './PaymentMethodsPage';
@@ -50,7 +50,7 @@ const PaymentsPage = () => {
   const [selectedTab, setSelectedTab] = useState(0);
   const [animate] = useState(true);
   const [anchorEl, setAnchorEl] = useState(null);
-  const { loading, error, walletBalance, walletMissing, transactions, fetchTransactions } =
+  const { loading, error, walletBalance, walletMissing, transactions, fetchTransactions, refresh } =
     usePayments();
   const user = useSelector((state) => state.auth.user);
   const canManagePaymentMethods = hasRole(user, ['worker', 'admin']);
@@ -75,6 +75,37 @@ const PaymentsPage = () => {
   const pagedTransactions = Array.isArray(transactions)
     ? transactions.slice((page - 1) * perPage, page * perPage)
     : [];
+  const [slowLoading, setSlowLoading] = useState(false);
+  const slowLoadingTimerRef = useRef(null);
+  const paymentErrorMessage = error
+    ? `We could not load your latest payment data. ${error} You can tap Retry now.`
+    : '';
+
+  useEffect(() => {
+    if (!loading) {
+      setSlowLoading(false);
+      if (slowLoadingTimerRef.current) {
+        clearTimeout(slowLoadingTimerRef.current);
+        slowLoadingTimerRef.current = null;
+      }
+      return;
+    }
+
+    slowLoadingTimerRef.current = setTimeout(() => {
+      setSlowLoading(true);
+    }, 8000);
+
+    return () => {
+      if (slowLoadingTimerRef.current) {
+        clearTimeout(slowLoadingTimerRef.current);
+        slowLoadingTimerRef.current = null;
+      }
+    };
+  }, [loading]);
+
+  const handleRetryPayments = () => {
+    refresh();
+  };
 
   const handleTabChange = (event, newValue) => {
     setSelectedTab(newValue);
@@ -113,17 +144,25 @@ const PaymentsPage = () => {
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: 1.5,
           mb: 3,
         }}
       >
-        <Typography variant="h4" sx={{ color: 'secondary.main' }}>
-          Payments
-        </Typography>
+        <Box>
+          <Typography variant="h4" sx={{ color: 'secondary.main' }}>
+            Payments
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+            Track transactions, review wallet activity, and manage billing safely.
+          </Typography>
+        </Box>
         <Button
           startIcon={<MoreVertIcon />}
           variant="outlined"
           color="secondary"
           sx={{ borderWidth: 2, boxShadow: '0 2px 8px rgba(255,215,0,0.4)', minHeight: 44 }}
+          aria-label="Open payment actions menu"
           onClick={handleMenuOpen}
         >
           Actions
@@ -158,9 +197,26 @@ const PaymentsPage = () => {
           </MenuItem>
         </Menu>
       </Box>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        Review wallet activity, filter transactions, and manage billing options.
-      </Typography>
+      {slowLoading && (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          Payments are taking longer than usual to load. The service may be waking up.
+          You can wait a bit more or retry now.
+        </Alert>
+      )}
+
+      {error && (
+        <Alert
+          severity="error"
+          sx={{ mb: 2 }}
+          action={
+            <Button color="inherit" size="small" onClick={handleRetryPayments}>
+              Retry
+            </Button>
+          }
+        >
+          {paymentErrorMessage}
+        </Alert>
+      )}
 
       <Grid container spacing={3}>
         {/* Wallet Balance */}
@@ -192,11 +248,6 @@ const PaymentsPage = () => {
                   {currencyFormatter.format(walletBalance)}
                 </Typography>
               </Grow>
-            )}
-            {error && (
-              <Alert severity="error" sx={{ mb: 2 }}>
-                {error}
-              </Alert>
             )}
             {walletMissing && !error && (
               <Alert severity="info" sx={{ mt: 2 }}>
@@ -242,7 +293,8 @@ const PaymentsPage = () => {
                       mb: 3,
                       display: 'flex',
                       flexWrap: 'wrap',
-                      gap: { xs: 1, sm: 2, md: 2, lg: 1.5 },
+                      columnGap: { xs: 1, sm: 2 },
+                      rowGap: { xs: 1, sm: 1.5 },
                       alignItems: 'center',
                     }}
                   >
@@ -254,7 +306,7 @@ const PaymentsPage = () => {
                       onChange={(e) => setStartDate(e.target.value)}
                       InputLabelProps={{ shrink: true }}
                       inputProps={{ 'aria-label': 'Filter transactions from date' }}
-                      sx={{ backgroundColor: 'action.hover', borderRadius: 1, flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' } }}
+                      sx={{ backgroundColor: 'action.hover', borderRadius: 1, minWidth: { sm: 170 }, flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' } }}
                     />
                     <TextField
                       variant="filled"
@@ -264,9 +316,9 @@ const PaymentsPage = () => {
                       onChange={(e) => setEndDate(e.target.value)}
                       InputLabelProps={{ shrink: true }}
                       inputProps={{ 'aria-label': 'Filter transactions to date' }}
-                      sx={{ backgroundColor: 'action.hover', borderRadius: 1, flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' } }}
+                      sx={{ backgroundColor: 'action.hover', borderRadius: 1, minWidth: { sm: 170 }, flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' } }}
                     />
-                    <FormControl sx={{ minWidth: { xs: 0, sm: 140 }, flex: { xs: '1 1 100%', sm: '0 1 auto' } }}>
+                    <FormControl sx={{ minWidth: { xs: 0, sm: 170 }, flex: { xs: '1 1 100%', sm: '0 1 auto' } }}>
                       <InputLabel>Type</InputLabel>
                       <Select
                         value={filterType}
@@ -297,6 +349,11 @@ const PaymentsPage = () => {
                     transactions={pagedTransactions}
                     loading={loading}
                   />
+                  {!loading && !error && Array.isArray(transactions) && transactions.length === 0 && (
+                    <Alert severity="info" sx={{ mt: 2 }}>
+                      No transactions yet. Once deposits, withdrawals, or escrow events occur, they will appear here.
+                    </Alert>
+                  )}
                   {pageCount > 1 && (
                     <Box
                       sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}

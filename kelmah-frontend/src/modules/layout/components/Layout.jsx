@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Box, Fade, Typography, useTheme } from '@mui/material';
+import { Box, Fade, Typography, useTheme, useMediaQuery } from '@mui/material';
 import { useLocation, Outlet } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
@@ -96,6 +96,7 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
   // Only show footer on homepage
   const isHomePage = location.pathname === '/' || location.pathname === '/home';
   const isMdUp = useBreakpointUp('md');
+  const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
   // ✅ MOBILE-AUDIT FIX: Use MUI breakpoint instead of custom query to avoid 769-899px dead zone
   const isMobile = !isMdUp;
   const currentPath = location.pathname || '';
@@ -158,10 +159,20 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
     </Box>
   );
 
+  const handleSkipToContent = (event) => {
+    event.preventDefault();
+    const mainContent = document.getElementById('main-content');
+    if (mainContent) {
+      mainContent.focus();
+      mainContent.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    }
+  };
+
   const skipToContentLink = (
     <Box
       component="a"
       href="#main-content"
+      onClick={handleSkipToContent}
       sx={{
         position: 'absolute',
         left: 16,
@@ -174,8 +185,13 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
         color: 'primary.contrastText',
         textDecoration: 'none',
         fontWeight: 600,
-        '&:focus': {
+        transition: 'top 0.2s ease',
+        '&:focus, &:focus-visible': {
           top: 12,
+          outline: '3px solid',
+          outlineColor: 'primary.contrastText',
+          outlineOffset: 2,
+          boxShadow: '0 0 0 3px rgba(0,0,0,0.2)',
         },
       }}
     >
@@ -287,7 +303,7 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
           setThemeMode={resolvedSetThemeMode}
         />
       )}
-      <Fade in timeout={500}>
+      <Fade in timeout={prefersReducedMotion ? 0 : 500}>
         <Box
           component="main"
           id="main-content"

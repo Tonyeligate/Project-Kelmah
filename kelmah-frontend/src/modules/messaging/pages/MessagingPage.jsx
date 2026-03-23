@@ -241,6 +241,32 @@ const EnhancedMessagingPage = () => {
   const [deepLinkLoading, setDeepLinkLoading] = useState(false);
   const [deepLinkError, setDeepLinkError] = useState(null);
   const deepLinkAttemptedRef = useRef(false);
+  const [slowLoadingHint, setSlowLoadingHint] = useState(false);
+  const slowLoadingTimerRef = useRef(null);
+
+  useEffect(() => {
+    const isLoading = loadingConversations || loadingMessages || deepLinkLoading;
+
+    if (!isLoading) {
+      setSlowLoadingHint(false);
+      if (slowLoadingTimerRef.current) {
+        clearTimeout(slowLoadingTimerRef.current);
+        slowLoadingTimerRef.current = null;
+      }
+      return;
+    }
+
+    slowLoadingTimerRef.current = setTimeout(() => {
+      setSlowLoadingHint(true);
+    }, 8000);
+
+    return () => {
+      if (slowLoadingTimerRef.current) {
+        clearTimeout(slowLoadingTimerRef.current);
+        slowLoadingTimerRef.current = null;
+      }
+    };
+  }, [loadingConversations, loadingMessages, deepLinkLoading]);
 
   useEffect(() => {
     if (!user) return;
@@ -280,7 +306,7 @@ const EnhancedMessagingPage = () => {
             return;
           }
         } catch (error) {
-          if (import.meta.env.DEV) {
+          if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') {
             console.warn(`Failed to deep-load conversation ${conversationId}:`, error.message);
           }
           setDeepLinkError('Conversation could not be loaded. It may no longer exist.');
@@ -373,7 +399,7 @@ const EnhancedMessagingPage = () => {
 
       sessionStorage.removeItem('kelmah_message_draft');
     } catch (draftError) {
-      if (import.meta.env.DEV) console.warn('Failed to load message draft from session storage', draftError);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Failed to load message draft from session storage', draftError);
     }
   }, []);
 
@@ -645,7 +671,7 @@ const EnhancedMessagingPage = () => {
         await contextSendMessage(text, type, attachments);
       }
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Failed to send message:', error);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to send message:', error);
       showFeedback('Message was not sent. Check your connection and try again.', 'error');
     }
   }, [messageText, selectedFiles, selectedConversation, contextSendMessage, showFeedback]);
@@ -826,10 +852,16 @@ const EnhancedMessagingPage = () => {
                 aria-label="Start new chat"
                 onClick={() => setNewChatDialog(true)}
                 sx={{
+                  minWidth: 44,
+                  minHeight: 44,
                   color: 'primary.main',
                   background: alpha(theme.palette.primary.main, 0.1),
                   '&:hover': {
                     background: alpha(theme.palette.primary.main, 0.2),
+                  },
+                  '&:focus-visible': {
+                    outline: `3px solid ${theme.palette.primary.main}`,
+                    outlineOffset: '2px',
                   },
                 }}
               >
@@ -841,10 +873,16 @@ const EnhancedMessagingPage = () => {
               aria-label="Open messaging options"
               onClick={(e) => setMoreMenuAnchor(e.currentTarget)}
               sx={{
+                minWidth: 44,
+                minHeight: 44,
                 color: 'text.secondary',
                 '&:hover': {
                   color: 'primary.main',
                   background: alpha(theme.palette.primary.main, 0.1),
+                },
+                '&:focus-visible': {
+                  outline: `3px solid ${theme.palette.primary.main}`,
+                  outlineOffset: '2px',
                 },
               }}
             >
@@ -1306,7 +1344,16 @@ const EnhancedMessagingPage = () => {
                 color="inherit"
                 aria-label="Go back"
                 onClick={handleBackToConversationList}
-                sx={{ mr: 2, color: 'primary.main' }}
+                sx={{
+                  mr: 2,
+                  color: 'primary.main',
+                  minWidth: 44,
+                  minHeight: 44,
+                  '&:focus-visible': {
+                    outline: `3px solid ${theme.palette.primary.main}`,
+                    outlineOffset: '2px',
+                  },
+                }}
               >
                 <ArrowBackIcon />
               </IconButton>
@@ -1392,6 +1439,10 @@ const EnhancedMessagingPage = () => {
                     '&:hover': {
                       color: 'primary.main',
                       background: alpha(theme.palette.primary.main, 0.1),
+                    },
+                    '&:focus-visible': {
+                      outline: `3px solid ${theme.palette.primary.main}`,
+                      outlineOffset: '2px',
                     },
                   }}
                 >
@@ -1726,10 +1777,14 @@ const EnhancedMessagingPage = () => {
                         right: -8,
                         background: 'error.main',
                         color: 'error.contrastText',
-                        width: 28,
-                        height: 28,
+                        width: 36,
+                        height: 36,
                         '&:hover': {
                           background: 'error.dark',
+                        },
+                        '&:focus-visible': {
+                          outline: `3px solid ${theme.palette.error.main}`,
+                          outlineOffset: '2px',
                         },
                       }}
                     >
@@ -1815,6 +1870,10 @@ const EnhancedMessagingPage = () => {
                     color: 'primary.main',
                     background: alpha(theme.palette.primary.main, 0.1),
                   },
+                  '&:focus-visible': {
+                    outline: `3px solid ${theme.palette.primary.main}`,
+                    outlineOffset: '2px',
+                  },
                 }}
               >
                 <AttachFileIcon />
@@ -1883,6 +1942,10 @@ const EnhancedMessagingPage = () => {
                   '&:disabled': {
                     background: alpha(theme.palette.text.primary, 0.1),
                     color: 'text.disabled',
+                  },
+                  '&:focus-visible': {
+                    outline: `3px solid ${theme.palette.primary.main}`,
+                    outlineOffset: '2px',
                   },
                 }}
               >
@@ -1957,6 +2020,10 @@ const EnhancedMessagingPage = () => {
                     color: 'primary.main',
                     minWidth: 44,
                     minHeight: 44,
+                    '&:focus-visible': {
+                      outline: `3px solid ${theme.palette.primary.main}`,
+                      outlineOffset: '2px',
+                    },
                   }}
                 >
                   <ArrowBackIcon sx={{ fontSize: 20 }} />
@@ -2259,6 +2326,10 @@ const EnhancedMessagingPage = () => {
                       color: 'primary.main',
                       minWidth: 44,
                       minHeight: 44,
+                      '&:focus-visible': {
+                        outline: `3px solid ${theme.palette.primary.main}`,
+                        outlineOffset: '2px',
+                      },
                     }}
                   >
                     <ArrowBackIcon sx={{ fontSize: 20 }} />
@@ -2308,6 +2379,10 @@ const EnhancedMessagingPage = () => {
                     color: 'primary.main',
                     minWidth: 44,
                     minHeight: 44,
+                    '&:focus-visible': {
+                      outline: `3px solid ${theme.palette.primary.main}`,
+                      outlineOffset: '2px',
+                    },
                   }}
                 >
                   <MoreVertIcon sx={{ fontSize: 20 }} />
@@ -2436,6 +2511,14 @@ const EnhancedMessagingPage = () => {
                         size="small"
                         onClick={() => setSelectedFiles((prev) => prev.filter((_, currentIndex) => currentIndex !== index))}
                         aria-label={`Remove ${file.name}`}
+                        sx={{
+                          minWidth: 44,
+                          minHeight: 44,
+                          '&:focus-visible': {
+                            outline: `3px solid ${theme.palette.primary.main}`,
+                            outlineOffset: '2px',
+                          },
+                        }}
                       >
                         <CloseIcon fontSize="small" />
                       </IconButton>
@@ -2456,6 +2539,10 @@ const EnhancedMessagingPage = () => {
                     border: `1px solid ${theme.palette.divider}`,
                     minWidth: 44,
                     minHeight: 44,
+                    '&:focus-visible': {
+                      outline: `3px solid ${theme.palette.primary.main}`,
+                      outlineOffset: '2px',
+                    },
                   }}
                 >
                   <AttachFileIcon fontSize="small" />
@@ -2519,6 +2606,10 @@ const EnhancedMessagingPage = () => {
                       backgroundColor: alpha(theme.palette.text.primary, 0.1),
                       color: 'text.disabled',
                     },
+                    '&:focus-visible': {
+                      outline: `3px solid ${theme.palette.primary.main}`,
+                      outlineOffset: '2px',
+                    },
                   }}
                 >
                   <SendIcon sx={{ fontSize: 18 }} />
@@ -2551,6 +2642,11 @@ const EnhancedMessagingPage = () => {
         {(realtimeIssue || !isConnected) && (
           <Alert severity="warning" sx={{ mb: 2 }}>
             {realtimeIssue || 'Reconnecting... You can still read and send messages.'}
+          </Alert>
+        )}
+        {slowLoadingHint && (
+          <Alert severity="info" sx={{ mb: 2 }}>
+            Messages are taking longer than usual to load. The service may still be waking up. You can wait a little longer or retry.
           </Alert>
         )}
         <Grid container spacing={2} sx={{ height: '100%' }}>

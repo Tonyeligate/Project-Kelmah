@@ -2,6 +2,9 @@ import { api } from '../../../services/apiClient';
 import { unwrapApiData } from '../../../services/responseNormalizer';
 import { captureRecoverableApiError } from '../../../services/errorTelemetry';
 
+const __DEV__ = import.meta.env.DEV;
+const devWarn = (...args) => { if (__DEV__) console.warn(...args); };
+
 const WORKERS_BASE = '/users/workers';
 const WORKER_SEARCH_ENDPOINT = `${WORKERS_BASE}/search`;
 const WORKER_SEARCH_ENDPOINTS = [
@@ -444,7 +447,7 @@ const workerService = {
       const response = await api.get('/users/me/credentials');
       payload = response?.data?.data ?? response?.data ?? {};
     } catch (error) {
-      if (import.meta.env.DEV) console.warn('Credentials endpoint unavailable:', error.message);
+      devWarn('Credentials endpoint unavailable:', error.message);
       captureRecoverableApiError(error, {
         operation: 'workers.getMyCredentials.primary',
         fallbackUsed: true,

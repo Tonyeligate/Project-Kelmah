@@ -290,7 +290,7 @@ const AdvancedMapController = ({
           setCenterOnUser(false);
         })
         .catch((error) => {
-          if (import.meta.env.DEV) console.error('Location error:', error);
+          if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Location error:', error);
         })
         .finally(() => {
           setIsLocating(false);
@@ -976,7 +976,7 @@ const InteractiveMap = ({
           setUserLocation(location);
         })
         .catch((error) => {
-          if (import.meta.env.DEV) console.warn('Could not get user location:', error.message);
+          if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Could not get user location:', error.message);
         });
     }
   }, [showUserLocation]);

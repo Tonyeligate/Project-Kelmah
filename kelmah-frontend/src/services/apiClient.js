@@ -12,6 +12,12 @@ import {
 import { captureContractMismatch, captureRecoverableApiError } from './errorTelemetry';
 import { normalizeRequestedPath } from '../utils/authRedirect';
 
+const apiClientWarn = (...args) => {
+    if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_API_CLIENT === 'true') {
+        console.warn(...args);
+    }
+};
+
 let uuidFallbackCounter = 0;
 
 // Lightweight UUID v4 generator (browser-compatible)
@@ -231,6 +237,36 @@ const initializeCrossTabAuthSync = () => {
 
 initializeCrossTabAuthSync();
 
+const parseRetryAfterMs = (error) => {
+    const headerValue =
+        error?.response?.headers?.['retry-after'] ||
+        error?.response?.headers?.RetryAfter ||
+        error?.response?.headers?.['Retry-After'];
+
+    if (!headerValue) {
+        return null;
+    }
+
+    const value = String(headerValue).trim();
+    if (/^\d+$/.test(value)) {
+        return Math.max(Number(value) * 1000, 0);
+    }
+
+    const dateMs = Date.parse(value);
+    if (!Number.isNaN(dateMs)) {
+        return Math.max(dateMs - Date.now(), 0);
+    }
+
+    return null;
+};
+
+const applyBackoffJitter = (baseDelayMs) => {
+    const safeDelay = Math.max(250, Math.min(baseDelayMs, 10_000));
+    const jitterCap = Math.max(100, Math.floor(safeDelay * 0.2));
+    const jitter = Math.floor(Math.random() * (jitterCap + 1));
+    return safeDelay + jitter;
+};
+
 // Request interceptor
 apiClient.interceptors.request.use(
     async (config) => {
@@ -316,9 +352,7 @@ apiClient.interceptors.response.use(
                 endpoint: originalRequest?.url,
                 method: originalRequest?.method,
             });
-            if (import.meta.env.DEV) console.warn(
-                `⏳ Backend returned ${status} — likely waking from sleep`,
-            );
+            apiClientWarn(`⏳ Backend returned ${status} — likely waking from sleep`);
             return Promise.reject(error);
         }
 
@@ -443,6 +477,22 @@ apiClient.interceptors.response.use(
             });
         }
 
+        if (!error.normalizedError) {
+            error.normalizedError = normalizeApiError(error, {
+                phase: 'interceptor-reject',
+                endpoint: originalRequest?.url,
+                method: originalRequest?.method,
+            });
+            error.friendlyMessage = error.friendlyMessage || error.normalizedError.userMessage;
+            error.retryable =
+                typeof error.retryable === 'boolean'
+                    ? error.retryable
+                    : error.normalizedError.retryable;
+            if (!Number.isFinite(error.retryAfterMs) && Number.isFinite(error.normalizedError.retryAfterMs)) {
+                error.retryAfterMs = error.normalizedError.retryAfterMs;
+            }
+        }
+
         return Promise.reject(error);
     },
 );
@@ -456,8 +506,11 @@ const retryRequest = async (fn, retries = 3, delay = 1000) => {
         const status = error?.response?.status;
         const shouldRetryClientError = status === 429;
         const isRecoverable = isRetryableError(error) || shouldRetryClientError;
+        const retryAfterMs = parseRetryAfterMs(error);
         const computedDelay = Number.isFinite(error?.retryAfterMs)
             ? error.retryAfterMs
+            : Number.isFinite(retryAfterMs)
+                ? retryAfterMs
             : delay;
         if (
             retries === 0 ||
@@ -468,8 +521,9 @@ const retryRequest = async (fn, retries = 3, delay = 1000) => {
             throw error;
         }
 
-        await new Promise((resolve) => setTimeout(resolve, computedDelay));
-        return retryRequest(fn, retries - 1, Math.min(computedDelay * 2, 10_000));
+        const waitMs = applyBackoffJitter(computedDelay);
+        await new Promise((resolve) => setTimeout(resolve, waitMs));
+        return retryRequest(fn, retries - 1, delay);
     }
 };
 

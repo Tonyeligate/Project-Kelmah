@@ -144,7 +144,6 @@ const NearbyJobsPage = () => {
     if (locationRef.current) {
       fetchJobs();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [maxDistance, categoryFilter, fetchJobs]);
 
   // Handle quote submission

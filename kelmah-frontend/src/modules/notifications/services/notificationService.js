@@ -9,7 +9,9 @@ import websocketService from '../../../services/websocketService';
 import { APP_SOCKET_EVENTS } from '../../../services/socketEvents';
 
 const __DEV__ = import.meta.env.DEV;
-const devLog = (...args) => { if (__DEV__) console.log(...args); };
+const NOTIFICATIONS_DEBUG =
+  __DEV__ && import.meta.env.VITE_DEBUG_NOTIFICATIONS === 'true';
+const devLog = (...args) => { if (NOTIFICATIONS_DEBUG) console.log(...args); };
 
 export const normalizeNotificationLink = (notification = {}) => {
   const rawLink = notification?.link || notification?.actionUrl || null;
@@ -103,7 +105,7 @@ class NotificationService {
     if (this.isConnected && this._listeners) return;
     try {
       if (!token) {
-        if (import.meta.env.DEV) console.warn('Notifications: connect skipped - missing auth token');
+        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Notifications: connect skipped - missing auth token');
         return;
       }
 
@@ -112,7 +114,7 @@ class NotificationService {
       }
 
       if (!websocketService.socket) {
-        if (import.meta.env.DEV) {
+        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') {
           console.warn('Notifications: shared websocket unavailable; realtime notifications paused');
         }
         return;
@@ -140,7 +142,7 @@ class NotificationService {
       this.isConnected = true;
       devLog('📡 Notifications subscribed to shared websocket events');
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Failed to connect to notification socket:', error);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to connect to notification socket:', error);
     }
   }
 
@@ -218,7 +220,7 @@ class NotificationService {
         error.message ||
         'Unknown error occurred';
 
-      if (import.meta.env.DEV) console.error('Failed to fetch notifications:', {
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to fetch notifications:', {
         error: errorMessage,
         serviceStatus: statusMsg.status,
       });
@@ -244,7 +246,7 @@ class NotificationService {
       );
       return response.data;
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Failed to mark notification as read:', error);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to mark notification as read:', error);
       throw error;
     }
   }
@@ -255,7 +257,7 @@ class NotificationService {
       const response = await this.client.patch('/notifications/read/all');
       return response.data;
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Failed to mark all notifications as read:', error);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to mark all notifications as read:', error);
       throw error;
     }
   }
@@ -266,7 +268,7 @@ class NotificationService {
       const response = await this.client.delete('/notifications/clear-all');
       return response.data;
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Failed to clear all notifications:', error);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to clear all notifications:', error);
       throw error;
     }
   }
@@ -280,7 +282,7 @@ class NotificationService {
       if (typeof payload?.data?.unreadCount === 'number') return payload.data.unreadCount;
       return 0;
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Failed to get unread count:', error);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to get unread count:', error);
       throw error;
     }
   }
@@ -293,7 +295,7 @@ class NotificationService {
       );
       return response.data;
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Failed to delete notification:', error);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to delete notification:', error);
       throw error;
     }
   }
@@ -304,7 +306,7 @@ class NotificationService {
       const response = await this.client.get('/notifications/preferences');
       return response.data?.data || response.data;
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Failed to load notification preferences:', error);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to load notification preferences:', error);
       throw error;
     }
   }
@@ -318,7 +320,7 @@ class NotificationService {
       );
       return response.data?.data || response.data;
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Failed to update notification preferences:', error);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to update notification preferences:', error);
       throw error;
     }
   }

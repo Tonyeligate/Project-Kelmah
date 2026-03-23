@@ -28,7 +28,11 @@ export const useDashboard = () => {
       if (token) {
         dashboardService.initialize(token);
       }
-    } catch {}
+    } catch (error) {
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') {
+        console.warn('Dashboard initialization skipped due to auth token read failure.', error);
+      }
+    }
   }, []);
 
   // Initialize socket connection and listeners when authenticated

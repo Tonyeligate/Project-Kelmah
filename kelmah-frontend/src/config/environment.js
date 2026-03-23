@@ -23,6 +23,8 @@ export { SERVICES };
 
 // Load runtime config for dynamic LocalTunnel URL
 let runtimeConfig = null;
+const CONFIG_DEBUG =
+  import.meta.env.DEV && import.meta.env.VITE_DEBUG_CONFIG === 'true';
 
 // Sanitize a URL coming from env vars — removes accidental double-protocol typos
 // e.g. "https://https://..." → "https://..."  or  "wss://https://..." → "wss://..."
@@ -165,9 +167,9 @@ const loadRuntimeConfig = async () => {
       window.RUNTIME_CONFIG = {
         apiUrl: envConfiguredUrl || runtimeConfiguredUrl || PRODUCTION_API_URL || '/api',
       };
-      if (import.meta.env.DEV) console.log('🔧 Runtime config loaded:', runtimeConfig);
+      if (CONFIG_DEBUG) console.log('Runtime config loaded:', runtimeConfig);
     } catch (error) {
-      if (import.meta.env.DEV) console.warn('⚠️ Failed to load runtime config:', error.message);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('⚠️ Failed to load runtime config:', error.message);
     }
   }
   return runtimeConfig;
@@ -264,14 +266,16 @@ export const FEATURES = {
 };
 
 const AUTH_HTTPONLY_COOKIES =
-  import.meta.env.VITE_AUTH_HTTPONLY_COOKIES === 'true';
+  import.meta.env.VITE_AUTH_HTTPONLY_COOKIES === undefined
+    ? isProduction
+    : import.meta.env.VITE_AUTH_HTTPONLY_COOKIES === 'true';
 const AUTH_SEND_AUTH_HEADER =
   import.meta.env.VITE_SEND_AUTH_HEADER === undefined
-    ? !AUTH_HTTPONLY_COOKIES
+    ? !isProduction
     : import.meta.env.VITE_SEND_AUTH_HEADER === 'true';
 const AUTH_STORE_TOKENS_CLIENT_SIDE =
   import.meta.env.VITE_STORE_TOKENS_CLIENT_SIDE === undefined
-    ? !AUTH_HTTPONLY_COOKIES
+    ? !isProduction
     : import.meta.env.VITE_STORE_TOKENS_CLIENT_SIDE === 'true';
 
 // ===============================================

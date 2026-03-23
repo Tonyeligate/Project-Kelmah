@@ -16,6 +16,15 @@ import notificationServiceUser, {
   normalizeNotificationLink,
 } from '../services/notificationService';
 import { secureStorage } from '../../../utils/secureStorage';
+
+const NOTIFICATIONS_DEBUG =
+  import.meta.env.DEV && import.meta.env.VITE_DEBUG_NOTIFICATIONS === 'true';
+const notificationsLog = (...args) => {
+  if (NOTIFICATIONS_DEBUG) {
+    console.log(...args);
+  }
+};
+
 const NotificationContext = createContext(null);
 
 const normalizeNotificationPayload = (notification = {}) => ({
@@ -80,9 +89,7 @@ export const NotificationProvider = ({ children }) => {
       const now = Date.now();
       const withinInterval = now - lastFetchRef.current < MIN_FETCH_INTERVAL;
       if (!force && withinInterval && fetchKey === lastFetchKeyRef.current) {
-        if (import.meta.env.DEV) console.log(
-          '⏱️ Skipping notification fetch - too soon since last fetch',
-        );
+        notificationsLog('⏱️ Skipping notification fetch - too soon since last fetch');
         return;
       }
 
@@ -122,11 +129,11 @@ export const NotificationProvider = ({ children }) => {
         // unreadCount is computed from notifications, no need for separate setter
         setError(null);
       } catch (err) {
-        if (import.meta.env.DEV) console.error('Failed to fetch notifications:', err);
+        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to fetch notifications:', err);
         // Check if it's a 429 Too Many Requests error
         if (err?.response?.status === 429) {
           // Rate limited - back off significantly
-          if (import.meta.env.DEV) console.warn(
+          if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn(
             '⚠️ Rate limited on notifications endpoint - backing off 2 minutes',
           );
           lastFetchRef.current = now + 120000; // Block fetches for 2 minutes
@@ -156,7 +163,7 @@ export const NotificationProvider = ({ children }) => {
         const token = secureStorage.getAuthToken();
 
         if (!token) {
-          if (import.meta.env.DEV) console.log(
+          notificationsLog(
             '⏸️ Notifications: Auth token missing, delaying socket connection',
           );
         } else {
@@ -191,7 +198,7 @@ export const NotificationProvider = ({ children }) => {
           );
         }
       } catch (socketError) {
-        if (import.meta.env.DEV) console.error(
+        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error(
           'Notifications: Failed to initialise socket connection',
           socketError,
         );
@@ -202,7 +209,7 @@ export const NotificationProvider = ({ children }) => {
       try {
         notificationService.disconnect();
       } catch (disconnectError) {
-        if (import.meta.env.DEV) console.warn(
+        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn(
           'Notifications: Socket disconnect failed',
           disconnectError,
         );
@@ -229,7 +236,7 @@ export const NotificationProvider = ({ children }) => {
         ),
       );
     } catch (err) {
-      if (import.meta.env.DEV) console.error('Failed to mark notification as read:', err);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to mark notification as read:', err);
       setError('Failed to update notification status.');
     }
   }, []);
@@ -249,7 +256,7 @@ export const NotificationProvider = ({ children }) => {
         })),
       );
     } catch (err) {
-      if (import.meta.env.DEV) console.error('Failed to mark all notifications as read:', err);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to mark all notifications as read:', err);
       setError('Failed to update notifications.');
     }
   }, []);
@@ -261,7 +268,7 @@ export const NotificationProvider = ({ children }) => {
         prev.filter((n) => (n.id || n._id) !== id),
       );
     } catch (err) {
-      if (import.meta.env.DEV) console.error('Failed to delete notification:', err);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to delete notification:', err);
       setError('Failed to delete notification.');
     }
   }, []);
@@ -271,7 +278,7 @@ export const NotificationProvider = ({ children }) => {
       await notificationServiceUser.clearAllNotifications();
       setNotifications([]);
     } catch (err) {
-      if (import.meta.env.DEV) console.error('Failed to clear notifications:', err);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to clear notifications:', err);
       setError('Failed to clear notifications.');
     }
   }, []);

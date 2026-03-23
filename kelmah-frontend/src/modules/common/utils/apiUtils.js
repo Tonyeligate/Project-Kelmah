@@ -1,5 +1,13 @@
 import { api as gatewayClient } from '../../../services/apiClient';
 
+const API_HEALTH_DEBUG =
+  import.meta.env.DEV && import.meta.env.VITE_DEBUG_SERVICE_HEALTH === 'true';
+const apiHealthDebug = (...args) => {
+  if (API_HEALTH_DEBUG) {
+    console.debug(...args);
+  }
+};
+
 /**
  * Check if the API is reachable
  * @param {boolean} showLoading - Whether to show loading state in component
@@ -7,8 +15,8 @@ import { api as gatewayClient } from '../../../services/apiClient';
  */
 export const checkApiHealth = async (showLoading = true) => {
   // In development, allow proceeding without API connectivity
-  if (import.meta.env.DEV) {
-    console.debug('[apiUtils] Development mode: assuming API is available');
+  if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') {
+    apiHealthDebug('[apiUtils] Development mode: assuming API is available');
     return true;
   }
 
@@ -27,7 +35,7 @@ export const checkApiHealth = async (showLoading = true) => {
     } catch (error) {
       const isLast = attempt === maxAttempts;
       if (import.meta.env.DEV && isLast) {
-        console.debug(
+        apiHealthDebug(
           `API health check failed after ${maxAttempts} attempts:`,
           error?.message || 'unknown error',
         );

@@ -65,11 +65,10 @@ describe('apiClient integration behaviors', () => {
   let responseSuccessHandler;
   let responseErrorHandler;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     jest.resetModules();
 
-    // eslint-disable-next-line global-require
-    const axiosModule = require('axios');
+    const axiosModule = await import('axios');
     mockAxiosInstance = axiosModule.__mockAxiosInstance;
 
     mockAxiosInstance.get.mockReset();
@@ -87,8 +86,8 @@ describe('apiClient integration behaviors', () => {
       responseErrorHandler = onError;
     });
 
-    // eslint-disable-next-line global-require
-    api = require('./apiClient').api;
+    const apiClientModule = await import('./apiClient');
+    api = apiClientModule.api;
   });
 
   test('adds request id and auth header in request interceptor', async () => {

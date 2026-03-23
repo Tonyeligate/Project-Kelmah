@@ -68,7 +68,7 @@ const FeatureCard = ({ icon, title, description }) => (
   </Paper>
 );
 
-const PricingTier = ({ plan, price, isYearly, onUpgrade }) => (
+const PricingTier = ({ plan, price, isYearly, onUpgrade, yearlySavings }) => (
   <Paper
     elevation={plan.isPopular ? 8 : 2}
     sx={{
@@ -103,6 +103,18 @@ const PricingTier = ({ plan, price, isYearly, onUpgrade }) => (
       </Typography>
     </Box>
 
+    {isYearly && (
+      <Stack direction="row" spacing={1} sx={{ mb: 1.5, flexWrap: 'wrap', gap: 1 }}>
+        <Chip label="Billed yearly" size="small" color="primary" variant="outlined" />
+        <Chip
+          label={`Save GH₵${yearlySavings.toLocaleString()} vs monthly`}
+          size="small"
+          color="success"
+          variant="outlined"
+        />
+      </Stack>
+    )}
+
     <List dense>
       {plan.features.map((feature) => (
         <ListItem key={feature} disableGutters>
@@ -125,6 +137,9 @@ const PricingTier = ({ plan, price, isYearly, onUpgrade }) => (
     >
       Upgrade to {plan.name}
     </Button>
+    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1.25 }}>
+      Secure checkout via Kelmah Payments. You will review charge details before final confirmation.
+    </Typography>
   </Paper>
 );
 
@@ -188,6 +203,10 @@ const PremiumPage = () => {
       pro: 4490,
       business: 11990,
     },
+  };
+  const yearlySavings = {
+    pro: plans.monthly.pro * 12 - plans.yearly.pro,
+    business: plans.monthly.business * 12 - plans.yearly.business,
   };
 
   const handleUpgradeClick = (planName) => {
@@ -329,6 +348,9 @@ const PremiumPage = () => {
           <Typography variant="h4" fontWeight="bold" gutterBottom>
             Choose Your Plan
           </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+            Compare plans side-by-side and choose monthly or yearly billing before checkout.
+          </Typography>
           <Tooltip title="Switch to annual billing to save ~17%">
             <FormControlLabel
               control={
@@ -359,6 +381,7 @@ const PremiumPage = () => {
               plan={planDetails[0]}
               price={isYearly ? plans.yearly.pro : plans.monthly.pro}
               isYearly={isYearly}
+              yearlySavings={yearlySavings.pro}
               onUpgrade={handleUpgradeClick}
             />
           </Grid>
@@ -367,10 +390,33 @@ const PremiumPage = () => {
               plan={planDetails[1]}
               price={isYearly ? plans.yearly.business : plans.monthly.business}
               isYearly={isYearly}
+              yearlySavings={yearlySavings.business}
               onUpgrade={handleUpgradeClick}
             />
           </Grid>
         </Grid>
+        <Paper
+          elevation={0}
+          sx={{
+            mt: 3,
+            px: 3,
+            py: 2,
+            borderRadius: 2,
+            border: '1px solid',
+            borderColor: 'divider',
+            bgcolor: 'background.paper',
+          }}
+        >
+          <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.5} alignItems={{ xs: 'flex-start', md: 'center' }}>
+            <Chip size="small" color="primary" variant="outlined" label="Transparent pricing" />
+            <Typography variant="body2" color="text.secondary">
+              Pro monthly equivalent: GH₵{Math.round(plans.yearly.pro / 12)}/month.
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Business monthly equivalent: GH₵{Math.round(plans.yearly.business / 12)}/month.
+            </Typography>
+          </Stack>
+        </Paper>
       </Container>
 
       {/* Confirmation Dialog */}
@@ -416,6 +462,17 @@ const PremiumPage = () => {
             </Typography>
             .
           </Typography>
+          <Stack spacing={0.5} sx={{ mt: 2 }}>
+            <Typography variant="body2" color="text.secondary">
+              Billing cycle: {isYearly ? 'Yearly' : 'Monthly'}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Checkout confidence: no charge is submitted until you click Confirm & Pay.
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Need help before paying? Contact support@kelmah.com for assisted checkout.
+            </Typography>
+          </Stack>
         </DialogContent>
         <DialogActions sx={{ p: '16px 24px' }}>
           <Button

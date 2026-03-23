@@ -420,12 +420,12 @@ const SchedulingPage = ({
             const dateObj = new Date(appointmentDate);
             // Check if date is valid
             if (isNaN(dateObj.getTime())) {
-              if (import.meta.env.DEV) console.warn('Invalid appointment date:', appointmentDate);
+              if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Invalid appointment date:', appointmentDate);
               return null;
             }
             return format(dateObj, 'yyyy-MM-dd');
           } catch (error) {
-            if (import.meta.env.DEV) console.warn('Invalid appointment date:', appointmentDate, error);
+            if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Invalid appointment date:', appointmentDate, error);
             return null;
           }
         })
@@ -441,7 +441,7 @@ const SchedulingPage = ({
       const appointmentsArray = Array.isArray(data) ? data : [];
       setAppointments(appointmentsArray);
     } catch (err) {
-      if (import.meta.env.DEV) console.error('Error loading appointments:', err);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error loading appointments:', err);
       setError('Failed to load appointments');
       setAppointments([]); // Set empty array as fallback
       enqueueSnackbar('Failed to load appointments', { variant: 'error' });
@@ -459,7 +459,7 @@ const SchedulingPage = ({
       const jobsArray = Array.isArray(response?.jobs) ? response.jobs : [];
       setJobs(jobsArray);
     } catch (err) {
-      if (import.meta.env.DEV) console.error('Error loading jobs:', err);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error loading jobs:', err);
       setJobs([]); // Set empty array as fallback
       enqueueSnackbar('Failed to load jobs for autocomplete', { variant: 'warning' });
     } finally {
@@ -481,7 +481,7 @@ const SchedulingPage = ({
       } catch (apiError) {
         // Non-critical: falls through to mock data below when worker API is unavailable.
         // This is an intentional graceful degradation for the user autocomplete field.
-        if (import.meta.env.DEV) console.warn(
+        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn(
           'workerService.searchWorkers not available, using mock data:',
           apiError.message,
         );
@@ -528,7 +528,7 @@ const SchedulingPage = ({
         setUsers([]);
       }
     } catch (err) {
-      if (import.meta.env.DEV) console.error('Error loading users:', err);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error loading users:', err);
       // Set empty array as fallback
       setUsers([]);
     } finally {
@@ -645,7 +645,7 @@ const SchedulingPage = ({
       handleCloseDialog();
       loadAppointments();
     } catch (err) {
-      if (import.meta.env.DEV) console.error('Error saving appointment:', err);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error saving appointment:', err);
       enqueueSnackbar('Error saving appointment', { variant: 'error' });
     } finally {
       setIsSubmitting(false);
@@ -665,7 +665,7 @@ const SchedulingPage = ({
       });
       loadAppointments();
     } catch (err) {
-      if (import.meta.env.DEV) console.error('Error deleting appointment:', err);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error deleting appointment:', err);
       enqueueSnackbar('Error deleting appointment', { variant: 'error' });
     } finally {
       setDeleteTarget(null);
@@ -698,7 +698,7 @@ const SchedulingPage = ({
           if (isNaN(appointmentDate.getTime())) return false;
           return isSameDay(appointmentDate, selectedDate);
         } catch (error) {
-          if (import.meta.env.DEV) console.warn(
+          if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn(
             'Invalid appointment date in dailyAppointments filter:',
             a.date,
           );
@@ -714,7 +714,7 @@ const SchedulingPage = ({
         try {
           const appointmentDate = new Date(app.date);
           if (isNaN(appointmentDate.getTime())) {
-            if (import.meta.env.DEV) console.warn('Invalid appointment date in reduce:', app.date);
+            if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Invalid appointment date in reduce:', app.date);
             return acc;
           }
           const dateKey = format(appointmentDate, 'yyyy-MM-dd');
@@ -722,7 +722,7 @@ const SchedulingPage = ({
           acc[dateKey].push(app);
           return acc;
         } catch (error) {
-          if (import.meta.env.DEV) console.warn(
+          if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn(
             'Error processing appointment date in reduce:',
             app.date,
             error,
@@ -745,7 +745,7 @@ const SchedulingPage = ({
               isBefore(appointmentDate, addDays(new Date(), 7))
             );
           } catch (error) {
-            if (import.meta.env.DEV) console.warn(
+            if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn(
               'Error processing upcoming appointment date:',
               a.date,
               error,

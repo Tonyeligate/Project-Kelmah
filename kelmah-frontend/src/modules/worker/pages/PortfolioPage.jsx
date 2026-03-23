@@ -30,7 +30,7 @@ const PortfolioPage = () => {
       })
       .catch((err) => {
         if (signal?.aborted) return;
-        if (import.meta.env.DEV) console.error('Failed to load portfolio:', err);
+        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to load portfolio:', err);
         setError('Failed to load portfolio items. Please try again.');
         setItems([]);
       })

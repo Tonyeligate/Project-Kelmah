@@ -77,18 +77,20 @@ const CreateContractPage = () => {
     dispatch(fetchContractTemplates());
   }, [dispatch]);
 
-  // Auto-populate worker and client info from URL params and auth state
+  // Auto-populate client name from auth state
+  useEffect(() => {
+    if (!user) return;
+
+    const clientName = [user.firstName, user.lastName].filter(Boolean).join(' ') || user.name || '';
+    if (!clientName) return;
+
+    setContract((prev) => (prev.clientName ? prev : { ...prev, clientName }));
+  }, [user]);
+
+  // Auto-populate worker info from URL param
   useEffect(() => {
     let cancelled = false;
     const workerId = searchParams.get('workerId');
-
-    // Auto-populate client name from authenticated user
-    if (user && !contract.clientName) {
-      const clientName = [user.firstName, user.lastName].filter(Boolean).join(' ') || user.name || '';
-      if (clientName) {
-        setContract((prev) => ({ ...prev, clientName }));
-      }
-    }
 
     // Auto-populate worker info from URL param
     if (workerId && !contract.workerName) {
@@ -110,12 +112,12 @@ const CreateContractPage = () => {
         })
         .catch((err) => {
           if (cancelled) return;
-          if (import.meta.env.DEV) console.error('Failed to fetch worker details:', err);
+          if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to fetch worker details:', err);
         })
         .finally(() => { if (!cancelled) setWorkerLoading(false); });
     }
     return () => { cancelled = true; };
-  }, [searchParams, user]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [searchParams, contract.workerName]);
 
   // Warn if the user tries to close/reload with unsaved changes
   useEffect(() => {

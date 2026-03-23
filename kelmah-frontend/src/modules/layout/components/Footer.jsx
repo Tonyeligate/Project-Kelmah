@@ -51,6 +51,9 @@ const Footer = () => {
   const theme = useTheme();
   const isMobile = useBreakpointDown('md');
   const currentYear = new Date().getFullYear();
+  const footerTextStrong = 'rgba(255,255,255,0.88)';
+  const footerTextMedium = 'rgba(255,255,255,0.8)';
+  const footerTextSoft = 'rgba(255,255,255,0.74)';
 
   const footerSections = [
     {
@@ -194,8 +197,12 @@ const Footer = () => {
                         width: 44,
                         height: 44,
                         bgcolor: 'rgba(255,255,255,0.06)',
-                        color: 'rgba(255,255,255,0.6)',
+                        color: footerTextStrong,
                         p: 1,
+                        '&:focus-visible': {
+                          outline: `2px solid ${theme.palette.primary.main}`,
+                          outlineOffset: 2,
+                        },
                       }}
                     >
                       <social.icon sx={{ fontSize: 16 }} />
@@ -224,10 +231,15 @@ const Footer = () => {
                     component={RouterLink}
                     to={link.href}
                     sx={{
-                      color: 'rgba(255,255,255,0.55)',
+                      color: footerTextMedium,
                       textDecoration: 'none',
                       fontSize: '0.8rem',
                       '&:hover': { color: theme.palette.primary.main },
+                      '&:focus-visible': {
+                        outline: `2px solid ${theme.palette.primary.main}`,
+                        outlineOffset: 2,
+                        borderRadius: 2,
+                      },
                     }}
                   >
                     {link.label}
@@ -253,7 +265,7 @@ const Footer = () => {
                   <Typography
                     variant="body2"
                     sx={{
-                      color: 'rgba(255,255,255,0.55)',
+                      color: footerTextSoft,
                       lineHeight: 1.7,
                       maxWidth: 260,
                     }}
@@ -275,7 +287,11 @@ const Footer = () => {
                           height: 44,
                           bgcolor: 'rgba(255,255,255,0.05)',
                           border: '1px solid rgba(255,255,255,0.08)',
-                          color: 'rgba(255,255,255,0.6)',
+                          color: footerTextStrong,
+                          '&:focus-visible': {
+                            outline: `2px solid ${theme.palette.primary.main}`,
+                            outlineOffset: 2,
+                          },
                           transition: 'all 0.2s ease',
                           '&:hover': {
                             bgcolor: alpha(theme.palette.primary.main, 0.15),
@@ -293,19 +309,19 @@ const Footer = () => {
                   <Stack spacing={1} sx={{ mt: 1 }}>
                     <Stack direction="row" alignItems="center" spacing={1}>
                       <EmailIcon sx={{ color: 'rgba(255,255,255,0.35)', fontSize: 16 }} />
-                      <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)' }}>
+                      <Typography variant="caption" sx={{ color: footerTextSoft }}>
                         {CONTACT.email}
                       </Typography>
                     </Stack>
                     <Stack direction="row" alignItems="center" spacing={1}>
                       <PhoneIcon sx={{ color: 'rgba(255,255,255,0.35)', fontSize: 16 }} />
-                      <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)' }}>
+                      <Typography variant="caption" sx={{ color: footerTextSoft }}>
                         {CONTACT.phone}
                       </Typography>
                     </Stack>
                     <Stack direction="row" alignItems="center" spacing={1}>
                       <LocationIcon sx={{ color: 'rgba(255,255,255,0.35)', fontSize: 16 }} />
-                      <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)' }}>
+                      <Typography variant="caption" sx={{ color: footerTextSoft }}>
                         {CONTACT.location}
                       </Typography>
                     </Stack>
@@ -330,13 +346,18 @@ const Footer = () => {
                         aria-label={`${link.label} - ${link.intent}`}
                         title={link.intent}
                         sx={{
-                          color: 'rgba(255,255,255,0.5)',
+                          color: 'rgba(255,255,255,0.74)',
                           textDecoration: 'none',
                           fontSize: '0.85rem',
                           py: 0.6,
                           display: 'block',
                           transition: 'color 0.2s ease',
                           '&:hover': { color: theme.palette.primary.main },
+                          '&:focus-visible': {
+                            outline: `2px solid ${theme.palette.primary.main}`,
+                            outlineOffset: 2,
+                            borderRadius: 2,
+                          },
                         }}
                       >
                         {link.label}
@@ -356,7 +377,7 @@ const Footer = () => {
             alignItems="center"
             spacing={1.5}
           >
-            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.4)' }}>
+            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.68)' }}>
               © {currentYear} Kelmah. All rights reserved.
             </Typography>
             <Stack direction="row" spacing={2} alignItems="center">
@@ -366,10 +387,15 @@ const Footer = () => {
                 aria-label="Privacy Policy - Review privacy and data handling policy"
                 title="Review privacy and data handling policy"
                 sx={{
-                  color: 'rgba(255,255,255,0.4)',
+                  color: 'rgba(255,255,255,0.68)',
                   textDecoration: 'none',
                   fontSize: '0.75rem',
                   '&:hover': { color: 'rgba(255,255,255,0.7)' },
+                  '&:focus-visible': {
+                    outline: `2px solid ${theme.palette.primary.main}`,
+                    outlineOffset: 2,
+                    borderRadius: 2,
+                  },
                 }}
               >
                 Privacy Policy
@@ -380,16 +406,21 @@ const Footer = () => {
                 aria-label="Terms of Service - Review service terms and user responsibilities"
                 title="Review service terms and user responsibilities"
                 sx={{
-                  color: 'rgba(255,255,255,0.4)',
+                  color: 'rgba(255,255,255,0.68)',
                   textDecoration: 'none',
                   fontSize: '0.75rem',
                   '&:hover': { color: 'rgba(255,255,255,0.7)' },
+                  '&:focus-visible': {
+                    outline: `2px solid ${theme.palette.primary.main}`,
+                    outlineOffset: 2,
+                    borderRadius: 2,
+                  },
                 }}
               >
                 Terms of Service
               </Link>
               <Stack direction="row" alignItems="center" spacing={0.75}>
-                <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.4)' }}>
+                <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.68)' }}>
                   Made with ❤️ in Ghana
                 </Typography>
                 <Box

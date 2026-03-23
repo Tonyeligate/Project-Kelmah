@@ -101,7 +101,7 @@ const PaymentRelease = () => {
         try {
           await dispatch(fetchPaymentSummary()).unwrap();
         } catch (err) {
-          if (import.meta.env.DEV) console.warn(
+          if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn(
             `Failed to fetch payment summary (attempt ${attempts}):`,
             err,
           );
@@ -234,7 +234,7 @@ const PaymentRelease = () => {
       handleDialogClose();
       setSnackbar({ open: true, message: 'Payment released successfully', severity: 'success' });
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Error releasing payment:', error);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error releasing payment:', error);
       setSnackbar({ open: true, message: error?.message || 'Failed to release payment', severity: 'error' });
     } finally {
       setLoading(false);

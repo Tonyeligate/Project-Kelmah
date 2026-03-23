@@ -627,3 +627,30 @@ Advanced tools to activate:
   - QueryEnergyBudgetAnalyzer
   - MigrationRollbackVerifier
 ```
+
+### DFL-6: Database Experience Learning Loop
+```
+After each advanced database task:
+  - capture schema/data mismatch mistakes observed in production-like data
+  - map each mismatch to a preventive validation or migration guardrail
+  - record query-regression signals from real workloads
+  - update drift/oracle checks to prevent recurrence
+
+Evidence files:
+  - learning_update.json
+  - field_experience_report.json
+
+No learning evidence => data fix is not growth-complete.
+```
+
+### DFL-7: Behavioral Twin Feature-Store Integrity Gate
+```
+For adaptive-interface and design-flow optimization support data:
+  - store only minimum required interaction features
+  - enforce retention windows and purge policies
+  - version feature schemas to avoid training-serving drift
+  - guarantee deterministic defaults when features are absent
+
+No user-sensitive adaptive feature should be persisted without
+documented purpose, TTL, and rollback-safe migration path.
+```

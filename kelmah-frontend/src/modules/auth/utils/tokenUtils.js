@@ -1,6 +1,12 @@
 export const TOKEN_EXPIRY_TIME = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 export const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes in milliseconds
 
+const tokenUtilsError = (...args) => {
+  if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') {
+    console.error(...args);
+  }
+};
+
 /**
  * Decode a base64url string (JWT-safe). Replaces `-` → `+` and `_` → `/`
  * before calling atob() so tokens with base64url characters don't crash.
@@ -21,7 +27,7 @@ export const isTokenValid = (token) => {
     // Check if token has expired
     return payload.exp * 1000 > Date.now();
   } catch (error) {
-    if (import.meta.env.DEV) console.error('Error checking token validity:', error);
+    tokenUtilsError('Error checking token validity:', error);
     return false;
   }
 };

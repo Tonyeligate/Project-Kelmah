@@ -241,7 +241,7 @@ const EscrowDetailsPage = () => {
                 showToast('Funds released successfully.', 'success');
                 await refresh();
               } catch (err) {
-                if (import.meta.env.DEV) console.error('Release failed:', err);
+                if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Release failed:', err);
                 showToast('Failed to release funds.', 'error');
               } finally {
                 setReleasing(false);

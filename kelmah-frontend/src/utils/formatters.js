@@ -2,13 +2,17 @@
  * Utility functions for formatting various data types
  */
 
-const logFormatterFallback = (label, error) => {
+const formatterWarn = (...args) => {
   if (import.meta.env.DEV && typeof console !== 'undefined' && typeof console.warn === 'function') {
-    console.warn(
-      `[formatters] ${label} fallback:`,
-      error?.message ? error.message : error,
-    );
+    console.warn(...args);
   }
+};
+
+const logFormatterFallback = (label, error) => {
+  formatterWarn(
+    `[formatters] ${label} fallback:`,
+    error?.message ? error.message : error,
+  );
 };
 
 /**
@@ -421,7 +425,7 @@ export const formatTimeRange = (startTime, endTime) => {
 
   // Validate that dates are valid
   if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-    if (import.meta.env.DEV) console.warn('Invalid date values in formatTimeRange:', {
+    formatterWarn('Invalid date values in formatTimeRange:', {
       startTime,
       endTime,
     });
@@ -433,7 +437,7 @@ export const formatTimeRange = (startTime, endTime) => {
   try {
     return `${start.toLocaleTimeString('en-US', timeOptions)} - ${end.toLocaleTimeString('en-US', timeOptions)}`;
   } catch (error) {
-    if (import.meta.env.DEV) console.warn('Error formatting time range:', error);
+    formatterWarn('Error formatting time range:', error);
     return '';
   }
 };

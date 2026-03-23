@@ -92,7 +92,7 @@ const AvailabilityCalendar = () => {
       setError(null);
     } catch (err) {
       setError('Failed to load availability');
-      if (import.meta.env.DEV) console.error(err);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error(err);
     } finally {
       setLoading(false);
     }
@@ -169,7 +169,7 @@ const AvailabilityCalendar = () => {
       fetchAvailability();
     } catch (err) {
       setError('Failed to save availability');
-      if (import.meta.env.DEV) console.error(err);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error(err);
     } finally {
       setLoading(false);
     }
@@ -182,7 +182,7 @@ const AvailabilityCalendar = () => {
       setError('Direct slot delete is not supported yet. Edit the slot and set unavailable instead.');
     } catch (err) {
       setError('Failed to delete availability slot');
-      if (import.meta.env.DEV) console.error(err);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error(err);
     } finally {
       setLoading(false);
     }

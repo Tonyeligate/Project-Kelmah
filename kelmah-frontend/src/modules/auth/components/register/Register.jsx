@@ -126,6 +126,12 @@ const ROLE_OPTIONS = [
 
 const TRUST_PILLS = ['4-step onboarding', 'Draft save enabled', 'Email verification'];
 
+const LOW_LITERACY_GUIDE_STEPS = [
+  'Pick Worker or Hirer first.',
+  'Use your real phone number so hirers can trust your profile.',
+  'Finish all 4 steps, then tap Create account.',
+];
+
 const PLATFORM_BENEFITS = [
   {
     title: 'Focused onboarding',
@@ -1337,6 +1343,27 @@ const Register = () => {
                     }}
                   />
                 </Stack>
+
+                <Alert
+                  severity="info"
+                  sx={{
+                    borderRadius: 3,
+                    '& .MuiAlert-message': {
+                      width: '100%',
+                    },
+                  }}
+                >
+                  <Typography variant="subtitle2" sx={{ fontWeight: 800, mb: 0.75 }}>
+                    Simple guide
+                  </Typography>
+                  <Stack spacing={0.25}>
+                    {LOW_LITERACY_GUIDE_STEPS.map((stepText, index) => (
+                      <Typography key={stepText} variant="body2" sx={{ color: formPanelMuted }}>
+                        {index + 1}. {stepText}
+                      </Typography>
+                    ))}
+                  </Stack>
+                </Alert>
 
                 <Box>
                   <LinearProgress

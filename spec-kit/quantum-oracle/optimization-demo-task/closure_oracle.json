@@ -3,6 +3,7 @@
   "taskType": "ui-optimization",
   "requiresFrontendVisualOracle": false,
   "requiresOptimizationOracle": true,
+  "requiresLearningOracle": true,
   "oracleState": "PASS",
   "requiredDelegationsExecuted": true,
   "requiredDiagnosticsExecuted": true,
@@ -20,7 +21,11 @@
     "GroverPathAuditor",
     "BehavioralTwinSimulator",
     "AdaptiveInterfaceController",
-    "AccessibilityCloudAnalyzer"
+    "AccessibilityCloudAnalyzer",
+    "MistakePatternMiner",
+    "FieldExperienceIngestor",
+    "GuardrailEvolutionEngine",
+    "RegressionPreventionCompiler"
   ],
   "notes": "Optimization demo bundle validating adaptive UI and layout optimization gates"
 }

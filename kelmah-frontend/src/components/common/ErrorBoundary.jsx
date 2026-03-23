@@ -36,6 +36,47 @@ class ErrorBoundary extends React.Component {
     this.setState({ hasError: false, error: null, errorInfo: null });
   };
 
+  handleGoHome = () => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    try {
+      const targetPath = '/';
+      const currentPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+      if (currentPath === targetPath) {
+        this.setState({ hasError: false, error: null, errorInfo: null });
+        return;
+      }
+
+      if (window.history && typeof window.history.pushState === 'function') {
+        window.history.pushState({}, '', targetPath);
+        window.dispatchEvent(new PopStateEvent('popstate'));
+        return;
+      }
+    } catch {
+      // No-op: avoid forcing a hard navigation when router state is recoverable.
+    }
+  };
+
+  handleContactSupport = () => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const path = encodeURIComponent(window.location.pathname || '/');
+    const supportPath = `/support?source=error-boundary&path=${path}`;
+
+    try {
+      if (window.history && typeof window.history.pushState === 'function') {
+        window.history.pushState({}, '', supportPath);
+        window.dispatchEvent(new PopStateEvent('popstate'));
+      }
+    } catch {
+      // No-op: keep fallback view visible if in-app navigation fails.
+    }
+  };
+
   render() {
     if (this.state.hasError) {
       return (
@@ -127,7 +168,7 @@ class ErrorBoundary extends React.Component {
           <Button
             variant="text"
             startIcon={<HomeIcon />}
-            onClick={() => { window.location.href = '/'; }}
+            onClick={this.handleGoHome}
             sx={{
               minHeight: 48,
               fontSize: '0.95rem',
@@ -140,6 +181,29 @@ class ErrorBoundary extends React.Component {
             }}
           >
             Go Home
+          </Button>
+
+          <Alert severity="info" sx={{ mb: 2.5, maxWidth: 600, textAlign: 'left' }}>
+            <Typography variant="body2">
+              Recovery steps: 1) tap Try Again, 2) if it fails, tap Refresh Page, 3) contact support if the problem continues.
+            </Typography>
+          </Alert>
+
+          <Button
+            variant="text"
+            onClick={this.handleContactSupport}
+            sx={{
+              minHeight: 44,
+              fontSize: '0.92rem',
+              color: 'text.secondary',
+              '&:hover': { color: '#D4AF37' },
+              '&:focus-visible': {
+                outline: '3px solid #D4AF37',
+                outlineOffset: '3px',
+              },
+            }}
+          >
+            Contact Support
           </Button>
 
           {isDev && this.state.error && (

@@ -654,3 +654,29 @@ Advanced tools to activate:
   - ReconnectConvergenceAnalyzer
   - DeliveryFidelityScorer
 ```
+
+### RFL-6: Realtime Experience Learning Loop
+```
+After each advanced realtime task:
+  - capture delivery-loss/duplication mistakes from field sessions
+  - map each issue to deterministic listener or reconnection guardrails
+  - ingest real-world latency/presence convergence signals
+  - update causality and reconnect oracles to prevent recurrence
+
+Evidence files:
+  - learning_update.json
+  - field_experience_report.json
+
+No learning evidence => realtime fix is not growth-complete.
+```
+
+### RFL-7: Adaptive Signal Stream Reliability Gate
+```
+When realtime signals feed adaptive UI logic:
+  - verify ordering guarantees for critical interaction events
+  - cap event burst amplification to avoid feedback oscillation
+  - preserve idempotency under reconnect and replay
+  - provide deterministic fallback when signal confidence is low
+
+No adaptive decision should depend on an unverified realtime signal path.
+```

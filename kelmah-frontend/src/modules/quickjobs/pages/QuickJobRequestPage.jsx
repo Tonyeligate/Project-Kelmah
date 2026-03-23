@@ -85,6 +85,37 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
     'Western North', 'Ahafo', 'Bono East', 'Oti', 'North East', 'Savannah'
   ];
 
+  const toQuickJobErrorMessage = (rawMessage) => {
+    const message = String(rawMessage || '').trim();
+    if (!message) {
+      return 'We could not send your request yet. Check your connection and tap Retry.';
+    }
+
+    const normalized = message.toLowerCase();
+
+    if (normalized.includes('microphone')) {
+      return 'Microphone permission is off. Allow microphone access in your browser settings, then try recording again.';
+    }
+
+    if (normalized.includes('upload')) {
+      return 'We could not upload one or more photos. Try smaller files or a stronger connection, then retry.';
+    }
+
+    if (normalized.includes('location') || normalized.includes('geocode') || normalized.includes('address')) {
+      return 'We could not confirm this location. Tap Use My Current Location or enter a clearer address, then retry.';
+    }
+
+    if (normalized.includes('required')) {
+      return 'Please complete the required fields in this step, then continue.';
+    }
+
+    if (normalized.includes('failed') || normalized.includes('error')) {
+      return `${message}. Please retry in a moment.`;
+    }
+
+    return message;
+  };
+
   // Get user's location on mount + cleanup blob URLs, recording, and timers on unmount
   useEffect(() => {
     handleGetLocation();
@@ -225,7 +256,9 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
           });
         }, 1000);
       } catch (err) {
-        setError('Microphone access denied. Please allow microphone access to record a voice note.');
+        setError(
+          toQuickJobErrorMessage('Microphone access denied. Please allow microphone access to record a voice note.'),
+        );
       }
     }
   };
@@ -277,7 +310,7 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
   // Handle submit
   const handleSubmit = async () => {
     if (!isStepComplete(0) || !isStepComplete(1)) {
-      setError('Please complete all required fields');
+      setError(toQuickJobErrorMessage('Please complete all required fields'));
       return;
     }
 
@@ -293,7 +326,7 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
         try {
           photoUrls = await uploadQuickJobPhotos(files);
         } catch (uploadError) {
-          setError(uploadError.message || 'Photo upload failed. Please try again.');
+          setError(toQuickJobErrorMessage(uploadError.message || 'Photo upload failed. Please try again.'));
           return;
         }
       }
@@ -317,9 +350,7 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
         });
 
         if (!geocoded) {
-          setError(
-            'We could not pinpoint this address. Please tap "Use My Current Location" or enter a more specific address.',
-          );
+          setError(toQuickJobErrorMessage('We could not pinpoint this address. Please tap "Use My Current Location" or enter a more specific address.'));
           return;
         }
 
@@ -354,13 +385,15 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
           navigate(`${successBasePath}/${result.data._id || result.data.id}`);
         }, 2000);
       } else {
-        setError(result.error?.message || 'Failed to create job request');
+        setError(toQuickJobErrorMessage(result.error?.message || 'Failed to create job request'));
       }
     } catch (err) {
       setError(
-        toUserMessage(err, {
-          fallback: 'Something went wrong. Please try again.',
-        }),
+        toQuickJobErrorMessage(
+          toUserMessage(err, {
+            fallback: 'Something went wrong. Please try again.',
+          }),
+        ),
       );
     } finally {
       setSubmitting(false);
@@ -415,7 +448,7 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               sx={{ mb: 3 }}
-              helperText={`${description.length}/500 characters`}
+              helperText={`Share the main problem, location clue, and urgency. ${description.length}/500 characters`}
               inputProps={{ maxLength: 500 }}
             />
 
@@ -458,7 +491,8 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
                     width: 80, 
                     height: 80, 
                     borderStyle: 'dashed',
-                    flexDirection: 'column'
+                    flexDirection: 'column',
+                    minHeight: 44,
                   }}
                 >
                   <PhotoCameraIcon />
@@ -494,7 +528,7 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
                 startIcon={isRecording ? <MicOffIcon /> : <MicIcon />}
                 onClick={handleVoiceToggle}
                 color={isRecording ? 'error' : 'primary'}
-                sx={{ mb: 2 }}
+                sx={{ mb: 2, minHeight: 44 }}
               >
                 {isRecording ? `Stop Recording (${recordingDuration}s)` : 'Record Voice Note'}
               </Button>
@@ -523,14 +557,14 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
               startIcon={locationLoading ? <CircularProgress size={20} color="inherit" /> : <MyLocationIcon />}
               onClick={handleGetLocation}
               disabled={locationLoading}
-              sx={{ mb: 3 }}
+              sx={{ mb: 3, minHeight: 44 }}
               fullWidth>
               {locationLoading ? 'Getting Location...' : 'Use My Current Location'}
             </Button>
 
             {locationError && (
               <Alert severity="warning" sx={{ mb: 2 }}>
-                {locationError}
+                {toQuickJobErrorMessage(locationError)}
               </Alert>
             )}
 
@@ -710,12 +744,17 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
       <Helmet><title>Quick Job Request | Kelmah</title></Helmet>
       {/* Back button & title */}
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-        <IconButton aria-label="Go back" onClick={handleBack} sx={{ mr: 1 }}>
+        <IconButton aria-label="Go back" onClick={handleBack} sx={{ mr: 1, minWidth: 44, minHeight: 44 }}>
           <ArrowBackIcon />
         </IconButton>
-        <Typography variant="h5" fontWeight="600">
-          Quick Job Request
-        </Typography>
+        <Box>
+          <Typography variant="h5" fontWeight="600">
+            Quick Job Request
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Three short steps: describe the job, confirm location, and send.
+          </Typography>
+        </Box>
       </Box>
 
       {/* Stepper */}
@@ -751,7 +790,7 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
             </Button>
           }
         >
-          {error}
+          {toQuickJobErrorMessage(error)}
         </Alert>
       )}
 
@@ -771,7 +810,7 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
         <Button
           variant="outlined"
           onClick={handleBack}
-          sx={{ flex: 1 }}
+          sx={{ flex: 1, minHeight: 44 }}
         >
           Back
         </Button>
@@ -782,7 +821,7 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
             onClick={handleNext}
             disabled={!isStepComplete(activeStep)}
             endIcon={<ArrowForwardIcon />}
-            sx={{ flex: 2 }}
+            sx={{ flex: 2, minHeight: 44 }}
           >
             Continue
           </Button>
@@ -793,7 +832,7 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
             disabled={submitting || !isStepComplete(activeStep)}
             startIcon={submitting ? <CircularProgress size={20} color="inherit" /> : <SendIcon />}
             color="success"
-            sx={{ flex: 2 }}>
+            sx={{ flex: 2, minHeight: 44 }}>
             {submitting ? 'Sending...' : 'Send Request'}
           </Button>
         )}

@@ -63,6 +63,14 @@ const isAbortError = (error) =>
   error?.name === 'CanceledError' ||
   error?.code === 'ERR_CANCELED';
 
+const __WORKER_DEBUG__ =
+  import.meta.env.DEV && import.meta.env.VITE_DEBUG_WORKER === 'true';
+const workerDebugError = (...args) => {
+  if (__WORKER_DEBUG__) {
+    console.error(...args);
+  }
+};
+
 const STATUS_CONFIG = {
   pending: { label: 'Pending', color: 'warning', icon: <PendingIcon fontSize="small" /> },
   accepted: { label: 'Accepted', color: 'success', icon: <AcceptedIcon fontSize="small" /> },
@@ -353,7 +361,7 @@ const MyBidsPage = () => {
       }
 
       setError('Failed to load your bids. Please try again.');
-      if (import.meta.env.DEV) console.error('MyBidsPage fetch error:', err);
+      workerDebugError('MyBidsPage fetch error:', err);
     } finally {
       if (!signal?.aborted) {
         setLoading(false);
@@ -395,7 +403,7 @@ const MyBidsPage = () => {
         message: 'Your bid has been withdrawn and will no longer be considered for this job.',
       });
     } catch (err) {
-      if (import.meta.env.DEV) console.error('Failed to withdraw bid:', err);
+      workerDebugError('Failed to withdraw bid:', err);
       setToast({
         open: true,
         severity: 'error',

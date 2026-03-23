@@ -25,6 +25,12 @@ const DEFAULT_NOTIFICATION_PREFS = {
   inApp: true,
 };
 
+const settingsError = (...args) => {
+  if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') {
+    console.error(...args);
+  }
+};
+
 class SettingsService {
   // Get user settings (aggregates notification prefs with local defaults)
   async getSettings() {
@@ -75,7 +81,7 @@ class SettingsService {
       const response = await api.put(settingsPath(), settings);
       return response.data.data;
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Failed to update settings:', error.message);
+      settingsError('Failed to update settings:', error.message);
       throw error;
     }
   }
@@ -86,7 +92,7 @@ class SettingsService {
       const response = await api.put(settingsPath('/notifications'), preferences);
       return response.data.data;
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Failed to update notification preferences:', error.message);
+      settingsError('Failed to update notification preferences:', error.message);
       throw error;
     }
   }
@@ -97,7 +103,7 @@ class SettingsService {
       const response = await api.put(settingsPath('/privacy'), settings);
       return response.data.data;
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Failed to update privacy settings:', error.message);
+      settingsError('Failed to update privacy settings:', error.message);
       throw error;
     }
   }
@@ -108,7 +114,7 @@ class SettingsService {
       const response = await api.put(settingsPath('/language'), { language });
       return response.data.data;
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Failed to update language:', error.message);
+      settingsError('Failed to update language:', error.message);
       throw error;
     }
   }
@@ -119,7 +125,7 @@ class SettingsService {
       const response = await api.put(settingsPath('/theme'), { theme });
       return response.data.data;
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Failed to update theme:', error.message);
+      settingsError('Failed to update theme:', error.message);
       throw error;
     }
   }
@@ -140,7 +146,7 @@ class SettingsService {
       const response = await api.post(settingsPath('/reset'));
       return response.data.data;
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Failed to reset settings:', error.message);
+      settingsError('Failed to reset settings:', error.message);
       throw error;
     }
   }

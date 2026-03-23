@@ -39,6 +39,14 @@ import { useSnackbar } from 'notistack';
 import PropTypes from 'prop-types';
 import locationService from '../services/locationService';
 
+const __SEARCH_DEBUG__ =
+  import.meta.env.DEV && import.meta.env.VITE_DEBUG_SEARCH === 'true';
+const searchDebugError = (...args) => {
+  if (__SEARCH_DEBUG__) {
+    console.error(...args);
+  }
+};
+
 const LocationBasedSearch = ({
   onLocationSelect,
   initialLocation = null,
@@ -262,8 +270,7 @@ const LocationBasedSearch = ({
         response?.meta?.unavailable ? response.meta.message : '',
       );
     } catch (error) {
-      if (import.meta.env.DEV)
-        console.error('Failed to load popular locations:', error);
+      searchDebugError('Failed to load popular locations:', error);
     }
   };
 
@@ -273,8 +280,7 @@ const LocationBasedSearch = ({
       const response = await locationService.getRecentSearches();
       setRecentSearches(response.data || []);
     } catch (error) {
-      if (import.meta.env.DEV)
-        console.error('Failed to load recent searches:', error);
+      searchDebugError('Failed to load recent searches:', error);
     }
   };
 
@@ -290,8 +296,7 @@ const LocationBasedSearch = ({
         );
         setNearbyLocations(response.data || []);
       } catch (error) {
-        if (import.meta.env.DEV)
-          console.error('Failed to load nearby locations:', error);
+        searchDebugError('Failed to load nearby locations:', error);
       } finally {
         setLoading(false);
       }
@@ -343,8 +348,7 @@ const LocationBasedSearch = ({
             variant: 'success',
           });
         } catch (error) {
-          if (import.meta.env.DEV)
-            console.error('Failed to process detected location:', error);
+          searchDebugError('Failed to process detected location:', error);
           enqueueSnackbar('Failed to get location details', {
             variant: 'error',
           });
@@ -387,8 +391,7 @@ const LocationBasedSearch = ({
       await locationService.saveRecentSearch(location);
       loadRecentSearches();
     } catch (error) {
-      if (import.meta.env.DEV)
-        console.error('Failed to save recent search:', error);
+      searchDebugError('Failed to save recent search:', error);
     }
 
     if (onLocationSelect) {
@@ -436,7 +439,7 @@ const LocationBasedSearch = ({
         );
       }
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Location search failed:', error);
+      searchDebugError('Location search failed:', error);
       enqueueSnackbar('Search failed', { variant: 'error' });
     } finally {
       setLoading(false);

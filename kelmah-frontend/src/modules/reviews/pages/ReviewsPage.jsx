@@ -169,7 +169,7 @@ const EnhancedReviewsPage = () => {
         setReviews(workerReviews?.reviews || []);
       }
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Failed to load reviews:', error);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to load reviews:', error);
       showFeedback('Failed to load reviews', 'error');
     } finally {
       setIsLoading(false);
@@ -291,7 +291,7 @@ const EnhancedReviewsPage = () => {
       setSelectedReview(null);
       showFeedback('Reply posted successfully!', 'success');
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Failed to post reply:', error);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to post reply:', error);
       showFeedback('Failed to post reply', 'error');
     } finally {
       setReplySubmitting(false);
@@ -324,7 +324,7 @@ const EnhancedReviewsPage = () => {
 
       showFeedback('Thank you for your feedback!', 'success');
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Failed to vote:', error);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to vote:', error);
       showFeedback('Failed to record vote', 'error');
     }
   };

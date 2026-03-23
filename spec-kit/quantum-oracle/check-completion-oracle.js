@@ -47,6 +47,41 @@ const REQUIRED_BACKEND_OPTIMIZATION_TOOLS = [
   'QueryPerformanceEstimator',
 ];
 
+const REQUIRED_DATABASE_TOOLS = [
+  'SchemaDriftSentinel',
+  'EnumConsistencyOracle',
+  'QueryEnergyBudgetAnalyzer',
+  'MigrationRollbackVerifier',
+];
+
+const REQUIRED_SECURITY_TOOLS = [
+  'AttackReplayHarness',
+  'ThreatSurfaceDeltaScanner',
+  'MitigationProofGenerator',
+  'ResidualRiskQuantifier',
+];
+
+const REQUIRED_REALTIME_TOOLS = [
+  'EventCausalityTracer',
+  'ListenerCardinalityGuard',
+  'ReconnectConvergenceAnalyzer',
+  'DeliveryFidelityScorer',
+];
+
+const REQUIRED_DEVOPS_TOOLS = [
+  'DeploymentTwinComparator',
+  'EnvironmentParityChecker',
+  'MultiWorldGateVerifier',
+  'InfraEntropyMonitor',
+];
+
+const REQUIRED_LEARNING_TOOLS = [
+  'MistakePatternMiner',
+  'FieldExperienceIngestor',
+  'GuardrailEvolutionEngine',
+  'RegressionPreventionCompiler',
+];
+
 function parseArgs(argv) {
   const parsed = {
     taskId: null,
@@ -313,6 +348,102 @@ function validateBehavioralTwinReport(obj, errors) {
   }
 }
 
+function validateAdaptivePolicyGuardrails(obj, errors) {
+  if (!obj || typeof obj !== 'object') {
+    errors.push('adaptive_policy_guardrails.json: object is required');
+    return;
+  }
+
+  if (!Array.isArray(obj.guardrails) || obj.guardrails.length === 0) {
+    errors.push('adaptive_policy_guardrails.json: guardrails must be a non-empty array');
+  }
+
+  if (!obj.safetyEnvelope || typeof obj.safetyEnvelope !== 'object') {
+    errors.push('adaptive_policy_guardrails.json: safetyEnvelope object is required');
+  }
+
+  if (!obj.deterministicFallback || typeof obj.deterministicFallback !== 'object') {
+    errors.push('adaptive_policy_guardrails.json: deterministicFallback object is required');
+  }
+
+  if (obj.closureVerdict !== 'PASS') {
+    errors.push(`adaptive_policy_guardrails.json: closureVerdict must be PASS (received '${obj.closureVerdict}')`);
+  }
+}
+
+function validateUiStateSpaceAudit(obj, errors) {
+  if (!obj || typeof obj !== 'object') {
+    errors.push('ui_state_space_audit.json: object is required');
+    return;
+  }
+
+  if (!Array.isArray(obj.frictionStatesDetected)) {
+    errors.push('ui_state_space_audit.json: frictionStatesDetected must be an array');
+  }
+
+  if (!Array.isArray(obj.selfHealingActions) || obj.selfHealingActions.length === 0) {
+    errors.push('ui_state_space_audit.json: selfHealingActions must be a non-empty array');
+  }
+
+  if (!obj.prohibitedActionAudit || typeof obj.prohibitedActionAudit !== 'object') {
+    errors.push('ui_state_space_audit.json: prohibitedActionAudit object is required');
+  }
+
+  if (obj.closureVerdict !== 'PASS') {
+    errors.push(`ui_state_space_audit.json: closureVerdict must be PASS (received '${obj.closureVerdict}')`);
+  }
+}
+
+function validateNisqHybridExecutionReport(obj, errors) {
+  if (!obj || typeof obj !== 'object') {
+    errors.push('nisq_hybrid_execution_report.json: object is required');
+    return;
+  }
+
+  if (!obj.baseline || !obj.optimized) {
+    errors.push('nisq_hybrid_execution_report.json: baseline and optimized sections are required');
+  }
+
+  if (!obj.computeBudget || typeof obj.computeBudget !== 'object') {
+    errors.push('nisq_hybrid_execution_report.json: computeBudget object is required');
+  }
+
+  if (!obj.fallbackBehavior || typeof obj.fallbackBehavior !== 'object') {
+    errors.push('nisq_hybrid_execution_report.json: fallbackBehavior object is required');
+  }
+
+  if (obj.closureVerdict !== 'PASS') {
+    errors.push(`nisq_hybrid_execution_report.json: closureVerdict must be PASS (received '${obj.closureVerdict}')`);
+  }
+}
+
+function validateAllAgentActivationMatrix(obj, errors) {
+  if (!obj || typeof obj !== 'object') {
+    errors.push('all_agent_activation_matrix.json: object is required');
+    return;
+  }
+
+  const requiredAgents = ['frontend', 'backend', 'database', 'security', 'realtime', 'devops', 'debugger'];
+  if (!obj.agentActivations || typeof obj.agentActivations !== 'object') {
+    errors.push('all_agent_activation_matrix.json: agentActivations object is required');
+  } else {
+    requiredAgents.forEach((agent) => {
+      const activation = obj.agentActivations[agent];
+      if (!activation || activation.activated !== true) {
+        errors.push(`all_agent_activation_matrix.json: agent '${agent}' must be activated=true`);
+      }
+    });
+  }
+
+  if (!obj.verification || typeof obj.verification !== 'object') {
+    errors.push('all_agent_activation_matrix.json: verification object is required');
+  }
+
+  if (obj.closureVerdict !== 'PASS') {
+    errors.push(`all_agent_activation_matrix.json: closureVerdict must be PASS (received '${obj.closureVerdict}')`);
+  }
+}
+
 function validateDebuggerOptimizationEvidence(packets, errors) {
   if (!packets || !Array.isArray(packets.packets)) {
     errors.push('delegation_packets.json: packets array is required for debugger optimization evidence');
@@ -378,6 +509,231 @@ function validateServiceReliabilityReport(obj, errors) {
 
   if (obj.closureVerdict !== 'PASS') {
     errors.push(`service_reliability_report.json: closureVerdict must be PASS (received '${obj.closureVerdict}')`);
+  }
+}
+
+function validateLearningUpdateReport(obj, errors) {
+  if (!obj || typeof obj !== 'object') {
+    errors.push('learning_update.json: object is required');
+    return;
+  }
+
+  if (!Array.isArray(obj.mistakesObserved) || obj.mistakesObserved.length === 0) {
+    errors.push('learning_update.json: mistakesObserved must be a non-empty array');
+  }
+
+  if (!Array.isArray(obj.preventiveRulesAdded) || obj.preventiveRulesAdded.length === 0) {
+    errors.push('learning_update.json: preventiveRulesAdded must be a non-empty array');
+  }
+
+  if (!Array.isArray(obj.testOrOracleImprovements) || obj.testOrOracleImprovements.length === 0) {
+    errors.push('learning_update.json: testOrOracleImprovements must be a non-empty array');
+  }
+
+  if (obj.closureVerdict !== 'PASS') {
+    errors.push(`learning_update.json: closureVerdict must be PASS (received '${obj.closureVerdict}')`);
+  }
+}
+
+function validateFieldExperienceReport(obj, errors) {
+  if (!obj || typeof obj !== 'object') {
+    errors.push('field_experience_report.json: object is required');
+    return;
+  }
+
+  if (!Array.isArray(obj.realWorldSignals) || obj.realWorldSignals.length === 0) {
+    errors.push('field_experience_report.json: realWorldSignals must be a non-empty array');
+  }
+
+  if (!Array.isArray(obj.userPainPoints) || obj.userPainPoints.length === 0) {
+    errors.push('field_experience_report.json: userPainPoints must be a non-empty array');
+  }
+
+  if (!Array.isArray(obj.policyAdjustments) || obj.policyAdjustments.length === 0) {
+    errors.push('field_experience_report.json: policyAdjustments must be a non-empty array');
+  }
+
+  if (!obj.rollbackLessons || typeof obj.rollbackLessons !== 'object') {
+    errors.push('field_experience_report.json: rollbackLessons object is required');
+  }
+
+  if (obj.closureVerdict !== 'PASS') {
+    errors.push(`field_experience_report.json: closureVerdict must be PASS (received '${obj.closureVerdict}')`);
+  }
+}
+
+function validateSchemaDriftReport(obj, errors) {
+  if (!obj || typeof obj !== 'object') {
+    errors.push('schema_drift_report.json: object is required');
+    return;
+  }
+  if (!Array.isArray(obj.collectionsChecked) || obj.collectionsChecked.length === 0) {
+    errors.push('schema_drift_report.json: collectionsChecked must be a non-empty array');
+  }
+  if (typeof obj.driftCount !== 'number' || obj.driftCount < 0) {
+    errors.push('schema_drift_report.json: driftCount must be a non-negative number');
+  }
+  if (obj.closureVerdict !== 'PASS') {
+    errors.push(`schema_drift_report.json: closureVerdict must be PASS (received '${obj.closureVerdict}')`);
+  }
+}
+
+function validateEnumConsistencyReport(obj, errors) {
+  if (!obj || typeof obj !== 'object') {
+    errors.push('enum_consistency_report.json: object is required');
+    return;
+  }
+  if (!Array.isArray(obj.enumsChecked) || obj.enumsChecked.length === 0) {
+    errors.push('enum_consistency_report.json: enumsChecked must be a non-empty array');
+  }
+  if (typeof obj.mismatchCount !== 'number' || obj.mismatchCount < 0) {
+    errors.push('enum_consistency_report.json: mismatchCount must be a non-negative number');
+  }
+  if (obj.closureVerdict !== 'PASS') {
+    errors.push(`enum_consistency_report.json: closureVerdict must be PASS (received '${obj.closureVerdict}')`);
+  }
+}
+
+function validateQueryEnergyBudget(obj, errors) {
+  if (!obj || typeof obj !== 'object') {
+    errors.push('query_energy_budget.json: object is required');
+    return;
+  }
+  if (!Array.isArray(obj.queries) || obj.queries.length === 0) {
+    errors.push('query_energy_budget.json: queries must be a non-empty array');
+  }
+  if (obj.closureVerdict !== 'PASS') {
+    errors.push(`query_energy_budget.json: closureVerdict must be PASS (received '${obj.closureVerdict}')`);
+  }
+}
+
+function validateMigrationSafetyReport(obj, errors) {
+  if (!obj || typeof obj !== 'object') {
+    errors.push('migration_safety_report.json: object is required');
+    return;
+  }
+  if (!obj.forwardPlan || !obj.rollbackPlan || !Array.isArray(obj.validationQueries)) {
+    errors.push('migration_safety_report.json: forwardPlan, rollbackPlan, and validationQueries are required');
+  }
+  if (obj.closureVerdict !== 'PASS') {
+    errors.push(`migration_safety_report.json: closureVerdict must be PASS (received '${obj.closureVerdict}')`);
+  }
+}
+
+function validateAttackReplayMatrix(obj, errors) {
+  if (!obj || typeof obj !== 'object') {
+    errors.push('attack_replay_matrix.json: object is required');
+    return;
+  }
+  if (!Array.isArray(obj.attackVectors) || obj.attackVectors.length === 0) {
+    errors.push('attack_replay_matrix.json: attackVectors must be a non-empty array');
+  }
+  if (obj.closureVerdict !== 'PASS') {
+    errors.push(`attack_replay_matrix.json: closureVerdict must be PASS (received '${obj.closureVerdict}')`);
+  }
+}
+
+function validateMitigationEffectiveness(obj, errors) {
+  if (!obj || typeof obj !== 'object') {
+    errors.push('mitigation_effectiveness.json: object is required');
+    return;
+  }
+  if (!Array.isArray(obj.mitigations) || obj.mitigations.length === 0) {
+    errors.push('mitigation_effectiveness.json: mitigations must be a non-empty array');
+  }
+  if (obj.closureVerdict !== 'PASS') {
+    errors.push(`mitigation_effectiveness.json: closureVerdict must be PASS (received '${obj.closureVerdict}')`);
+  }
+}
+
+function validateResidualRiskQuantification(obj, errors) {
+  if (!obj || typeof obj !== 'object') {
+    errors.push('residual_risk_quantification.json: object is required');
+    return;
+  }
+  if (!Array.isArray(obj.risks) || obj.risks.length === 0) {
+    errors.push('residual_risk_quantification.json: risks must be a non-empty array');
+  }
+  if (obj.closureVerdict !== 'PASS') {
+    errors.push(`residual_risk_quantification.json: closureVerdict must be PASS (received '${obj.closureVerdict}')`);
+  }
+}
+
+function validateEventCausalityLedger(obj, errors) {
+  if (!obj || typeof obj !== 'object') {
+    errors.push('event_causality_ledger.json: object is required');
+    return;
+  }
+  if (!Array.isArray(obj.eventsChecked) || obj.eventsChecked.length === 0) {
+    errors.push('event_causality_ledger.json: eventsChecked must be a non-empty array');
+  }
+  if (obj.closureVerdict !== 'PASS') {
+    errors.push(`event_causality_ledger.json: closureVerdict must be PASS (received '${obj.closureVerdict}')`);
+  }
+}
+
+function validateListenerCardinalityReport(obj, errors) {
+  if (!obj || typeof obj !== 'object') {
+    errors.push('listener_cardinality_report.json: object is required');
+    return;
+  }
+  if (typeof obj.maxListenerDelta !== 'number' || obj.maxListenerDelta < 0) {
+    errors.push('listener_cardinality_report.json: maxListenerDelta must be a non-negative number');
+  }
+  if (obj.closureVerdict !== 'PASS') {
+    errors.push(`listener_cardinality_report.json: closureVerdict must be PASS (received '${obj.closureVerdict}')`);
+  }
+}
+
+function validateReconnectConsistencyReport(obj, errors) {
+  if (!obj || typeof obj !== 'object') {
+    errors.push('reconnect_consistency_report.json: object is required');
+    return;
+  }
+  if (!Array.isArray(obj.scenarios) || obj.scenarios.length === 0) {
+    errors.push('reconnect_consistency_report.json: scenarios must be a non-empty array');
+  }
+  if (obj.closureVerdict !== 'PASS') {
+    errors.push(`reconnect_consistency_report.json: closureVerdict must be PASS (received '${obj.closureVerdict}')`);
+  }
+}
+
+function validateDeploymentTwinState(obj, errors) {
+  if (!obj || typeof obj !== 'object') {
+    errors.push('deployment_twin_state.json: object is required');
+    return;
+  }
+  if (!obj.localState || !obj.remoteState) {
+    errors.push('deployment_twin_state.json: localState and remoteState are required');
+  }
+  if (obj.closureVerdict !== 'PASS') {
+    errors.push(`deployment_twin_state.json: closureVerdict must be PASS (received '${obj.closureVerdict}')`);
+  }
+}
+
+function validateEnvDriftDelta(obj, errors) {
+  if (!obj || typeof obj !== 'object') {
+    errors.push('env_drift_delta.json: object is required');
+    return;
+  }
+  if (!Array.isArray(obj.differences)) {
+    errors.push('env_drift_delta.json: differences must be an array');
+  }
+  if (obj.closureVerdict !== 'PASS') {
+    errors.push(`env_drift_delta.json: closureVerdict must be PASS (received '${obj.closureVerdict}')`);
+  }
+}
+
+function validateWorldVerificationReport(obj, errors) {
+  if (!obj || typeof obj !== 'object') {
+    errors.push('world_verification_report.json: object is required');
+    return;
+  }
+  if (!Array.isArray(obj.worlds) || obj.worlds.length < 5) {
+    errors.push('world_verification_report.json: worlds must be an array with at least 5 entries');
+  }
+  if (obj.closureVerdict !== 'PASS') {
+    errors.push(`world_verification_report.json: closureVerdict must be PASS (received '${obj.closureVerdict}')`);
   }
 }
 
@@ -461,6 +817,10 @@ function main() {
       if (requiresOptimizationOracle) {
         const layoutReportPath = path.join(bundleDir, 'layout_optimization_report.json');
         const behavioralTwinPath = path.join(bundleDir, 'behavioral_twin_report.json');
+        const adaptivePolicyPath = path.join(bundleDir, 'adaptive_policy_guardrails.json');
+        const stateSpacePath = path.join(bundleDir, 'ui_state_space_audit.json');
+        const nisqPath = path.join(bundleDir, 'nisq_hybrid_execution_report.json');
+        const activationPath = path.join(bundleDir, 'all_agent_activation_matrix.json');
 
         if (!exists(layoutReportPath)) {
           report.errors.push('Missing required file: layout_optimization_report.json');
@@ -477,6 +837,42 @@ function main() {
           const twinReport = readJson(behavioralTwinPath, report.errors, 'behavioral_twin_report.json');
           if (twinReport) {
             validateBehavioralTwinReport(twinReport, report.errors);
+          }
+        }
+
+        if (!exists(adaptivePolicyPath)) {
+          report.errors.push('Missing required file: adaptive_policy_guardrails.json');
+        } else {
+          const policy = readJson(adaptivePolicyPath, report.errors, 'adaptive_policy_guardrails.json');
+          if (policy) {
+            validateAdaptivePolicyGuardrails(policy, report.errors);
+          }
+        }
+
+        if (!exists(stateSpacePath)) {
+          report.errors.push('Missing required file: ui_state_space_audit.json');
+        } else {
+          const audit = readJson(stateSpacePath, report.errors, 'ui_state_space_audit.json');
+          if (audit) {
+            validateUiStateSpaceAudit(audit, report.errors);
+          }
+        }
+
+        if (!exists(nisqPath)) {
+          report.errors.push('Missing required file: nisq_hybrid_execution_report.json');
+        } else {
+          const nisq = readJson(nisqPath, report.errors, 'nisq_hybrid_execution_report.json');
+          if (nisq) {
+            validateNisqHybridExecutionReport(nisq, report.errors);
+          }
+        }
+
+        if (!exists(activationPath)) {
+          report.errors.push('Missing required file: all_agent_activation_matrix.json');
+        } else {
+          const activation = readJson(activationPath, report.errors, 'all_agent_activation_matrix.json');
+          if (activation) {
+            validateAllAgentActivationMatrix(activation, report.errors);
           }
         }
 
@@ -526,6 +922,210 @@ function main() {
         }
 
         validateDebuggerOptimizationEvidence(packets, report.errors);
+      }
+
+      const databaseTaskTypes = new Set(['database-integrity-hardening']);
+      const requiresDatabaseOracle =
+        closure && (closure.requiresDatabaseOracle === true || databaseTaskTypes.has(closure.taskType));
+
+      if (requiresDatabaseOracle) {
+        const driftPath = path.join(bundleDir, 'schema_drift_report.json');
+        const enumPath = path.join(bundleDir, 'enum_consistency_report.json');
+        const qebPath = path.join(bundleDir, 'query_energy_budget.json');
+        const migPath = path.join(bundleDir, 'migration_safety_report.json');
+
+        if (!exists(driftPath)) {
+          report.errors.push('Missing required file: schema_drift_report.json');
+        } else {
+          const drift = readJson(driftPath, report.errors, 'schema_drift_report.json');
+          if (drift) validateSchemaDriftReport(drift, report.errors);
+        }
+
+        if (!exists(enumPath)) {
+          report.errors.push('Missing required file: enum_consistency_report.json');
+        } else {
+          const enumReport = readJson(enumPath, report.errors, 'enum_consistency_report.json');
+          if (enumReport) validateEnumConsistencyReport(enumReport, report.errors);
+        }
+
+        if (!exists(qebPath)) {
+          report.errors.push('Missing required file: query_energy_budget.json');
+        } else {
+          const qeb = readJson(qebPath, report.errors, 'query_energy_budget.json');
+          if (qeb) validateQueryEnergyBudget(qeb, report.errors);
+        }
+
+        if (!exists(migPath)) {
+          report.errors.push('Missing required file: migration_safety_report.json');
+        } else {
+          const migration = readJson(migPath, report.errors, 'migration_safety_report.json');
+          if (migration) validateMigrationSafetyReport(migration, report.errors);
+        }
+
+        if (Array.isArray(closure.activatedEliteTools)) {
+          REQUIRED_DATABASE_TOOLS.forEach((tool) => {
+            if (!closure.activatedEliteTools.includes(tool)) {
+              report.errors.push(`closure_oracle.json: missing database elite tool '${tool}' for database integrity task`);
+            }
+          });
+        }
+
+        validateDebuggerOptimizationEvidence(packets, report.errors);
+      }
+
+      const securityTaskTypes = new Set(['security-hardening']);
+      const requiresSecurityOracle =
+        closure && (closure.requiresSecurityOracle === true || securityTaskTypes.has(closure.taskType));
+
+      if (requiresSecurityOracle) {
+        const attackPath = path.join(bundleDir, 'attack_replay_matrix.json');
+        const mitigationPath = path.join(bundleDir, 'mitigation_effectiveness.json');
+        const residualPath = path.join(bundleDir, 'residual_risk_quantification.json');
+
+        if (!exists(attackPath)) {
+          report.errors.push('Missing required file: attack_replay_matrix.json');
+        } else {
+          const attack = readJson(attackPath, report.errors, 'attack_replay_matrix.json');
+          if (attack) validateAttackReplayMatrix(attack, report.errors);
+        }
+
+        if (!exists(mitigationPath)) {
+          report.errors.push('Missing required file: mitigation_effectiveness.json');
+        } else {
+          const mitigation = readJson(mitigationPath, report.errors, 'mitigation_effectiveness.json');
+          if (mitigation) validateMitigationEffectiveness(mitigation, report.errors);
+        }
+
+        if (!exists(residualPath)) {
+          report.errors.push('Missing required file: residual_risk_quantification.json');
+        } else {
+          const residual = readJson(residualPath, report.errors, 'residual_risk_quantification.json');
+          if (residual) validateResidualRiskQuantification(residual, report.errors);
+        }
+
+        if (Array.isArray(closure.activatedEliteTools)) {
+          REQUIRED_SECURITY_TOOLS.forEach((tool) => {
+            if (!closure.activatedEliteTools.includes(tool)) {
+              report.errors.push(`closure_oracle.json: missing security elite tool '${tool}' for security hardening task`);
+            }
+          });
+        }
+
+        validateDebuggerOptimizationEvidence(packets, report.errors);
+      }
+
+      const realtimeTaskTypes = new Set(['realtime-reliability']);
+      const requiresRealtimeOracle =
+        closure && (closure.requiresRealtimeOracle === true || realtimeTaskTypes.has(closure.taskType));
+
+      if (requiresRealtimeOracle) {
+        const causalityPath = path.join(bundleDir, 'event_causality_ledger.json');
+        const cardinalityPath = path.join(bundleDir, 'listener_cardinality_report.json');
+        const reconnectPath = path.join(bundleDir, 'reconnect_consistency_report.json');
+
+        if (!exists(causalityPath)) {
+          report.errors.push('Missing required file: event_causality_ledger.json');
+        } else {
+          const causality = readJson(causalityPath, report.errors, 'event_causality_ledger.json');
+          if (causality) validateEventCausalityLedger(causality, report.errors);
+        }
+
+        if (!exists(cardinalityPath)) {
+          report.errors.push('Missing required file: listener_cardinality_report.json');
+        } else {
+          const cardinality = readJson(cardinalityPath, report.errors, 'listener_cardinality_report.json');
+          if (cardinality) validateListenerCardinalityReport(cardinality, report.errors);
+        }
+
+        if (!exists(reconnectPath)) {
+          report.errors.push('Missing required file: reconnect_consistency_report.json');
+        } else {
+          const reconnect = readJson(reconnectPath, report.errors, 'reconnect_consistency_report.json');
+          if (reconnect) validateReconnectConsistencyReport(reconnect, report.errors);
+        }
+
+        if (Array.isArray(closure.activatedEliteTools)) {
+          REQUIRED_REALTIME_TOOLS.forEach((tool) => {
+            if (!closure.activatedEliteTools.includes(tool)) {
+              report.errors.push(`closure_oracle.json: missing realtime elite tool '${tool}' for realtime reliability task`);
+            }
+          });
+        }
+
+        validateDebuggerOptimizationEvidence(packets, report.errors);
+      }
+
+      const devopsTaskTypes = new Set(['infra-coherence']);
+      const requiresDevopsOracle =
+        closure && (closure.requiresDevopsOracle === true || devopsTaskTypes.has(closure.taskType));
+
+      if (requiresDevopsOracle) {
+        const twinPath = path.join(bundleDir, 'deployment_twin_state.json');
+        const driftPath = path.join(bundleDir, 'env_drift_delta.json');
+        const worldPath = path.join(bundleDir, 'world_verification_report.json');
+
+        if (!exists(twinPath)) {
+          report.errors.push('Missing required file: deployment_twin_state.json');
+        } else {
+          const twin = readJson(twinPath, report.errors, 'deployment_twin_state.json');
+          if (twin) validateDeploymentTwinState(twin, report.errors);
+        }
+
+        if (!exists(driftPath)) {
+          report.errors.push('Missing required file: env_drift_delta.json');
+        } else {
+          const drift = readJson(driftPath, report.errors, 'env_drift_delta.json');
+          if (drift) validateEnvDriftDelta(drift, report.errors);
+        }
+
+        if (!exists(worldPath)) {
+          report.errors.push('Missing required file: world_verification_report.json');
+        } else {
+          const world = readJson(worldPath, report.errors, 'world_verification_report.json');
+          if (world) validateWorldVerificationReport(world, report.errors);
+        }
+
+        if (Array.isArray(closure.activatedEliteTools)) {
+          REQUIRED_DEVOPS_TOOLS.forEach((tool) => {
+            if (!closure.activatedEliteTools.includes(tool)) {
+              report.errors.push(`closure_oracle.json: missing devops elite tool '${tool}' for infra coherence task`);
+            }
+          });
+        }
+
+        validateDebuggerOptimizationEvidence(packets, report.errors);
+      }
+
+      const requiresLearningOracle = closure && closure.requiresLearningOracle === true;
+      if (requiresLearningOracle) {
+        const learningPath = path.join(bundleDir, 'learning_update.json');
+        const fieldPath = path.join(bundleDir, 'field_experience_report.json');
+
+        if (!exists(learningPath)) {
+          report.errors.push('Missing required file: learning_update.json');
+        } else {
+          const learning = readJson(learningPath, report.errors, 'learning_update.json');
+          if (learning) {
+            validateLearningUpdateReport(learning, report.errors);
+          }
+        }
+
+        if (!exists(fieldPath)) {
+          report.errors.push('Missing required file: field_experience_report.json');
+        } else {
+          const field = readJson(fieldPath, report.errors, 'field_experience_report.json');
+          if (field) {
+            validateFieldExperienceReport(field, report.errors);
+          }
+        }
+
+        if (Array.isArray(closure.activatedEliteTools)) {
+          REQUIRED_LEARNING_TOOLS.forEach((tool) => {
+            if (!closure.activatedEliteTools.includes(tool)) {
+              report.errors.push(`closure_oracle.json: missing learning elite tool '${tool}' for learning-enabled task`);
+            }
+          });
+        }
       }
     }
   }

@@ -16,8 +16,75 @@ const MAX_WARMUP_RETRIES = 1;
 const RETRY_DELAY_MS = 15000;
 const WARMUP_COOLDOWN_MS = 15 * 60 * 1000;
 const LAST_WARMUP_AT_KEY = 'kelmah:lastServiceWarmupAt';
+const WARMUP_DEBUG =
+  import.meta.env.DEV && import.meta.env.VITE_DEBUG_SERVICE_HEALTH === 'true';
+const DEFAULT_HEALTH_ENDPOINT = '/health';
+
+const isOffline = () =>
+  typeof navigator !== 'undefined' && navigator.onLine === false;
+
+const buildHealthUrl = (baseUrl, endpoint = DEFAULT_HEALTH_ENDPOINT) => {
+  const normalizedEndpoint = endpoint.startsWith('/')
+    ? endpoint
+    : `/${endpoint}`;
+
+  if (!baseUrl) {
+    return `/api${normalizedEndpoint}`;
+  }
+
+  const trimmedBase =
+    baseUrl.endsWith('/') && baseUrl !== '/' ? baseUrl.slice(0, -1) : baseUrl;
+
+  if (trimmedBase === '') {
+    return `/api${normalizedEndpoint}`;
+  }
+
+  if (trimmedBase.endsWith('/api')) {
+    return `${trimmedBase}${normalizedEndpoint}`;
+  }
+
+  return `${trimmedBase}/api${normalizedEndpoint}`;
+};
+
+const warmupLog = (...args) => {
+  if (WARMUP_DEBUG) {
+    console.log(...args);
+  }
+};
+const warmupWarn = (...args) => {
+  if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') {
+    console.warn(...args);
+  }
+};
+const warmupError = (...args) => {
+  if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') {
+    console.error(...args);
+  }
+};
+
+let lastWarmupStatus = {
+  state: 'idle',
+  message: 'Services are idle',
+  updatedAt: 0,
+};
 let warmUpRetryCount = 0;
 let warmUpRetryTimer = null;
+
+const setWarmupStatus = (nextStatus) => {
+  lastWarmupStatus = {
+    ...lastWarmupStatus,
+    ...nextStatus,
+    updatedAt: Date.now(),
+  };
+
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(
+      new CustomEvent('kelmah:warmup-status', { detail: lastWarmupStatus }),
+    );
+  }
+};
+
+export const getWarmupStatus = () => ({ ...lastWarmupStatus });
 
 const clearScheduledWarmUpRetry = () => {
   if (warmUpRetryTimer) {
@@ -79,27 +146,89 @@ const pingEndpoint = async (baseUrl, endpoint) => {
  * Wake up all backend services
  * Call this early in app initialization
  */
+export const warmUpService = async (serviceUrl) => {
+  if (isOffline()) {
+    return false;
+  }
+
+  warmupLog(`🔥 Warming up service: ${serviceUrl || 'gateway'}`);
+
+  try {
+    const base = await Promise.resolve(getApiBaseUrl()).catch(() => '/api');
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    const warmupUrl = buildHealthUrl(base, '/health');
+
+    const response = await fetch(warmupUrl, {
+      method: 'GET',
+      signal: controller.signal,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    clearTimeout(timeoutId);
+
+    warmupLog(
+      `🔥 Service warmed up - ${serviceUrl || 'gateway'}: ${response.status}`,
+    );
+    return response.ok;
+  } catch (error) {
+    warmupWarn(
+      `🔥 Service warmup failed - ${serviceUrl || 'gateway'}:`,
+      error.message,
+    );
+    return false;
+  }
+};
+
+/**
+ * Wake up all backend services
+ * Call this early in app initialization
+ */
 export const warmUpServices = async (options = {}) => {
   const { force = false, maxRetries = MAX_WARMUP_RETRIES } = options;
+
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+    setWarmupStatus({
+      state: 'offline',
+      message: 'You are offline. Service warm-up will run when connection returns.',
+    });
+    clearScheduledWarmUpRetry();
+    warmUpRetryCount = 0;
+    return { success: false, skipped: true, reason: 'offline' };
+  }
 
   if (!force) {
     clearScheduledWarmUpRetry();
     warmUpRetryCount = 0;
     const elapsed = Date.now() - getLastWarmupAt();
     if (elapsed > 0 && elapsed < WARMUP_COOLDOWN_MS) {
+      setWarmupStatus({
+        state: 'cooldown',
+        message: 'Services were checked recently. Reusing latest health state.',
+      });
       return { success: true, skipped: true, reason: 'cooldown' };
     }
   }
 
   try {
     const baseUrl = await getApiBaseUrl();
-    
+
     if (!baseUrl) {
-      if (import.meta.env.DEV) console.warn('⚠️ Service warm-up: No API base URL configured');
+      warmupWarn('⚠️ Service warm-up: No API base URL configured');
+      setWarmupStatus({
+        state: 'error',
+        message: 'Could not determine API endpoint for warm-up.',
+      });
       return { success: false, reason: 'no_base_url' };
     }
 
-    if (import.meta.env.DEV) console.log('🔥 Warming up backend services...');
+    warmupLog('🔥 Warming up backend services...');
+    setWarmupStatus({
+      state: 'starting',
+      message: 'Checking backend availability. This can take up to a minute after idle time.',
+    });
     const startTime = Date.now();
     setLastWarmupAt(startTime);
 
@@ -112,13 +241,13 @@ export const warmUpServices = async (options = {}) => {
     const successful = results.filter(r => r.status === 'fulfilled' && r.value?.success).length;
     const wakingUp = results.filter(r => r.status === 'fulfilled' && r.value?.isWakingUp).length;
 
-    if (import.meta.env.DEV) console.log(`🔥 Service warm-up complete: ${successful}/${results.length} healthy, ${wakingUp} waking up (${elapsed}ms)`);
+    warmupLog(`🔥 Service warm-up complete: ${successful}/${results.length} healthy, ${wakingUp} waking up (${elapsed}ms)`);
 
     // If services are waking up, schedule a limited retry.
     if (wakingUp > 0) {
       if (warmUpRetryCount < maxRetries) {
         warmUpRetryCount += 1;
-        if (import.meta.env.DEV) console.log(`⏳ Services waking up, retry ${warmUpRetryCount}/${maxRetries} in ${RETRY_DELAY_MS / 1000} seconds...`);
+        warmupLog(`⏳ Services waking up, retry ${warmUpRetryCount}/${maxRetries} in ${RETRY_DELAY_MS / 1000} seconds...`);
         if (!warmUpRetryTimer) {
           warmUpRetryTimer = setTimeout(() => {
             warmUpRetryTimer = null;
@@ -126,11 +255,18 @@ export const warmUpServices = async (options = {}) => {
           }, RETRY_DELAY_MS);
         }
       } else {
-        if (import.meta.env.DEV) console.warn('⚠️ Max warm-up retries reached. Some services may still be waking up.');
+        warmupWarn('⚠️ Max warm-up retries reached. Some services may still be waking up.');
         clearScheduledWarmUpRetry();
         warmUpRetryCount = 0;
       }
     } else {
+      setWarmupStatus({
+        state: successful > 0 ? 'ready' : 'degraded',
+        message:
+          successful > 0
+            ? 'Backend services are ready.'
+            : 'Backend services are slow to respond. You can retry shortly.',
+      });
       clearScheduledWarmUpRetry();
       warmUpRetryCount = 0;
     }
@@ -141,12 +277,16 @@ export const warmUpServices = async (options = {}) => {
       total: results.length,
       wakingUp,
       elapsed,
-      results: results.map(r => r.status === 'fulfilled' ? r.value : { error: r.reason })
+      results: results.map(r => r.status === 'fulfilled' ? r.value : { error: r.reason }),
     };
   } catch (error) {
+    setWarmupStatus({
+      state: 'error',
+      message: 'Service warm-up failed. Retry in a few moments.',
+    });
     clearScheduledWarmUpRetry();
     warmUpRetryCount = 0;
-    if (import.meta.env.DEV) console.error('🔥 Service warm-up failed:', error);
+    warmupError('🔥 Service warm-up failed:', error);
     return { success: false, error: error.message };
   }
 };
@@ -168,14 +308,14 @@ export const waitForServices = async (maxWaitMs = 60000) => {
   while (Date.now() - startTime < maxWaitMs) {
     const ready = await checkServicesReady();
     if (ready) {
-      if (import.meta.env.DEV) console.log('✅ All services are ready');
+      warmupLog('✅ All services are ready');
       return true;
     }
     // Wait 5 seconds before retry
     await new Promise(resolve => setTimeout(resolve, 5000));
   }
   
-  if (import.meta.env.DEV) console.warn('⚠️ Services warm-up timeout - some services may still be starting');
+  warmupWarn('⚠️ Services warm-up timeout - some services may still be starting');
   return false;
 };
 

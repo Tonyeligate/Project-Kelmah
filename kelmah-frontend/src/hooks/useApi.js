@@ -6,6 +6,113 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'react-toastify';
 
+const parseRetryAfterMs = (error) => {
+  const headerValue =
+    error?.response?.headers?.['retry-after'] ||
+    error?.response?.headers?.RetryAfter ||
+    error?.response?.headers?.['Retry-After'];
+
+  if (!headerValue) {
+    return null;
+  }
+
+  const value = String(headerValue).trim();
+  if (/^\d+$/.test(value)) {
+    return Math.max(Number(value) * 1000, 0);
+  }
+
+  const dateMs = Date.parse(value);
+  if (!Number.isNaN(dateMs)) {
+    return Math.max(dateMs - Date.now(), 0);
+  }
+
+  return null;
+};
+
+const shouldRetryError = (error) => {
+  const status = error?.response?.status;
+
+  if (status >= 400 && status < 500 && status !== 408 && status !== 429) {
+    return false;
+  }
+
+  if (error?.name === 'AbortError') {
+    return false;
+  }
+
+  return true;
+};
+
+const computeRetryDelay = (error, attempt, baseDelay) => {
+  const retryAfterMs = parseRetryAfterMs(error);
+  const backoffBase = Number.isFinite(retryAfterMs)
+    ? retryAfterMs
+    : baseDelay * 2 ** attempt;
+  const boundedBackoff = Math.max(250, Math.min(backoffBase, 10000));
+  const jitterCap = Math.max(100, Math.floor(boundedBackoff * 0.2));
+  const jitter = Math.floor(Math.random() * (jitterCap + 1));
+  return boundedBackoff + jitter;
+};
+
+const getRecoveryGuidance = (error) => {
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+    return {
+      userMessage: 'No internet connection detected.',
+      suggestedAction: 'Reconnect to the internet, then retry.',
+      isRecoverable: true,
+    };
+  }
+
+  const status = error?.response?.status;
+  const message = error?.response?.data?.message || error?.message || 'Request failed';
+
+  if (status === 429) {
+    return {
+      userMessage: message,
+      suggestedAction: 'Too many requests. Wait a moment, then try again.',
+      isRecoverable: true,
+    };
+  }
+
+  if (status === 503 || status === 504) {
+    return {
+      userMessage: message,
+      suggestedAction: 'Service may be waking up. Retry in 30-60 seconds.',
+      isRecoverable: true,
+    };
+  }
+
+  if (status === 401 || status === 403) {
+    return {
+      userMessage: message,
+      suggestedAction: 'Sign in again to refresh your access.',
+      isRecoverable: true,
+    };
+  }
+
+  if (status === 404) {
+    return {
+      userMessage: message,
+      suggestedAction: 'The requested item may have moved or been removed.',
+      isRecoverable: false,
+    };
+  }
+
+  if (String(message).toLowerCase().includes('timeout')) {
+    return {
+      userMessage: message,
+      suggestedAction: 'The request took too long. Retry in a few seconds.',
+      isRecoverable: true,
+    };
+  }
+
+  return {
+    userMessage: message,
+    suggestedAction: 'Try again. If this keeps happening, contact support.',
+    isRecoverable: true,
+  };
+};
+
 /**
  * Universal hook for handling API calls
  * @param {Function} apiFunction - The API function to call
@@ -30,6 +137,7 @@ export const useApi = (apiFunction, options = {}) => {
   const [error, setError] = useState(null);
   const [retryCount, setRetryCount] = useState(0);
   const isMountedRef = useRef(true);
+  const activeRequestIdRef = useRef(0);
   const retryTimeoutRef = useRef(null);
 
   const clearRetryTimeout = useCallback(() => {
@@ -42,9 +150,12 @@ export const useApi = (apiFunction, options = {}) => {
   const executeApi = useCallback(
     async (...args) => {
       clearRetryTimeout();
+      const requestId = ++activeRequestIdRef.current;
+      const canUpdateState = () =>
+        isMountedRef.current && requestId === activeRequestIdRef.current;
 
       try {
-        if (isMountedRef.current) {
+        if (canUpdateState()) {
           setLoading(true);
           setError(null);
         }
@@ -53,7 +164,7 @@ export const useApi = (apiFunction, options = {}) => {
           try {
             const result = await apiFunction(...args);
 
-            if (isMountedRef.current) {
+            if (canUpdateState()) {
               setData(result);
               setRetryCount(0);
 
@@ -68,28 +179,43 @@ export const useApi = (apiFunction, options = {}) => {
 
             return result;
           } catch (err) {
-            if (import.meta.env.DEV) console.error('API Error:', err);
+            if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('API Error:', err);
 
-            if (attempt < retryAttempts) {
-              if (isMountedRef.current) {
+            if (attempt < retryAttempts && shouldRetryError(err)) {
+              if (
+                typeof navigator !== 'undefined' &&
+                navigator.onLine === false
+              ) {
+                throw err;
+              }
+
+              if (canUpdateState()) {
                 setRetryCount(attempt + 1);
               }
+
+              const retryDelayMs = computeRetryDelay(err, attempt, retryDelay);
 
               await new Promise((resolve) => {
                 retryTimeoutRef.current = setTimeout(
                   resolve,
-                  retryDelay * (attempt + 1),
+                  retryDelayMs,
                 );
               });
 
-              if (!isMountedRef.current) {
+              if (!canUpdateState()) {
                 return null;
               }
 
               return executeWithRetry(attempt + 1);
             }
 
-            if (isMountedRef.current) {
+            if (canUpdateState()) {
+              const guidance = getRecoveryGuidance(err);
+              if (err && typeof err === 'object') {
+                err.userMessage = guidance.userMessage;
+                err.suggestedAction = guidance.suggestedAction;
+                err.isRecoverable = guidance.isRecoverable;
+              }
               setError(err);
 
               if (onError) {
@@ -97,9 +223,7 @@ export const useApi = (apiFunction, options = {}) => {
               }
 
               if (showErrorToast) {
-                const errorMessage =
-                  err.response?.data?.message || err.message || 'An error occurred';
-                toast.error(`Service Error: ${errorMessage}`);
+                toast.error(`Service Error: ${guidance.userMessage} ${guidance.suggestedAction}`);
               }
             }
 
@@ -110,7 +234,7 @@ export const useApi = (apiFunction, options = {}) => {
         return await executeWithRetry(0);
       } finally {
         clearRetryTimeout();
-        if (isMountedRef.current) {
+        if (canUpdateState()) {
           setLoading(false);
         }
       }
@@ -140,6 +264,7 @@ export const useApi = (apiFunction, options = {}) => {
 
   const reset = useCallback(() => {
     clearRetryTimeout();
+    activeRequestIdRef.current += 1;
     setData(initialData);
     setError(null);
     setLoading(false);
@@ -150,6 +275,7 @@ export const useApi = (apiFunction, options = {}) => {
     isMountedRef.current = true;
     return () => {
       isMountedRef.current = false;
+      activeRequestIdRef.current += 1;
       clearRetryTimeout();
     };
   }, [clearRetryTimeout]);
@@ -254,10 +380,18 @@ export const useMultipleApi = (apiCalls, options = {}) => {
   const [results, setResults] = useState({});
   const [loading, setLoading] = useState(immediate);
   const [errors, setErrors] = useState({});
+  const isMountedRef = useRef(true);
+  const activeRequestIdRef = useRef(0);
 
   const executeAll = useCallback(async () => {
-    setLoading(true);
-    setErrors({});
+    const requestId = ++activeRequestIdRef.current;
+    const canUpdateState = () =>
+      isMountedRef.current && requestId === activeRequestIdRef.current;
+
+    if (canUpdateState()) {
+      setLoading(true);
+      setErrors({});
+    }
 
     const promises = Object.entries(apiCalls).map(
       async ([key, apiFunction]) => {
@@ -265,7 +399,7 @@ export const useMultipleApi = (apiCalls, options = {}) => {
           const result = await apiFunction();
           return { key, result, error: null };
         } catch (error) {
-          if (import.meta.env.DEV) console.error(`API Error for ${key}:`, error);
+          if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error(`API Error for ${key}:`, error);
           return { key, result: null, error };
         }
       },
@@ -286,12 +420,16 @@ export const useMultipleApi = (apiCalls, options = {}) => {
         }
       });
 
-      setResults(newResults);
-      setErrors(newErrors);
+      if (canUpdateState()) {
+        setResults(newResults);
+        setErrors(newErrors);
+      }
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Multiple API calls failed:', error);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Multiple API calls failed:', error);
     } finally {
-      setLoading(false);
+      if (canUpdateState()) {
+        setLoading(false);
+      }
     }
   }, [apiCalls]);
 
@@ -300,9 +438,16 @@ export const useMultipleApi = (apiCalls, options = {}) => {
   }, [executeAll]);
 
   useEffect(() => {
+    isMountedRef.current = true;
+
     if (immediate) {
       executeAll();
     }
+
+    return () => {
+      isMountedRef.current = false;
+      activeRequestIdRef.current += 1;
+    };
   }, [immediate, executeAll, ...dependencies]);
 
   return {
@@ -333,17 +478,36 @@ export const useApiSubmit = (submitFunction, options = {}) => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+  const isMountedRef = useRef(true);
+  const activeSubmitIdRef = useRef(0);
+  const successResetTimerRef = useRef(null);
+
+  const clearSuccessResetTimer = useCallback(() => {
+    if (successResetTimerRef.current) {
+      clearTimeout(successResetTimerRef.current);
+      successResetTimerRef.current = null;
+    }
+  }, []);
 
   const submit = useCallback(
     async (formData) => {
+      const submitId = ++activeSubmitIdRef.current;
+      const canUpdateState = () =>
+        isMountedRef.current && submitId === activeSubmitIdRef.current;
+
       try {
-        setSubmitting(true);
-        setError(null);
-        setSuccess(false);
+        clearSuccessResetTimer();
+        if (canUpdateState()) {
+          setSubmitting(true);
+          setError(null);
+          setSuccess(false);
+        }
 
         const result = await submitFunction(formData);
 
-        setSuccess(true);
+        if (canUpdateState()) {
+          setSuccess(true);
+        }
 
         if (onSuccess) {
           onSuccess(result);
@@ -354,35 +518,67 @@ export const useApiSubmit = (submitFunction, options = {}) => {
         }
 
         if (resetOnSuccess) {
-          setTimeout(() => setSuccess(false), 3000);
+          successResetTimerRef.current = setTimeout(() => {
+            if (canUpdateState()) {
+              setSuccess(false);
+            }
+            successResetTimerRef.current = null;
+          }, 3000);
         }
 
         return result;
       } catch (err) {
-        if (import.meta.env.DEV) console.error('Submit Error:', err);
-        setError(err);
+        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Submit Error:', err);
+        const guidance = getRecoveryGuidance(err);
+        if (err && typeof err === 'object') {
+          err.userMessage = guidance.userMessage;
+          err.suggestedAction = guidance.suggestedAction;
+          err.isRecoverable = guidance.isRecoverable;
+        }
+        if (canUpdateState()) {
+          setError(err);
+        }
 
         if (onError) {
           onError(err);
         }
 
-        const errorMessage =
-          err.response?.data?.message || err.message || 'Submission failed';
-        toast.error(errorMessage);
+        toast.error(`${guidance.userMessage} ${guidance.suggestedAction}`);
 
         throw err;
       } finally {
-        setSubmitting(false);
+        if (canUpdateState()) {
+          setSubmitting(false);
+        }
       }
     },
-    [submitFunction, onSuccess, onError, resetOnSuccess, showSuccessToast],
+    [
+      clearSuccessResetTimer,
+      submitFunction,
+      onSuccess,
+      onError,
+      resetOnSuccess,
+      showSuccessToast,
+    ],
   );
 
   const reset = useCallback(() => {
+    clearSuccessResetTimer();
+    activeSubmitIdRef.current += 1;
     setError(null);
     setSuccess(false);
     setSubmitting(false);
-  }, []);
+  }, [clearSuccessResetTimer]);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+
+    return () => {
+      isMountedRef.current = false;
+      activeSubmitIdRef.current += 1;
+      clearSuccessResetTimer();
+    };
+  }, [clearSuccessResetTimer]);
 
   return {
     submit,

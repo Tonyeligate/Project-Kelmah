@@ -13,6 +13,19 @@
 /* Dark mode (default — applied first so :root covers SSR) */
 :root,
 [data-theme="dark"] {
+  /* Spacing system */
+  --k-space-1: 4px;
+  --k-space-2: 8px;
+  --k-space-3: 12px;
+  --k-space-4: 16px;
+  --k-space-5: 20px;
+  --k-space-6: 24px;
+  --k-space-8: 32px;
+
+  /* Typography rhythm */
+  --k-line-body: 1.6;
+  --k-line-heading: 1.25;
+
   /* Focus */
   --kelmah-focus-color: #ffd24c;
   --kelmah-focus-ring: rgba(255, 210, 76, 0.35);
@@ -220,12 +233,13 @@ h5,
 h6 {
   margin: 0;
   font-weight: 600;
-  line-height: 1.2;
+  line-height: var(--k-line-heading);
   font-family: 'Montserrat', sans-serif;
 }
 
 p {
-  margin: 0 0 1rem 0;
+  margin: 0 0 var(--k-space-4) 0;
+  line-height: var(--k-line-body);
 }
 
 /* Remove default button styles to let Material-UI handle them */
@@ -236,10 +250,28 @@ button {
   cursor: pointer;
 }
 
-/* Restore focus-visible outline for accessibility */
-button:focus-visible {
-  outline: 2px solid #ffd700;
+/* Global keyboard focus treatment for stronger visibility across components */
+:where(
+  button,
+  [role="button"],
+  a,
+  input,
+  textarea,
+  select,
+  .MuiButtonBase-root,
+  .MuiChip-clickable,
+  .MuiTab-root
+):focus-visible {
+  outline: 3px solid var(--kelmah-focus-color);
   outline-offset: 2px;
+}
+
+/* Keep high-use controls finger-friendly in dense layouts */
+.MuiIconButton-root,
+.MuiButton-root,
+.MuiTab-root {
+  min-width: 44px;
+  min-height: 44px;
 }
 
 /* Form elements */
@@ -267,6 +299,10 @@ select:focus-visible {
   color: var(--kelmah-focus-color) !important;
 }
 
+.MuiFormHelperText-root {
+  color: var(--k-text-secondary);
+}
+
 /* Links - Let Material-UI components handle their own styling */
 a {
   text-decoration: none;
@@ -277,7 +313,19 @@ a {
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 1rem;
+  padding: 0 var(--k-space-4);
+}
+
+@media (min-width: 600px) {
+  .container {
+    padding: 0 var(--k-space-6);
+  }
+}
+
+@media (min-width: 900px) {
+  .container {
+    padding: 0 var(--k-space-8);
+  }
 }
 
 /* Flexbox utilities */

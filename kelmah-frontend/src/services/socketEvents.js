@@ -1,6 +1,7 @@
 export const SOCKET_EVENTS = {
   CORE: {
     CONNECT: 'connect',
+    CONNECTED: 'connected',
     DISCONNECT: 'disconnect',
     CONNECT_ERROR: 'connect_error',
     RECONNECT: 'reconnect',
@@ -15,6 +16,21 @@ export const SOCKET_EVENTS = {
     MESSAGE_DELIVERED: 'message_delivered',
     MESSAGE_READ: 'message_read',
     TYPING_INDICATOR: 'typing-indicator',
+    USER_TYPING: 'user_typing',
+    MESSAGES_READ: 'messages_read',
+    TYPING_START: 'typing_start',
+    TYPING_STOP: 'typing_stop',
+  },
+  CONVERSATION: {
+    JOIN: 'join_conversation',
+    LEAVE: 'leave_conversation',
+    JOINED: 'conversation_joined',
+    MARK_READ: 'mark_read',
+  },
+  DASHBOARD: {
+    UPDATE: 'dashboard:update',
+    NEW_JOB: 'dashboard:new-job',
+    STATUS_CHANGE: 'dashboard:status-change',
   },
   JOB: {
     JOB_NOTIFICATION: 'job-notification',
@@ -69,4 +85,9 @@ export const MESSAGE_DELIVERY_ALIASES = [
   SOCKET_EVENTS.MESSAGE.NEW_MESSAGE,
   SOCKET_EVENTS.MESSAGE.NEW_MESSAGE_ALT,
   SOCKET_EVENTS.MESSAGE.RECEIVE_MESSAGE,
+];
+
+export const MESSAGE_TYPING_ALIASES = [
+  SOCKET_EVENTS.MESSAGE.TYPING_INDICATOR,
+  SOCKET_EVENTS.MESSAGE.USER_TYPING,
 ];

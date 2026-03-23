@@ -20,6 +20,19 @@ import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 
+const __WORKER_DEBUG__ =
+  import.meta.env.DEV && import.meta.env.VITE_DEBUG_WORKER === 'true';
+const workerDebugError = (...args) => {
+  if (__WORKER_DEBUG__) {
+    console.error(...args);
+  }
+};
+const workerDebugWarn = (...args) => {
+  if (__WORKER_DEBUG__) {
+    console.warn(...args);
+  }
+};
+
 const MyApplicationsPage = () => {
   const navigate = useNavigate();
   const [applications, setApplications] = useState([]);
@@ -57,7 +70,7 @@ const MyApplicationsPage = () => {
       setApplications(Array.isArray(data) ? data : []);
     } catch (requestError) {
       if (isCancelled()) return;
-      if (import.meta.env.DEV) console.error('Error loading applications:', requestError);
+      workerDebugError('Error loading applications:', requestError);
       setApplications([]);
       setError(getErrorMessage(requestError));
     } finally {
@@ -132,7 +145,7 @@ const MyApplicationsPage = () => {
         JSON.stringify(draftPayload),
       );
     } catch (storageError) {
-      if (import.meta.env.DEV) console.warn('Failed to persist message draft:', storageError);
+      workerDebugWarn('Failed to persist message draft:', storageError);
     }
 
     setMessage('');

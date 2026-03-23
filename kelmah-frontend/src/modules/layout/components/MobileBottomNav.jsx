@@ -185,6 +185,7 @@ const MobileBottomNav = () => {
 
   // Navigation items based on user role - capped at 5 primary actions for clean UX.
   const navigationItems = useMemo(() => {
+    const applicationsLabel = isMobile ? 'Apps' : 'Applications';
     if (isHirer) {
       return [
         {
@@ -206,7 +207,7 @@ const MobileBottomNav = () => {
           path: '/hirer/find-talents',
         },
         {
-          label: isMobile ? 'My Jobs' : 'Applications',
+          label: applicationsLabel,
           value: 'applications',
           icon: <ApplicationsIcon />,
           path: '/hirer/applications',
@@ -235,7 +236,7 @@ const MobileBottomNav = () => {
         path: '/worker/find-work',
       },
       {
-        label: isMobile ? 'My Jobs' : 'Applications',
+        label: applicationsLabel,
         value: 'applications',
         icon: <ApplicationsIcon />,
         path: '/worker/applications',

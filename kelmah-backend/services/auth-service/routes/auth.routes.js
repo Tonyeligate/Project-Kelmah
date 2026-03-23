@@ -5,7 +5,10 @@
 const express = require("express");
 const { body } = require("express-validator");
 const authController = require("../controllers/auth.controller");
-const { verifyGatewayRequest } = require("../../../shared/middlewares/serviceTrust");
+const {
+  verifyGatewayRequest,
+  optionalGatewayVerification,
+} = require("../../../shared/middlewares/serviceTrust");
 const { createLimiter } = require("../middlewares/rateLimiter");
 const SecurityUtils = require("../utils/security");
 const { validate } = require("../utils/validation");
@@ -123,7 +126,7 @@ router.post(
 );
 
 // Logout route
-router.post("/logout", verifyGatewayRequest, authController.logout);
+router.post("/logout", optionalGatewayVerification, authController.logout);
 
 // Refresh token
 router.post(

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
@@ -75,6 +75,8 @@ const ContractDetailsPage = () => {
   const [completeContractDialogOpen, setCompleteContractDialogOpen] = useState(false);
   const [signDialogOpen, setSignDialogOpen] = useState(false);
   const [signature, setSignature] = useState('');
+  const [slowLoadingHint, setSlowLoadingHint] = useState(false);
+  const slowLoadingTimerRef = useRef(null);
 
   // Toast state
   const [toast, setToast] = useState({
@@ -86,14 +88,46 @@ const ContractDetailsPage = () => {
   // Action-level loading to prevent double-clicks on async buttons
   const [actionLoading, setActionLoading] = useState(false);
 
+  const getErrorText = (err, fallback) => {
+    if (!err) return fallback;
+    if (typeof err === 'string') return err;
+    return err.message || err.technicalMessage || fallback;
+  };
+
+  const retryContractLoad = () => {
+    if (!resolvedContractId) return;
+    dispatch(fetchContractById(resolvedContractId));
+    dispatch(fetchContractMilestones(resolvedContractId));
+  };
+
   // Load contract and milestones on mount
   useEffect(() => {
     if (!resolvedContractId) return;
-    let cancelled = false;
     dispatch(fetchContractById(resolvedContractId));
     dispatch(fetchContractMilestones(resolvedContractId));
-    return () => { cancelled = true; };
   }, [dispatch, resolvedContractId]);
+
+  useEffect(() => {
+    if (!loading.currentContract) {
+      setSlowLoadingHint(false);
+      if (slowLoadingTimerRef.current) {
+        clearTimeout(slowLoadingTimerRef.current);
+        slowLoadingTimerRef.current = null;
+      }
+      return;
+    }
+
+    slowLoadingTimerRef.current = setTimeout(() => {
+      setSlowLoadingHint(true);
+    }, 8000);
+
+    return () => {
+      if (slowLoadingTimerRef.current) {
+        clearTimeout(slowLoadingTimerRef.current);
+        slowLoadingTimerRef.current = null;
+      }
+    };
+  }, [loading.currentContract]);
 
   // Show creation success toast if navigated with state
   useEffect(() => {
@@ -137,7 +171,7 @@ const ContractDetailsPage = () => {
       .catch((err) => {
         setToast({
           open: true,
-          message: err || 'Failed to cancel contract',
+          message: getErrorText(err, 'Failed to cancel contract'),
           severity: 'error',
         });
       })
@@ -161,7 +195,7 @@ const ContractDetailsPage = () => {
       .catch((err) => {
         setToast({
           open: true,
-          message: err || 'Failed to sign contract',
+          message: getErrorText(err, 'Failed to sign contract'),
           severity: 'error',
         });
       })
@@ -183,7 +217,7 @@ const ContractDetailsPage = () => {
       .catch((err) => {
         setToast({
           open: true,
-          message: err || 'Failed to send contract for signature',
+          message: getErrorText(err, 'Failed to send contract for signature'),
           severity: 'error',
         });
       })
@@ -205,7 +239,7 @@ const ContractDetailsPage = () => {
       .catch((err) => {
         setToast({
           open: true,
-          message: err || 'Failed to complete milestone',
+          message: getErrorText(err, 'Failed to complete milestone'),
           severity: 'error',
         });
       })
@@ -229,7 +263,7 @@ const ContractDetailsPage = () => {
       .catch((err) => {
         setToast({
           open: true,
-          message: err || 'Failed to submit dispute',
+          message: getErrorText(err, 'Failed to submit dispute'),
           severity: 'error',
         });
       })
@@ -252,7 +286,7 @@ const ContractDetailsPage = () => {
       .catch((err) => {
         setToast({
           open: true,
-          message: err || 'Failed to complete contract',
+          message: getErrorText(err, 'Failed to complete contract'),
           severity: 'error',
         });
       })
@@ -289,10 +323,48 @@ const ContractDetailsPage = () => {
     return Math.round((completedMilestones / milestones.length) * 100);
   };
 
+  const milestoneSummary = {
+    total: milestones?.length || 0,
+    completed: milestones?.filter((milestone) => milestone.status === 'completed').length || 0,
+    pending: milestones?.filter((milestone) => milestone.status === 'pending').length || 0,
+  };
+
+  const contractActionGuidance = {
+    draft: {
+      severity: 'info',
+      text: 'Review details before requesting signatures. Deleting a draft is irreversible.',
+    },
+    pending: {
+      severity: 'warning',
+      text: 'Sign only after confirming dates, value, and scope. Declining stops this contract flow.',
+    },
+    active: {
+      severity: 'info',
+      text: 'Complete milestones before marking job complete. Report issues early if scope or payment is disputed.',
+    },
+    completed: {
+      severity: 'success',
+      text: 'Contract is closed. You can still print records for reference.',
+    },
+    cancelled: {
+      severity: 'warning',
+      text: 'Contract was cancelled. Keep records and reasons for accountability.',
+    },
+    disputed: {
+      severity: 'warning',
+      text: 'Dispute is open. Keep communication and milestone evidence available for resolution.',
+    },
+  };
+
   // Show a loading state while contract data is being fetched
   if (loading.currentContract) {
     return (
       <Container maxWidth="md" sx={{ py: 3 }}>
+        {slowLoadingHint && (
+          <Alert severity="info" sx={{ mb: 2 }}>
+            Contract details are taking longer than usual to load. The backend may still be waking up.
+          </Alert>
+        )}
         <Skeleton variant="text" width={200} height={36} sx={{ mb: 2 }} />
         <Skeleton variant="rounded" height={400} sx={{ borderRadius: 2, mb: 2 }} />
         <Skeleton variant="rounded" height={120} sx={{ borderRadius: 2 }} />
@@ -303,8 +375,12 @@ const ContractDetailsPage = () => {
   if (!contract && error.currentContract) {
     return (
       <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
-        <Alert severity="error" sx={{ mb: 3 }}>
-          Error loading contract: {error.currentContract}
+        <Alert severity="error" sx={{ mb: 3 }} action={
+          <Button color="inherit" size="small" onClick={retryContractLoad}>
+            Retry
+          </Button>
+        }>
+          Error loading contract: {getErrorText(error.currentContract, 'Unable to load contract details.')}
         </Alert>
         <Button onClick={handleBack} variant="outlined">Back to Contracts</Button>
       </Container>
@@ -314,7 +390,13 @@ const ContractDetailsPage = () => {
   if (!contract) {
     return (
       <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
-        <Alert severity="warning">Contract not found.</Alert>
+        <Alert severity="warning" action={
+          <Button color="inherit" size="small" onClick={retryContractLoad}>
+            Retry
+          </Button>
+        }>
+          Contract not found.
+        </Alert>
         <Button onClick={handleBack} variant="outlined" sx={{ mt: 2 }}>Back to Contracts</Button>
       </Container>
     );
@@ -434,6 +516,19 @@ const ContractDetailsPage = () => {
             </Grid>
 
             <Divider sx={{ my: 2 }} />
+
+            <Alert
+              severity={contractActionGuidance[contract.status]?.severity || 'info'}
+              sx={{ mb: 2 }}
+            >
+              {contractActionGuidance[contract.status]?.text || 'Review your next contract action carefully before continuing.'}
+            </Alert>
+
+            <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap', gap: 1 }}>
+              <Chip size="small" variant="outlined" label={`${milestoneSummary.completed}/${milestoneSummary.total} milestones done`} />
+              <Chip size="small" color="warning" variant="outlined" label={`${milestoneSummary.pending} pending`} />
+              <Chip size="small" color="info" variant="outlined" label={`Progress ${calculateProgress()}%`} />
+            </Stack>
 
             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', '& .MuiButton-root': { minHeight: 44 } }}>
               {contract.status === 'draft' && (
@@ -594,6 +689,13 @@ const ContractDetailsPage = () => {
             </Box>
             <Divider sx={{ mb: 2 }} />
 
+            <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap', gap: 1 }}>
+              <Chip size="small" variant="outlined" label="Status legend" />
+              <Chip size="small" color="success" label="Completed" />
+              <Chip size="small" color="warning" label="Pending" />
+              <Chip size="small" color="error" label="Needs attention" />
+            </Stack>
+
             {loading.milestones ? (
               <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
                 <CircularProgress />
@@ -718,6 +820,9 @@ const ContractDetailsPage = () => {
             will mark the contract as completed and release any held payment to
             the worker.
           </DialogContentText>
+          <Alert severity="warning" sx={{ mt: 2 }}>
+            This final step is hard to reverse. Confirm all milestones and deliverables first.
+          </Alert>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setCompleteContractDialogOpen(false)}
@@ -752,6 +857,9 @@ const ContractDetailsPage = () => {
               ? 'Are you sure you want to delete this draft contract? This action cannot be undone.'
               : 'Please provide a reason for cancelling this contract. This action cannot be undone.'}
           </DialogContentText>
+          <Alert severity="warning" sx={{ mt: 2, mb: 1 }}>
+            Cancellation stops this contract workflow immediately. Keep your reason clear for dispute prevention.
+          </Alert>
           {contract.status !== 'draft' && (
             <TextField
               autoFocus
@@ -821,6 +929,9 @@ const ContractDetailsPage = () => {
             Please provide details about the issue you're experiencing with this
             contract.
           </DialogContentText>
+          <Alert severity="info" sx={{ mt: 2, mb: 1 }}>
+            Include milestone name, date, and payment context so support can resolve this faster.
+          </Alert>
           <TextField
             margin="dense"
             label="Dispute Reason"

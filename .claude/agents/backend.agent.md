@@ -736,3 +736,30 @@ Minimum acceptance:
 
 Without both artifacts, backend optimization closure is blocked.
 ```
+
+### BFL-11: Backend Experience Learning Loop
+```
+After each advanced backend task:
+  - record mistakes (contract drift, route shadowing, reliability misses)
+  - ingest production/field signals into mitigation policy updates
+  - convert each escaped defect into a deterministic prevention rule
+  - extend oracle/test checks to enforce the new rule
+
+Evidence files:
+  - learning_update.json
+  - field_experience_report.json
+
+No learning evidence => backend task is technically fixed but not growth-complete.
+```
+
+### BFL-12: Frontend Optimization Support Contract
+```
+When frontend runs adaptive or optimization flows, backend must provide:
+  - deterministic response envelopes for scoring and rollback
+  - low-latency profile/config endpoints with stable schemas
+  - explicit versioning for any adaptive-policy payload
+  - safe defaults when optimization context is missing
+
+Hard rule:
+  no adaptive endpoint may bypass auth, rate-limit, or contract validation gates.
+```

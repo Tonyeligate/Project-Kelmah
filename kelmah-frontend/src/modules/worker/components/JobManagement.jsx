@@ -89,7 +89,7 @@ const JobManagement = () => {
       setError(null);
     } catch (err) {
       setError('Failed to load jobs');
-      if (import.meta.env.DEV) console.error(err);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error(err);
     } finally {
       setLoading(false);
     }
@@ -154,7 +154,7 @@ const JobManagement = () => {
       fetchJobs();
     } catch (err) {
       setError('Your submission could not be completed. Please try again.');
-      if (import.meta.env.DEV) console.error(err);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error(err);
     }
   };
 

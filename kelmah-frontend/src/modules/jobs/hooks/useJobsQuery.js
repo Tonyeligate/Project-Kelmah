@@ -116,6 +116,33 @@ const updateSavedJobsCache = (current, job, mode = 'add') => {
     return { ...current, jobs: nextJobs, data: nextJobs };
 };
 
+const normalizeJobId = (job) => job?.id || job?._id || job?.jobId || job;
+
+const markJobAsApplied = (job) => {
+    if (!job || typeof job !== 'object') {
+        return job;
+    }
+
+    const currentCount = Number(job.applicationsCount ?? job.proposalCount ?? 0);
+    const nextCount = Number.isFinite(currentCount) ? currentCount + 1 : 1;
+    return {
+        ...job,
+        hasApplied: true,
+        applicationsCount: nextCount,
+        proposalCount: nextCount,
+    };
+};
+
+const updateJobInCollection = (collection, jobId) => {
+    if (!Array.isArray(collection)) {
+        return collection;
+    }
+
+    return collection.map((job) =>
+        normalizeJobId(job) === jobId ? markJobAsApplied(job) : job,
+    );
+};
+
 export const useJobsQuery = (filters = EMPTY_QUERY_PARAMS, options = {}) => {
     const filtersKey = buildStableParamsKey(filters);
     const normalizedFilters = useMemo(
@@ -125,7 +152,7 @@ export const useJobsQuery = (filters = EMPTY_QUERY_PARAMS, options = {}) => {
 
     return useQuery({
         queryKey: jobKeys.list(normalizedFilters),
-        queryFn: () => jobsApi.getJobs(normalizedFilters),
+        queryFn: ({ signal }) => jobsApi.getJobs(normalizedFilters, { signal }),
         staleTime: 2 * 60 * 1000, // AUD2-L08: 2 min — avoids hammering API on every mount without sacrificing freshness
         gcTime: 5 * 60 * 1000,
         placeholderData: keepPreviousData,
@@ -136,7 +163,7 @@ export const useJobsQuery = (filters = EMPTY_QUERY_PARAMS, options = {}) => {
 export const useJobQuery = (jobId, options = {}) =>
     useQuery({
         queryKey: jobKeys.detail(jobId),
-        queryFn: () => jobsApi.getJobById(jobId),
+        queryFn: ({ signal }) => jobsApi.getJobById(jobId, { signal }),
         enabled: Boolean(jobId),
         staleTime: 2 * 60 * 1000, // AUD2-L08: 2 min for detail pages
         gcTime: 5 * 60 * 1000,
@@ -152,7 +179,7 @@ export const useSavedJobsQuery = (params = EMPTY_QUERY_PARAMS, options = {}) => 
 
     return useQuery({
         queryKey: jobKeys.saved(normalizedParams),
-        queryFn: () => jobsApi.getSavedJobs(normalizedParams),
+        queryFn: ({ signal }) => jobsApi.getSavedJobs(normalizedParams, { signal }),
         staleTime: 2 * 60 * 1000, // AUD2-L08
         gcTime: 5 * 60 * 1000,
         ...options,
@@ -177,12 +204,55 @@ export const useApplyToJobMutation = (options = {}) => {
     return useMutation({
         mutationFn: ({ jobId, applicationData }) =>
             jobsApi.applyToJob(jobId, applicationData),
+        onMutate: async (variables) => {
+            const jobId = normalizeJobId(variables?.jobId);
+            if (!jobId) {
+                return { snapshots: [] };
+            }
+
+            await Promise.all([
+                queryClient.cancelQueries({ queryKey: jobKeys.detail(jobId) }),
+                queryClient.cancelQueries({ queryKey: jobKeys.list(), exact: false }),
+            ]);
+
+            const snapshots = [
+                [jobKeys.detail(jobId), queryClient.getQueryData(jobKeys.detail(jobId))],
+                ...queryClient.getQueriesData({ queryKey: jobKeys.list(), exact: false }),
+            ];
+
+            const detailQuery = queryClient.getQueryData(jobKeys.detail(jobId));
+            if (detailQuery && typeof detailQuery === 'object') {
+                queryClient.setQueryData(jobKeys.detail(jobId), markJobAsApplied(detailQuery));
+            }
+
+            queryClient.getQueriesData({ queryKey: jobKeys.list(), exact: false }).forEach(([key, data]) => {
+                if (!data || typeof data !== 'object') {
+                    return;
+                }
+
+                const nextData = {
+                    ...data,
+                    jobs: updateJobInCollection(data?.jobs, jobId),
+                    data: updateJobInCollection(data?.data, jobId),
+                };
+                queryClient.setQueryData(key, nextData);
+            });
+
+            return { snapshots };
+        },
+        onError: (error, variables, context) => {
+            context?.snapshots?.forEach(([key, value]) => {
+                queryClient.setQueryData(key, value);
+            });
+            options.onError?.(error, variables, context);
+        },
         onSuccess: (data, variables, context) => {
             if (variables?.jobId) {
                 queryClient.invalidateQueries({
                     queryKey: jobKeys.detail(variables.jobId),
                 });
             }
+            queryClient.invalidateQueries({ queryKey: jobKeys.list(), exact: false });
             queryClient.invalidateQueries({ queryKey: jobKeys.my('worker') });
             options.onSuccess?.(data, variables, context);
         },

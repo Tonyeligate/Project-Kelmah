@@ -8,6 +8,12 @@ import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { normalizeUser } from '../utils/userUtils';
 
+const authCheckError = (...args) => {
+  if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') {
+    console.error(...args);
+  }
+};
+
 export const useAuthCheck = () => {
   // Use ONLY Redux auth state to prevent dual state management conflicts
   const { user, isAuthenticated, loading } = useSelector((state) => state.auth);
@@ -19,7 +25,7 @@ export const useAuthCheck = () => {
       // Redux auth state: isAuthenticated is a boolean, not a function
       return Boolean(isAuthenticated);
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Error checking authentication status:', error);
+      authCheckError('Error checking authentication status:', error);
       return false;
     }
   }, [isAuthenticated]);

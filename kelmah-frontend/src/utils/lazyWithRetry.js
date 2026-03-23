@@ -20,6 +20,12 @@ const isChunkLoadError = (error) => {
 const RELOAD_GUARD_KEY = 'lazy-retry-reload-at';
 const RELOAD_GUARD_WINDOW_MS = 30_000;
 
+const lazyRetryWarn = (...args) => {
+  if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') {
+    console.warn(...args);
+  }
+};
+
 const canTriggerReload = () => {
   if (!isBrowser()) {
     return false;
@@ -79,7 +85,7 @@ const purgeCachesAndReload = (() => {
           type: 'KELMAH_CLEAR_RUNTIME_CACHES',
         });
       } catch (error) {
-        if (import.meta.env.DEV) console.warn('lazyWithRetry service worker message failed:', error);
+        lazyRetryWarn('lazyWithRetry service worker message failed:', error);
       }
 
       tasks.push(
@@ -115,7 +121,7 @@ const purgeCachesAndReload = (() => {
 
     purgeCaches()
       .catch((error) => {
-        if (import.meta.env.DEV) console.warn('lazyWithRetry cache purge failed:', error);
+        lazyRetryWarn('lazyWithRetry cache purge failed:', error);
       })
       .finally(() => {
         markReloadTriggered();
@@ -172,7 +178,7 @@ export const lazyWithRetry = (factory, options = {}) => {
         const stored = sessionStorage.getItem(storageKey);
         attempts = Number(stored) || 0;
       } catch (storageError) {
-        if (import.meta.env.DEV) console.warn('lazyWithRetry storage error:', storageError);
+        lazyRetryWarn('lazyWithRetry storage error:', storageError);
       }
 
       if (attempts >= maxRetries) {
@@ -183,7 +189,7 @@ export const lazyWithRetry = (factory, options = {}) => {
       try {
         sessionStorage.setItem(storageKey, String(attempts + 1));
       } catch (storageError) {
-        if (import.meta.env.DEV) console.warn('lazyWithRetry storage write failed:', storageError);
+        lazyRetryWarn('lazyWithRetry storage write failed:', storageError);
       }
 
       purgeCachesAndReload();

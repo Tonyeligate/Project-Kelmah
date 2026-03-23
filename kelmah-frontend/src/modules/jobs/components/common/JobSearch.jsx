@@ -87,7 +87,7 @@ const JobSearch = () => {
       setJobs(response.data.data);
     } catch (err) {
       setError('Failed to fetch jobs. Please try again later.');
-      if (import.meta.env.DEV) console.error('Error fetching jobs:', err);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error fetching jobs:', err);
     } finally {
       setLoading(false);
     }
@@ -118,7 +118,7 @@ const JobSearch = () => {
       await api.post(`/jobs/${jobId}/apply`, {});
       // Show success message or update UI
     } catch (err) {
-      if (import.meta.env.DEV) console.error('Error applying for job:', err);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error applying for job:', err);
     }
   };
 

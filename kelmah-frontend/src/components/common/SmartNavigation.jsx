@@ -81,7 +81,7 @@ const SmartNavigation = () => {
         };
         secureStorage.setItem(QUICK_NAV_STORAGE_KEY, next, QUICK_NAV_PREF_TTL);
       } catch (error) {
-        if (import.meta.env.DEV) console.warn(
+        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn(
           'Quick navigation preference persistence failed:',
           error.message,
         );
@@ -162,7 +162,7 @@ const SmartNavigation = () => {
         }
       }
     } catch (error) {
-      if (import.meta.env.DEV) console.warn(
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn(
         'Quick navigation preference hydrate failed:',
         error.message,
       );

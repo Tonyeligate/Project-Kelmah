@@ -1,6 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { API_BASE_URL } from '../config/environment';
 
+const API_HEALTH_DEBUG =
+  import.meta.env.DEV && import.meta.env.VITE_DEBUG_SERVICE_HEALTH === 'true';
+const apiHealthDebug = (...args) => {
+  if (API_HEALTH_DEBUG) {
+    console.debug(...args);
+  }
+};
+
 export const useApiHealth = () => {
   const [isHealthy, setIsHealthy] = useState(true); // Optimistic default
   const [lastCheck, setLastCheck] = useState(null);
@@ -46,14 +54,17 @@ export const useApiHealth = () => {
             }
           } catch (endpointError) {
             // Try next endpoint
-            console.debug(`Health check failed for ${healthUrl}:`, endpointError.message);
+            apiHealthDebug(
+              `Health check failed for ${healthUrl}:`,
+              endpointError.message,
+            );
           }
         }
 
         // All endpoints failed
         throw new Error('All health endpoints failed');
       } catch (error) {
-        if (import.meta.env.DEV) console.warn('Health check failed:', error.message);
+        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Health check failed:', error.message);
         if (!isMountedRef.current) return;
 
         // Retry logic - single retry with backoff to reduce request churn

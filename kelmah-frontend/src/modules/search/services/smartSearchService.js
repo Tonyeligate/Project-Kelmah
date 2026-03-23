@@ -133,7 +133,7 @@ const smartSearchService = {
       const response = await api.post(`/jobs/${jobId}/save`);
       return response?.data?.data || response?.data || { success: true };
     } catch (error) {
-      if (import.meta.env.DEV) console.warn('Save job API not available:', error.message);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Save job API not available:', error.message);
       throw error;
     }
   },

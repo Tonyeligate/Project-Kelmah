@@ -9,6 +9,11 @@ const THEME_STORAGE_VERSION = 2;
 const SYSTEM_PREFERENCE_MEDIA = '(prefers-color-scheme: dark)';
 const DARK_THEME_COLOR = darkTheme?.palette?.background?.default || '#050507';
 const LIGHT_THEME_COLOR = lightTheme?.palette?.background?.default || '#F9F7ED';
+const themeWarn = (...args) => {
+  if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') {
+    console.warn(...args);
+  }
+};
 
 const isValidMode = (value) => value === 'dark' || value === 'light';
 
@@ -43,7 +48,7 @@ const parseThemePreference = (rawValue) => {
       version: parsed.version || 1,
     };
   } catch (error) {
-    if (import.meta.env.DEV) console.warn('Failed to parse stored theme preference:', error);
+    themeWarn('Failed to parse stored theme preference:', error);
     return null;
   }
 };
@@ -68,7 +73,7 @@ const readStoredThemePreference = () => {
       'localStorage',
     );
   } catch (error) {
-    if (import.meta.env.DEV) console.warn('Failed to read theme from localStorage:', error);
+    themeWarn('Failed to read theme from localStorage:', error);
   }
 
   try {
@@ -77,7 +82,7 @@ const readStoredThemePreference = () => {
       'sessionStorage',
     );
   } catch (error) {
-    if (import.meta.env.DEV) console.warn('Failed to read theme from sessionStorage:', error);
+    themeWarn('Failed to read theme from sessionStorage:', error);
   }
 
   const domTheme = document.documentElement?.getAttribute('data-theme');
@@ -103,14 +108,35 @@ const applyDocumentTheme = (mode) => {
   }
 
   document.documentElement.setAttribute('data-theme', mode);
+  document.documentElement.setAttribute('data-color-scheme', mode);
+  document.documentElement.style.colorScheme = mode;
 
-  const themeMeta = document.querySelector('meta[name="theme-color"]');
-  if (themeMeta) {
-    themeMeta.setAttribute(
-      'content',
-      mode === 'dark' ? DARK_THEME_COLOR : LIGHT_THEME_COLOR,
-    );
+  let themeMeta = document.querySelector('meta[name="theme-color"]');
+  if (!themeMeta) {
+    themeMeta = document.createElement('meta');
+    themeMeta.setAttribute('name', 'theme-color');
+    document.head.appendChild(themeMeta);
   }
+
+  themeMeta.setAttribute(
+    'content',
+    mode === 'dark' ? DARK_THEME_COLOR : LIGHT_THEME_COLOR,
+  );
+};
+
+const broadcastThemeModeChange = (mode) => {
+  if (!isBrowser()) {
+    return;
+  }
+
+  window.dispatchEvent(
+    new CustomEvent('kelmah:theme-mode-changed', {
+      detail: {
+        mode,
+        changedAt: Date.now(),
+      },
+    }),
+  );
 };
 
 const persistThemeMode = (mode) => {
@@ -123,13 +149,13 @@ const persistThemeMode = (mode) => {
   try {
     window.localStorage.setItem(THEME_STORAGE_KEY, payload);
   } catch (error) {
-    if (import.meta.env.DEV) console.warn('Failed to save theme to localStorage:', error);
+    themeWarn('Failed to save theme to localStorage:', error);
   }
 
   try {
     window.sessionStorage.setItem(THEME_STORAGE_KEY, payload);
   } catch (error) {
-    if (import.meta.env.DEV) console.warn('Failed to save theme to sessionStorage:', error);
+    themeWarn('Failed to save theme to sessionStorage:', error);
   }
 
   return payload;
@@ -176,6 +202,7 @@ export const KelmahThemeProvider = ({ children }) => {
   useEffect(() => {
     persistThemeMode(mode);
     applyDocumentTheme(mode);
+    broadcastThemeModeChange(mode);
   }, [mode]);
 
   // Keep multiple tabs/windows in sync

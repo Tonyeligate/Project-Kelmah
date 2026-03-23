@@ -54,7 +54,8 @@ const PageHeader = ({
                             alignItems: 'center',
                             color: 'text.secondary',
                             textDecoration: 'none',
-                            fontSize: '0.875rem',
+                            fontSize: { xs: '0.85rem', sm: '0.9rem' },
+                            lineHeight: 1.45,
                             '&:hover': { color: 'primary.main' },
                         }}
                     >
@@ -71,7 +72,8 @@ const PageHeader = ({
                                     sx={{
                                         color: 'text.primary',
                                         fontWeight: 500,
-                                        fontSize: '0.875rem',
+                                        fontSize: { xs: '0.85rem', sm: '0.9rem' },
+                                        lineHeight: 1.45,
                                     }}
                                 >
                                     {crumb.label}
@@ -87,7 +89,8 @@ const PageHeader = ({
                                 sx={{
                                     color: 'text.secondary',
                                     textDecoration: 'none',
-                                    fontSize: '0.875rem',
+                                    fontSize: { xs: '0.85rem', sm: '0.9rem' },
+                                    lineHeight: 1.45,
                                     '&:hover': { color: 'primary.main' },
                                 }}
                             >
@@ -116,7 +119,9 @@ const PageHeader = ({
                         sx={{
                             fontWeight: 600,
                             color: 'text.primary',
-                            fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' },
+                            fontSize: { xs: '1.45rem', sm: '1.75rem', md: '2rem' },
+                            lineHeight: 1.25,
+                            letterSpacing: '-0.01em',
                         }}
                     >
                         {title}
@@ -127,6 +132,9 @@ const PageHeader = ({
                             sx={{
                                 color: 'text.secondary',
                                 mt: 0.5,
+                                lineHeight: 1.65,
+                                fontSize: { xs: '0.95rem', sm: '1rem' },
+                                maxWidth: { sm: '64ch' },
                             }}
                         >
                             {subtitle}
@@ -151,8 +159,14 @@ const PageHeader = ({
                                 onClick={onRefresh}
                                 disabled={isRefreshing}
                                 sx={{
+                                    minHeight: 44,
+                                    minWidth: 44,
                                     color: 'text.secondary',
                                     '&:hover': { color: 'primary.main' },
+                                    '&:focus-visible': {
+                                        outline: `3px solid ${theme.palette.primary.main}`,
+                                        outlineOffset: 2,
+                                    },
                                 }}
                                 aria-label="Refresh data panel"
                             >
@@ -179,6 +193,7 @@ const PageHeader = ({
                             aria-label={secondaryAction.label}
                             size={isMobile ? 'small' : 'medium'}
                             sx={{
+                                minHeight: 44,
                                 borderRadius: 2,
                                 textTransform: 'none',
                                 fontWeight: 500,
@@ -198,6 +213,7 @@ const PageHeader = ({
                             aria-label={primaryAction.label}
                             size={isMobile ? 'small' : 'medium'}
                             sx={{
+                                minHeight: 44,
                                 borderRadius: 2,
                                 textTransform: 'none',
                                 fontWeight: 600,

@@ -239,7 +239,11 @@ const MobileRegister = () => {
         });
       }, 1500);
     } catch (error) {
-      setSubmitError(error?.message || error || 'Registration failed');
+      setSubmitError(
+        error?.message ||
+          error ||
+          'We could not create your account yet. Check your details and connection, then try again.',
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -596,6 +600,20 @@ const MobileRegister = () => {
             '& .MuiLinearProgress-bar': { backgroundColor: theme.palette.primary.main },
           }}
         />
+
+        <Alert
+          severity="info"
+          sx={{
+            mt: 1.25,
+            borderRadius: 2,
+            py: 0.5,
+            '& .MuiAlert-message': {
+              fontSize: '0.82rem',
+            },
+          }}
+        >
+          1) Pick role  2) Add your real details  3) Create password.
+        </Alert>
       </Box>
 
       {/* Main Card */}

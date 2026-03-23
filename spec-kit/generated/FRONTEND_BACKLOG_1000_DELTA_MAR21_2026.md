@@ -9,6 +9,18 @@
 2. Batch by theme for sprint execution.
 3. Validate each fix on mobile and desktop before closure.
 
+## Re-Audit Closure Overlay (March 23, 2026)
+
+- Closed/deprioritized as stale duplicates based on `spec-kit/generated/FRONTEND_REAUDIT_FIXED_AREAS_MAR23_2026.md`:
+	- Theme 17: Error recovery affordances
+	- Theme 18: Search demand intelligence
+	- Theme 19: Navigation IA simplification
+	- Theme 20: Performance observability UX
+- Keep active follow-up work focused on:
+	- global console-noise reduction
+	- periodic contract review for `useJobsQuery.js` and `apiClient.js`
+	- unresolved mobile/desktop visual and accessibility polish in other surfaces
+
 ## Evidence Anchors
 - kelmah-frontend/src/modules/layout/components/MobileBottomNav.jsx
 - kelmah-frontend/src/components/common/SmartNavigation.jsx

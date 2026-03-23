@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { api } from '../services/apiClient';
 
+const proposalsError = (...args) => {
+  if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') {
+    console.error(...args);
+  }
+};
+
 export const DEFAULT_PROPOSAL_PAGE_SIZE = 10;
 const MAX_RETRY_ATTEMPTS = 2;
 const REQUEST_TIMEOUT_MS = 10000;
@@ -192,7 +198,7 @@ export const useProposals = ({
             finalError?.message ||
             'Unable to fetch proposals. Please try again later.';
 
-        if (import.meta.env.DEV) console.error('Unable to fetch proposals', {
+        proposalsError('Unable to fetch proposals', {
           requestId,
           timedOut,
           status: finalError?.response?.status,

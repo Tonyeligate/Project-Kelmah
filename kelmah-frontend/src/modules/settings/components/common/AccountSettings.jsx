@@ -253,6 +253,8 @@ const AccountSettings = () => {
             helperText={formErrors.firstName}
             fullWidth
             disabled={isSaving}
+            required
+            autoComplete="given-name"
           />
           <TextField
             label="Last Name"
@@ -263,6 +265,8 @@ const AccountSettings = () => {
             helperText={formErrors.lastName}
             fullWidth
             disabled={isSaving}
+            required
+            autoComplete="family-name"
           />
           <TextField
             label="Email"
@@ -274,6 +278,8 @@ const AccountSettings = () => {
             helperText={formErrors.email}
             fullWidth
             disabled={isSaving}
+            required
+            autoComplete="email"
           />
           <TextField
             label="Phone"
@@ -284,6 +290,8 @@ const AccountSettings = () => {
             helperText={formErrors.phone || 'Include country code e.g. +233...'}
             fullWidth
             disabled={isSaving}
+            autoComplete="tel"
+            inputProps={{ inputMode: 'tel' }}
           />
           <Typography variant="body2" color="text.secondary">
             Use a phone number with country code so hirers can contact you reliably.
@@ -299,7 +307,7 @@ const AccountSettings = () => {
               type="submit"
               variant="contained"
               disabled={isSaving}
-              sx={{ minWidth: 180 }}
+              sx={{ minWidth: 180, minHeight: 44 }}
             >
               {isSaving ? <CircularProgress size={24} /> : 'Save Changes'}
             </Button>
@@ -328,7 +336,8 @@ const AccountSettings = () => {
           color="error"
           onClick={handleLogout}
           startIcon={<LogoutIcon />}
-          disabled={isLoggingOut}>
+          disabled={isLoggingOut}
+          sx={{ minHeight: 44 }}>
           {isLoggingOut ? 'Signing out…' : 'Logout of Kelmah'}
         </Button>
       </Paper>

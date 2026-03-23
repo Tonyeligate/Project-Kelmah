@@ -1,0 +1,17 @@
+{
+  "taskId": "backend-demo-task",
+  "realWorldSignals": [
+    "Inter-service timeout spikes during peak usage windows"
+  ],
+  "userPainPoints": [
+    "Delayed API responses create retry storms in clients"
+  ],
+  "policyAdjustments": [
+    "Enforce fallback responses and stricter timeout guards"
+  ],
+  "rollbackLessons": {
+    "trigger": "p95 latency regression",
+    "lesson": "Rollback path must be rehearsed before release"
+  },
+  "closureVerdict": "PASS"
+}

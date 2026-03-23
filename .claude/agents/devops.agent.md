@@ -617,3 +617,29 @@ Advanced tools to activate:
   - MultiWorldGateVerifier
   - InfraEntropyMonitor
 ```
+
+### OFL-6: DevOps Experience Learning Loop
+```
+After each advanced infra task:
+  - capture deployment/drift incidents and root-cause mistakes
+  - convert each incident into deterministic pipeline/config guardrails
+  - ingest field uptime/error and rollback telemetry signals
+  - update coherence and world-verification checks to prevent recurrence
+
+Evidence files:
+  - learning_update.json
+  - field_experience_report.json
+
+No learning evidence => infra fix is not growth-complete.
+```
+
+### OFL-7: Optimization Experiment Pipeline Gate
+```
+For adaptive or optimization rollout infrastructure:
+  - require canary and rollback strategy before activation
+  - enforce experiment isolation to prevent cross-feature contamination
+  - track p95 latency, error rate, and conversion safety bounds
+  - auto-disable optimization path when reliability budgets are exceeded
+
+No optimization rollout is valid without safe rollback and telemetry guards.
+```

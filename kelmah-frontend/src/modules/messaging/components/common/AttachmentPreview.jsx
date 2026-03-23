@@ -142,7 +142,16 @@ const AttachmentPreview = ({
                     size="small"
                     onClick={togglePreview}
                     aria-label="Preview attachment"
-                    sx={{ mr: 0.5 }}
+                    sx={{
+                      mr: 0.5,
+                      width: 44,
+                      height: 44,
+                      '&:focus-visible': {
+                        outline: '3px solid',
+                        outlineColor: 'primary.main',
+                        outlineOffset: '2px',
+                      },
+                    }}
                   >
                     <VisibilityIcon fontSize="small" />
                   </IconButton>
@@ -155,7 +164,16 @@ const AttachmentPreview = ({
                     size="small"
                     onClick={handleDownload}
                     aria-label="Download attachment"
-                    sx={{ mr: 0.5 }}
+                    sx={{
+                      mr: 0.5,
+                      width: 44,
+                      height: 44,
+                      '&:focus-visible': {
+                        outline: '3px solid',
+                        outlineColor: 'primary.main',
+                        outlineOffset: '2px',
+                      },
+                    }}
                   >
                     <CloudDownloadIcon fontSize="small" />
                   </IconButton>
@@ -171,6 +189,15 @@ const AttachmentPreview = ({
                       onRemove && onRemove(attachment);
                     }}
                     aria-label="Remove attachment"
+                    sx={{
+                      width: 44,
+                      height: 44,
+                      '&:focus-visible': {
+                        outline: '3px solid',
+                        outlineColor: 'primary.main',
+                        outlineOffset: '2px',
+                      },
+                    }}
                   >
                     <CloseIcon fontSize="small" />
                   </IconButton>
@@ -205,8 +232,14 @@ const AttachmentPreview = ({
               top: 16,
               right: 16,
               color: 'white',
+              width: 44,
+              height: 44,
               bgcolor: 'rgba(0, 0, 0, 0.5)',
               '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.7)' },
+              '&:focus-visible': {
+                outline: '3px solid #fff',
+                outlineOffset: '2px',
+              },
             }}
             onClick={() => setShowPreview(false)}
             aria-label="Close attachment preview"

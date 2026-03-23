@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import profileService from '../services/profileService';
 import {
@@ -10,6 +10,14 @@ import useAuth from '../../auth/hooks/useAuth';
 
 const PROFILE_REQUEST_TIMEOUT_MS = 5000;
 let profileInitPromise = null;
+const PROFILE_DEBUG =
+  import.meta.env.DEV && import.meta.env.VITE_DEBUG_PROFILE === 'true';
+
+const profileDebug = (...args) => {
+  if (PROFILE_DEBUG) {
+    console.debug(...args);
+  }
+};
 
 export const useProfile = (options = {}) => {
   const { autoInitialize = true } = options;
@@ -17,12 +25,23 @@ export const useProfile = (options = {}) => {
   const { isAuthenticated } = useAuth();
   const [statistics, setStatistics] = useState(null);
   const [activity, setActivity] = useState([]);
+  const isMountedRef = useRef(true);
+  const activeRequestIdRef = useRef(0);
+
+  const isCurrentRequest = useCallback(
+    (requestId) =>
+      isMountedRef.current && requestId === activeRequestIdRef.current,
+    [],
+  );
 
   const loadProfile = useCallback(async () => {
+    const requestId = ++activeRequestIdRef.current;
     const startedAt = Date.now();
     let timeoutId;
-    dispatch(setLoading(true));
-    console.debug('[ProfileHook] loadProfile() initiated');
+    if (isCurrentRequest(requestId)) {
+      dispatch(setLoading(true));
+    }
+    profileDebug('[ProfileHook] loadProfile() initiated');
 
     try {
       const timeoutPromise = new Promise((_, reject) => {
@@ -37,9 +56,11 @@ export const useProfile = (options = {}) => {
         timeoutPromise,
       ]);
 
-      dispatch(setProfile(profile));
-      dispatch(setError(null)); // Clear any previous errors
-      console.debug('[ProfileHook] loadProfile() completed successfully', {
+      if (isCurrentRequest(requestId)) {
+        dispatch(setProfile(profile));
+        dispatch(setError(null)); // Clear any previous errors
+      }
+      profileDebug('[ProfileHook] loadProfile() completed successfully', {
         durationMs: Date.now() - startedAt,
       });
       return profile;
@@ -49,30 +70,34 @@ export const useProfile = (options = {}) => {
         ? 'Profile is taking too long to load. Please try again.'
         : error?.message || 'Failed to load profile. Please try again later.';
 
-      dispatch(setError(friendlyMessage));
-      if (import.meta.env.DEV) console.warn('Profile loading error (with fallback):', error.message);
+      if (isCurrentRequest(requestId)) {
+        dispatch(setError(friendlyMessage));
+      }
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Profile loading error (with fallback):', error.message);
       if (isTimeout) {
-        if (import.meta.env.DEV) console.warn('[ProfileHook] loadProfile() timed out after 5s');
+        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('[ProfileHook] loadProfile() timed out after 5s');
       }
       return null;
     } finally {
       clearTimeout(timeoutId);
-      console.debug('[ProfileHook] loadProfile() finished', {
+      profileDebug('[ProfileHook] loadProfile() finished', {
         durationMs: Date.now() - startedAt,
       });
-      dispatch(setLoading(false));
+      if (isCurrentRequest(requestId)) {
+        dispatch(setLoading(false));
+      }
     }
-  }, [dispatch]);
+  }, [dispatch, isCurrentRequest]);
 
   const updateProfile = useCallback(
     async (profileData) => {
       try {
         dispatch(setLoading(true));
-        console.debug('[ProfileHook] updateProfile() initiated');
+        profileDebug('[ProfileHook] updateProfile() initiated');
         const updatedProfile = await profileService.updateProfile(profileData);
         dispatch(setProfile(updatedProfile));
         dispatch(setError(null));
-        console.debug('[ProfileHook] updateProfile() completed');
+        profileDebug('[ProfileHook] updateProfile() completed');
         return updatedProfile;
       } catch (error) {
         dispatch(setError(error.message));
@@ -88,10 +113,10 @@ export const useProfile = (options = {}) => {
     async (file) => {
       try {
         dispatch(setLoading(true));
-        console.debug('[ProfileHook] uploadProfilePicture() initiated');
+        profileDebug('[ProfileHook] uploadProfilePicture() initiated');
         const result = await profileService.uploadProfilePicture(file);
         await loadProfile(); // Reload profile to get updated picture
-        console.debug('[ProfileHook] uploadProfilePicture() completed');
+        profileDebug('[ProfileHook] uploadProfilePicture() completed');
         return result;
       } catch (error) {
         dispatch(setError(error.message));
@@ -176,10 +201,12 @@ export const useProfile = (options = {}) => {
   const loadStatistics = useCallback(async () => {
     try {
       const stats = await profileService.getStatistics();
-      setStatistics(stats);
+      if (isMountedRef.current) {
+        setStatistics(stats);
+      }
       return stats;
     } catch (error) {
-      if (import.meta.env.DEV) console.warn('Statistics loading error (with fallback):', error.message);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Statistics loading error (with fallback):', error.message);
       // Don't re-throw since profileService now provides fallback data
       return null;
     }
@@ -188,13 +215,24 @@ export const useProfile = (options = {}) => {
   const loadActivity = useCallback(async (filters = {}) => {
     try {
       const activities = await profileService.getActivity(filters);
-      setActivity(activities);
+      if (isMountedRef.current) {
+        setActivity(activities);
+      }
       return activities;
     } catch (error) {
-      if (import.meta.env.DEV) console.warn('Activity loading error (with fallback):', error.message);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Activity loading error (with fallback):', error.message);
       // Don't re-throw since profileService now provides fallback data
       return [];
     }
+  }, []);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+
+    return () => {
+      isMountedRef.current = false;
+      activeRequestIdRef.current += 1;
+    };
   }, []);
 
   // Load profile when authenticated
@@ -208,13 +246,13 @@ export const useProfile = (options = {}) => {
             if (profile) {
               await Promise.allSettled([
                 loadStatistics().catch((error) => {
-                  if (import.meta.env.DEV) console.warn(
+                  if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn(
                     'Statistics loading failed (gracefully handled):',
                     error.message,
                   );
                 }),
                 loadActivity().catch((error) => {
-                  if (import.meta.env.DEV) console.warn(
+                  if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn(
                     'Activity loading failed (gracefully handled):',
                     error.message,
                   );
@@ -222,9 +260,9 @@ export const useProfile = (options = {}) => {
               ]);
             }
 
-            if (import.meta.env.DEV) console.log('🎯 Profile initialization completed');
+            profileDebug('[ProfileHook] Profile initialization completed');
           } catch (error) {
-            if (import.meta.env.DEV) console.error('Profile initialization error:', error);
+            if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Profile initialization error:', error);
           } finally {
             profileInitPromise = null;
           }

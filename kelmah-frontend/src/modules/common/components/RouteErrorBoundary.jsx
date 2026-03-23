@@ -18,7 +18,7 @@ class RouteErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    if (import.meta.env.DEV) {
+    if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') {
       console.error(
         `[RouteErrorBoundary] Error in ${this.props.label || 'route'}:`,
         error,
@@ -45,6 +45,29 @@ class RouteErrorBoundary extends React.Component {
     }
 
     this.setState({ hasError: false, error: null });
+  };
+
+  navigateToDashboard = () => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    try {
+      const targetPath = '/dashboard';
+      const currentPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+      if (currentPath === targetPath) {
+        this.setState({ hasError: false, error: null });
+        return;
+      }
+
+      if (window.history && typeof window.history.pushState === 'function') {
+        window.history.pushState({}, '', targetPath);
+        window.dispatchEvent(new PopStateEvent('popstate'));
+        return;
+      }
+    } catch {
+      // No-op: avoid forcing a hard navigation when router state is recoverable.
+    }
   };
 
   render() {
@@ -79,12 +102,29 @@ class RouteErrorBoundary extends React.Component {
               {' '}You can try again or go back to the dashboard.
             </Typography>
             <Box display="flex" gap={2} justifyContent="center">
-              <Button variant="contained" onClick={this.handleReset}>
+              <Button
+                variant="contained"
+                onClick={this.handleReset}
+                sx={{
+                  minHeight: 44,
+                  '&:focus-visible': {
+                    outline: '3px solid currentColor',
+                    outlineOffset: 2,
+                  },
+                }}
+              >
                 {this.isChunkLoadFailure() ? 'Reload App' : 'Try Again'}
               </Button>
               <Button
                 variant="outlined"
-                onClick={() => (window.location.href = '/dashboard')}
+                onClick={this.navigateToDashboard}
+                sx={{
+                  minHeight: 44,
+                  '&:focus-visible': {
+                    outline: '3px solid currentColor',
+                    outlineOffset: 2,
+                  },
+                }}
               >
                 Go to Dashboard
               </Button>

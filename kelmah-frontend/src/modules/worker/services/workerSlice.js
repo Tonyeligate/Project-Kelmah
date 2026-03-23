@@ -156,7 +156,11 @@ export const updateWorkerSkills = createAsyncThunk(
 
         const results = await Promise.allSettled(mutationTasks);
         const failures = results.filter((r) => r.status === 'rejected');
-        if (failures.length > 0 && import.meta.env.DEV) {
+        if (
+          failures.length > 0 &&
+          import.meta.env.DEV &&
+          import.meta.env.VITE_DEBUG_FRONTEND === 'true'
+        ) {
           console.warn(`${failures.length} skill update(s) failed`);
         }
       }

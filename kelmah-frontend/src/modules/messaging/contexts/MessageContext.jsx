@@ -17,7 +17,31 @@ import { normalizeAttachmentListVirusScan } from '../utils/virusScanUtils';
 import { MESSAGE_DELIVERY_ALIASES, SOCKET_EVENTS } from '../../../services/socketEvents';
 import { createRealtimeMessageDeduper } from '../utils/realtimeMessageDeduper';
 
+const MESSAGING_SOCKET_EVENTS = [
+  ...MESSAGE_DELIVERY_ALIASES,
+  SOCKET_EVENTS.MESSAGE.MESSAGE_DELIVERED,
+  SOCKET_EVENTS.MESSAGE.MESSAGE_READ,
+  SOCKET_EVENTS.MESSAGE.USER_TYPING,
+  SOCKET_EVENTS.MESSAGE.MESSAGES_READ,
+  'user_status_changed',
+  SOCKET_EVENTS.PRESENCE.USER_ONLINE,
+  SOCKET_EVENTS.PRESENCE.USER_OFFLINE,
+  SOCKET_EVENTS.CORE.CONNECTED,
+  SOCKET_EVENTS.CORE.CONNECT,
+  SOCKET_EVENTS.CORE.DISCONNECT,
+  SOCKET_EVENTS.CORE.CONNECT_ERROR,
+  SOCKET_EVENTS.CORE.ERROR,
+];
+
 const MessageContext = createContext(null);
+const MESSAGING_DEBUG =
+  import.meta.env.DEV && import.meta.env.VITE_DEBUG_MESSAGING === 'true';
+
+const messagingLog = (...args) => {
+  if (MESSAGING_DEBUG) {
+    console.log(...args);
+  }
+};
 
 const normalizeParticipant = (participant = {}) => {
   if (!participant || typeof participant !== 'object') return participant;
@@ -294,7 +318,7 @@ export const MessageProvider = ({ children }) => {
         return normalized; // Return list for callers that need it
       } catch (error) {
         lastError = error;
-        if (import.meta.env.DEV) console.warn(`loadConversations attempt ${attempt}/2 failed:`, error.message);
+        messagingLog(`loadConversations attempt ${attempt}/2 failed:`, error.message);
         if (attempt < 2) {
           await new Promise((r) => setTimeout(r, 3000)); // Wait 3s before retry
         }
@@ -302,7 +326,8 @@ export const MessageProvider = ({ children }) => {
     }
 
     // All retries failed
-    if (import.meta.env.DEV) console.error('Error loading conversations after retries:', lastError);
+    if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true')
+      console.error('Error loading conversations after retries:', lastError);
     setConversations([]);
     setLoadingConversations(false);
     return [];
@@ -327,32 +352,20 @@ export const MessageProvider = ({ children }) => {
 
       const sharedSocket = websocketService.socket;
       if (!sharedSocket) {
-        if (import.meta.env.DEV) console.warn('WebSocketService socket unavailable — messaging will use REST only');
+        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true')
+          console.warn(
+            'WebSocketService socket unavailable — messaging will use REST only',
+          );
         setRealtimeIssue('Real-time connection unavailable. Using standard refresh mode.');
         connectingRef.current = false;
         return;
       }
 
-      if (import.meta.env.DEV) console.log('🔌 MessageContext: reusing shared WebSocket connection');
+      messagingLog('🔌 MessageContext: reusing shared WebSocket connection');
 
       // Remove ONLY the listeners WE registered (named references), not all listeners
       const msgListeners = msgListenersRef.current;
-      const messagingEvents = [
-        ...MESSAGE_DELIVERY_ALIASES,
-        SOCKET_EVENTS.MESSAGE.MESSAGE_DELIVERED,
-        SOCKET_EVENTS.MESSAGE.MESSAGE_READ,
-        'user_online',
-        'user_offline',
-        'user_typing',
-        'messages_read',
-        'user_status_changed',
-        'connected',
-        SOCKET_EVENTS.CORE.CONNECT,
-        SOCKET_EVENTS.CORE.DISCONNECT,
-        SOCKET_EVENTS.CORE.CONNECT_ERROR,
-        SOCKET_EVENTS.CORE.ERROR,
-      ];
-      messagingEvents.forEach(evt => {
+      MESSAGING_SOCKET_EVENTS.forEach((evt) => {
         if (msgListeners[evt]) sharedSocket.off(evt, msgListeners[evt]);
       });
       msgListenersRef.current = {};
@@ -373,14 +386,15 @@ export const MessageProvider = ({ children }) => {
       };
       const onConnectError = (error) => {
         if (!socketErrorLoggedRef.current) {
-          if (import.meta.env.DEV) console.error('🚨 WebSocket connection error:', error);
+          if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true')
+            console.error('🚨 WebSocket connection error:', error);
           socketErrorLoggedRef.current = true;
         }
         setRealtimeIssue('Real-time connection failed. Using standard refresh mode.');
         connectingRef.current = false;
       };
       const onConnected = (data) => {
-        if (import.meta.env.DEV) console.log('🎉 Messaging service connected:', data);
+        messagingLog('🎉 Messaging service connected:', data);
         if (data.conversations) {
           setConversations((prev) => {
             if (Array.isArray(prev) && prev.length > 0) {
@@ -396,7 +410,7 @@ export const MessageProvider = ({ children }) => {
         }
       };
       const onNewMessage = (messageData) => {
-        if (import.meta.env.DEV) console.log('📨 New message received:', messageData);
+        messagingLog('📨 New message received:', messageData);
         const hydratedMessage = normalizeMessageAttachments(messageData);
         if (realtimeMessageDeduperRef.current.mark(hydratedMessage)) {
           return;
@@ -478,7 +492,7 @@ export const MessageProvider = ({ children }) => {
         });
       };
       const onMessagesRead = (data) => {
-        if (import.meta.env.DEV) console.log('📖 Messages marked as read:', data);
+        messagingLog('📖 Messages marked as read:', data);
         const activeConversation = selectedConversationRef.current;
         if (
           activeConversation &&
@@ -510,7 +524,7 @@ export const MessageProvider = ({ children }) => {
       const onUserOffline = (data) => onUserStatusChanged({ userId: data.userId, status: 'offline' });
 
       const onMessageDelivered = (data) => {
-        if (import.meta.env.DEV) console.log('✓ Message delivered:', data);
+        messagingLog('✓ Message delivered:', data);
         const activeConversation = selectedConversationRef.current;
         if (activeConversation && data.conversationId === activeConversation.id) {
           setMessages((prev) =>
@@ -522,7 +536,7 @@ export const MessageProvider = ({ children }) => {
       };
 
       const onError = (error) => {
-        if (import.meta.env.DEV) console.error('🚨 WebSocket error:', error);
+        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('🚨 WebSocket error:', error);
       };
 
       // Register all named handlers and store references for cleanup
@@ -530,17 +544,17 @@ export const MessageProvider = ({ children }) => {
         [SOCKET_EVENTS.CORE.CONNECT]: onConnect,
         [SOCKET_EVENTS.CORE.DISCONNECT]: onDisconnect,
         [SOCKET_EVENTS.CORE.CONNECT_ERROR]: onConnectError,
-        connected: onConnected,
+        [SOCKET_EVENTS.CORE.CONNECTED]: onConnected,
         [SOCKET_EVENTS.MESSAGE.NEW_MESSAGE]: onNewMessage,
         [SOCKET_EVENTS.MESSAGE.RECEIVE_MESSAGE]: onNewMessage,
         [SOCKET_EVENTS.MESSAGE.NEW_MESSAGE_ALT]: onNewMessage,
-        user_typing: onUserTyping,
-        messages_read: onMessagesRead,
+        [SOCKET_EVENTS.MESSAGE.USER_TYPING]: onUserTyping,
+        [SOCKET_EVENTS.MESSAGE.MESSAGES_READ]: onMessagesRead,
         [SOCKET_EVENTS.MESSAGE.MESSAGE_READ]: onMessagesRead,
         [SOCKET_EVENTS.MESSAGE.MESSAGE_DELIVERED]: onMessageDelivered,
         user_status_changed: onUserStatusChanged,
-        user_online: onUserOnline,
-        user_offline: onUserOffline,
+        [SOCKET_EVENTS.PRESENCE.USER_ONLINE]: onUserOnline,
+        [SOCKET_EVENTS.PRESENCE.USER_OFFLINE]: onUserOffline,
         [SOCKET_EVENTS.CORE.ERROR]: onError,
       };
       Object.entries(msgListenersRef.current).forEach(([evt, handler]) => {
@@ -555,7 +569,8 @@ export const MessageProvider = ({ children }) => {
         connectingRef.current = false;
       }
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Failed to initialize messaging socket:', error);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true')
+        console.error('Failed to initialize messaging socket:', error);
       setRealtimeIssue('Real-time connection failed. Using standard refresh mode.');
       connectingRef.current = false;
     }
@@ -572,34 +587,19 @@ export const MessageProvider = ({ children }) => {
       conversationLoadTimeoutRef.current = null;
     }
     if (activeSocket) {
-      if (import.meta.env.DEV) console.log('🔌 MessageContext: detaching messaging listeners from shared socket');
+      messagingLog('🔌 MessageContext: detaching messaging listeners from shared socket');
       const msgListeners = msgListenersRef.current;
       try {
-        const messagingEvents = [
-          ...MESSAGE_DELIVERY_ALIASES,
-          SOCKET_EVENTS.MESSAGE.MESSAGE_DELIVERED,
-          SOCKET_EVENTS.MESSAGE.MESSAGE_READ,
-          'user_online',
-          'user_offline',
-          'user_typing',
-          'messages_read',
-          'user_status_changed',
-          'connected',
-          SOCKET_EVENTS.CORE.CONNECT,
-          SOCKET_EVENTS.CORE.DISCONNECT,
-          SOCKET_EVENTS.CORE.CONNECT_ERROR,
-          SOCKET_EVENTS.CORE.ERROR,
-        ];
-        messagingEvents.forEach(evt => {
+        MESSAGING_SOCKET_EVENTS.forEach((evt) => {
           if (msgListeners[evt]) activeSocket.off(evt, msgListeners[evt]);
         });
         if (conversationJoinHandlerRef.current) {
-          activeSocket.off('conversation_joined', conversationJoinHandlerRef.current);
+          activeSocket.off(SOCKET_EVENTS.CONVERSATION.JOINED, conversationJoinHandlerRef.current);
           conversationJoinHandlerRef.current = null;
         }
         msgListenersRef.current = {};
       } catch (error) {
-        if (import.meta.env.DEV) console.warn('Failed to remove messaging listeners', error);
+        messagingLog('Failed to remove messaging listeners', error);
       }
       // Do NOT disconnect the shared socket
       setSocket(null);
@@ -640,13 +640,13 @@ export const MessageProvider = ({ children }) => {
 
       // Leave previous conversation room
       if (selectedConversation && socket && !selectedConversation.isTemporary) {
-        socket.emit('leave_conversation', {
+        socket.emit(SOCKET_EVENTS.CONVERSATION.LEAVE, {
           conversationId: selectedConversation.id,
         });
       }
 
       if (socket && conversationJoinHandlerRef.current) {
-        socket.off('conversation_joined', conversationJoinHandlerRef.current);
+        socket.off(SOCKET_EVENTS.CONVERSATION.JOINED, conversationJoinHandlerRef.current);
         conversationJoinHandlerRef.current = null;
       }
       if (conversationLoadTimeoutRef.current) {
@@ -691,10 +691,10 @@ export const MessageProvider = ({ children }) => {
       try {
         // Join new conversation room via WebSocket
         if (socket && isConnected) {
-          socket.emit('join_conversation', { conversationId: normalizedConversation.id });
+          socket.emit(SOCKET_EVENTS.CONVERSATION.JOIN, { conversationId: normalizedConversation.id });
 
           // Notify backend that messages in this conversation have been read
-          socket.emit('mark_read', {
+          socket.emit(SOCKET_EVENTS.CONVERSATION.MARK_READ, {
             conversationId: normalizedConversation.id,
             messageIds: 'all_unread',
           });
@@ -705,21 +705,21 @@ export const MessageProvider = ({ children }) => {
               return;
             }
             if (conversationJoinHandlerRef.current) {
-              socket.off('conversation_joined', conversationJoinHandlerRef.current);
+              socket.off(SOCKET_EVENTS.CONVERSATION.JOINED, conversationJoinHandlerRef.current);
               conversationJoinHandlerRef.current = null;
             }
             if (conversationLoadTimeoutRef.current) {
               clearTimeout(conversationLoadTimeoutRef.current);
               conversationLoadTimeoutRef.current = null;
             }
-            if (import.meta.env.DEV) console.log('🏠 Joined conversation:', data);
+            messagingLog('🏠 Joined conversation:', data);
             setMessages(normalizeMessageList(data.messages || []));
             setLoadingMessages(false);
             loadingMessagesRef.current = false;
           };
 
           conversationJoinHandlerRef.current = handleConversationJoined;
-          socket.on('conversation_joined', handleConversationJoined);
+          socket.on(SOCKET_EVENTS.CONVERSATION.JOINED, handleConversationJoined);
 
           // MED-21 FIX: Fallback timeout — fetch via REST if WS doesn't respond in time
           const conversationId = normalizedConversation.id;
@@ -729,10 +729,13 @@ export const MessageProvider = ({ children }) => {
                 const fallbackMessages = await messagingService.getMessages(conversationId);
                 setMessages(normalizeMessageList(fallbackMessages));
               } catch (fallbackErr) {
-                if (import.meta.env.DEV) console.warn('REST fallback for messages also failed:', fallbackErr.message);
+                messagingLog(
+                  'REST fallback for messages also failed:',
+                  fallbackErr.message,
+                );
               } finally {
                 if (conversationJoinHandlerRef.current) {
-                  socket.off('conversation_joined', conversationJoinHandlerRef.current);
+                  socket.off(SOCKET_EVENTS.CONVERSATION.JOINED, conversationJoinHandlerRef.current);
                   conversationJoinHandlerRef.current = null;
                 }
                 setLoadingMessages(false);
@@ -750,7 +753,7 @@ export const MessageProvider = ({ children }) => {
           setLoadingMessages(false);
         }
       } catch (error) {
-        if (import.meta.env.DEV) console.error(
+        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error(
           `Error loading messages for conversation ${normalizedConversation.id}:`,
           error,
         );
@@ -830,7 +833,7 @@ export const MessageProvider = ({ children }) => {
 
         // Use WebSocket for real-time messaging if available
         if (socket && isConnected) {
-          if (import.meta.env.DEV) console.log('📤 Sending message via WebSocket');
+          messagingLog('📤 Sending message via WebSocket');
           // Create optimistic message with clientId
           const clientId = `${currentUserId}_${Date.now()}`;
           const now = new Date().toISOString();
@@ -891,7 +894,7 @@ export const MessageProvider = ({ children }) => {
 
           socket.emit(eventName, payload, async (ack) => {
             if (!ack || ack.ok !== true) {
-              if (import.meta.env.DEV) console.warn('WebSocket send failed, falling back to REST', ack);
+              messagingLog('WebSocket send failed, falling back to REST', ack);
               try {
                 const recipient = activeConversation.participants.find(
                   (participant) => {
@@ -951,7 +954,7 @@ export const MessageProvider = ({ children }) => {
                   ),
                 );
               } catch (e) {
-                if (import.meta.env.DEV) console.error('REST fallback failed:', e);
+                if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('REST fallback failed:', e);
                 // Mark optimistic message as failed
                 setMessages((prev) =>
                   prev.map((m) =>
@@ -964,9 +967,7 @@ export const MessageProvider = ({ children }) => {
           // Message will be added to UI via 'new_message' event
         } else {
           // Fallback to REST API
-          if (import.meta.env.DEV) console.log(
-            '📤 Sending message via REST API (WebSocket unavailable)',
-          );
+          messagingLog('📤 Sending message via REST API (WebSocket unavailable)');
           const recipient = activeConversation.participants.find(
             (participant) => {
               const participantId = resolveParticipantId(participant);
@@ -1011,7 +1012,7 @@ export const MessageProvider = ({ children }) => {
           );
         }
       } catch (error) {
-        if (import.meta.env.DEV) console.error('Error sending message:', error);
+        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error sending message:', error);
         setSendError(error?.message || 'Failed to send message. Please try again.');
       } finally {
         setSendingMessage(false);
@@ -1036,7 +1037,8 @@ export const MessageProvider = ({ children }) => {
         await selectConversation(fullConvo);
         return fullConvo;
       } catch (error) {
-        if (import.meta.env.DEV) console.error('Error creating conversation:', error);
+        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true')
+          console.error('Error creating conversation:', error);
         throw error;
       }
     },
@@ -1083,12 +1085,12 @@ export const MessageProvider = ({ children }) => {
 
   const clearConversation = useCallback(() => {
     if (selectedConversation && socket && !selectedConversation.isTemporary) {
-      socket.emit('leave_conversation', {
+      socket.emit(SOCKET_EVENTS.CONVERSATION.LEAVE, {
         conversationId: selectedConversation.id,
       });
     }
     if (socket && conversationJoinHandlerRef.current) {
-      socket.off('conversation_joined', conversationJoinHandlerRef.current);
+      socket.off(SOCKET_EVENTS.CONVERSATION.JOINED, conversationJoinHandlerRef.current);
       conversationJoinHandlerRef.current = null;
     }
     if (conversationLoadTimeoutRef.current) {
@@ -1107,13 +1109,13 @@ export const MessageProvider = ({ children }) => {
   // Real-time typing functions
   const startTyping = useCallback(() => {
     if (selectedConversation && socket && isConnected && !selectedConversation.isTemporary) {
-      socket.emit('typing_start', { conversationId: selectedConversation.id });
+      socket.emit(SOCKET_EVENTS.MESSAGE.TYPING_START, { conversationId: selectedConversation.id });
     }
   }, [selectedConversation, socket, isConnected]);
 
   const stopTyping = useCallback(() => {
     if (selectedConversation && socket && isConnected && !selectedConversation.isTemporary) {
-      socket.emit('typing_stop', { conversationId: selectedConversation.id });
+      socket.emit(SOCKET_EVENTS.MESSAGE.TYPING_STOP, { conversationId: selectedConversation.id });
     }
   }, [selectedConversation, socket, isConnected]);
 
@@ -1121,7 +1123,7 @@ export const MessageProvider = ({ children }) => {
   const markMessagesAsRead = useCallback(
     (messageIds = []) => {
       if (selectedConversation && socket && isConnected && !selectedConversation.isTemporary) {
-        socket.emit('mark_read', {
+        socket.emit(SOCKET_EVENTS.CONVERSATION.MARK_READ, {
           conversationId: selectedConversation.id,
           messageIds,
         });

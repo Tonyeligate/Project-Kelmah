@@ -110,7 +110,7 @@ const DocumentVerification = () => {
       setError(null);
     } catch (err) {
       setError('Failed to load documents');
-      if (import.meta.env.DEV) console.error(err);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error(err);
     } finally {
       setLoading(false);
     }
@@ -211,7 +211,7 @@ const DocumentVerification = () => {
       fetchDocuments();
     } catch (err) {
       setError('Failed to save document');
-      if (import.meta.env.DEV) console.error(err);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error(err);
     } finally {
       setLoading(false);
       setUploadProgress(0);
@@ -231,7 +231,7 @@ const DocumentVerification = () => {
       fetchDocuments();
     } catch (err) {
       setError('Failed to delete document');
-      if (import.meta.env.DEV) console.error(err);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error(err);
     } finally {
       setLoading(false);
     }
@@ -260,7 +260,7 @@ const DocumentVerification = () => {
       document.body.removeChild(a);
     } catch (err) {
       setError('Failed to download document');
-      if (import.meta.env.DEV) console.error(err);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error(err);
     }
   };
 

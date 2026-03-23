@@ -332,7 +332,13 @@ const PortfolioManager = () => {
           top: 8,
           right: 8,
           backgroundColor: alpha(theme.palette.background.paper, 0.8),
+          minWidth: 44,
+          minHeight: 44,
           zIndex: 1,
+          '&:focus-visible': {
+            outline: `3px solid ${theme.palette.primary.main}`,
+            outlineOffset: 2,
+          },
         }}
         aria-label={`Open actions for ${item.title}`}
         onClick={(e) => {
@@ -349,8 +355,24 @@ const PortfolioManager = () => {
           height={isMobile ? 176 : 200}
           image={item.heroImage}
           alt={item.title}
-          sx={{ objectFit: 'cover', cursor: 'pointer' }}
+          sx={{
+            objectFit: 'cover',
+            cursor: 'pointer',
+            '&:focus-visible': {
+              outline: `3px solid ${theme.palette.primary.main}`,
+              outlineOffset: -3,
+            },
+          }}
           onClick={() => handleOpenGallery(item)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              handleOpenGallery(item);
+            }
+          }}
+          tabIndex={0}
+          role="button"
+          aria-label={`Open image gallery for ${item.title}`}
           onError={(e) => { e.target.onerror = null; e.target.src = ''; e.target.style.display = 'none'; }}
         />
       ) : (
@@ -375,6 +397,15 @@ const PortfolioManager = () => {
           size="small"
           color="secondary"
           onClick={() => handleOpenGallery(item)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              handleOpenGallery(item);
+            }
+          }}
+          role="button"
+          tabIndex={0}
+          aria-label={`Open ${item.imageCount} gallery image${item.imageCount === 1 ? '' : 's'} for ${item.title}`}
           sx={{
             position: 'absolute',
             bottom: 12,
@@ -455,6 +486,15 @@ const PortfolioManager = () => {
                     bgcolor: 'action.hover',
                   }}
                   onClick={() => handleOpenGallery(item, index)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      handleOpenGallery(item, index);
+                    }
+                  }}
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`Open ${item.title} image ${index + 1}`}
                 >
                   <Box
                     component="img"

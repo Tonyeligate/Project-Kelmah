@@ -1,6 +1,6 @@
 import { AppBar, Box, Typography, IconButton, Avatar, Badge, Menu, MenuItem, Button } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { BRAND_COLORS } from '../../../../theme';
+import { BRAND_COLORS, KELMAH_FOCUS_RING } from '../../../../theme';
 import { Z_INDEX } from '../../../../constants/layout';
 
 export const StyledAppBar = styled(AppBar)(({ theme }) => ({
@@ -29,6 +29,11 @@ export const BrandLogo = styled(Box)(({ theme }) => ({
   textDecoration: 'none',
   cursor: 'pointer',
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  '&:focus-visible': {
+    outline: `3px solid ${theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black}`,
+    outlineOffset: 3,
+    borderRadius: 8,
+  },
   '&:hover': {
     transform: 'scale(1.02)',
   },
@@ -110,14 +115,20 @@ export const BrandText = styled(Typography)(({ theme }) => ({
     fontSize: '1.2rem',
     fontWeight: 700,
   },
+  '@media (forced-colors: active)': {
+    background: 'none',
+    WebkitTextFillColor: 'CanvasText',
+    color: 'CanvasText',
+    textShadow: 'none',
+  },
 }));
 
 export const TaglineText = styled(Typography)(({ theme }) => ({
   fontSize: '0.75rem',
   color:
     theme.palette.mode === 'dark'
-      ? 'rgba(255, 255, 255, 0.7)'
-      : 'rgba(0, 0, 0, 0.8)',
+      ? 'rgba(255, 255, 255, 0.8)'
+      : 'rgba(0, 0, 0, 0.9)',
   fontWeight: 500,
   marginTop: '-2px',
   letterSpacing: '0.5px',
@@ -137,8 +148,8 @@ export const ActionButton = styled(IconButton)(({ theme }) => ({
   color: theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
   border:
     theme.palette.mode === 'dark'
-      ? `1px solid rgba(255, 215, 0, 0.2)`
-      : `1px solid rgba(0, 0, 0, 0.2)`,
+      ? `1px solid rgba(255, 215, 0, 0.36)`
+      : `1px solid rgba(0, 0, 0, 0.36)`,
   margin: theme.spacing(0, 0.5),
   minWidth: 44,
   minHeight: 44,
@@ -146,7 +157,7 @@ export const ActionButton = styled(IconButton)(({ theme }) => ({
   height: 44,
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   '&:focus-visible': {
-    outline: `3px solid ${theme.palette.mode === 'dark' ? BRAND_COLORS.gold : theme.palette.primary.main}`,
+    outline: theme.palette.mode === 'dark' ? KELMAH_FOCUS_RING.dark : KELMAH_FOCUS_RING.light,
     outlineOffset: '2px',
   },
   [theme.breakpoints.down('sm')]: {
@@ -172,6 +183,11 @@ export const ActionButton = styled(IconButton)(({ theme }) => ({
   },
   '&:active': {
     transform: 'translateY(0) scale(1)',
+  },
+  '@media (forced-colors: active)': {
+    border: '1px solid ButtonText',
+    color: 'ButtonText',
+    backgroundColor: 'ButtonFace',
   },
 }));
 
@@ -208,6 +224,10 @@ export const UserAvatar = styled(Avatar)(({ theme }) => ({
       theme.palette.mode === 'dark'
         ? `0 4px 15px rgba(255, 215, 0, 0.4)`
         : `0 4px 15px rgba(0, 0, 0, 0.3)`,
+  },
+  '&:focus-visible': {
+    outline: theme.palette.mode === 'dark' ? KELMAH_FOCUS_RING.dark : KELMAH_FOCUS_RING.light,
+    outlineOffset: 2,
   },
 }));
 
@@ -273,8 +293,13 @@ export const AuthButton = styled(Button)(({ theme, variant }) => ({
   textTransform: 'none',
   fontWeight: 600,
   padding: '8px 20px',
+  minHeight: 44,
   fontSize: '0.9rem',
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  '&:focus-visible': {
+    outline: `3px solid ${theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black}`,
+    outlineOffset: 2,
+  },
   [theme.breakpoints.down('sm')]: {
     padding: '6px 12px',
     fontSize: '0.8rem',

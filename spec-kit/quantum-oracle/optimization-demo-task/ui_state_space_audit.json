@@ -1,0 +1,33 @@
+{
+  "taskId": "optimization-demo-task",
+  "frictionStatesDetected": [
+    {
+      "id": "FR-001",
+      "signal": "repeated help-hover before submit",
+      "severity": "medium"
+    },
+    {
+      "id": "FR-002",
+      "signal": "two-step back navigation loop",
+      "severity": "high"
+    }
+  ],
+  "selfHealingActions": [
+    {
+      "action": "simplify flow from 4 steps to 3",
+      "bounded": true,
+      "validated": true
+    },
+    {
+      "action": "surface inline assistance near primary CTA",
+      "bounded": true,
+      "validated": true
+    }
+  ],
+  "prohibitedActionAudit": {
+    "silentDataMutation": false,
+    "irreversibleTransition": false,
+    "hiddenConsent": false
+  },
+  "closureVerdict": "PASS"
+}

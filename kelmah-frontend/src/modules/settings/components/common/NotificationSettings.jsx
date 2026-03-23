@@ -114,6 +114,9 @@ const NotificationSettings = ({
                     checked={Boolean(localSettings[row.name])}
                     onChange={handleChange}
                     name={row.name}
+                    inputProps={{
+                      'aria-label': `${row.label} toggle`,
+                    }}
                   />
                 )}
                 label={(
@@ -135,7 +138,7 @@ const NotificationSettings = ({
           Notification categories such as jobs, messages, and promotions will use these channel preferences.
         </Alert>
         <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
-          <Button variant="contained" onClick={handleSave} disabled={loading}>
+          <Button variant="contained" onClick={handleSave} disabled={loading} sx={{ minHeight: 44 }}>
             {loading ? <CircularProgress size={24} /> : 'Save Changes'}
           </Button>
         </Box>

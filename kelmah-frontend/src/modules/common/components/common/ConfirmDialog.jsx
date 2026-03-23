@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -29,34 +29,58 @@ const ConfirmDialog = ({
   confirmColor = 'error',
   onConfirm,
   onCancel,
-}) => (
-  <Dialog
-    open={open}
-    onClose={onCancel}
-    aria-labelledby="confirm-dialog-title"
-    aria-describedby="confirm-dialog-description"
-    maxWidth="xs"
-    fullWidth
-  >
-    <DialogTitle id="confirm-dialog-title">{title}</DialogTitle>
-    <DialogContent>
-      <DialogContentText id="confirm-dialog-description">
-        {message}
-      </DialogContentText>
-    </DialogContent>
-    <DialogActions sx={{ px: 3, pb: 2 }}>
-      <Button onClick={onCancel} color="inherit">
-        {cancelLabel}
-      </Button>
-      <Button
-        onClick={onConfirm}
-        color={confirmColor}
-        variant="contained"
-        autoFocus>
-        {confirmLabel}
-      </Button>
-    </DialogActions>
-  </Dialog>
-);
+}) => {
+  const titleId = useId();
+  const descriptionId = useId();
+
+  return (
+    <Dialog
+      open={open}
+      onClose={onCancel}
+      aria-labelledby={titleId}
+      aria-describedby={descriptionId}
+      maxWidth="xs"
+      fullWidth
+    >
+      <DialogTitle id={titleId}>{title}</DialogTitle>
+      <DialogContent>
+        <DialogContentText id={descriptionId} sx={{ lineHeight: 1.6, fontSize: '0.96rem' }}>
+          {message}
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions sx={{ px: 3, pb: 2 }}>
+        <Button
+          onClick={onCancel}
+          color="inherit"
+          sx={{
+            minHeight: 44,
+            '&:focus-visible': {
+              outline: '3px solid currentColor',
+              outlineOffset: 2,
+            },
+          }}
+        >
+          {cancelLabel}
+        </Button>
+        <Button
+          onClick={onConfirm}
+          color={confirmColor}
+          variant="contained"
+          autoFocus
+          sx={{
+            minHeight: 44,
+            lineHeight: 1.3,
+            '&:focus-visible': {
+              outline: '3px solid currentColor',
+              outlineOffset: 2,
+            },
+          }}
+        >
+          {confirmLabel}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
 
 export default ConfirmDialog;

@@ -26,6 +26,9 @@ const shouldUseBridge = () =>
   typeof window !== 'undefined' &&
   !['localhost', '127.0.0.1'].includes(window.location?.hostname);
 
+const __DEV__ = import.meta.env.DEV;
+const devWarn = (...args) => { if (__DEV__) console.warn(...args); };
+
 let bridgeUnavailable = false;
 
 const getBridgeToken = async ({ forceRefresh = false } = {}) => {
@@ -206,7 +209,7 @@ export const messagingService = {
       if (payload?.conversations) return normalizeConversationList(payload.conversations);
       return [];
     } catch (error) {
-      if (import.meta.env.DEV) console.warn('Messaging service unavailable:', error.message);
+      devWarn('Messaging service unavailable:', error.message);
       // No mock data; return empty list to avoid false positives
       return [];
     }
@@ -222,9 +225,7 @@ export const messagingService = {
       if (payload?.data) return normalizeConversation(payload.data);
       return normalizeConversation(payload);
     } catch (error) {
-      if (import.meta.env.DEV) {
-        console.warn(`Failed to fetch conversation ${conversationId}:`, error.message);
-      }
+      devWarn(`Failed to fetch conversation ${conversationId}:`, error.message);
       throw error;
     }
   },
@@ -261,7 +262,7 @@ export const messagingService = {
       }
       return normalizeConversation(data);
     } catch (error) {
-      if (import.meta.env.DEV) console.warn(
+      devWarn(
         'Messaging service unavailable for conversation from application:',
         error.message,
       );
@@ -287,7 +288,7 @@ export const messagingService = {
       if (Array.isArray(payload)) return normalizeMessageList(payload);
       return [];
     } catch (error) {
-      if (import.meta.env.DEV) console.warn('Failed to load messages:', error.message);
+      devWarn('Failed to load messages:', error.message);
       return [];
     }
   },
@@ -337,9 +338,9 @@ export const messagingService = {
         const msg = response.data?.data || response.data;
         if (msg && !msg.error) return normalizeMessage(msg);
         // Bridge returned an error body — fall through to gateway
-        if (import.meta.env.DEV) console.warn('[sendMessage] Bridge returned error, trying gateway:', response.data);
+        devWarn('[sendMessage] Bridge returned error, trying gateway:', response.data);
       } catch (bridgeErr) {
-        if (import.meta.env.DEV) console.warn('[sendMessage] Bridge threw, trying gateway:', bridgeErr.message);
+        devWarn('[sendMessage] Bridge threw, trying gateway:', bridgeErr.message);
         // Fall through to gateway
       }
     }
@@ -350,7 +351,7 @@ export const messagingService = {
       const response = await api.post(postPath, payload);
       return normalizeMessage(response.data?.data || response.data);
     } catch (error) {
-      if (import.meta.env.DEV) console.warn('Failed to send message via REST:', error.message);
+      devWarn('Failed to send message via REST:', error.message);
       throw error;
     }
   },
@@ -369,7 +370,7 @@ export const messagingService = {
         const response = await bridgePost('/api/create-conversation', payload);
         return normalizeConversation(response.data?.data?.conversation || response.data);
       } catch (bridgeErr) {
-        if (import.meta.env.DEV) console.warn('Bridge failed, trying gateway:', bridgeErr.message);
+        devWarn('Bridge failed, trying gateway:', bridgeErr.message);
         // Fall through to gateway
       }
     }
@@ -379,7 +380,7 @@ export const messagingService = {
       const response = await api.post('/messages/conversations', payload);
       return normalizeConversation(response.data?.data?.conversation || response.data);
     } catch (error) {
-      if (import.meta.env.DEV) console.warn(
+      devWarn(
         'Messaging service unavailable for creating direct conversation:',
         error.message,
       );
@@ -406,7 +407,7 @@ export const messagingService = {
         return { messages: normalizeMessageList(payload.messages) };
       return { messages: [] };
     } catch (error) {
-      if (import.meta.env.DEV) console.warn('Failed to search messages:', error.message);
+      devWarn('Failed to search messages:', error.message);
       return { messages: [] };
     }
   },

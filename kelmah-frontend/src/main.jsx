@@ -40,6 +40,24 @@ if (typeof requestIdleCallback === 'function') {
   setTimeout(checkStorageQuota, 0);
 }
 
+const navigateToHome = () => {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  try {
+    const targetPath = '/';
+    const currentPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    if (currentPath !== targetPath && window.history && typeof window.history.pushState === 'function') {
+      window.history.pushState({}, '', targetPath);
+      window.dispatchEvent(new PopStateEvent('popstate'));
+      return;
+    }
+  } catch {
+    // No-op: keep failure local and avoid forcing a hard navigation.
+  }
+};
+
 
 // LOW-13 FIX: ErrorFallback now includes a retry button for user recovery
 const ErrorFallback = ({ error, resetErrorBoundary }) => (
@@ -112,7 +130,7 @@ const ErrorFallback = ({ error, resetErrorBoundary }) => (
         Try Again
       </button>
       <button
-        onClick={() => { window.location.href = '/'; }}
+        onClick={navigateToHome}
         style={{
           padding: '12px 24px',
           backgroundColor: 'transparent',

@@ -70,6 +70,7 @@ const SURFACE_TOKENS = {
 
 // Base theme configuration
 const baseTheme = {
+  spacing: 8,
   breakpoints: {
     values: {
       xs: 0,
@@ -123,14 +124,28 @@ const baseTheme = {
       lineHeight: 1.4,
     },
     body1: {
-      fontSize: '1rem',
-      lineHeight: 1.6,
+      fontSize: 'clamp(0.98rem, 0.22vw + 0.93rem, 1.08rem)',
+      lineHeight: 1.7,
       fontWeight: 400,
+      letterSpacing: '0.01em',
     },
     body2: {
-      fontSize: '0.875rem',
-      lineHeight: 1.6,
+      fontSize: 'clamp(0.9rem, 0.16vw + 0.84rem, 0.98rem)',
+      lineHeight: 1.62,
       fontWeight: 400,
+      letterSpacing: '0.01em',
+    },
+    subtitle1: {
+      fontSize: 'clamp(1rem, 0.32vw + 0.92rem, 1.2rem)',
+      lineHeight: 1.5,
+      fontWeight: 600,
+      letterSpacing: '0.01em',
+    },
+    subtitle2: {
+      fontSize: 'clamp(0.9rem, 0.2vw + 0.84rem, 1rem)',
+      lineHeight: 1.5,
+      fontWeight: 600,
+      letterSpacing: '0.01em',
     },
     button: {
       fontWeight: 600,
@@ -139,7 +154,7 @@ const baseTheme = {
     },
     caption: {
       fontSize: '0.75rem',
-      lineHeight: 1.4,
+      lineHeight: 1.45,
       fontWeight: 400,
     },
     overline: {
@@ -724,6 +739,10 @@ const darkTheme = createTheme({
             paddingLeft: '24px',
             paddingRight: '24px',
           },
+          '@media (min-width: 900px)': {
+            paddingLeft: '32px',
+            paddingRight: '32px',
+          },
         },
       },
     },
@@ -1244,6 +1263,10 @@ const lightTheme = createTheme({
             paddingLeft: '24px',
             paddingRight: '24px',
           },
+          '@media (min-width: 900px)': {
+            paddingLeft: '32px',
+            paddingRight: '32px',
+          },
         },
       },
     },
@@ -1301,6 +1324,11 @@ export const KELMAH_DEPTH = {
     ghanaFlagSweep:
       'linear-gradient(120deg, rgba(220,20,60,0.18), rgba(255,215,0,0.15), rgba(46,125,50,0.18))',
   },
+};
+
+export const KELMAH_FOCUS_RING = {
+  dark: `3px solid ${BRAND_COLORS.gold}`,
+  light: '3px solid #101113',
 };
 
 // augment theme with kelmah namespace via createTheme overrides below

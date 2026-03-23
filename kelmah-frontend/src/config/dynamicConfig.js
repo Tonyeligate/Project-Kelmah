@@ -5,6 +5,9 @@
 
 import { getApiBaseUrl } from './environment';
 
+const CONFIG_DEBUG =
+  import.meta.env.DEV && import.meta.env.VITE_DEBUG_CONFIG === 'true';
+
 // Function to get current ngrok URL from centralized config
 const getCurrentNgrokUrl = async () => {
   try {
@@ -21,7 +24,7 @@ const getCurrentNgrokUrl = async () => {
       import.meta.env.VITE_API_URL.startsWith('http');
 
     if (isProduction && hasExplicitApiUrl) {
-      if (import.meta.env.DEV) console.log(
+      if (CONFIG_DEBUG) console.log(
         '🎯 Production mode: Using explicit API URL instead of ngrok',
       );
       return null; // Don't use ngrok in production when explicit URL is set
@@ -53,7 +56,7 @@ const getCurrentNgrokUrl = async () => {
             }
           }
         } catch (fetchError) {
-          if (import.meta.env.DEV) console.warn('Failed to fetch runtime config:', fetchError);
+          if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Failed to fetch runtime config:', fetchError);
         }
       }
 
@@ -67,7 +70,7 @@ const getCurrentNgrokUrl = async () => {
     // Node.js environment (if this ever runs on server)
     return process.env.VITE_NGROK_URL || process.env.VITE_MESSAGING_SERVICE_URL;
   } catch (error) {
-    if (import.meta.env.DEV) console.warn('Failed to get dynamic ngrok URL:', error);
+    if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Failed to get dynamic ngrok URL:', error);
     return null;
   }
 };
@@ -77,10 +80,10 @@ export const updateNgrokUrl = (newUrl) => {
   try {
     if (typeof window !== 'undefined') {
       localStorage.setItem('kelmah_ngrok_url', newUrl);
-      if (import.meta.env.DEV) console.log('✅ Ngrok URL updated in localStorage:', newUrl);
+      if (CONFIG_DEBUG) console.log('Ngrok URL updated in localStorage:', newUrl);
     }
   } catch (error) {
-    if (import.meta.env.DEV) console.error('Failed to update ngrok URL:', error);
+    if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to update ngrok URL:', error);
   }
 };
 

@@ -219,6 +219,8 @@ const SecuritySettings = () => {
         value={form.currentPassword}
         onChange={handleChange}
         fullWidth
+        required
+        autoComplete="current-password"
         InputProps={buildPasswordAdornment('current')}
       />
       <TextField
@@ -228,6 +230,8 @@ const SecuritySettings = () => {
         value={form.newPassword}
         onChange={handleChange}
         fullWidth
+        required
+        autoComplete="new-password"
         InputProps={buildPasswordAdornment('next')}
       />
       <TextField
@@ -237,10 +241,12 @@ const SecuritySettings = () => {
         value={form.confirmPassword}
         onChange={handleChange}
         fullWidth
+        required
+        autoComplete="new-password"
         InputProps={buildPasswordAdornment('confirm')}
       />
       <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-        <Button variant="contained" onClick={handleSubmit} disabled={loading}>
+        <Button variant="contained" onClick={handleSubmit} disabled={loading} sx={{ minHeight: 44 }}>
           {loading ? <CircularProgress size={24} /> : 'Update Password'}
         </Button>
       </Box>
@@ -272,7 +278,7 @@ const SecuritySettings = () => {
               <Button
                 variant="outlined"
                 onClick={() => setShowDisable(true)}
-                sx={{ mt: 1 }}
+                sx={{ mt: 1, minHeight: 44 }}
               >
                 Disable Two-Factor Authentication
               </Button>
@@ -291,6 +297,7 @@ const SecuritySettings = () => {
                   onChange={handleDisableChange}
                   fullWidth
                   required
+                  autoComplete="current-password"
                   InputProps={buildPasswordAdornment('disable')}
                 />
                 <TextField
@@ -300,11 +307,13 @@ const SecuritySettings = () => {
                   onChange={handleDisableChange}
                   fullWidth
                   required
+                  inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
                 />
                 <Button
                   type="submit"
                   variant="contained"
                   disabled={disableLoading}
+                  sx={{ minHeight: 44 }}
                 >
                   {disableLoading ? (
                     <CircularProgress size={24} />
@@ -312,7 +321,7 @@ const SecuritySettings = () => {
                     'Confirm Disable'
                   )}
                 </Button>
-                <Button variant="text" onClick={() => setShowDisable(false)}>
+                <Button variant="text" onClick={() => setShowDisable(false)} sx={{ minHeight: 44 }}>
                   Cancel
                 </Button>
               </Box>
@@ -327,7 +336,7 @@ const SecuritySettings = () => {
               variant="contained"
               component={RouterLink}
               to="/mfa/setup"
-              sx={{ mt: 1 }}
+              sx={{ mt: 1, minHeight: 44 }}
             >
               Enable Two-Factor Authentication
             </Button>

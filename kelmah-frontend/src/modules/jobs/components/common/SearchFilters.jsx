@@ -75,6 +75,7 @@ function SearchFilters({ filters, onFilterChange }) {
               placeholder="Search jobs..."
               value={filters.search}
               onChange={handleChange('search')}
+              inputProps={{ 'aria-label': 'Search jobs by title or keyword' }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -88,6 +89,8 @@ function SearchFilters({ filters, onFilterChange }) {
               onClick={() => setExpanded(!expanded)}
               endIcon={expanded ? <ExpandLess /> : <ExpandMore />}
               startIcon={<FilterList />}
+              aria-label={expanded ? 'Hide advanced filters' : 'Show advanced filters'}
+              sx={{ minHeight: 44 }}
             >
               Filters
             </Button>
@@ -96,6 +99,8 @@ function SearchFilters({ filters, onFilterChange }) {
                 variant="text"
                 onClick={handleClear}
                 startIcon={<Clear />}
+                aria-label="Clear all active filters"
+                sx={{ minHeight: 44 }}
               >
                 Clear
               </Button>
@@ -149,6 +154,7 @@ function SearchFilters({ filters, onFilterChange }) {
               type="number"
               value={filters.min_budget}
               onChange={handleChange('min_budget')}
+              inputProps={{ inputMode: 'decimal', 'aria-label': 'Minimum budget in Ghana cedi' }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">GH₵</InputAdornment>
@@ -164,6 +170,7 @@ function SearchFilters({ filters, onFilterChange }) {
               type="number"
               value={filters.max_budget}
               onChange={handleChange('max_budget')}
+              inputProps={{ inputMode: 'decimal', 'aria-label': 'Maximum budget in Ghana cedi' }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">GH₵</InputAdornment>
@@ -179,6 +186,7 @@ function SearchFilters({ filters, onFilterChange }) {
               value={filters.location}
               onChange={handleChange('location')}
               placeholder="Enter location or 'Remote'"
+              inputProps={{ 'aria-label': 'Filter jobs by location' }}
             />
           </Grid>
         </Grid>

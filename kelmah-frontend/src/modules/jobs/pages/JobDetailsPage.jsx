@@ -310,8 +310,19 @@ const JobDetailsPage = () => {
   const [bidDialogOpen, setBidDialogOpen] = useState(false);
   const [clientDetailsOpen, setClientDetailsOpen] = useState(false);
   const [shareSnackbar, setShareSnackbar] = useState('');
+  const [showFullOverview, setShowFullOverview] = useState(false);
   const locationLabel = getJobLocationLabel(job);
   const skillLabels = normalizeSkillLabels(job?.skills);
+  const fullJobDescription = toDisplayText(job?.description, 'No description available.');
+  const condensedJobDescription =
+    fullJobDescription.length > 280
+      ? `${fullJobDescription.slice(0, 280)}…`
+      : fullJobDescription;
+  const visibleOverviewText = job?.description
+    ? showFullOverview
+      ? fullJobDescription
+      : condensedJobDescription
+    : 'Review the job overview, scope, and client details below before you place a bid.';
   const accentColor = theme.palette.mode === 'dark' ? theme.palette.primary.main : theme.palette.primary.dark;
   const accentSoftBg = theme.palette.mode === 'dark'
     ? alpha(theme.palette.primary.main, 0.12)
@@ -320,7 +331,7 @@ const JobDetailsPage = () => {
   useEffect(() => {
     // Validate jobId before fetching
     if (!id || id === 'undefined' || id === 'null') {
-      if (import.meta.env.DEV) console.error('❌ Invalid job ID:', id);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('❌ Invalid job ID:', id);
       return;
     }
 
@@ -423,7 +434,7 @@ const JobDetailsPage = () => {
         setShareSnackbar('Job saved successfully');
       }
     } catch (err) {
-      if (import.meta.env.DEV) console.error('Failed to toggle bookmark:', err);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to toggle bookmark:', err);
       setShareSnackbar('Could not update saved jobs. Try again.');
     } finally {
       setSavingBookmark(false);
@@ -748,30 +759,57 @@ const JobDetailsPage = () => {
                   component="h1"
                   sx={{
                     fontWeight: 800,
-                    fontSize: { xs: '1.55rem', sm: '1.9rem', md: '2.2rem' },
+                    fontSize: { xs: '1.45rem', sm: '1.85rem', md: '2.2rem' },
                     color: 'text.primary',
-                    lineHeight: 1.25,
+                    lineHeight: 1.2,
                     mb: 1.4,
                     maxWidth: '18ch',
+                    letterSpacing: '-0.012em',
                   }}
                 >
                   {job?.title || 'Job Title'}
                 </Typography>
 
-                <Typography
-                  variant="body1"
-                  sx={{
-                    color: 'text.secondary',
-                    fontWeight: 500,
-                    lineHeight: 1.7,
-                    mb: 2,
-                    maxWidth: { md: '70ch' },
-                  }}
+                <Box
+                  id="job-overview-content"
+                  role="article"
+                  aria-label="Job overview"
+                  sx={{ mb: 2, maxWidth: { md: '70ch' } }}
                 >
-                  {job?.description
-                    ? `${job.description.slice(0, 200)}${job.description.length > 200 ? '…' : ''}`
-                    : 'Review the job overview, scope, and client details below before you place a bid.'}
-                </Typography>
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      color: 'text.secondary',
+                      fontWeight: 500,
+                      lineHeight: 1.72,
+                      fontSize: { xs: '0.96rem', sm: '1.02rem' },
+                      whiteSpace: 'pre-line',
+                      overflowWrap: 'anywhere',
+                    }}
+                  >
+                    {visibleOverviewText}
+                  </Typography>
+                </Box>
+
+                {job?.description && fullJobDescription.length > 280 && (
+                  <Button
+                    variant="text"
+                    size="small"
+                    onClick={() => setShowFullOverview((prev) => !prev)}
+                    aria-controls="job-overview-content"
+                    aria-expanded={showFullOverview}
+                    sx={{
+                      mb: 2,
+                      px: 0,
+                      minHeight: 44,
+                      fontWeight: 700,
+                      textTransform: 'none',
+                    }}
+                    aria-label={showFullOverview ? 'Show less job overview text' : 'Show full job overview text'}
+                  >
+                    {showFullOverview ? 'Show less' : 'Read full overview'}
+                  </Button>
+                )}
 
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                   <MetaPill icon={LocationOn} label={locationLabel} />
@@ -871,17 +909,31 @@ const JobDetailsPage = () => {
               <DetailsPaper elevation={2} sx={{ mb: 3 }}>
                 <SectionHeading icon={WorkOutline}>Job Description</SectionHeading>
                 <Typography
+                  id="job-description-content"
                   variant="body1"
                   sx={{
                     color: 'text.primary',
                     whiteSpace: 'pre-line',
-                    lineHeight: 1.8,
+                    lineHeight: 1.75,
                     fontWeight: 500,
-                    fontSize: { xs: '0.93rem', sm: '1rem' },
+                    fontSize: { xs: '0.97rem', sm: '1.03rem' },
+                    maxWidth: '72ch',
                   }}
                 >
-                  {job?.description || 'No description available.'}
+                  {showFullOverview ? fullJobDescription : truncatedJobDescription}
                 </Typography>
+                {fullJobDescription.length > 320 && (
+                  <Button
+                    variant="text"
+                    size="small"
+                    onClick={() => setShowFullOverview((prev) => !prev)}
+                    aria-controls="job-description-content"
+                    aria-label={showFullOverview ? 'Show less job description' : 'Show full job description'}
+                    sx={{ mt: 1.5, px: 0, minHeight: 44, fontWeight: 700, textTransform: 'none' }}
+                  >
+                    {showFullOverview ? 'Show less' : 'Read full description'}
+                  </Button>
+                )}
               </DetailsPaper>
 
               {/* Required Skills */}
@@ -909,12 +961,7 @@ const JobDetailsPage = () => {
                           alt={`Job image ${index + 1}`}
                           sx={{
                             width: '100%', height: index === 0 ? 220 : 180, objectFit: 'cover',
-                            borderRadius: 2, cursor: 'pointer',
-                            transition: 'transform 0.3s ease',
-                            '&:hover': {
-                              transform: 'scale(1.03)',
-                              '@media (hover: none)': { transform: 'none' },
-                            },
+                            borderRadius: 2,
                           }}
                         />
                       </Grid>
@@ -985,13 +1032,13 @@ const JobDetailsPage = () => {
                     onClick={handleToggleSave}
                     disabled={savingBookmark}
                     sx={{ color: saved ? accentColor : 'text.primary', borderColor: 'divider', fontWeight: 600 }}
-                   aria-label="Save">
+                    aria-label={saved ? 'Remove from saved jobs' : 'Save job'}>
                       {saved ? 'Saved Job' : 'Save Job'}
                   </Button>
                   <IconButton
                     onClick={handleShareJob}
                     aria-label="Share job"
-                    sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1.5, color: 'text.primary', px: 1.5, '&:hover': { color: accentColor, borderColor: accentColor, bgcolor: accentSoftBg } }}
+                    sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1.5, color: 'text.primary', px: 1.5, '&:hover': { color: accentColor, borderColor: accentColor, bgcolor: accentSoftBg }, '&:focus-visible': { outline: `3px solid ${accentColor}`, outlineOffset: '2px' } }}
                   >
                     <Share />
                   </IconButton>
@@ -1410,14 +1457,14 @@ const JobDetailsPage = () => {
               onClick={handleToggleSave}
               disabled={savingBookmark}
               aria-label={saved ? 'Remove from saved jobs' : 'Save job'}
-              sx={{ color: saved ? accentColor : 'text.primary', minWidth: 40, minHeight: 40 }}
+              sx={{ color: saved ? accentColor : 'text.primary', minWidth: 44, minHeight: 44, '&:focus-visible': { outline: `3px solid ${accentColor}`, outlineOffset: '2px' } }}
             >
               {saved ? <Bookmark /> : <BookmarkBorder />}
             </IconButton>
             <IconButton
               onClick={handleShareJob}
               aria-label="Share job"
-              sx={{ color: 'text.primary', minWidth: 40, minHeight: 40 }}
+              sx={{ color: 'text.primary', minWidth: 44, minHeight: 44, '&:focus-visible': { outline: `3px solid ${accentColor}`, outlineOffset: '2px' } }}
             >
               <Share />
             </IconButton>
@@ -1430,9 +1477,18 @@ const JobDetailsPage = () => {
         open={!!shareSnackbar}
         autoHideDuration={3000}
         onClose={() => setShareSnackbar('')}
-        message={shareSnackbar}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      />
+      >
+        <Alert
+          severity="info"
+          role="status"
+          aria-live="polite"
+          onClose={() => setShareSnackbar('')}
+          sx={{ width: '100%' }}
+        >
+          {shareSnackbar}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

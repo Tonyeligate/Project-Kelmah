@@ -91,7 +91,7 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
       const response = await messagingService.searchMessages(query, options);
       setResults(response.messages || []);
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Error searching messages:', error);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error searching messages:', error);
       setResults([]);
     } finally {
       setLoading(false);
@@ -251,8 +251,17 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
       <Divider />
 
       {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-          <CircularProgress />
+        <Box sx={{ p: 2 }}>
+          {[1, 2, 3, 4].map((row) => (
+            <Box
+              key={`message-search-loading-skeleton-${row}`}
+              sx={{ py: 1.25, borderBottom: '1px solid', borderColor: 'divider' }}
+            >
+              <Skeleton variant="text" width="42%" height={24} sx={{ mb: 0.5 }} />
+              <Skeleton variant="text" width="88%" height={20} sx={{ mb: 0.4 }} />
+              <Skeleton variant="text" width="34%" height={18} />
+            </Box>
+          ))}
         </Box>
       ) : results.length > 0 ? (
         <List sx={{ overflow: 'auto', flexGrow: 1 }}>

@@ -3,7 +3,7 @@ const path = require('path');
 module.exports = {
   rootDir: __dirname,
   testEnvironment: 'jsdom',
-  testMatch: ['<rootDir>/src/tests/smoke/**/*.test.jsx'],
+  testMatch: ['<rootDir>/src/tests/smoke/**/*.test.{js,jsx}'],
   moduleFileExtensions: ['js', 'jsx', 'json'],
   transform: {
     '^.+\\.[jt]sx?$': [

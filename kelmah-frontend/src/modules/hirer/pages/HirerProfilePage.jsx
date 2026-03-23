@@ -229,7 +229,10 @@ const HirerProfilePage = () => {
         <Grid container spacing={3} alignItems="center">
           <Grid item xs={12} md={8}>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2.5} alignItems={{ xs: 'flex-start', sm: 'center' }}>
-              <ProfilePicture size={96} />
+              <ProfilePicture
+                size={96}
+                altText={`${getDisplayName(profile, user)} profile photo`}
+              />
               <Box sx={{ flex: 1 }}>
                 <Typography variant="h4" fontWeight={700} gutterBottom>
                   {getDisplayName(profile, user)}

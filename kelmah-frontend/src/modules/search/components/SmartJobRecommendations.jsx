@@ -64,6 +64,14 @@ const EMPTY_RECOMMENDATION_META = {
   refreshedAt: null,
 };
 
+const __SEARCH_DEBUG__ =
+  import.meta.env.DEV && import.meta.env.VITE_DEBUG_SEARCH === 'true';
+const searchDebugWarn = (...args) => {
+  if (__SEARCH_DEBUG__) {
+    console.warn(...args);
+  }
+};
+
 const isRequestAbort = (error) =>
   error?.name === 'AbortError' ||
   error?.name === 'CanceledError' ||
@@ -332,8 +340,7 @@ const SmartJobRecommendations = ({
         await saveJobMutation.mutateAsync({ jobId, job });
       } catch (mutationError) {
         // Notification handled inside mutation callbacks.
-        if (import.meta.env.DEV)
-          console.warn('Saved job mutation failed:', mutationError);
+        searchDebugWarn('Saved job mutation failed:', mutationError);
       }
     },
     [enqueueSnackbar, saveJobMutation, savedJobIds, unsaveJobMutation],

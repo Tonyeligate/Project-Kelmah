@@ -1,0 +1,28 @@
+{
+  "taskId": "<task-id>",
+  "frictionStatesDetected": [
+    {
+      "id": "FR-001",
+      "signal": "repeated back navigation",
+      "severity": "medium"
+    }
+  ],
+  "selfHealingActions": [
+    {
+      "action": "simplify step count",
+      "bounded": true,
+      "validated": true
+    },
+    {
+      "action": "surface inline help",
+      "bounded": true,
+      "validated": true
+    }
+  ],
+  "prohibitedActionAudit": {
+    "silentDataMutation": false,
+    "irreversibleTransition": false,
+    "hiddenConsent": false
+  },
+  "closureVerdict": "PASS"
+}

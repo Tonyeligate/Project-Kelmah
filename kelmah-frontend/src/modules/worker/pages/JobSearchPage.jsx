@@ -142,6 +142,7 @@ const SearchHeader = ({ search, setSearch, onSearch, resultCount, isLoading }) =
         background: alpha(theme.palette.background.paper, 0.6),
         backdropFilter: 'blur(12px)',
         border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`,
+        overflow: 'hidden',
       }}
     >
       <Stack spacing={1.5}>
@@ -152,7 +153,7 @@ const SearchHeader = ({ search, setSearch, onSearch, resultCount, isLoading }) =
         >
           Find Work
         </Typography>
-        <Stack direction="row" spacing={1}>
+        <Stack direction="row" spacing={1} sx={{ alignItems: 'stretch', minWidth: 0 }}>
           <TextField
             fullWidth
             placeholder="Search by job title, skill, or keyword…"
@@ -183,6 +184,7 @@ const SearchHeader = ({ search, setSearch, onSearch, resultCount, isLoading }) =
               sx: {
                 borderRadius: 2,
                 bgcolor: alpha(theme.palette.background.default, 0.5),
+                minHeight: 44,
               },
             }}
           />
@@ -224,8 +226,14 @@ const CategoryChips = ({ selected, onChange }) => {
         overflowX: 'auto',
         py: 1,
         px: 0.5,
+        pr: 1,
+        scrollSnapType: 'x proximity',
         '&::-webkit-scrollbar': { display: 'none' },
         scrollbarWidth: 'none',
+        '& .MuiChip-root': {
+          minHeight: 40,
+          scrollSnapAlign: 'start',
+        },
       }}
     >
       <Chip
@@ -393,6 +401,10 @@ const FindWorkJobCard = ({ job, isSaved, onSave, onUnsave }) => {
           border: `1px solid ${alpha(theme.palette.divider, 0.6)}`,
           bgcolor: theme.palette.background.paper,
           transition: 'all 0.2s ease',
+          '&:focus-visible': {
+            outline: `3px solid ${theme.palette.primary.main}`,
+            outlineOffset: 2,
+          },
           '&:hover': {
             borderColor: alpha(theme.palette.primary.main, 0.4),
             transform: 'translateY(-2px)',
@@ -403,6 +415,7 @@ const FindWorkJobCard = ({ job, isSaved, onSave, onUnsave }) => {
         {job.coverImage && (
           <CardMedia
             component="img"
+            loading="lazy"
             height={140}
             image={job.coverImage}
             alt={job.title || 'Job image'}

@@ -78,7 +78,7 @@ const paymentService = {
       const response = await api.get('/payments/methods');
       return normalizePaymentMethodsResponse(unwrapPaymentPayload(response, []));
     } catch (err) {
-      if (import.meta.env.DEV) console.error('getPaymentMethods failed:', err);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('getPaymentMethods failed:', err);
       captureRecoverableApiError(err, {
         operation: 'payments.getPaymentMethods',
         fallbackUsed: true,
@@ -158,7 +158,7 @@ const paymentService = {
       }
       return payload?.escrows || [];
     } catch (error) {
-      if (import.meta.env.DEV) console.warn('Escrow service unavailable:', error.message);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Escrow service unavailable:', error.message);
       captureRecoverableApiError(error, {
         operation: 'payments.getEscrows',
         fallbackUsed: true,
@@ -193,98 +193,98 @@ const paymentService = {
 
   // Bills operations
   getBills: async () => {
-    const { data } = await api.get('/payments/bills');
-    return data;
+    const response = await api.get('/payments/bills');
+    return unwrapPaymentPayload(response, []);
   },
 
   payBill: async (billId) => {
-    const { data } = await api.post(`/payments/bills/${billId}/pay`);
-    return data;
+    const response = await api.post(`/payments/bills/${billId}/pay`);
+    return unwrapPaymentPayload(response, {});
   },
 
   // Wallet fund operations
   withdrawFunds: async (amount, methodId) => {
-    const { data } = await api.post('/payments/transactions', {
+    const response = await api.post('/payments/transactions', {
       amount,
       type: 'withdrawal',
       paymentMethodId: methodId,
     });
-    return data;
+    return unwrapPaymentPayload(response, {});
   },
 
   addFunds: async (amount, methodId) => {
-    const { data } = await api.post('/payments/transactions', {
+    const response = await api.post('/payments/transactions', {
       amount,
       type: 'deposit',
       paymentMethodId: methodId,
     });
-    return data;
+    return unwrapPaymentPayload(response, {});
   },
 
   // Payment settings
   getPaymentSettings: async () => {
-    const { data } = await api.get('/payments/settings');
-    return data;
+    const response = await api.get('/payments/settings');
+    return unwrapPaymentPayload(response, {});
   },
 
   updatePaymentSettings: async (settings) => {
-    const { data } = await api.put('/payments/settings', settings);
-    return data;
+    const response = await api.put('/payments/settings', settings);
+    return unwrapPaymentPayload(response, {});
   },
 
   // 🇬🇭 GHANA MOBILE MONEY INTEGRATION
 
   // MTN Mobile Money operations
   processMtnMoMoPayment: async (paymentData) => {
-    const { data } = await api.post(
+    const response = await api.post(
       '/payments/mtn-momo/request-to-pay',
       paymentData,
     );
-    return data;
+    return unwrapPaymentPayload(response, {});
   },
 
   getMtnMoMoTransactionStatus: async (referenceId) => {
-    const { data } = await api.get(`/payments/mtn-momo/status/${referenceId}`);
-    return data;
+    const response = await api.get(`/payments/mtn-momo/status/${referenceId}`);
+    return unwrapPaymentPayload(response, {});
   },
 
   validateMtnMoMoAccount: async (phoneNumber) => {
-    const { data } = await api.post('/payments/mtn-momo/validate', {
+    const response = await api.post('/payments/mtn-momo/validate', {
       phoneNumber,
     });
-    return data;
+    return unwrapPaymentPayload(response, {});
   },
 
   // Vodafone Cash operations
   processVodafoneCashPayment: async (paymentData) => {
-    const { data } = await api.post(
+    const response = await api.post(
       '/payments/vodafone-cash/request-to-pay',
       paymentData,
     );
-    return data;
+    return unwrapPaymentPayload(response, {});
   },
 
   getVodafoneCashTransactionStatus: async (referenceId) => {
-    const { data } = await api.get(
+    const response = await api.get(
       `/payments/vodafone-cash/status/${referenceId}`,
     );
-    return data;
+    return unwrapPaymentPayload(response, {});
   },
 
   // AirtelTigo Money operations
   processAirtelTigoPayment: async (paymentData) => {
-    const { data } = await api.post(
+    const response = await api.post(
       '/payments/airteltigo/request-to-pay',
       paymentData,
     );
-    return data;
+    return unwrapPaymentPayload(response, {});
   },
 
   getAirtelTigoTransactionStatus: async (referenceId) => {
-    const { data } = await api.get(
+    const response = await api.get(
       `/payments/airteltigo/status/${referenceId}`,
     );
-    return data;
+    return unwrapPaymentPayload(response, {});
   },
 
   // Unified Mobile Money payment processor
@@ -338,58 +338,58 @@ const paymentService = {
 
   // Paystack Ghana integration
   processPaystackPayment: async (paymentData) => {
-    const { data } = await api.post(
+    const response = await api.post(
       '/payments/paystack/initialize',
       paymentData,
     );
-    return data;
+    return unwrapPaymentPayload(response, {});
   },
 
   verifyPaystackPayment: async (reference) => {
-    const { data } = await api.get(`/payments/paystack/verify/${reference}`);
-    return data;
+    const response = await api.get(`/payments/paystack/verify/${reference}`);
+    return unwrapPaymentPayload(response, {});
   },
 
   // Stripe integration
   createStripePaymentIntent: async (intentData) => {
-    const { data } = await api.post(
+    const response = await api.post(
       '/payments/create-payment-intent',
       intentData,
     );
-    return data;
+    return unwrapPaymentPayload(response, {});
   },
 
   // Bank transfer operations (Ghana banks)
   initiateBankTransfer: async (transferData) => {
-    const { data } = await api.post(
+    const response = await api.post(
       '/payments/bank-transfer/initiate',
       transferData,
     );
-    return data;
+    return unwrapPaymentPayload(response, {});
   },
 
   getBankTransferStatus: async (transferId) => {
-    const { data } = await api.get(
+    const response = await api.get(
       `/payments/bank-transfer/status/${transferId}`,
     );
-    return data;
+    return unwrapPaymentPayload(response, {});
   },
 
   // Get available Ghana payment methods
   getGhanaPaymentMethods: async () => {
-    const { data } = await api.get('/payments/ghana/methods');
-    return data;
+    const response = await api.get('/payments/ghana/methods');
+    return unwrapPaymentPayload(response, []);
   },
 
   // Worker payout operations (for paying workers)
   processWorkerPayout: async (payoutData) => {
-    const { data } = await api.post('/payments/payout/worker', payoutData);
-    return data;
+    const response = await api.post('/payments/payout/worker', payoutData);
+    return unwrapPaymentPayload(response, {});
   },
 
   getPayoutStatus: async (payoutId) => {
-    const { data } = await api.get(`/payments/payout/status/${payoutId}`);
-    return data;
+    const response = await api.get(`/payments/payout/status/${payoutId}`);
+    return unwrapPaymentPayload(response, {});
   },
 
   // Aliases for GhanaianMobileMoneyInterface and GhanaSMSVerification components
@@ -405,29 +405,29 @@ const paymentService = {
       airteltigo: '/payments/airteltigo-money/confirm',
     };
     const endpoint = providerEndpoints[provider] || providerEndpoints.mtn;
-    const { data } = await api.post(endpoint, {
+    const response = await api.post(endpoint, {
       transactionId,
       pin,
       phoneNumber,
     });
-    return data;
+    return unwrapPaymentPayload(response, {});
   },
 
   sendSMSVerification: async ({ phoneNumber, purpose, amount }) => {
-    const { data } = await api.post('/payments/sms-verification/send', {
+    const response = await api.post('/payments/sms-verification/send', {
       phoneNumber,
       purpose,
       amount,
     });
-    return data;
+    return unwrapPaymentPayload(response, {});
   },
 
   verifySMSCode: async ({ verificationId, code }) => {
-    const { data } = await api.post('/payments/sms-verification/verify', {
+    const response = await api.post('/payments/sms-verification/verify', {
       verificationId,
       code,
     });
-    return data;
+    return unwrapPaymentPayload(response, {});
   },
 };
 

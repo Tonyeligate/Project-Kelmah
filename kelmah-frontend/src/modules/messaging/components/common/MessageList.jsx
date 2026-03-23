@@ -6,6 +6,7 @@ import {
   Paper,
   Divider,
   CircularProgress,
+    Skeleton,
   IconButton,
   Menu,
   MenuItem,
@@ -50,6 +51,8 @@ const MessagesContainer = styled(Box)(({ theme }) => ({
   padding: theme.spacing(2),
   display: 'flex',
   flexDirection: 'column',
+  fontSize: 'clamp(0.95rem, 0.2vw + 0.9rem, 1.02rem)',
+  lineHeight: 1.62,
 }));
 
 // MessageBubble and MessageTime removed — unused styled components
@@ -61,7 +64,8 @@ const SystemMessage = styled(Box)(({ theme }) => ({
   backgroundColor: theme.palette.primary.main,
   borderRadius: theme.spacing(1),
   color: theme.palette.primary.contrastText,
-  fontSize: '0.875rem',
+  fontSize: '0.92rem',
+  lineHeight: 1.45,
 }));
 
 const AttachmentContainer = styled(Box)(({ theme }) => ({
@@ -129,6 +133,9 @@ const MessageList = ({
   const [menuAnchorEl, setMenuAnchorEl] = useState(null);
   const [selectedMessage, setSelectedMessage] = useState(null);
   const [loadingMore, setLoadingMore] = useState(false);
+  const loadMoreLockRef = useRef(false);
+  const isMountedRef = useRef(true);
+  const loadMoreRequestIdRef = useRef(0);
   const [isFirstLoad, setIsFirstLoad] = useState(true);
   const [visibleMessages, setVisibleMessages] = useState(new Set());
 
@@ -137,6 +144,15 @@ const MessageList = ({
     threshold: 0.1,
     rootMargin: '100px 0px 0px 0px',
   });
+
+  useEffect(() => {
+    isMountedRef.current = true;
+
+    return () => {
+      isMountedRef.current = false;
+      loadMoreRequestIdRef.current += 1;
+    };
+  }, []);
 
   // Group messages by date for dividers
   const groupedMessages = React.useMemo(() => {
@@ -156,6 +172,7 @@ const MessageList = ({
             messages: [...currentGroup],
           });
         }
+
         currentDate = messageDate;
         currentGroup = [message];
       } else {
@@ -191,16 +208,43 @@ const MessageList = ({
 
   // Handle loading more messages when scrolling to top
   useEffect(() => {
+    const requestId = ++loadMoreRequestIdRef.current;
     const handleLoadMore = async () => {
-      if (isTopVisible && hasMore && !loadingMore && !isLoading) {
-        setLoadingMore(true);
-        await onLoadMore();
-        setLoadingMore(false);
+      if (
+        isTopVisible &&
+        hasMore &&
+        !loadingMore &&
+        !isLoading &&
+        !loadMoreLockRef.current
+      ) {
+        loadMoreLockRef.current = true;
+        if (
+          isMountedRef.current &&
+          requestId === loadMoreRequestIdRef.current
+        ) {
+          setLoadingMore(true);
+        }
+        try {
+          await onLoadMore();
+        } finally {
+          if (
+            isMountedRef.current &&
+            requestId === loadMoreRequestIdRef.current
+          ) {
+            setLoadingMore(false);
+          }
+        }
       }
     };
 
     handleLoadMore();
   }, [isTopVisible, hasMore, loadingMore, isLoading, onLoadMore]);
+
+  useEffect(() => {
+    if (!isTopVisible || !hasMore) {
+      loadMoreLockRef.current = false;
+    }
+  }, [isTopVisible, hasMore]);
 
   // Scroll to bottom on first load or new messages
   useEffect(() => {
@@ -291,8 +335,13 @@ const MessageList = ({
   // Handle message delete
   const handleDeleteMessage = async () => {
     if (selectedMessage && typeof deleteMessage === 'function') {
-      await deleteMessage(selectedMessage.id);
-      handleMenuClose();
+      try {
+        await deleteMessage(selectedMessage.id);
+      } finally {
+        if (isMountedRef.current) {
+          handleMenuClose();
+        }
+      }
     } else {
       handleMenuClose();
     }
@@ -408,15 +457,34 @@ const MessageList = ({
 
   // Render loading state
   const renderLoadingState = () => (
-    <Box
-      sx={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100%',
-      }}
-    >
-      <CircularProgress size={40} />
+    <Box sx={{ height: '100%', p: 2 }}>
+      {[1, 2, 3, 4, 5].map((row) => {
+        const isOwnMessage = row % 2 === 0;
+        return (
+          <Box
+            key={`message-list-loading-skeleton-${row}`}
+            sx={{
+              display: 'flex',
+              justifyContent: isOwnMessage ? 'flex-end' : 'flex-start',
+              mb: 1.5,
+            }}
+          >
+            <Box
+              sx={{
+                width: { xs: '78%', sm: '62%' },
+                borderRadius: 2,
+                p: 1.25,
+                bgcolor: 'background.paper',
+                border: '1px solid',
+                borderColor: 'divider',
+              }}
+            >
+              <Skeleton variant="text" width="85%" height={18} sx={{ mb: 0.5 }} />
+              <Skeleton variant="text" width="60%" height={18} />
+            </Box>
+          </Box>
+        );
+      })}
     </Box>
   );
 
@@ -428,10 +496,24 @@ const MessageList = ({
       ) : conversation ? (
         <MessagesContainer ref={containerRef}>
           {/* Load more indicator */}
-          <div ref={topRef} style={{ minHeight: '10px' }}>
+          <div
+            ref={topRef}
+            role="status"
+            aria-live="polite"
+            style={{ minHeight: '10px' }}
+          >
             {loadingMore && (
-              <Box sx={{ display: 'flex', justifyContent: 'center', p: 1 }}>
-                <CircularProgress size={24} />
+              <Box sx={{ p: 1.25 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 0.9 }}>
+                  <Box sx={{ width: { xs: '62%', sm: '48%' }, p: 1, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
+                    <Skeleton variant="text" width="78%" height={18} />
+                  </Box>
+                </Box>
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <Box sx={{ width: { xs: '70%', sm: '54%' }, p: 1, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
+                    <Skeleton variant="text" width="66%" height={18} />
+                  </Box>
+                </Box>
               </Box>
             )}
           </div>

@@ -84,6 +84,15 @@ const BottomSheet = ({ open, onToggle, children, title, count, loading }) => {
       >
         <Box
           onClick={onToggle}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              onToggle();
+            }
+          }}
+          tabIndex={0}
+          role="button"
+          aria-label="Toggle results panel"
           sx={{
             display: 'flex',
             flexDirection: 'column',
@@ -91,6 +100,10 @@ const BottomSheet = ({ open, onToggle, children, title, count, loading }) => {
             pt: 1,
             pb: 1.5,
             cursor: 'pointer',
+            '&:focus-visible': {
+              outline: `3px solid ${theme.palette.primary.main}`,
+              outlineOffset: -2,
+            },
           }}
         >
           <Box
@@ -151,6 +164,10 @@ const ResultCard = ({ item, viewType, onSelect, onNavigate, onMessage }) => {
             borderColor: theme.palette.primary.main,
             boxShadow: `0 4px 20px ${theme.palette.primary.main}22`,
             transform: 'translateY(-2px)',
+          },
+          '&:focus-visible': {
+            outline: `3px solid ${theme.palette.primary.main}`,
+            outlineOffset: 2,
           },
         }}
       >
@@ -294,7 +311,7 @@ const ResultCard = ({ item, viewType, onSelect, onNavigate, onMessage }) => {
                   e.stopPropagation();
                   onSelect(item);
                 }}
-                sx={{ textTransform: 'none', minHeight: 36 }}
+                sx={{ textTransform: 'none', minHeight: 44 }}
               >
                 {primaryActionLabel}
               </Button>
@@ -306,7 +323,7 @@ const ResultCard = ({ item, viewType, onSelect, onNavigate, onMessage }) => {
                   e.stopPropagation();
                   onNavigate(item);
                 }}
-                sx={{ textTransform: 'none', minHeight: 36 }}
+                sx={{ textTransform: 'none', minHeight: 44 }}
               >
                 Route
               </Button>
@@ -318,7 +335,7 @@ const ResultCard = ({ item, viewType, onSelect, onNavigate, onMessage }) => {
                   e.stopPropagation();
                   onMessage(item);
                 }}
-                sx={{ textTransform: 'none', minHeight: 36 }}
+                sx={{ textTransform: 'none', minHeight: 44 }}
               >
                 Message
               </Button>

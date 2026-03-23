@@ -11,6 +11,10 @@ const OPTIMIZATION_TASK_TYPES = new Set([
   'backend-optimization',
   'api-design-optimization',
   'reliability-hardening',
+  'database-integrity-hardening',
+  'security-hardening',
+  'realtime-reliability',
+  'infra-coherence',
 ]);
 
 const ALLOWED_PR_TASK_TYPES = new Set([
@@ -21,12 +25,20 @@ const ALLOWED_PR_TASK_TYPES = new Set([
   'backend-optimization',
   'api-design-optimization',
   'reliability-hardening',
+  'database-integrity-hardening',
+  'security-hardening',
+  'realtime-reliability',
+  'infra-coherence',
 ]);
 
 function parseArgs(argv) {
   const parsed = {
     base: null,
     head: null,
+    prTitle: null,
+    prBody: null,
+    changedFiles: null,
+    labelsJson: null,
   };
 
   for (let i = 2; i < argv.length; i += 1) {
@@ -36,6 +48,18 @@ function parseArgs(argv) {
       i += 1;
     } else if (token === '--head') {
       parsed.head = argv[i + 1] || null;
+      i += 1;
+    } else if (token === '--pr-title') {
+      parsed.prTitle = argv[i + 1] || null;
+      i += 1;
+    } else if (token === '--pr-body') {
+      parsed.prBody = argv[i + 1] || null;
+      i += 1;
+    } else if (token === '--changed-files') {
+      parsed.changedFiles = argv[i + 1] || null;
+      i += 1;
+    } else if (token === '--labels-json') {
+      parsed.labelsJson = argv[i + 1] || null;
       i += 1;
     }
   }
@@ -77,14 +101,36 @@ function parseLabelsFromEnv() {
   }
 }
 
+function parseLabels(raw) {
+  if (!raw) {
+    return [];
+  }
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.map((s) => String(s)) : [];
+  } catch (_) {
+    return [];
+  }
+}
+
+function parseChangedFiles(raw) {
+  if (!raw) {
+    return [];
+  }
+  return String(raw)
+    .split(',')
+    .map((f) => f.trim())
+    .filter(Boolean);
+}
+
 function hasOptimizationSignal(changedFiles, title, labels) {
   const text = `${title || ''}\n${labels.join(' ')}`.toLowerCase();
 
-  if (/ui-optimization|adaptive-interface|design-flow-optimization|backend-optimization|api-design-optimization|reliability-hardening|adaptive ui|quantum optimization|api optimization|backend optimization|reliability hardening/.test(text)) {
+  if (/ui-optimization|adaptive-interface|design-flow-optimization|backend-optimization|api-design-optimization|reliability-hardening|database-integrity-hardening|security-hardening|realtime-reliability|infra-coherence|adaptive ui|quantum optimization|api optimization|backend optimization|reliability hardening|database integrity|security hardening|realtime reliability|infra coherence/.test(text)) {
     return true;
   }
 
-  if (changedFiles.some((f) => /spec-kit\/quantum-oracle\/[^/]+\/(layout_optimization_report|behavioral_twin_report|api_topology_report|service_reliability_report)\.json$/i.test(f))) {
+  if (changedFiles.some((f) => /spec-kit\/quantum-oracle\/[^/]+\/(layout_optimization_report|behavioral_twin_report|api_topology_report|service_reliability_report|schema_drift_report|enum_consistency_report|query_energy_budget|migration_safety_report|attack_replay_matrix|mitigation_effectiveness|residual_risk_quantification|event_causality_ledger|listener_cardinality_report|reconnect_consistency_report|deployment_twin_state|env_drift_delta|world_verification_report)\.json$/i.test(f))) {
     return true;
   }
 
@@ -93,7 +139,7 @@ function hasOptimizationSignal(changedFiles, title, labels) {
 
 function parseTaskTypeSelection(body) {
   const selected = [];
-  const checkboxMatches = (body || '').matchAll(/^-\s*\[(x|X)\]\s*(general|ui-optimization|adaptive-interface|design-flow-optimization|backend-optimization|api-design-optimization|reliability-hardening)\s*$/gm);
+  const checkboxMatches = (body || '').matchAll(/^-\s*\[(x|X)\]\s*(general|ui-optimization|adaptive-interface|design-flow-optimization|backend-optimization|api-design-optimization|reliability-hardening|database-integrity-hardening|security-hardening|realtime-reliability|infra-coherence)\s*$/gm);
 
   for (const match of checkboxMatches) {
     selected.push(String(match[2]).toLowerCase());
@@ -176,20 +222,45 @@ function validateDebuggerEvidence(taskId) {
   return null;
 }
 
+function validateLearningEvidence(taskId) {
+  const closurePath = path.join(process.cwd(), 'spec-kit', 'quantum-oracle', taskId, 'closure_oracle.json');
+  const closure = readJson(closurePath);
+  if (!closure || typeof closure !== 'object') {
+    return 'closure_oracle.json missing or invalid for learning evidence check';
+  }
+
+  if (closure.requiresLearningOracle !== true) {
+    return 'closure_oracle.json must set requiresLearningOracle=true for advanced optimization/reliability task types';
+  }
+
+  const learningPath = path.join(process.cwd(), 'spec-kit', 'quantum-oracle', taskId, 'learning_update.json');
+  const fieldPath = path.join(process.cwd(), 'spec-kit', 'quantum-oracle', taskId, 'field_experience_report.json');
+
+  if (!fs.existsSync(learningPath)) {
+    return 'missing learning_update.json for learning-enabled task';
+  }
+
+  if (!fs.existsSync(fieldPath)) {
+    return 'missing field_experience_report.json for learning-enabled task';
+  }
+
+  return null;
+}
+
 function main() {
   const args = parseArgs(process.argv);
   const base = args.base || process.env.PR_BASE_SHA || null;
   const head = args.head || process.env.PR_HEAD_SHA || null;
 
-  const changedFiles = getChangedFiles(base, head);
-  const labels = parseLabelsFromEnv();
-  const title = process.env.PR_TITLE || '';
-  const body = process.env.PR_BODY || '';
+  const changedFiles = args.changedFiles ? parseChangedFiles(args.changedFiles) : getChangedFiles(base, head);
+  const labels = args.labelsJson ? parseLabels(args.labelsJson) : parseLabelsFromEnv();
+  const title = args.prTitle || process.env.PR_TITLE || '';
+  const body = args.prBody || process.env.PR_BODY || '';
 
   const errors = [];
   const selectedTaskTypes = parseTaskTypeSelection(body);
   if (selectedTaskTypes.length !== 1) {
-    errors.push('PR template task type is required and must have exactly one checked option: general, ui-optimization, adaptive-interface, design-flow-optimization, backend-optimization, api-design-optimization, or reliability-hardening.');
+    errors.push('PR template task type is required and must have exactly one checked option: general, ui-optimization, adaptive-interface, design-flow-optimization, backend-optimization, api-design-optimization, reliability-hardening, database-integrity-hardening, security-hardening, realtime-reliability, or infra-coherence.');
   }
 
   const selectedTaskType = selectedTaskTypes.length === 1 ? selectedTaskTypes[0] : null;
@@ -249,6 +320,11 @@ function main() {
     const debuggerEvidenceError = validateDebuggerEvidence(taskId);
     if (debuggerEvidenceError) {
       errors.push(`Debugger evidence check failed for task '${taskId}': ${debuggerEvidenceError}`);
+    }
+
+    const learningEvidenceError = validateLearningEvidence(taskId);
+    if (learningEvidenceError) {
+      errors.push(`Learning evidence check failed for task '${taskId}': ${learningEvidenceError}`);
     }
   });
 

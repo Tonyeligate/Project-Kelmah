@@ -184,7 +184,7 @@ const EarningsTracker = () => {
           return;
         }
       } catch (apiErr) {
-        if (import.meta.env.DEV) console.warn('Earnings API unavailable:', apiErr.message);
+        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Earnings API unavailable:', apiErr.message);
       }
 
       setEarningsData(EMPTY_EARNINGS_DATA);

@@ -20,7 +20,7 @@ import { useSelector } from 'react-redux';
 import { selectProfile } from '../../../store/slices/profileSlice.js';
 import { useSnackbar } from 'notistack';
 
-const ProfilePicture = ({ size = 120, editable = true }) => {
+const ProfilePicture = ({ size = 120, editable = true, altText = 'Profile picture' }) => {
   const { uploadProfilePicture } = useProfile({ autoInitialize: false });
   const profile = useSelector(selectProfile);
   const { enqueueSnackbar } = useSnackbar();
@@ -61,7 +61,7 @@ const ProfilePicture = ({ size = 120, editable = true }) => {
       setPreviewUrl(null);
       enqueueSnackbar('Profile picture updated', { variant: 'success' });
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Error uploading profile picture:', error);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error uploading profile picture:', error);
       enqueueSnackbar('Failed to upload picture', { variant: 'error' });
     } finally {
       setLoading(false);
@@ -77,7 +77,7 @@ const ProfilePicture = ({ size = 120, editable = true }) => {
       setPreviewUrl(null);
       enqueueSnackbar('Profile picture removed', { variant: 'success' });
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Error removing profile picture:', error);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error removing profile picture:', error);
       enqueueSnackbar('Failed to remove picture', { variant: 'error' });
     } finally {
       setLoading(false);
@@ -88,12 +88,25 @@ const ProfilePicture = ({ size = 120, editable = true }) => {
     <Box sx={{ position: 'relative', width: size, height: size }}>
       <Avatar
         src={previewUrl || profile?.profilePicture || profile?.avatar || ''}
-        alt="Profile picture"
+        alt={altText}
+        imgProps={{
+          loading: 'lazy',
+          decoding: 'async',
+          referrerPolicy: 'no-referrer',
+        }}
         sx={{
           width: size,
           height: size,
           border: '2px solid',
           borderColor: 'primary.main',
+          '& img': {
+            objectFit: 'cover',
+          },
+          '&:focus-visible': {
+            outline: '3px solid',
+            outlineColor: 'primary.main',
+            outlineOffset: 2,
+          },
         }}
       />
 
@@ -117,6 +130,13 @@ const ProfilePicture = ({ size = 120, editable = true }) => {
                   bottom: 0,
                   right: 0,
                   bgcolor: 'background.paper',
+                  minHeight: 44,
+                  minWidth: 44,
+                  '&:focus-visible': {
+                    outline: '3px solid',
+                    outlineColor: 'primary.main',
+                    outlineOffset: 2,
+                  },
                   '&:hover': {
                     bgcolor: 'action.hover',
                   },
@@ -148,7 +168,7 @@ const ProfilePicture = ({ size = 120, editable = true }) => {
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenDialog(false)} disabled={loading}>
+          <Button onClick={() => setOpenDialog(false)} disabled={loading} sx={{ minHeight: 44 }}>
             Cancel
           </Button>
           <Button
@@ -156,10 +176,11 @@ const ProfilePicture = ({ size = 120, editable = true }) => {
             color="error"
             startIcon={<DeleteIcon />}
             disabled={loading}
+            sx={{ minHeight: 44 }}
           >
             Remove
           </Button>
-          <Button onClick={handleUpload} variant="contained" disabled={loading}>
+          <Button onClick={handleUpload} variant="contained" disabled={loading} sx={{ minHeight: 44 }}>
             Upload
           </Button>
         </DialogActions>

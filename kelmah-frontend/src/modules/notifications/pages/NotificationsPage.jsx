@@ -124,7 +124,7 @@ const PageNotificationItem = ({ notification, onMarkRead }) => {
       return;
     }
 
-    if (import.meta.env.DEV) {
+    if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') {
       console.warn('Blocked unsafe notification link:', nextLink);
     }
   };

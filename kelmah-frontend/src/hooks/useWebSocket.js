@@ -1,90 +1,95 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import authService from '../modules/auth/services/authService';
-import { io } from 'socket.io-client';
-import { getWebSocketUrl } from '../services/socketUrl';
+import websocketService from '../services/websocketService';
+import { APP_SOCKET_EVENTS } from '../services/socketEvents';
 
-// Socket.IO based WebSocket compatibility hook
+const websocketHookDebug = (...args) => {
+  if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') {
+    return {
+      warn: (...warnArgs) => console.warn(...warnArgs),
+      error: (...errorArgs) => console.error(...errorArgs),
+    };
+  }
+
+  return {
+    warn: () => {},
+    error: () => {},
+  };
+};
+
+const websocketHookLogger = websocketHookDebug();
+
+// Compatibility hook that now reuses websocketService singleton.
 export const useWebSocket = () => {
-  const [ioSocket, setIoSocket] = useState(null);
-  const [isConnected, setIsConnected] = useState(false);
+  const [isConnected, setIsConnected] = useState(Boolean(websocketService.isConnected));
   const [error, setError] = useState(null);
   const onMessageHandler = useRef(null);
+
+  const emitMessage = useCallback((payload) => {
+    if (!onMessageHandler.current) {
+      return;
+    }
+
+    try {
+      onMessageHandler.current({ data: JSON.stringify(payload) });
+    } catch (handlerError) {
+      websocketHookLogger.error('onmessage handler error:', handlerError);
+    }
+  }, []);
 
   const connect = useCallback(async () => {
     try {
       const token = authService.getToken();
-      if (!token) {
-        setError(new Error('No authentication token found'));
+      const user = authService.getCurrentUser();
+      const userId = user?.id || user?._id || user?.userId || user?.sub;
+      const userRole = user?.role || 'worker';
+
+      if (!token || !userId) {
+        const authError = new Error('Missing authentication context for realtime connection');
+        setError(authError);
         return;
       }
 
-      const wsUrl = await getWebSocketUrl();
-      if (import.meta.env.DEV) console.log('📡 WebSocket connecting to backend:', wsUrl);
-
-      // Connect to backend server - Socket.IO handles /socket.io path automatically
-      const socket = io(wsUrl, {
-        auth: { token },
-        path: '/socket.io',
-        transports: ['websocket', 'polling'],
-        reconnection: true,
-        reconnectionAttempts: 10,
-        reconnectionDelay: 1000,
-        reconnectionDelayMax: 5000,
-      });
-
-      socket.on('connect', () => {
-        setIoSocket(socket);
-        setIsConnected(true);
-        setError(null);
-      });
-
-      socket.on('disconnect', () => {
-        setIsConnected(false);
-      });
-
-      // Generic adapter: map common events to a single onmessage(JSON)
-      const emitMessage = (payload) => {
-        if (onMessageHandler.current) {
-          try {
-            onMessageHandler.current({ data: JSON.stringify(payload) });
-          } catch (e) {
-            if (import.meta.env.DEV) console.error('onmessage handler error:', e);
-          }
-        }
-      };
-
-      // Audit-related events compatibility
-      socket.on('audit_notification', (data) =>
-        emitMessage({ type: 'audit_notification', data }),
-      );
-      socket.on('audit_subscription_success', (data) =>
-        emitMessage({ type: 'audit_subscription_success', data }),
-      );
-
-      // Generic message passthrough if server emits 'message'
-      socket.on('message', (data) => emitMessage({ type: 'message', data }));
-
-      // Notifications passthrough
-      socket.on('notification', (data) =>
-        emitMessage({ type: 'notification', data }),
-      );
-
-      return socket;
-    } catch (e) {
-      if (import.meta.env.DEV) console.error('Socket.IO connection failed:', e);
-      setError(e);
+      await websocketService.connect(userId, userRole, token);
+      setIsConnected(Boolean(websocketService.isConnected));
+      setError(null);
+    } catch (connectionError) {
+      websocketHookLogger.error('Socket connection failed:', connectionError);
+      setError(connectionError);
     }
   }, []);
 
   useEffect(() => {
-    let active;
-    connect().then((s) => (active = s));
-    return () => {
-      if (active) active.disconnect();
-    };
-  }, [connect]);
+    connect();
 
-  // API compatible wrapper expected by existing consumers
+    const listeners = {
+      [APP_SOCKET_EVENTS.MESSAGE_NEW]: (data) =>
+        emitMessage({ type: 'message', data }),
+      [APP_SOCKET_EVENTS.GENERIC_NOTIFICATION]: (data) =>
+        emitMessage({ type: 'notification', data }),
+      [APP_SOCKET_EVENTS.SYSTEM_NOTIFICATION]: (data) =>
+        emitMessage({ type: 'system_notification', data }),
+      [APP_SOCKET_EVENTS.TYPING_INDICATOR]: (data) =>
+        emitMessage({ type: 'typing_indicator', data }),
+    };
+
+    Object.entries(listeners).forEach(([eventName, handler]) => {
+      websocketService.addEventListener(eventName, handler);
+    });
+
+    const connectionPoll = setInterval(() => {
+      setIsConnected(Boolean(websocketService.isConnected));
+    }, 1000);
+
+    return () => {
+      clearInterval(connectionPoll);
+      Object.entries(listeners).forEach(([eventName, handler]) => {
+        websocketService.removeEventListener(eventName, handler);
+      });
+    };
+  }, [connect, emitMessage]);
+
+  // API-compatible wrapper expected by legacy consumers.
   const ws = useRef({
     set onmessage(handler) {
       onMessageHandler.current = handler;
@@ -93,27 +98,30 @@ export const useWebSocket = () => {
       return onMessageHandler.current;
     },
     close: () => {
-      if (ioSocket) ioSocket.disconnect();
+      websocketService.disconnect();
+      setIsConnected(false);
     },
   }).current;
 
-  const sendMessage = useCallback(
-    (message) => {
-      if (!ioSocket) { if (import.meta.env.DEV) console.warn('Socket not connected'); return; }
-      // Support string shorthand used by useAuditNotifications
-      if (typeof message === 'string') {
-        if (message === 'subscribe_audit_notifications')
-          ioSocket.emit('audit:subscribe');
-        else if (message === 'unsubscribe_audit_notifications')
-          ioSocket.emit('audit:unsubscribe');
-        else ioSocket.emit('client:event', { message });
-        return;
+  const sendMessage = useCallback((message) => {
+    if (!websocketService.isConnected) {
+      websocketHookLogger.warn('Socket not connected');
+      return;
+    }
+
+    if (typeof message === 'string') {
+      if (message === 'subscribe_audit_notifications') {
+        websocketService.socket?.emit('audit:subscribe');
+      } else if (message === 'unsubscribe_audit_notifications') {
+        websocketService.socket?.emit('audit:unsubscribe');
+      } else {
+        websocketService.socket?.emit('client:event', { message });
       }
-      // Object messages emitted on a generic channel
-      ioSocket.emit('client:message', message);
-    },
-    [ioSocket],
-  );
+      return;
+    }
+
+    websocketService.socket?.emit('client:message', message);
+  }, []);
 
   return {
     ws,

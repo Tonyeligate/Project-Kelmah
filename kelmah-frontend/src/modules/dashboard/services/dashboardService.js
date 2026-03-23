@@ -1,9 +1,12 @@
 import { api } from '../../../services/apiClient';
 // MED-19 FIX: Use shared websocketService instead of creating a third socket connection
 import websocketService from '../../../services/websocketService';
+import { SOCKET_EVENTS } from '../../../services/socketEvents';
 
 const __DEV__ = import.meta.env.DEV;
-const devLog = (...args) => { if (__DEV__) console.log(...args); };
+const DASHBOARD_DEBUG = __DEV__ && import.meta.env.VITE_DEBUG_DASHBOARD === 'true';
+const devLog = (...args) => { if (DASHBOARD_DEBUG) console.log(...args); };
+const devError = (...args) => { if (__DEV__ && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error(...args); };
 
 /**
  * Dashboard service to handle dashboard data fetching and real-time updates.
@@ -35,7 +38,7 @@ class DashboardService {
       const response = await api.get('/dashboard/summary');
       return response.data?.data || response.data || {};
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Error fetching dashboard summary:', error);
+      devError('Error fetching dashboard summary:', error);
       const overview = await this.getOverview();
       const [recentActivity, recentMessages] = await Promise.all([
         this.getRecentActivity(1, 10),
@@ -103,9 +106,9 @@ class DashboardService {
     devLog('📡 Dashboard subscribing to shared websocket events');
 
     // Subscribe to dashboard-specific events on the shared socket
-    socket.on('dashboard:update', this._onDashboardUpdate);
-    socket.on('dashboard:new-job', this._onNewJob);
-    socket.on('dashboard:status-change', this._onStatusChange);
+    socket.on(SOCKET_EVENTS.DASHBOARD.UPDATE, this._onDashboardUpdate);
+    socket.on(SOCKET_EVENTS.DASHBOARD.NEW_JOB, this._onNewJob);
+    socket.on(SOCKET_EVENTS.DASHBOARD.STATUS_CHANGE, this._onStatusChange);
     this.connected = true;
   }
 
@@ -116,9 +119,9 @@ class DashboardService {
     const socket = websocketService.socket;
     if (!socket) return;
 
-    socket.off('dashboard:update', this._onDashboardUpdate);
-    socket.off('dashboard:new-job', this._onNewJob);
-    socket.off('dashboard:status-change', this._onStatusChange);
+    socket.off(SOCKET_EVENTS.DASHBOARD.UPDATE, this._onDashboardUpdate);
+    socket.off(SOCKET_EVENTS.DASHBOARD.NEW_JOB, this._onNewJob);
+    socket.off(SOCKET_EVENTS.DASHBOARD.STATUS_CHANGE, this._onStatusChange);
     this._overviewCache = null;
     this._overviewCacheTime = 0;
     this.connected = false;
@@ -161,7 +164,7 @@ class DashboardService {
       try {
         callback(data);
       } catch (error) {
-        if (import.meta.env.DEV) console.error(`Error in ${event} listener:`, error);
+          devError(`Error in ${event} listener:`, error);
       }
     });
   }
@@ -214,7 +217,7 @@ class DashboardService {
       this._overviewCacheTime = Date.now();
       return result;
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Error fetching dashboard overview:', error);
+        devError('Error fetching dashboard overview:', error);
       return {
         metrics: {
           totalUsers: 0,
@@ -255,7 +258,7 @@ class DashboardService {
             : activities.length >= limit,
       };
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Error fetching recent activity:', error);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error fetching recent activity:', error);
       return {
         activities: [],
         hasMore: false,
@@ -271,7 +274,7 @@ class DashboardService {
       });
       return response.data?.data || response.data || {};
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Error fetching statistics:', error);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error fetching statistics:', error);
       return {
         userGrowth: [],
         metrics: {},
@@ -299,7 +302,7 @@ class DashboardService {
       }
       return [];
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Error fetching recent messages:', error);
+        devError('Error fetching recent messages:', error);
       return [];
     }
   }
@@ -317,7 +320,7 @@ class DashboardService {
         earningsThisMonth: analytics.earningsThisMonth || 0,
       };
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Error fetching performance metrics:', error);
+        devError('Error fetching performance metrics:', error);
       return {
         completionRate: 0,
         clientSatisfaction: 0,
@@ -354,7 +357,7 @@ class DashboardService {
         },
       ];
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Error fetching quick actions:', error);
+        devError('Error fetching quick actions:', error);
       return [
         {
           id: 'refresh-dashboard',
@@ -377,7 +380,7 @@ class DashboardService {
         newApplicants: overview.metrics?.newApplicants || overview.jobs?.totalJobsToday || 0,
       };
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Error fetching notifications summary:', error);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error fetching notifications summary:', error);
       return {
         unreadMessages: 0,
         pendingJobs: 0,
@@ -392,7 +395,7 @@ class DashboardService {
       const overview = await this.getOverview();
       return overview.metrics || {};
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Error fetching real-time stats:', error);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error fetching real-time stats:', error);
       return {
         totalUsers: 0,
         totalWorkers: 0,
@@ -415,7 +418,7 @@ class DashboardService {
       } catch (_) {
         // Fall through to the stable empty payload below.
       }
-      if (import.meta.env.DEV) console.error('Error fetching job matches:', error);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error fetching job matches:', error);
       return [];
     }
   }
@@ -432,7 +435,7 @@ class DashboardService {
       } catch (_) {
         // Fall through to the stable empty payload below.
       }
-      if (import.meta.env.DEV) console.error('Error fetching recommendations:', error);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error fetching recommendations:', error);
       return [];
     }
   }

@@ -29,7 +29,7 @@ const getAPIBaseUrl = async () => {
   try {
     return await getApiBaseUrl();
   } catch (error) {
-    if (import.meta.env.DEV) console.warn('Failed to get API base URL from centralized config:', error);
+    if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Failed to get API base URL from centralized config:', error);
     return '/api';
   }
 };

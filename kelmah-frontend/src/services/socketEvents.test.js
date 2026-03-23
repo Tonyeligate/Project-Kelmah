@@ -1,6 +1,7 @@
 import {
   APP_SOCKET_EVENTS,
   MESSAGE_DELIVERY_ALIASES,
+  MESSAGE_TYPING_ALIASES,
   SOCKET_EVENTS,
 } from './socketEvents';
 
@@ -21,5 +22,18 @@ describe('socket event registry contracts', () => {
     expect(MESSAGE_DELIVERY_ALIASES).toEqual(
       expect.arrayContaining(['new_message', 'new-message', 'receive_message']),
     );
+  });
+
+  test('includes typing aliases used by legacy and canonical payloads', () => {
+    expect(MESSAGE_TYPING_ALIASES).toEqual(
+      expect.arrayContaining(['typing-indicator', 'user_typing']),
+    );
+  });
+
+  test('registers conversation and dashboard socket domains centrally', () => {
+    expect(SOCKET_EVENTS.CONVERSATION.JOIN).toBe('join_conversation');
+    expect(SOCKET_EVENTS.CONVERSATION.JOINED).toBe('conversation_joined');
+    expect(SOCKET_EVENTS.DASHBOARD.UPDATE).toBe('dashboard:update');
+    expect(SOCKET_EVENTS.DASHBOARD.NEW_JOB).toBe('dashboard:new-job');
   });
 });

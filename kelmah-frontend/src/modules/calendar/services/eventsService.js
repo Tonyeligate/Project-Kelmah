@@ -1,4 +1,6 @@
 import { api } from '../../../services/apiClient';
+import { unwrapApiData } from '../../../services/responseNormalizer';
+import { captureRecoverableApiError } from '../../../services/errorTelemetry';
 
 const CALENDAR_ENDPOINTS = ['/events', '/calendar/events'];
 
@@ -7,23 +9,8 @@ const shouldTryFallback = (error) => {
   return status === 404 || status === 405 || status === 501 || status === 503;
 };
 
-const extractPayload = (response) => {
-  const body = response?.data;
-
-  if (body?.success === false) {
-    const message = body?.error?.message || body?.message || 'Calendar request failed';
-    const normalized = new Error(message);
-    normalized.response = response;
-    normalized.code = body?.error?.code;
-    throw normalized;
-  }
-
-  if (body && Object.prototype.hasOwnProperty.call(body, 'data')) {
-    return body.data;
-  }
-
-  return body;
-};
+const extractPayload = (response, defaultValue = null) =>
+  unwrapApiData(response, { defaultValue });
 
 const requestWithFallback = async (requestFactory) => {
   let lastError;
@@ -57,7 +44,10 @@ const eventsService = {
     try {
       return await requestWithFallback((endpoint) => api.get(endpoint));
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Error fetching events:', error);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error fetching events:', error);
+      captureRecoverableApiError(error, {
+        operation: 'calendar.getEvents',
+      });
       throw error;
     }
   },
@@ -71,7 +61,10 @@ const eventsService = {
     try {
       return await requestWithFallback((endpoint) => api.post(endpoint, eventData));
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Error creating event:', error);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error creating event:', error);
+      captureRecoverableApiError(error, {
+        operation: 'calendar.createEvent',
+      });
       throw error;
     }
   },
@@ -88,7 +81,10 @@ const eventsService = {
         api.put(`${endpoint}/${eventId}`, eventData),
       );
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Error updating event:', error);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error updating event:', error);
+      captureRecoverableApiError(error, {
+        operation: 'calendar.updateEvent',
+      });
       throw error;
     }
   },
@@ -102,7 +98,10 @@ const eventsService = {
     try {
       return await requestWithFallback((endpoint) => api.delete(`${endpoint}/${eventId}`));
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Error deleting event:', error);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error deleting event:', error);
+      captureRecoverableApiError(error, {
+        operation: 'calendar.deleteEvent',
+      });
       throw error;
     }
   },

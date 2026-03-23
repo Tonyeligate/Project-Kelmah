@@ -1,0 +1,19 @@
+{
+  "taskId": "<task-id>",
+  "guardrails": [
+    "baseline UX does not depend on biometrics",
+    "adaptation triggers are explainable",
+    "no manipulative or discriminatory adaptation"
+  ],
+  "safetyEnvelope": {
+    "noDarkPatterns": true,
+    "coreWorkflowAlwaysVisible": true,
+    "consentModelVerified": true
+  },
+  "deterministicFallback": {
+    "enabled": true,
+    "fallbackMode": "default-static-ui",
+    "rollbackTrigger": "accessibility or trust regression"
+  },
+  "closureVerdict": "PASS"
+}

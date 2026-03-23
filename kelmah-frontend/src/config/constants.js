@@ -15,7 +15,7 @@ const getAPIUrls = async () => {
       production: baseUrl,
     };
   } catch (error) {
-    if (import.meta.env.DEV) console.warn('Failed to get centralized API URLs:', error);
+    if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Failed to get centralized API URLs:', error);
     return {
       development: '/api',
       test: '/api',
@@ -43,7 +43,7 @@ export const getSOCKET_URL = async () => {
   try {
     return API_ENDPOINTS.WEBSOCKET.MESSAGING || '/socket.io';
   } catch (error) {
-    if (import.meta.env.DEV) console.warn('Failed to get socket URL:', error);
+    if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Failed to get socket URL:', error);
     return '/socket.io';
   }
 };

@@ -73,7 +73,7 @@ const WorkerReviewsPage = () => {
         setPagination(pagination);
       })
       .catch((err) => {
-        if (import.meta.env.DEV) console.error(err);
+        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error(err);
         setError('Failed to load reviews. Please try again later.');
       })
       .finally(() => setLoading(false));

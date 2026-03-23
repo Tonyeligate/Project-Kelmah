@@ -22,6 +22,12 @@ const getCancelIdleCallback = () => {
   return window.cancelIdleCallback || clearTimeout;
 };
 
+const prefetchWarn = (...args) => {
+  if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') {
+    console.warn(...args);
+  }
+};
+
 /**
  * Warm up React.lazy icon factories once the browser is idle
  * @param {Record<string, React.LazyExoticComponent<any>>} lazyIconMap
@@ -61,7 +67,7 @@ export const prefetchLazyIcons = (lazyIconMap) => {
         }),
       );
     } catch (error) {
-      if (import.meta.env.DEV) console.warn('[prefetchLazyIcons] Failed to warm icons:', error);
+      prefetchWarn('[prefetchLazyIcons] Failed to warm icons:', error);
     }
   });
 

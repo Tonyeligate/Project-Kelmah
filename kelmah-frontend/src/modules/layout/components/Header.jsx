@@ -366,6 +366,10 @@ const Header = ({
               aria-label="Go back"
               sx={{
                 mr: 1,
+                '&:focus-visible': {
+                  outline: `3px solid ${theme.palette.primary.main}`,
+                  outlineOffset: 2,
+                },
                 '&:hover': {
                   backgroundColor:
                     theme.palette.mode === 'dark'
@@ -402,8 +406,19 @@ const Header = ({
         >
           {/* Theme Toggle - Only show on desktop */}
           {!isMobile && (
-            <Tooltip title="Theme" arrow>
-              <ActionButton onClick={handleThemeMenuOpen}>
+            <Tooltip title="Theme options" arrow>
+              <ActionButton
+                onClick={handleThemeMenuOpen}
+                aria-label="Open theme options"
+                aria-haspopup="menu"
+                aria-expanded={Boolean(themeMenuAnchor)}
+                sx={{
+                  '&:focus-visible': {
+                    outline: `3px solid ${theme.palette.primary.main}`,
+                    outlineOffset: 2,
+                  },
+                }}
+              >
                 <ColorLensIcon />
               </ActionButton>
             </Tooltip>
@@ -429,15 +444,29 @@ const Header = ({
                       }
                       sx={{
                         backgroundColor: headerAvailability.isAvailable
-                          ? 'rgba(76, 175, 80, 0.12)'
-                          : 'rgba(255, 152, 0, 0.12)',
+                          ? (theme.palette.mode === 'dark'
+                              ? 'rgba(102, 187, 106, 0.22)'
+                              : 'rgba(76, 175, 80, 0.2)')
+                          : (theme.palette.mode === 'dark'
+                              ? 'rgba(255, 183, 77, 0.25)'
+                              : 'rgba(255, 152, 0, 0.22)'),
                         color: headerAvailability.isAvailable
-                          ? '#4caf50'
-                          : '#ff9800',
+                          ? (theme.palette.mode === 'dark'
+                              ? '#c8e6c9'
+                              : '#1b5e20')
+                          : (theme.palette.mode === 'dark'
+                              ? '#ffe0b2'
+                              : '#7a3e00'),
                         border:
                           theme.palette.mode === 'dark'
-                            ? '1px solid rgba(255, 215, 0, 0.15)'
-                            : '1px solid rgba(0, 0, 0, 0.12)',
+                            ? '1px solid rgba(255, 224, 178, 0.35)'
+                            : '1px solid rgba(0, 0, 0, 0.2)',
+                        '& .MuiChip-label': {
+                          fontSize: '0.78rem',
+                          lineHeight: 1.35,
+                          letterSpacing: '0.01em',
+                          fontWeight: 600,
+                        },
                       }}
                       onClick={() =>
                         navigate('/worker/profile/edit?section=availability')
@@ -450,12 +479,22 @@ const Header = ({
                       size="small"
                       label={`${Math.round(headerCompletion.completion)}%`}
                       sx={{
-                        backgroundColor: 'rgba(255, 215, 0, 0.12)',
-                        color: '#FFD700',
+                        backgroundColor:
+                          theme.palette.mode === 'dark'
+                            ? 'rgba(255, 213, 79, 0.28)'
+                            : 'rgba(255, 215, 0, 0.3)',
+                        color:
+                          theme.palette.mode === 'dark' ? '#fff3c4' : '#6b5200',
                         border:
                           theme.palette.mode === 'dark'
-                            ? '1px solid rgba(255, 215, 0, 0.15)'
-                            : '1px solid rgba(0, 0, 0, 0.12)',
+                            ? '1px solid rgba(255, 213, 79, 0.42)'
+                            : '1px solid rgba(0, 0, 0, 0.22)',
+                        '& .MuiChip-label': {
+                          fontSize: '0.78rem',
+                          lineHeight: 1.35,
+                          letterSpacing: '0.01em',
+                          fontWeight: 600,
+                        },
                       }}
                       onClick={() => navigate('/worker/profile/edit')}
                       clickable
@@ -502,6 +541,7 @@ const Header = ({
                   to={authCta.secondary.to}
                   variant="outlined"
                   size="small"
+                  sx={{ lineHeight: 1.3, letterSpacing: '0.01em', fontSize: '0.86rem' }}
                 >
                   {authCta.secondary.label}
                 </AuthButton>
@@ -514,7 +554,9 @@ const Header = ({
                   size="small"
                   sx={{
                     ...(isMobile && {
-                      fontSize: '0.75rem',
+                      fontSize: '0.82rem',
+                      lineHeight: 1.3,
+                      letterSpacing: '0.01em',
                       px: 1.5,
                       py: 0.5,
                       minHeight: '44px',
@@ -542,6 +584,10 @@ const Header = ({
                   p: { xs: 0.9, sm: 1.1 },
                   color: 'error.main',
                   borderColor: alpha(theme.palette.error.main, 0.5),
+                  '&:focus-visible': {
+                    outline: `3px solid ${theme.palette.error.main}`,
+                    outlineOffset: 2,
+                  },
                   '&:hover': {
                     backgroundColor: alpha(theme.palette.error.main, 0.16),
                   },
@@ -564,6 +610,10 @@ const Header = ({
               sx={{
                 ml: { xs: 0.5, sm: 1 },
                 p: { xs: 1, sm: 1.5 },
+                '&:focus-visible': {
+                  outline: `3px solid ${theme.palette.primary.main}`,
+                  outlineOffset: 2,
+                },
                 '&:hover': {
                   backgroundColor:
                     theme.palette.mode === 'dark'
@@ -616,10 +666,18 @@ const Header = ({
           <Stack direction="row" spacing={1} alignItems="center">
             <Brightness7Icon fontSize="small" />
             <Box>
-              <Typography variant="subtitle2" fontWeight={600}>
+              <Typography
+                variant="subtitle2"
+                fontWeight={600}
+                sx={{ lineHeight: 1.3, letterSpacing: '0.01em' }}
+              >
                 Light Mode
               </Typography>
-              <Typography variant="caption" color="text.secondary">
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ fontSize: '0.78rem', lineHeight: 1.35 }}
+              >
                 High contrast daytime palette
               </Typography>
             </Box>
@@ -635,10 +693,18 @@ const Header = ({
           <Stack direction="row" spacing={1} alignItems="center">
             <Brightness4Icon fontSize="small" />
             <Box>
-              <Typography variant="subtitle2" fontWeight={600}>
+              <Typography
+                variant="subtitle2"
+                fontWeight={600}
+                sx={{ lineHeight: 1.3, letterSpacing: '0.01em' }}
+              >
                 Dark Mode
               </Typography>
-              <Typography variant="caption" color="text.secondary">
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ fontSize: '0.78rem', lineHeight: 1.35 }}
+              >
                 OLED-friendly evening palette
               </Typography>
             </Box>
@@ -650,7 +716,7 @@ const Header = ({
             toggleTheme();
             handleThemeMenuClose();
           }}
-          sx={{ justifyContent: 'center', fontWeight: 600 }}
+          sx={{ justifyContent: 'center', fontWeight: 600, lineHeight: 1.35, letterSpacing: '0.01em' }}
         >
           Quick Toggle
         </MenuItem>

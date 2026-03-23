@@ -7,6 +7,12 @@
 
 const QUOTA_WARNING_THRESHOLD = 0.9; // warn at 90 % usage
 
+const quotaWarn = (...args) => {
+  if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') {
+    console.warn(...args);
+  }
+};
+
 /**
  * Check available browser storage and warn if nearing capacity.
  * Safe to call on startup — resolves silently when the API is unavailable.
@@ -23,7 +29,7 @@ export async function checkStorageQuota() {
     const quotaMB = (quota / 1024 / 1024).toFixed(1);
 
     if (usagePercent >= QUOTA_WARNING_THRESHOLD) {
-      if (import.meta.env.DEV) console.warn(
+      quotaWarn(
         `⚠️ Browser storage ${(usagePercent * 100).toFixed(0)}% full (${usageMB} MB / ${quotaMB} MB). ` +
           'Consider clearing site data to avoid FILE_ERROR_NO_SPACE errors.'
       );

@@ -1,0 +1,17 @@
+{
+  "taskId": "optimization-demo-task",
+  "realWorldSignals": [
+    "Users on low-end devices show higher hesitation in long forms"
+  ],
+  "userPainPoints": [
+    "Too many branches before primary action caused drop-offs"
+  ],
+  "policyAdjustments": [
+    "Reduce branching and add guided inline support on repeated errors"
+  ],
+  "rollbackLessons": {
+    "trigger": "completion rate drops below baseline",
+    "lesson": "Keep optimization behind feature flag until stability is proven"
+  },
+  "closureVerdict": "PASS"
+}

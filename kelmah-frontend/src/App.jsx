@@ -191,7 +191,7 @@ const App = () => {
           setServicesWakingUp(false);
         }
       } catch (e) {
-        if (import.meta.env.DEV) console.warn('Service warm-up check failed:', e);
+        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Service warm-up check failed:', e);
         setServicesWakingUp(false);
       }
     };
@@ -357,6 +357,7 @@ const App = () => {
                 color="primary"
                 size="small"
                 onClick={handleApplySwUpdate}
+                sx={{ minHeight: 44 }}
               >
                 Update Now
               </Button>
@@ -364,6 +365,7 @@ const App = () => {
                 color="inherit"
                 size="small"
                 onClick={() => setSwUpdateAvailable(false)}
+                sx={{ minHeight: 44 }}
               >
                 Later
               </Button>
@@ -395,6 +397,7 @@ const App = () => {
                   color="inherit"
                   size="small"
                   onClick={handleDismissInstallPrompt}
+                  sx={{ minHeight: 44, minWidth: 44 }}
                 >
                   <CloseIcon fontSize="small" />
                 </IconButton>
@@ -420,6 +423,8 @@ const App = () => {
         >
           <Alert
             severity={apiRecoveryNotice?.isTimeout ? 'warning' : 'info'}
+            role="status"
+            aria-live="polite"
             onClose={() => setApiRecoveryNotice(null)}
             action={
               apiRecoveryNotice?.retryable
@@ -431,6 +436,7 @@ const App = () => {
                       setApiRecoveryNotice(null);
                       window.location.reload();
                     }}
+                    sx={{ minHeight: 44 }}
                   >
                     Retry
                   </Button>

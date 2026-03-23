@@ -250,6 +250,15 @@ const MessageInput = ({
                     onClick={() => removeAttachment(index)}
                     size="small"
                     aria-label={`Remove attachment ${file.name}`}
+                    sx={{
+                      width: 44,
+                      height: 44,
+                      '&:focus-visible': {
+                        outline: '3px solid',
+                        outlineColor: 'primary.main',
+                        outlineOffset: '2px',
+                      },
+                    }}
                   >
                     <CloseIcon />
                   </IconButton>
@@ -284,7 +293,15 @@ const MessageInput = ({
           }}
           disabled={disabled || loading}
           aria-label="Add attachment"
-          sx={{ width: 44, height: 44 }}
+          sx={{
+            width: 44,
+            height: 44,
+            '&:focus-visible': {
+              outline: '3px solid',
+              outlineColor: 'primary.main',
+              outlineOffset: '2px',
+            },
+          }}
         >
           <AttachFileIcon />
         </IconButton>
@@ -322,7 +339,15 @@ const MessageInput = ({
             disabled || loading || (!message.trim() && attachments.length === 0)
           }
           aria-label="Send message"
-          sx={{ width: 44, height: 44 }}
+          sx={{
+            width: 44,
+            height: 44,
+            '&:focus-visible': {
+              outline: '3px solid',
+              outlineColor: 'primary.main',
+              outlineOffset: '2px',
+            },
+          }}
         >
           {loading ? <CircularProgress size={24} /> : <SendIcon />}
         </IconButton>

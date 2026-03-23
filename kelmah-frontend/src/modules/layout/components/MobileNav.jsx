@@ -1,4 +1,4 @@
-import { useMemo, useRef, useCallback } from 'react';
+import { useMemo, useRef, useCallback, useEffect } from 'react';
 import {
   Drawer,
   List,
@@ -114,6 +114,14 @@ const MobileNav = ({ open, onClose }) => {
   // restoring body overflow, clearing aria-hidden). By deferring navigation
   // to SlideProps.onExited, we guarantee MUI finishes first.
   const pendingActionRef = useRef(null);
+  const closeFallbackTimerRef = useRef(null);
+
+  const clearCloseFallbackTimer = useCallback(() => {
+    if (closeFallbackTimerRef.current) {
+      clearTimeout(closeFallbackTimerRef.current);
+      closeFallbackTimerRef.current = null;
+    }
+  }, []);
 
   const { user, canShowUserFeatures, shouldShowAuthButtons } = authState;
 
@@ -143,7 +151,8 @@ const MobileNav = ({ open, onClose }) => {
     // keepMounted or interrupted transitions), execute the pending action after
     // a generous timeout. Also force-clean body overflow to unfreeze the page.
     if (pendingActionRef.current) {
-      setTimeout(() => {
+      clearCloseFallbackTimer();
+      closeFallbackTimerRef.current = setTimeout(() => {
         const action = pendingActionRef.current;
         if (action) {
           pendingActionRef.current = null;
@@ -152,6 +161,7 @@ const MobileNav = ({ open, onClose }) => {
           document.body.style.removeProperty('padding-right');
           action();
         }
+        closeFallbackTimerRef.current = null;
       }, 350);
     }
   };
@@ -159,12 +169,20 @@ const MobileNav = ({ open, onClose }) => {
   // Called by SlideProps.onExited — the Drawer's slide-out animation has
   // completed and MUI Modal has fully restored body styles & removed backdrop.
   const handleDrawerExited = useCallback(() => {
+    clearCloseFallbackTimer();
     const action = pendingActionRef.current;
     pendingActionRef.current = null;
     if (typeof action === 'function') {
       action();
     }
-  }, []);
+  }, [clearCloseFallbackTimer]);
+
+  useEffect(() => {
+    return () => {
+      clearCloseFallbackTimer();
+      pendingActionRef.current = null;
+    };
+  }, [clearCloseFallbackTimer]);
 
   const authCtas = useMemo(() => {
     if (!showAuthButtons) return [];
@@ -268,9 +286,6 @@ const MobileNav = ({ open, onClose }) => {
         );
       }
 
-      baseItems.push(
-        { label: 'Help & Support', icon: <SupportIcon />, path: '/support' },
-      );
     } else {
       // Guest navigation
       baseItems.push(
@@ -389,6 +404,9 @@ const MobileNav = ({ open, onClose }) => {
 
         {/* Navigation Items */}
         <List sx={{ flex: 1, py: 1 }}>
+          <Typography variant="caption" color="text.secondary" sx={{ px: 2.25, py: 0.75, display: 'block' }}>
+            Quick links. Main tabs stay in the bottom navigation bar.
+          </Typography>
           {/* ✅ MOBILE-AUDIT P3: removed motion.div staggered animation from nav items */}
           {navigationItems.map((item) => (
                 <StyledListItemButton key={item.path} onClick={() => handleNavigate(item.path)}>

@@ -102,7 +102,6 @@ import reviewService from '../../reviews/services/reviewService';
 import { hasRole } from '../../../utils/userUtils';
 import {
   useBreakpointDown,
-  useMaxWidth,
 } from '../../../hooks/useResponsive';
 import {
   resolveMediaAssetUrl,
@@ -133,6 +132,10 @@ const ProfileAvatar = styled(Avatar)(({ theme }) => ({
   fontSize: '4rem',
   fontWeight: 700,
   background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+  '&:focus-visible': {
+    outline: `3px solid ${theme.palette.primary.main}`,
+    outlineOffset: 3,
+  },
 }));
 
 const GlassCard = styled(Card)(({ theme }) => ({
@@ -149,8 +152,9 @@ const GlassCard = styled(Card)(({ theme }) => ({
 }));
 
 const SkillChip = styled(Chip)(({ theme }) => ({
-  background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+  backgroundColor: theme.palette.primary.main,
   color: theme.palette.primary.contrastText,
+  border: `1px solid ${alpha(theme.palette.primary.main, 0.35)}`,
   fontWeight: 600,
   maxWidth: '100%',
   '& .MuiChip-label': {
@@ -187,6 +191,10 @@ const AnimatedButton = styled(Button)(({ theme }) => ({
   textTransform: 'none',
   transition: 'all 0.3s ease-in-out',
   background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+  '&:focus-visible': {
+    outline: `3px solid ${theme.palette.primary.main}`,
+    outlineOffset: 2,
+  },
   '&:hover': {
     transform: 'translateY(-2px)',
     boxShadow: theme.shadows[12],
@@ -274,7 +282,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
   const theme = useTheme();
   const isMobile = useBreakpointDown('md');
   const isTablet = useBreakpointDown('lg');
-  const isActualMobile = useMaxWidth(768);
+  const isActualMobile = isMobile;
 
   const [profile, setProfile] = useState(null);
   const [skills, setSkills] = useState([]);
@@ -468,7 +476,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
       setEarnings(earningsRes?.data?.data || earningsRes?.data || null);
     } catch (err) {
       setError('Could not find this worker. Please try again.');
-      if (import.meta.env.DEV) console.error(err);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error(err);
     } finally {
       setLoading(false);
     }
@@ -509,7 +517,11 @@ function WorkerProfile({ workerId: workerIdProp }) {
         setIsBookmarked(ids.includes(resolvedWorkerId));
       })
       .catch((bookmarkError) => {
-        if (bookmarkError?.response?.status !== 401 && import.meta.env.DEV) {
+        if (
+          bookmarkError?.response?.status !== 401 &&
+          import.meta.env.DEV &&
+          import.meta.env.VITE_DEBUG_FRONTEND === 'true'
+        ) {
           console.error('Failed to load bookmarks', bookmarkError);
         }
       });
@@ -811,6 +823,8 @@ function WorkerProfile({ workerId: workerIdProp }) {
               <ProfileAvatar
                 src={profileAvatarUrl}
                 alt={`${profile.user?.firstName} ${profile.user?.lastName}`}
+                role="img"
+                aria-label={`${profile.user?.firstName || 'Worker'} ${profile.user?.lastName || ''} profile photo`}
               >
                 {profile.user?.firstName?.charAt(0)}
                 {profile.user?.lastName?.charAt(0)}
@@ -820,7 +834,14 @@ function WorkerProfile({ workerId: workerIdProp }) {
             <Typography
               variant="h3"
               fontWeight={700}
-              sx={{ mt: 2, mb: 1, color: theme.palette.text.primary }}
+              sx={{
+                mt: 2,
+                mb: 1,
+                color: theme.palette.text.primary,
+                fontSize: { xs: '1.65rem', sm: '2rem', md: '2.25rem' },
+                lineHeight: 1.22,
+                letterSpacing: '-0.01em',
+              }}
             >
               {profile.user?.firstName} {profile.user?.lastName}
               {profile.is_online && (
@@ -838,7 +859,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
               color="primary"
               gutterBottom
               fontWeight={600}
-              sx={{ mb: 2 }}
+              sx={{ mb: 2, fontSize: { xs: '1.05rem', sm: '1.2rem', md: '1.3rem' }, lineHeight: 1.35 }}
             >
               {profile.profession}
             </Typography>
@@ -873,8 +894,8 @@ function WorkerProfile({ workerId: workerIdProp }) {
                 maxWidth: 600,
                 mx: 'auto',
                 mb: 4,
-                lineHeight: 1.8,
-                fontSize: '1.1rem',
+                lineHeight: 1.72,
+                fontSize: { xs: '0.98rem', sm: '1.06rem', md: '1.1rem' },
               }}
             >
               {profile.bio ||

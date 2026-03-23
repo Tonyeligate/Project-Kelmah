@@ -105,7 +105,17 @@ const SettingsPage = () => {
         <Container maxWidth="lg" sx={{ py: 1, px: 1.5, color: 'text.primary' }}>
           <Helmet><title>Settings | Kelmah</title></Helmet>
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 0.5 }}>
-            <IconButton onClick={() => setMobileSection(-1)} sx={{ mr: 0.5 }} aria-label="Go back">
+            <IconButton
+              onClick={() => setMobileSection(-1)}
+              sx={{
+                mr: 0.5,
+                '&:focus-visible': {
+                  outline: `3px solid ${theme.palette.primary.main}`,
+                  outlineOffset: 2,
+                },
+              }}
+              aria-label="Go back"
+            >
               <ArrowBack />
             </IconButton>
             <Box>
@@ -177,6 +187,10 @@ const SettingsPage = () => {
                   py: 2,
                   borderBottom: index < settingsPanels.length - 1 ? '1px solid' : 'none',
                   borderColor: 'divider',
+                  '&:focus-visible': {
+                    outline: `3px solid ${theme.palette.primary.main}`,
+                    outlineOffset: -2,
+                  },
                 }}
               >
                 <ListItemIcon sx={{ minWidth: 40, color: 'primary.main' }}>
@@ -234,7 +248,7 @@ const SettingsPage = () => {
         </Stack>
       </Paper>
 
-      <Grid container spacing={4}>
+      <Grid container spacing={{ xs: 2.5, md: 4 }} sx={{ minWidth: 0 }}>
         <Grid item xs={12} md={3}>
           <Paper
             elevation={2}
@@ -264,12 +278,19 @@ const SettingsPage = () => {
                 borderRight: isMdUp ? 1 : 0,
                 borderBottom: isMdUp ? 0 : 1,
                 borderColor: 'divider',
+                '& .MuiTabs-flexContainer': {
+                  gap: 0.25,
+                },
                 '& .MuiTab-root': {
                   justifyContent: 'flex-start',
                   fontWeight: '600',
                   textTransform: 'none',
-                  minHeight: isMdUp ? 64 : 48,
+                  minHeight: isMdUp ? 64 : 52,
                   minWidth: isMdUp ? 'auto' : 44,
+                  '&:focus-visible': {
+                    outline: `3px solid ${theme.palette.primary.main}`,
+                    outlineOffset: -2,
+                  },
                 },
                 '& .Mui-selected': {
                   color: 'primary.main',
@@ -282,6 +303,7 @@ const SettingsPage = () => {
                   label={panel.label}
                   icon={panel.icon}
                   iconPosition={isMdUp ? 'start' : 'top'}
+                  sx={{ minHeight: 44 }}
                 />
               ))}
             </Tabs>

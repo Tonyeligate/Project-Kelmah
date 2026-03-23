@@ -1,5 +1,9 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { contractService } from './contractService';
+import {
+  toThunkErrorPayload,
+  getThunkErrorMessage,
+} from '../../common/services/thunkError';
 
 // Async thunks
 export const fetchContracts = createAsyncThunk(
@@ -9,7 +13,9 @@ export const fetchContracts = createAsyncThunk(
       const response = await contractService.getContracts(filters);
       return response;
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(
+        toThunkErrorPayload(error, 'Failed to fetch contracts'),
+      );
     }
   },
 );
@@ -21,7 +27,9 @@ export const fetchContractById = createAsyncThunk(
       const response = await contractService.getContractById(contractId);
       return response;
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(
+        toThunkErrorPayload(error, 'Failed to load contract details'),
+      );
     }
   },
 );
@@ -33,7 +41,9 @@ export const createContract = createAsyncThunk(
       const response = await contractService.createContract(contractData);
       return response;
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(
+        toThunkErrorPayload(error, 'Failed to create contract'),
+      );
     }
   },
 );
@@ -48,7 +58,9 @@ export const updateContract = createAsyncThunk(
       );
       return response;
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(
+        toThunkErrorPayload(error, 'Failed to update contract'),
+      );
     }
   },
 );
@@ -63,7 +75,9 @@ export const signContract = createAsyncThunk(
       );
       return response;
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(
+        toThunkErrorPayload(error, 'Failed to sign contract'),
+      );
     }
   },
 );
@@ -76,7 +90,9 @@ export const sendContractForSignature = createAsyncThunk(
         await contractService.sendContractForSignature(contractId);
       return response;
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(
+        toThunkErrorPayload(error, 'Failed to send contract for signature'),
+      );
     }
   },
 );
@@ -88,7 +104,9 @@ export const fetchContractMilestones = createAsyncThunk(
       const response = await contractService.getContractMilestones(contractId);
       return { contractId, milestones: response };
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(
+        toThunkErrorPayload(error, 'Failed to load milestones'),
+      );
     }
   },
 );
@@ -103,7 +121,9 @@ export const createMilestone = createAsyncThunk(
       );
       return { contractId, milestone: response };
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(
+        toThunkErrorPayload(error, 'Failed to create milestone'),
+      );
     }
   },
 );
@@ -119,7 +139,9 @@ export const completeMilestone = createAsyncThunk(
       );
       return { contractId, milestoneId, updatedMilestone: response };
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(
+        toThunkErrorPayload(error, 'Failed to complete milestone'),
+      );
     }
   },
 );
@@ -131,7 +153,9 @@ export const cancelContract = createAsyncThunk(
       const response = await contractService.cancelContract(contractId, reason);
       return response;
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(
+        toThunkErrorPayload(error, 'Failed to cancel contract'),
+      );
     }
   },
 );
@@ -143,7 +167,9 @@ export const completeContract = createAsyncThunk(
       const response = await contractService.completeContract(contractId);
       return response;
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(
+        toThunkErrorPayload(error, 'Failed to complete contract'),
+      );
     }
   },
 );
@@ -158,7 +184,9 @@ export const createDispute = createAsyncThunk(
       );
       return { contractId, dispute: response };
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(
+        toThunkErrorPayload(error, 'Failed to submit dispute'),
+      );
     }
   },
 );
@@ -170,7 +198,9 @@ export const fetchContractTemplates = createAsyncThunk(
       const response = await contractService.getContractTemplates();
       return response;
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(
+        toThunkErrorPayload(error, 'Failed to load contract templates'),
+      );
     }
   },
 );
@@ -238,7 +268,10 @@ const contractSlice = createSlice({
       })
       .addCase(fetchContracts.rejected, (state, action) => {
         state.loading.contracts = false;
-        state.error.contracts = action.payload;
+        state.error.contracts = getThunkErrorMessage(
+          action.payload,
+          action.error?.message,
+        );
       })
 
       // Fetch contract by ID
@@ -252,7 +285,10 @@ const contractSlice = createSlice({
       })
       .addCase(fetchContractById.rejected, (state, action) => {
         state.loading.currentContract = false;
-        state.error.currentContract = action.payload;
+        state.error.currentContract = getThunkErrorMessage(
+          action.payload,
+          action.error?.message,
+        );
       })
 
       // Create contract
@@ -267,7 +303,10 @@ const contractSlice = createSlice({
       })
       .addCase(createContract.rejected, (state, action) => {
         state.loading.createContract = false;
-        state.error.createContract = action.payload;
+        state.error.createContract = getThunkErrorMessage(
+          action.payload,
+          action.error?.message,
+        );
       })
 
       // Update contract
@@ -292,7 +331,10 @@ const contractSlice = createSlice({
       })
       .addCase(updateContract.rejected, (state, action) => {
         state.loading.updateContract = false;
-        state.error.updateContract = action.payload;
+        state.error.updateContract = getThunkErrorMessage(
+          action.payload,
+          action.error?.message,
+        );
       })
 
       // Sign contract
@@ -317,7 +359,10 @@ const contractSlice = createSlice({
       })
       .addCase(signContract.rejected, (state, action) => {
         state.loading.signContract = false;
-        state.error.signContract = action.payload;
+        state.error.signContract = getThunkErrorMessage(
+          action.payload,
+          action.error?.message,
+        );
       })
 
       // Send contract for signature
@@ -342,7 +387,10 @@ const contractSlice = createSlice({
       })
       .addCase(sendContractForSignature.rejected, (state, action) => {
         state.loading.currentContract = false;
-        state.error.currentContract = action.payload;
+        state.error.currentContract = getThunkErrorMessage(
+          action.payload,
+          action.error?.message,
+        );
       })
 
       // Fetch contract milestones
@@ -357,7 +405,10 @@ const contractSlice = createSlice({
       })
       .addCase(fetchContractMilestones.rejected, (state, action) => {
         state.loading.milestones = false;
-        state.error.milestones = action.payload;
+        state.error.milestones = getThunkErrorMessage(
+          action.payload,
+          action.error?.message,
+        );
       })
 
       // Create milestone
@@ -377,7 +428,10 @@ const contractSlice = createSlice({
       })
       .addCase(createMilestone.rejected, (state, action) => {
         state.loading.milestones = false;
-        state.error.milestones = action.payload;
+        state.error.milestones = getThunkErrorMessage(
+          action.payload,
+          action.error?.message,
+        );
       })
 
       // Complete milestone
@@ -399,7 +453,10 @@ const contractSlice = createSlice({
       })
       .addCase(completeMilestone.rejected, (state, action) => {
         state.loading.milestones = false;
-        state.error.milestones = action.payload;
+        state.error.milestones = getThunkErrorMessage(
+          action.payload,
+          action.error?.message,
+        );
       })
 
       // Cancel contract
@@ -424,7 +481,10 @@ const contractSlice = createSlice({
       })
       .addCase(cancelContract.rejected, (state, action) => {
         state.loading.currentContract = false;
-        state.error.currentContract = action.payload;
+        state.error.currentContract = getThunkErrorMessage(
+          action.payload,
+          action.error?.message,
+        );
       })
 
       // Complete contract
@@ -444,7 +504,10 @@ const contractSlice = createSlice({
       })
       .addCase(completeContract.rejected, (state, action) => {
         state.loading.currentContract = false;
-        state.error.currentContract = action.payload;
+        state.error.currentContract = getThunkErrorMessage(
+          action.payload,
+          action.error?.message,
+        );
       })
 
       // Create dispute
@@ -459,7 +522,10 @@ const contractSlice = createSlice({
       })
       .addCase(createDispute.rejected, (state, action) => {
         state.loading.dispute = false;
-        state.error.dispute = action.payload;
+        state.error.dispute = getThunkErrorMessage(
+          action.payload,
+          action.error?.message,
+        );
       })
 
       // Fetch contract templates
@@ -473,7 +539,10 @@ const contractSlice = createSlice({
       })
       .addCase(fetchContractTemplates.rejected, (state, action) => {
         state.loading.templates = false;
-        state.error.templates = action.payload;
+        state.error.templates = getThunkErrorMessage(
+          action.payload,
+          action.error?.message,
+        );
       });
   },
 });

@@ -21,7 +21,7 @@ class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    if (import.meta.env.DEV) {
+    if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') {
       console.error('[ErrorBoundary]', error, errorInfo);
     }
   }

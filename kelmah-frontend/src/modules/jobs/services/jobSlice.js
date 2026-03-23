@@ -1,6 +1,10 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { createSelector } from '@reduxjs/toolkit';
 import jobsApi from './jobsService';
+import {
+  toThunkErrorPayload,
+  getThunkErrorMessage,
+} from '../../common/services/thunkError';
 
 // Async thunks
 export const fetchJobs = createAsyncThunk(
@@ -9,7 +13,7 @@ export const fetchJobs = createAsyncThunk(
     try {
       return await jobsApi.getJobs(params);
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(toThunkErrorPayload(error, 'Failed to load jobs'));
     }
   },
 );
@@ -20,7 +24,9 @@ export const fetchJobById = createAsyncThunk(
     try {
       return await jobsApi.getJobById(id);
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(
+        toThunkErrorPayload(error, 'Failed to load this job'),
+      );
     }
   },
 );
@@ -31,7 +37,7 @@ export const createJob = createAsyncThunk(
     try {
       return await jobsApi.createJob(jobData);
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(toThunkErrorPayload(error, 'Failed to create job'));
     }
   },
 );
@@ -42,7 +48,9 @@ export const applyForJob = createAsyncThunk(
     try {
       return await jobsApi.applyToJob(jobId, applicationData);
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(
+        toThunkErrorPayload(error, 'Failed to submit job application'),
+      );
     }
   },
 );
@@ -133,7 +141,7 @@ const jobSlice = createSlice({
       })
       .addCase(fetchJobs.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
+        state.error = getThunkErrorMessage(action.payload, action.error?.message);
       })
       // Fetch Single Job
       .addCase(fetchJobById.pending, (state) => {
@@ -146,7 +154,7 @@ const jobSlice = createSlice({
       })
       .addCase(fetchJobById.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
+        state.error = getThunkErrorMessage(action.payload, action.error?.message);
       })
       // Create Job
       .addCase(createJob.pending, (state) => {
@@ -159,7 +167,7 @@ const jobSlice = createSlice({
       })
       .addCase(createJob.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
+        state.error = getThunkErrorMessage(action.payload, action.error?.message);
       })
       // Apply for Job
       .addCase(applyForJob.pending, (state) => {
@@ -171,7 +179,7 @@ const jobSlice = createSlice({
       })
       .addCase(applyForJob.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
+        state.error = getThunkErrorMessage(action.payload, action.error?.message);
       });
   },
 });

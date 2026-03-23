@@ -18,6 +18,13 @@ const EMPTY_SKILLS = [];
 const SEARCH_QUERY_MAX_LENGTH = 120;
 const SEARCH_LOCATION_MAX_LENGTH = 80;
 const SEARCH_SKILL_MAX_LENGTH = 40;
+const __SEARCH_DEBUG__ =
+  import.meta.env.DEV && import.meta.env.VITE_DEBUG_SEARCH === 'true';
+const searchDebugWarn = (...args) => {
+  if (__SEARCH_DEBUG__) {
+    console.warn(...args);
+  }
+};
 
 const areSkillsEqual = (left = EMPTY_SKILLS, right = EMPTY_SKILLS) =>
   left.length === right.length &&
@@ -136,8 +143,7 @@ const JobSearchForm = ({
     if (submitHandler) {
       emitSearch();
     } else {
-      if (import.meta.env.DEV)
-        console.warn('JobSearchForm submitted without handler');
+      searchDebugWarn('JobSearchForm submitted without handler');
     }
   };
 

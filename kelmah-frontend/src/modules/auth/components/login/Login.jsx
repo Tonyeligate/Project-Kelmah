@@ -44,6 +44,9 @@ import {
   resolveLoginRedirectPath,
 } from '@/utils/authRedirect';
 
+const AUTH_DEBUG =
+  import.meta.env.DEV && import.meta.env.VITE_DEBUG_AUTH === 'true';
+
 const normalizeErrorMessage = (value) => {
   if (typeof value === 'string') {
     return value.trim();
@@ -213,10 +216,10 @@ const Login = () => {
       ).unwrap();
 
       const destination = resolveLoginRedirect(result?.user);
-      if (import.meta.env.DEV) console.log(`Login successful, redirecting to ${destination}`);
+      if (AUTH_DEBUG) console.log(`Login successful, redirecting to ${destination}`);
       navigate(destination, { replace: true });
     } catch (err) {
-      if (import.meta.env.DEV) console.error('Login error:', err);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Login error:', err);
       const errorMessage = toUserMessage(err, {
         fallback: 'Login failed. Please check your credentials.',
       });

@@ -257,7 +257,7 @@ const JobResultsSection = ({
     try {
       await jobsApi.saveJob(jobId);
     } catch (err) {
-      if (import.meta.env.DEV) console.warn('Failed to bookmark job:', err.message);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Failed to bookmark job:', err.message);
       captureRecoverableApiError(err, {
         phase: 'save-job',
         feature: 'job-results',
@@ -870,10 +870,14 @@ const JobResultsSection = ({
                         aria-label={`Open job details for ${job.title}`}
                         sx={{
                           color: '#D4AF37',
-                          minWidth: { xs: '44px', sm: '40px' },
-                          minHeight: { xs: '44px', sm: '40px' },
+                          minWidth: 44,
+                          minHeight: 44,
                           '&:hover': { bgcolor: 'rgba(212,175,55,0.1)' },
                           '&:active': { transform: 'scale(0.95)' },
+                          '&:focus-visible': {
+                            outline: '3px solid #D4AF37',
+                            outlineOffset: '2px',
+                          },
                         }}
                       >
                         <Visibility />
@@ -886,10 +890,14 @@ const JobResultsSection = ({
                         aria-label={`Save ${job.title} for later`}
                         sx={{
                           color: '#D4AF37',
-                          minWidth: { xs: '44px', sm: '40px' },
-                          minHeight: { xs: '44px', sm: '40px' },
+                          minWidth: 44,
+                          minHeight: 44,
                           '&:hover': { bgcolor: 'rgba(212,175,55,0.1)' },
                           '&:active': { transform: 'scale(0.95)' },
+                          '&:focus-visible': {
+                            outline: '3px solid #D4AF37',
+                            outlineOffset: '2px',
+                          },
                         }}
                       >
                         <BookmarkBorder />
@@ -902,9 +910,13 @@ const JobResultsSection = ({
                         aria-label={`Share ${job.title}`}
                         sx={{
                           color: '#D4AF37',
-                          minWidth: { xs: '44px', sm: '40px' },
-                          minHeight: { xs: '44px', sm: '40px' },
+                          minWidth: 44,
+                          minHeight: 44,
                           '&:hover': { bgcolor: 'rgba(212,175,55,0.1)' },
+                          '&:focus-visible': {
+                            outline: '3px solid #D4AF37',
+                            outlineOffset: '2px',
+                          },
                         }}
                       >
                         <Share />

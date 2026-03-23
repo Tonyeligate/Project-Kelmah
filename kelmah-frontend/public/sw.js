@@ -6,6 +6,11 @@ const OFFLINE_URL = '/offline.html';
 const HEALTHY_GATEWAY_DB = 'kelmah-gateway-db';
 const HEALTHY_GATEWAY_STORE = 'healthyGatewayStore';
 const HEALTHY_GATEWAY_KEY = 'lastHealthyGateway';
+const OFFLINE_QUEUE_DB = 'kelmah-offline-queue-db';
+const OFFLINE_QUEUE_VERSION = 1;
+const OFFLINE_JOB_APPLICATIONS_STORE = 'jobApplications';
+const OFFLINE_MESSAGES_STORE = 'messages';
+const OFFLINE_PAYMENTS_STORE = 'payments';
 const SW_DEBUG_HOSTS = new Set(['localhost', '127.0.0.1', '::1', '[::1]']);
 const SW_DEBUG =
   SW_DEBUG_HOSTS.has(self.location.hostname) ||
@@ -784,18 +789,82 @@ self.addEventListener('notificationclick', (event) => {
 });
 
 // Placeholder functions for IndexedDB operations
-// These would be implemented with a proper IndexedDB wrapper
+// Minimal IndexedDB queue helpers used by Background Sync handlers
+async function openOfflineQueueDb() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(OFFLINE_QUEUE_DB, OFFLINE_QUEUE_VERSION);
+
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      [
+        OFFLINE_JOB_APPLICATIONS_STORE,
+        OFFLINE_MESSAGES_STORE,
+        OFFLINE_PAYMENTS_STORE,
+      ].forEach((storeName) => {
+        if (!db.objectStoreNames.contains(storeName)) {
+          db.createObjectStore(storeName, {
+            keyPath: 'id',
+            autoIncrement: false,
+          });
+        }
+      });
+    };
+
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function readOfflineQueue(storeName) {
+  try {
+    const db = await openOfflineQueueDb();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(storeName, 'readonly');
+      const request = tx.objectStore(storeName).getAll();
+      request.onsuccess = () => resolve(Array.isArray(request.result) ? request.result : []);
+      request.onerror = () => reject(request.error);
+    });
+  } catch (error) {
+    swWarn(`[SW] Failed to read offline queue (${storeName}):`, error);
+    return [];
+  }
+}
+
+async function removeOfflineQueueItem(storeName, id) {
+  if (id === undefined || id === null) {
+    return;
+  }
+
+  try {
+    const db = await openOfflineQueueDb();
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction(storeName, 'readwrite');
+      const request = tx.objectStore(storeName).delete(id);
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
+  } catch (error) {
+    swWarn(`[SW] Failed to remove queued item (${storeName}:${id}):`, error);
+  }
+}
+
 async function getOfflineJobApplications() {
-  return [];
+  return readOfflineQueue(OFFLINE_JOB_APPLICATIONS_STORE);
 }
-async function removeOfflineJobApplication(id) { }
+async function removeOfflineJobApplication(id) {
+  return removeOfflineQueueItem(OFFLINE_JOB_APPLICATIONS_STORE, id);
+}
 async function getOfflineMessages() {
-  return [];
+  return readOfflineQueue(OFFLINE_MESSAGES_STORE);
 }
-async function removeOfflineMessage(id) { }
+async function removeOfflineMessage(id) {
+  return removeOfflineQueueItem(OFFLINE_MESSAGES_STORE, id);
+}
 async function getOfflinePayments() {
-  return [];
+  return readOfflineQueue(OFFLINE_PAYMENTS_STORE);
 }
-async function removeOfflinePayment(id) { }
+async function removeOfflinePayment(id) {
+  return removeOfflineQueueItem(OFFLINE_PAYMENTS_STORE, id);
+}
 
 swLog('🇬🇭 Kelmah Service Worker loaded - Optimized for Ghana market (v1.0.7 chunk recovery)');

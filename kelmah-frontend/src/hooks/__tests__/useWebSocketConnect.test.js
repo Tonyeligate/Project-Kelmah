@@ -97,4 +97,21 @@ describe('useWebSocketConnect auth transition behavior', () => {
     expect(websocketService.connect).toHaveBeenCalledTimes(2);
     expect(websocketService.connect).toHaveBeenLastCalledWith('user-2', 'hirer', 'token-2');
   });
+
+  test('keeps connection stable across rerenders when auth identity is unchanged', () => {
+    authState = {
+      isAuthenticated: true,
+      user: { id: 'user-1', role: 'worker' },
+    };
+    secureStorage.getAuthToken.mockReturnValue('token-1');
+
+    const { rerender } = renderHook(() => useWebSocketConnect());
+
+    act(() => {
+      rerender();
+    });
+
+    expect(websocketService.connect).toHaveBeenCalledTimes(1);
+    expect(websocketService.disconnect).not.toHaveBeenCalled();
+  });
 });

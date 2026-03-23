@@ -20,6 +20,10 @@ const staticLookupCache = {
   skills: { data: null, expiresAt: 0, promise: null },
 };
 
+const __DEV__ = import.meta.env.DEV;
+const devWarn = (...args) => { if (__DEV__) console.warn(...args); };
+const devError = (...args) => { if (__DEV__) console.error(...args); };
+
 const isSuggestionAbort = (error) =>
   error?.name === 'AbortError' ||
   error?.name === 'CanceledError' ||
@@ -151,7 +155,7 @@ const searchService = {
       const payload = unwrapApiData(response);
       return normalizeArrayPayload(payload, ['results', 'items']);
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Search error:', error);
+      devError('Search error:', error);
       throw error;
     }
   },
@@ -165,7 +169,7 @@ const searchService = {
     try {
       return await workerService.searchWorkers(params);
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Worker search error:', error);
+      devError('Worker search error:', error);
       throw error;
     }
   },
@@ -182,7 +186,7 @@ const searchService = {
       );
       return unwrapApiData(response, { defaultValue: [] }) || [];
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Job search error:', error);
+      devError('Job search error:', error);
       throw error;
     }
   },
@@ -255,8 +259,8 @@ const searchService = {
             return normalizeArrayPayload(payload, ['suggestions']);
           })
           .catch((error) => {
-            if (!isSuggestionAbort(error) && import.meta.env.DEV) {
-              console.error('Suggestions error:', error);
+            if (!isSuggestionAbort(error)) {
+              devError('Suggestions error:', error);
             }
             if (!isSuggestionAbort(error)) {
               captureRecoverableApiError(error, {
@@ -304,7 +308,7 @@ const searchService = {
       const payload = unwrapApiData(response);
       return normalizeArrayPayload(payload, ['terms']);
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Popular terms error:', error);
+      devError('Popular terms error:', error);
       captureRecoverableApiError(error, {
         operation: 'search.getPopularTerms',
         fallbackUsed: true,
@@ -323,7 +327,7 @@ const searchService = {
         ['categories', 'items'],
       );
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Categories fetch error:', error);
+      devError('Categories fetch error:', error);
       throw error;
     }
   },
@@ -337,7 +341,7 @@ const searchService = {
         ['skills', 'items'],
       );
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Skills fetch error:', error);
+      devError('Skills fetch error:', error);
       throw error;
     }
   },
@@ -353,7 +357,7 @@ const searchService = {
       });
       return unwrapApiData(response, { defaultValue: [] }) || [];
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Job suggestions error:', error);
+      devError('Job suggestions error:', error);
       captureRecoverableApiError(error, {
         operation: 'search.getSearchSuggestions',
         fallbackUsed: true,
@@ -372,7 +376,7 @@ const searchService = {
       const response = await api.get('/jobs/popular-searches');
       return unwrapApiData(response, { defaultValue: [] }) || [];
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Popular searches error:', error);
+      devError('Popular searches error:', error);
       captureRecoverableApiError(error, {
         operation: 'search.getPopularSearches',
         fallbackUsed: true,

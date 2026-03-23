@@ -88,7 +88,7 @@ const UserPerformanceDashboard = ({ userId, onRefresh }) => {
       setServiceNotice('');
       setError(null);
     } catch (err) {
-      if (import.meta.env.DEV) console.warn('Performance API unavailable:', err.message);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Performance API unavailable:', err.message);
       setPerformance(DEFAULT_PERFORMANCE);
       setServiceNotice(
         'Live performance analytics are unavailable. Showing baseline access values only.',

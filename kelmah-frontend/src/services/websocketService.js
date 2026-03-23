@@ -6,12 +6,18 @@ import {
 import { WS_CONFIG } from '../config/environment';
 import { getWebSocketUrl } from './socketUrl';
 import { isTokenValid } from '../modules/auth/utils/tokenUtils';
-import { APP_SOCKET_EVENTS, SOCKET_EVENTS } from './socketEvents';
+import {
+  APP_SOCKET_EVENTS,
+  MESSAGE_DELIVERY_ALIASES,
+  MESSAGE_TYPING_ALIASES,
+  SOCKET_EVENTS,
+} from './socketEvents';
 
 /** Only log in development builds — prevents leaking metadata in production */
 const __DEV__ = import.meta.env.DEV;
-const devLog = (...args) => { if (__DEV__) console.log(...args); };
+const devLog = (...args) => { if (__DEV__ && import.meta.env.VITE_DEBUG_WEBSOCKET === 'true') console.log(...args); };
 const devWarn = (...args) => { if (__DEV__) console.warn(...args); };
+const devError = (...args) => { if (__DEV__) console.error(...args); };
 
 const RECONNECT_ATTEMPTS = Math.max(
   3,
@@ -30,6 +36,28 @@ const RECONNECT_DELAY_MAX = Math.min(RECONNECT_DELAY * 8, 30000);
 let _notifIdCounter = 0;
 /** Generate a unique notification ID that won't collide within the same millisecond */
 const uniqueNotifId = () => `${Date.now()}-${++_notifIdCounter}`;
+const navigateWithinApp = (targetPath) => {
+  if (typeof window === 'undefined' || !targetPath) {
+    return false;
+  }
+
+  try {
+    const currentPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    if (currentPath === targetPath) {
+      return true;
+    }
+
+    if (window.history && typeof window.history.pushState === 'function') {
+      window.history.pushState({}, '', targetPath);
+      window.dispatchEvent(new PopStateEvent('popstate'));
+      return true;
+    }
+  } catch {
+    return false;
+  }
+
+  return false;
+};
 
 class WebSocketService {
   constructor() {
@@ -44,6 +72,12 @@ class WebSocketService {
     this.messageQueue = [];
     this.subscriptions = new Set();
     this.eventListeners = new Map();
+    this.lastAuthContext = null;
+    this.manualDisconnect = false;
+    this.networkHandlersBound = false;
+    this.reconnectCooldownUntil = 0;
+    this.onWindowOffline = this.onWindowOffline.bind(this);
+    this.onWindowOnline = this.onWindowOnline.bind(this);
   }
 
   /**
@@ -54,10 +88,26 @@ class WebSocketService {
    */
   async connect(userId, userRole, token) {
     try {
+      this.manualDisconnect = false;
+
       if (!token || !isTokenValid(token)) {
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('auth:tokenExpired'));
         }
+        return;
+      }
+
+      this.lastAuthContext = {
+        userId,
+        userRole,
+        token,
+      };
+
+      this.bindNetworkLifecycleHandlers();
+
+      if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+        this.reconnectCooldownUntil = Date.now() + 2000;
+        devWarn('WebSocket connect deferred because browser is offline');
         return;
       }
 
@@ -96,7 +146,7 @@ class WebSocketService {
 
       devLog('WebSocket connection initiated for user:', userId);
     } catch (error) {
-      if (import.meta.env.DEV) console.error('WebSocket connection error:', error);
+      devError('WebSocket connection error:', error);
       this.handleConnectionError(error);
       this._connecting = false;
     }
@@ -165,7 +215,7 @@ class WebSocketService {
     });
 
     this.socket.on(SOCKET_EVENTS.CORE.CONNECT_ERROR, (error) => {
-      if (import.meta.env.DEV) console.error('WebSocket connection error:', error);
+      devError('WebSocket connection error:', error);
       this._connecting = false;
       this.handleConnectionError(error);
     });
@@ -176,7 +226,7 @@ class WebSocketService {
     });
 
     this.socket.on(SOCKET_EVENTS.CORE.RECONNECT_FAILED, () => {
-      if (import.meta.env.DEV) console.error('❌ WebSocket reconnection failed');
+      devError('❌ WebSocket reconnection failed');
       store.dispatch(
         addNotification({
           id: uniqueNotifId(),
@@ -190,14 +240,10 @@ class WebSocketService {
     });
 
     // Real-time message events
-    this.socket.on(SOCKET_EVENTS.MESSAGE.NEW_MESSAGE_ALT, (data) => {
-      this.handleNewMessage(data);
-    });
-    this.socket.on(SOCKET_EVENTS.MESSAGE.NEW_MESSAGE, (data) => {
-      this.handleNewMessage(data);
-    });
-    this.socket.on(SOCKET_EVENTS.MESSAGE.RECEIVE_MESSAGE, (data) => {
-      this.handleNewMessage(data);
+    MESSAGE_DELIVERY_ALIASES.forEach((eventName) => {
+      this.socket.on(eventName, (data) => {
+        this.handleNewMessage(data);
+      });
     });
 
     this.socket.on(SOCKET_EVENTS.MESSAGE.MESSAGE_STATUS, (data) => {
@@ -209,9 +255,42 @@ class WebSocketService {
     this.socket.on(SOCKET_EVENTS.MESSAGE.MESSAGE_READ, (data) => {
       this.handleMessageStatus({ ...data, status: 'read' });
     });
+    this.socket.on(SOCKET_EVENTS.MESSAGE.MESSAGES_READ, (data) => {
+      this.handleMessageStatus({ ...data, status: 'read' });
+    });
 
-    this.socket.on(SOCKET_EVENTS.MESSAGE.TYPING_INDICATOR, (data) => {
-      this.handleTypingIndicator(data);
+    MESSAGE_TYPING_ALIASES.forEach((eventName) => {
+      this.socket.on(eventName, (data) => {
+        this.handleTypingIndicator(data);
+      });
+    });
+
+    this.socket.on(SOCKET_EVENTS.PRESENCE.USER_ONLINE, (data) => {
+      this.triggerEvent(APP_SOCKET_EVENTS.USER_ONLINE, data);
+    });
+
+    this.socket.on(SOCKET_EVENTS.PRESENCE.USER_OFFLINE, (data) => {
+      this.triggerEvent(APP_SOCKET_EVENTS.USER_OFFLINE, data);
+    });
+
+    this.socket.on(SOCKET_EVENTS.PRESENCE.ONLINE_USERS, (data) => {
+      this.triggerEvent(APP_SOCKET_EVENTS.USERS_ONLINE_LIST, data);
+    });
+
+    // Legacy aliases used by messaging context payloads
+    this.socket.on('user_status_changed', (data) => {
+      if (data?.status === 'offline') {
+        this.triggerEvent(APP_SOCKET_EVENTS.USER_OFFLINE, data);
+        return;
+      }
+      this.triggerEvent(APP_SOCKET_EVENTS.USER_ONLINE, data);
+    });
+
+    this.socket.on(SOCKET_EVENTS.CORE.CONNECTED, (data) => {
+      this.triggerEvent(APP_SOCKET_EVENTS.GENERIC_NOTIFICATION, {
+        type: SOCKET_EVENTS.CORE.CONNECTED,
+        data,
+      });
     });
 
     // Job notification events
@@ -255,19 +334,6 @@ class WebSocketService {
 
     this.socket.on(SOCKET_EVENTS.PAYMENT.PAYMENT_STATUS_UPDATE, (data) => {
       this.handlePaymentStatusUpdate(data);
-    });
-
-    // User presence events (handled by MessageContext socket — no-op here)
-    this.socket.on(SOCKET_EVENTS.PRESENCE.USER_ONLINE, (data) => {
-      this.triggerEvent(APP_SOCKET_EVENTS.USER_ONLINE, data);
-    });
-
-    this.socket.on(SOCKET_EVENTS.PRESENCE.USER_OFFLINE, (data) => {
-      this.triggerEvent(APP_SOCKET_EVENTS.USER_OFFLINE, data);
-    });
-
-    this.socket.on(SOCKET_EVENTS.PRESENCE.ONLINE_USERS, (data) => {
-      this.triggerEvent(APP_SOCKET_EVENTS.USERS_ONLINE_LIST, data);
     });
 
     // System events
@@ -711,7 +777,7 @@ class WebSocketService {
         try {
           callback(data);
         } catch (error) {
-          if (import.meta.env.DEV) console.error('Event listener error:', error);
+          devError('Event listener error:', error);
         }
       });
     }
@@ -743,7 +809,7 @@ class WebSocketService {
           this._fallbackNotification(title, notifOptions);
         }
       } catch (error) {
-        if (import.meta.env.DEV) console.error('Browser notification error:', error);
+        devError('Browser notification error:', error);
       }
     }
   }
@@ -753,11 +819,13 @@ class WebSocketService {
     notification.onclick = () => {
       window.focus();
       if (options.data?.conversationId) {
-        window.location.href = `/messages?conversation=${encodeURIComponent(
-          String(options.data.conversationId)
+        const conversationPath = `/messages?conversation=${encodeURIComponent(
+          String(options.data.conversationId),
         )}`;
+        navigateWithinApp(conversationPath);
       } else if (options.data?.jobId) {
-        window.location.href = `/jobs/${options.data.jobId}`;
+        const jobPath = `/jobs/${options.data.jobId}`;
+        navigateWithinApp(jobPath);
       }
       notification.close();
     };
@@ -779,7 +847,9 @@ class WebSocketService {
    */
   handleConnectionError(error) {
     this.reconnectAttempts++;
-    if (import.meta.env.DEV) console.error(
+    const baseDelay = Math.min(RECONNECT_DELAY * 2 ** this.reconnectAttempts, RECONNECT_DELAY_MAX);
+    this.reconnectCooldownUntil = Date.now() + baseDelay;
+    devError(
       `WebSocket connection error (attempt ${this.reconnectAttempts}):`,
       error,
     );
@@ -816,6 +886,8 @@ class WebSocketService {
    * Disconnect WebSocket
    */
   disconnect() {
+    this.manualDisconnect = true;
+    this.unbindNetworkLifecycleHandlers();
     if (this.socket) {
       devLog('🔌 Disconnecting WebSocket');
       this.stopPingMonitoring();
@@ -826,6 +898,52 @@ class WebSocketService {
       this.eventListeners.clear();
       this.messageQueue = [];
     }
+  }
+
+  bindNetworkLifecycleHandlers() {
+    if (this.networkHandlersBound || typeof window === 'undefined') {
+      return;
+    }
+
+    window.addEventListener('offline', this.onWindowOffline);
+    window.addEventListener('online', this.onWindowOnline);
+    this.networkHandlersBound = true;
+  }
+
+  unbindNetworkLifecycleHandlers() {
+    if (!this.networkHandlersBound || typeof window === 'undefined') {
+      return;
+    }
+
+    window.removeEventListener('offline', this.onWindowOffline);
+    window.removeEventListener('online', this.onWindowOnline);
+    this.networkHandlersBound = false;
+  }
+
+  onWindowOffline() {
+    this.reconnectCooldownUntil = Date.now() + 2000;
+    if (this.socket && this.isConnected) {
+      this.socket.disconnect();
+    }
+    this.isConnected = false;
+    this._connecting = false;
+  }
+
+  onWindowOnline() {
+    if (this.manualDisconnect || this.isConnected || this._connecting) {
+      return;
+    }
+
+    if (Date.now() < this.reconnectCooldownUntil) {
+      return;
+    }
+
+    const auth = this.lastAuthContext;
+    if (!auth?.userId || !auth?.token) {
+      return;
+    }
+
+    this.connect(auth.userId, auth.userRole, auth.token);
   }
 }
 

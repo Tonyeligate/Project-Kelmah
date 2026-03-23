@@ -11,7 +11,10 @@ import { secureStorage } from '../../../utils/secureStorage';
 import { normalizeUser } from '../../../utils/userUtils';
 
 const __DEV__ = import.meta.env.DEV;
-const devLog = (...args) => { if (__DEV__) console.log(...args); };
+const AUTH_DEBUG = __DEV__ && import.meta.env.VITE_DEBUG_AUTH === 'true';
+const devLog = (...args) => { if (AUTH_DEBUG) console.log(...args); };
+const devWarn = (...args) => { if (__DEV__) console.warn(...args); };
+const devError = (...args) => { if (__DEV__) console.error(...args); };
 
 // Shared response interceptors and token refresh locking are handled by
 // the centralized apiClient in src/services/apiClient.js.
@@ -110,7 +113,7 @@ const authService = {
         success: true,
       };
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Login failed:', error);
+      devError('Login failed:', error);
 
       // Enhanced error handling with user-friendly messages
       let errorMessage = 'Login failed. Please try again.';
@@ -168,7 +171,7 @@ const authService = {
       // Do not persist auth state/tokens here to avoid confusing route behavior.
       return { token, user: normalizedUser || user, success: true };
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Registration error:', error);
+      devError('Registration error:', error);
       throw error;
     }
   },
@@ -188,7 +191,7 @@ const authService = {
         return { user: undefined, success: true };
       }
     } catch (error) {
-      if (import.meta.env.DEV) console.warn('Auth verification failed:', error.message);
+      devWarn('Auth verification failed:', error.message);
       return { success: false, error: error.message };
     }
   },
@@ -202,7 +205,7 @@ const authService = {
 
       await api.post('/auth/logout', logoutData);
     } catch (error) {
-      if (import.meta.env.DEV) console.warn('Logout API call failed:', error.message);
+      devWarn('Logout API call failed:', error.message);
       // Continue with local cleanup even if API call fails
     } finally {
       // Clear token refresh timeout
@@ -285,7 +288,7 @@ const authService = {
         success: true,
       };
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Token refresh failed:', error);
+      devError('Token refresh failed:', error);
 
       const status = error.response?.status;
       const isNetworkError =
@@ -307,7 +310,7 @@ const authService = {
           try {
             window.dispatchEvent(new CustomEvent('auth:tokenExpired'));
           } catch (dispatchError) {
-            if (import.meta.env.DEV) console.warn(
+            devWarn(
               'Failed to dispatch tokenExpired event:',
               dispatchError,
             );
@@ -334,7 +337,7 @@ const authService = {
       );
       return response.data;
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Forgot password error:', error);
+      devError('Forgot password error:', error);
       throw error;
     }
   },
@@ -348,7 +351,7 @@ const authService = {
       );
       return response.data;
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Reset password error:', error);
+      devError('Reset password error:', error);
       throw error;
     }
   },
@@ -368,7 +371,7 @@ const authService = {
       };
 
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Profile update error:', error);
+      devError('Profile update error:', error);
       throw error;
     }
   },
@@ -381,7 +384,7 @@ const authService = {
       });
       return response.data?.data || response.data || { success: true };
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Change password error:', error);
+      devError('Change password error:', error);
       throw error;
     }
   },
@@ -410,7 +413,7 @@ const authService = {
         message: payload.message,
       };
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Verify email error:', error);
+      devError('Verify email error:', error);
       throw error;
     }
   },
@@ -422,7 +425,7 @@ const authService = {
       });
       return response.data?.data || response.data || { success: true };
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Resend verification email error:', error);
+      devError('Resend verification email error:', error);
       throw error;
     }
   },
@@ -432,7 +435,7 @@ const authService = {
       const response = await api.post('/auth/mfa/setup');
       return response.data?.data || response.data || {};
     } catch (error) {
-      if (import.meta.env.DEV) console.error('MFA setup error:', error);
+      devError('MFA setup error:', error);
       throw error;
     }
   },
@@ -442,7 +445,7 @@ const authService = {
       const response = await api.post('/auth/mfa/verify', { code });
       return response.data?.data || response.data || {};
     } catch (error) {
-      if (import.meta.env.DEV) console.error('MFA verify error:', error);
+      devError('MFA verify error:', error);
       throw error;
     }
   },
@@ -455,7 +458,7 @@ const authService = {
       });
       return response.data?.data || response.data || {};
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Disable MFA error:', error);
+      devError('Disable MFA error:', error);
       throw error;
     }
   },
@@ -490,11 +493,11 @@ const authService = {
         try {
           await authService.refreshToken();
         } catch (error) {
-          if (import.meta.env.DEV) console.warn('Automatic token refresh failed:', error.message);
+          devWarn('Automatic token refresh failed:', error.message);
         }
       }, refreshDelay);
     } catch (error) {
-      if (import.meta.env.DEV) console.warn('Failed to schedule token refresh:', error.message);
+      devWarn('Failed to schedule token refresh:', error.message);
     }
   },
 

@@ -1,0 +1,20 @@
+{
+  "taskId": "optimization-demo-task",
+  "baseline": {
+    "latencyP95Ms": 410,
+    "taskSuccessRate": 0.7
+  },
+  "optimized": {
+    "latencyP95Ms": 295,
+    "taskSuccessRate": 0.82
+  },
+  "computeBudget": {
+    "clientCpuBounded": true,
+    "maxInferenceMs": 45
+  },
+  "fallbackBehavior": {
+    "deterministicFallback": true,
+    "trigger": "low confidence or solver timeout"
+  },
+  "closureVerdict": "PASS"
+}

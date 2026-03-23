@@ -6,6 +6,7 @@ import {
   IconButton,
   Chip,
   Stack,
+  useMediaQuery,
 } from '@mui/material';
 import { motion } from 'framer-motion';
 import PropTypes from 'prop-types';
@@ -41,6 +42,7 @@ const AuthWrapper = ({ children }) => {
   const theme = useTheme();
   const isMobile = useBreakpointDown('sm');
   const isTablet = useBreakpointBetween('sm', 'md');
+  const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
   const [currentImage, setCurrentImage] = useState(0);
   const [isCarouselAutoPlay, setIsCarouselAutoPlay] = useState(true);
   const isDarkMode = theme.palette.mode === 'dark';
@@ -88,7 +90,7 @@ const AuthWrapper = ({ children }) => {
               rgba(244,242,235,0.78) 100%)`;
 
   useEffect(() => {
-    if (!isCarouselAutoPlay) {
+    if (!isCarouselAutoPlay || prefersReducedMotion) {
       return undefined;
     }
 
@@ -96,7 +98,7 @@ const AuthWrapper = ({ children }) => {
       setCurrentImage((prev) => (prev + 1) % cartoonScenes.length);
     }, 5000);
     return () => clearInterval(interval);
-  }, [isCarouselAutoPlay]);
+  }, [isCarouselAutoPlay, prefersReducedMotion]);
 
   const features = [
     {
@@ -227,7 +229,7 @@ const AuthWrapper = ({ children }) => {
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: 'easeOut' }}
+          transition={{ duration: prefersReducedMotion ? 0 : 0.8, ease: 'easeOut' }}
         >
           <Paper
             elevation={12}
@@ -255,6 +257,9 @@ const AuthWrapper = ({ children }) => {
                   `linear-gradient(90deg, ${accentColor} 0%, #FFC000 50%, ${accentColor} 100%)`,
                 zIndex: 3,
                 borderRadius: '5px 5px 0 0',
+              },
+              '& .MuiButton-root': {
+                minHeight: 44,
               },
             }}
           >
@@ -335,6 +340,8 @@ const AuthWrapper = ({ children }) => {
                         sx={{
                           color: leftPanelText,
                           fontWeight: 500,
+                          lineHeight: 1.45,
+                          letterSpacing: '0.01em',
                           fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
                         }}
                       >

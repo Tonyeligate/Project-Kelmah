@@ -123,7 +123,7 @@ const JobApplicationForm = () => {
           setError('Job not found or no longer available');
         }
       } catch (err) {
-        if (import.meta.env.DEV) console.error('Error fetching job:', err);
+        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error fetching job:', err);
         setError(
           err.response?.data?.message ||
             'Could not load job details. Please try again.',
@@ -189,7 +189,7 @@ const JobApplicationForm = () => {
         }, 3000);
       }
     } catch (err) {
-      if (import.meta.env.DEV) console.error('Submit error:', err);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Submit error:', err);
       const serverMsg =
         err.response?.data?.message || err.response?.data?.error?.message;
       if (serverMsg?.includes('already applied')) {

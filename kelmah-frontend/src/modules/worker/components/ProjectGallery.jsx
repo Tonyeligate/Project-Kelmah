@@ -82,7 +82,7 @@ const ProjectGallery = ({
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Failed to download image:', error);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to download image:', error);
     }
   };
 
@@ -96,7 +96,7 @@ const ProjectGallery = ({
           url: imageUrl,
         });
       } catch (error) {
-        if (import.meta.env.DEV) console.error('Failed to share:', error);
+        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to share:', error);
       }
     } else {
       // Fallback - copy to clipboard
@@ -104,7 +104,7 @@ const ProjectGallery = ({
         await navigator.clipboard.writeText(imageUrl);
         // You might want to show a snackbar here
       } catch (error) {
-        if (import.meta.env.DEV) console.error('Failed to copy to clipboard:', error);
+        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to copy to clipboard:', error);
       }
     }
   };
@@ -180,7 +180,15 @@ const ProjectGallery = ({
               )
             }
             aria-label="Download current image"
-            sx={{ color: 'white' }}
+            sx={{
+              color: 'white',
+              minHeight: 44,
+              minWidth: 44,
+              '&:focus-visible': {
+                outline: `3px solid ${theme.palette.primary.main}`,
+                outlineOffset: 2,
+              },
+            }}
           >
             <DownloadIcon />
           </IconButton>
@@ -188,11 +196,32 @@ const ProjectGallery = ({
             color="inherit"
             onClick={() => handleShare(galleryImages[currentIndex])}
             aria-label="Share current image"
-            sx={{ color: 'white' }}
+            sx={{
+              color: 'white',
+              minHeight: 44,
+              minWidth: 44,
+              '&:focus-visible': {
+                outline: `3px solid ${theme.palette.primary.main}`,
+                outlineOffset: 2,
+              },
+            }}
           >
             <ShareIcon />
           </IconButton>
-          <IconButton color="inherit" onClick={onClose} aria-label="Close gallery" sx={{ color: 'white' }}>
+          <IconButton
+            color="inherit"
+            onClick={onClose}
+            aria-label="Close gallery"
+            sx={{
+              color: 'white',
+              minHeight: 44,
+              minWidth: 44,
+              '&:focus-visible': {
+                outline: `3px solid ${theme.palette.primary.main}`,
+                outlineOffset: 2,
+              },
+            }}
+          >
             <CloseIcon />
           </IconButton>
         </Stack>
@@ -224,9 +253,15 @@ const ProjectGallery = ({
                 transform: 'translateY(-50%)',
                 color: 'white',
                 backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                minHeight: 44,
+                minWidth: 44,
                 zIndex: 1,
                 '&:hover': {
                   backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                },
+                '&:focus-visible': {
+                  outline: `3px solid ${theme.palette.primary.main}`,
+                  outlineOffset: 2,
                 },
               }}
             >
@@ -242,9 +277,15 @@ const ProjectGallery = ({
                 transform: 'translateY(-50%)',
                 color: 'white',
                 backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                minHeight: 44,
+                minWidth: 44,
                 zIndex: 1,
                 '&:hover': {
                   backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                },
+                '&:focus-visible': {
+                  outline: `3px solid ${theme.palette.primary.main}`,
+                  outlineOffset: 2,
                 },
               }}
             >
@@ -259,6 +300,8 @@ const ProjectGallery = ({
             component="img"
             src={galleryImages[currentIndex]}
             alt={`${projectTitle} - Image ${currentIndex + 1}`}
+            loading="eager"
+            decoding="async"
             onLoad={() => setImageLoaded(true)}
             sx={{
               maxWidth: '100%',
@@ -281,6 +324,9 @@ const ProjectGallery = ({
               backgroundColor: 'rgba(255, 255, 255, 0.1)',
               borderRadius: 1,
             }}
+            role="status"
+            aria-live="polite"
+            aria-busy="true"
           >
             <Typography variant="body1" sx={{ color: 'white', opacity: 0.7 }}>
               Loading...
@@ -302,6 +348,9 @@ const ProjectGallery = ({
               maxWidth: '80%',
               overflow: 'hidden',
             }}
+            role="status"
+            aria-live="polite"
+            aria-label={`Showing image ${currentIndex + 1} of ${galleryImages.length}`}
           >
             <ImageList
               cols={Math.min(images.length, 8)}
@@ -334,10 +383,24 @@ const ProjectGallery = ({
                     setCurrentIndex(index);
                     setImageLoaded(false);
                   }}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      setCurrentIndex(index);
+                      setImageLoaded(false);
+                    }
+                  }}
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`Open gallery image ${index + 1}`}
                 >
                   <img
                     src={image}
                     alt={`Thumbnail ${index + 1}`}
+                    loading="lazy"
+                    decoding="async"
+                    width="60"
+                    height="40"
                     style={{
                       width: '100%',
                       height: '100%',
@@ -369,6 +432,16 @@ const ProjectGallery = ({
                   setCurrentIndex(index);
                   setImageLoaded(false);
                 }}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    setCurrentIndex(index);
+                    setImageLoaded(false);
+                  }
+                }}
+                tabIndex={0}
+                role="button"
+                aria-label={`Open gallery image ${index + 1}`}
                 sx={{
                   width: 8,
                   height: 8,

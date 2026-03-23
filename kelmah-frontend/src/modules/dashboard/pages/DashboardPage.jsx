@@ -31,7 +31,7 @@ const DashboardPage = () => {
 
   if (!user) {
     return (
-      <Box sx={{ p: 3, textAlign: 'center', minHeight: '50vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+      <Box sx={{ p: 3, textAlign: 'center', minHeight: '50vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minWidth: 0, overflowX: 'hidden' }}>
         <LockIcon sx={{ fontSize: 56, color: '#D4AF37', mb: 2 }} />
         <Typography variant="h6" gutterBottom>
           Please sign in to continue
@@ -42,7 +42,18 @@ const DashboardPage = () => {
         <Button
           variant="contained"
           onClick={() => navigate('/login')}
-          sx={{ minHeight: 48, px: 4, bgcolor: '#D4AF37', color: '#000', fontWeight: 600, '&:hover': { bgcolor: '#B8941F' } }}
+          sx={{
+            minHeight: 48,
+            px: 4,
+            bgcolor: '#D4AF37',
+            color: '#000',
+            fontWeight: 600,
+            '&:hover': { bgcolor: '#B8941F' },
+            '&:focus-visible': {
+              outline: '3px solid #111',
+              outlineOffset: 2,
+            },
+          }}
         >
           Sign In
         </Button>
@@ -62,10 +73,23 @@ const DashboardPage = () => {
       break;
     case 'admin':
       dashboard = (
-        <Box sx={{ p: 3, textAlign: 'center' }}>
+        <Box sx={{ p: 3, textAlign: 'center', minWidth: 0, overflowX: 'hidden' }}>
           <Typography variant="h5" gutterBottom>Admin Dashboard</Typography>
           <Typography variant="body1">Admin tools are available in the admin section.</Typography>
-          <Button variant="outlined" onClick={() => navigate(getRoleHomePath(user))} sx={{ mt: 2, borderColor: '#D4AF37', color: '#D4AF37', minHeight: 44 }}>
+          <Button
+            variant="outlined"
+            onClick={() => navigate(getRoleHomePath(user))}
+            sx={{
+              mt: 2,
+              borderColor: '#D4AF37',
+              color: '#D4AF37',
+              minHeight: 44,
+              '&:focus-visible': {
+                outline: '3px solid #D4AF37',
+                outlineOffset: 2,
+              },
+            }}
+          >
             Go to Admin Panel
           </Button>
         </Box>

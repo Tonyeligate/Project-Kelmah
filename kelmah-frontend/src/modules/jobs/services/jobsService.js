@@ -113,7 +113,7 @@ const transformJobListItem = (job) => {
     }
 
     // Fallback: Flag for admin review
-    if (import.meta.env.DEV) console.warn(
+    if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn(
       `⚠️ Job ${job._id || job.id} missing employer data - flagged for admin review`,
     );
     // U-06 FIX: Neutral fallback — “Anonymous Employer” is honest, not misleading
@@ -193,9 +193,12 @@ const jobsApi = {
   /**
    * Get all jobs with filtering and pagination
    */
-  async getJobs(params = {}) {
+  async getJobs(params = {}, requestOptions = {}) {
     try {
-      const response = await api.get('/jobs', { params });
+      const response = await api.get('/jobs', {
+        params,
+        ...requestOptions,
+      });
 
       // Handle different response formats from the backend
       let jobs = [];
@@ -253,7 +256,7 @@ const jobsApi = {
 
       // Log jobs needing admin review
       if (jobsNeedingReview.length > 0) {
-        if (import.meta.env.DEV) console.warn(
+        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn(
           `⚠️ ${jobsNeedingReview.length} jobs missing employer data:`,
           jobsNeedingReview,
         );
@@ -270,7 +273,7 @@ const jobsApi = {
         jobsNeedingReview: jobsNeedingReview.length, // Include count in response
       };
     } catch (error) {
-      if (import.meta.env.DEV) console.warn('❌ Job service API error:', error.message, {
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('❌ Job service API error:', error.message, {
         status: error.response?.status,
         statusText: error.response?.statusText,
         data: error.response?.data,
@@ -348,8 +351,11 @@ const jobsApi = {
   /**
    * Saved jobs
    */
-  async getSavedJobs(params = {}) {
-    const response = await api.get('/jobs/saved', { params });
+  async getSavedJobs(params = {}, requestOptions = {}) {
+    const response = await api.get('/jobs/saved', {
+      params,
+      ...requestOptions,
+    });
     const payload = response.data?.data || response.data;
     const jobs = Array.isArray(payload?.jobs)
       ? payload.jobs
@@ -376,7 +382,7 @@ const jobsApi = {
       // Prefer nested data shape, fallback to flat
       return response.data?.data?.contracts || response.data?.contracts || [];
     } catch (error) {
-      if (import.meta.env.DEV) console.warn('Job service unavailable for contracts:', error.message);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Job service unavailable for contracts:', error.message);
       return [];
     }
   },
@@ -384,15 +390,15 @@ const jobsApi = {
   /**
    * Get a single job by ID
    */
-  async getJobById(jobId) {
+  async getJobById(jobId, requestOptions = {}) {
     // Validate jobId before making API call
     if (!jobId || jobId === 'undefined' || jobId === 'null') {
-      if (import.meta.env.DEV) console.error('❌ Invalid job ID provided to getJobById:', jobId);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('❌ Invalid job ID provided to getJobById:', jobId);
       throw new Error('Invalid job ID');
     }
 
     try {
-      const response = await api.get(`/jobs/${jobId}`);
+      const response = await api.get(`/jobs/${jobId}`, requestOptions);
 
       // Backend GET /api/jobs/:id returns { success, data: { ...job } }
       const raw = response.data?.data || response.data;
@@ -463,7 +469,7 @@ const jobsApi = {
           : raw;
       return normalized;
     } catch (error) {
-      if (import.meta.env.DEV) console.warn(`Job service unavailable for job ${jobId}:`, error.message);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn(`Job service unavailable for job ${jobId}:`, error.message);
       throw error;
     }
   },
@@ -513,7 +519,7 @@ const jobsApi = {
         currentPage,
       };
     } catch (error) {
-      if (import.meta.env.DEV) console.warn('Job service unavailable for job search:', error.message);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Job service unavailable for job search:', error.message);
       return {
         jobs: [],
         totalPages: 1,
@@ -558,7 +564,7 @@ const jobsApi = {
             : [];
       return jobs.map(transformJobListItem);
     } catch (error) {
-      if (import.meta.env.DEV) console.warn('Job service unavailable for featured jobs:', error.message);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Job service unavailable for featured jobs:', error.message);
       return [];
     }
   },
@@ -574,7 +580,7 @@ const jobsApi = {
       );
       return response.data;
     } catch (error) {
-      if (import.meta.env.DEV) console.warn(
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn(
         `Job service unavailable for job application ${jobId}:`,
         error.message,
       );
@@ -590,7 +596,7 @@ const jobsApi = {
       const response = await api.get('/jobs/categories');
       return response.data.data || response.data;
     } catch (error) {
-      if (import.meta.env.DEV) console.warn(
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn(
         'Job service unavailable for job categories:',
         error.message,
       );
@@ -619,7 +625,7 @@ const jobsApi = {
       const items = Array.isArray(payload?.items) ? payload.items : [];
       return items.map(transformJobListItem);
     } catch (error) {
-      if (import.meta.env.DEV) console.warn(
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn(
         'Job service unavailable for personalized recommendations:',
         error.message,
       );
@@ -635,7 +641,7 @@ const jobsApi = {
       const response = await api.get('/jobs/stats');
       return response.data?.data || response.data || {};
     } catch (error) {
-      if (import.meta.env.DEV) console.warn('Job service unavailable for platform stats:', error.message);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Job service unavailable for platform stats:', error.message);
       return null;
     }
   },

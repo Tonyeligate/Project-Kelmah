@@ -12,6 +12,7 @@ import {
   Alert,
   Stack,
   CircularProgress,
+  Skeleton,
 } from '@mui/material';
 import { styled, useTheme } from '@mui/material/styles';
 import { notificationService } from '../../notifications/services/notificationService';
@@ -104,8 +105,16 @@ const JobAlertsPage = () => {
             Manage job alert notifications and channels.
           </Typography>
           {loading ? (
-            <Box sx={{ py: 2 }}>
-              <CircularProgress size={24} />
+            <Box sx={{ py: 1 }}>
+              {[1, 2, 3].map((item) => (
+                <Box
+                  key={`job-alert-pref-skeleton-${item}`}
+                  sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 0.8 }}
+                >
+                  <Skeleton variant="rounded" width={42} height={24} />
+                  <Skeleton variant="text" width="55%" height={24} />
+                </Box>
+              ))}
             </Box>
           ) : (
             <FormGroup>
@@ -184,7 +193,10 @@ const JobAlertsPage = () => {
               aria-label="Save job alert settings"
             >
               {saving ? (
-                <CircularProgress size={18} sx={{ color: '#000' }} />
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <CircularProgress size={16} sx={{ color: '#000' }} />
+                  Saving...
+                </Box>
               ) : (
                 'Save alert settings'
               )}

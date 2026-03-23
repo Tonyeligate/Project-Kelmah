@@ -1,0 +1,78 @@
+{
+  "generatedAtUtc": "2026-03-23T01:43:10.115Z",
+  "rootDir": "C:\\Users\\OS\\Desktop\\Project-Kelmah-main\\spec-kit\\quantum-oracle",
+  "taskDirectoryCount": 3,
+  "learningEnabledTaskCount": 2,
+  "learningArtifactTaskCount": 2,
+  "advancedMissingLearningEvidence": [],
+  "trends": {
+    "topRecurringMistakes": [
+      {
+        "item": "previous route updates lacked explicit contract drift scoring",
+        "count": 1
+      },
+      {
+        "item": "early optimization prototypes did not enforce rollback safety",
+        "count": 1
+      }
+    ],
+    "topRealWorldSignals": [
+      {
+        "item": "inter-service timeout spikes during peak usage windows",
+        "count": 1
+      },
+      {
+        "item": "users on low-end devices show higher hesitation in long forms",
+        "count": 1
+      }
+    ],
+    "topUserPainPoints": [
+      {
+        "item": "delayed api responses create retry storms in clients",
+        "count": 1
+      },
+      {
+        "item": "too many branches before primary action caused drop-offs",
+        "count": 1
+      }
+    ],
+    "topPolicyAdjustments": [
+      {
+        "item": "enforce fallback responses and stricter timeout guards",
+        "count": 1
+      },
+      {
+        "item": "reduce branching and add guided inline support on repeated errors",
+        "count": 1
+      }
+    ]
+  },
+  "tasks": [
+    {
+      "taskId": "backend-demo-task",
+      "taskType": "backend-optimization",
+      "requiresLearningOracle": true,
+      "mistakesCount": 1,
+      "preventiveRulesCount": 1,
+      "oracleImprovementsCount": 1,
+      "realWorldSignalsCount": 1,
+      "userPainPointsCount": 1,
+      "policyAdjustmentsCount": 1,
+      "hasLearningUpdate": true,
+      "hasFieldExperience": true
+    },
+    {
+      "taskId": "optimization-demo-task",
+      "taskType": "ui-optimization",
+      "requiresLearningOracle": true,
+      "mistakesCount": 1,
+      "preventiveRulesCount": 1,
+      "oracleImprovementsCount": 1,
+      "realWorldSignalsCount": 1,
+      "userPainPointsCount": 1,
+      "policyAdjustmentsCount": 1,
+      "hasLearningUpdate": true,
+      "hasFieldExperience": true
+    }
+  ]
+}

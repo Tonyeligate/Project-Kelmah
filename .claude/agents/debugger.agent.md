@@ -722,3 +722,82 @@ Required evidence:
 
 No debugger PASS => backend optimization verdict remains PROVISIONAL.
 ```
+
+### GFL-8: Learning Evolution Challenge Gate
+```
+For any task with requiresLearningOracle=true:
+  - verify mistakes are specific and evidence-backed
+  - verify each mistake maps to a preventive guardrail
+  - verify real-world signals resulted in policy/check updates
+  - reject generic or duplicated "lessons learned"
+
+Required evidence:
+  - learning_update.json
+  - field_experience_report.json
+
+No debugger PASS => learning evidence is considered insufficient.
+```
+
+### GFL-9: Database Integrity Challenge Gate
+```
+For taskType in { database-integrity-hardening }:
+  - validate schema/data consistency claims against evidence artifacts
+  - challenge query efficiency claims with measured budget metrics
+  - verify migration safety and rollback proofs
+
+Required evidence:
+  - schema_drift_report.json
+  - enum_consistency_report.json
+  - query_energy_budget.json
+  - migration_safety_report.json
+```
+
+### GFL-10: Security Hardening Challenge Gate
+```
+For taskType in { security-hardening }:
+  - challenge exploitability assumptions and mitigation proof quality
+  - verify attack replay failure evidence and residual risk quantification
+
+Required evidence:
+  - attack_replay_matrix.json
+  - mitigation_effectiveness.json
+  - residual_risk_quantification.json
+```
+
+### GFL-11: Realtime Reliability Challenge Gate
+```
+For taskType in { realtime-reliability }:
+  - challenge delivery fidelity and reconnect determinism claims
+  - verify listener cardinality stability and causality consistency
+
+Required evidence:
+  - event_causality_ledger.json
+  - listener_cardinality_report.json
+  - reconnect_consistency_report.json
+```
+
+### GFL-12: Infra Coherence Challenge Gate
+```
+For taskType in { infra-coherence }:
+  - challenge environment parity and deployment twin consistency claims
+  - verify five-world verification evidence and drift deltas
+
+Required evidence:
+  - deployment_twin_state.json
+  - env_drift_delta.json
+  - world_verification_report.json
+```
+
+### GFL-13: Adaptive UX Contradiction Challenge Gate
+```
+For taskType in { adaptive-interface, design-flow-optimization, ui-optimization }:
+  - challenge claimed user-friction reductions against measured evidence
+  - verify accessibility and literacy regressions did not increase
+  - validate deterministic fallback and rollback path
+
+Required evidence:
+  - layout_optimization_report.json
+  - behavioral_twin_report.json
+  - learning_update.json
+  - field_experience_report.json
+```

@@ -109,6 +109,13 @@ const JobCard = ({
     }
   };
 
+  const handleCardKeyDown = (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      handleCardClick();
+    }
+  };
+
   // Format budget display
   const formatBudget = (budget) => {
     if (typeof budget === 'object' && budget.min && budget.max) {
@@ -151,6 +158,10 @@ const JobCard = ({
       boxShadow: 2,
       transition: 'all 0.3s ease',
       cursor: features.showNavigation ? 'pointer' : 'default',
+      '&:focus-visible': {
+        outline: `3px solid ${theme.palette.primary.main}`,
+        outlineOffset: 2,
+      },
       '&:hover': features.showNavigation
         ? {
             boxShadow: 4,
@@ -167,17 +178,27 @@ const JobCard = ({
   };
 
   return (
-    <Card sx={getCardSx()} onClick={handleCardClick}>
+    <Card
+      sx={getCardSx()}
+      onClick={handleCardClick}
+      onKeyDown={handleCardKeyDown}
+      tabIndex={features.showNavigation ? 0 : -1}
+      role={features.showNavigation ? 'button' : undefined}
+      aria-label={title ? `Open job details for ${title}` : 'Open job details'}
+    >
       {/* Cover image */}
       {resolvedCoverImage && variant !== 'compact' && (
         <CardMedia
           component="img"
+          loading="lazy"
           height={variant === 'detailed' ? 200 : 160}
           image={resolvedCoverImage}
           alt={title || 'Job image'}
           sx={{
+            aspectRatio: variant === 'detailed' ? '16 / 9' : '5 / 3',
             objectFit: 'cover',
             borderBottom: `1px solid ${theme.palette.divider}`,
+            backgroundColor: theme.palette.action.hover,
           }}
           onError={(e) => { e.target.onerror = null; e.target.src = ''; e.target.style.display = 'none'; }}
         />
@@ -193,10 +214,20 @@ const JobCard = ({
           }}
         >
           <Typography
-            noWrap
             variant={variant === 'compact' ? 'subtitle1' : 'h6'}
             component="div"
-            sx={{ flexGrow: 1, mr: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}
+            sx={{
+              flexGrow: 1,
+              mr: 1,
+              lineHeight: 1.35,
+              fontSize: variant === 'compact'
+                ? { xs: '0.98rem', sm: '1.02rem' }
+                : { xs: '1.02rem', sm: '1.12rem' },
+              display: '-webkit-box',
+              WebkitLineClamp: variant === 'compact' ? 2 : 3,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+            }}
           >
             {title}
           </Typography>
@@ -233,7 +264,19 @@ const JobCard = ({
 
         {/* Description */}
         {variant !== 'compact' && (
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{
+              mb: 2,
+              lineHeight: 1.62,
+              fontSize: { xs: '0.92rem', sm: '0.96rem' },
+              display: '-webkit-box',
+              WebkitLineClamp: variant === 'detailed' ? 5 : 4,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+            }}
+          >
             {getDescription()}
           </Typography>
         )}
@@ -245,15 +288,15 @@ const JobCard = ({
           sx={{ mb: 2 }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <AttachMoney fontSize="small" color="primary" />
-            <Typography variant="body2" fontWeight="medium">
+            <AttachMoney sx={{ fontSize: 18 }} color="primary" />
+            <Typography variant="body2" fontWeight="medium" sx={{ lineHeight: 1.4 }}>
               {formatBudget(budget)}
             </Typography>
           </Box>
           {location && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <LocationOn fontSize="small" color="action" />
-              <Typography variant="body2" color="text.secondary">
+              <LocationOn sx={{ fontSize: 18 }} color="action" />
+              <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.4 }}>
                 {location}
               </Typography>
             </Box>
@@ -322,7 +365,7 @@ const JobCard = ({
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <AccessTime fontSize="small" color="action" />
+            <AccessTime sx={{ fontSize: 17 }} color="action" />
             <Typography variant="caption" color="text.secondary">
               {formatTimeAgo(postedDate)}
             </Typography>
@@ -354,7 +397,7 @@ const JobCard = ({
               }
             }}
             fullWidth={isMobile}
-            sx={{ fontWeight: 'bold' }}
+            sx={{ fontWeight: 'bold', lineHeight: 1.35 }}
           >
             Apply Now
           </Button>
@@ -367,12 +410,21 @@ const JobCard = ({
               handleCardClick();
             }}
             fullWidth={isMobile}
+            sx={{ minHeight: 44 }}
           >
             View Details
           </Button>
         </CardActions>
       )}
     </Card>
+            sx={{
+              minHeight: 40,
+              lineHeight: 1.35,
+              '&:focus-visible': {
+                outline: `3px solid ${theme.palette.primary.main}`,
+                outlineOffset: 2,
+              },
+            }}
   );
 };
 

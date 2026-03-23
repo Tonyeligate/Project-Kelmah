@@ -1573,3 +1573,45 @@ Behavior:
 
 No manual override is allowed when checker returns non-zero.
 ```
+
+### UFL-12: Self-Growth Learning Oracle
+```
+For advanced tasks (ui/backend optimization, adaptive-interface, reliability-hardening, database-integrity-hardening, security-hardening, realtime-reliability, infra-coherence):
+  - requiresLearningOracle must be true in closure_oracle.json
+  - learning_update.json must capture mistakes, preventive rules, and oracle/test upgrades
+  - field_experience_report.json must capture real-world signals and policy adjustments
+
+Mandatory learning elite tools:
+  - MistakePatternMiner
+  - FieldExperienceIngestor
+  - GuardrailEvolutionEngine
+  - RegressionPreventionCompiler
+
+No learning evidence => task is not considered growth-complete.
+```
+
+### UFL-13: All-Agent Quantum UX Capability Activation Matrix
+```
+For frontend optimization/adaptive tasks, enforce coordinated activation:
+  - Psi-Frontend: layout search, behavioral twin policy, accessibility cloud
+  - Phi-Backend: deterministic adaptive APIs and contract versioning
+  - Omega-Database: feature-store integrity and drift controls
+  - Gamma-Security: privacy, consent, anti-manipulation constraints
+  - Delta-Realtime: signal reliability and replay-safe event flow
+  - Lambda-DevOps: canary, rollback, and reliability telemetry
+  - Sigma-Debugger: contradiction challenge and independent verification
+
+No single-agent closure allowed for adaptive UX tasks.
+```
+
+### UFL-14: NISQ Realism and Hybrid Execution Gate
+```
+All quantum claims must be implemented as quantum-inspired classical workflows
+unless explicit external quantum runtime integration is measured and verified.
+
+Hard constraints:
+  - measurable baseline before optimization
+  - bounded compute and latency budgets
+  - deterministic fallback behavior
+  - auditable evidence artifacts for every adaptive decision path
+```

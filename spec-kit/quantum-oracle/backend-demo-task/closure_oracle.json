@@ -2,6 +2,7 @@
   "taskId": "backend-demo-task",
   "taskType": "backend-optimization",
   "requiresBackendOracle": true,
+  "requiresLearningOracle": true,
   "oracleState": "PASS",
   "requiredDelegationsExecuted": true,
   "requiredDiagnosticsExecuted": true,
@@ -19,7 +20,11 @@
     "ContractEvolutionAnalyzer",
     "ReliabilityChaosSimulator",
     "GatewayPolicyVerifier",
-    "QueryPerformanceEstimator"
+    "QueryPerformanceEstimator",
+    "MistakePatternMiner",
+    "FieldExperienceIngestor",
+    "GuardrailEvolutionEngine",
+    "RegressionPreventionCompiler"
   ],
   "notes": "Backend optimization demo bundle"
 }

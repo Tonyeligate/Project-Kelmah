@@ -72,17 +72,17 @@ export default function EmptyState({
       <Box
         aria-hidden="true"
         sx={{
-          width: 96,
-          height: 96,
+          width: { xs: 88, sm: 96 },
+          height: { xs: 88, sm: 96 },
           borderRadius: '50%',
-          bgcolor: 'action.hover',
+          bgcolor: 'action.selected',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           mb: 3,
         }}
       >
-        <Icon sx={{ fontSize: 48, color: 'text.secondary', opacity: 0.6 }} />
+        <Icon sx={{ fontSize: { xs: 44, sm: 48 }, color: 'text.secondary', opacity: 0.88 }} />
       </Box>
       <Typography
         variant="h6"
@@ -95,7 +95,7 @@ export default function EmptyState({
       {subtitle && (
         <Typography
           variant="body2"
-          sx={{ color: 'text.secondary', maxWidth: 320, mb: actionLabel ? 3 : 0 }}
+          sx={{ color: 'text.secondary', maxWidth: 320, mb: actionLabel ? 3 : 0, lineHeight: 1.6 }}
         >
           {subtitle}
         </Typography>
@@ -114,8 +114,9 @@ export default function EmptyState({
             fontSize: '1rem',
             '&:hover': { bgcolor: '#B8941F' },
             '&:focus-visible': {
-              outline: '3px solid #D4AF37',
-              outlineOffset: '3px',
+              outline: '3px solid rgba(255,255,255,0.95)',
+              outlineOffset: '2px',
+              boxShadow: '0 0 0 3px rgba(212,175,55,0.55)',
             },
           }}
         >

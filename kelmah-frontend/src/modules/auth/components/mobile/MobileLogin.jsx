@@ -101,7 +101,10 @@ const MobileLogin = ({ registrationSuccess = false }) => {
       const destination = resolveLoginRedirect(result?.user);
       navigate(destination, { replace: true });
     } catch (error) {
-      setSubmitError(error.message || 'Login failed. Please try again.');
+      setSubmitError(
+        error.message ||
+          'We could not sign you in. Check your email and password, then try again.',
+      );
     } finally {
       setIsSubmitting(false);
     }

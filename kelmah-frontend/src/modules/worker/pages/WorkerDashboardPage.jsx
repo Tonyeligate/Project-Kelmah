@@ -727,6 +727,13 @@ const WorkerDashboardPage = () => {
             variant="contained"
             startIcon={<SearchIcon />}
             onClick={() => navigate('/worker/find-work')}
+            sx={{
+              minHeight: 44,
+              '&:focus-visible': {
+                outline: `3px solid ${theme.palette.primary.main}`,
+                outlineOffset: 2,
+              },
+            }}
           >
             Find Your First Job
           </Button>
@@ -898,6 +905,14 @@ const WorkerDashboardPage = () => {
                 <Grid item xs={12} sm={6} md={3} key={job.id}>
                   <Paper
                     elevation={0}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        navigate(`/jobs/${job.id}`);
+                      }
+                    }}
                     sx={{
                       p: 2,
                       borderRadius: 2,
@@ -906,6 +921,10 @@ const WorkerDashboardPage = () => {
                       cursor: 'pointer',
                       transition: 'box-shadow 0.2s',
                       '&:hover': { boxShadow: 2 },
+                      '&:focus-visible': {
+                        outline: `3px solid ${theme.palette.primary.main}`,
+                        outlineOffset: 2,
+                      },
                       animation: 'workerCardRise 420ms ease-out both',
                       animationDelay: `${index * 55}ms`,
                       '@keyframes workerCardRise': {

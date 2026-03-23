@@ -8,6 +8,15 @@ import React, {
 import { contractService } from '../services/contractService';
 import { useAuth } from '../../auth/hooks/useAuth';
 import { useNotifications } from '../../notifications/contexts/NotificationContext';
+
+const CONTRACTS_DEBUG =
+  import.meta.env.DEV && import.meta.env.VITE_DEBUG_CONTRACTS === 'true';
+const contractsLog = (...args) => {
+  if (CONTRACTS_DEBUG) {
+    console.log(...args);
+  }
+};
+
 const ContractContext = createContext(null);
 
 export const ContractProvider = ({ children }) => {
@@ -30,7 +39,7 @@ export const ContractProvider = ({ children }) => {
     // Always use real API data - no mock data fallbacks
     if (!user) return;
     setListLoading(true);
-    if (import.meta.env.DEV) console.log('🔄 Fetching real contract data from API...');
+    contractsLog('Fetching real contract data from API...');
 
     try {
       const response = await contractService.getContracts();
@@ -40,7 +49,7 @@ export const ContractProvider = ({ children }) => {
         : response?.contracts || [];
       setContracts(fetchedContracts);
     } catch (err) {
-      if (import.meta.env.DEV) console.error('Failed to fetch contracts:', err);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to fetch contracts:', err);
       setError('Could not load contract information. Please try again later.');
       showToast('Failed to load contracts.', 'error');
     } finally {
@@ -91,7 +100,7 @@ export const ContractProvider = ({ children }) => {
           throw new Error('Milestone approval failed on the backend.');
         }
       } catch (err) {
-        if (import.meta.env.DEV) console.error(err);
+        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error(err);
         showToast('Failed to approve milestone.', 'error');
       }
     },

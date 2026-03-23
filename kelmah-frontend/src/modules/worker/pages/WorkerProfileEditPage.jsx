@@ -45,6 +45,14 @@ const DEFAULT_AVAILABLE_HOURS = {
   sunday: { start: '09:00', end: '13:00', available: false },
 };
 
+const __WORKER_DEBUG__ =
+  import.meta.env.DEV && import.meta.env.VITE_DEBUG_WORKER === 'true';
+const workerDebugError = (...args) => {
+  if (__WORKER_DEBUG__) {
+    console.error(...args);
+  }
+};
+
 const mapAvailabilityApiToForm = (data) => {
   const dayOrder = [
     'sunday',
@@ -255,7 +263,7 @@ const WorkerProfileEditPage = () => {
         setInitialLoading(false);
       })
       .catch((err) => {
-        if (import.meta.env.DEV) console.error('Error loading profile:', err);
+        workerDebugError('Error loading profile:', err);
         setInitialLoading(false);
         setSnackbar({
           open: true,
@@ -284,7 +292,7 @@ const WorkerProfileEditPage = () => {
           }));
         }
       } catch (e) {
-        if (import.meta.env.DEV) console.error('Error loading availability:', e);
+        workerDebugError('Error loading availability:', e);
         setSnackbar({
           open: true,
           message: 'Could not load your availability settings. The form may show defaults.',
@@ -516,7 +524,7 @@ const WorkerProfileEditPage = () => {
             format: uploadedImage.format || null,
           };
         } catch (imgErr) {
-          if (import.meta.env.DEV) console.error('Image upload failed:', imgErr);
+          workerDebugError('Image upload failed:', imgErr);
           // Continue with profile save even if image upload fails
         }
       }
@@ -535,7 +543,7 @@ const WorkerProfileEditPage = () => {
         navigate('/worker/profile');
       }, 2000);
     } catch (err) {
-      if (import.meta.env.DEV) console.error('Error updating profile:', err);
+      workerDebugError('Error updating profile:', err);
       setSnackbar({
         open: true,
         message: 'Failed to update profile. Please try again.',
@@ -673,9 +681,15 @@ const WorkerProfileEditPage = () => {
           Complete your profile details, then save to help hirers trust your experience.
         </Typography>
         <Alert severity="info" sx={{ mt: 2 }}>
-          Complete these core fields first ({completedChecklistCount}/{checklistItems.length}):{' '}
-          {checklistItems.map((item) => `${item.done ? '✓' : '○'} ${item.label}`).join('  |  ')}.
-          Optional sections are collapsed below to keep this form faster to finish.
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 0.5 }}>
+            Quick profile checklist ({completedChecklistCount}/{checklistItems.length})
+          </Typography>
+          <Typography variant="body2" sx={{ mb: 0.5 }}>
+            Fill the core fields first, then save. Optional sections can wait.
+          </Typography>
+          <Typography variant="body2">
+            {checklistItems.map((item) => `${item.done ? '[done]' : '[todo]'} ${item.label}`).join(' | ')}
+          </Typography>
         </Alert>
       </Box>
 

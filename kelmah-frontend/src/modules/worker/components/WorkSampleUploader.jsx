@@ -16,7 +16,7 @@ const WorkSampleUploader = ({ onUpload }) => {
       await portfolioApi.uploadWorkSamples(files);
       onUpload?.(files);
     } catch (err) {
-      if (import.meta.env.DEV) console.error('Upload failed', err);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Upload failed', err);
       setUploadError('Upload failed. Please try again.');
     }
   };

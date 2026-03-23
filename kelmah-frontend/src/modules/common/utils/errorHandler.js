@@ -25,6 +25,6 @@ export const formatApiError = (error) => {
  * @param {string} context - Context where error occurred
  */
 export const logError = (error, context = 'general') => {
-  if (import.meta.env.DEV) console.error(`[${context}]`, error);
+  if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error(`[${context}]`, error);
   // In production, would send to error monitoring service
 };

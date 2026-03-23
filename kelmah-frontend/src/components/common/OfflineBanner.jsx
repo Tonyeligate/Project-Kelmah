@@ -37,10 +37,12 @@ export default function OfflineBanner() {
           severity="error"
           role="alert"
           aria-live="assertive"
+          aria-atomic="true"
           icon={<WifiOffIcon aria-hidden="true" />}
           sx={{
             width: '100%',
             maxWidth: 500,
+            minHeight: 44,
             fontWeight: 600,
             fontSize: '0.95rem',
             boxShadow: theme.shadows[4],
@@ -63,8 +65,9 @@ export default function OfflineBanner() {
           severity="success"
           role="status"
           aria-live="polite"
+          aria-atomic="true"
           icon={<WifiIcon aria-hidden="true" />}
-          sx={{ width: '100%', maxWidth: 500, fontWeight: 600, fontSize: '0.95rem' }}
+          sx={{ width: '100%', maxWidth: 500, minHeight: 44, fontWeight: 600, fontSize: '0.95rem' }}
         >
           Back online
         </Alert>

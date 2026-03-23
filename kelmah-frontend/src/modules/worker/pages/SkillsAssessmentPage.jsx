@@ -210,7 +210,7 @@ const SkillsAssessmentPage = () => {
       );
       setAnalytics(analyticsSummary);
     } catch (err) {
-      if (import.meta.env.DEV) console.error('Failed to load assessment data', err);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to load assessment data', err);
       setError('Failed to load assessment data. Showing sample insights.');
       setMySkills(fallbackNormalizedSkills);
       setAvailableTests(fallbackAvailableTests.map((test) => ({ ...test })));
@@ -252,7 +252,7 @@ const SkillsAssessmentPage = () => {
         setPaused(false);
         setTimeRemaining((test.duration || 30) * 60);
       } catch (err) {
-        if (import.meta.env.DEV) console.error('Failed to load test details', err);
+        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to load test details', err);
         setError('Failed to load test details');
       } finally {
         setLoading(false);

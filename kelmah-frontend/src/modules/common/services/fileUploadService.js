@@ -122,7 +122,7 @@ const fileUploadService = {
         type: uploaded?.fileType || uploaded?.resourceType || file.type,
       };
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Error uploading file:', error);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error uploading file:', error);
       throw error;
     }
   },

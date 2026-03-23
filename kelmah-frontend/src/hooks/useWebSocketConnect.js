@@ -44,16 +44,17 @@ const useWebSocketConnect = () => {
       sessionKeyRef.current = null;
       websocketService.disconnect();
     }
+  }, [isAuthenticated, user?.id, user?.role]);
 
+  useEffect(() => {
     return () => {
-      // Cleanup on unmount (app teardown)
       if (connectedRef.current) {
         connectedRef.current = false;
         sessionKeyRef.current = null;
         websocketService.disconnect();
       }
     };
-  }, [isAuthenticated, user?.id, user?.role]);
+  }, []);
 };
 
 export default useWebSocketConnect;

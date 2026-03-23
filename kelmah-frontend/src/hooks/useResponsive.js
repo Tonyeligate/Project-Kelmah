@@ -31,8 +31,14 @@ export const useBreakpointBetween = (start = 'sm', end = 'md') => {
   return useMediaQuery(theme.breakpoints.between(start, end));
 };
 
-export const useMaxWidth = (px) => {
-  const normalizedPx = typeof px === 'number' ? `${px}px` : px;
+export const useMaxWidth = (value) => {
+  const theme = useTheme();
+
+  if (typeof value === 'string' && value in theme.breakpoints.values) {
+    return useMediaQuery(theme.breakpoints.down(value));
+  }
+
+  const normalizedPx = typeof value === 'number' ? `${value}px` : value;
   return useMediaQuery(`(max-width: ${normalizedPx})`);
 };
 
@@ -54,13 +60,6 @@ export const useResponsive = () => {
   const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md')); // sm only
   const isDesktop = useMediaQuery(theme.breakpoints.up('md')); // md, lg, xl
   const isLargeDesktop = useMediaQuery(theme.breakpoints.up('lg')); // lg, xl
-
-  // Custom pixel-based queries (for legacy compatibility)
-  const isActualMobile = useMediaQuery('(max-width: 768px)');
-  const isActualTablet = useMediaQuery(
-    '(min-width: 769px) and (max-width: 1024px)',
-  );
-  const isActualDesktop = useMediaQuery('(min-width: 1025px)');
 
   return useMemo(
     () => ({
@@ -88,11 +87,6 @@ export const useResponsive = () => {
       isDesktop,
       isLargeDesktop,
 
-      // Legacy pixel-based (for backward compatibility)
-      isActualMobile,
-      isActualTablet,
-      isActualDesktop,
-
       // Screen size info (snapshot — use CSS for reactive layout)
       screenWidth: typeof window !== 'undefined' ? window.innerWidth : 0,
       screenHeight: typeof window !== 'undefined' ? window.innerHeight : 0,
@@ -115,9 +109,6 @@ export const useResponsive = () => {
       isTablet,
       isDesktop,
       isLargeDesktop,
-      isActualMobile,
-      isActualTablet,
-      isActualDesktop,
     ],
   );
 };

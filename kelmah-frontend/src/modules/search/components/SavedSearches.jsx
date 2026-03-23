@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/hooks/useAuth';
 import smartSearchService from '../services/smartSearchService';
@@ -82,6 +82,38 @@ const SavedSearches = ({
   const [anchorEl, setAnchorEl] = useState(null);
   const [runningSearchId, setRunningSearchId] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState({ open: false, id: null });
+  const isMountedRef = useRef(true);
+  const activeLoadRequestIdRef = useRef(0);
+
+  const canUpdateState = useCallback(
+    (requestId = null) => {
+      if (!isMountedRef.current) return false;
+      if (requestId === null) return true;
+      return requestId === activeLoadRequestIdRef.current;
+    },
+    [],
+  );
+
+  const demandInsights = useMemo(() => {
+    const total = savedSearches.length;
+    const alertsOn = savedSearches.filter((search) => search.alertsEnabled).length;
+    const trending = savedSearches.filter((search) => search.trending).length;
+
+    const locationCount = {};
+    const categoryCount = {};
+
+    savedSearches.forEach((search) => {
+      const location = search?.filters?.location;
+      const category = search?.filters?.category;
+      if (location) locationCount[location] = (locationCount[location] || 0) + 1;
+      if (category) categoryCount[category] = (categoryCount[category] || 0) + 1;
+    });
+
+    const topLocation = Object.entries(locationCount).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
+    const topCategory = Object.entries(categoryCount).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
+
+    return { total, alertsOn, trending, topLocation, topCategory };
+  }, [savedSearches]);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -94,18 +126,47 @@ const SavedSearches = ({
 
   // Load saved searches
   const loadSavedSearches = useCallback(async () => {
-    try {
-      setLoading(true);
-      const response = await smartSearchService.getSavedSearches(user?.id);
-      setSavedSearches(response.data || []);
-      setError(null);
-    } catch (err) {
-      setError('Failed to load saved searches');
-      enqueueSnackbar('Failed to load saved searches', { variant: 'error' });
-    } finally {
-      setLoading(false);
+    const requestId = ++activeLoadRequestIdRef.current;
+
+    if (!user?.id) {
+      if (canUpdateState(requestId)) {
+        setSavedSearches([]);
+        setError(null);
+        setLoading(false);
+      }
+      return;
     }
-  }, [user?.id, enqueueSnackbar]);
+
+    try {
+      if (canUpdateState(requestId)) {
+        setLoading(true);
+      }
+      const response = await smartSearchService.getSavedSearches(user?.id);
+
+      if (canUpdateState(requestId)) {
+        setSavedSearches(response.data || []);
+        setError(null);
+      }
+    } catch (err) {
+      if (canUpdateState(requestId)) {
+        setError('Failed to load saved searches');
+        enqueueSnackbar('Failed to load saved searches', { variant: 'error' });
+      }
+    } finally {
+      if (canUpdateState(requestId)) {
+        setLoading(false);
+      }
+    }
+  }, [user?.id, enqueueSnackbar, canUpdateState]);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+
+    return () => {
+      isMountedRef.current = false;
+      activeLoadRequestIdRef.current += 1;
+    };
+  }, []);
 
   useEffect(() => {
     if (user?.id) {
@@ -163,7 +224,13 @@ const SavedSearches = ({
   // Handle run saved search
   const handleRunSearch = async (search) => {
     try {
-      setRunningSearchId(search.id);
+      if (!search?.id) {
+        return;
+      }
+
+      if (canUpdateState()) {
+        setRunningSearchId(search.id);
+      }
 
       // Update last run timestamp
       await smartSearchService.updateSavedSearch(search.id, {
@@ -186,7 +253,9 @@ const SavedSearches = ({
     } catch (error) {
       enqueueSnackbar('Failed to run search', { variant: 'error' });
     } finally {
-      setRunningSearchId(null);
+      if (canUpdateState()) {
+        setRunningSearchId(null);
+      }
     }
   };
 
@@ -571,6 +640,30 @@ const SavedSearches = ({
           Saved searches keep your trusted filters in one place so you can rerun
           and compare opportunities quickly.
         </Typography>
+      )}
+
+      {savedSearches.length > 0 && (
+        <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap', gap: 1 }}>
+          <Chip size="small" color="primary" variant="outlined" label={`${demandInsights.total} saved`} />
+          <Chip size="small" color="success" variant="outlined" label={`${demandInsights.alertsOn} with alerts`} />
+          <Chip size="small" color="secondary" variant="outlined" label={`${demandInsights.trending} trending`} />
+          {demandInsights.topCategory && (
+            <Chip
+              size="small"
+              icon={<CategoryIcon fontSize="small" />}
+              label={`Top trade: ${demandInsights.topCategory}`}
+              variant="outlined"
+            />
+          )}
+          {demandInsights.topLocation && (
+            <Chip
+              size="small"
+              icon={<LocationIcon fontSize="small" />}
+              label={`Top area: ${demandInsights.topLocation}`}
+              variant="outlined"
+            />
+          )}
+        </Stack>
       )}
 
       {/* Saved Searches Grid */}

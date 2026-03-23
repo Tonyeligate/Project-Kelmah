@@ -1,5 +1,4 @@
 import { useMemo, useCallback } from 'react';
-// eslint-disable-next-line no-unused-vars
 import { useLocation } from 'react-router-dom';
 // Removed AuthContext import to prevent dual state management conflicts
 // import { useAuth } from '../modules/auth/hooks/useAuth';

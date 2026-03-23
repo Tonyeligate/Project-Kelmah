@@ -42,7 +42,7 @@ export const captureContractMismatch = (error, context = {}) => {
   appendToWindowBuffer('__kelmahContractMismatchEvents', payload);
   emitWindowEvent(CONTRACT_EVENT_NAME, payload);
 
-  if (import.meta.env.DEV) {
+  if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') {
     console.warn('[ContractMismatch]', payload);
   }
 
@@ -62,7 +62,7 @@ export const captureRecoverableApiError = (error, context = {}) => {
   appendToWindowBuffer('__kelmahRecoverableApiEvents', payload);
   emitWindowEvent(RECOVERABLE_EVENT_NAME, payload);
 
-  if (import.meta.env.DEV) {
+  if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') {
     console.warn('[RecoverableApiError]', payload);
   }
 

@@ -166,7 +166,7 @@ class MapService {
       const jobs = extractPayload(response);
       return this.transformJobsForMap(Array.isArray(jobs) ? jobs : []);
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Jobs API unavailable:', error);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Jobs API unavailable:', error);
       throw error;
     }
   }
@@ -183,7 +183,7 @@ class MapService {
 
       return this.transformWorkersForMap(workers);
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Workers API unavailable:', error);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Workers API unavailable:', error);
       throw error;
     }
   }
@@ -359,7 +359,7 @@ class MapService {
       this.locationCache.set(cacheKey, result);
       return result;
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Reverse geocoding error:', error);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Reverse geocoding error:', error);
       throw new Error('Failed to get address for location');
     }
   }
@@ -411,7 +411,7 @@ class MapService {
 
       return results;
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Geocoding error:', error);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Geocoding error:', error);
       throw new Error('Failed to find coordinates for address');
     }
   }

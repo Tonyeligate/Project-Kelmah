@@ -189,6 +189,11 @@ const EmptyState = ({
                                 borderRadius: 2,
                                 textTransform: 'none',
                                 fontWeight: 600,
+                                minHeight: 44,
+                                '&:focus-visible': {
+                                    outline: `3px solid ${theme.palette.primary.main}`,
+                                    outlineOffset: 2,
+                                },
                             }}>
                             {actionText}
                         </Button>
@@ -201,6 +206,11 @@ const EmptyState = ({
                             sx={{
                                 borderRadius: 2,
                                 textTransform: 'none',
+                                minHeight: 44,
+                                '&:focus-visible': {
+                                    outline: `3px solid ${theme.palette.primary.main}`,
+                                    outlineOffset: 2,
+                                },
                             }}>
                             {secondaryActionText}
                         </Button>

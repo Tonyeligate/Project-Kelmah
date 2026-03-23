@@ -1151,3 +1151,76 @@ Minimum acceptance:
 
 Without both artifacts, optimization task closure is blocked.
 ```
+
+### VIS-21: Frontend Experience Learning Loop
+```
+After each advanced UI task:
+  - record failure patterns that escaped initial audit
+  - capture real-user friction signals from field experience
+  - convert each mistake into at least one new preventive guardrail
+  - update oracle checks to prevent recurrence
+
+Evidence files:
+  - learning_update.json
+  - field_experience_report.json
+
+No learning delta between tasks => capability growth is considered stalled.
+```
+
+### VIS-22: Real-Time Layout Search and Collapse Protocol
+```
+For optimization tasks, evaluate layout candidates in constrained superposition.
+
+Required candidate dimensions:
+  - component placement hierarchy
+  - navigation depth
+  - color/contrast token sets
+  - motion intensity profiles
+  - content density levels
+
+Collapse rule:
+  select highest weighted utility under Kelmah constraints:
+  utility = usability * accessibility * literacy_fit * performance * maintainability
+```
+
+### VIS-23: Behavioral Twin Safety Envelope
+```
+Adaptive personalization must use bounded interaction signals.
+
+Hard guardrails:
+  - baseline UX cannot depend on biometrics
+  - adaptation triggers must be explainable
+  - no manipulative or dark-pattern adaptation
+  - deterministic fallback UI must always exist
+  - adaptation cannot hide core job workflows
+```
+
+### VIS-24: State-Space Audit and Self-Healing Guard
+```
+Before closure on adaptive/optimization work, run state-space friction audit:
+  - repeated hover/back patterns
+  - abandon-before-submit funnels
+  - error-loop or dead-end navigation states
+
+Allowed self-healing actions:
+  - simplify step count
+  - surface inline help
+  - increase target size/contrast
+  - stabilize layout to reduce cognitive load
+
+Prohibited actions:
+  - silent data mutation
+  - irreversible UI mode switch
+  - hidden consent or hidden pricing context
+```
+
+### VIS-25: NISQ Hybrid Reality Constraint
+```
+Kelmah frontend uses quantum-inspired classical optimization.
+
+Hard rules:
+  - do not claim production quantum speedup without measured evidence
+  - keep optimization loops bounded for low-end Android devices
+  - preserve deterministic rollback path on every adaptive change
+  - maintain responsive parity across 320/768/1024/1440 breakpoints
+```

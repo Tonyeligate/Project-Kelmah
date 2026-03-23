@@ -22,6 +22,32 @@ const HEALTH_ENDPOINTS = {
 };
 
 const DEFAULT_HEALTH_ENDPOINT = '/health';
+const isOffline = () =>
+  typeof navigator !== 'undefined' && navigator.onLine === false;
+const HEALTH_DEBUG =
+  import.meta.env.DEV && import.meta.env.VITE_DEBUG_SERVICE_HEALTH === 'true';
+
+const healthLog = (...args) => {
+  if (HEALTH_DEBUG) {
+    console.log(...args);
+  }
+};
+const healthWarn = (...args) => {
+  if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') {
+    console.warn(...args);
+  }
+};
+const healthError = (...args) => {
+  if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') {
+    console.error(...args);
+  }
+};
+
+const healthMonitorState = {
+  intervalId: null,
+  visibilityHandler: null,
+  consumers: 0,
+};
 
 const buildHealthUrl = (baseUrl, endpoint = DEFAULT_HEALTH_ENDPOINT) => {
   const normalizedEndpoint = endpoint.startsWith('/')
@@ -50,6 +76,16 @@ const buildHealthUrl = (baseUrl, endpoint = DEFAULT_HEALTH_ENDPOINT) => {
  * Check if a service is healthy
  */
 export const checkServiceHealth = async (serviceUrl, timeout = 10000) => {
+  if (isOffline()) {
+    serviceHealthCache.set(serviceUrl, {
+      isHealthy: false,
+      lastChecked: Date.now(),
+      error: 'offline',
+      status: 'offline',
+    });
+    return false;
+  }
+
   const healthEndpoint =
     HEALTH_ENDPOINTS[serviceUrl] || DEFAULT_HEALTH_ENDPOINT;
 
@@ -61,10 +97,7 @@ export const checkServiceHealth = async (serviceUrl, timeout = 10000) => {
     try {
       base = await getApiBaseUrl(); // This should point to API Gateway
     } catch (error) {
-      if (import.meta.env.DEV) console.warn(
-        'Failed to get API base URL for aggregate check, using fallback:',
-        error,
-      );
+      healthWarn('Failed to get API base URL for aggregate check, using fallback:', error);
       base = '/api';
     }
   } else {
@@ -80,7 +113,7 @@ export const checkServiceHealth = async (serviceUrl, timeout = 10000) => {
       try {
         base = await getApiBaseUrl();
       } catch (error) {
-        if (import.meta.env.DEV) console.warn('Failed to get API base URL, using fallback:', error);
+        healthWarn('Failed to get API base URL, using fallback:', error);
         base = '/api';
       }
     }
@@ -117,7 +150,7 @@ export const checkServiceHealth = async (serviceUrl, timeout = 10000) => {
       status: response.status,
     });
 
-    if (import.meta.env.DEV) console.log(`🏥 Service Health Check - ${serviceUrl}:`, {
+    healthLog(`🏥 Service Health Check - ${serviceUrl}:`, {
       healthy: isHealthy,
       status: response.status,
       responseTime: `${duration}ms`,
@@ -126,14 +159,10 @@ export const checkServiceHealth = async (serviceUrl, timeout = 10000) => {
 
     return isHealthy;
   } catch (error) {
-    if (import.meta.env.DEV) console.warn(
-      `🏥 Service Health Check Failed - ${serviceUrl}:`,
-      error.message,
-      {
-        url: fullUrl,
-        timeout: timeout,
-      },
-    );
+    healthWarn(`🏥 Service Health Check Failed - ${serviceUrl}:`, error.message, {
+      url: fullUrl,
+      timeout: timeout,
+    });
 
     // Cache the failed result
     serviceHealthCache.set(serviceUrl, {
@@ -151,7 +180,11 @@ export const checkServiceHealth = async (serviceUrl, timeout = 10000) => {
  * Warm up a service by making a simple health check request
  */
 export const warmUpService = async (serviceUrl) => {
-  if (import.meta.env.DEV) console.log(`🔥 Warming up service: ${serviceUrl || 'gateway'}`);
+  if (isOffline()) {
+    return false;
+  }
+
+  healthLog(`🔥 Warming up service: ${serviceUrl || 'gateway'}`);
 
   try {
     const base = await Promise.resolve(getApiBaseUrl()).catch(() => '/api');
@@ -169,15 +202,12 @@ export const warmUpService = async (serviceUrl) => {
 
     clearTimeout(timeoutId);
 
-    if (import.meta.env.DEV) console.log(
+    healthLog(
       `🔥 Service warmed up - ${serviceUrl || 'gateway'}: ${response.status}`,
     );
     return response.ok;
   } catch (error) {
-    if (import.meta.env.DEV) console.warn(
-      `🔥 Service warmup failed - ${serviceUrl || 'gateway'}:`,
-      error.message,
-    );
+    healthWarn(`🔥 Service warmup failed - ${serviceUrl || 'gateway'}:`, error.message);
     return false;
   }
 };
@@ -186,13 +216,18 @@ export const warmUpService = async (serviceUrl) => {
  * Warm up all services proactively
  */
 export const warmUpAllServices = async () => {
-  if (import.meta.env.DEV) console.log('🔥 Starting service warmup...');
+  if (isOffline()) {
+    healthLog('🔥 Skipping service warmup while offline');
+    return [];
+  }
+
+  healthLog('🔥 Starting service warmup...');
 
   const services = Object.values(SERVICES);
   const warmupPromises = services.map((service) => {
     // Don't wait for each service, warm them up in parallel
     return warmUpService(service).catch((error) => {
-      if (import.meta.env.DEV) console.warn(`Warmup failed for ${service}:`, error);
+      healthWarn(`Warmup failed for ${service}:`, error);
       return false;
     });
   });
@@ -201,7 +236,7 @@ export const warmUpAllServices = async () => {
     // Also warm up aggregate health once via gateway
     warmupPromises.push(
       checkServiceHealth('aggregate', 15000).catch((error) => {
-        if (import.meta.env.DEV) console.warn('Aggregate health check failed:', error);
+        healthWarn('Aggregate health check failed:', error);
         return false;
       }),
     );
@@ -211,12 +246,12 @@ export const warmUpAllServices = async () => {
       (r) => r.status === 'fulfilled' && r.value,
     ).length;
 
-    if (import.meta.env.DEV) console.log(
+    healthLog(
       `🔥 Service warmup complete: ${successCount}/${services.length + 1} services responding`,
     );
     return results;
   } catch (error) {
-    if (import.meta.env.DEV) console.error('Service warmup error:', error);
+    healthError('Service warmup error:', error);
     return [];
   }
 };
@@ -284,32 +319,57 @@ export const getServiceStatusMessage = (serviceUrl) => {
  * Returns a cleanup function to stop monitoring and remove listeners.
  */
 export const initializeServiceHealth = () => {
-  if (import.meta.env.DEV) console.log('🏥 Initializing service health monitoring...');
+  healthMonitorState.consumers += 1;
 
-  // Warm up services immediately
-  warmUpAllServices();
+  if (!healthMonitorState.intervalId) {
+    healthLog('🏥 Initializing service health monitoring...');
 
-  // Set up periodic health checks
-  const intervalId = setInterval(() => {
-    if (import.meta.env.DEV) console.log('🏥 Running periodic service health checks...');
-    Object.values(SERVICES).forEach((service) => {
-      checkServiceHealth(service);
-    });
-  }, HEALTH_CHECK_INTERVAL);
+    // Warm up services immediately
+    warmUpAllServices();
 
-  // Warm up services on page focus (user returns)
-  const handleVisibility = () => {
-    if (!document.hidden) {
-      if (import.meta.env.DEV) console.log('🏥 Page focused - warming up services...');
+    // Set up periodic health checks
+    healthMonitorState.intervalId = setInterval(() => {
+      healthLog('🏥 Running periodic service health checks...');
+      Object.values(SERVICES).forEach((service) => {
+        checkServiceHealth(service);
+      });
+    }, HEALTH_CHECK_INTERVAL);
+
+    // Warm up services on page focus (user returns)
+    healthMonitorState.visibilityHandler = () => {
+      if (document.hidden || isOffline()) {
+        return;
+      }
+
+      healthLog('🏥 Page focused - warming up services...');
       warmUpAllServices();
-    }
-  };
-  document.addEventListener('visibilitychange', handleVisibility);
+    };
+    document.addEventListener('visibilitychange', healthMonitorState.visibilityHandler);
+  }
+
+  let cleanedUp = false;
 
   // Return cleanup function
   return () => {
-    clearInterval(intervalId);
-    document.removeEventListener('visibilitychange', handleVisibility);
+    if (cleanedUp) {
+      return;
+    }
+    cleanedUp = true;
+
+    healthMonitorState.consumers = Math.max(0, healthMonitorState.consumers - 1);
+    if (healthMonitorState.consumers > 0) {
+      return;
+    }
+
+    if (healthMonitorState.intervalId) {
+      clearInterval(healthMonitorState.intervalId);
+      healthMonitorState.intervalId = null;
+    }
+
+    if (healthMonitorState.visibilityHandler) {
+      document.removeEventListener('visibilitychange', healthMonitorState.visibilityHandler);
+      healthMonitorState.visibilityHandler = null;
+    }
   };
 };
 
@@ -320,7 +380,7 @@ export const handleServiceError = (error, serviceUrl) => {
   const health = getServiceHealth(serviceUrl);
   const statusMsg = getServiceStatusMessage(serviceUrl);
 
-  if (import.meta.env.DEV) console.error(`🚨 Service Error - ${serviceUrl}:`, {
+  healthError(`🚨 Service Error - ${serviceUrl}:`, {
     error: error.message,
     health,
     statusMessage: statusMsg,
@@ -355,6 +415,41 @@ export const debugServiceHealth = () => {
       'Response Time': health.responseTime || 'N/A',
     })),
   );
+};
+
+/**
+ * Get a gentle, user-facing service startup summary.
+ */
+export const getServiceStartupSummary = () => {
+  const checks = Array.from(serviceHealthCache.values());
+  if (!checks.length) {
+    return {
+      state: 'unknown',
+      message: 'Checking backend services...',
+    };
+  }
+
+  const healthyCount = checks.filter((entry) => entry.isHealthy).length;
+  const timeoutCount = checks.filter((entry) => String(entry.error || '').includes('timeout')).length;
+
+  if (healthyCount === checks.length) {
+    return {
+      state: 'ready',
+      message: 'All backend services are responding normally.',
+    };
+  }
+
+  if (timeoutCount > 0) {
+    return {
+      state: 'waking',
+      message: 'Some services are waking up. Please wait a short moment and retry.',
+    };
+  }
+
+  return {
+    state: 'degraded',
+    message: 'Some services are temporarily unavailable. Limited data may be shown.',
+  };
 };
 
 const isLocalHostname = (hostname = '') => {

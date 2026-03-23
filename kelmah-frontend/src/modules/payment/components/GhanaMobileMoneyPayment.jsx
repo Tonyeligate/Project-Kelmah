@@ -180,7 +180,7 @@ const GhanaMobileMoneyPayment = ({
         throw new Error(result.error || 'Payment processing failed');
       }
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Mobile Money payment error:', error);
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Mobile Money payment error:', error);
       setPaymentStep('error');
       setErrors({
         general: error.message || 'Payment failed. Please try again.',

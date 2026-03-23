@@ -601,3 +601,29 @@ Advanced tools to activate:
   - MitigationProofGenerator
   - ResidualRiskQuantifier
 ```
+
+### SFL-6: Security Experience Learning Loop
+```
+After each advanced security task:
+  - capture escaped threat vectors and why detection missed them
+  - convert each escape into a preventive policy/check update
+  - record field attack telemetry and user trust-impact signals
+  - extend replay matrix coverage for newly observed attack paths
+
+Evidence files:
+  - learning_update.json
+  - field_experience_report.json
+
+No learning evidence => mitigation is not growth-complete.
+```
+
+### SFL-7: Adaptive UX Privacy and Trust Gate
+```
+For adaptive-interface and behavioral-twin workflows:
+  - require explicit consent model for non-essential personalization signals
+  - block sensitive inferences without policy and legal basis
+  - enforce data minimization and purpose limitation
+  - verify adaptation logic cannot become manipulative or discriminatory
+
+Closure requires documented privacy posture and trust-impact statement.
+```
