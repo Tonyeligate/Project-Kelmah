@@ -643,3 +643,14 @@ For adaptive or optimization rollout infrastructure:
 
 No optimization rollout is valid without safe rollback and telemetry guards.
 ```
+
+### OFL-8: Immersive Asset Pipeline and GPU Budget Gate
+```
+For 3D/HD UI delivery pipelines:
+  - enforce asset-size and decode-time budgets in CI
+  - validate fallback bundles for low-capability devices
+  - monitor client render-stability signals (fps drop, crash, timeout)
+  - block rollout when immersive path exceeds reliability budget thresholds
+
+No premium visual rollout proceeds without passing budget and fallback checks.
+```

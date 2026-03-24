@@ -35,7 +35,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { api } from '../../../services/apiClient';
 import { useBreakpointDown } from '@/hooks/useResponsive';
-import { devError } from '@/modules/common/utils/devLogger';
+import { devError } from '';
 
 // Simple location formatter
 const formatLocation = (loc) => {

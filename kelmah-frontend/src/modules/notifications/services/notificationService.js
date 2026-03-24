@@ -11,7 +11,7 @@ import {
   createFeatureLogger,
   devError,
   devWarn,
-} from '@/modules/common/utils/devLogger';
+} from '';
 
 const devLog = createFeatureLogger({
   flagName: 'VITE_DEBUG_NOTIFICATIONS',

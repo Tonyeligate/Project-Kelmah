@@ -2,7 +2,7 @@ import axios from 'axios';
 import { api } from '../../../services/apiClient';
 import { EXTERNAL_SERVICES } from '../../../config/services';
 import workerService from '../../worker/services/workerService';
-import { devError } from '@/modules/common/utils/devLogger';
+import { devError } from '';
 
 const mapError = devError;
 

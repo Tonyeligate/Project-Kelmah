@@ -130,7 +130,7 @@ function hasOptimizationSignal(changedFiles, title, labels) {
     return true;
   }
 
-  if (changedFiles.some((f) => /spec-kit\/quantum-oracle\/[^/]+\/(layout_optimization_report|behavioral_twin_report|adaptive_policy_guardrails|ui_state_space_audit|nisq_hybrid_execution_report|all_agent_activation_matrix|three_d_hd_design_report|api_topology_report|service_reliability_report|schema_drift_report|enum_consistency_report|query_energy_budget|migration_safety_report|attack_replay_matrix|mitigation_effectiveness|residual_risk_quantification|event_causality_ledger|listener_cardinality_report|reconnect_consistency_report|deployment_twin_state|env_drift_delta|world_verification_report)\.json$/i.test(f))) {
+  if (changedFiles.some((f) => /spec-kit\/quantum-oracle\/[^/]+\/(layout_optimization_report|behavioral_twin_report|adaptive_policy_guardrails|ui_state_space_audit|nisq_hybrid_execution_report|all_agent_activation_matrix|three_d_hd_design_report|three_d_hd_render_budget|immersive_interaction_map|api_topology_report|service_reliability_report|schema_drift_report|enum_consistency_report|query_energy_budget|migration_safety_report|attack_replay_matrix|mitigation_effectiveness|residual_risk_quantification|event_causality_ledger|listener_cardinality_report|reconnect_consistency_report|deployment_twin_state|env_drift_delta|world_verification_report)\.json$/i.test(f))) {
     return true;
   }
 

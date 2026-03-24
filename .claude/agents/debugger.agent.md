@@ -814,3 +814,16 @@ Required evidence:
   - layout_optimization_report.json
   - behavioral_twin_report.json
 ```
+
+### GFL-15: Immersive Intelligence Challenge Gate
+```
+For 3D/HD and adaptive-intelligence claims together:
+  - challenge render-budget claims against telemetry and fallback evidence
+  - verify interaction models improve outcomes without raising cognitive load
+  - verify deterministic downgrade path under low-performance conditions
+
+Required evidence:
+  - three_d_hd_render_budget.json
+  - immersive_interaction_map.json
+  - three_d_hd_design_report.json
+```

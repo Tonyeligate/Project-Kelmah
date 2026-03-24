@@ -64,7 +64,7 @@ import { safeFormatRelative } from '@/modules/common/utils/formatters';
 import { useMessages } from '../../contexts/MessageContext';
 import searchService from '../../../search/services/searchService';
 import Skeleton from '@mui/material/Skeleton';
-import { devError } from '@/modules/common/utils/devLogger';
+import { devError } from '';
 
 // Styled components
 const ConversationContainer = styled(Paper)(({ theme }) => ({

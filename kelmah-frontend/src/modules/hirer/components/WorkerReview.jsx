@@ -1,18 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Card, CardContent, Typography, Grid, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, Avatar, IconButton, Menu, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Rating, Divider, Alert, Skeleton, Snackbar, LinearProgress, useTheme } from '@mui/material';
-import {
-  MoreVert as MoreVertIcon,
-  Edit as EditIcon,
-  Visibility as ViewIcon,
-  Star as StarIcon,
-  ThumbUp as ThumbUpIcon,
-  Work as WorkIcon,
-  Schedule as ScheduleIcon,
-  AttachMoney as MoneyIcon,
-} from '@mui/icons-material';
-import { hirerService } from '../services/hirerService';
-import { useBreakpointDown } from '@/hooks/useResponsive';
-import { devError, devWarn } from '@/modules/common/utils/devLogger';
+// IconButton focus-visible styling is enforced globally via MuiIconButton theme overrides.
+
+
+
+
+
+
+
+
+
+
+
 
 const WorkerReview = () => {
   const theme = useTheme();
@@ -471,7 +468,7 @@ const WorkerReview = () => {
                         )}
                       </TableCell>
                       <TableCell align="center">
-                        <IconButton
+                        <IconButton sx={iconButtonA11ySx}
                           size="small"
                           onClick={(e) => handleMenuOpen(e, job.worker, job)}
                           aria-label={`Open review actions for ${job.worker.name}`}

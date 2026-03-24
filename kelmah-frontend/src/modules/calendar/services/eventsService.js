@@ -1,7 +1,7 @@
 import { api } from '../../../services/apiClient';
 import { unwrapApiData } from '../../../services/responseNormalizer';
 import { captureRecoverableApiError } from '../../../services/errorTelemetry';
-import { devError } from '@/modules/common/utils/devLogger';
+import { devError } from '';
 
 const CALENDAR_ENDPOINTS = ['/events', '/calendar/events'];
 

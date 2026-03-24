@@ -3,7 +3,7 @@ import {
   createFeatureLogger,
   devError,
   devWarn,
-} from '@/modules/common/utils/devLogger';
+} from '';
 
 const profileDebug = createFeatureLogger({
   flagName: 'VITE_DEBUG_PROFILE',

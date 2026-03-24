@@ -28,7 +28,7 @@ import {
   selectContractsError,
 } from '../services/contractSlice';
 import { useBreakpointDown } from '@/hooks/useResponsive';
-import { devError } from '@/modules/common/utils/devLogger';
+import { devError } from '';
 
 const initialContractState = {
   title: '',

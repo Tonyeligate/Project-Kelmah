@@ -1,6 +1,6 @@
 import { api } from '../../../services/apiClient';
 import { secureStorage } from '../../../utils/secureStorage';
-import { devWarn } from '@/modules/common/utils/devLogger';
+import { devWarn } from '';
 
 // Use centralized api client
 

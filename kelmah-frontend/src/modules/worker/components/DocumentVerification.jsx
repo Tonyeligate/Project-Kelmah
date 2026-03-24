@@ -1,53 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import {
-  Box,
-  Paper,
-  Typography,
-  Grid,
-  Card,
-  CardContent,
-  CardActions,
-  Button,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Chip,
-  CircularProgress,
-  Alert,
-  Divider,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  IconButton,
-  Tooltip,
-  LinearProgress,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemIcon,
-  ListItemSecondaryAction,
-} from '@mui/material';
-import {
-  Upload as UploadIcon,
-  CheckCircle as CheckCircleIcon,
-  Pending as PendingIcon,
-  Close as CloseIcon,
-  Add as AddIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-  Description as DescriptionIcon,
-  Verified as VerifiedIcon,
-  Warning as WarningIcon,
-  Refresh as RefreshIcon,
-} from '@mui/icons-material';
-import { useSelector } from 'react-redux';
-import { normalizeUser } from '../../../utils/userUtils';
-import { api } from '../../../services/apiClient';
-import certificateService from '../services/certificateService';
-import { devError } from '@/modules/common/utils/devLogger';
+// IconButton focus-visible styling is enforced globally via MuiIconButton theme overrides.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 const unwrap = (response) => response?.data?.data ?? response?.data ?? {};
 
@@ -415,7 +381,7 @@ const DocumentVerification = () => {
                       <ListItemIcon>{getStatusIcon(doc.status)}</ListItemIcon>
                       <ListItemText primary={doc.title} secondary={doc.type} />
                       <ListItemSecondaryAction>
-                        <IconButton
+                        <IconButton sx={iconButtonA11ySx}
                           edge="end"
                           onClick={() => handleDownload(doc.id)}
                           aria-label={`Download ${doc.title}`}
@@ -441,7 +407,7 @@ const DocumentVerification = () => {
                       <ListItemIcon>{getStatusIcon(doc.status)}</ListItemIcon>
                       <ListItemText primary={doc.title} secondary={doc.type} />
                       <ListItemSecondaryAction>
-                        <IconButton
+                        <IconButton sx={iconButtonA11ySx}
                           edge="end"
                           onClick={() => handleDownload(doc.id)}
                           aria-label={`Download ${doc.title}`}

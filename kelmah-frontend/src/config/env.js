@@ -6,6 +6,7 @@
  */
 
 import { getApiBaseUrl, SERVICES, API_BASE_URL, WS_CONFIG, API_ENDPOINTS } from './environment';
+import { devWarn } from '../modules/common/utils/devLogger';
 
 // Read Vite environment variables at build time
 const {
@@ -19,14 +20,6 @@ const {
   VITE_ENV,
   VITE_DEBUG_MODE,
 } = import.meta.env;
-const FRONTEND_DEBUG =
-  import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true';
-const devWarn = (...args) => {
-  if (FRONTEND_DEBUG) {
-    console.warn(...args);
-  }
-};
-
 // Derive websocket URL from API base
 const WS_URL = WS_CONFIG?.url || API_BASE_URL?.replace(/^http/, 'ws') || '/ws';
 const USE_MOCK_DATA = VITE_USE_MOCK_DATA === 'true';

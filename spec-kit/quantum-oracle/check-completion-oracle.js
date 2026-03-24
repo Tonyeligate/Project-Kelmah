@@ -39,6 +39,12 @@ const REQUIRED_FRONTEND_OPTIMIZATION_TOOLS = [
   'AccessibilityCloudAnalyzer',
 ];
 
+const REQUIRED_IMMERSIVE_TOOLS = [
+  'RenderBudgetProfiler',
+  'ImmersiveInteractionAuditor',
+  'DeterministicFallbackVerifier',
+];
+
 const REQUIRED_BACKEND_OPTIMIZATION_TOOLS = [
   'APITopologyOptimizer',
   'ContractEvolutionAnalyzer',
@@ -475,6 +481,56 @@ function validateThreeDHDDesignReport(obj, errors) {
   }
 }
 
+function validateThreeDHDRenderBudget(obj, errors) {
+  if (!obj || typeof obj !== 'object') {
+    errors.push('three_d_hd_render_budget.json: object is required');
+    return;
+  }
+
+  if (!obj.deviceClassBudgets || typeof obj.deviceClassBudgets !== 'object') {
+    errors.push('three_d_hd_render_budget.json: deviceClassBudgets object is required');
+  }
+
+  if (!Array.isArray(obj.telemetryChecks) || obj.telemetryChecks.length === 0) {
+    errors.push('three_d_hd_render_budget.json: telemetryChecks must be a non-empty array');
+  }
+
+  if (!obj.deterministicFallback || typeof obj.deterministicFallback !== 'object') {
+    errors.push('three_d_hd_render_budget.json: deterministicFallback object is required');
+  }
+
+  if (obj.closureVerdict !== 'PASS') {
+    errors.push(`three_d_hd_render_budget.json: closureVerdict must be PASS (received '${obj.closureVerdict}')`);
+  }
+}
+
+function validateImmersiveInteractionMap(obj, errors) {
+  if (!obj || typeof obj !== 'object') {
+    errors.push('immersive_interaction_map.json: object is required');
+    return;
+  }
+
+  if (!Array.isArray(obj.interactionFlows) || obj.interactionFlows.length === 0) {
+    errors.push('immersive_interaction_map.json: interactionFlows must be a non-empty array');
+  }
+
+  if (!obj.cognitiveLoadBudget || typeof obj.cognitiveLoadBudget !== 'object') {
+    errors.push('immersive_interaction_map.json: cognitiveLoadBudget object is required');
+  }
+
+  if (!obj.outcomeDelta || typeof obj.outcomeDelta !== 'object') {
+    errors.push('immersive_interaction_map.json: outcomeDelta object is required');
+  }
+
+  if (!obj.fallbackPath || typeof obj.fallbackPath !== 'object') {
+    errors.push('immersive_interaction_map.json: fallbackPath object is required');
+  }
+
+  if (obj.closureVerdict !== 'PASS') {
+    errors.push(`immersive_interaction_map.json: closureVerdict must be PASS (received '${obj.closureVerdict}')`);
+  }
+}
+
 function validateDebuggerOptimizationEvidence(packets, errors) {
   if (!packets || !Array.isArray(packets.packets)) {
     errors.push('delegation_packets.json: packets array is required for debugger optimization evidence');
@@ -855,7 +911,7 @@ function main() {
 
       const optimizationTaskTypes = new Set(['ui-optimization', 'adaptive-interface', 'design-flow-optimization']);
       const requiresOptimizationOracle =
-        closure && (closure.requiresOptimizationOracle === true || optimizationTaskTypes.has(closure.taskType));
+        closure && (closure.requiresOptimizationOracle === true || closure.requiresImmersiveOracle === true || optimizationTaskTypes.has(closure.taskType));
 
       if (requiresOptimizationOracle) {
         const layoutReportPath = path.join(bundleDir, 'layout_optimization_report.json');
@@ -865,6 +921,8 @@ function main() {
         const nisqPath = path.join(bundleDir, 'nisq_hybrid_execution_report.json');
         const activationPath = path.join(bundleDir, 'all_agent_activation_matrix.json');
         const threeDHDPath = path.join(bundleDir, 'three_d_hd_design_report.json');
+        const threeDHDRenderBudgetPath = path.join(bundleDir, 'three_d_hd_render_budget.json');
+        const immersiveInteractionMapPath = path.join(bundleDir, 'immersive_interaction_map.json');
 
         if (!exists(layoutReportPath)) {
           report.errors.push('Missing required file: layout_optimization_report.json');
@@ -929,10 +987,34 @@ function main() {
           }
         }
 
+        if (!exists(threeDHDRenderBudgetPath)) {
+          report.errors.push('Missing required file: three_d_hd_render_budget.json');
+        } else {
+          const budget = readJson(threeDHDRenderBudgetPath, report.errors, 'three_d_hd_render_budget.json');
+          if (budget) {
+            validateThreeDHDRenderBudget(budget, report.errors);
+          }
+        }
+
+        if (!exists(immersiveInteractionMapPath)) {
+          report.errors.push('Missing required file: immersive_interaction_map.json');
+        } else {
+          const interactionMap = readJson(immersiveInteractionMapPath, report.errors, 'immersive_interaction_map.json');
+          if (interactionMap) {
+            validateImmersiveInteractionMap(interactionMap, report.errors);
+          }
+        }
+
         if (Array.isArray(closure.activatedEliteTools)) {
           REQUIRED_FRONTEND_OPTIMIZATION_TOOLS.forEach((tool) => {
             if (!closure.activatedEliteTools.includes(tool)) {
               report.errors.push(`closure_oracle.json: missing optimization elite tool '${tool}' for optimization task`);
+            }
+          });
+
+          REQUIRED_IMMERSIVE_TOOLS.forEach((tool) => {
+            if (!closure.activatedEliteTools.includes(tool)) {
+              report.errors.push(`closure_oracle.json: missing immersive elite tool '${tool}' for optimization task`);
             }
           });
         }

@@ -6,6 +6,11 @@
  */
 
 import { SERVICES, getApiBaseUrl } from '../config/environment';
+import {
+  createFeatureLogger,
+  devError as healthError,
+  devWarn as healthWarn,
+} from '../modules/common/utils/devLogger';
 
 // Service health status cache
 const serviceHealthCache = new Map();
@@ -24,24 +29,9 @@ const HEALTH_ENDPOINTS = {
 const DEFAULT_HEALTH_ENDPOINT = '/health';
 const isOffline = () =>
   typeof navigator !== 'undefined' && navigator.onLine === false;
-const HEALTH_DEBUG =
-  import.meta.env.DEV && import.meta.env.VITE_DEBUG_SERVICE_HEALTH === 'true';
-
-const healthLog = (...args) => {
-  if (HEALTH_DEBUG) {
-    console.log(...args);
-  }
-};
-const healthWarn = (...args) => {
-  if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') {
-    console.warn(...args);
-  }
-};
-const healthError = (...args) => {
-  if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') {
-    console.error(...args);
-  }
-};
+const healthLog = createFeatureLogger({
+  flagName: 'VITE_DEBUG_SERVICE_HEALTH',
+});
 
 const healthMonitorState = {
   intervalId: null,

@@ -4,6 +4,7 @@
  */
 
 import { api } from '../services/apiClient';
+import { createDevLogger } from '../modules/common/utils/devLogger';
 
 const HEALTHY_GATEWAY_DB = 'kelmah-gateway-db';
 const HEALTHY_GATEWAY_STORE = 'healthyGatewayStore';
@@ -11,6 +12,15 @@ const HEALTHY_GATEWAY_KEY = 'lastHealthyGateway';
 const BOOTSTRAP_GATEWAY_SESSION_KEY = 'kelmah:bootstrapGateway';
 const BOOTSTRAP_TTL_MS = 1000 * 60 * 60 * 6; // 6 hours
 const PWA_DEBUG_FLAG_KEY = 'kelmah:pwaDebug';
+const CHUNK_RECOVERY_ATTEMPTS_KEY = 'kelmah:chunkRecoveryAttempts';
+const CHUNK_RECOVERY_MAX_ATTEMPTS = 2;
+const CHUNK_MISMATCH_SIGNATURES = [
+  'does not provide an export named',
+  'Loading chunk',
+  'ChunkLoadError',
+  'Failed to fetch dynamically imported module',
+];
+let chunkRecoveryListenersBound = false;
 
 const shouldDebugPwa = () => {
   if (typeof import.meta !== 'undefined' && import.meta.env?.DEV) {
@@ -29,15 +39,99 @@ const shouldDebugPwa = () => {
 };
 
 const pwaLog = (...args) => {
-  if (shouldDebugPwa()) console.log(...args);
+  createDevLogger(shouldDebugPwa(), 'log')(...args);
 };
 
 const pwaWarn = (...args) => {
-  if (shouldDebugPwa()) console.warn(...args);
+  createDevLogger(shouldDebugPwa(), 'warn')(...args);
 };
 
 const pwaError = (...args) => {
-  if (shouldDebugPwa()) console.error(...args);
+  createDevLogger(shouldDebugPwa(), 'error')(...args);
+};
+
+const shouldRecoverFromChunkMismatch = (message) => {
+  if (!message || typeof message !== 'string') {
+    return false;
+  }
+
+  return CHUNK_MISMATCH_SIGNATURES.some((signature) =>
+    message.includes(signature),
+  );
+};
+
+const clearRuntimeCachesAndReload = async () => {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  let attempts = 0;
+  try {
+    attempts = Number(window.sessionStorage.getItem(CHUNK_RECOVERY_ATTEMPTS_KEY) || 0);
+  } catch {
+    attempts = 0;
+  }
+
+  if (attempts >= CHUNK_RECOVERY_MAX_ATTEMPTS) {
+    pwaWarn('[PWA] Chunk recovery attempts exceeded; skipping forced reload.');
+    return;
+  }
+
+  try {
+    window.sessionStorage.setItem(CHUNK_RECOVERY_ATTEMPTS_KEY, String(attempts + 1));
+  } catch {
+    // Ignore sessionStorage write failure and continue recovery.
+  }
+
+  try {
+    navigator.serviceWorker?.controller?.postMessage({
+      type: 'KELMAH_CLEAR_RUNTIME_CACHES',
+    });
+  } catch {
+    // Non-fatal.
+  }
+
+  try {
+    if (typeof caches !== 'undefined') {
+      const cacheNames = await caches.keys();
+      await Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)));
+    }
+  } catch {
+    // Non-fatal.
+  }
+
+  window.location.reload();
+};
+
+const installChunkMismatchRecovery = () => {
+  if (chunkRecoveryListenersBound || typeof window === 'undefined') {
+    return;
+  }
+
+  const handleWindowError = (event) => {
+    const message = String(event?.message || event?.error?.message || '');
+    if (!shouldRecoverFromChunkMismatch(message)) {
+      return;
+    }
+
+    pwaWarn('[PWA] Detected chunk mismatch runtime error. Starting recovery.', message);
+    clearRuntimeCachesAndReload();
+  };
+
+  const handleUnhandledRejection = (event) => {
+    const reason = event?.reason;
+    const message = String(reason?.message || reason || '');
+    if (!shouldRecoverFromChunkMismatch(message)) {
+      return;
+    }
+
+    pwaWarn('[PWA] Detected chunk mismatch promise rejection. Starting recovery.', message);
+    clearRuntimeCachesAndReload();
+  };
+
+  window.addEventListener('error', handleWindowError);
+  window.addEventListener('unhandledrejection', handleUnhandledRejection);
+  chunkRecoveryListenersBound = true;
 };
 
 const openGatewayDb = () => {
@@ -608,6 +702,7 @@ const checkForUpdates = async () => {
 // Initialize PWA features
 export const initializePWA = async () => {
   pwaLog('Initializing PWA features for Ghana 🇬🇭');
+  installChunkMismatchRecovery();
 
   const isDev =
     typeof import.meta !== 'undefined' &&

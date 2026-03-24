@@ -3,7 +3,7 @@ import eventsService from './eventsService';
 import {
   createFeatureLogger,
   devError,
-} from '@/modules/common/utils/devLogger';
+} from '';
 
 const calendarLog = createFeatureLogger({
   flagName: 'VITE_DEBUG_CALENDAR',

@@ -1,74 +1,23 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import {
-  MapContainer,
-  TileLayer,
-  Marker,
-  Popup,
-  useMap,
-  Circle,
-  Polyline,
-  LayersControl,
-  FeatureGroup,
-} from 'react-leaflet';
-import {
-  Box,
-  Paper,
-  Typography,
-  IconButton,
-  Fab,
-  Tooltip,
-  CircularProgress,
-  Alert,
-  Chip,
-  Avatar,
-  Rating,
-  Button,
-  useTheme,
-  Badge,
-  Card,
-  CardContent,
-  Zoom,
-  Slide,
-  Grow,
-  LinearProgress,
-  Stack,
-  Divider,
-} from '@mui/material';
-import {
-  MyLocation as MyLocationIcon,
-  ZoomIn as ZoomInIcon,
-  ZoomOut as ZoomOutIcon,
-  Layers as LayersIcon,
-  Fullscreen as FullscreenIcon,
-  FullscreenExit as FullscreenExitIcon,
-  WorkOutline as JobIcon,
-  Person as WorkerIcon,
-  Star as StarIcon,
-  Schedule as ScheduleIcon,
-  LocationOn as LocationIcon,
-  Build as BuildIcon,
-  AttachMoney as MoneyIcon,
-  Verified as VerifiedIcon,
-  Timeline as TimelineIcon,
-  TrendingUp as TrendingUpIcon,
-  Speed as SpeedIcon,
-  Visibility as VisibilityIcon,
-  Navigation as NavigationIcon,
-  Map as MapIcon,
-  Satellite as SatelliteIcon,
-  Terrain as TerrainIcon,
-  RadioButtonChecked as PulseIcon,
-  FlashOn as FlashIcon,
-  PhotoCamera as PhotoIcon,
-  Settings as SettingsIcon,
-  Info as InfoIcon,
-} from '@mui/icons-material';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-import { motion, AnimatePresence } from 'framer-motion';
-import mapService from '../../services/mapService';
-import { EXTERNAL_SERVICES } from '../../../../config/services';
-import { devError, devWarn } from '@/modules/common/utils/devLogger';
+// IconButton focus-visible styling is enforced globally via MuiIconButton theme overrides.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Enhanced marker icons with sophisticated styling
 delete L.Icon.Default.prototype._getIconUrl;

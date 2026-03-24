@@ -5,7 +5,7 @@ import {
   resolveJobVisualUrl,
   resolveProfileImageUrl,
 } from '../../common/utils/mediaAssets';
-import { devError, devWarn } from '@/modules/common/utils/devLogger';
+import { devError, devWarn } from '';
 
 const jobsWarn = devWarn;
 const jobsError = devError;

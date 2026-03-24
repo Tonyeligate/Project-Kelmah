@@ -1,4 +1,4 @@
-import { devError } from '@/modules/common/utils/devLogger';
+import { devError } from '';
 
 export const TOKEN_EXPIRY_TIME = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 export const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes in milliseconds

@@ -1,7 +1,7 @@
 /**
  * Error handling utility functions
  */
-import { devError } from '@/modules/common/utils/devLogger';
+import { devError } from '';
 
 /**
  * Format error message from API response

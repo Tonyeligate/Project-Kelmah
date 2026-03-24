@@ -1,5 +1,5 @@
 import { lazy } from 'react';
-import { devError } from '@/modules/common/utils/devLogger';
+import { devError } from '';
 
 /**
  * Lazy load a component with improved error handling

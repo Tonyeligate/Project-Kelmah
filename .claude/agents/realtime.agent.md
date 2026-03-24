@@ -680,3 +680,14 @@ When realtime signals feed adaptive UI logic:
 
 No adaptive decision should depend on an unverified realtime signal path.
 ```
+
+### RFL-8: Immersive Event Cadence and Replay-Safe Sync Gate
+```
+For 3D/HD interaction streams and gesture-heavy flows:
+  - maintain deterministic event ordering across reconnect boundaries
+  - bound event cadence to prevent render-thread starvation
+  - attach replay-safe sequencing metadata for high-frequency interactions
+  - provide fallback to low-frequency canonical event channel
+
+No immersive stream path is allowed without replay and cadence proof.
+```

@@ -1,42 +1,11 @@
-import React, { useState, useMemo, useCallback } from 'react';
-import {
-  Box,
-  Typography,
-  Paper,
-  Button,
-  IconButton,
-  Grid,
-  Chip,
-  Stack,
-  useTheme,
-  alpha,
-  Snackbar,
-  ToggleButton,
-  ToggleButtonGroup,
-} from '@mui/material';
-import {
-  ChevronLeft as PrevIcon,
-  ChevronRight as NextIcon,
-  Today as TodayIcon,
-  CheckCircle as AvailableIcon,
-  Cancel as UnavailableIcon,
-} from '@mui/icons-material';
-import {
-  format,
-  startOfMonth,
-  endOfMonth,
-  startOfWeek,
-  endOfWeek,
-  addDays,
-  addMonths,
-  subMonths,
-  isSameMonth,
-  isSameDay,
-  isToday,
-  isBefore,
-  startOfDay,
-  isValid,
-} from 'date-fns';
+// IconButton focus-visible styling is enforced globally via MuiIconButton theme overrides.
+
+
+
+
+
+
+
 
 const AdvancedCalendar = ({ schedule = [], onScheduleChange }) => {
   const theme = useTheme();
@@ -117,13 +86,13 @@ const AdvancedCalendar = ({ schedule = [], onScheduleChange }) => {
       {/* Month navigation */}
       <Paper sx={{ p: 2, mb: 2 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <IconButton onClick={() => setCurrentMonth(prev => subMonths(prev, 1))} aria-label="Previous month">
+          <IconButton sx={iconButtonA11ySx} onClick={() => setCurrentMonth(prev => subMonths(prev, 1))} aria-label="Previous month">
             <PrevIcon />
           </IconButton>
           <Typography variant="h6" fontWeight="bold">
             {format(currentMonth, 'MMMM yyyy')}
           </Typography>
-          <IconButton onClick={() => setCurrentMonth(prev => addMonths(prev, 1))} aria-label="Next month">
+          <IconButton sx={iconButtonA11ySx} onClick={() => setCurrentMonth(prev => addMonths(prev, 1))} aria-label="Next month">
             <NextIcon />
           </IconButton>
         </Box>

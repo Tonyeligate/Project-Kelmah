@@ -5,7 +5,7 @@ import { SOCKET_EVENTS } from '../../../services/socketEvents';
 import {
   createFeatureLogger,
   devError,
-} from '@/modules/common/utils/devLogger';
+} from '';
 
 const devLog = createFeatureLogger({
   flagName: 'VITE_DEBUG_DASHBOARD',

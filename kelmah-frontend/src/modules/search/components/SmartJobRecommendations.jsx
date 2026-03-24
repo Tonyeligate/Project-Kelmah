@@ -54,7 +54,7 @@ import {
   formatRelativeTime,
   formatJobLocation,
 } from '../../../utils/formatters';
-import { createFeatureLogger } from '@/modules/common/utils/devLogger';
+import { createFeatureLogger } from '';
 
 // FIX C2: Stable default object to prevent infinite render loops from {} !== {}
 const EMPTY_FILTER = {};

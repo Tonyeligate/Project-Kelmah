@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { api } from '../../../services/apiClient';
-import { devWarn } from '@/modules/common/utils/devLogger';
+import { devWarn } from '';
 
 // Async thunks for worker operations
 export const fetchWorkerProfile = createAsyncThunk(

@@ -9,7 +9,7 @@ import {
   selectSettingsLoading,
   selectSettingsError,
 } from '../../../store/slices/settingsSlice';
-import { devError } from '@/modules/common/utils/devLogger';
+import { devError } from '';
 
 export const useSettings = () => {
   const dispatch = useDispatch();

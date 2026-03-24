@@ -1,66 +1,27 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Box, Card, CardContent, Typography, Grid, Button, IconButton, Select, MenuItem, FormControl, InputLabel, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip, LinearProgress, CircularProgress, Alert, Tooltip, Avatar, Divider, useTheme, alpha, Stack, Tabs, Tab, Dialog, DialogTitle, DialogContent, DialogActions, TextField, List, ListItem, ListItemText, ListItemIcon, ListItemSecondaryAction } from '@mui/material';
-import {
-  TrendingUp as TrendingUpIcon,
-  AttachMoney as MoneyIcon,
-  Assessment as AssessmentIcon,
-  Receipt as ReceiptIcon,
-  GetApp as DownloadIcon,
-  FilterList as FilterIcon,
-  DateRange as DateRangeIcon,
-  PieChart as PieChartIcon,
-  BarChart as BarChartIcon,
-  Timeline as TimelineIcon,
-  AccountBalance as BankIcon,
-  CreditCard as CardIcon,
-  Wallet as WalletIcon,
-  Schedule as ScheduleIcon,
-  Work as WorkIcon,
-  Star as StarIcon,
-  CheckCircle as CheckCircleIcon,
-  Pending as PendingIcon,
-  Error as ErrorIcon,
-  Info as InfoIcon,
-  Warning as WarningIcon,
-  Visibility as VisibilityIcon,
-  FileDownload as FileDownloadIcon,
-  Print as PrintIcon,
-  Email as EmailIcon,
-  CalendarToday as CalendarIcon,
-  Refresh as RefreshIcon,
-} from '@mui/icons-material';
-import { styled } from '@mui/material/styles';
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip as ChartTooltip,
-  Legend,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
-  Area,
-  AreaChart,
-} from 'recharts';
-import {
-  format,
-  startOfMonth,
-  endOfMonth,
-  subMonths,
-  parseISO,
-  startOfWeek,
-} from 'date-fns';
-import { motion, AnimatePresence } from 'framer-motion';
-import workerService from '../services/workerService';
-import { useSelector } from 'react-redux';
-import { normalizeUser } from '../../../utils/userUtils';
-import { useBreakpointDown } from '@/hooks/useResponsive';
-import { devWarn } from '@/modules/common/utils/devLogger';
+// IconButton focus-visible styling is enforced globally via MuiIconButton theme overrides.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Styled components
 const GlassCard = styled(Card)(({ theme }) => ({
@@ -612,7 +573,7 @@ const EarningsTracker = () => {
             >
               Export
             </AnimatedButton>
-            <IconButton onClick={loadEarningsData} disabled={loading} aria-label="Refresh earnings data">
+            <IconButton sx={iconButtonA11ySx} onClick={loadEarningsData} disabled={loading} aria-label="Refresh earnings data">
               <RefreshIcon />
             </IconButton>
           </Box>
@@ -744,7 +705,7 @@ const EarningsTracker = () => {
                     </TableCell>
                     <TableCell>
                       <Tooltip title="View Details">
-                        <IconButton
+                        <IconButton sx={iconButtonA11ySx}
                           size="small"
                           aria-label="View transaction details"
                           onClick={() => {

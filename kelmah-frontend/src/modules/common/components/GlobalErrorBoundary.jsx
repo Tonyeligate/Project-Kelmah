@@ -19,7 +19,7 @@ import {
   getServiceStatusMessage,
 } from '../../../utils/serviceHealthCheck';
 import { BRAND_COLORS } from '../../../theme';
-import { devError, devWarn } from '@/modules/common/utils/devLogger';
+import { devError, devWarn } from '';
 
 class GlobalErrorBoundaryInner extends Component {
   constructor(props) {

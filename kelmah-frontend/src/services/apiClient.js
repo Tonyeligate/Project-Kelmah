@@ -11,12 +11,9 @@ import {
 } from './responseNormalizer';
 import { captureContractMismatch, captureRecoverableApiError } from './errorTelemetry';
 import { normalizeRequestedPath } from '../utils/authRedirect';
+import { createFeatureLogger } from '../modules/common/utils/devLogger';
 
-const apiClientWarn = (...args) => {
-    if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_API_CLIENT === 'true') {
-        console.warn(...args);
-    }
-};
+const apiClientWarn = createFeatureLogger({ flagName: 'VITE_DEBUG_API_CLIENT', level: 'warn' });
 
 let uuidFallbackCounter = 0;
 

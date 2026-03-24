@@ -34,7 +34,7 @@ import { format, formatDistanceToNow, isValid } from 'date-fns';
 import CountUp from 'react-countup';
 import { useInView } from 'react-intersection-observer';
 import { captureRecoverableApiError } from '@/services/errorTelemetry';
-import { devWarn } from '@/modules/common/utils/devLogger';
+import { devWarn } from '';
 import {
   ElectricalServices as ElectricalIcon,
   Plumbing as PlumbingIcon,

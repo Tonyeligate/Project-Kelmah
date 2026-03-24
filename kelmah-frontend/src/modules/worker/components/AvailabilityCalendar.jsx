@@ -1,44 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import {
-  Box,
-  Paper,
-  Typography,
-  Grid,
-  Button,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Chip,
-  CircularProgress,
-  Alert,
-  Divider,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  IconButton,
-  Tooltip,
-} from '@mui/material';
-import {
-  CalendarToday as CalendarIcon,
-  Add as AddIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-  Check as CheckIcon,
-  Close as CloseIcon,
-  AccessTime as AccessTimeIcon,
-} from '@mui/icons-material';
-import { useSelector } from 'react-redux';
-import { normalizeUser } from '../../../utils/userUtils';
-import { api } from '../../../services/apiClient';
-import { format, parseISO, isSameDay } from 'date-fns';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
-import { TimePicker } from '@mui/x-date-pickers/TimePicker';
-import { devError } from '@/modules/common/utils/devLogger';
+// IconButton focus-visible styling is enforced globally via MuiIconButton theme overrides.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 const unwrap = (response) => response?.data?.data ?? response?.data ?? {};
 
@@ -228,7 +211,7 @@ const AvailabilityCalendar = () => {
       </Box>
       <Box>
         <Tooltip title="Edit">
-          <IconButton
+          <IconButton sx={iconButtonA11ySx}
             size="small"
             onClick={() => handleDialogOpen(slot)}
             disabled={slot.status === 'booked'}
@@ -238,7 +221,7 @@ const AvailabilityCalendar = () => {
           </IconButton>
         </Tooltip>
         <Tooltip title="Delete">
-          <IconButton
+          <IconButton sx={iconButtonA11ySx}
             size="small"
             onClick={() => handleDelete(slot.id)}
             disabled={slot.status === 'booked'}

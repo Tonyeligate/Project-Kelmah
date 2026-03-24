@@ -4,7 +4,7 @@ import {
   resolveMediaAssetUrls,
   resolveProfileImageUrl,
 } from '../../common/utils/mediaAssets';
-import { devError } from '@/modules/common/utils/devLogger';
+import { devError } from '';
 
 const unwrapData = (response) => response?.data?.data ?? response?.data ?? {};
 const unwrapResponse = (response) => response?.data ?? {};

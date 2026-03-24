@@ -627,3 +627,14 @@ For adaptive-interface and behavioral-twin workflows:
 
 Closure requires documented privacy posture and trust-impact statement.
 ```
+
+### SFL-8: Immersive UX Safety and Anti-Manipulation Gate
+```
+For premium 3D/HD and motion-rich interfaces:
+  - assess susceptibility to coercive or manipulative interaction loops
+  - enforce informed consent boundaries for behavior-driven personalization
+  - verify vulnerable-user protection policies remain active
+  - require emergency downgrade path to safe-mode interface
+
+No immersive optimization is valid without explicit safety guard evidence.
+```

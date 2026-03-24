@@ -1,25 +1,21 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Container, Typography, Paper, Alert, Tabs, Tab, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, Button, IconButton, CircularProgress, Card, CardActions, CardContent, Avatar, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Grid, Stack, Divider } from '@mui/material';
-import {
-  Visibility as VisibilityIcon,
-  Delete as DeleteIcon,
-  Edit as EditIcon,
-  WorkOutline as WorkOutlineIcon,
-  Message as MessageIcon,
-  CheckCircle as CheckCircleIcon,
-  Cancel as CancelIcon,
-  AccessTime as AccessTimeIcon,
-  Business as BusinessIcon,
-  Person as PersonIcon,
-  ArrowBack as ArrowBackIcon,
-  FilterList as FilterListIcon,
-} from '@mui/icons-material';
-import applicationsService from '../services/applicationsService';
-import { useTheme } from '@mui/material/styles';
-import { useNavigate } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
-import { useBreakpointDown } from '@/hooks/useResponsive';
-import { createFeatureLogger } from '@/modules/common/utils/devLogger';
+// IconButton focus-visible styling is enforced globally via MuiIconButton theme overrides.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 const workerDebugError = createFeatureLogger({
   flagName: 'VITE_DEBUG_WORKER',

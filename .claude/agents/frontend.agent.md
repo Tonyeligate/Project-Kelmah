@@ -1249,3 +1249,18 @@ Required proof areas:
   - motion choreography map (state-based, not only entry fades)
   - responsive depth parity for 320/375/768/1024/1440
 ```
+
+### VIS-28: 3D/HD Render Budget and Interaction Intelligence Gate
+```
+3D/HD UI capability must remain performant and comprehensible.
+
+Mandatory constraints:
+  - bounded render cost on low-end devices
+  - deterministic fallback to non-3D presentation
+  - interaction intent models must improve task completion, not visual novelty only
+  - no degradation of accessibility cloud coverage
+
+Required artifacts:
+  - three_d_hd_render_budget.json
+  - immersive_interaction_map.json
+```

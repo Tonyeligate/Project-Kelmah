@@ -1,0 +1,21 @@
+{
+  "taskId": "optimization-demo-task",
+  "deviceClassBudgets": {
+    "low": { "maxFrameTimeMs": 24, "maxBundleKB": 450 },
+    "mid": { "maxFrameTimeMs": 20, "maxBundleKB": 700 },
+    "high": { "maxFrameTimeMs": 16, "maxBundleKB": 1200 }
+  },
+  "telemetryChecks": [
+    {
+      "signal": "fps-drop-rate",
+      "threshold": 0.08,
+      "result": "pass"
+    }
+  ],
+  "deterministicFallback": {
+    "enabled": true,
+    "trigger": "render_budget_exceeded",
+    "fallbackMode": "2d-safe"
+  },
+  "closureVerdict": "PASS"
+}

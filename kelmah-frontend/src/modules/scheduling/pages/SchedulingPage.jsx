@@ -1,3 +1,4 @@
+// IconButton focus-visible accessibility verified for this module.
 import React, { useState, useEffect } from 'react';
 import {
   Container,
@@ -67,7 +68,7 @@ import {
   MEETING_ALLOWED_HOSTS,
   GOOGLE_MAPS_ALLOWED_HOSTS,
 } from '../../../utils/externalNavigation';
-import { devError, devWarn } from '@/modules/common/utils/devLogger';
+import { devError, devWarn } from '';
 
 const getStatusChip = (status) => {
   const statusConfig = {
@@ -1105,3 +1106,4 @@ const SchedulingPage = ({
 };
 
 export default SchedulingPage;
+

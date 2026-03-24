@@ -49,7 +49,7 @@ import {
   openExternalUrl,
   NOTIFICATION_ALLOWED_HOSTS,
 } from '../../../utils/externalNavigation';
-import { devWarn } from '@/modules/common/utils/devLogger';
+import { devWarn } from '';
 
 // --- Reusable Components ---
 

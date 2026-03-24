@@ -654,3 +654,14 @@ For adaptive-interface and design-flow optimization support data:
 No user-sensitive adaptive feature should be persisted without
 documented purpose, TTL, and rollback-safe migration path.
 ```
+
+### DFL-8: Immersive Signal and Render-Metadata Integrity Gate
+```
+For 3D/HD and high-fidelity UI support data:
+  - persist only render-essential metadata with strict schema typing
+  - include source provenance for generated design/interaction signals
+  - enforce TTL and purge policy for short-lived immersive telemetry
+  - provide deterministic defaults for missing depth/lighting tokens
+
+No immersive signal set may be used if integrity/provenance checks fail.
+```

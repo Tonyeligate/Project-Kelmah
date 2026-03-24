@@ -24,7 +24,7 @@ import {
 import { styled } from '@mui/material/styles';
 import { safeFormatDate } from '@/modules/common/utils/formatters';
 import { messagingService } from '../../services/messagingService';
-import { devError } from '@/modules/common/utils/devLogger';
+import { devError } from '';
 
 // Styled components
 const SearchHeader = styled(Box)(({ theme }) => ({

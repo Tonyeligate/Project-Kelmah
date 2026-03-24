@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { api } from '../../../services/apiClient';
-import { createFeatureLogger, devWarn } from '@/modules/common/utils/devLogger';
+import { createFeatureLogger, devWarn } from '';
 
 const devLog = createFeatureLogger({
   flagName: 'VITE_DEBUG_HIRER',

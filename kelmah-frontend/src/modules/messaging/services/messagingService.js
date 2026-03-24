@@ -10,7 +10,7 @@ import store from '../../../store';
 import { getServiceStatusMessage } from '../../../utils/serviceHealthCheck';
 import { secureStorage } from '../../../utils/secureStorage';
 import authService from '../../auth/services/authService';
-import { devWarn } from '@/modules/common/utils/devLogger';
+import { devWarn } from '';
 
 /**
  * Call a Vercel serverless bridge endpoint (bypasses API Gateway proxy).

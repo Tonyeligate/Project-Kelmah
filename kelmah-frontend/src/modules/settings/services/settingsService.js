@@ -1,5 +1,5 @@
 import { api } from '../../../services/apiClient';
-import { devError } from '@/modules/common/utils/devLogger';
+import { devError } from '';
 
 // FIXED: Removed /api prefix - apiClient.baseURL already includes '/api'
 const SETTINGS_BASE = '/settings';

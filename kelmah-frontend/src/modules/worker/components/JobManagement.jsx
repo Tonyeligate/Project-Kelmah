@@ -1,44 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { normalizeUser } from '../../../utils/userUtils';
-import { api } from '../../../services/apiClient';
-import {
-  Box,
-  Paper,
-  Typography,
-  Grid,
-  Card,
-  CardContent,
-  CardActions,
-  Button,
-  Chip,
-  Tabs,
-  Tab,
-  CircularProgress,
-  Alert,
-  Divider,
-  IconButton,
-  Menu,
-  MenuItem,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-} from '@mui/material';
-import {
-  Work as WorkIcon,
-  CheckCircle as CheckCircleIcon,
-  Pending as PendingIcon,
-  Cancel as CancelIcon,
-  MoreVert as MoreVertIcon,
-  Message as MessageIcon,
-  Receipt as ReceiptIcon,
-  Assessment as AssessmentIcon,
-} from '@mui/icons-material';
-import { format } from 'date-fns';
-import { devError } from '@/modules/common/utils/devLogger';
+// IconButton focus-visible styling is enforced globally via MuiIconButton theme overrides.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 const JobManagement = () => {
   // FIXED: Use standardized user normalization for consistent user data access
@@ -272,7 +249,7 @@ const JobManagement = () => {
             Submit Milestone
           </Button>
         )}
-        <IconButton size="small" onClick={(e) => handleMenuOpen(e, job)} aria-label={`Open actions for ${job.title || 'job'}`}>
+        <IconButton sx={iconButtonA11ySx} size="small" onClick={(e) => handleMenuOpen(e, job)} aria-label={`Open actions for ${job.title || 'job'}`}>
           <MoreVertIcon />
         </IconButton>
       </CardActions>

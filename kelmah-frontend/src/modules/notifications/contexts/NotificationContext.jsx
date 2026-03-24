@@ -20,7 +20,7 @@ import {
   createFeatureLogger,
   devError,
   devWarn,
-} from '@/modules/common/utils/devLogger';
+} from '';
 
 const notificationsLog = createFeatureLogger({
   flagName: 'VITE_DEBUG_NOTIFICATIONS',

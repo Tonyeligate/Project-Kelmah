@@ -7,12 +7,7 @@
 import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { normalizeUser } from '../utils/userUtils';
-
-const authCheckError = (...args) => {
-  if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') {
-    console.error(...args);
-  }
-};
+import { devError as authCheckError } from '../modules/common/utils/devLogger';
 
 export const useAuthCheck = () => {
   // Use ONLY Redux auth state to prevent dual state management conflicts

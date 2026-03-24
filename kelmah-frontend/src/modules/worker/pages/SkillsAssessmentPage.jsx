@@ -69,7 +69,7 @@ import {
   TimerDisplay,
 } from '@/modules/worker/components/skillsAssessment/styled';
 import { useBreakpointDown } from '@/hooks/useResponsive';
-import { devError } from '@/modules/common/utils/devLogger';
+import { devError } from '';
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;

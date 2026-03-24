@@ -1,36 +1,15 @@
-import { useCallback, useMemo, useState } from 'react';
-import {
-  Card,
-  CardContent,
-  CardActions,
-  Typography,
-  Box,
-  Chip,
-  Divider,
-  Stack,
-  Grid,
-  Avatar,
-  Rating,
-  Button,
-  Tooltip,
-  IconButton,
-} from '@mui/material';
-import {
-  LocationOn as LocationIcon,
-  WorkOutline as WorkIcon,
-  Star as StarIcon,
-  Message as MessageIcon,
-  Visibility as VisibilityIcon,
-  Verified as VerifiedIcon,
-  Bolt as BoltIcon,
-  Schedule as ScheduleIcon,
-  WorkspacePremium as WorkspacePremiumIcon,
-  BookmarkBorder as BookmarkBorderIcon,
-  Bookmark as BookmarkIcon,
-} from '@mui/icons-material';
-import PropTypes from 'prop-types';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useAuthCheck } from '../../../hooks/useAuthCheck';
+// IconButton focus-visible styling is enforced globally via MuiIconButton theme overrides.
+
+
+
+
+
+
+
+
+
+
+
 
 const WorkerCard = ({ worker, onSave, isPublicView }) => {
   const navigate = useNavigate();

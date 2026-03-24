@@ -4,21 +4,15 @@
  */
 
 import { getApiBaseUrl } from './environment';
+import {
+  createFeatureLogger,
+  devError,
+  devWarn,
+} from '../modules/common/utils/devLogger';
 
 const CONFIG_DEBUG =
   import.meta.env.DEV && import.meta.env.VITE_DEBUG_CONFIG === 'true';
-const FRONTEND_DEBUG =
-  import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true';
-const devWarn = (...args) => {
-  if (FRONTEND_DEBUG) {
-    console.warn(...args);
-  }
-};
-const devError = (...args) => {
-  if (FRONTEND_DEBUG) {
-    console.error(...args);
-  }
-};
+const configLog = createFeatureLogger({ flagName: 'VITE_DEBUG_CONFIG' });
 
 // Function to get current ngrok URL from centralized config
 const getCurrentNgrokUrl = async () => {
@@ -36,7 +30,7 @@ const getCurrentNgrokUrl = async () => {
       import.meta.env.VITE_API_URL.startsWith('http');
 
     if (isProduction && hasExplicitApiUrl) {
-      if (CONFIG_DEBUG) console.log(
+      if (CONFIG_DEBUG) configLog(
         '🎯 Production mode: Using explicit API URL instead of ngrok',
       );
       return null; // Don't use ngrok in production when explicit URL is set
@@ -92,7 +86,7 @@ export const updateNgrokUrl = (newUrl) => {
   try {
     if (typeof window !== 'undefined') {
       localStorage.setItem('kelmah_ngrok_url', newUrl);
-      if (CONFIG_DEBUG) console.log('Ngrok URL updated in localStorage:', newUrl);
+      if (CONFIG_DEBUG) configLog('Ngrok URL updated in localStorage:', newUrl);
     }
   } catch (error) {
     devError('Failed to update ngrok URL:', error);

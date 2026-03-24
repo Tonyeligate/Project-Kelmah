@@ -31,6 +31,7 @@ import constructionImg from '../assets/images/construction.jpg';
 import electricalImg from '../assets/images/electrical.jpg';
 import homeService from '../modules/home/services/homeService';
 import { useBreakpointDown } from '@/hooks/useResponsive';
+import { devWarn } from '../modules/common/utils/devLogger';
 
 /* ─── Category data ─── */
 const TRADE_CATEGORIES = [
@@ -66,14 +67,6 @@ const TESTIMONIALS = [
     avatar: 'Y',
   },
 ];
-
-const FRONTEND_DEBUG =
-  import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true';
-const devWarn = (...args) => {
-  if (FRONTEND_DEBUG) {
-    console.warn(...args);
-  }
-};
 
 const HomeLanding = () => {
   const navigate = useNavigate();

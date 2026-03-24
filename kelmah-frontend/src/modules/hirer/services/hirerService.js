@@ -7,7 +7,7 @@
 
 import { API_ENDPOINTS } from '../../../config/environment';
 import { api } from '../../../services/apiClient';
-import { devWarn } from '@/modules/common/utils/devLogger';
+import { devWarn } from '';
 
 const hirerWarn = devWarn;
 

@@ -1,28 +1,17 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import {
-  Box, Card, CardContent, Typography, Tabs, Tab, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TablePagination, IconButton, Menu, MenuItem, Button, Dialog, DialogTitle, DialogContent, DialogActions, Chip, Avatar, Grid, Paper, LinearProgress, Skeleton, Alert, Snackbar, useTheme } from '@mui/material';
-import {
-  MoreVert as MoreVertIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-  Visibility as ViewIcon,
-  Publish as PublishIcon,
-  TrendingUp as TrendingUpIcon,
-  Work as WorkIcon,
-  AttachMoney as MoneyIcon,
-  People as PeopleIcon,
-} from '@mui/icons-material';
-import {
-  fetchHirerJobs,
-  deleteHirerJob,
-  updateJobStatus,
-  selectHirerJobs,
-  selectHirerLoading,
-  selectHirerError,
-} from '../services/hirerSlice';
-import { useBreakpointDown } from '@/hooks/useResponsive';
+// IconButton focus-visible styling is enforced globally via MuiIconButton theme overrides.
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 const HirerJobManagement = () => {
   const theme = useTheme();
@@ -495,7 +484,7 @@ const HirerJobManagement = () => {
                               {job.description?.substring(0, 60)}...
                             </Typography>
                           </Box>
-                          <IconButton size="small" onClick={(e) => handleMenuOpen(e, job)} aria-label="Job actions">
+                          <IconButton sx={iconButtonA11ySx} size="small" onClick={(e) => handleMenuOpen(e, job)} aria-label="Job actions">
                             <MoreVertIcon />
                           </IconButton>
                         </Box>
@@ -603,7 +592,7 @@ const HirerJobManagement = () => {
                           </Typography>
                         </TableCell>
                         <TableCell align="center">
-                          <IconButton
+                          <IconButton sx={iconButtonA11ySx}
                             size="small"
                             onClick={(e) => handleMenuOpen(e, job)}
                             aria-label={`Open actions for ${job.title || 'job'}`}

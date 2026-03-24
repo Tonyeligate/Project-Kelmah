@@ -34,6 +34,12 @@ const FRONTEND_OPT_TOOLS = [
   'AccessibilityCloudAnalyzer',
 ];
 
+const IMMERSIVE_TOOLS = [
+  'RenderBudgetProfiler',
+  'ImmersiveInteractionAuditor',
+  'DeterministicFallbackVerifier',
+];
+
 const BACKEND_OPT_TOOLS = [
   'APITopologyOptimizer',
   'ContractEvolutionAnalyzer',
@@ -142,6 +148,8 @@ function requiredByTaskType(taskType) {
     'nisq_hybrid_execution_report',
     'all_agent_activation_matrix',
     'three_d_hd_design_report',
+    'three_d_hd_render_budget',
+    'immersive_interaction_map',
   ];
 
   const backend = ['api_topology_report', 'service_reliability_report'];
@@ -178,6 +186,7 @@ function applyClosureFlags(closure, taskType) {
   closure.taskType = taskType;
   closure.requiresLearningOracle = ADVANCED_TASK_TYPES.has(taskType);
   closure.requiresOptimizationOracle = new Set(['ui-optimization', 'adaptive-interface', 'design-flow-optimization']).has(taskType);
+  closure.requiresImmersiveOracle = closure.requiresOptimizationOracle;
   closure.requiresBackendOracle = new Set(['backend-optimization', 'api-design-optimization', 'reliability-hardening']).has(taskType);
   closure.requiresDatabaseOracle = taskType === 'database-integrity-hardening';
   closure.requiresSecurityOracle = taskType === 'security-hardening';
@@ -188,6 +197,7 @@ function applyClosureFlags(closure, taskType) {
   CORE_ELITE_TOOLS.forEach((t) => tools.add(t));
 
   if (closure.requiresOptimizationOracle) FRONTEND_OPT_TOOLS.forEach((t) => tools.add(t));
+  if (closure.requiresOptimizationOracle) IMMERSIVE_TOOLS.forEach((t) => tools.add(t));
   if (closure.requiresBackendOracle) BACKEND_OPT_TOOLS.forEach((t) => tools.add(t));
   if (closure.requiresDatabaseOracle) DATABASE_TOOLS.forEach((t) => tools.add(t));
   if (closure.requiresSecurityOracle) SECURITY_TOOLS.forEach((t) => tools.add(t));

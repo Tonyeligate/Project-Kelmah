@@ -18,7 +18,7 @@ import {
 } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { format, isSameDay } from 'date-fns';
-import { devWarn } from '@/modules/common/utils/devLogger';
+import { devWarn } from '';
 
 /**
  * A reusable calendar component for displaying appointments

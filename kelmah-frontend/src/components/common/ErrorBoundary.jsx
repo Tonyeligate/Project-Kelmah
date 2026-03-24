@@ -5,8 +5,10 @@ import {
   Home as HomeIcon,
   ErrorOutline as ErrorOutlineIcon,
 } from '@mui/icons-material';
+import { createDevLogger } from '../../modules/common/utils/devLogger';
 
 const isDev = typeof import.meta !== 'undefined' && import.meta.env?.DEV;
+const boundaryError = createDevLogger(isDev, 'error');
 
 /**
  * ErrorBoundary — catches React render errors and shows a friendly fallback.
@@ -28,7 +30,7 @@ class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    if (isDev) console.error('ErrorBoundary caught an error:', error, errorInfo);
+    boundaryError('ErrorBoundary caught an error:', error, errorInfo);
     this.setState({ error, errorInfo });
   }
 

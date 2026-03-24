@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { devError } from '@/modules/common/utils/devLogger';
+import { devError } from '';
 
 /**
  * Custom hook for storing values in localStorage with serialization

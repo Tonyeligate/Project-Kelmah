@@ -21,7 +21,7 @@ import {
   History as HistoryIcon,
 } from '@mui/icons-material';
 import mapService from '../../services/mapService';
-import { devError, devWarn } from '@/modules/common/utils/devLogger';
+import { devError, devWarn } from '';
 
 const LOCATION_QUERY_MAX_LENGTH = 120;
 

@@ -5,14 +5,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'react-toastify';
-
-const USE_API_DEBUG =
-  import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true';
-const useApiError = (...args) => {
-  if (USE_API_DEBUG) {
-    console.error(...args);
-  }
-};
+import { devError as useApiError } from '../modules/common/utils/devLogger';
 
 const parseRetryAfterMs = (error) => {
   const headerValue =

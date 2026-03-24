@@ -1,7 +1,7 @@
 // Kelmah Service Worker for Ghana Market
 // Optimized for poor network conditions and offline functionality
 
-const CACHE_NAME = 'kelmah-v1.0.9-nav-stability';
+const CACHE_NAME = 'kelmah-v1.0.10-chunk-coherence';
 const OFFLINE_URL = '/offline.html';
 const HEALTHY_GATEWAY_DB = 'kelmah-gateway-db';
 const HEALTHY_GATEWAY_STORE = 'healthyGatewayStore';
@@ -16,16 +16,34 @@ const SW_DEBUG =
   SW_DEBUG_HOSTS.has(self.location.hostname) ||
   self.location.search.includes('sw_debug=1');
 
+const resolveConsoleMethod = (level) => {
+  if (typeof console === 'undefined' || typeof console[level] !== 'function') {
+    return null;
+  }
+
+  return console[level].bind(console);
+};
+
+const swLogMethod = resolveConsoleMethod('log');
+const swWarnMethod = resolveConsoleMethod('warn');
+const swErrorMethod = resolveConsoleMethod('error');
+
 const swLog = (...args) => {
-  if (SW_DEBUG) console.log(...args);
+  if (SW_DEBUG && swLogMethod) {
+    swLogMethod(...args);
+  }
 };
 
 const swWarn = (...args) => {
-  if (SW_DEBUG) console.warn(...args);
+  if (SW_DEBUG && swWarnMethod) {
+    swWarnMethod(...args);
+  }
 };
 
 const swError = (...args) => {
-  if (SW_DEBUG) console.error(...args);
+  if (SW_DEBUG && swErrorMethod) {
+    swErrorMethod(...args);
+  }
 };
 
 const OFFLINE_HTML_FALLBACK = `<!doctype html>
@@ -372,6 +390,64 @@ async function handleAPIRequest(request) {
 
 // Handle static assets (JS, CSS, images)
 async function handleStaticAssetRequest(request) {
+  const isVersionedScriptOrStyle =
+    isChunkAsset(request.url) &&
+    (request.destination === 'script' || request.destination === 'style');
+
+  // Never serve JS/CSS chunk files cache-first. A stale importer with a fresh
+  // shared chunk (or vice versa) causes runtime "does not provide an export"
+  // syntax errors. Network-first keeps module graphs coherent per deploy.
+  if (isVersionedScriptOrStyle) {
+    try {
+      const response = await fetch(request, { cache: 'no-store' });
+
+      if (response.status === 404) {
+        swWarn('[SW] Missing hashed chunk detected. Clearing runtime caches.', request.url);
+        await clearRuntimeCaches();
+
+        if (request.destination === 'script') {
+          return buildChunkRecoveryScriptResponse();
+        }
+
+        return new Response('/* chunk missing - forcing app shell reload */', {
+          status: 200,
+          headers: {
+            'Content-Type': 'text/css; charset=utf-8',
+            'X-Service-Worker-Fallback': 'chunk-recovery-style',
+          },
+        });
+      }
+
+      if (response.status === 200) {
+        const cache = await caches.open(CACHE_NAME);
+        cache.put(request, response.clone());
+      }
+
+      return response;
+    } catch (error) {
+      const cachedResponse = await caches.match(request);
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+
+      if (request.destination === 'script') {
+        return buildChunkRecoveryScriptResponse();
+      }
+
+      if (request.destination === 'style') {
+        return new Response('/* network unavailable for style chunk */', {
+          status: 200,
+          headers: {
+            'Content-Type': 'text/css; charset=utf-8',
+            'X-Service-Worker-Fallback': 'chunk-recovery-style-network',
+          },
+        });
+      }
+
+      throw error;
+    }
+  }
+
   const cachedResponse = await caches.match(request);
 
   if (cachedResponse) {

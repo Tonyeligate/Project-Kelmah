@@ -1,26 +1,8 @@
-import React, { useState } from 'react';
-import {
-  Paper,
-  TextField,
-  InputAdornment,
-  IconButton,
-  Grid,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Button,
-  Box,
-  Collapse,
-  Typography,
-} from '@mui/material';
-import {
-  Search,
-  FilterList,
-  ExpandMore,
-  ExpandLess,
-  Clear,
-} from '@mui/icons-material';
+
+
+
+
+
 
 const JOB_TYPES = [
   { value: 'full_time', label: 'Full Time' },

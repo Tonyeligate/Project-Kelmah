@@ -1,22 +1,35 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, Avatar, Box, Button, Card, CardContent, Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Divider, Grid, IconButton, LinearProgress, Menu, MenuItem, Pagination, Skeleton, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography, useTheme } from '@mui/material';
-import RefreshIcon from '@mui/icons-material/Refresh';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import HighlightOffIcon from '@mui/icons-material/HighlightOff';
-import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
-import ScheduleOutlinedIcon from '@mui/icons-material/ScheduleOutlined';
-import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined';
-import StarIcon from '@mui/icons-material/Star';
-import { useSnackbar } from 'notistack';
-import {
-  DEFAULT_PROPOSAL_PAGE_SIZE,
-  useProposals,
-} from '../../../hooks/useProposals';
-import { hirerService } from '../services/hirerService';
-import { useBreakpointDown } from '@/hooks/useResponsive';
-import { devError } from '@/modules/common/utils/devLogger';
+// IconButton focus-visible styling is enforced globally via MuiIconButton theme overrides.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 const STATUS_FILTERS = [
   { label: 'All', value: 'all' },
@@ -679,7 +692,7 @@ const ProposalReview = () => {
                         <Typography variant="caption" color="text.disabled" noWrap>
                           {formatDate(proposal.submittedAt ?? proposal.createdAt)}
                         </Typography>
-                        <IconButton
+                        <IconButton sx={iconButtonA11ySx}
                           size="small"
                           onClick={(e) => handleMenuOpen(e, proposal)}
                           aria-label="Proposal actions"
@@ -818,7 +831,7 @@ const ProposalReview = () => {
                         />
                       </TableCell>
                       <TableCell align="right">
-                        <IconButton
+                        <IconButton sx={iconButtonA11ySx}
                           size="small"
                           onClick={(event) => handleMenuOpen(event, proposal)}
                           aria-label="Proposal actions"

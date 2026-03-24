@@ -11,7 +11,7 @@ import {
 } from '../services/dashboardSlice';
 import { useAuth } from '../../auth/hooks/useAuth';
 import { secureStorage } from '../../../utils/secureStorage';
-import { devWarn } from '@/modules/common/utils/devLogger';
+import { devWarn } from '';
 
 export const useDashboard = () => {
   const dispatch = useDispatch();

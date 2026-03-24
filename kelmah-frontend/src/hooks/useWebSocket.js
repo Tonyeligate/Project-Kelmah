@@ -2,22 +2,12 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import authService from '../modules/auth/services/authService';
 import websocketService from '../services/websocketService';
 import { APP_SOCKET_EVENTS } from '../services/socketEvents';
+import { createFeatureLogger } from '../modules/common/utils/devLogger';
 
-const websocketHookDebug = (...args) => {
-  if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') {
-    return {
-      warn: (...warnArgs) => console.warn(...warnArgs),
-      error: (...errorArgs) => console.error(...errorArgs),
-    };
-  }
-
-  return {
-    warn: () => {},
-    error: () => {},
-  };
+const websocketHookLogger = {
+  warn: createFeatureLogger({ level: 'warn' }),
+  error: createFeatureLogger({ level: 'error' }),
 };
-
-const websocketHookLogger = websocketHookDebug();
 
 // Compatibility hook that now reuses websocketService singleton.
 export const useWebSocket = () => {

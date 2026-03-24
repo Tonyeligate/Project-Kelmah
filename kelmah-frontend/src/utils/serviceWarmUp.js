@@ -6,6 +6,11 @@
  */
 
 import { getApiBaseUrl } from '../config/environment';
+import {
+  createFeatureLogger,
+  devError as warmupError,
+  devWarn as warmupWarn,
+} from '../modules/common/utils/devLogger';
 
 const WARMUP_ENDPOINTS = [
   '/health/aggregate'
@@ -16,8 +21,6 @@ const MAX_WARMUP_RETRIES = 1;
 const RETRY_DELAY_MS = 15000;
 const WARMUP_COOLDOWN_MS = 15 * 60 * 1000;
 const LAST_WARMUP_AT_KEY = 'kelmah:lastServiceWarmupAt';
-const WARMUP_DEBUG =
-  import.meta.env.DEV && import.meta.env.VITE_DEBUG_SERVICE_HEALTH === 'true';
 const DEFAULT_HEALTH_ENDPOINT = '/health';
 
 const isOffline = () =>
@@ -46,21 +49,9 @@ const buildHealthUrl = (baseUrl, endpoint = DEFAULT_HEALTH_ENDPOINT) => {
   return `${trimmedBase}/api${normalizedEndpoint}`;
 };
 
-const warmupLog = (...args) => {
-  if (WARMUP_DEBUG) {
-    console.log(...args);
-  }
-};
-const warmupWarn = (...args) => {
-  if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') {
-    console.warn(...args);
-  }
-};
-const warmupError = (...args) => {
-  if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') {
-    console.error(...args);
-  }
-};
+const warmupLog = createFeatureLogger({
+  flagName: 'VITE_DEBUG_SERVICE_HEALTH',
+});
 
 let lastWarmupStatus = {
   state: 'idle',

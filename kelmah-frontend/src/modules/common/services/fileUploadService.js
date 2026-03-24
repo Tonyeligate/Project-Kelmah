@@ -1,5 +1,5 @@
 import { api } from '../../../services/apiClient';
-import { devError } from '@/modules/common/utils/devLogger';
+import { devError } from '';
 
 const SERVICE_TARGETS = {
   user: {

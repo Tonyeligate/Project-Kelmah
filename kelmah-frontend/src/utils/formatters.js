@@ -2,11 +2,9 @@
  * Utility functions for formatting various data types
  */
 
-const formatterWarn = (...args) => {
-  if (import.meta.env.DEV && typeof console !== 'undefined' && typeof console.warn === 'function') {
-    console.warn(...args);
-  }
-};
+import { createDevLogger } from '../modules/common/utils/devLogger';
+
+const formatterWarn = createDevLogger(import.meta.env.DEV, 'warn');
 
 const logFormatterFallback = (label, error) => {
   formatterWarn(

@@ -1,26 +1,17 @@
+// IconButton focus-visible styling is enforced globally via MuiIconButton theme overrides.
 /**
  * Mobile Filter Drawer for Jobs Page
  * Bottom sheet with all job filters optimized for mobile touch
  * Replaces bulky inline filters (240-280px) with drawer interface
  */
 
-import React, { useState, useEffect } from 'react';
-import {
-  Drawer,
-  Box,
-  Typography,
-  IconButton,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Button,
-  Stack,
-  Slider,
-} from '@mui/material';
-import { Close as CloseIcon, Search as SearchIcon } from '@mui/icons-material';
-import PropTypes from 'prop-types';
+
+
+
+
+
+
+
 
 const JobsMobileFilterDrawer = ({
   open,

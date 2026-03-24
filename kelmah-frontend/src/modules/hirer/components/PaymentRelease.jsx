@@ -1,28 +1,19 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import {
-  Box, Card, CardContent, Typography, Grid, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, Avatar, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Divider, Alert, LinearProgress, IconButton, Tooltip, Paper, Skeleton, Snackbar, useTheme, Stack, CircularProgress } from '@mui/material';
-import {
-  AttachMoney as MoneyIcon,
-  Schedule as ScheduleIcon,
-  CheckCircle as CompleteIcon,
-  Warning as WarningIcon,
-  Receipt as ReceiptIcon,
-  TrendingUp as TrendingUpIcon,
-  AccountBalance as BankIcon,
-  Visibility as ViewIcon,
-  Refresh as RefreshIcon,
-} from '@mui/icons-material';
-import {
-  selectHirerJobs,
-  selectHirerLoading,
-  selectHirerPayments,
-  selectHirerError,
-  fetchPaymentSummary,
-} from '../services/hirerSlice';
-import paymentService from '../../payment/services/paymentService';
-import { useBreakpointDown } from '@/hooks/useResponsive';
-import { devError, devWarn } from '@/modules/common/utils/devLogger';
+// IconButton focus-visible styling is enforced globally via MuiIconButton theme overrides.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // No mock data - using real API data only
 
@@ -486,7 +477,7 @@ const PaymentRelease = () => {
                         Due: {formatDate(payment.dueDate)}
                       </Typography>
                       <Box display="flex" gap={1}>
-                        <IconButton size="small" onClick={() => handleDialogOpen('view', payment)} aria-label="View payment details">
+                        <IconButton sx={iconButtonA11ySx} size="small" onClick={() => handleDialogOpen('view', payment)} aria-label="View payment details">
                             <ViewIcon />
                         </IconButton>
                         {payment.status === 'ready_for_release' && (
@@ -563,7 +554,7 @@ const PaymentRelease = () => {
                       <TableCell align="center">
                         <Box display="flex" gap={1} justifyContent="center">
                           <Tooltip title="View Details">
-                            <IconButton
+                            <IconButton sx={iconButtonA11ySx}
                               size="small"
                               onClick={() => handleDialogOpen('view', payment)}
                               aria-label={`View payment details for ${payment.workerName || 'worker'}`}

@@ -10,7 +10,7 @@ import {
 } from '@mui/icons-material';
 import { resolveMediaAssetUrls } from '../../common/utils/mediaAssets';
 import { useBreakpointDown } from '@/hooks/useResponsive';
-import { devError } from '@/modules/common/utils/devLogger';
+import { devError } from '';
 
 const ProjectGallery = ({
   images = [],

@@ -1,20 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { API_BASE_URL } from '../config/environment';
+import {
+  createFeatureLogger,
+  devWarn as apiHealthWarn,
+} from '../modules/common/utils/devLogger';
 
-const API_HEALTH_DEBUG =
-  import.meta.env.DEV && import.meta.env.VITE_DEBUG_SERVICE_HEALTH === 'true';
-const API_HEALTH_WARN =
-  import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true';
-const apiHealthDebug = (...args) => {
-  if (API_HEALTH_DEBUG) {
-    console.debug(...args);
-  }
-};
-const apiHealthWarn = (...args) => {
-  if (API_HEALTH_WARN) {
-    console.warn(...args);
-  }
-};
+const apiHealthDebug = createFeatureLogger({
+  flagName: 'VITE_DEBUG_SERVICE_HEALTH',
+  level: 'debug',
+});
 
 export const useApiHealth = () => {
   const [isHealthy, setIsHealthy] = useState(true); // Optimistic default

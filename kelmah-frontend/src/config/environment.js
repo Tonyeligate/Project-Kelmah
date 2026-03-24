@@ -8,6 +8,10 @@
 // Import service URLs from centralized services.js
 // IMPORTANT: All imports must be at top of file to avoid TDZ (Temporal Dead Zone) errors
 import SERVICES from './services';
+import {
+  createFeatureLogger,
+  devWarn,
+} from '../modules/common/utils/devLogger';
 
 // Get current environment
 const isDevelopment = import.meta.env.MODE === 'development';
@@ -154,13 +158,7 @@ const PRODUCTION_API_URL = (() => {
   return '/api';
 })();
 
-const FRONTEND_DEBUG =
-  import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true';
-const devWarn = (...args) => {
-  if (FRONTEND_DEBUG) {
-    console.warn(...args);
-  }
-};
+const configLog = createFeatureLogger({ flagName: 'VITE_DEBUG_CONFIG' });
 
 const loadRuntimeConfig = async () => {
   if (typeof window !== 'undefined' && !runtimeConfig) {
@@ -175,7 +173,7 @@ const loadRuntimeConfig = async () => {
       window.RUNTIME_CONFIG = {
         apiUrl: envConfiguredUrl || runtimeConfiguredUrl || PRODUCTION_API_URL || '/api',
       };
-      if (CONFIG_DEBUG) console.log('Runtime config loaded:', runtimeConfig);
+      if (CONFIG_DEBUG) configLog('Runtime config loaded:', runtimeConfig);
     } catch (error) {
       devWarn('⚠️ Failed to load runtime config:', error.message);
     }

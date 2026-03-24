@@ -1,4 +1,5 @@
 import { lazy } from 'react';
+import { devWarn as lazyRetryWarn } from '../modules/common/utils/devLogger';
 
 const isBrowser = () => typeof window !== 'undefined';
 
@@ -19,12 +20,6 @@ const isChunkLoadError = (error) => {
 
 const RELOAD_GUARD_KEY = 'lazy-retry-reload-at';
 const RELOAD_GUARD_WINDOW_MS = 30_000;
-
-const lazyRetryWarn = (...args) => {
-  if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') {
-    console.warn(...args);
-  }
-};
 
 const canTriggerReload = () => {
   if (!isBrowser()) {

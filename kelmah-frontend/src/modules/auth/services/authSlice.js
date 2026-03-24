@@ -7,7 +7,7 @@ import {
   createFeatureLogger,
   devError,
   devWarn,
-} from '@/modules/common/utils/devLogger';
+} from '';
 // Support import.meta.env in Vite and process.env in tests
 // Use Node.js environment variables for tests
 const devLog = createFeatureLogger({ flagName: 'VITE_DEBUG_AUTH' });

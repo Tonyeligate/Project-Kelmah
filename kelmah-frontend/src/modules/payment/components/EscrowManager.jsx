@@ -12,7 +12,7 @@ import {
   Alert,
 } from '@mui/material';
 import paymentService from '../../payment/services/paymentService';
-import { devError } from '@/modules/common/utils/devLogger';
+import { devError } from '';
 
 const EscrowManager = () => {
   const [escrows, setEscrows] = useState([]);

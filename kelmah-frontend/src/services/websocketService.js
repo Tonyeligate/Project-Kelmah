@@ -12,12 +12,15 @@ import {
   MESSAGE_TYPING_ALIASES,
   SOCKET_EVENTS,
 } from './socketEvents';
+import {
+  createDevLogger,
+  createFeatureLogger,
+} from '../modules/common/utils/devLogger';
 
 /** Only log in development builds — prevents leaking metadata in production */
-const __DEV__ = import.meta.env.DEV;
-const devLog = (...args) => { if (__DEV__ && import.meta.env.VITE_DEBUG_WEBSOCKET === 'true') console.log(...args); };
-const devWarn = (...args) => { if (__DEV__) console.warn(...args); };
-const devError = (...args) => { if (__DEV__) console.error(...args); };
+const devLog = createFeatureLogger({ flagName: 'VITE_DEBUG_WEBSOCKET' });
+const devWarn = createDevLogger(import.meta.env.DEV, 'warn');
+const devError = createDevLogger(import.meta.env.DEV, 'error');
 
 const RECONNECT_ATTEMPTS = Math.max(
   3,

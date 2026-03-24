@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import fileUploadService from '../../common/services/fileUploadService';
-import { devError, devWarn } from '@/modules/common/utils/devLogger';
+import { devError, devWarn } from '';
 
 const useAttachments = (conversationId) => {
   const [attachments, setAttachments] = useState([]);

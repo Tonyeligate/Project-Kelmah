@@ -107,7 +107,7 @@ import {
   resolveMediaAssetUrl,
   resolveProfileImageUrl,
 } from '../../common/utils/mediaAssets';
-import { devError } from '@/modules/common/utils/devLogger';
+import { devError } from '';
 
 const Input = styled('input')({
   display: 'none',

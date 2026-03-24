@@ -19,7 +19,7 @@ import ClearIcon from '@mui/icons-material/Clear';
 import EmojiEmotionsIcon from '@mui/icons-material/EmojiEmotions';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import FavoriteIcon from '@mui/icons-material/Favorite';
-import { devError } from '@/modules/common/utils/devLogger';
+import { devError } from '';
 
 // Define emoji categories
 const categories = [

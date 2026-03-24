@@ -11,7 +11,7 @@ import { useNotifications } from '../../notifications/contexts/NotificationConte
 import {
   createFeatureLogger,
   devError,
-} from '@/modules/common/utils/devLogger';
+} from '';
 
 const contractsLog = createFeatureLogger({
   flagName: 'VITE_DEBUG_CONTRACTS',

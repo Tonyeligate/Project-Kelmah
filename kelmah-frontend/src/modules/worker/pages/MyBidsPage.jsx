@@ -57,7 +57,7 @@ import {
 } from '@mui/icons-material';
 import bidApi from '../../jobs/services/bidService';
 import Toast from '../../common/components/common/Toast';
-import { createFeatureLogger } from '@/modules/common/utils/devLogger';
+import { createFeatureLogger } from '';
 
 const isAbortError = (error) =>
   error?.name === 'AbortError' ||

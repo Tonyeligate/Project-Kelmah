@@ -7,7 +7,7 @@ import ProjectShowcase from '../components/ProjectShowcase';
 import portfolioService from '../services/portfolioService';
 import { Helmet } from 'react-helmet-async';
 import { useBreakpointDown } from '@/hooks/useResponsive';
-import { devError } from '@/modules/common/utils/devLogger';
+import { devError } from '';
 
 const PortfolioPage = () => {
   const navigate = useNavigate();

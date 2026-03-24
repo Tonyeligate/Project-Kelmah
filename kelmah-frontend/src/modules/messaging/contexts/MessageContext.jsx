@@ -20,7 +20,7 @@ import {
   createFeatureLogger,
   devError,
   devWarn,
-} from '@/modules/common/utils/devLogger';
+} from '';
 
 const MESSAGING_SOCKET_EVENTS = [
   ...MESSAGE_DELIVERY_ALIASES,

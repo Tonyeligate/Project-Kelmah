@@ -20,7 +20,7 @@ import {
 import { useInView } from 'react-intersection-observer';
 import MessageAttachments from './MessageAttachments';
 import { useBreakpointDown } from '@/hooks/useResponsive';
-import { devError } from '@/modules/common/utils/devLogger';
+import { devError } from '';
 
 // Styled components
 const MessageBubble = styled(Paper)(({ theme, isOwn }) => ({

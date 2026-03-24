@@ -11,7 +11,7 @@ import {
   createFeatureLogger,
   devError,
   devWarn,
-} from '@/modules/common/utils/devLogger';
+} from '';
 
 const PROFILE_REQUEST_TIMEOUT_MS = 5000;
 let profileInitPromise = null;

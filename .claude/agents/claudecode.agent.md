@@ -1628,3 +1628,19 @@ Evidence artifact:
 
 Report inputs must include learning ledger trends and per-task learning evidence.
 ```
+
+### UFL-16: Immersive Intelligence Cross-Agent Closure Gate
+```
+For taskType in { ui-optimization, adaptive-interface, design-flow-optimization }
+with premium 3D/HD or immersive interaction scope:
+  - require coordinated evidence from frontend/backend/database/security/realtime/devops/debugger
+  - require render budget, interaction intelligence, privacy/safety, and fallback proof
+  - require contradiction-resolution verdict from debugger before closure
+
+Minimum evidence artifacts:
+  - three_d_hd_design_report.json
+  - three_d_hd_render_budget.json
+  - immersive_interaction_map.json
+
+If any required immersive artifact is missing, closure_oracle must be FAIL.
+```

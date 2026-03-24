@@ -1,69 +1,30 @@
+// IconButton focus-visible styling is enforced globally via MuiIconButton theme overrides.
 /**
  * Enhanced Job Card Component
  * Displays job information with bidding system and performance tiers
  */
 
-import React, { useState } from 'react';
-import { useSelector } from 'react-redux';
-import { normalizeUser } from '../../../utils/userUtils';
-import {
-  Card,
-  CardContent,
-  CardMedia,
-  CardActions,
-  Typography,
-  Box,
-  Chip,
-  Button,
-  Avatar,
-  IconButton,
-  Tooltip,
-  LinearProgress,
-  Divider,
-  Stack,
-  Badge,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Alert,
-  useTheme,
-  alpha,
-  InputAdornment,
-} from '@mui/material';
-import {
-  LocationOn as LocationOnIcon,
-  Work as WorkIcon,
-  AccessTime as AccessTimeIcon,
-  AttachMoney as AttachMoneyIcon,
-  People as PeopleIcon,
-  Star as StarIcon,
-  BookmarkBorder as BookmarkBorderIcon,
-  Bookmark as BookmarkIcon,
-  Share as ShareIcon,
-  TrendingUp as TrendingUpIcon,
-  Verified as VerifiedIcon,
-  Schedule as ScheduleIcon,
-  Gavel as GavelIcon,
-  EmojiEvents as EmojiEventsIcon,
-  Description as DescriptionIcon,
-} from '@mui/icons-material';
-import { motion } from 'framer-motion';
-import { format, formatDistanceToNow } from 'date-fns';
-import bidApi from '../../jobs/services/bidService';
-import { useSnackbar } from 'notistack';
-import {
-  resolveMediaAssetUrl,
-  resolveMediaAssetUrls,
-  resolveJobVisualUrl,
-  resolveProfileImageUrl,
-} from '../../common/utils/mediaAssets';
-import { devError, devWarn } from '@/modules/common/utils/devLogger';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 const EnhancedJobCard = ({
   job,
@@ -470,7 +431,7 @@ const EnhancedJobCard = ({
 
           <CardActions sx={{ p: 2, justifyContent: 'space-between' }}>
             <Box>
-              <IconButton
+              <IconButton sx={iconButtonA11ySx}
                 onClick={() => onSave?.(job)}
                 color={job.saved ? 'primary' : 'default'}
                 aria-label={job.saved ? 'Remove from saved jobs' : 'Save job'}
@@ -478,7 +439,7 @@ const EnhancedJobCard = ({
               >
                 {job.saved ? <BookmarkIcon /> : <BookmarkBorderIcon />}
               </IconButton>
-              <IconButton
+              <IconButton sx={iconButtonA11ySx}
                 onClick={() => onShare?.(job)}
                 aria-label="Share job"
                 sx={{ minWidth: 44, minHeight: 44 }}

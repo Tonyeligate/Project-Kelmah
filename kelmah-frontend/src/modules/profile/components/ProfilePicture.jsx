@@ -19,7 +19,7 @@ import { useProfile } from '../hooks/useProfile';
 import { useSelector } from 'react-redux';
 import { selectProfile } from '../../../store/slices/profileSlice.js';
 import { useSnackbar } from 'notistack';
-import { devError } from '@/modules/common/utils/devLogger';
+import { devError } from '';
 
 const ProfilePicture = ({ size = 120, editable = true, altText = 'Profile picture' }) => {
   const { uploadProfilePicture } = useProfile({ autoInitialize: false });

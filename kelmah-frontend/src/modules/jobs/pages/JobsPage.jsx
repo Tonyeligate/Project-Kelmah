@@ -188,7 +188,7 @@ import { useJobsFiltersState } from '../hooks/useJobsFiltersState';
 import {
   createFeatureLogger,
   devError,
-} from '@/modules/common/utils/devLogger';
+} from '';
 import BreadcrumbNavigation from '../../../components/common/BreadcrumbNavigation';
 import PullToRefresh from '../../../components/common/PullToRefresh';
 import usePrefersReducedMotion from '../../../hooks/usePrefersReducedMotion';

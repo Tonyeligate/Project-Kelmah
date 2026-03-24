@@ -1,11 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { api } from '../services/apiClient';
-
-const proposalsError = (...args) => {
-  if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') {
-    console.error(...args);
-  }
-};
+import { devError as proposalsError } from '../modules/common/utils/devLogger';
 
 export const DEFAULT_PROPOSAL_PAGE_SIZE = 10;
 const MAX_RETRY_ATTEMPTS = 2;

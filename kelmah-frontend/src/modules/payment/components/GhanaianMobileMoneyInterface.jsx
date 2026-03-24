@@ -1,24 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Paper, Typography, Grid, Button, TextField, Card, CardContent, CardActions, RadioGroup, FormControlLabel, Radio, Alert, CircularProgress, Stepper, Step, StepLabel, StepContent, Dialog, DialogTitle, DialogContent, DialogActions, InputAdornment, Chip, Avatar, List, ListItem, ListItemAvatar, ListItemText, ListItemSecondaryAction, IconButton, Divider, useTheme, alpha } from '@mui/material';
-import {
-  Phone as PhoneIcon,
-  Security as SecurityIcon,
-  CheckCircle as CheckIcon,
-  Error as ErrorIcon,
-  AccountBalance as BankIcon,
-  CreditCard as CardIcon,
-  Smartphone as MobileIcon,
-  Send as SendIcon,
-  Refresh as RefreshIcon,
-  Info as InfoIcon,
-  Timer as TimerIcon,
-  Receipt as ReceiptIcon,
-  Warning as WarningIcon,
-} from '@mui/icons-material';
-import { useSnackbar } from 'notistack';
-import { formatCurrency, formatPhoneNumber } from '../../../utils/formatters';
-import paymentService from '../services/paymentService';
-import { useBreakpointDown } from '@/hooks/useResponsive';
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 const GhanaianMobileMoneyInterface = ({
   amount,

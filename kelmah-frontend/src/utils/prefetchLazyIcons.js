@@ -1,3 +1,5 @@
+import { devWarn as prefetchWarn } from '../modules/common/utils/devLogger';
+
 const getIdleCallback = () => {
   if (typeof window === 'undefined') {
     return (cb) =>
@@ -20,12 +22,6 @@ const getCancelIdleCallback = () => {
     return (id) => clearTimeout(id);
   }
   return window.cancelIdleCallback || clearTimeout;
-};
-
-const prefetchWarn = (...args) => {
-  if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') {
-    console.warn(...args);
-  }
 };
 
 /**

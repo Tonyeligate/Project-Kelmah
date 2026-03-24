@@ -1,57 +1,21 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import {
-  Alert,
-  Avatar,
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Chip,
-  CircularProgress,
-  Container,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Divider,
-  Grid,
-  IconButton,
-  MenuItem,
-  Rating,
-  Skeleton,
-  Stack,
-  Step,
-  StepLabel,
-  Stepper,
-  TextField,
-  Typography,
-} from '@mui/material';
-import {
-  ArrowBack as ArrowBackIcon,
-  AssignmentTurnedIn as AssignmentTurnedInIcon,
-  CheckCircleOutline as CheckCircleOutlineIcon,
-  LocalShipping as LocalShippingIcon,
-  Payment as PaymentIcon,
-  PersonOutline as PersonOutlineIcon,
-  WarningAmber as WarningAmberIcon,
-} from '@mui/icons-material';
-import { Helmet } from 'react-helmet-async';
-import { useSnackbar } from 'notistack';
-import {
-  SERVICE_CATEGORIES,
-  acceptQuote,
-  approveWork,
-  cancelQuickJob,
-  formatCurrency,
-  getQuickJob,
-  getQuickJobPaymentStatus,
-  initializeQuickJobPayment,
-  raiseDispute,
-  verifyQuickJobPayment,
-} from '../../quickjobs/services/quickJobService';
-import { useVisibilityPolling } from '../../../hooks/useVisibilityPolling';
-import { sanitizeExternalUrl } from '../../../utils/externalNavigation';
+// IconButton focus-visible styling is enforced globally via MuiIconButton theme overrides.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 const requesterSteps = [
   { status: 'pending', label: 'Waiting for quotes' },
@@ -459,7 +423,7 @@ const HirerQuickJobTrackingPage = () => {
       </Helmet>
 
       <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 3 }}>
-        <IconButton aria-label="Go back" onClick={() => navigate('/hirer/quick-hire')}>
+        <IconButton sx={iconButtonA11ySx} aria-label="Go back" onClick={() => navigate('/hirer/quick-hire')}>
           <ArrowBackIcon />
         </IconButton>
         <Typography variant="h5" fontWeight={700}>

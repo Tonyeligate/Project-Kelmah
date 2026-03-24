@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import PropTypes from 'prop-types';
-import { createFeatureLogger } from '@/modules/common/utils/devLogger';
+import { createFeatureLogger } from '';
 
 const EMPTY_SKILLS = [];
 const SEARCH_QUERY_MAX_LENGTH = 120;

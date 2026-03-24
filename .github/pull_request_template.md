@@ -31,6 +31,8 @@ Bundle path:
 - [ ] nisq_hybrid_execution_report.json is present
 - [ ] all_agent_activation_matrix.json is present
 - [ ] three_d_hd_design_report.json is present
+- [ ] three_d_hd_render_budget.json is present
+- [ ] immersive_interaction_map.json is present
 
 ## Backend Artifact Bundle (Required for backend-optimization, api-design-optimization, reliability-hardening)
 

@@ -25,7 +25,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { Helmet } from 'react-helmet-async';
 import { currencyFormatter } from '@/modules/common/utils/formatters';
 import { getRoleHomePath, hasRole } from '../../../utils/userUtils';
-import { devError } from '@/modules/common/utils/devLogger';
+import { devError } from '';
 
 const EscrowDetailsPage = () => {
   const { escrowId } = useParams();

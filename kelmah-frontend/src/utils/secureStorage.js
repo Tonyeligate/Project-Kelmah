@@ -6,22 +6,13 @@
  */
 
 import CryptoJS from 'crypto-js';
+import {
+  createFeatureLogger,
+  devError as storageError,
+  devWarn as storageWarn,
+} from '../modules/common/utils/devLogger';
 
-const storageWarn = (...args) => {
-  if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') {
-    console.warn(...args);
-  }
-};
-const storageLog = (...args) => {
-  if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_SECURE_STORAGE === 'true') {
-    console.log(...args);
-  }
-};
-const storageError = (...args) => {
-  if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') {
-    console.error(...args);
-  }
-};
+const storageLog = createFeatureLogger({ flagName: 'VITE_DEBUG_SECURE_STORAGE' });
 
 const AUTH_TOKEN_TTL = 2 * 60 * 60 * 1000;
 const REFRESH_TOKEN_TTL = 7 * 24 * 60 * 60 * 1000;

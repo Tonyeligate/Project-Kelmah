@@ -26,7 +26,7 @@ import {
 import { useTheme } from '@mui/material/styles';
 import { styled } from '@mui/material/styles';
 import paymentService from '../services/paymentService';
-import { devError } from '@/modules/common/utils/devLogger';
+import { devError } from '';
 
 // Custom styled components
 const PaymentMethodCard = styled(Paper)(({ theme, selected }) => ({

@@ -159,6 +159,97 @@
   <body>
     <!-- Runtime Configuration Injection -->
     <script>
+      const BOOTSTRAP_DEBUG =
+        /localhost|127\.0\.0\.1/.test(location.hostname) ||
+        location.search.includes('pwa_debug=1');
+
+      const resolveConsoleMethod = (level) => {
+        if (typeof console === 'undefined' || typeof console[level] !== 'function') {
+          return null;
+        }
+
+        return console[level].bind(console);
+      };
+
+      const bootstrapLogMethod = resolveConsoleMethod('log');
+      const bootstrapWarnMethod = resolveConsoleMethod('warn');
+
+      const bootstrapLog = (...args) => {
+        if (BOOTSTRAP_DEBUG && bootstrapLogMethod) {
+          bootstrapLogMethod(...args);
+        }
+      };
+
+      const bootstrapWarn = (...args) => {
+        if (BOOTSTRAP_DEBUG && bootstrapWarnMethod) {
+          bootstrapWarnMethod(...args);
+        }
+      };
+
+      const CHUNK_RECOVERY_ATTEMPTS_KEY = 'kelmah:bootstrapChunkRecoveryAttempts';
+      const CHUNK_RECOVERY_MAX_ATTEMPTS = 2;
+      const CHUNK_RECOVERY_SIGNATURES = [
+        'does not provide an export named',
+        'Loading chunk',
+        'ChunkLoadError',
+        'Failed to fetch dynamically imported module',
+      ];
+
+      const shouldRecoverChunkMismatch = (message) => {
+        if (!message || typeof message !== 'string') {
+          return false;
+        }
+
+        return CHUNK_RECOVERY_SIGNATURES.some((signature) =>
+          message.includes(signature),
+        );
+      };
+
+      const recoverFromChunkMismatch = async (message) => {
+        try {
+          const attempts = Number(sessionStorage.getItem(CHUNK_RECOVERY_ATTEMPTS_KEY) || 0);
+          if (attempts >= CHUNK_RECOVERY_MAX_ATTEMPTS) {
+            bootstrapWarn('[Bootstrap] Chunk recovery attempts exceeded:', message);
+            return;
+          }
+
+          sessionStorage.setItem(CHUNK_RECOVERY_ATTEMPTS_KEY, String(attempts + 1));
+
+          if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+            navigator.serviceWorker.controller.postMessage({
+              type: 'KELMAH_CLEAR_RUNTIME_CACHES',
+            });
+          }
+
+          if (typeof caches !== 'undefined') {
+            const cacheNames = await caches.keys();
+            await Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)));
+          }
+        } catch (_) {
+          // Non-fatal: always proceed to reload.
+        }
+
+        location.reload();
+      };
+
+      window.addEventListener(
+        'error',
+        (event) => {
+          const message = String(event?.message || event?.error?.message || '');
+          if (shouldRecoverChunkMismatch(message)) {
+            recoverFromChunkMismatch(message);
+          }
+        },
+        true,
+      );
+
+      window.addEventListener('unhandledrejection', (event) => {
+        const message = String(event?.reason?.message || event?.reason || '');
+        if (shouldRecoverChunkMismatch(message)) {
+          recoverFromChunkMismatch(message);
+        }
+      });
+
       // Load runtime configuration (async — may not be available on initial render)
       (async function() {
         try {
@@ -166,10 +257,10 @@
           if (response.ok) {
             const config = await response.json();
             window.__RUNTIME_CONFIG__ = config;
-            console.log('✅ Runtime config loaded:', config.ngrokUrl);
+            bootstrapLog('✅ Runtime config loaded:', config.ngrokUrl);
           }
         } catch (error) {
-          console.warn('⚠️ Failed to load runtime config:', error);
+          bootstrapWarn('⚠️ Failed to load runtime config:', error);
         }
       })();
     </script>
@@ -189,7 +280,7 @@
               return navigator.serviceWorker.register('/sw.js');
             })
             .then((registration) => {
-              console.log('✅ Service Worker registered successfully:', registration.scope);
+              bootstrapLog('✅ Service Worker registered successfully:', registration.scope);
               
               // Handle updates
               registration.addEventListener('updatefound', () => {
@@ -198,7 +289,7 @@
                   newWorker.addEventListener('statechange', () => {
                     if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                       // New update available — dispatch event for React app to show styled notification
-                      console.log('🔄 New app version available');
+                      bootstrapLog('🔄 New app version available');
                       window.dispatchEvent(new CustomEvent('sw:updateAvailable'));
                     }
                   });
@@ -206,24 +297,24 @@
               });
             })
             .catch((error) => {
-              console.warn('❌ Service Worker not registered (missing or error):', error?.message || error);
+              bootstrapWarn('❌ Service Worker not registered (missing or error):', error?.message || error);
             });
         });
 
         // Listen for service worker messages
         navigator.serviceWorker.addEventListener('message', (event) => {
           if (event.data && event.data.type === 'CACHE_UPDATED') {
-            console.log('📦 App cache updated');
+            bootstrapLog('📦 App cache updated');
           }
         });
       } else {
-        console.log('⚠️ Service Worker disabled in development');
+        bootstrapLog('⚠️ Service Worker disabled in development');
       }
 
       // Handle app installation prompt — dispatch to React for accessible UI
       let deferredPrompt;
       window.addEventListener('beforeinstallprompt', (e) => {
-        console.log('📱 App install prompt available');
+        bootstrapLog('📱 App install prompt available');
         e.preventDefault();
         deferredPrompt = e;
         // Expose to React via custom event
@@ -235,7 +326,7 @@
         if (deferredPrompt) {
           deferredPrompt.prompt();
           const { outcome } = await deferredPrompt.userChoice;
-          console.log(`📱 App install outcome: ${outcome}`);
+          bootstrapLog(`📱 App install outcome: ${outcome}`);
           deferredPrompt = null;
           window.dispatchEvent(new CustomEvent('pwa:installComplete'));
         }
@@ -243,7 +334,7 @@
 
       // Handle app installed event
       window.addEventListener('appinstalled', (evt) => {
-        console.log('🎉 Kelmah app installed successfully!');
+        bootstrapLog('🎉 Kelmah app installed successfully!');
         // Track installation analytics
         if (window.gtag) {
           gtag('event', 'app_installed', {
@@ -253,7 +344,7 @@
       });
 
       window.addEventListener('online', () => {
-        console.log('🌐 Back online');
+        bootstrapLog('🌐 Back online');
         // Trigger sync for offline actions
         if ('serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype) {
           navigator.serviceWorker.ready.then((registration) => {
@@ -263,10 +354,10 @@
       });
 
       window.addEventListener('offline', () => {
-        console.log('📱 Gone offline');
+        bootstrapLog('📱 Gone offline');
       });
 
-      console.log('🇬🇭 Kelmah PWA initialized for Ghana market');
+      bootstrapLog('🇬🇭 Kelmah PWA initialized for Ghana market');
     </script>
     
     <script type="module" src="/src/main.jsx"></script>

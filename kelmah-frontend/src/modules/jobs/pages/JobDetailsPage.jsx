@@ -68,7 +68,7 @@ import {
   resolveJobVisualUrl,
   resolveProfileImageUrl,
 } from '../../common/utils/mediaAssets';
-import { devError } from '@/modules/common/utils/devLogger';
+import { devError } from '';
 
 // Styled components
 const SectionHeading = ({ children, icon: Icon, sx = {} }) => {

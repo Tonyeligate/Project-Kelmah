@@ -30,14 +30,7 @@ import {
 import { motion } from 'framer-motion';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 import secureStorage from '../../utils/secureStorage';
-
-const FRONTEND_DEBUG =
-  import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true';
-const devWarn = (...args) => {
-  if (FRONTEND_DEBUG) {
-    console.warn(...args);
-  }
-};
+import { devWarn } from '../../modules/common/utils/devLogger';
 
 const QUICK_NAV_STORAGE_KEY = 'quick_nav_preferences';
 const QUICK_NAV_PREF_TTL = 180 * 24 * 60 * 60 * 1000; // 6 months

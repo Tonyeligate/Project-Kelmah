@@ -317,3 +317,38 @@ Validation for batch 12:
 
 Current open focus after batch 12:
 - none for direct-console hygiene in `src/modules/**`.
+
+## Execution Delta Batch 13 (March 24 2026)
+
+- Extended direct-console cleanup from module scope to full frontend source scope.
+- Closed remaining root-source wrappers and inline calls in:
+	- `src/utils/**` (storage, warmup, health checks, secure storage, PWA helpers, formatter/lazy helpers)
+	- `src/services/**` (websocket, api client, telemetry)
+	- `src/hooks/**` (api/auth-check/api-health/proposals/websocket)
+	- `src/config/**` (environment, env, dynamicConfig, constants)
+	- selected app/page/components (`App.jsx`, `HomeLanding.jsx`, `ReviewSystem.jsx`, `SmartNavigation.jsx`, `ErrorBoundary.jsx`, `ThemeProvider.jsx`).
+
+Validation for batch 13:
+- PASS: direct-console residual scan returned no `console.(error|warn|log|info|debug)` matches in `src/**`.
+- PASS: `npm run build` in `kelmah-frontend`.
+
+Current open focus after batch 13:
+- none for direct-console hygiene in `src/**`.
+
+## Execution Delta Batch 14 (March 24 2026)
+
+- Production runtime crash hardening for chunk export mismatch:
+	- symptom addressed: `Uncaught SyntaxError: The requested module './shared-api-*.js' does not provide an export named 'u'`.
+	- mitigation implemented in `public/sw.js`: hashed JS/CSS chunk requests now use network-first with `cache: 'no-store'`, avoiding stale importer/shared-chunk combinations.
+	- cache namespace rotated to `kelmah-v1.0.10-chunk-coherence` and runtime-cache clear fallback retained for missing chunks.
+- Client-side auto-recovery:
+	- `src/utils/pwaHelpers.js` and `index.html` now detect chunk-mismatch signatures and perform bounded one-session cache-clear + reload recovery.
+	- startup/bootstrap logs in `index.html` now run only under explicit debug conditions (localhost or `?pwa_debug=1`).
+
+Validation for batch 14:
+- PASS: direct-console residual scan returned no `console.(error|warn|log|info|debug)` matches in `src/**`, `index.html`, and `public/sw.js`.
+- PASS: `npm run build` in `kelmah-frontend`.
+- PASS: smoke suites (`routed-paths`, `critical-path-happy-flow`, `critical-path-gateway-contract`) all green.
+
+Current open focus after batch 14:
+- monitor deploy telemetry for any residual chunk mismatch incidents after this SW + bootstrap coherence hardening.

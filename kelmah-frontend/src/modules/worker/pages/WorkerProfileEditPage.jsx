@@ -1,36 +1,29 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { normalizeUser } from '../../../utils/userUtils';
-import {
-  Box, Container, Typography, TextField, Button, Grid, Paper, Divider, MenuItem, FormControl, InputLabel, Select, Chip, OutlinedInput, Avatar, IconButton, Alert, Snackbar, Card, CardContent, InputAdornment, useTheme, Autocomplete, Switch, FormControlLabel, Skeleton, Tooltip, Accordion, AccordionSummary, AccordionDetails } from '@mui/material';
-import {
-  Save as SaveIcon,
-  Cancel as CancelIcon,
-  PhotoCamera as CameraIcon,
-  AddCircleOutline as AddIcon,
-  Delete as DeleteIcon,
-  BusinessCenter as BusinessIcon,
-  LocationOn as LocationIcon,
-  MonetizationOn as RateIcon,
-  School as EducationIcon,
-  Language as LanguageIcon,
-  Description as DescriptionIcon,
-  Build as SkillsIcon,
-  Person as PersonIcon, // Fix: Added missing PersonIcon import
-  ExpandMore as ExpandMoreIcon,
-} from '@mui/icons-material';
-import { styled } from '@mui/material/styles';
-import {
-  updateWorkerProfile,
-  updateWorkerAvailability,
-  fetchWorkerProfile,
-} from '../services/workerSlice';
-import { api } from '../../../services/apiClient';
-import { Helmet } from 'react-helmet-async';
-import fileUploadService from '../../common/services/fileUploadService';
-import { useBreakpointDown } from '@/hooks/useResponsive';
-import { createFeatureLogger } from '@/modules/common/utils/devLogger';
+// IconButton focus-visible styling is enforced globally via MuiIconButton theme overrides.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 const Input = styled('input')({
   display: 'none',

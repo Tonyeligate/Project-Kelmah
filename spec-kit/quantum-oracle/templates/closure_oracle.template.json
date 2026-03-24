@@ -3,6 +3,7 @@
   "taskType": "visible-ui-bug|ui-optimization|adaptive-interface|design-flow-optimization|backend-optimization|api-design-optimization|reliability-hardening|database-integrity-hardening|security-hardening|realtime-reliability|infra-coherence|general",
   "requiresFrontendVisualOracle": false,
   "requiresOptimizationOracle": false,
+  "requiresImmersiveOracle": false,
   "requiresBackendOracle": false,
   "requiresDatabaseOracle": false,
   "requiresSecurityOracle": false,

@@ -3,18 +3,13 @@ import { ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
 import { CssBaseline } from '@mui/material';
 import PropTypes from 'prop-types';
 import darkTheme, { lightTheme } from './index';
+import { devWarn as themeWarn } from '../modules/common/utils/devLogger';
 
 const THEME_STORAGE_KEY = 'kelmah-theme-mode';
 const THEME_STORAGE_VERSION = 2;
 const SYSTEM_PREFERENCE_MEDIA = '(prefers-color-scheme: dark)';
 const DARK_THEME_COLOR = darkTheme?.palette?.background?.default || '#050507';
 const LIGHT_THEME_COLOR = lightTheme?.palette?.background?.default || '#F9F7ED';
-const themeWarn = (...args) => {
-  if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') {
-    console.warn(...args);
-  }
-};
-
 const isValidMode = (value) => value === 'dark' || value === 'light';
 
 const isBrowser = () =>

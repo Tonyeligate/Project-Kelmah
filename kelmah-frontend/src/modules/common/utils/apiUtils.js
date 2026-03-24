@@ -1,5 +1,5 @@
 import { api as gatewayClient } from '../../../services/apiClient';
-import { devDebug } from '@/modules/common/utils/devLogger';
+import { devDebug } from '';
 
 /**
  * Check if the API is reachable

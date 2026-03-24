@@ -3,37 +3,17 @@
  * Displays user performance metrics and tier information
  */
 
-import React, { useState, useEffect } from 'react';
-import {
-  Card,
-  CardContent,
-  Typography,
-  Box,
-  Alert,
-  LinearProgress,
-  Chip,
-  Grid,
-  Avatar,
-  Stack,
-  Divider,
-  IconButton,
-  Tooltip,
-  useTheme,
-  alpha,
-} from '@mui/material';
-import {
-  EmojiEvents as EmojiEventsIcon,
-  TrendingUp as TrendingUpIcon,
-  Star as StarIcon,
-  Schedule as ScheduleIcon,
-  CheckCircle as CheckCircleIcon,
-  LocationOn as LocationOnIcon,
-  Gavel as GavelIcon,
-  Timeline as TimelineIcon,
-} from '@mui/icons-material';
-import { motion } from 'framer-motion';
-import workerService from '../services/workerService';
-import { devWarn } from '@/modules/common/utils/devLogger';
+
+
+
+
+
+
+
+
+
+
+
 
 const DEFAULT_PERFORMANCE = {
   performanceTier: 'tier3',

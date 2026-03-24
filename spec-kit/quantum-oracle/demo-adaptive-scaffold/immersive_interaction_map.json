@@ -1,0 +1,27 @@
+{
+  "taskId": "demo-adaptive-scaffold",
+  "interactionFlows": [
+    {
+      "flowId": "browse-to-action",
+      "stateCount": 4,
+      "adaptive": true,
+      "result": "pass"
+    }
+  ],
+  "cognitiveLoadBudget": {
+    "maxConcurrentCues": 3,
+    "maxMotionDensity": 0.45,
+    "result": "pass"
+  },
+  "outcomeDelta": {
+    "taskCompletionDelta": 0.11,
+    "frictionDelta": -0.13,
+    "result": "pass"
+  },
+  "fallbackPath": {
+    "deterministic": true,
+    "condition": "low_performance_or_low_confidence",
+    "mode": "canonical-ui"
+  },
+  "closureVerdict": "PASS"
+}

@@ -46,7 +46,7 @@ import {
 import {
   createFeatureLogger,
   devError,
-} from '@/modules/common/utils/devLogger';
+} from '';
 
 const authLog = createFeatureLogger({
   flagName: 'VITE_DEBUG_AUTH',

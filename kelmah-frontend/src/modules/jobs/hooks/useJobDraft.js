@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { secureStorage } from '../../../utils/secureStorage';
-import { devWarn } from '@/modules/common/utils/devLogger';
+import { devWarn } from '';
 
 const DRAFT_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days
 const SAVE_DELAY = 800;

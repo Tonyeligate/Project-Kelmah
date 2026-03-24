@@ -74,7 +74,7 @@ import { useBreakpointDown } from '../../../hooks/useResponsive';
 // ConversationList + Chatbox rendered inline — imports removed (dead code)
 import SEO from '../../common/components/common/SEO';
 import EmptyState from '../../../components/common/EmptyState';
-import { devError, devWarn } from '@/modules/common/utils/devLogger';
+import { devError, devWarn } from '';
 
 // Enhanced Messaging Page with modern features
 const EnhancedMessagingPage = () => {

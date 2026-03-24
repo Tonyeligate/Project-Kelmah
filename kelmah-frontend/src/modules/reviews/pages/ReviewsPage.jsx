@@ -73,7 +73,7 @@ import { useNavigate } from 'react-router-dom';
 import reviewService from '../services/reviewService';
 import MobileFilterSheet from '../../../components/common/MobileFilterSheet';
 import { Helmet } from 'react-helmet-async';
-import { devError } from '@/modules/common/utils/devLogger';
+import { devError } from '';
 
 // Enhanced Reviews Page with comprehensive review management
 const EnhancedReviewsPage = () => {

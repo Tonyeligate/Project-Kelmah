@@ -763,3 +763,14 @@ When frontend runs adaptive or optimization flows, backend must provide:
 Hard rule:
   no adaptive endpoint may bypass auth, rate-limit, or contract validation gates.
 ```
+
+### BFL-13: Immersive Contract Determinism
+```
+For frontend 3D/HD and adaptive UI consumers, backend APIs must expose
+deterministic, versioned contract fields for layout/interaction payloads.
+
+Hard rules:
+  - preserve response envelope and contract version traceability
+  - include bounded payload sizing metadata for render safety
+  - define deterministic fallbacks when immersive fields are absent
+```

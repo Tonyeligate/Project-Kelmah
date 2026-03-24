@@ -1,41 +1,28 @@
-import React, { useRef, useEffect, useState, useCallback } from 'react';
-import {
-  Box,
-  Typography,
-  Avatar,
-  Paper,
-  Divider,
-  CircularProgress,
-    Skeleton,
-  IconButton,
-  Menu,
-  MenuItem,
-  ListItemIcon,
-  ListItemText,
-  Link,
-  ImageList,
-  ImageListItem,
-  ImageListItemBar,
-  Button,
-} from '@mui/material';
-import {
-  MoreVert as MoreIcon,
-  Delete as DeleteIcon,
-  ContentCopy as CopyIcon,
-  InsertDriveFile as FileIcon,
-  Image as ImageIcon,
-  Download as DownloadIcon,
-} from '@mui/icons-material';
-import { format } from 'date-fns';
-import { styled } from '@mui/material/styles';
-import { useMessages } from '../../contexts/MessageContext';
-import { useAuth } from '../../../auth/hooks/useAuth';
-import { MESSAGE_TYPES } from '../../../../config/constants';
-import { useInView } from 'react-intersection-observer';
-import Message from './Message';
-import TypingIndicator from './TypingIndicator';
-import MessageDateDivider from './MessageDateDivider';
-import EmptyState from '../../../../components/common/EmptyState';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Styled components
 const MessageListContainer = styled(Box)(({ theme }) => ({

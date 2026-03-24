@@ -30,7 +30,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../../../../services/apiClient';
 import { formatJobLocation } from '../../../../../utils/formatters';
-import { devError } from '@/modules/common/utils/devLogger';
+import { devError } from '';
 
 const JobSearch = () => {
   const navigate = useNavigate();

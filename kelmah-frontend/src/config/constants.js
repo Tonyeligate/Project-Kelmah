@@ -1,13 +1,6 @@
 // Import centralized services (must be at top to avoid TDZ issues)
 import { getApiBaseUrl, API_ENDPOINTS } from './environment';
-
-const FRONTEND_DEBUG =
-  import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true';
-const devWarn = (...args) => {
-  if (FRONTEND_DEBUG) {
-    console.warn(...args);
-  }
-};
+import { devWarn } from '../modules/common/utils/devLogger';
 
 // Environment-based configuration
 const ENV = import.meta.env.MODE || 'development';

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Typography, Paper, Button, Alert } from '@mui/material';
 import portfolioApi from '../services/portfolioService';
-import { devError } from '@/modules/common/utils/devLogger';
+import { devError } from '';
 
 const WorkSampleUploader = ({ onUpload }) => {
   const fileInputRef = React.useRef(null);

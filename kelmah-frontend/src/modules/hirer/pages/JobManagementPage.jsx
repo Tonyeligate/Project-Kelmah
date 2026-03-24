@@ -1,36 +1,23 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { Helmet } from 'react-helmet-async';
-import {
-  Box, Typography, Tabs, Tab, Paper, Button, Card, CardContent, CardMedia, IconButton, Chip, TextField, InputAdornment, Menu, MenuItem, Divider, Badge, CircularProgress, Alert, Snackbar, Tooltip, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, useTheme, TableContainer, Table, TableHead, TableBody, TableRow, TableCell, TablePagination } from '@mui/material';
-import {
-  Add as AddIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-  MoreVert as MoreIcon,
-  Search as SearchIcon,
-  Person as PersonIcon,
-  Visibility as ViewIcon,
-  Assignment as ApplicationIcon,
-  CheckCircle as ActiveIcon,
-  AccessTime as ExpiredIcon,
-  Close as ClosedIcon,
-  HourglassEmpty as DraftIcon,
-  Refresh as RefreshIcon,
-  ErrorOutline as WarningIcon,
-  Gavel as BidIcon,
-  Public as PublicIcon,
-  Lock as PrivateIcon,
-  GroupAdd as InviteIcon,
-} from '@mui/icons-material';
-import {
-  updateJobStatus,
-  deleteHirerJob,
-} from '../services/hirerSlice';
-import { formatJobLocation } from '../../../utils/formatters';
-import { api } from '../../../services/apiClient';
-import { useBreakpointDown } from '@/hooks/useResponsive';
+// IconButton focus-visible styling is enforced globally via MuiIconButton theme overrides.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Visibility chip — tells the hirer whether the job appears on the public Jobs page
 const VisibilityChip = ({ visibility }) => {

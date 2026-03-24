@@ -1,13 +1,22 @@
-import React, { useState } from 'react';
-import { Box, Paper, TextField, InputAdornment, Slider, FormControlLabel, Checkbox, Typography, Divider, Button, MenuItem, Select, FormControl, InputLabel, IconButton, Collapse } from '@mui/material';
-import { styled, useTheme } from '@mui/material/styles';
-import SearchIcon from '@mui/icons-material/Search';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import CategoryIcon from '@mui/icons-material/Category';
-import FilterListIcon from '@mui/icons-material/FilterList';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import { useBreakpointDown } from '@/hooks/useResponsive';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 const FilterPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),

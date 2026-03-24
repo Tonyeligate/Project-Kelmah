@@ -1,25 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import {
-  Box, Card, CardContent, Typography, Grid, LinearProgress, Chip, Avatar, Button, IconButton, Divider, List, ListItem, ListItemAvatar, ListItemText, ListItemSecondaryAction, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Rating, Skeleton, Alert, Snackbar, useTheme } from '@mui/material';
-import {
-  PlayArrow as StartIcon,
-  Pause as PauseIcon,
-  CheckCircle as CompleteIcon,
-  Schedule as ScheduleIcon,
-  AttachMoney as PaymentIcon,
-  Message as MessageIcon,
-  Star as StarIcon,
-  Visibility as ViewIcon,
-} from '@mui/icons-material';
-import {
-  fetchHirerJobs,
-  selectHirerJobs,
-  selectHirerLoading,
-} from '../services/hirerSlice';
-import { hirerService } from '../services/hirerService';
-import { useBreakpointDown } from '@/hooks/useResponsive';
+// IconButton focus-visible styling is enforced globally via MuiIconButton theme overrides.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 const JobProgressTracker = () => {
   const theme = useTheme();
@@ -295,14 +289,14 @@ const JobProgressTracker = () => {
                 </Box>
               </Box>
               <Box display="flex" gap={1}>
-                <IconButton
+                <IconButton sx={iconButtonA11ySx}
                   size="small"
                   onClick={() => handleDialogOpen('view', job)}
                   aria-label="View job details"
                 >
                   <ViewIcon />
                 </IconButton>
-                <IconButton
+                <IconButton sx={iconButtonA11ySx}
                   size="small"
                   onClick={() => handleMessageWorker(job)}
                   aria-label="Message worker"

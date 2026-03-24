@@ -78,7 +78,7 @@ import {
   formatRelativeTime,
 } from '../../../utils/formatters';
 import paymentService from '../services/paymentService';
-import { devError } from '@/modules/common/utils/devLogger';
+import { devError } from '';
 
 const PaymentAnalyticsDashboard = ({
   userType = 'worker', // 'worker', 'hirer', 'admin'

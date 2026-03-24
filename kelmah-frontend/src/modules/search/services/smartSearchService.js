@@ -1,5 +1,5 @@
 import { api } from '../../../services/apiClient';
-import { devWarn } from '@/modules/common/utils/devLogger';
+import { devWarn } from '';
 
 const API_URL = '/search';
 const JOB_RECOMMENDATIONS_ENDPOINT = '/jobs/recommendations/personalized';

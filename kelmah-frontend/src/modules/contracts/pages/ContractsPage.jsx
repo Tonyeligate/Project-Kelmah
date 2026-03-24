@@ -19,7 +19,7 @@ import MobileFilterSheet from '../../../components/common/MobileFilterSheet';
 import EmptyState from '../../../components/common/EmptyState';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 import { toUserMessage } from '@/services/responseNormalizer';
-import { devError } from '@/modules/common/utils/devLogger';
+import { devError } from '';
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All contracts' },

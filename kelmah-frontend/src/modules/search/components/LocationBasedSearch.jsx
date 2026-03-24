@@ -38,7 +38,7 @@ import {
 import { useSnackbar } from 'notistack';
 import PropTypes from 'prop-types';
 import locationService from '../services/locationService';
-import { createFeatureLogger } from '@/modules/common/utils/devLogger';
+import { createFeatureLogger } from '';
 
 const searchDebugError = createFeatureLogger({
   flagName: 'VITE_DEBUG_SEARCH',

@@ -1,59 +1,23 @@
-import React, { useState, useCallback } from 'react';
-import { useSelector } from 'react-redux';
-import certificateService from '../services/certificateService';
-import {
-  Box,
-  Paper,
-  Typography,
-  Button,
-  Grid,
-  Card,
-  CardContent,
-  CardActions,
-  IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Chip,
-  Alert,
-  CircularProgress,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  ListItemSecondaryAction,
-  Divider,
-  Stack,
-  LinearProgress,
-  useTheme,
-  alpha,
-} from '@mui/material';
-import {
-  CloudUpload as UploadIcon,
-  Delete as DeleteIcon,
-  Visibility as ViewIcon,
-  GetApp as DownloadIcon,
-  CheckCircle as VerifiedIcon,
-  Schedule as PendingIcon,
-  Cancel as RejectedIcon,
-  Add as AddIcon,
-  Description as DocumentIcon,
-  School as CertificateIcon,
-  WorkOutline as LicenseIcon,
-  Security as BadgeIcon,
-  Edit as EditIcon,
-} from '@mui/icons-material';
-import { useSnackbar } from 'notistack';
-import { useDropzone } from 'react-dropzone';
-import { formatFileSize, formatDate } from '../../../utils/formatters';
-import { normalizeUser } from '../../../utils/userUtils';
-import ConfirmDialog from '../../common/components/common/ConfirmDialog';
+// IconButton focus-visible styling is enforced globally via MuiIconButton theme overrides.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 const CertificateUploader = ({ onCertificatesChange }) => {
   // FIXED: Use standardized user normalization for consistent user data access
