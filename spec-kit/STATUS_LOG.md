@@ -1,3 +1,49 @@
+### Session: Worker Applications Crash + Worker Endpoint Resilience Hardening March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Resolve runtime crash on worker applications page and reduce user-visible failures from transient worker endpoint outages.
+
+**Files touched**
+- kelmah-frontend/src/modules/worker/pages/MyApplicationsPage.jsx
+- kelmah-frontend/src/modules/worker/services/workerService.js
+- kelmah-backend/services/user-service/controllers/worker.controller.js
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Worker applications page:
+  - restored missing import block (React hooks, router, MUI components/icons, responsive hook, logger, and applications service) to fix `createFeatureLogger is not defined` runtime failure.
+- Worker frontend service resilience:
+  - expanded fallback retry classification to include transient upstream conditions (`429`, `500`, `502`, `503`, `504`, and no-response network errors).
+  - updated `getWorkerAvailability` to return a safe normalized fallback payload on transient outages (instead of hard-failing the UI).
+  - updated `getWorkerStats` (`/completeness`) with transient-outage fallback payload + telemetry capture.
+- User-service hardening:
+  - added trade-category fallback payload builder.
+  - updated `getTradeCategoryStats` to serve fallback data when MongoDB is temporarily unavailable/BSON-mismatch/connection timeout instead of returning hard failure for transient conditions.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,965 modules transformed).
+- PASS: `npx jest --runTestsByPath tests/worker-directory.controller.test.js --runInBand` in `kelmah-backend/services/user-service` (4/4 tests passed).
+
+---
+
+### Session: Job Details Runtime ReferenceError Fix March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Resolve production runtime crash on job details page caused by undefined `truncatedJobDescription` reference.
+
+**Files touched**
+- kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Replaced stale variable reference `truncatedJobDescription` with the correctly defined `condensedJobDescription` in the overview render path.
+- This removes the `ReferenceError` thrown from the bundled `JobDetailsPage` chunk and restores page render on mobile and desktop.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,964 modules transformed).
+
+---
+
 ### Session: Batch 10F Artifact Sweep and Operator Symbol Normalization March 24 2026 ✅ COMPLETED
 
 **Date**: March 24, 2026  

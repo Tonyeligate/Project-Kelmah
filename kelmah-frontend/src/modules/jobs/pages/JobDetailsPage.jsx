@@ -921,7 +921,7 @@ const JobDetailsPage = () => {
                     maxWidth: '72ch',
                   }}
                 >
-                  {showFullOverview ? fullJobDescription : truncatedJobDescription}
+                  {showFullOverview ? fullJobDescription : condensedJobDescription}
                 </Typography>
                 {fullJobDescription.length > 320 && (
                   <Button

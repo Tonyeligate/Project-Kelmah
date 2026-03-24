@@ -1009,6 +1009,17 @@ const buildAvailabilityFallbackPayload = (workerId = null, reason = 'USER_SERVIC
   user: workerId,
 });
 
+const buildTradeCategoryFallbackPayload = (reason = 'USER_SERVICE_DB_UNAVAILABLE') => ({
+  categories: LANDING_TRADE_CATEGORIES.map(({ key, label }) => ({
+    key,
+    label,
+    query: key,
+    count: 0,
+  })),
+  fallback: true,
+  fallbackReason: reason,
+});
+
 const isNil = (value) => value === null || value === undefined;
 
 const toIsoString = (value) => {
@@ -2104,6 +2115,13 @@ class WorkerController {
 
 
       static async getTradeCategoryStats(req, res) {
+        const sendFallback = (reason) =>
+          res.status(200).json({
+            success: true,
+            message: 'Trade category stats temporarily unavailable; serving fallback data.',
+            data: buildTradeCategoryFallbackPayload(reason),
+          });
+
         try {
           const categories = await executeTradeCategoryStatsQuery();
 
@@ -2117,12 +2135,12 @@ class WorkerController {
         } catch (error) {
           logger.error('Trade category stats error:', error);
 
+          if (isDbUnavailableError(error) || error?.name === 'BSONVersionError') {
+            return sendFallback('USER_SERVICE_DB_UNAVAILABLE');
+          }
+
           if (error?.message?.toLowerCase().includes('timed out waiting for mongodb connection')) {
-            return res.status(503).json({
-              success: false,
-              message: 'User Service database is reconnecting. Please try again shortly.',
-              code: 'USER_DB_NOT_READY',
-            });
+            return sendFallback('USER_DB_NOT_READY');
           }
 
           return handleServiceError(res, error, 'Failed to retrieve trade category stats');

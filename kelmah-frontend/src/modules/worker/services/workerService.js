@@ -277,7 +277,20 @@ const unwrapPayload = (response) =>
 
 const shouldTryFallback = (error) => {
   const status = error?.response?.status;
-  return status === 404 || status === 405 || status === 501 || status === 503;
+  if (!status) {
+    return true;
+  }
+
+  return [404, 405, 429, 500, 501, 502, 503, 504].includes(status);
+};
+
+const isTransientWorkerEndpointError = (error) => {
+  const status = error?.response?.status;
+  if (!status) {
+    return true;
+  }
+
+  return [429, 500, 502, 503, 504].includes(status);
 };
 
 const requestWithFallback = async (endpoints, requestFactory) => {
@@ -625,7 +638,8 @@ const workerService = {
       response = await api.get(workerPath(workerId, '/availability'));
     } catch (error) {
       const status = error?.response?.status;
-      if (status && status !== 404 && status !== 405) {
+      const shouldFallback = status === 404 || status === 405 || isTransientWorkerEndpointError(error);
+      if (!shouldFallback) {
         throw error;
       }
 
@@ -647,7 +661,7 @@ const workerService = {
         lastUpdated: null,
       }, {
         fallback: true,
-        fallbackReason: 'availability-endpoint-unavailable',
+        fallbackReason: status ? `availability-endpoint-${status}` : 'availability-endpoint-unavailable',
       });
     }
     const payload = unwrapPayload(response);
@@ -722,10 +736,41 @@ const workerService = {
       throw new Error('workerId is required to fetch statistics');
     }
 
-    const response = await api.get(workerPath(workerId, '/completeness'));
-    const payload = unwrapPayload(response);
-    const completion =
-      payload?.completionPercentage ?? payload?.percentage ?? 0;
+    let payload;
+    try {
+      const response = await api.get(workerPath(workerId, '/completeness'));
+      payload = unwrapPayload(response);
+    } catch (error) {
+      if (!isTransientWorkerEndpointError(error)) {
+        throw error;
+      }
+
+      captureRecoverableApiError(error, {
+        operation: 'workers.getWorkerStats',
+        fallbackUsed: true,
+        suppressUi: true,
+      });
+
+      payload = {
+        completionPercentage: 0,
+        percentage: 0,
+        requiredCompletion: 0,
+        optionalCompletion: 0,
+        missingRequired: [],
+        missingOptional: [],
+        recommendations: [],
+        source: {
+          worker: false,
+          workerProfile: false,
+        },
+        fallback: true,
+        fallbackReason: error?.response?.status
+          ? `completeness-endpoint-${error.response.status}`
+          : 'completeness-endpoint-unavailable',
+      };
+    }
+
+    const completion = payload?.completionPercentage ?? payload?.percentage ?? 0;
 
     const normalized = {
       completionPercentage: completion,

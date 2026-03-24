@@ -38,6 +38,7 @@ import {
   CheckCircle,
   Cancel,
   Message,
+  ArrowBack,
   InboxOutlined,
   TipsAndUpdates,
   ArrowForward,
@@ -73,6 +74,7 @@ import {
   JobListItem,
 } from '../components/ApplicationManagementCards';
 import { useBreakpointDown } from '../../../hooks/useResponsive';
+import { BOTTOM_NAV_HEIGHT } from '../../../constants/layout';
 
 /* ─── helpers ─────────────────────────────────────────────────────── */
 
@@ -368,6 +370,7 @@ function ApplicationManagementPage() {
     : (summary?.totalApplications || 0);
 
   const hasNoStandardJobs = !initialLoading && allJobs.length === 0;
+  const mobileDetailMode = isMobile && Boolean(selectedApplication);
 
   const triageSummary = useMemo(() => {
     const withRate = filteredApps.filter((app) => Number.isFinite(Number(app?.proposedRate)));
@@ -399,17 +402,25 @@ function ApplicationManagementPage() {
           return null;
         }
 
+        if (isMobile && !current) {
+          return null;
+        }
+
         if (current) {
           const stillVisible = filteredApps.find((app) => app.id === current.id);
           if (stillVisible) {
             return stillVisible;
+          }
+
+          if (isMobile) {
+            return null;
           }
         }
 
         return filteredApps[0];
       });
     }
-  }, [filteredApps, initialLoading]);
+  }, [filteredApps, initialLoading, isMobile]);
 
   // ── Handlers ───────────────────────────────────────────────────
   const handleSelectJob = (jobId) => {
@@ -472,6 +483,13 @@ function ApplicationManagementPage() {
     }
   };
 
+  const handleSelectApplication = useCallback((application) => {
+    setSelectedApplication(application);
+    if (isMobile) {
+      setShowJobList(false);
+    }
+  }, [isMobile]);
+
   const handleMessage = async () => {
     if (!selectedApplication?.workerId) {
       setError('Worker contact information is unavailable.');
@@ -503,7 +521,14 @@ function ApplicationManagementPage() {
      ═══════════════════════════════════════════════════════════════ */
 
   return (
-    <Container maxWidth="xl" sx={{ mt: { xs: 2, md: 3 }, mb: { xs: 2, md: 4 } }}>
+    <Container
+      maxWidth="xl"
+      sx={{
+        mt: { xs: 2, md: 3 },
+        mb: { xs: 2, md: 4 },
+        pb: { xs: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px) + 12px)`, md: 0 },
+      }}
+    >
       <Helmet>
         <title>Applications | Kelmah</title>
       </Helmet>
@@ -557,7 +582,7 @@ function ApplicationManagementPage() {
             variant="outlined"
             startIcon={<Work />}
             onClick={() => setShowJobList(!showJobList)}>
-            {showJobList ? 'Hide Jobs' : 'Select Job'}
+            {showJobList ? 'Hide Jobs' : selectedJobId ? 'Change Job' : 'Select Job'}
           </Button>
         )}
       </Box>
@@ -632,7 +657,7 @@ function ApplicationManagementPage() {
               borderRight: isMobile
                 ? 'none'
                 : `1px solid ${theme.palette.divider}`,
-              display: 'flex',
+              display: mobileDetailMode ? 'none' : 'flex',
               flexDirection: 'column',
             }}
           >
@@ -654,7 +679,9 @@ function ApplicationManagementPage() {
                   fontSize: '0.8rem',
                 },
               }}
-              variant="fullWidth"
+              variant={isMobile ? 'scrollable' : 'fullWidth'}
+              scrollButtons={isMobile ? 'auto' : false}
+              allowScrollButtonsMobile={isMobile}
             >
               <Tab
                 label={
@@ -695,7 +722,7 @@ function ApplicationManagementPage() {
               selectedApplicationId={selectedApplication?.id}
               activeTabCountsByJob={activeTabCountsByJob}
               onClearError={() => setError(null)}
-              onSelectApplication={setSelectedApplication}
+              onSelectApplication={handleSelectApplication}
               onSelectJob={handleSelectJob}
             />
 
@@ -718,22 +745,35 @@ function ApplicationManagementPage() {
           <Box
             sx={{
               flex: 1,
+              width: isMobile ? '100%' : 'auto',
               p: { xs: 2, md: 3 },
-              display: 'flex',
+              display: isMobile && !mobileDetailMode ? 'none' : 'flex',
               flexDirection: 'column',
             }}
           >
             {selectedApplication ? (
-              <ApplicationDetailPanel
-                app={selectedApplication}
-                onAccept={() => handleOpenReviewDialog('accepted')}
-                onReject={() => handleOpenReviewDialog('rejected')}
-                onMessage={handleMessage}
-                onViewJob={() =>
-                  navigate(`/jobs/${selectedApplication.jobId}`)
-                }
-                navigate={navigate}
-              />
+              <>
+                {isMobile && (
+                  <Button
+                    variant="text"
+                    startIcon={<ArrowBack />}
+                    onClick={() => setSelectedApplication(null)}
+                    sx={{ alignSelf: 'flex-start', mb: 1, minHeight: 44 }}
+                  >
+                    Back To Applications
+                  </Button>
+                )}
+                <ApplicationDetailPanel
+                  app={selectedApplication}
+                  onAccept={() => handleOpenReviewDialog('accepted')}
+                  onReject={() => handleOpenReviewDialog('rejected')}
+                  onMessage={handleMessage}
+                  onViewJob={() =>
+                    navigate(`/jobs/${selectedApplication.jobId}`)
+                  }
+                  navigate={navigate}
+                />
+              </>
             ) : (
               <Box
                 sx={{
