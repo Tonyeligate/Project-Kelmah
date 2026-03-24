@@ -12,6 +12,7 @@ import {
 } from '@mui/icons-material';
 import { hirerService } from '../services/hirerService';
 import { useBreakpointDown } from '@/hooks/useResponsive';
+import { devError, devWarn } from '@/modules/common/utils/devLogger';
 
 const WorkerReview = () => {
   const theme = useTheme();
@@ -54,7 +55,7 @@ const WorkerReview = () => {
       );
       setError(null);
     } catch (err) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('User service unavailable for worker reviews:', err.message);
+      devWarn('User service unavailable for worker reviews:', err.message);
       setWorkers([]);
       setError('Unable to fetch worker reviews. Please try again later.');
     } finally {
@@ -148,7 +149,7 @@ const WorkerReview = () => {
         setSnackbar({ open: true, message: 'Review submitted successfully!', severity: 'success' });
         handleDialogClose();
       } catch (err) {
-        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error submitting review:', err);
+        devError('Error submitting review:', err);
         setSnackbar({
           open: true,
           message: err?.message || err || 'Failed to submit review',

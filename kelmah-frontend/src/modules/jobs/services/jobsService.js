@@ -5,6 +5,10 @@ import {
   resolveJobVisualUrl,
   resolveProfileImageUrl,
 } from '../../common/utils/mediaAssets';
+import { devError, devWarn } from '@/modules/common/utils/devLogger';
+
+const jobsWarn = devWarn;
+const jobsError = devError;
 
 // Use centralized jobServiceClient with auth/retry interceptors
 
@@ -113,7 +117,7 @@ const transformJobListItem = (job) => {
     }
 
     // Fallback: Flag for admin review
-    if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn(
+    jobsWarn(
       `⚠️ Job ${job._id || job.id} missing employer data - flagged for admin review`,
     );
     // U-06 FIX: Neutral fallback — “Anonymous Employer” is honest, not misleading
@@ -256,7 +260,7 @@ const jobsApi = {
 
       // Log jobs needing admin review
       if (jobsNeedingReview.length > 0) {
-        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn(
+        jobsWarn(
           `⚠️ ${jobsNeedingReview.length} jobs missing employer data:`,
           jobsNeedingReview,
         );
@@ -273,7 +277,7 @@ const jobsApi = {
         jobsNeedingReview: jobsNeedingReview.length, // Include count in response
       };
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('❌ Job service API error:', error.message, {
+      jobsWarn('❌ Job service API error:', error.message, {
         status: error.response?.status,
         statusText: error.response?.statusText,
         data: error.response?.data,
@@ -382,7 +386,7 @@ const jobsApi = {
       // Prefer nested data shape, fallback to flat
       return response.data?.data?.contracts || response.data?.contracts || [];
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Job service unavailable for contracts:', error.message);
+      jobsWarn('Job service unavailable for contracts:', error.message);
       return [];
     }
   },
@@ -393,7 +397,7 @@ const jobsApi = {
   async getJobById(jobId, requestOptions = {}) {
     // Validate jobId before making API call
     if (!jobId || jobId === 'undefined' || jobId === 'null') {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('❌ Invalid job ID provided to getJobById:', jobId);
+      jobsError('❌ Invalid job ID provided to getJobById:', jobId);
       throw new Error('Invalid job ID');
     }
 
@@ -469,7 +473,7 @@ const jobsApi = {
           : raw;
       return normalized;
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn(`Job service unavailable for job ${jobId}:`, error.message);
+      jobsWarn(`Job service unavailable for job ${jobId}:`, error.message);
       throw error;
     }
   },
@@ -519,7 +523,7 @@ const jobsApi = {
         currentPage,
       };
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Job service unavailable for job search:', error.message);
+      jobsWarn('Job service unavailable for job search:', error.message);
       return {
         jobs: [],
         totalPages: 1,
@@ -564,7 +568,7 @@ const jobsApi = {
             : [];
       return jobs.map(transformJobListItem);
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Job service unavailable for featured jobs:', error.message);
+      jobsWarn('Job service unavailable for featured jobs:', error.message);
       return [];
     }
   },
@@ -580,7 +584,7 @@ const jobsApi = {
       );
       return response.data;
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn(
+      jobsWarn(
         `Job service unavailable for job application ${jobId}:`,
         error.message,
       );
@@ -596,7 +600,7 @@ const jobsApi = {
       const response = await api.get('/jobs/categories');
       return response.data.data || response.data;
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn(
+      jobsWarn(
         'Job service unavailable for job categories:',
         error.message,
       );
@@ -625,7 +629,7 @@ const jobsApi = {
       const items = Array.isArray(payload?.items) ? payload.items : [];
       return items.map(transformJobListItem);
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn(
+      jobsWarn(
         'Job service unavailable for personalized recommendations:',
         error.message,
       );
@@ -641,7 +645,7 @@ const jobsApi = {
       const response = await api.get('/jobs/stats');
       return response.data?.data || response.data || {};
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Job service unavailable for platform stats:', error.message);
+      jobsWarn('Job service unavailable for platform stats:', error.message);
       return null;
     }
   },

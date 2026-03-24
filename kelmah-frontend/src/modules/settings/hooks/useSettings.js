@@ -9,6 +9,7 @@ import {
   selectSettingsLoading,
   selectSettingsError,
 } from '../../../store/slices/settingsSlice';
+import { devError } from '@/modules/common/utils/devLogger';
 
 export const useSettings = () => {
   const dispatch = useDispatch();
@@ -136,7 +137,7 @@ export const useSettings = () => {
       setLanguages(languages);
       return languages;
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error loading languages:', error);
+      devError('Error loading languages:', error);
       return [];
     }
   }, []);
@@ -147,7 +148,7 @@ export const useSettings = () => {
       setThemes(themes);
       return themes;
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error loading themes:', error);
+      devError('Error loading themes:', error);
       return [];
     }
   }, []);

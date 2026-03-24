@@ -7,6 +7,18 @@ import { getApiBaseUrl } from './environment';
 
 const CONFIG_DEBUG =
   import.meta.env.DEV && import.meta.env.VITE_DEBUG_CONFIG === 'true';
+const FRONTEND_DEBUG =
+  import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true';
+const devWarn = (...args) => {
+  if (FRONTEND_DEBUG) {
+    console.warn(...args);
+  }
+};
+const devError = (...args) => {
+  if (FRONTEND_DEBUG) {
+    console.error(...args);
+  }
+};
 
 // Function to get current ngrok URL from centralized config
 const getCurrentNgrokUrl = async () => {
@@ -56,7 +68,7 @@ const getCurrentNgrokUrl = async () => {
             }
           }
         } catch (fetchError) {
-          if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Failed to fetch runtime config:', fetchError);
+          devWarn('Failed to fetch runtime config:', fetchError);
         }
       }
 
@@ -70,7 +82,7 @@ const getCurrentNgrokUrl = async () => {
     // Node.js environment (if this ever runs on server)
     return process.env.VITE_NGROK_URL || process.env.VITE_MESSAGING_SERVICE_URL;
   } catch (error) {
-    if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Failed to get dynamic ngrok URL:', error);
+    devWarn('Failed to get dynamic ngrok URL:', error);
     return null;
   }
 };
@@ -83,7 +95,7 @@ export const updateNgrokUrl = (newUrl) => {
       if (CONFIG_DEBUG) console.log('Ngrok URL updated in localStorage:', newUrl);
     }
   } catch (error) {
-    if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to update ngrok URL:', error);
+    devError('Failed to update ngrok URL:', error);
   }
 };
 

@@ -1,0 +1,12 @@
+{
+  "taskId": "<task-id>",
+  "scenarios": [
+    {
+      "name": "disconnect-reconnect",
+      "duplicates": 0,
+      "loss": 0,
+      "presenceConverged": true
+    }
+  ],
+  "closureVerdict": "PASS"
+}

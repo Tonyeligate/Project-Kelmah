@@ -1,11 +1,9 @@
+import { devError } from '@/modules/common/utils/devLogger';
+
 export const TOKEN_EXPIRY_TIME = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 export const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes in milliseconds
 
-const tokenUtilsError = (...args) => {
-  if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') {
-    console.error(...args);
-  }
-};
+const tokenUtilsError = devError;
 
 /**
  * Decode a base64url string (JWT-safe). Replaces `-` → `+` and `_` → `/`

@@ -64,6 +64,7 @@ import { safeFormatRelative } from '@/modules/common/utils/formatters';
 import { useMessages } from '../../contexts/MessageContext';
 import searchService from '../../../search/services/searchService';
 import Skeleton from '@mui/material/Skeleton';
+import { devError } from '@/modules/common/utils/devLogger';
 
 // Styled components
 const ConversationContainer = styled(Paper)(({ theme }) => ({
@@ -287,7 +288,7 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
         });
         if (active) setUserOptions(results.data || results.results || results);
       } catch (err) {
-        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error searching users:', err);
+        devError('Error searching users:', err);
       } finally {
         if (active) setUsersLoading(false);
       }
@@ -471,7 +472,7 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
       setShowNewConversationDialog(false);
       onSelectConversation(convo);
     } catch (err) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error creating conversation:', err);
+      devError('Error creating conversation:', err);
     }
   };
 

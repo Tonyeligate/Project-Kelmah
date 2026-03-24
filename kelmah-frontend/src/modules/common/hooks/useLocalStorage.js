@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { devError } from '@/modules/common/utils/devLogger';
 
 /**
  * Custom hook for storing values in localStorage with serialization
@@ -21,7 +22,7 @@ const useLocalStorage = (key, initialValue) => {
       return item ? JSON.parse(item) : initialValue;
     } catch (error) {
       // If error also return initialValue
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error(`Error reading localStorage key "${key}":`, error);
+      devError(`Error reading localStorage key "${key}":`, error);
       return initialValue;
     }
   });
@@ -46,7 +47,7 @@ const useLocalStorage = (key, initialValue) => {
         }
       }
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error(`Error setting localStorage key "${key}":`, error);
+      devError(`Error setting localStorage key "${key}":`, error);
     }
   };
 
@@ -57,7 +58,7 @@ const useLocalStorage = (key, initialValue) => {
         try {
           setStoredValue(e.newValue ? JSON.parse(e.newValue) : initialValue);
         } catch (error) {
-          if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error(
+          devError(
             `Error parsing localStorage change for key "${key}":`,
             error,
           );

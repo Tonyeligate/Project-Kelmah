@@ -1,0 +1,22 @@
+{
+  "taskId": "demo-adaptive-scaffold",
+  "packets": [
+    {
+      "agent": "debugger",
+      "triggerRule": "adaptive-ux-contradiction-challenge",
+      "filesMeasured": [
+        "spec-kit/quantum-oracle/<task-id>/closure_oracle.json"
+      ],
+      "findings": [
+        "Independent cross-check completed"
+      ],
+      "confidence": 0.9,
+      "verification": {
+        "testsRun": [
+          "quantum:check-closure --strict"
+        ],
+        "status": "pass"
+      }
+    }
+  ]
+}

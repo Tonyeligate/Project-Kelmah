@@ -74,6 +74,7 @@ import { useBreakpointDown } from '../../../hooks/useResponsive';
 // ConversationList + Chatbox rendered inline — imports removed (dead code)
 import SEO from '../../common/components/common/SEO';
 import EmptyState from '../../../components/common/EmptyState';
+import { devError, devWarn } from '@/modules/common/utils/devLogger';
 
 // Enhanced Messaging Page with modern features
 const EnhancedMessagingPage = () => {
@@ -306,9 +307,7 @@ const EnhancedMessagingPage = () => {
             return;
           }
         } catch (error) {
-          if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') {
-            console.warn(`Failed to deep-load conversation ${conversationId}:`, error.message);
-          }
+          devWarn(`Failed to deep-load conversation ${conversationId}:`, error.message);
           setDeepLinkError('Conversation could not be loaded. It may no longer exist.');
           showFeedback('Conversation could not be loaded.', 'error');
         }
@@ -399,7 +398,7 @@ const EnhancedMessagingPage = () => {
 
       sessionStorage.removeItem('kelmah_message_draft');
     } catch (draftError) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Failed to load message draft from session storage', draftError);
+      devWarn('Failed to load message draft from session storage', draftError);
     }
   }, []);
 
@@ -671,7 +670,7 @@ const EnhancedMessagingPage = () => {
         await contextSendMessage(text, type, attachments);
       }
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to send message:', error);
+      devError('Failed to send message:', error);
       showFeedback('Message was not sent. Check your connection and try again.', 'error');
     }
   }, [messageText, selectedFiles, selectedConversation, contextSendMessage, showFeedback]);
@@ -1777,8 +1776,8 @@ const EnhancedMessagingPage = () => {
                         right: -8,
                         background: 'error.main',
                         color: 'error.contrastText',
-                        width: 36,
-                        height: 36,
+                        width: 44,
+                        height: 44,
                         '&:hover': {
                           background: 'error.dark',
                         },

@@ -1,0 +1,11 @@
+{
+  "taskId": "<task-id>",
+  "attackVectors": [
+    {
+      "vector": "mass-assignment",
+      "replayed": true,
+      "result": "blocked"
+    }
+  ],
+  "closureVerdict": "PASS"
+}

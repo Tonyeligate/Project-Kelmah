@@ -250,7 +250,20 @@ const MessageAttachments = ({
                       >
                         {canInteract ? (
                           <Tooltip title="View image">
-                            <IconButton size="small" color="primary" aria-label="View image attachment">
+                            <IconButton
+                              size="small"
+                              color="primary"
+                              aria-label="View image attachment"
+                              sx={{
+                                width: 44,
+                                height: 44,
+                                '&:focus-visible': {
+                                  outline: '3px solid',
+                                  outlineColor: 'primary.main',
+                                  outlineOffset: '2px',
+                                },
+                              }}
+                            >
                               <Visibility />
                             </IconButton>
                           </Tooltip>
@@ -279,7 +292,16 @@ const MessageAttachments = ({
                           size="small"
                           onClick={() => onRemove && onRemove(index)}
                           aria-label="Remove attachment"
-                          sx={{ color: 'text.secondary' }}
+                          sx={{
+                            color: 'text.secondary',
+                            width: 44,
+                            height: 44,
+                            '&:focus-visible': {
+                              outline: '3px solid',
+                              outlineColor: 'primary.main',
+                              outlineOffset: '2px',
+                            },
+                          }}
                         >
                           <Close fontSize="small" />
                         </IconButton>
@@ -297,7 +319,16 @@ const MessageAttachments = ({
                               allowDownload ? 'noopener noreferrer' : undefined
                             }
                             aria-label="Download attachment"
-                            sx={{ color: 'primary.main' }}
+                            sx={{
+                              color: 'primary.main',
+                              width: 44,
+                              height: 44,
+                              '&:focus-visible': {
+                                outline: '3px solid',
+                                outlineColor: 'primary.main',
+                                outlineOffset: '2px',
+                              },
+                            }}
                             disabled={!allowDownload}
                           >
                             <Download fontSize="small" />
@@ -320,10 +351,16 @@ const MessageAttachments = ({
             position: 'absolute',
             right: 8,
             top: 8,
+            width: 44,
+            height: 44,
             color: (theme) => theme.palette.grey[500],
             backgroundColor: 'rgba(0, 0, 0, 0.5)',
             '&:hover': {
               backgroundColor: 'rgba(0, 0, 0, 0.7)',
+            },
+            '&:focus-visible': {
+              outline: '3px solid #fff',
+              outlineOffset: '2px',
             },
           }}
           onClick={handleClosePreview}

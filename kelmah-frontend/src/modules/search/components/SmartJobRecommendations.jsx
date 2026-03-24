@@ -54,6 +54,7 @@ import {
   formatRelativeTime,
   formatJobLocation,
 } from '../../../utils/formatters';
+import { createFeatureLogger } from '@/modules/common/utils/devLogger';
 
 // FIX C2: Stable default object to prevent infinite render loops from {} !== {}
 const EMPTY_FILTER = {};
@@ -64,13 +65,10 @@ const EMPTY_RECOMMENDATION_META = {
   refreshedAt: null,
 };
 
-const __SEARCH_DEBUG__ =
-  import.meta.env.DEV && import.meta.env.VITE_DEBUG_SEARCH === 'true';
-const searchDebugWarn = (...args) => {
-  if (__SEARCH_DEBUG__) {
-    console.warn(...args);
-  }
-};
+const searchDebugWarn = createFeatureLogger({
+  flagName: 'VITE_DEBUG_SEARCH',
+  level: 'warn',
+});
 
 const isRequestAbort = (error) =>
   error?.name === 'AbortError' ||

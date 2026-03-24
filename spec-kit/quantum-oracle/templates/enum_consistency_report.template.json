@@ -1,0 +1,7 @@
+{
+  "taskId": "<task-id>",
+  "enumsChecked": ["job.status", "application.status"],
+  "mismatchCount": 0,
+  "mismatches": [],
+  "closureVerdict": "PASS"
+}

@@ -79,10 +79,38 @@ const PaymentMethodCard = ({ method, onEdit }) => {
             <Typography variant="h6">{method.type}</Typography>
           </Box>
           <Box>
-            <IconButton size="small" onClick={handleEdit} sx={{ mr: 1, width: 44, height: 44 }} aria-label={`Edit ${method.type} card ending ${String(method.cardNumber || '').slice(-4)}`}>
+            <IconButton
+              size="small"
+              onClick={handleEdit}
+              sx={{
+                mr: 1,
+                width: 44,
+                height: 44,
+                '&:focus-visible': {
+                  outline: '3px solid',
+                  outlineColor: 'primary.main',
+                  outlineOffset: '2px',
+                },
+              }}
+              aria-label={`Edit ${method.type} card ending ${String(method.cardNumber || '').slice(-4)}`}
+            >
               <EditIcon />
             </IconButton>
-            <IconButton size="small" onClick={handleDelete} color="error" sx={{ width: 44, height: 44 }} aria-label={`Remove ${method.type} card ending ${String(method.cardNumber || '').slice(-4)}`}>
+            <IconButton
+              size="small"
+              onClick={handleDelete}
+              color="error"
+              sx={{
+                width: 44,
+                height: 44,
+                '&:focus-visible': {
+                  outline: '3px solid',
+                  outlineColor: 'error.main',
+                  outlineOffset: '2px',
+                },
+              }}
+              aria-label={`Remove ${method.type} card ending ${String(method.cardNumber || '').slice(-4)}`}
+            >
               <DeleteIcon />
             </IconButton>
           </Box>

@@ -39,7 +39,20 @@ const Chatbox = ({
             </Typography>
           </Box>
           <Box flexGrow={1} />
-          <IconButton edge="end" onClick={onClose} aria-label="Close conversation" sx={{ width: 44, height: 44 }}>
+          <IconButton
+            edge="end"
+            onClick={onClose}
+            aria-label="Close conversation"
+            sx={{
+              width: 44,
+              height: 44,
+              '&:focus-visible': {
+                outline: '3px solid',
+                outlineColor: 'primary.main',
+                outlineOffset: '2px',
+              },
+            }}
+          >
             <CloseIcon />
           </IconButton>
         </Toolbar>

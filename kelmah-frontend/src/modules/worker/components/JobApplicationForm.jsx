@@ -35,6 +35,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { api } from '../../../services/apiClient';
 import { useBreakpointDown } from '@/hooks/useResponsive';
+import { devError } from '@/modules/common/utils/devLogger';
 
 // Simple location formatter
 const formatLocation = (loc) => {
@@ -123,7 +124,7 @@ const JobApplicationForm = () => {
           setError('Job not found or no longer available');
         }
       } catch (err) {
-        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error fetching job:', err);
+        devError('Error fetching job:', err);
         setError(
           err.response?.data?.message ||
             'Could not load job details. Please try again.',
@@ -189,7 +190,7 @@ const JobApplicationForm = () => {
         }, 3000);
       }
     } catch (err) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Submit error:', err);
+      devError('Submit error:', err);
       const serverMsg =
         err.response?.data?.message || err.response?.data?.error?.message;
       if (serverMsg?.includes('already applied')) {

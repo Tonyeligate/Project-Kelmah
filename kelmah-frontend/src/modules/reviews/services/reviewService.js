@@ -4,10 +4,10 @@ import {
   resolveMediaAssetUrls,
   resolveProfileImageUrl,
 } from '../../common/utils/mediaAssets';
+import { devError } from '@/modules/common/utils/devLogger';
 
 const unwrapData = (response) => response?.data?.data ?? response?.data ?? {};
 const unwrapResponse = (response) => response?.data ?? {};
-
 const normalizeReview = (review = {}, index = 0) => {
   const reviewerAvatar = resolveProfileImageUrl(review?.reviewer || review?.hirerId || {});
   const jobGallery = resolveMediaAssetUrls(
@@ -96,7 +96,7 @@ class ReviewService {
       const response = await api.get(`/reviews/worker/${workerId}`, { params });
       return normalizeReviewCollection(unwrapData(response));
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error fetching worker reviews:', error);
+      devError('Error fetching worker reviews:', error);
       throw error;
     }
   }
@@ -111,7 +111,7 @@ class ReviewService {
       });
       return normalizeReviewCollection(unwrapData(response));
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error fetching user reviews:', error);
+      devError('Error fetching user reviews:', error);
       throw error;
     }
   }
@@ -126,7 +126,7 @@ class ReviewService {
       });
       return normalizeReviewCollection(unwrapData(response));
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error fetching job reviews:', error);
+      devError('Error fetching job reviews:', error);
       throw error;
     }
   }
@@ -139,7 +139,7 @@ class ReviewService {
       const response = await api.get(`/ratings/worker/${workerId}`);
       return unwrapData(response);
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error fetching worker rating:', error);
+      devError('Error fetching worker rating:', error);
       throw error;
     }
   }
@@ -154,7 +154,7 @@ class ReviewService {
         categoryRatings: rating?.categoryRatings ?? [],
       };
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error fetching review stats:', error);
+      devError('Error fetching review stats:', error);
       throw error;
     }
   }
@@ -187,7 +187,7 @@ class ReviewService {
             'Eligibility check unavailable. Complete a contract with this worker before reviewing.',
         };
       }
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error determining review eligibility:', error);
+      devError('Error determining review eligibility:', error);
       throw error;
     }
   }
@@ -197,7 +197,7 @@ class ReviewService {
       const response = await api.post('/reviews', reviewData);
       return unwrapResponse(response);
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error submitting review:', error);
+      devError('Error submitting review:', error);
       throw error;
     }
   }
@@ -211,7 +211,7 @@ class ReviewService {
       const response = await api.put(`/reviews/${reviewId}`, reviewData);
       return unwrapResponse(response);
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error updating review:', error);
+      devError('Error updating review:', error);
       throw error;
     }
   }
@@ -221,7 +221,7 @@ class ReviewService {
       const response = await api.delete(`/reviews/${reviewId}`);
       return unwrapResponse(response);
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error deleting review:', error);
+      devError('Error deleting review:', error);
       throw error;
     }
   }
@@ -231,7 +231,7 @@ class ReviewService {
       const response = await api.get(`/reviews/${reviewId}`);
       return normalizeReview(unwrapData(response));
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error fetching review:', error);
+      devError('Error fetching review:', error);
       throw error;
     }
   }
@@ -243,7 +243,7 @@ class ReviewService {
       });
       return unwrapResponse(response);
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error adding worker response:', error);
+      devError('Error adding worker response:', error);
       throw error;
     }
   }
@@ -253,7 +253,7 @@ class ReviewService {
       const response = await api.post(`/reviews/${reviewId}/helpful`);
       return unwrapResponse(response);
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error voting review helpful:', error);
+      devError('Error voting review helpful:', error);
       throw error;
     }
   }
@@ -263,7 +263,7 @@ class ReviewService {
       const response = await api.post(`/reviews/${reviewId}/unhelpful`);
       return unwrapResponse(response);
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error voting review unhelpful:', error);
+      devError('Error voting review unhelpful:', error);
       throw error;
     }
   }
@@ -275,7 +275,7 @@ class ReviewService {
       });
       return unwrapResponse(response);
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error reporting review:', error);
+      devError('Error reporting review:', error);
       throw error;
     }
   }
@@ -287,7 +287,7 @@ class ReviewService {
       });
       return unwrapData(response);
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error fetching review analytics:', error);
+      devError('Error fetching review analytics:', error);
       throw error;
     }
   }
@@ -297,7 +297,7 @@ class ReviewService {
       const response = await api.get('/admin/reviews/queue', { params });
       return unwrapData(response);
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error fetching moderation queue:', error);
+      devError('Error fetching moderation queue:', error);
       throw error;
     }
   }
@@ -310,7 +310,7 @@ class ReviewService {
       });
       return unwrapResponse(response);
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error moderating review:', error);
+      devError('Error moderating review:', error);
       throw error;
     }
   }
@@ -324,7 +324,7 @@ class ReviewService {
       });
       return unwrapResponse(response);
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error bulk moderating reviews:', error);
+      devError('Error bulk moderating reviews:', error);
       throw error;
     }
   }

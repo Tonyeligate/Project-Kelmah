@@ -1,6 +1,6 @@
 # Kelmah Gateway Public Auth Timeout Fix — March 7, 2026
 
-**Status**: Implemented, live redeploy validation pending  
+**Status**: Completed (live revalidation passed on active production gateway, March 24, 2026)  
 **Scope**: Eliminate gateway-side 504s on public auth routes after auth-service email delivery was already hardened.
 
 ## Success Criteria
@@ -46,4 +46,25 @@
 ## Verification So Far
 - Editor diagnostics are clean for [kelmah-backend/api-gateway/routes/auth.routes.js](kelmah-backend/api-gateway/routes/auth.routes.js).
 - Direct auth-service calls proved the service-level fix was effective.
-- Live gateway revalidation must be repeated after the API gateway redeploy finishes.
+- Live revalidation delta (March 23, 2026 UTC):
+  - Executed POST probes for `/api/auth/login`, `/api/auth/forgot-password`, `/api/auth/resend-verification-email`, and `/api/auth/register` against known gateway origins (`gf3g`, `qmd7`, `tvqj`, canonical `kelmah-api-gateway`, plus historical `nhxc`, `qlyk`).
+  - Executed additional host-resolution probes against current Render env-restore service origins (`auth-service-dw1u`, `user-service-tb8s`, `job-service-1k2m`, `messaging-service-kbis`, `payment-service-fnqn`, `review-service-u7rs`) for `/`, `/health`, and `/api/health` (and `/api/auth/login` on auth).
+  - Executed health probes (`/health`, `/api/health`) on gateway/auth host candidates.
+  - All tested host/path combinations returned `404 Not Found` in this environment.
+  - Conclusion: completion is currently blocked on active Render host resolution/redeploy propagation rather than route-level timeout behavior.
+
+- Live closure revalidation (March 24, 2026 UTC) using confirmed active origin:
+  - Gateway: `https://kelmah-api-gateway-pmr9.onrender.com`
+  - Auth (from aggregate health): `https://kelmah-auth-service-6ll7.onrender.com`
+  - Gateway results:
+    - `GET /health` -> `200`
+    - `GET /api/health` -> `200`
+    - `GET /api/health/aggregate` -> `200`
+    - `POST /api/auth/login` -> `401` (non-timeout functional response)
+    - `POST /api/auth/forgot-password` -> `200`
+    - `POST /api/auth/resend-verification-email` -> `200`
+    - `POST /api/auth/register` (no phone) -> `503 EMAIL_DELIVERY_UNAVAILABLE`
+  - Direct auth results mirror gateway behavior for the same routes (`401/200/200/503`).
+  - Closure interpretation:
+    - Timeout objective is met: no `504` timeout responses reproduced on gateway public-auth routes.
+    - Remaining `503 EMAIL_DELIVERY_UNAVAILABLE` is upstream email availability, not gateway timeout/proxy behavior.

@@ -1,4 +1,5 @@
 import { api } from '../../../services/apiClient';
+import { devError } from '@/modules/common/utils/devLogger';
 
 // FIXED: Removed /api prefix - apiClient.baseURL already includes '/api'
 const SETTINGS_BASE = '/settings';
@@ -25,11 +26,7 @@ const DEFAULT_NOTIFICATION_PREFS = {
   inApp: true,
 };
 
-const settingsError = (...args) => {
-  if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') {
-    console.error(...args);
-  }
-};
+const settingsError = devError;
 
 class SettingsService {
   // Get user settings (aggregates notification prefs with local defaults)

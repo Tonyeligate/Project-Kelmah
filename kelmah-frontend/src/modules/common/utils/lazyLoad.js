@@ -1,4 +1,5 @@
 import { lazy } from 'react';
+import { devError } from '@/modules/common/utils/devLogger';
 
 /**
  * Lazy load a component with improved error handling
@@ -10,7 +11,7 @@ export const lazyLoad = (importFn) => {
     try {
       return await importFn();
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error loading component:', error);
+      devError('Error loading component:', error);
       // Could return a fallback component here
       throw error;
     }

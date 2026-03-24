@@ -9,6 +9,16 @@
   "testOrOracleImprovements": [
     "Closure checker now validates learning artifacts for advanced tasks"
   ],
+  "skillAcquisitions": [
+    "Designing deterministic fallback criteria for adaptive UI rollouts"
+  ],
+  "skillSources": [
+    "Optimization postmortem review",
+    "Learning ledger trend analysis"
+  ],
+  "skillTransferEvidence": [
+    "Encoded fallback criteria into adaptive policy guardrails and pre-PR gates"
+  ],
   "nextTaskGuards": [
     "Block release if readability score regresses after optimization"
   ],

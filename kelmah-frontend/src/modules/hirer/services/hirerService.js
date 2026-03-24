@@ -7,6 +7,9 @@
 
 import { API_ENDPOINTS } from '../../../config/environment';
 import { api } from '../../../services/apiClient';
+import { devWarn } from '@/modules/common/utils/devLogger';
+
+const hirerWarn = devWarn;
 
 const { USER, JOB } = API_ENDPOINTS;
 const DASHBOARD_CACHE_TTL_MS = 30 * 1000;
@@ -276,7 +279,7 @@ export const hirerService = {
       const response = await api.get(USER.ME_CREDENTIALS);
       return unwrapPayload(response?.data) || {};
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn(
+        hirerWarn(
         'User service unavailable for hirer profile:',
         error.message,
       );
@@ -295,7 +298,7 @@ export const hirerService = {
       const response = await api.put(USER.UPDATE, profileData);
       return unwrapPayload(response?.data) ?? response?.data ?? {};
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Service unavailable:', error.message);
+        hirerWarn('Service unavailable:', error.message);
       throw error;
     }
   },
@@ -308,7 +311,7 @@ export const hirerService = {
       });
       return extractCollectionItems(response?.data);
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn(
+        hirerWarn(
         `Job service unavailable for hirer jobs (${status}):`,
         error.message,
       );
@@ -340,7 +343,7 @@ export const hirerService = {
         countsByStatus: data?.meta?.countsByStatus || {},
       };
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Paged hirer jobs unavailable:', error.message);
+        hirerWarn('Paged hirer jobs unavailable:', error.message);
       return {
         jobs: [],
         pagination: { page: Number(options.page) || 1, totalPages: 1, total: 0 },
@@ -422,7 +425,7 @@ export const hirerService = {
 
       return await dashboardDataCache.promise;
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn(
+        hirerWarn(
         'Dashboard data unavailable, using fallback:',
         error.message,
       );
@@ -450,7 +453,7 @@ export const hirerService = {
       });
       return unwrapPayload(response?.data) || {};
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Metrics unavailable, using fallback:', error.message);
+        hirerWarn('Metrics unavailable, using fallback:', error.message);
       return {
         activeJobs: 0,
         totalJobs: 0,
@@ -471,7 +474,7 @@ export const hirerService = {
       });
       return extractCollectionItems(response?.data);
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Recent jobs unavailable:', error.message);
+        hirerWarn('Recent jobs unavailable:', error.message);
       return [];
     }
   },
@@ -495,7 +498,7 @@ export const hirerService = {
       }
       return applications.slice(0, limit);
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Applications unavailable:', error.message);
+        hirerWarn('Applications unavailable:', error.message);
       return [];
     }
   },
@@ -572,16 +575,14 @@ export const hirerService = {
 
           return buildSummaryFromProposalsFallback(fallbackResponse?.data, params);
         } catch (fallbackError) {
-          if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') {
-            console.warn('Applications summary fallback unavailable:', fallbackError.message);
-          }
+          hirerWarn('Applications summary fallback unavailable:', fallbackError.message);
           if (fallbackError?.response?.status === 404 || applicationsSummaryEndpointUnavailable) {
             return buildEmptyApplicationsSummary(params);
           }
         }
       }
 
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Applications summary unavailable:', error.message);
+      hirerWarn('Applications summary unavailable:', error.message);
       throw error;
     }
   },
@@ -595,7 +596,7 @@ export const hirerService = {
       const response = await api.get(`/jobs/${jobId}/applications`, { params });
       return extractCollectionItems(response?.data);
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Failed to fetch job applications:', error.message);
+        hirerWarn('Failed to fetch job applications:', error.message);
       return [];
     }
   },
@@ -615,7 +616,7 @@ export const hirerService = {
       );
       return unwrapPayload(response?.data) ?? response?.data ?? {};
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Failed to update application status:', error.message);
+        hirerWarn('Failed to update application status:', error.message);
       throw error;
     }
   },
@@ -631,7 +632,7 @@ export const hirerService = {
         pagination: buildNormalizedPagination(response?.data, workers.length),
       };
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Worker search unavailable:', error.message);
+      hirerWarn('Worker search unavailable:', error.message);
       return {
         workers: [],
         pagination: { currentPage: 1, totalPages: 1, totalItems: 0 },
@@ -673,7 +674,7 @@ export const hirerService = {
 
       return [];
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Saved workers unavailable:', error.message);
+        hirerWarn('Saved workers unavailable:', error.message);
       return [];
     }
   },
@@ -683,9 +684,7 @@ export const hirerService = {
       const response = await api.get('/reviews/hirer/review-candidates');
       return extractWorkerItems(response?.data);
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') {
-        console.warn('Completed workers unavailable for reviews:', error.message);
-      }
+        hirerWarn('Completed workers unavailable for reviews:', error.message);
       return [];
     }
   },
@@ -695,7 +694,7 @@ export const hirerService = {
       const response = await api.post(workerBookmarkPath(workerId), {});
       return unwrapPayload(response?.data) ?? response?.data ?? {};
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Service unavailable:', error.message);
+        hirerWarn('Service unavailable:', error.message);
       throw error;
     }
   },
@@ -705,7 +704,7 @@ export const hirerService = {
       const response = await api.delete(workerBookmarkPath(workerId));
       return unwrapPayload(response?.data) ?? response?.data ?? {};
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Service unavailable:', error.message);
+        hirerWarn('Service unavailable:', error.message);
       throw error;
     }
   },
@@ -721,7 +720,7 @@ export const hirerService = {
       );
       return unwrapPayload(response?.data) ?? response?.data ?? {};
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Service unavailable:', error.message);
+      hirerWarn('Service unavailable:', error.message);
       throw error;
     }
   },
@@ -744,7 +743,7 @@ export const hirerService = {
       });
       return unwrapPayload(response?.data) ?? response?.data ?? {};
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Service unavailable:', error.message);
+      hirerWarn('Service unavailable:', error.message);
       throw error;
     }
   },

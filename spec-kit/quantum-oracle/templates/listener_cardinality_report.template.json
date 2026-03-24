@@ -1,0 +1,12 @@
+{
+  "taskId": "<task-id>",
+  "maxListenerDelta": 0,
+  "listenerChecks": [
+    {
+      "component": "MessageList",
+      "before": 1,
+      "after": 1
+    }
+  ],
+  "closureVerdict": "PASS"
+}

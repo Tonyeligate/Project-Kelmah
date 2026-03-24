@@ -444,6 +444,37 @@ function validateAllAgentActivationMatrix(obj, errors) {
   }
 }
 
+function validateThreeDHDDesignReport(obj, errors) {
+  if (!obj || typeof obj !== 'object') {
+    errors.push('three_d_hd_design_report.json: object is required');
+    return;
+  }
+
+  if (!obj.surfaceTaxonomy || typeof obj.surfaceTaxonomy !== 'object') {
+    errors.push('three_d_hd_design_report.json: surfaceTaxonomy object is required');
+  }
+
+  if (!obj.iconLanguageAudit || typeof obj.iconLanguageAudit !== 'object') {
+    errors.push('three_d_hd_design_report.json: iconLanguageAudit object is required');
+  }
+
+  if (!obj.typographyRhythm || typeof obj.typographyRhythm !== 'object') {
+    errors.push('three_d_hd_design_report.json: typographyRhythm object is required');
+  }
+
+  if (!Array.isArray(obj.motionChoreographyMap) || obj.motionChoreographyMap.length === 0) {
+    errors.push('three_d_hd_design_report.json: motionChoreographyMap must be a non-empty array');
+  }
+
+  if (!Array.isArray(obj.responsiveDepthBreakpoints) || obj.responsiveDepthBreakpoints.length === 0) {
+    errors.push('three_d_hd_design_report.json: responsiveDepthBreakpoints must be a non-empty array');
+  }
+
+  if (obj.closureVerdict !== 'PASS') {
+    errors.push(`three_d_hd_design_report.json: closureVerdict must be PASS (received '${obj.closureVerdict}')`);
+  }
+}
+
 function validateDebuggerOptimizationEvidence(packets, errors) {
   if (!packets || !Array.isArray(packets.packets)) {
     errors.push('delegation_packets.json: packets array is required for debugger optimization evidence');
@@ -528,6 +559,18 @@ function validateLearningUpdateReport(obj, errors) {
 
   if (!Array.isArray(obj.testOrOracleImprovements) || obj.testOrOracleImprovements.length === 0) {
     errors.push('learning_update.json: testOrOracleImprovements must be a non-empty array');
+  }
+
+  if (!Array.isArray(obj.skillAcquisitions) || obj.skillAcquisitions.length === 0) {
+    errors.push('learning_update.json: skillAcquisitions must be a non-empty array');
+  }
+
+  if (!Array.isArray(obj.skillSources) || obj.skillSources.length === 0) {
+    errors.push('learning_update.json: skillSources must be a non-empty array');
+  }
+
+  if (!Array.isArray(obj.skillTransferEvidence) || obj.skillTransferEvidence.length === 0) {
+    errors.push('learning_update.json: skillTransferEvidence must be a non-empty array');
   }
 
   if (obj.closureVerdict !== 'PASS') {
@@ -821,6 +864,7 @@ function main() {
         const stateSpacePath = path.join(bundleDir, 'ui_state_space_audit.json');
         const nisqPath = path.join(bundleDir, 'nisq_hybrid_execution_report.json');
         const activationPath = path.join(bundleDir, 'all_agent_activation_matrix.json');
+        const threeDHDPath = path.join(bundleDir, 'three_d_hd_design_report.json');
 
         if (!exists(layoutReportPath)) {
           report.errors.push('Missing required file: layout_optimization_report.json');
@@ -873,6 +917,15 @@ function main() {
           const activation = readJson(activationPath, report.errors, 'all_agent_activation_matrix.json');
           if (activation) {
             validateAllAgentActivationMatrix(activation, report.errors);
+          }
+        }
+
+        if (!exists(threeDHDPath)) {
+          report.errors.push('Missing required file: three_d_hd_design_report.json');
+        } else {
+          const threeDHD = readJson(threeDHDPath, report.errors, 'three_d_hd_design_report.json');
+          if (threeDHD) {
+            validateThreeDHDDesignReport(threeDHD, report.errors);
           }
         }
 

@@ -19,6 +19,7 @@ import { useProfile } from '../hooks/useProfile';
 import { useSelector } from 'react-redux';
 import { selectProfile } from '../../../store/slices/profileSlice.js';
 import { useSnackbar } from 'notistack';
+import { devError } from '@/modules/common/utils/devLogger';
 
 const ProfilePicture = ({ size = 120, editable = true, altText = 'Profile picture' }) => {
   const { uploadProfilePicture } = useProfile({ autoInitialize: false });
@@ -61,7 +62,7 @@ const ProfilePicture = ({ size = 120, editable = true, altText = 'Profile pictur
       setPreviewUrl(null);
       enqueueSnackbar('Profile picture updated', { variant: 'success' });
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error uploading profile picture:', error);
+      devError('Error uploading profile picture:', error);
       enqueueSnackbar('Failed to upload picture', { variant: 'error' });
     } finally {
       setLoading(false);
@@ -77,7 +78,7 @@ const ProfilePicture = ({ size = 120, editable = true, altText = 'Profile pictur
       setPreviewUrl(null);
       enqueueSnackbar('Profile picture removed', { variant: 'success' });
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error removing profile picture:', error);
+      devError('Error removing profile picture:', error);
       enqueueSnackbar('Failed to remove picture', { variant: 'error' });
     } finally {
       setLoading(false);

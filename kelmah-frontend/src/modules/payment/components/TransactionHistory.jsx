@@ -77,7 +77,15 @@ const TransactionHistory = ({ transactions }) => {
                     <IconButton
                       size="small"
                       aria-label={`Download ${getTypeLabel(row.type)} receipt for ${safeFormatDate(row.date, 'PP')}`}
-                      sx={{ width: 44, height: 44 }}
+                      sx={{
+                        width: 44,
+                        height: 44,
+                        '&:focus-visible': {
+                          outline: '3px solid',
+                          outlineColor: 'primary.main',
+                          outlineOffset: '2px',
+                        },
+                      }}
                     >
                       <DownloadIcon fontSize="inherit" />
                     </IconButton>
@@ -143,7 +151,15 @@ const TransactionHistory = ({ transactions }) => {
                 <IconButton
                   size="small"
                   aria-label={`Download ${getTypeLabel(row.type)} receipt for ${safeFormatDate(row.date, 'PP')}`}
-                  sx={{ width: 44, height: 44 }}
+                  sx={{
+                    width: 44,
+                    height: 44,
+                    '&:focus-visible': {
+                      outline: '3px solid',
+                      outlineColor: 'primary.main',
+                      outlineOffset: '2px',
+                    },
+                  }}
                 >
                   <DownloadIcon fontSize="inherit" />
                 </IconButton>

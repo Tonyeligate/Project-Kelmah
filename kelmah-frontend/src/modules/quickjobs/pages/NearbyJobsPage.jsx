@@ -474,7 +474,20 @@ const NearbyJobsPage = () => {
         <DialogTitle id="send-quote-dialog-title">
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             Send Quote
-            <IconButton aria-label="Close quote dialog" onClick={() => setQuoteDialogOpen(false)} disabled={quoteSubmitting}>
+            <IconButton
+              aria-label="Close quote dialog"
+              onClick={() => setQuoteDialogOpen(false)}
+              disabled={quoteSubmitting}
+              sx={{
+                minWidth: 44,
+                minHeight: 44,
+                '&:focus-visible': {
+                  outline: '3px solid',
+                  outlineColor: 'primary.main',
+                  outlineOffset: '2px',
+                },
+              }}
+            >
               <CloseIcon />
             </IconButton>
           </Box>

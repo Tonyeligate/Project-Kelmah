@@ -16,14 +16,16 @@ import notificationServiceUser, {
   normalizeNotificationLink,
 } from '../services/notificationService';
 import { secureStorage } from '../../../utils/secureStorage';
+import {
+  createFeatureLogger,
+  devError,
+  devWarn,
+} from '@/modules/common/utils/devLogger';
 
-const NOTIFICATIONS_DEBUG =
-  import.meta.env.DEV && import.meta.env.VITE_DEBUG_NOTIFICATIONS === 'true';
-const notificationsLog = (...args) => {
-  if (NOTIFICATIONS_DEBUG) {
-    console.log(...args);
-  }
-};
+const notificationsLog = createFeatureLogger({
+  flagName: 'VITE_DEBUG_NOTIFICATIONS',
+  level: 'log',
+});
 
 const NotificationContext = createContext(null);
 
@@ -129,11 +131,11 @@ export const NotificationProvider = ({ children }) => {
         // unreadCount is computed from notifications, no need for separate setter
         setError(null);
       } catch (err) {
-        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to fetch notifications:', err);
+        devError('Failed to fetch notifications:', err);
         // Check if it's a 429 Too Many Requests error
         if (err?.response?.status === 429) {
           // Rate limited - back off significantly
-          if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn(
+          devWarn(
             '⚠️ Rate limited on notifications endpoint - backing off 2 minutes',
           );
           lastFetchRef.current = now + 120000; // Block fetches for 2 minutes
@@ -198,7 +200,7 @@ export const NotificationProvider = ({ children }) => {
           );
         }
       } catch (socketError) {
-        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error(
+        devError(
           'Notifications: Failed to initialise socket connection',
           socketError,
         );
@@ -209,7 +211,7 @@ export const NotificationProvider = ({ children }) => {
       try {
         notificationService.disconnect();
       } catch (disconnectError) {
-        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn(
+        devWarn(
           'Notifications: Socket disconnect failed',
           disconnectError,
         );
@@ -236,7 +238,7 @@ export const NotificationProvider = ({ children }) => {
         ),
       );
     } catch (err) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to mark notification as read:', err);
+      devError('Failed to mark notification as read:', err);
       setError('Failed to update notification status.');
     }
   }, []);
@@ -256,7 +258,7 @@ export const NotificationProvider = ({ children }) => {
         })),
       );
     } catch (err) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to mark all notifications as read:', err);
+      devError('Failed to mark all notifications as read:', err);
       setError('Failed to update notifications.');
     }
   }, []);
@@ -268,7 +270,7 @@ export const NotificationProvider = ({ children }) => {
         prev.filter((n) => (n.id || n._id) !== id),
       );
     } catch (err) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to delete notification:', err);
+      devError('Failed to delete notification:', err);
       setError('Failed to delete notification.');
     }
   }, []);
@@ -278,7 +280,7 @@ export const NotificationProvider = ({ children }) => {
       await notificationServiceUser.clearAllNotifications();
       setNotifications([]);
     } catch (err) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to clear notifications:', err);
+      devError('Failed to clear notifications:', err);
       setError('Failed to clear notifications.');
     }
   }, []);

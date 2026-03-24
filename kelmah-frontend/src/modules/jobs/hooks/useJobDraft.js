@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { secureStorage } from '../../../utils/secureStorage';
+import { devWarn } from '@/modules/common/utils/devLogger';
 
 const DRAFT_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days
 const SAVE_DELAY = 800;
@@ -13,7 +14,7 @@ const fallbackStorage = {
       const raw = window.localStorage.getItem(key);
       return raw ? JSON.parse(raw) : null;
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Draft fallback read failed:', error);
+      devWarn('Draft fallback read failed:', error);
       return null;
     }
   },
@@ -25,7 +26,7 @@ const fallbackStorage = {
       window.localStorage.setItem(key, JSON.stringify(value));
       return true;
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Draft fallback write failed:', error);
+      devWarn('Draft fallback write failed:', error);
       return false;
     }
   },
@@ -36,7 +37,7 @@ const fallbackStorage = {
       }
       window.localStorage.removeItem(key);
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Draft fallback remove failed:', error);
+      devWarn('Draft fallback remove failed:', error);
     }
   },
 };

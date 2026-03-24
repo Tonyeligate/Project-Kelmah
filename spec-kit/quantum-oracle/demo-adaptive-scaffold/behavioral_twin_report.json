@@ -1,0 +1,36 @@
+{
+  "taskId": "demo-adaptive-scaffold",
+  "profiles": [
+    {
+      "id": "TWIN-A",
+      "label": "low-literacy-first-time-user"
+    },
+    {
+      "id": "TWIN-B",
+      "label": "repeat-power-user"
+    },
+    {
+      "id": "TWIN-C",
+      "label": "low-end-device-low-bandwidth"
+    },
+    {
+      "id": "TWIN-D",
+      "label": "accessibility-first-user"
+    }
+  ],
+  "adaptationRules": [
+    "high hesitation => simplify labels and reduce branching",
+    "repeated validation errors => inline guided correction",
+    "fast intent => compress path to primary action"
+  ],
+  "safetyConstraints": {
+    "noDarkPatterns": true,
+    "preserveCriticalDisclosures": true,
+    "deterministicFallback": true
+  },
+  "rollbackPlan": {
+    "strategy": "feature-flag rollback",
+    "trigger": "task-success drops or accessibility regression detected"
+  },
+  "closureVerdict": "PASS"
+}

@@ -1615,3 +1615,16 @@ Hard constraints:
   - deterministic fallback behavior
   - auditable evidence artifacts for every adaptive decision path
 ```
+
+### UFL-15: Quarterly Agent Intelligence Report Oracle
+```
+At least once per quarter, generate an intelligence report scoring each agent:
+  - growth velocity
+  - skill transfer success
+  - regression-prevention strength
+
+Evidence artifact:
+  - agent-intelligence-report.json
+
+Report inputs must include learning ledger trends and per-task learning evidence.
+```

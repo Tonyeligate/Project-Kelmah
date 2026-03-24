@@ -298,7 +298,20 @@ const QuickJobTrackingPage = () => {
       <Helmet><title>Track Quick Job | Kelmah</title></Helmet>
       {/* Header */}
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-        <IconButton aria-label="Go back" onClick={() => navigate(-1)} sx={{ mr: 1 }}>
+        <IconButton
+          aria-label="Go back"
+          onClick={() => navigate(-1)}
+          sx={{
+            mr: 1,
+            minWidth: 44,
+            minHeight: 44,
+            '&:focus-visible': {
+              outline: '3px solid',
+              outlineColor: 'primary.main',
+              outlineOffset: '2px',
+            },
+          }}
+        >
           <ArrowBackIcon />
         </IconButton>
         <Typography variant="h5" fontWeight="bold">
@@ -365,6 +378,15 @@ const QuickJobTrackingPage = () => {
                     color="primary"
                     aria-label="Call client"
                     onClick={() => window.open(`tel:${job.client.phoneNumber}`, '_self')}
+                    sx={{
+                      minWidth: 44,
+                      minHeight: 44,
+                      '&:focus-visible': {
+                        outline: '3px solid',
+                        outlineColor: 'primary.main',
+                        outlineOffset: '2px',
+                      },
+                    }}
                   >
                     <PhoneIcon />
                   </IconButton>
@@ -506,7 +528,19 @@ const QuickJobTrackingPage = () => {
         <DialogTitle id="mark-complete-dialog-title">
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             Mark Work Complete
-            <IconButton aria-label="Close completion dialog" onClick={() => setCompletionDialogOpen(false)}>
+            <IconButton
+              aria-label="Close completion dialog"
+              onClick={() => setCompletionDialogOpen(false)}
+              sx={{
+                minWidth: 44,
+                minHeight: 44,
+                '&:focus-visible': {
+                  outline: '3px solid',
+                  outlineColor: 'primary.main',
+                  outlineOffset: '2px',
+                },
+              }}
+            >
               <CloseIcon />
             </IconButton>
           </Box>
@@ -539,7 +573,14 @@ const QuickJobTrackingPage = () => {
                     right: -8,
                     bgcolor: 'error.main',
                     color: 'white',
-                    '&:hover': { bgcolor: 'error.dark' }
+                    width: 44,
+                    height: 44,
+                    '&:hover': { bgcolor: 'error.dark' },
+                    '&:focus-visible': {
+                      outline: '3px solid',
+                      outlineColor: 'error.main',
+                      outlineOffset: '2px',
+                    },
                   }}
                 >
                   <CloseIcon fontSize="small" />

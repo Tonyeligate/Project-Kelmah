@@ -19,6 +19,7 @@ import MobileFilterSheet from '../../../components/common/MobileFilterSheet';
 import EmptyState from '../../../components/common/EmptyState';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 import { toUserMessage } from '@/services/responseNormalizer';
+import { devError } from '@/modules/common/utils/devLogger';
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All contracts' },
@@ -78,7 +79,7 @@ const ContractsPage = () => {
       const data = result?.contracts || result?.data || (Array.isArray(result) ? result : []);
       setContracts(data);
     } catch (err) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to load contracts:', err);
+      devError('Failed to load contracts:', err);
       setError(toUserMessage(err, { fallback: 'Unable to load contracts. Please try again.' }));
       setContracts([]);
     } finally {

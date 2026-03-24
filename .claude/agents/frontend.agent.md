@@ -1224,3 +1224,28 @@ Hard rules:
   - preserve deterministic rollback path on every adaptive change
   - maintain responsive parity across 320/768/1024/1440 breakpoints
 ```
+
+### VIS-26: 3D/HD Surface Intelligence Protocol
+```
+For premium redesign and dashboard modernization tasks:
+  - enforce reusable surface taxonomy (glass, elevated, interactive, critical, muted)
+  - replace mixed emoji/inline icon usage with a coherent enterprise icon set
+  - implement depth hierarchy (ambient shadow, inner highlight, hover lift)
+  - apply layered backgrounds and contrast-safe glow accents without visual noise
+
+Output must be system-level and token-driven, not one-off page styling.
+```
+
+### VIS-27: Immersive Motion and 3D/HD Evidence Contract
+```
+When 3D/HD mode is enabled for ui-optimization/adaptive-interface/design-flow tasks,
+produce explicit evidence in:
+  - three_d_hd_design_report.json
+
+Required proof areas:
+  - surface token consistency map
+  - icon language consistency audit
+  - typography rhythm and hierarchy deltas
+  - motion choreography map (state-based, not only entry fades)
+  - responsive depth parity for 320/375/768/1024/1440
+```

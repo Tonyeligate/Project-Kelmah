@@ -1,0 +1,33 @@
+{
+  "taskId": "optimization-demo-task",
+  "surfaceTaxonomy": {
+    "glass": "defined",
+    "elevated": "defined",
+    "interactive": "defined",
+    "critical": "defined",
+    "muted": "defined"
+  },
+  "iconLanguageAudit": {
+    "iconSet": "lucide",
+    "emojiControlsDetected": 0,
+    "inlineSvgControlCount": 0
+  },
+  "typographyRhythm": {
+    "scaleUpdated": true,
+    "hierarchyConsistencyScore": 0.94
+  },
+  "motionChoreographyMap": [
+    {
+      "state": "search-to-results",
+      "transitionType": "state-based",
+      "result": "pass"
+    },
+    {
+      "state": "skeleton-to-data",
+      "transitionType": "progressive-reveal",
+      "result": "pass"
+    }
+  ],
+  "responsiveDepthBreakpoints": [320, 375, 768, 1024, 1440],
+  "closureVerdict": "PASS"
+}

@@ -28,6 +28,7 @@ import {
   selectContractsError,
 } from '../services/contractSlice';
 import { useBreakpointDown } from '@/hooks/useResponsive';
+import { devError } from '@/modules/common/utils/devLogger';
 
 const initialContractState = {
   title: '',
@@ -112,7 +113,7 @@ const CreateContractPage = () => {
         })
         .catch((err) => {
           if (cancelled) return;
-          if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to fetch worker details:', err);
+          devError('Failed to fetch worker details:', err);
         })
         .finally(() => { if (!cancelled) setWorkerLoading(false); });
     }

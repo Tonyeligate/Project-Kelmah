@@ -285,7 +285,15 @@ const PaymentMethodsView = ({ methods, onEditMethod, onRequestDelete, paymentMet
                       size="small"
                       aria-label="Edit payment method"
                       onClick={() => onEditMethod?.(method)}
-                      sx={{ minWidth: 44, minHeight: 44 }}
+                      sx={{
+                        minWidth: 44,
+                        minHeight: 44,
+                        '&:focus-visible': {
+                          outline: '3px solid',
+                          outlineColor: 'primary.main',
+                          outlineOffset: '2px',
+                        },
+                      }}
                     >
                       <EditIcon />
                     </IconButton>
@@ -296,7 +304,15 @@ const PaymentMethodsView = ({ methods, onEditMethod, onRequestDelete, paymentMet
                       color="error"
                       aria-label="Delete payment method"
                       onClick={() => onRequestDelete?.(method)}
-                      sx={{ minWidth: 44, minHeight: 44 }}
+                      sx={{
+                        minWidth: 44,
+                        minHeight: 44,
+                        '&:focus-visible': {
+                          outline: '3px solid',
+                          outlineColor: 'error.main',
+                          outlineOffset: '2px',
+                        },
+                      }}
                     >
                       <DeleteIcon />
                     </IconButton>

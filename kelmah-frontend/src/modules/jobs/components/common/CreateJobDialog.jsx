@@ -150,7 +150,21 @@ function CreateJobDialog({
       {isMobile ? (
         <AppBar sx={{ position: 'relative', bgcolor: 'background.paper', color: 'text.primary', boxShadow: 1 }}>
           <Toolbar>
-            <IconButton edge="start" onClick={onClose} aria-label="Close create job dialog" disabled={loading}>
+            <IconButton
+              edge="start"
+              onClick={onClose}
+              aria-label="Close create job dialog"
+              disabled={loading}
+              sx={{
+                width: 44,
+                height: 44,
+                '&:focus-visible': {
+                  outline: '3px solid',
+                  outlineColor: 'primary.main',
+                  outlineOffset: '2px',
+                },
+              }}
+            >
               <CloseIcon />
             </IconButton>
             <Typography sx={{ ml: 1, flex: 1, fontWeight: 600 }} variant="subtitle1">

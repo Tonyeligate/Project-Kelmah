@@ -19,6 +19,7 @@ import ClearIcon from '@mui/icons-material/Clear';
 import EmojiEmotionsIcon from '@mui/icons-material/EmojiEmotions';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import FavoriteIcon from '@mui/icons-material/Favorite';
+import { devError } from '@/modules/common/utils/devLogger';
 
 // Define emoji categories
 const categories = [
@@ -242,7 +243,7 @@ const EmojiPicker = ({ onEmojiSelect, onClose }) => {
         setRecentEmojis(JSON.parse(saved));
       }
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error loading recent emojis', error);
+      devError('Error loading recent emojis', error);
     }
   }, []);
 
@@ -293,7 +294,7 @@ const EmojiPicker = ({ onEmojiSelect, onClose }) => {
     try {
       localStorage.setItem('recentEmojis', JSON.stringify(updatedRecent));
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error saving recent emojis', error);
+      devError('Error saving recent emojis', error);
     }
 
     // Call the onSelect callback
@@ -325,6 +326,15 @@ const EmojiPicker = ({ onEmojiSelect, onClose }) => {
         size="small"
         color="primary"
         aria-label="Open emoji picker"
+        sx={{
+          width: 44,
+          height: 44,
+          '&:focus-visible': {
+            outline: '3px solid',
+            outlineColor: 'primary.main',
+            outlineOffset: '2px',
+          },
+        }}
       >
         <EmojiEmotionsIcon />
       </IconButton>
@@ -362,7 +372,21 @@ const EmojiPicker = ({ onEmojiSelect, onClose }) => {
                   ),
                   endAdornment: searchQuery && (
                     <InputAdornment position="end">
-                      <IconButton size="small" onClick={clearSearch} edge="end" aria-label="Clear emoji search">
+                      <IconButton
+                        size="small"
+                        onClick={clearSearch}
+                        edge="end"
+                        aria-label="Clear emoji search"
+                        sx={{
+                          width: 44,
+                          height: 44,
+                          '&:focus-visible': {
+                            outline: '3px solid',
+                            outlineColor: 'primary.main',
+                            outlineOffset: '2px',
+                          },
+                        }}
+                      >
                         <ClearIcon fontSize="small" />
                       </IconButton>
                     </InputAdornment>

@@ -1,0 +1,12 @@
+{
+  "taskId": "<task-id>",
+  "risks": [
+    {
+      "id": "R-1",
+      "description": "remaining low-severity enumeration risk",
+      "score": 0.12,
+      "owner": "security"
+    }
+  ],
+  "closureVerdict": "PASS"
+}

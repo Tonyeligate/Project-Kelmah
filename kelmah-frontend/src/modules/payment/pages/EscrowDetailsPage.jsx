@@ -25,6 +25,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { Helmet } from 'react-helmet-async';
 import { currencyFormatter } from '@/modules/common/utils/formatters';
 import { getRoleHomePath, hasRole } from '../../../utils/userUtils';
+import { devError } from '@/modules/common/utils/devLogger';
 
 const EscrowDetailsPage = () => {
   const { escrowId } = useParams();
@@ -241,7 +242,7 @@ const EscrowDetailsPage = () => {
                 showToast('Funds released successfully.', 'success');
                 await refresh();
               } catch (err) {
-                if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Release failed:', err);
+                devError('Release failed:', err);
                 showToast('Failed to release funds.', 'error');
               } finally {
                 setReleasing(false);

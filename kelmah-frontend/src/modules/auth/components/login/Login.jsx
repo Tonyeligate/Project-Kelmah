@@ -43,9 +43,15 @@ import {
   getRequestedPathFromLocation,
   resolveLoginRedirectPath,
 } from '@/utils/authRedirect';
+import {
+  createFeatureLogger,
+  devError,
+} from '@/modules/common/utils/devLogger';
 
-const AUTH_DEBUG =
-  import.meta.env.DEV && import.meta.env.VITE_DEBUG_AUTH === 'true';
+const authLog = createFeatureLogger({
+  flagName: 'VITE_DEBUG_AUTH',
+  level: 'log',
+});
 
 const normalizeErrorMessage = (value) => {
   if (typeof value === 'string') {
@@ -216,10 +222,10 @@ const Login = () => {
       ).unwrap();
 
       const destination = resolveLoginRedirect(result?.user);
-      if (AUTH_DEBUG) console.log(`Login successful, redirecting to ${destination}`);
+      authLog(`Login successful, redirecting to ${destination}`);
       navigate(destination, { replace: true });
     } catch (err) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Login error:', err);
+      devError('Login error:', err);
       const errorMessage = toUserMessage(err, {
         fallback: 'Login failed. Please check your credentials.',
       });

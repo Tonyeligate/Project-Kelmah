@@ -107,6 +107,7 @@ import {
   resolveMediaAssetUrl,
   resolveProfileImageUrl,
 } from '../../common/utils/mediaAssets';
+import { devError } from '@/modules/common/utils/devLogger';
 
 const Input = styled('input')({
   display: 'none',
@@ -476,7 +477,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
       setEarnings(earningsRes?.data?.data || earningsRes?.data || null);
     } catch (err) {
       setError('Could not find this worker. Please try again.');
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error(err);
+      devError(err);
     } finally {
       setLoading(false);
     }
@@ -522,7 +523,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
           import.meta.env.DEV &&
           import.meta.env.VITE_DEBUG_FRONTEND === 'true'
         ) {
-          console.error('Failed to load bookmarks', bookmarkError);
+          devError('Failed to load bookmarks', bookmarkError);
         }
       });
   }, [authUser, fetchAllData, resolvedWorkerId, workerIdProp]);

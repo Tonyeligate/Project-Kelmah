@@ -9,12 +9,14 @@ import apiClient, { api } from '../../../services/apiClient';
 import { AUTH_CONFIG } from '../../../config/environment';
 import { secureStorage } from '../../../utils/secureStorage';
 import { normalizeUser } from '../../../utils/userUtils';
+import {
+  createDevLogger,
+  createFeatureLogger,
+} from '../../common/utils/devLogger';
 
-const __DEV__ = import.meta.env.DEV;
-const AUTH_DEBUG = __DEV__ && import.meta.env.VITE_DEBUG_AUTH === 'true';
-const devLog = (...args) => { if (AUTH_DEBUG) console.log(...args); };
-const devWarn = (...args) => { if (__DEV__) console.warn(...args); };
-const devError = (...args) => { if (__DEV__) console.error(...args); };
+const devLog = createFeatureLogger({ flagName: 'VITE_DEBUG_AUTH' });
+const devWarn = createDevLogger(import.meta.env.DEV, 'warn');
+const devError = createDevLogger(import.meta.env.DEV, 'error');
 
 // Shared response interceptors and token refresh locking are handled by
 // the centralized apiClient in src/services/apiClient.js.

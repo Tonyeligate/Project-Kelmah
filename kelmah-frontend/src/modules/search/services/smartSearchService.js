@@ -1,4 +1,5 @@
 import { api } from '../../../services/apiClient';
+import { devWarn } from '@/modules/common/utils/devLogger';
 
 const API_URL = '/search';
 const JOB_RECOMMENDATIONS_ENDPOINT = '/jobs/recommendations/personalized';
@@ -133,7 +134,7 @@ const smartSearchService = {
       const response = await api.post(`/jobs/${jobId}/save`);
       return response?.data?.data || response?.data || { success: true };
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Save job API not available:', error.message);
+      devWarn('Save job API not available:', error.message);
       throw error;
     }
   },

@@ -3,9 +3,16 @@ import { API_BASE_URL } from '../config/environment';
 
 const API_HEALTH_DEBUG =
   import.meta.env.DEV && import.meta.env.VITE_DEBUG_SERVICE_HEALTH === 'true';
+const API_HEALTH_WARN =
+  import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true';
 const apiHealthDebug = (...args) => {
   if (API_HEALTH_DEBUG) {
     console.debug(...args);
+  }
+};
+const apiHealthWarn = (...args) => {
+  if (API_HEALTH_WARN) {
+    console.warn(...args);
   }
 };
 
@@ -64,7 +71,7 @@ export const useApiHealth = () => {
         // All endpoints failed
         throw new Error('All health endpoints failed');
       } catch (error) {
-        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Health check failed:', error.message);
+        apiHealthWarn('Health check failed:', error.message);
         if (!isMountedRef.current) return;
 
         // Retry logic - single retry with backoff to reduce request churn

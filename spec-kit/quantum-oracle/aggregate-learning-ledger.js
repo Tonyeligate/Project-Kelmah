@@ -73,6 +73,8 @@ function main() {
   const recurringSignals = new Map();
   const recurringPainPoints = new Map();
   const recurringPolicyAdjustments = new Map();
+  const recurringSkillAcquisitions = new Map();
+  const recurringSkillSources = new Map();
 
   const tasks = [];
   const advancedMissingLearningEvidence = [];
@@ -96,6 +98,9 @@ function main() {
     const mistakesObserved = Array.isArray(learning && learning.mistakesObserved) ? learning.mistakesObserved : [];
     const preventiveRulesAdded = Array.isArray(learning && learning.preventiveRulesAdded) ? learning.preventiveRulesAdded : [];
     const testOrOracleImprovements = Array.isArray(learning && learning.testOrOracleImprovements) ? learning.testOrOracleImprovements : [];
+    const skillAcquisitions = Array.isArray(learning && learning.skillAcquisitions) ? learning.skillAcquisitions : [];
+    const skillSources = Array.isArray(learning && learning.skillSources) ? learning.skillSources : [];
+    const skillTransferEvidence = Array.isArray(learning && learning.skillTransferEvidence) ? learning.skillTransferEvidence : [];
 
     const realWorldSignals = Array.isArray(field && field.realWorldSignals) ? field.realWorldSignals : [];
     const userPainPoints = Array.isArray(field && field.userPainPoints) ? field.userPainPoints : [];
@@ -121,6 +126,16 @@ function main() {
       if (key) recurringPolicyAdjustments.set(key, (recurringPolicyAdjustments.get(key) || 0) + 1);
     });
 
+    skillAcquisitions.forEach((s) => {
+      const key = normalizeFact(s);
+      if (key) recurringSkillAcquisitions.set(key, (recurringSkillAcquisitions.get(key) || 0) + 1);
+    });
+
+    skillSources.forEach((s) => {
+      const key = normalizeFact(s);
+      if (key) recurringSkillSources.set(key, (recurringSkillSources.get(key) || 0) + 1);
+    });
+
     tasks.push({
       taskId,
       taskType: closure && closure.taskType ? closure.taskType : 'unknown',
@@ -131,6 +146,9 @@ function main() {
       realWorldSignalsCount: realWorldSignals.length,
       userPainPointsCount: userPainPoints.length,
       policyAdjustmentsCount: policyAdjustments.length,
+      skillAcquisitionsCount: skillAcquisitions.length,
+      skillSourcesCount: skillSources.length,
+      skillTransferEvidenceCount: skillTransferEvidence.length,
       hasLearningUpdate: !!learning,
       hasFieldExperience: !!field,
     });
@@ -148,6 +166,8 @@ function main() {
       topRealWorldSignals: toTopList(recurringSignals, 15),
       topUserPainPoints: toTopList(recurringPainPoints, 15),
       topPolicyAdjustments: toTopList(recurringPolicyAdjustments, 15),
+      topSkillAcquisitions: toTopList(recurringSkillAcquisitions, 15),
+      topSkillSources: toTopList(recurringSkillSources, 15),
     },
     tasks,
   };

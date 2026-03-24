@@ -19,19 +19,16 @@ import { useTheme } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useBreakpointDown } from '@/hooks/useResponsive';
+import { createFeatureLogger } from '@/modules/common/utils/devLogger';
 
-const __WORKER_DEBUG__ =
-  import.meta.env.DEV && import.meta.env.VITE_DEBUG_WORKER === 'true';
-const workerDebugError = (...args) => {
-  if (__WORKER_DEBUG__) {
-    console.error(...args);
-  }
-};
-const workerDebugWarn = (...args) => {
-  if (__WORKER_DEBUG__) {
-    console.warn(...args);
-  }
-};
+const workerDebugError = createFeatureLogger({
+  flagName: 'VITE_DEBUG_WORKER',
+  level: 'error',
+});
+const workerDebugWarn = createFeatureLogger({
+  flagName: 'VITE_DEBUG_WORKER',
+  level: 'warn',
+});
 
 const MyApplicationsPage = () => {
   const navigate = useNavigate();

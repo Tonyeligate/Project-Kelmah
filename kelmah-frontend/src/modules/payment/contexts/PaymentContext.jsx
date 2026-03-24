@@ -8,14 +8,15 @@ import React, {
 import paymentService from '../services/paymentService';
 import { useAuth } from '../../auth/hooks/useAuth';
 import { useNotifications } from '../../notifications/contexts/NotificationContext';
+import {
+  createFeatureLogger,
+  devError,
+} from '@/modules/common/utils/devLogger';
 
-const PAYMENTS_DEBUG =
-  import.meta.env.DEV && import.meta.env.VITE_DEBUG_PAYMENTS === 'true';
-const paymentsLog = (...args) => {
-  if (PAYMENTS_DEBUG) {
-    console.log(...args);
-  }
-};
+const paymentsLog = createFeatureLogger({
+  flagName: 'VITE_DEBUG_PAYMENTS',
+  level: 'log',
+});
 
 const PaymentContext = createContext(null);
 
@@ -120,7 +121,7 @@ export const PaymentProvider = ({ children }) => {
 
       setError(null);
     } catch (err) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to fetch payment data:', err);
+      devError('Failed to fetch payment data:', err);
       setError('Could not load payment information. Please try again later.');
     } finally {
       setLoading(false);
@@ -147,7 +148,7 @@ export const PaymentProvider = ({ children }) => {
         await fetchData();
         return true;
       } catch (err) {
-        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Deposit failed:', err);
+        devError('Deposit failed:', err);
         showToast('Failed to deposit funds.', 'error');
         return false;
       } finally {
@@ -177,7 +178,7 @@ export const PaymentProvider = ({ children }) => {
         await fetchData();
         return true;
       } catch (err) {
-        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Withdrawal failed:', err);
+        devError('Withdrawal failed:', err);
         showToast('Failed to process withdrawal.', 'error');
         return false;
       } finally {
@@ -199,7 +200,7 @@ export const PaymentProvider = ({ children }) => {
           : data?.data || data?.transactions || [];
         setTransactions(transactionsData);
       } catch (err) {
-        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to fetch transactions:', err);
+        devError('Failed to fetch transactions:', err);
         showToast('Failed to load transactions.', 'error');
       } finally {
         setLoading(false);
@@ -216,7 +217,7 @@ export const PaymentProvider = ({ children }) => {
         showToast('Payment method added successfully.', 'success');
         await fetchData();
       } catch (err) {
-        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to add payment method:', err);
+        devError('Failed to add payment method:', err);
         showToast('Failed to add payment method.', 'error');
       } finally {
         setLoading(false);
@@ -234,7 +235,7 @@ export const PaymentProvider = ({ children }) => {
         showToast('Default payment method updated.', 'success');
         await fetchData();
       } catch (err) {
-        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to set default payment method:', err);
+        devError('Failed to set default payment method:', err);
         showToast('Failed to set default payment method.', 'error');
       } finally {
         setLoading(false);
@@ -252,7 +253,7 @@ export const PaymentProvider = ({ children }) => {
         showToast('Payment method removed.', 'success');
         await fetchData();
       } catch (err) {
-        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to delete payment method:', err);
+        devError('Failed to delete payment method:', err);
         showToast('Failed to delete payment method.', 'error');
       } finally {
         setLoading(false);
@@ -270,7 +271,7 @@ export const PaymentProvider = ({ children }) => {
         // Refresh bills data
         await fetchData();
       } catch (err) {
-        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to pay bill:', err);
+        devError('Failed to pay bill:', err);
         showToast('Failed to pay bill.', 'error');
       } finally {
         setActionLoading(null);

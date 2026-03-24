@@ -4,7 +4,7 @@
   "hypotheses": [
     {
       "id": "H1",
-      "probability": 0.4,
+      "probability": 1.0,
       "evidenceFor": [],
       "evidenceAgainst": []
     }

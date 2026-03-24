@@ -1,6 +1,7 @@
 /**
  * Error handling utility functions
  */
+import { devError } from '@/modules/common/utils/devLogger';
 
 /**
  * Format error message from API response
@@ -25,6 +26,6 @@ export const formatApiError = (error) => {
  * @param {string} context - Context where error occurred
  */
 export const logError = (error, context = 'general') => {
-  if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error(`[${context}]`, error);
+  devError(`[${context}]`, error);
   // In production, would send to error monitoring service
 };

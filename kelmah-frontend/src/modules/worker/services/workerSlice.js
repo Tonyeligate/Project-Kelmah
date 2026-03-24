@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { api } from '../../../services/apiClient';
+import { devWarn } from '@/modules/common/utils/devLogger';
 
 // Async thunks for worker operations
 export const fetchWorkerProfile = createAsyncThunk(
@@ -156,12 +157,8 @@ export const updateWorkerSkills = createAsyncThunk(
 
         const results = await Promise.allSettled(mutationTasks);
         const failures = results.filter((r) => r.status === 'rejected');
-        if (
-          failures.length > 0 &&
-          import.meta.env.DEV &&
-          import.meta.env.VITE_DEBUG_FRONTEND === 'true'
-        ) {
-          console.warn(`${failures.length} skill update(s) failed`);
+        if (failures.length > 0) {
+          devWarn(`${failures.length} skill update(s) failed`);
         }
       }
 

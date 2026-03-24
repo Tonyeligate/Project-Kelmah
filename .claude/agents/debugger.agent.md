@@ -801,3 +801,16 @@ Required evidence:
   - learning_update.json
   - field_experience_report.json
 ```
+
+### GFL-14: 3D/HD Visual Coherence Challenge Gate
+```
+For premium frontend redesign claims:
+  - challenge depth/layering claims against tokenized surface evidence
+  - verify icon-language coherence and removal of mixed emoji enterprise controls
+  - verify motion choreography is state-based and not entry-only decoration
+
+Required evidence:
+  - three_d_hd_design_report.json
+  - layout_optimization_report.json
+  - behavioral_twin_report.json
+```

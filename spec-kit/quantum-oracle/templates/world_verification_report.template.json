@@ -1,0 +1,11 @@
+{
+  "taskId": "<task-id>",
+  "worlds": [
+    { "name": "anonymous", "status": "PASS" },
+    { "name": "authenticated", "status": "PASS" },
+    { "name": "websocket", "status": "PASS" },
+    { "name": "service-to-service", "status": "PASS" },
+    { "name": "config-coherence", "status": "PASS" }
+  ],
+  "closureVerdict": "PASS"
+}

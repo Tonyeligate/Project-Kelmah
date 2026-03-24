@@ -1,6 +1,14 @@
 // Import centralized services (must be at top to avoid TDZ issues)
 import { getApiBaseUrl, API_ENDPOINTS } from './environment';
 
+const FRONTEND_DEBUG =
+  import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true';
+const devWarn = (...args) => {
+  if (FRONTEND_DEBUG) {
+    console.warn(...args);
+  }
+};
+
 // Environment-based configuration
 const ENV = import.meta.env.MODE || 'development';
 const isDevelopment = ENV === 'development';
@@ -15,7 +23,7 @@ const getAPIUrls = async () => {
       production: baseUrl,
     };
   } catch (error) {
-    if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Failed to get centralized API URLs:', error);
+    devWarn('Failed to get centralized API URLs:', error);
     return {
       development: '/api',
       test: '/api',
@@ -43,7 +51,7 @@ export const getSOCKET_URL = async () => {
   try {
     return API_ENDPOINTS.WEBSOCKET.MESSAGING || '/socket.io';
   } catch (error) {
-    if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Failed to get socket URL:', error);
+    devWarn('Failed to get socket URL:', error);
     return '/socket.io';
   }
 };

@@ -1,0 +1,13 @@
+{
+  "taskId": "demo-adaptive-scaffold",
+  "risks": [
+    {
+      "id": "R1",
+      "description": "",
+      "likelihood": "low|medium|high",
+      "impact": "low|medium|high",
+      "mitigation": "",
+      "status": "open|mitigated|accepted"
+    }
+  ]
+}

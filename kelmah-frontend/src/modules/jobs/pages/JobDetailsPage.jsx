@@ -68,6 +68,7 @@ import {
   resolveJobVisualUrl,
   resolveProfileImageUrl,
 } from '../../common/utils/mediaAssets';
+import { devError } from '@/modules/common/utils/devLogger';
 
 // Styled components
 const SectionHeading = ({ children, icon: Icon, sx = {} }) => {
@@ -331,7 +332,7 @@ const JobDetailsPage = () => {
   useEffect(() => {
     // Validate jobId before fetching
     if (!id || id === 'undefined' || id === 'null') {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('❌ Invalid job ID:', id);
+      devError('❌ Invalid job ID:', id);
       return;
     }
 
@@ -434,7 +435,7 @@ const JobDetailsPage = () => {
         setShareSnackbar('Job saved successfully');
       }
     } catch (err) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to toggle bookmark:', err);
+      devError('Failed to toggle bookmark:', err);
       setShareSnackbar('Could not update saved jobs. Try again.');
     } finally {
       setSavingBookmark(false);
@@ -1038,7 +1039,24 @@ const JobDetailsPage = () => {
                   <IconButton
                     onClick={handleShareJob}
                     aria-label="Share job"
-                    sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1.5, color: 'text.primary', px: 1.5, '&:hover': { color: accentColor, borderColor: accentColor, bgcolor: accentSoftBg }, '&:focus-visible': { outline: `3px solid ${accentColor}`, outlineOffset: '2px' } }}
+                    sx={{
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      borderRadius: 1.5,
+                      color: 'text.primary',
+                      px: 1.5,
+                      minWidth: 44,
+                      minHeight: 44,
+                      '&:hover': {
+                        color: accentColor,
+                        borderColor: accentColor,
+                        bgcolor: accentSoftBg,
+                      },
+                      '&:focus-visible': {
+                        outline: `3px solid ${accentColor}`,
+                        outlineOffset: '2px',
+                      },
+                    }}
                   >
                     <Share />
                   </IconButton>

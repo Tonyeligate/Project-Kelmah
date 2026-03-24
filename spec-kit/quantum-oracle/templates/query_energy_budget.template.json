@@ -1,0 +1,13 @@
+{
+  "taskId": "<task-id>",
+  "queries": [
+    {
+      "name": "jobs-list",
+      "docsExamined": 120,
+      "nReturned": 40,
+      "qer": 0.333
+    }
+  ],
+  "notes": "Keep QER within target range.",
+  "closureVerdict": "PASS"
+}

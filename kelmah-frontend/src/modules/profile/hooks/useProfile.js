@@ -7,17 +7,18 @@ import {
   setError,
 } from '../../../store/slices/profileSlice.js';
 import useAuth from '../../auth/hooks/useAuth';
+import {
+  createFeatureLogger,
+  devError,
+  devWarn,
+} from '@/modules/common/utils/devLogger';
 
 const PROFILE_REQUEST_TIMEOUT_MS = 5000;
 let profileInitPromise = null;
-const PROFILE_DEBUG =
-  import.meta.env.DEV && import.meta.env.VITE_DEBUG_PROFILE === 'true';
-
-const profileDebug = (...args) => {
-  if (PROFILE_DEBUG) {
-    console.debug(...args);
-  }
-};
+const profileDebug = createFeatureLogger({
+  flagName: 'VITE_DEBUG_PROFILE',
+  level: 'debug',
+});
 
 export const useProfile = (options = {}) => {
   const { autoInitialize = true } = options;
@@ -73,9 +74,9 @@ export const useProfile = (options = {}) => {
       if (isCurrentRequest(requestId)) {
         dispatch(setError(friendlyMessage));
       }
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Profile loading error (with fallback):', error.message);
+      devWarn('Profile loading error (with fallback):', error.message);
       if (isTimeout) {
-        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('[ProfileHook] loadProfile() timed out after 5s');
+        devWarn('[ProfileHook] loadProfile() timed out after 5s');
       }
       return null;
     } finally {
@@ -206,7 +207,7 @@ export const useProfile = (options = {}) => {
       }
       return stats;
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Statistics loading error (with fallback):', error.message);
+      devWarn('Statistics loading error (with fallback):', error.message);
       // Don't re-throw since profileService now provides fallback data
       return null;
     }
@@ -220,7 +221,7 @@ export const useProfile = (options = {}) => {
       }
       return activities;
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Activity loading error (with fallback):', error.message);
+      devWarn('Activity loading error (with fallback):', error.message);
       // Don't re-throw since profileService now provides fallback data
       return [];
     }
@@ -246,13 +247,13 @@ export const useProfile = (options = {}) => {
             if (profile) {
               await Promise.allSettled([
                 loadStatistics().catch((error) => {
-                  if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn(
+                  devWarn(
                     'Statistics loading failed (gracefully handled):',
                     error.message,
                   );
                 }),
                 loadActivity().catch((error) => {
-                  if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn(
+                  devWarn(
                     'Activity loading failed (gracefully handled):',
                     error.message,
                   );
@@ -262,7 +263,7 @@ export const useProfile = (options = {}) => {
 
             profileDebug('[ProfileHook] Profile initialization completed');
           } catch (error) {
-            if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Profile initialization error:', error);
+            devError('Profile initialization error:', error);
           } finally {
             profileInitPromise = null;
           }

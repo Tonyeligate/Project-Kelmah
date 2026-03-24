@@ -1,9 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { api } from '../../../services/apiClient';
+import { createFeatureLogger, devWarn } from '@/modules/common/utils/devLogger';
 
-const __DEV__ = import.meta.env.DEV;
-const HIRER_DEBUG = __DEV__ && import.meta.env.VITE_DEBUG_HIRER === 'true';
-const devLog = (...args) => { if (HIRER_DEBUG) console.log(...args); };
+const devLog = createFeatureLogger({
+  flagName: 'VITE_DEBUG_HIRER',
+  level: 'log',
+});
 
 // Clients are centralized in modules/common/services/axios.js with auth interceptors
 
@@ -16,7 +18,7 @@ export const fetchHirerProfile = createAsyncThunk(
       const response = await api.get('/users/me/credentials');
       return response?.data?.data ?? response?.data ?? {};
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn(
+      devWarn(
         'User service unavailable for hirer profile:',
         error.message,
       );
@@ -87,7 +89,7 @@ export const fetchHirerJobs = createAsyncThunk(
       devLog('[HirerSlice] Fetched jobs:', { requestedStatus: status, dbStatus, count: Array.isArray(jobs) ? jobs.length : 0 });
       return { status, jobs: Array.isArray(jobs) ? jobs : [] };
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('fetchHirerJobs error:', error);
+      devWarn('fetchHirerJobs error:', error);
       return rejectWithValue(error.response?.data?.message || error.message || 'Failed to fetch jobs');
     }
   },
@@ -100,7 +102,7 @@ export const createHirerJob = createAsyncThunk(
       const response = await api.post('/jobs', jobData);
       return response.data.data || response.data;
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Job service unavailable for job creation:', error.message);
+      devWarn('Job service unavailable for job creation:', error.message);
       return rejectWithValue(error.response?.data?.message || error.message || 'Failed to create job');
     }
   },
@@ -113,7 +115,7 @@ export const updateHirerJob = createAsyncThunk(
       const response = await api.put(`/jobs/${jobId}`, updates);
       return response.data.data || response.data;
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Job service unavailable for job update:', error.message);
+      devWarn('Job service unavailable for job update:', error.message);
       const backendMessage =
         error?.response?.data?.error?.message ||
         error?.response?.data?.message ||
@@ -131,7 +133,7 @@ export const updateHirerProfile = createAsyncThunk(
       const response = await api.put('/users/profile', profileData);
       return response.data.data ?? response.data;
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn(
+      devWarn(
         'User service unavailable for profile update:',
         error.message,
       );
@@ -149,7 +151,7 @@ export const updateJobStatus = createAsyncThunk(
       });
       return unwrapApiPayload(response.data) ?? response.data ?? {};
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn(
+      devWarn(
         'Job service unavailable for status update:',
         error.message,
       );
@@ -165,7 +167,7 @@ export const deleteHirerJob = createAsyncThunk(
       await api.delete(`/jobs/${jobId}`);
       return { jobId };
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn(
+      devWarn(
         'Job service unavailable for job deletion:',
         error.message,
       );
@@ -192,7 +194,7 @@ export const fetchJobApplications = createAsyncThunk(
       });
       return { jobId, applications: extractThunkCollectionItems(response.data) };
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Service unavailable:', error.message);
+      devWarn('Service unavailable:', error.message);
       throw error;
     }
   },
@@ -205,7 +207,7 @@ export const fetchHirerAnalytics = createAsyncThunk(
       const response = await api.get('/users/dashboard/analytics');
       return response.data?.data ?? response.data;
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Service unavailable:', error.message);
+      devWarn('Service unavailable:', error.message);
       return rejectWithValue(error.response?.data?.message || error.message || 'Failed to fetch analytics');
     }
   },
@@ -313,7 +315,7 @@ export const fetchPaymentSummary = createAsyncThunk(
         averagePaymentTime,
       };
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Service unavailable:', error.message);
+      devWarn('Service unavailable:', error.message);
       throw error;
     }
   },

@@ -30,6 +30,7 @@ import { api } from '../../../services/apiClient';
 import { Helmet } from 'react-helmet-async';
 import fileUploadService from '../../common/services/fileUploadService';
 import { useBreakpointDown } from '@/hooks/useResponsive';
+import { createFeatureLogger } from '@/modules/common/utils/devLogger';
 
 const Input = styled('input')({
   display: 'none',
@@ -45,13 +46,10 @@ const DEFAULT_AVAILABLE_HOURS = {
   sunday: { start: '09:00', end: '13:00', available: false },
 };
 
-const __WORKER_DEBUG__ =
-  import.meta.env.DEV && import.meta.env.VITE_DEBUG_WORKER === 'true';
-const workerDebugError = (...args) => {
-  if (__WORKER_DEBUG__) {
-    console.error(...args);
-  }
-};
+const workerDebugError = createFeatureLogger({
+  flagName: 'VITE_DEBUG_WORKER',
+  level: 'error',
+});
 
 const mapAvailabilityApiToForm = (data) => {
   const dayOrder = [

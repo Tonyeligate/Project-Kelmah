@@ -6,6 +6,16 @@
 import { api } from '../../../services/apiClient';
 import { unwrapApiData } from '../../../services/responseNormalizer';
 import { captureRecoverableApiError } from '../../../services/errorTelemetry';
+import {
+  createFeatureLogger,
+  devError,
+  devWarn,
+} from '../../common/utils/devLogger';
+
+const paymentsLog = createFeatureLogger({
+  flagName: 'VITE_DEBUG_PAYMENTS',
+  level: 'log',
+});
 
 const normalizePaymentMethod = (raw) => {
   if (!raw || typeof raw !== 'object') return null;
@@ -78,7 +88,7 @@ const paymentService = {
       const response = await api.get('/payments/methods');
       return normalizePaymentMethodsResponse(unwrapPaymentPayload(response, []));
     } catch (err) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('getPaymentMethods failed:', err);
+      devError('getPaymentMethods failed:', err);
       captureRecoverableApiError(err, {
         operation: 'payments.getPaymentMethods',
         fallbackUsed: true,
@@ -150,6 +160,7 @@ const paymentService = {
   // Escrow operations
   getEscrows: async () => {
     try {
+      paymentsLog('Fetching escrows from payments service');
       // Backend returns { success: true, data: [...] } — normalise to array
       const response = await api.get('/payments/escrows');
       const payload = unwrapPaymentPayload(response, []);
@@ -158,7 +169,7 @@ const paymentService = {
       }
       return payload?.escrows || [];
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Escrow service unavailable:', error.message);
+      devWarn('Escrow service unavailable:', error.message);
       captureRecoverableApiError(error, {
         operation: 'payments.getEscrows',
         fallbackUsed: true,

@@ -31,6 +31,14 @@ import { motion } from 'framer-motion';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 import secureStorage from '../../utils/secureStorage';
 
+const FRONTEND_DEBUG =
+  import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true';
+const devWarn = (...args) => {
+  if (FRONTEND_DEBUG) {
+    console.warn(...args);
+  }
+};
+
 const QUICK_NAV_STORAGE_KEY = 'quick_nav_preferences';
 const QUICK_NAV_PREF_TTL = 180 * 24 * 60 * 60 * 1000; // 6 months
 
@@ -81,7 +89,7 @@ const SmartNavigation = () => {
         };
         secureStorage.setItem(QUICK_NAV_STORAGE_KEY, next, QUICK_NAV_PREF_TTL);
       } catch (error) {
-        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn(
+        devWarn(
           'Quick navigation preference persistence failed:',
           error.message,
         );
@@ -162,7 +170,7 @@ const SmartNavigation = () => {
         }
       }
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn(
+      devWarn(
         'Quick navigation preference hydrate failed:',
         error.message,
       );

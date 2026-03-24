@@ -34,6 +34,7 @@ import { format, formatDistanceToNow, isValid } from 'date-fns';
 import CountUp from 'react-countup';
 import { useInView } from 'react-intersection-observer';
 import { captureRecoverableApiError } from '@/services/errorTelemetry';
+import { devWarn } from '@/modules/common/utils/devLogger';
 import {
   ElectricalServices as ElectricalIcon,
   Plumbing as PlumbingIcon,
@@ -257,7 +258,7 @@ const JobResultsSection = ({
     try {
       await jobsApi.saveJob(jobId);
     } catch (err) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Failed to bookmark job:', err.message);
+      devWarn('Failed to bookmark job:', err.message);
       captureRecoverableApiError(err, {
         phase: 'save-job',
         feature: 'job-results',

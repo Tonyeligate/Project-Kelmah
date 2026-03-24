@@ -16,6 +16,7 @@ import {
 } from '../../../hooks/useProposals';
 import { hirerService } from '../services/hirerService';
 import { useBreakpointDown } from '@/hooks/useResponsive';
+import { devError } from '@/modules/common/utils/devLogger';
 
 const STATUS_FILTERS = [
   { label: 'All', value: 'all' },
@@ -310,7 +311,7 @@ const ProposalReview = () => {
         handleDialogClose();
         await refresh();
       } catch (err) {
-        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error(`Failed to update proposal ${proposalId}`, {
+        devError(`Failed to update proposal ${proposalId}`, {
           requestId,
           error: err,
         });

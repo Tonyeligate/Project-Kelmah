@@ -69,6 +69,7 @@ import {
   TimerDisplay,
 } from '@/modules/worker/components/skillsAssessment/styled';
 import { useBreakpointDown } from '@/hooks/useResponsive';
+import { devError } from '@/modules/common/utils/devLogger';
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -210,7 +211,7 @@ const SkillsAssessmentPage = () => {
       );
       setAnalytics(analyticsSummary);
     } catch (err) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to load assessment data', err);
+      devError('Failed to load assessment data', err);
       setError('Failed to load assessment data. Showing sample insights.');
       setMySkills(fallbackNormalizedSkills);
       setAvailableTests(fallbackAvailableTests.map((test) => ({ ...test })));
@@ -252,7 +253,7 @@ const SkillsAssessmentPage = () => {
         setPaused(false);
         setTimeRemaining((test.duration || 30) * 60);
       } catch (err) {
-        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to load test details', err);
+          devError('Failed to load test details', err);
         setError('Failed to load test details');
       } finally {
         setLoading(false);

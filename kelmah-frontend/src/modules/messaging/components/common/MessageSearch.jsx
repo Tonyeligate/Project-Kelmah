@@ -24,6 +24,7 @@ import {
 import { styled } from '@mui/material/styles';
 import { safeFormatDate } from '@/modules/common/utils/formatters';
 import { messagingService } from '../../services/messagingService';
+import { devError } from '@/modules/common/utils/devLogger';
 
 // Styled components
 const SearchHeader = styled(Box)(({ theme }) => ({
@@ -91,7 +92,7 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
       const response = await messagingService.searchMessages(query, options);
       setResults(response.messages || []);
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error searching messages:', error);
+      devError('Error searching messages:', error);
       setResults([]);
     } finally {
       setLoading(false);
@@ -173,7 +174,20 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
       }}
     >
       <SearchHeader>
-        <IconButton edge="start" onClick={onClose} aria-label="Close message search" sx={{ width: 44, height: 44 }}>
+        <IconButton
+          edge="start"
+          onClick={onClose}
+          aria-label="Close message search"
+          sx={{
+            width: 44,
+            height: 44,
+            '&:focus-visible': {
+              outline: '3px solid',
+              outlineColor: 'primary.main',
+              outlineOffset: '2px',
+            },
+          }}
+        >
           <ArrowBack />
         </IconButton>
         <Typography variant="h6">Message Search</Typography>
@@ -200,7 +214,15 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
                   edge="end"
                   onClick={() => setQuery('')}
                   aria-label="Clear search text"
-                  sx={{ width: 44, height: 44 }}
+                  sx={{
+                    width: 44,
+                    height: 44,
+                    '&:focus-visible': {
+                      outline: '3px solid',
+                      outlineColor: 'primary.main',
+                      outlineOffset: '2px',
+                    },
+                  }}
                 >
                   <Close />
                 </IconButton>

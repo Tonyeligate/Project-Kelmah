@@ -23,6 +23,14 @@ import ScrollToTop from './components/common/ScrollToTop';
 import { BOTTOM_NAV_HEIGHT, Z_INDEX } from './constants/layout';
 import { telemetryEvents } from './services/errorTelemetry';
 
+const FRONTEND_DEBUG =
+  import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true';
+const devWarn = (...args) => {
+  if (FRONTEND_DEBUG) {
+    console.warn(...args);
+  }
+};
+
 const PWA_BANNER_DISMISS_KEY = 'pwa_banner_dismissed';
 const PWA_BANNER_DISMISS_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -191,7 +199,7 @@ const App = () => {
           setServicesWakingUp(false);
         }
       } catch (e) {
-        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Service warm-up check failed:', e);
+        devWarn('Service warm-up check failed:', e);
         setServicesWakingUp(false);
       }
     };

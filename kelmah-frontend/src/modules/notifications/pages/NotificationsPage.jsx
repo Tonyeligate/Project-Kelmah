@@ -49,6 +49,7 @@ import {
   openExternalUrl,
   NOTIFICATION_ALLOWED_HOSTS,
 } from '../../../utils/externalNavigation';
+import { devWarn } from '@/modules/common/utils/devLogger';
 
 // --- Reusable Components ---
 
@@ -124,9 +125,7 @@ const PageNotificationItem = ({ notification, onMarkRead }) => {
       return;
     }
 
-    if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') {
-      console.warn('Blocked unsafe notification link:', nextLink);
-    }
+    devWarn('Blocked unsafe notification link:', nextLink);
   };
 
   return (
@@ -352,7 +351,15 @@ const NotificationsPage = () => {
             <IconButton
               onClick={(e) => setActionsAnchor(e.currentTarget)}
               aria-label="More actions"
-              sx={{ minWidth: 44, minHeight: 44 }}
+              sx={{
+                minWidth: 44,
+                minHeight: 44,
+                '&:focus-visible': {
+                  outline: '3px solid',
+                  outlineColor: 'primary.main',
+                  outlineOffset: '2px',
+                },
+              }}
             >
               <MoreVertIcon />
             </IconButton>

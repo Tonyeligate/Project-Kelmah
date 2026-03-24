@@ -1,0 +1,12 @@
+{
+  "taskId": "<task-id>",
+  "localState": {
+    "commit": "<sha>",
+    "env": "local"
+  },
+  "remoteState": {
+    "commit": "<sha>",
+    "env": "render-vercel"
+  },
+  "closureVerdict": "PASS"
+}

@@ -567,7 +567,20 @@ const ProfessionalMapPage = () => {
             ),
             endAdornment: searchQuery && (
               <InputAdornment position="end">
-                <IconButton size="small" onClick={() => setSearchQuery('')} aria-label="Clear search text">
+                <IconButton
+                  size="small"
+                  onClick={() => setSearchQuery('')}
+                  aria-label="Clear search text"
+                  sx={{
+                    width: 44,
+                    height: 44,
+                    '&:focus-visible': {
+                      outline: '3px solid',
+                      outlineColor: 'primary.main',
+                      outlineOffset: '2px',
+                    },
+                  }}
+                >
                   <ClearIcon fontSize="small" />
                 </IconButton>
               </InputAdornment>
@@ -596,13 +609,36 @@ const ProfessionalMapPage = () => {
             color={showFilters ? 'primary' : 'default'}
             aria-label={showFilters ? 'Hide filters' : 'Show filters'}
             size="small"
+            sx={{
+              width: 44,
+              height: 44,
+              '&:focus-visible': {
+                outline: '3px solid',
+                outlineColor: 'primary.main',
+                outlineOffset: '2px',
+              },
+            }}
           >
             <FilterIcon />
           </IconButton>
         </Tooltip>
 
         <Tooltip title="Refresh">
-          <IconButton onClick={fetchData} disabled={loading} aria-label="Refresh map results" size="small">
+          <IconButton
+            onClick={fetchData}
+            disabled={loading}
+            aria-label="Refresh map results"
+            size="small"
+            sx={{
+              width: 44,
+              height: 44,
+              '&:focus-visible': {
+                outline: '3px solid',
+                outlineColor: 'primary.main',
+                outlineOffset: '2px',
+              },
+            }}
+          >
             {loading ? <CircularProgress size={18} /> : <RefreshIcon />}
           </IconButton>
         </Tooltip>
@@ -614,6 +650,15 @@ const ProfessionalMapPage = () => {
               onClick={() => setListMode(!listMode)}
               aria-label={listMode ? 'Switch to map view' : 'Switch to list view'}
               color="primary"
+              sx={{
+                width: 44,
+                height: 44,
+                '&:focus-visible': {
+                  outline: '3px solid',
+                  outlineColor: 'primary.main',
+                  outlineOffset: '2px',
+                },
+              }}
             >
               {listMode ? <MapViewIcon /> : <ListViewIcon />}
             </IconButton>
@@ -989,6 +1034,15 @@ const ProfessionalMapPage = () => {
                     size="small"
                     onClick={() => setSelectedItem(null)}
                     aria-label="Close map details panel"
+                    sx={{
+                      width: 44,
+                      height: 44,
+                      '&:focus-visible': {
+                        outline: '3px solid',
+                        outlineColor: 'primary.main',
+                        outlineOffset: '2px',
+                      },
+                    }}
                   >
                     <CloseIcon fontSize="small" />
                   </IconButton>

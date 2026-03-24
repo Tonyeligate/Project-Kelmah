@@ -1128,7 +1128,20 @@ const JobSearchPage = () => {
           <Typography variant="subtitle1" fontWeight={700}>
             Filters
           </Typography>
-          <IconButton onClick={() => setFilterDrawerOpen(false)} size="small" aria-label="Close filters">
+          <IconButton
+            onClick={() => setFilterDrawerOpen(false)}
+            size="small"
+            aria-label="Close filters"
+            sx={{
+              minWidth: 44,
+              minHeight: 44,
+              '&:focus-visible': {
+                outline: '3px solid',
+                outlineColor: 'primary.main',
+                outlineOffset: '2px',
+              },
+            }}
+          >
             <CloseIcon />
           </IconButton>
         </Stack>

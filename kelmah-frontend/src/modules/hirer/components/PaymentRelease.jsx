@@ -22,6 +22,7 @@ import {
 } from '../services/hirerSlice';
 import paymentService from '../../payment/services/paymentService';
 import { useBreakpointDown } from '@/hooks/useResponsive';
+import { devError, devWarn } from '@/modules/common/utils/devLogger';
 
 // No mock data - using real API data only
 
@@ -101,7 +102,7 @@ const PaymentRelease = () => {
         try {
           await dispatch(fetchPaymentSummary()).unwrap();
         } catch (err) {
-          if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn(
+          devWarn(
             `Failed to fetch payment summary (attempt ${attempts}):`,
             err,
           );
@@ -234,7 +235,7 @@ const PaymentRelease = () => {
       handleDialogClose();
       setSnackbar({ open: true, message: 'Payment released successfully', severity: 'success' });
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error releasing payment:', error);
+      devError('Error releasing payment:', error);
       setSnackbar({ open: true, message: error?.message || 'Failed to release payment', severity: 'error' });
     } finally {
       setLoading(false);

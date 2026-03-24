@@ -680,6 +680,15 @@ function JobApplication() {
                                 edge="end"
                                 onClick={() => handleRemoveAttachment(index)}
                                 aria-label={`Remove attachment ${file.name}`}
+                                sx={{
+                                  width: 44,
+                                  height: 44,
+                                  '&:focus-visible': {
+                                    outline: '3px solid',
+                                    outlineColor: 'primary.main',
+                                    outlineOffset: '2px',
+                                  },
+                                }}
                               >
                                 <DeleteIcon />
                               </IconButton>
@@ -836,7 +845,16 @@ function JobApplication() {
                               size="small"
                               onClick={() => handleRemoveMilestone(index)}
                               aria-label={`Remove milestone ${index + 1}`}
-                              sx={{ ml: 1 }}
+                              sx={{
+                                ml: 1,
+                                width: 44,
+                                height: 44,
+                                '&:focus-visible': {
+                                  outline: '3px solid',
+                                  outlineColor: 'primary.main',
+                                  outlineOffset: '2px',
+                                },
+                              }}
                             >
                               <DeleteIcon fontSize="small" />
                             </IconButton>

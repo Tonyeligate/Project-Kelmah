@@ -12,6 +12,7 @@ import {
   Alert,
 } from '@mui/material';
 import paymentService from '../../payment/services/paymentService';
+import { devError } from '@/modules/common/utils/devLogger';
 
 const EscrowManager = () => {
   const [escrows, setEscrows] = useState([]);
@@ -32,7 +33,7 @@ const EscrowManager = () => {
       const data = await paymentService.getEscrows();
       setEscrows(Array.isArray(data) ? data : data?.data || []);
     } catch (e) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Load escrows failed', e);
+      devError('Load escrows failed', e);
     } finally {
       setLoading(false);
     }

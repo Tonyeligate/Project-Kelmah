@@ -1,12 +1,16 @@
 import { api } from '../../../services/apiClient';
+import {
+  createFeatureLogger,
+  devError,
+  devWarn,
+} from '@/modules/common/utils/devLogger';
 
-const PROFILE_DEBUG =
-  import.meta.env.DEV && import.meta.env.VITE_DEBUG_PROFILE === 'true';
-const profileDebug = (...args) => {
-  if (PROFILE_DEBUG) {
-    console.debug(...args);
-  }
-};
+const profileDebug = createFeatureLogger({
+  flagName: 'VITE_DEBUG_PROFILE',
+  level: 'debug',
+});
+const profileWarn = devWarn;
+const profileError = devError;
 
 const PROFILE_PICTURE_STORAGE_KEY = 'kelmah_profile_picture_preview';
 
@@ -62,7 +66,7 @@ class ProfileService {
       );
       return payload;
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Profile service unavailable:', { error: error.message });
+      profileWarn('Profile service unavailable:', { error: error.message });
       throw error;
     }
   }
@@ -74,7 +78,7 @@ class ProfileService {
       profileDebug('[ProfileService] Profile update succeeded');
       return response.data.data;
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error updating profile:', error);
+      profileError('Error updating profile:', error);
       throw error;
     }
   }
@@ -101,7 +105,7 @@ class ProfileService {
       }
       return response.data.data;
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn(
+      profileWarn(
         'Profile picture upload endpoint unavailable, using local preview fallback:',
         error?.message,
       );
@@ -120,7 +124,7 @@ class ProfileService {
       const response = await api.put('/users/profile', { skills });
       return response.data.data;
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error updating skills:', error);
+      profileError('Error updating skills:', error);
       throw error;
     }
   }
@@ -131,7 +135,7 @@ class ProfileService {
       const response = await api.put('/users/profile', { education });
       return response.data.data;
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error updating education:', error);
+      profileError('Error updating education:', error);
       throw error;
     }
   }
@@ -142,7 +146,7 @@ class ProfileService {
       const response = await api.put('/users/profile', { experience });
       return response.data.data;
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error updating experience:', error);
+      profileError('Error updating experience:', error);
       throw error;
     }
   }
@@ -153,7 +157,7 @@ class ProfileService {
       const response = await api.put('/users/profile', { preferences });
       return response.data.data;
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error updating preferences:', error);
+      profileError('Error updating preferences:', error);
       throw error;
     }
   }
@@ -167,7 +171,7 @@ class ProfileService {
         response.data || { jobsCompleted: 0, successRate: 0 }
       );
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Statistics service unavailable:', { error: error.message });
+      profileWarn('Statistics service unavailable:', { error: error.message });
       return { jobsCompleted: 0, successRate: 0 };
     }
   }
@@ -187,7 +191,7 @@ class ProfileService {
             ? data
             : [];
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Activity service unavailable:', { error: error.message });
+      profileWarn('Activity service unavailable:', { error: error.message });
       return [];
     }
   }

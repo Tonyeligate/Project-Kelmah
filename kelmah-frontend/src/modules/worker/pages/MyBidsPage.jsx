@@ -57,19 +57,17 @@ import {
 } from '@mui/icons-material';
 import bidApi from '../../jobs/services/bidService';
 import Toast from '../../common/components/common/Toast';
+import { createFeatureLogger } from '@/modules/common/utils/devLogger';
 
 const isAbortError = (error) =>
   error?.name === 'AbortError' ||
   error?.name === 'CanceledError' ||
   error?.code === 'ERR_CANCELED';
 
-const __WORKER_DEBUG__ =
-  import.meta.env.DEV && import.meta.env.VITE_DEBUG_WORKER === 'true';
-const workerDebugError = (...args) => {
-  if (__WORKER_DEBUG__) {
-    console.error(...args);
-  }
-};
+const workerDebugError = createFeatureLogger({
+  flagName: 'VITE_DEBUG_WORKER',
+  level: 'error',
+});
 
 const STATUS_CONFIG = {
   pending: { label: 'Pending', color: 'warning', icon: <PendingIcon fontSize="small" /> },
@@ -445,7 +443,20 @@ const MyBidsPage = () => {
           </Typography>
         </Box>
         <Tooltip title="Refresh">
-          <IconButton aria-label="Refresh bids" onClick={fetchBids} disabled={loading}>
+          <IconButton
+            aria-label="Refresh bids"
+            onClick={fetchBids}
+            disabled={loading}
+            sx={{
+              minWidth: 44,
+              minHeight: 44,
+              '&:focus-visible': {
+                outline: '3px solid',
+                outlineColor: 'primary.main',
+                outlineOffset: '2px',
+              },
+            }}
+          >
             <RefreshIcon />
           </IconButton>
         </Tooltip>

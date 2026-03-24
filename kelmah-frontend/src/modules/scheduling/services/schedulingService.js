@@ -1,10 +1,10 @@
 import { api } from '../../../services/apiClient';
 import { secureStorage } from '../../../utils/secureStorage';
+import { devWarn } from '@/modules/common/utils/devLogger';
 
 // Use centralized api client
 
 const APPOINTMENTS_STORAGE_KEY = 'kelmah_local_appointments';
-
 const normalizeAppointment = (appointment = {}, index = 0) => ({
   ...appointment,
   id: appointment?.id || appointment?._id || `appointment-${index}`,
@@ -59,7 +59,7 @@ class SchedulingService {
         normalizeAppointment(appointment, index),
       );
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Scheduling service unavailable:', error.message);
+      devWarn('Scheduling service unavailable:', error.message);
       return readStoredAppointments();
     }
   }
@@ -80,7 +80,7 @@ class SchedulingService {
         normalizeAppointment(appointment, index),
       );
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn(
+      devWarn(
         `Scheduling service unavailable for job ${jobId}:`,
         error.message,
       );
@@ -111,7 +111,7 @@ class SchedulingService {
         normalizeAppointment(appointment, index),
       );
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn(
+      devWarn(
         `Scheduling service unavailable for user ${userId}:`,
         error.message,
       );
@@ -131,7 +131,7 @@ class SchedulingService {
       const response = await api.post('/appointments', appointmentData);
       return normalizeAppointment(response.data.data || response.data, 0);
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Scheduling service unavailable:', error.message);
+      devWarn('Scheduling service unavailable:', error.message);
       const appointments = readStoredAppointments();
       const localAppointment = buildLocalAppointment(appointmentData);
       appointments.push(localAppointment);
@@ -151,7 +151,7 @@ class SchedulingService {
       );
       return normalizeAppointment(response.data.data || response.data, 0);
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Service unavailable:', error.message);
+      devWarn('Service unavailable:', error.message);
       const appointments = readStoredAppointments();
       const updatedAppointments = appointments.map((appointment) =>
         String(appointment.id) === String(appointmentId)
@@ -178,7 +178,7 @@ class SchedulingService {
       const response = await api.delete(`/appointments/${appointmentId}`);
       return response.data;
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Service unavailable:', error.message);
+      devWarn('Service unavailable:', error.message);
       const appointments = readStoredAppointments();
       const updatedAppointments = appointments.filter(
         (appointment) => String(appointment.id) !== String(appointmentId),
@@ -196,7 +196,7 @@ class SchedulingService {
       const response = await api.get(`/appointments/${appointmentId}`);
       return normalizeAppointment(response.data.data || response.data, 0);
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Scheduling service unavailable:', error.message);
+      devWarn('Scheduling service unavailable:', error.message);
       return (
         readStoredAppointments().find(
           (appointment) => String(appointment.id) === String(appointmentId),
@@ -216,7 +216,7 @@ class SchedulingService {
       );
       return normalizeAppointment(response.data.data || response.data, 0);
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Service unavailable:', error.message);
+      devWarn('Service unavailable:', error.message);
       return this.updateAppointment(appointmentId, { status });
     }
   }
@@ -231,7 +231,7 @@ class SchedulingService {
       });
       return response.data.data || response.data;
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Scheduling service unavailable:', error.message);
+      devWarn('Scheduling service unavailable:', error.message);
       return [];
     }
   }

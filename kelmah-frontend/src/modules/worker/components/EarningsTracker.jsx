@@ -60,6 +60,7 @@ import workerService from '../services/workerService';
 import { useSelector } from 'react-redux';
 import { normalizeUser } from '../../../utils/userUtils';
 import { useBreakpointDown } from '@/hooks/useResponsive';
+import { devWarn } from '@/modules/common/utils/devLogger';
 
 // Styled components
 const GlassCard = styled(Card)(({ theme }) => ({
@@ -184,7 +185,7 @@ const EarningsTracker = () => {
           return;
         }
       } catch (apiErr) {
-        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Earnings API unavailable:', apiErr.message);
+        devWarn('Earnings API unavailable:', apiErr.message);
       }
 
       setEarningsData(EMPTY_EARNINGS_DATA);

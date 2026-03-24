@@ -30,6 +30,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../../../../services/apiClient';
 import { formatJobLocation } from '../../../../../utils/formatters';
+import { devError } from '@/modules/common/utils/devLogger';
 
 const JobSearch = () => {
   const navigate = useNavigate();
@@ -87,7 +88,7 @@ const JobSearch = () => {
       setJobs(response.data.data);
     } catch (err) {
       setError('Failed to fetch jobs. Please try again later.');
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error fetching jobs:', err);
+      devError('Error fetching jobs:', err);
     } finally {
       setLoading(false);
     }
@@ -118,7 +119,7 @@ const JobSearch = () => {
       await api.post(`/jobs/${jobId}/apply`, {});
       // Show success message or update UI
     } catch (err) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error applying for job:', err);
+      devError('Error applying for job:', err);
     }
   };
 
@@ -196,6 +197,15 @@ const JobSearch = () => {
                         size="small"
                         onClick={() => handleFilterChange('searchTerm', '')}
                         aria-label="Clear job search"
+                        sx={{
+                          width: 44,
+                          height: 44,
+                          '&:focus-visible': {
+                            outline: '3px solid',
+                            outlineColor: 'primary.main',
+                            outlineOffset: '2px',
+                          },
+                        }}
                       >
                         <Clear />
                       </IconButton>

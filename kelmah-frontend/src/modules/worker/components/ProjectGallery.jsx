@@ -10,6 +10,7 @@ import {
 } from '@mui/icons-material';
 import { resolveMediaAssetUrls } from '../../common/utils/mediaAssets';
 import { useBreakpointDown } from '@/hooks/useResponsive';
+import { devError } from '@/modules/common/utils/devLogger';
 
 const ProjectGallery = ({
   images = [],
@@ -82,7 +83,7 @@ const ProjectGallery = ({
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to download image:', error);
+      devError('Failed to download image:', error);
     }
   };
 
@@ -96,7 +97,7 @@ const ProjectGallery = ({
           url: imageUrl,
         });
       } catch (error) {
-        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to share:', error);
+        devError('Failed to share:', error);
       }
     } else {
       // Fallback - copy to clipboard
@@ -104,7 +105,7 @@ const ProjectGallery = ({
         await navigator.clipboard.writeText(imageUrl);
         // You might want to show a snackbar here
       } catch (error) {
-        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to copy to clipboard:', error);
+        devError('Failed to copy to clipboard:', error);
       }
     }
   };

@@ -3,13 +3,14 @@ import authService from './authService';
 import { AUTH_CONFIG } from '../../../config/environment';
 import { secureStorage } from '../../../utils/secureStorage';
 import { normalizeUser } from '../../../utils/userUtils';
+import {
+  createFeatureLogger,
+  devError,
+  devWarn,
+} from '@/modules/common/utils/devLogger';
 // Support import.meta.env in Vite and process.env in tests
 // Use Node.js environment variables for tests
-const metaEnv = process.env;
-const __DEV__ = typeof import.meta !== 'undefined' ? import.meta.env?.DEV : false;
-const AUTH_DEBUG =
-  __DEV__ && typeof import.meta !== 'undefined' && import.meta.env?.VITE_DEBUG_AUTH === 'true';
-const devLog = (...args) => { if (AUTH_DEBUG) console.log(...args); };
+const devLog = createFeatureLogger({ flagName: 'VITE_DEBUG_AUTH' });
 
 const normalizeAuthUser = (user) => {
   if (!user) {
@@ -49,7 +50,7 @@ const resolveInitialAuthState = () => {
     secureStorage.setUserData(user);
     return { token, user, isAuthenticated: true };
   } catch (error) {
-    if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Failed to resolve initial auth state:', error);
+    devWarn('Failed to resolve initial auth state:', error);
     secureStorage.clearAuthData();
     return { token: null, user: null, isAuthenticated: false };
   }
@@ -102,14 +103,14 @@ export const login = createAsyncThunk(
           refreshToken: refreshToken || null,
         };
       } else {
-        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn(
+        devWarn(
           'No token received in login response. Response structure:',
           response,
         );
         return rejectWithValue('No authentication token received');
       }
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Login error in thunk:', error);
+      devError('Login error in thunk:', error);
       const errorMessage =
         error.response?.data?.message || error.message || 'Login failed';
       return rejectWithValue(errorMessage);
@@ -208,7 +209,7 @@ export const verifyAuth = createAsyncThunk(
         isAuthenticated: true,
       };
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Auth verification failed:', error);
+      devError('Auth verification failed:', error);
       const message = error?.message || 'Authentication verification failed';
       const isNetworkError =
         typeof error?.isNetworkError === 'boolean'

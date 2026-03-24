@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, Typography, Paper, Button, Alert } from '@mui/material';
 import portfolioApi from '../services/portfolioService';
+import { devError } from '@/modules/common/utils/devLogger';
 
 const WorkSampleUploader = ({ onUpload }) => {
   const fileInputRef = React.useRef(null);
@@ -16,7 +17,7 @@ const WorkSampleUploader = ({ onUpload }) => {
       await portfolioApi.uploadWorkSamples(files);
       onUpload?.(files);
     } catch (err) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Upload failed', err);
+      devError('Upload failed', err);
       setUploadError('Upload failed. Please try again.');
     }
   };

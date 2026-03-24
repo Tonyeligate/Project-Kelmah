@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import fileUploadService from '../../common/services/fileUploadService';
+import { devError, devWarn } from '@/modules/common/utils/devLogger';
 
 const useAttachments = (conversationId) => {
   const [attachments, setAttachments] = useState([]);
@@ -11,7 +12,7 @@ const useAttachments = (conversationId) => {
     const validFiles = files.filter((file) => {
       // Check file size (max 10MB)
       if (file.size > 10 * 1024 * 1024) {
-        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn(`File ${file.name} is too large. Maximum size is 10MB.`);
+        devWarn(`File ${file.name} is too large. Maximum size is 10MB.`);
         return false;
       }
       // Check file type
@@ -24,7 +25,7 @@ const useAttachments = (conversationId) => {
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       ];
       if (!validTypes.includes(file.type)) {
-        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn(`File ${file.name} has an unsupported type.`);
+        devWarn(`File ${file.name} has an unsupported type.`);
         return false;
       }
       return true;
@@ -56,7 +57,7 @@ const useAttachments = (conversationId) => {
           size: file.size,
         };
       } catch (error) {
-        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error uploading file:', error);
+        devError('Error uploading file:', error);
         throw error;
       } finally {
         setUploading(false);

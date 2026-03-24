@@ -53,6 +53,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../modules/auth/hooks/useAuth';
 import reviewService from '../../modules/reviews/services/reviewService';
 
+const FRONTEND_DEBUG =
+  import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true';
+const devError = (...args) => {
+  if (FRONTEND_DEBUG) {
+    console.error(...args);
+  }
+};
+
 /**
  * Comprehensive Review & Rating System Component
  * Features: Review submission, display, filtering, worker responses, moderation
@@ -141,7 +149,7 @@ const ReviewSystem = ({
       setTotalPages(reviewsResponse.pagination?.pages || 1);
       setWorkerRating(ratingResponse);
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error fetching review data:', error);
+      devError('Error fetching review data:', error);
       showFeedback('Failed to load reviews', 'error');
     } finally {
       setLoading(false);

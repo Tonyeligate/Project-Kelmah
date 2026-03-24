@@ -13,18 +13,16 @@ import {
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import PropTypes from 'prop-types';
+import { createFeatureLogger } from '@/modules/common/utils/devLogger';
 
 const EMPTY_SKILLS = [];
 const SEARCH_QUERY_MAX_LENGTH = 120;
 const SEARCH_LOCATION_MAX_LENGTH = 80;
 const SEARCH_SKILL_MAX_LENGTH = 40;
-const __SEARCH_DEBUG__ =
-  import.meta.env.DEV && import.meta.env.VITE_DEBUG_SEARCH === 'true';
-const searchDebugWarn = (...args) => {
-  if (__SEARCH_DEBUG__) {
-    console.warn(...args);
-  }
-};
+const searchDebugWarn = createFeatureLogger({
+  flagName: 'VITE_DEBUG_SEARCH',
+  level: 'warn',
+});
 
 const areSkillsEqual = (left = EMPTY_SKILLS, right = EMPTY_SKILLS) =>
   left.length === right.length &&

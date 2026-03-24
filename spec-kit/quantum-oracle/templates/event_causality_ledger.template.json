@@ -1,0 +1,11 @@
+{
+  "taskId": "<task-id>",
+  "eventsChecked": [
+    {
+      "event": "new_message",
+      "causality": "ordered",
+      "result": "pass"
+    }
+  ],
+  "closureVerdict": "PASS"
+}

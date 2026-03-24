@@ -18,6 +18,7 @@ import {
 } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { format, isSameDay } from 'date-fns';
+import { devWarn } from '@/modules/common/utils/devLogger';
 
 /**
  * A reusable calendar component for displaying appointments
@@ -36,7 +37,7 @@ const AppointmentCalendar = ({
     try {
       const appointmentDate = new Date(app.date);
       if (isNaN(appointmentDate.getTime())) {
-        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Invalid appointment date in calendar:', app.date);
+        devWarn('Invalid appointment date in calendar:', app.date);
         return acc;
       }
       const dateKey = format(appointmentDate, 'yyyy-MM-dd');
@@ -44,7 +45,7 @@ const AppointmentCalendar = ({
       acc[dateKey].push(app);
       return acc;
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn(
+      devWarn(
         'Error processing appointment date in calendar:',
         app.date,
         error,

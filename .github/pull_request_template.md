@@ -26,6 +26,11 @@ Bundle path:
 - [ ] delegation_packets.json includes debugger packet with verification status pass
 - [ ] layout_optimization_report.json is present
 - [ ] behavioral_twin_report.json is present
+- [ ] adaptive_policy_guardrails.json is present
+- [ ] ui_state_space_audit.json is present
+- [ ] nisq_hybrid_execution_report.json is present
+- [ ] all_agent_activation_matrix.json is present
+- [ ] three_d_hd_design_report.json is present
 
 ## Backend Artifact Bundle (Required for backend-optimization, api-design-optimization, reliability-hardening)
 
@@ -96,3 +101,8 @@ Bundle path:
 ## Validation
 
 List commands run and key results.
+
+Recommended checks:
+- `npm run quantum:pre-pr-gates -- --pr-title "<title>" --pr-body-file "<path-to-pr-body.md>" --labels-json "[]"`
+- `npm run quantum:check-learning-effectiveness`
+- `npm run quantum:agent-intelligence-report && npm run quantum:check-agent-intelligence`

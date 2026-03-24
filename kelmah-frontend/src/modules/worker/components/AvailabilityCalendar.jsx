@@ -38,6 +38,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
+import { devError } from '@/modules/common/utils/devLogger';
 
 const unwrap = (response) => response?.data?.data ?? response?.data ?? {};
 
@@ -92,7 +93,7 @@ const AvailabilityCalendar = () => {
       setError(null);
     } catch (err) {
       setError('Failed to load availability');
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error(err);
+      devError(err);
     } finally {
       setLoading(false);
     }
@@ -169,7 +170,7 @@ const AvailabilityCalendar = () => {
       fetchAvailability();
     } catch (err) {
       setError('Failed to save availability');
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error(err);
+      devError(err);
     } finally {
       setLoading(false);
     }
@@ -182,7 +183,7 @@ const AvailabilityCalendar = () => {
       setError('Direct slot delete is not supported yet. Edit the slot and set unavailable instead.');
     } catch (err) {
       setError('Failed to delete availability slot');
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error(err);
+      devError(err);
     } finally {
       setLoading(false);
     }

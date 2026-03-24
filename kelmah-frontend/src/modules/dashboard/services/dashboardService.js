@@ -2,11 +2,15 @@ import { api } from '../../../services/apiClient';
 // MED-19 FIX: Use shared websocketService instead of creating a third socket connection
 import websocketService from '../../../services/websocketService';
 import { SOCKET_EVENTS } from '../../../services/socketEvents';
+import {
+  createFeatureLogger,
+  devError,
+} from '@/modules/common/utils/devLogger';
 
-const __DEV__ = import.meta.env.DEV;
-const DASHBOARD_DEBUG = __DEV__ && import.meta.env.VITE_DEBUG_DASHBOARD === 'true';
-const devLog = (...args) => { if (DASHBOARD_DEBUG) console.log(...args); };
-const devError = (...args) => { if (__DEV__ && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error(...args); };
+const devLog = createFeatureLogger({
+  flagName: 'VITE_DEBUG_DASHBOARD',
+  level: 'log',
+});
 
 /**
  * Dashboard service to handle dashboard data fetching and real-time updates.
@@ -258,7 +262,7 @@ class DashboardService {
             : activities.length >= limit,
       };
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error fetching recent activity:', error);
+      devError('Error fetching recent activity:', error);
       return {
         activities: [],
         hasMore: false,
@@ -274,7 +278,7 @@ class DashboardService {
       });
       return response.data?.data || response.data || {};
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error fetching statistics:', error);
+      devError('Error fetching statistics:', error);
       return {
         userGrowth: [],
         metrics: {},
@@ -380,7 +384,7 @@ class DashboardService {
         newApplicants: overview.metrics?.newApplicants || overview.jobs?.totalJobsToday || 0,
       };
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error fetching notifications summary:', error);
+      devError('Error fetching notifications summary:', error);
       return {
         unreadMessages: 0,
         pendingJobs: 0,
@@ -395,7 +399,7 @@ class DashboardService {
       const overview = await this.getOverview();
       return overview.metrics || {};
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error fetching real-time stats:', error);
+      devError('Error fetching real-time stats:', error);
       return {
         totalUsers: 0,
         totalWorkers: 0,
@@ -418,7 +422,7 @@ class DashboardService {
       } catch (_) {
         // Fall through to the stable empty payload below.
       }
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error fetching job matches:', error);
+      devError('Error fetching job matches:', error);
       return [];
     }
   }
@@ -435,7 +439,7 @@ class DashboardService {
       } catch (_) {
         // Fall through to the stable empty payload below.
       }
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error fetching recommendations:', error);
+      devError('Error fetching recommendations:', error);
       return [];
     }
   }

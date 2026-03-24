@@ -5,13 +5,9 @@
  * and logs a warning so developers / advanced users know to clear storage.
  */
 
-const QUOTA_WARNING_THRESHOLD = 0.9; // warn at 90 % usage
+import { devWarn as quotaWarn } from '../modules/common/utils/devLogger';
 
-const quotaWarn = (...args) => {
-  if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') {
-    console.warn(...args);
-  }
-};
+const QUOTA_WARNING_THRESHOLD = 0.9; // warn at 90 % usage
 
 /**
  * Check available browser storage and warn if nearing capacity.

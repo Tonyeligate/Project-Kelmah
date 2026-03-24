@@ -1,14 +1,18 @@
 {
-  "generatedAtUtc": "2026-03-23T01:43:10.115Z",
+  "generatedAtUtc": "2026-03-24T01:37:25.303Z",
   "rootDir": "C:\\Users\\OS\\Desktop\\Project-Kelmah-main\\spec-kit\\quantum-oracle",
-  "taskDirectoryCount": 3,
-  "learningEnabledTaskCount": 2,
-  "learningArtifactTaskCount": 2,
+  "taskDirectoryCount": 4,
+  "learningEnabledTaskCount": 3,
+  "learningArtifactTaskCount": 3,
   "advancedMissingLearningEvidence": [],
   "trends": {
     "topRecurringMistakes": [
       {
         "item": "previous route updates lacked explicit contract drift scoring",
+        "count": 1
+      },
+      {
+        "item": "route ordering allowed param shadow risk in one service path",
         "count": 1
       },
       {
@@ -22,6 +26,10 @@
         "count": 1
       },
       {
+        "item": "intermittent timeout under peak user demand",
+        "count": 1
+      },
+      {
         "item": "users on low-end devices show higher hesitation in long forms",
         "count": 1
       }
@@ -29,6 +37,10 @@
     "topUserPainPoints": [
       {
         "item": "delayed api responses create retry storms in clients",
+        "count": 1
+      },
+      {
+        "item": "delayed feedback on critical actions increases retries",
         "count": 1
       },
       {
@@ -42,7 +54,51 @@
         "count": 1
       },
       {
+        "item": "introduce deterministic fallback response for degraded dependency",
+        "count": 1
+      },
+      {
         "item": "reduce branching and add guided inline support on repeated errors",
+        "count": 1
+      }
+    ],
+    "topSkillAcquisitions": [
+      {
+        "item": "route-contract compatibility scoring for backend optimization",
+        "count": 1
+      },
+      {
+        "item": "contract drift scoring for adaptive and backend optimization workflows",
+        "count": 1
+      },
+      {
+        "item": "designing deterministic fallback criteria for adaptive ui rollouts",
+        "count": 1
+      }
+    ],
+    "topSkillSources": [
+      {
+        "item": "backend reliability incident review",
+        "count": 1
+      },
+      {
+        "item": "cross-agent debugger challenge outcomes",
+        "count": 1
+      },
+      {
+        "item": "field incident review",
+        "count": 1
+      },
+      {
+        "item": "oracle regression analysis",
+        "count": 1
+      },
+      {
+        "item": "optimization postmortem review",
+        "count": 1
+      },
+      {
+        "item": "learning ledger trend analysis",
         "count": 1
       }
     ]
@@ -58,6 +114,25 @@
       "realWorldSignalsCount": 1,
       "userPainPointsCount": 1,
       "policyAdjustmentsCount": 1,
+      "skillAcquisitionsCount": 1,
+      "skillSourcesCount": 2,
+      "skillTransferEvidenceCount": 1,
+      "hasLearningUpdate": true,
+      "hasFieldExperience": true
+    },
+    {
+      "taskId": "demo-adaptive-scaffold",
+      "taskType": "adaptive-interface",
+      "requiresLearningOracle": true,
+      "mistakesCount": 1,
+      "preventiveRulesCount": 1,
+      "oracleImprovementsCount": 1,
+      "realWorldSignalsCount": 1,
+      "userPainPointsCount": 1,
+      "policyAdjustmentsCount": 1,
+      "skillAcquisitionsCount": 1,
+      "skillSourcesCount": 2,
+      "skillTransferEvidenceCount": 1,
       "hasLearningUpdate": true,
       "hasFieldExperience": true
     },
@@ -71,6 +146,9 @@
       "realWorldSignalsCount": 1,
       "userPainPointsCount": 1,
       "policyAdjustmentsCount": 1,
+      "skillAcquisitionsCount": 1,
+      "skillSourcesCount": 2,
+      "skillTransferEvidenceCount": 1,
       "hasLearningUpdate": true,
       "hasFieldExperience": true
     }

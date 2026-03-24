@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box, Typography, Button } from '@mui/material';
+import { devError } from '@/modules/common/utils/devLogger';
 
 /**
  * Reusable Error Boundary component.
@@ -22,7 +23,7 @@ class ErrorBoundary extends React.Component {
 
   componentDidCatch(error, errorInfo) {
     if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') {
-      console.error('[ErrorBoundary]', error, errorInfo);
+      devError('[ErrorBoundary]', error, errorInfo);
     }
   }
 

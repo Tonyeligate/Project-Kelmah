@@ -1,6 +1,7 @@
 import { api } from '../../../services/apiClient';
 import { unwrapApiData } from '../../../services/responseNormalizer';
 import { captureRecoverableApiError } from '../../../services/errorTelemetry';
+import { devError } from '@/modules/common/utils/devLogger';
 
 const CALENDAR_ENDPOINTS = ['/events', '/calendar/events'];
 
@@ -44,7 +45,7 @@ const eventsService = {
     try {
       return await requestWithFallback((endpoint) => api.get(endpoint));
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error fetching events:', error);
+      devError('Error fetching events:', error);
       captureRecoverableApiError(error, {
         operation: 'calendar.getEvents',
       });
@@ -61,7 +62,7 @@ const eventsService = {
     try {
       return await requestWithFallback((endpoint) => api.post(endpoint, eventData));
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error creating event:', error);
+      devError('Error creating event:', error);
       captureRecoverableApiError(error, {
         operation: 'calendar.createEvent',
       });
@@ -81,7 +82,7 @@ const eventsService = {
         api.put(`${endpoint}/${eventId}`, eventData),
       );
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error updating event:', error);
+      devError('Error updating event:', error);
       captureRecoverableApiError(error, {
         operation: 'calendar.updateEvent',
       });
@@ -98,7 +99,7 @@ const eventsService = {
     try {
       return await requestWithFallback((endpoint) => api.delete(`${endpoint}/${eventId}`));
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error deleting event:', error);
+      devError('Error deleting event:', error);
       captureRecoverableApiError(error, {
         operation: 'calendar.deleteEvent',
       });

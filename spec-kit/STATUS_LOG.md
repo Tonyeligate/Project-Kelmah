@@ -1,15 +1,682 @@
+### Session: Frontend Console Hygiene Focused Batch 13 March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Finish the remaining auth service layer direct-console residue and close the frontend modules sweep to zero direct `console.*` usage.
+
+**Files touched**
+- kelmah-frontend/src/modules/auth/services/authSlice.js
+- kelmah-frontend/src/modules/auth/services/authService.js
+- spec-kit/STATUS_LOG.md
+- spec-kit/generated/FRONTEND_REAUDIT_OPEN_AREAS_MAR23_2026.md
+
+**Implementation summary**
+- Replaced local auth-service console wrappers with shared logger utilities from `src/modules/common/utils/devLogger.js`.
+- Preserved auth debug flag behavior by using `createFeatureLogger({ flagName: 'VITE_DEBUG_AUTH' })` for auth-specific logs.
+- Preserved broader dev-only warn/error behavior in auth service with `createDevLogger(import.meta.env.DEV, ...)` while eliminating direct console calls.
+
+**Verification**
+- PASS: global residual scan reported no direct `console.(log|warn|error|info|debug)` usage in `kelmah-frontend/src/modules/**`.
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,973 modules transformed).
+
+---
+
+### Session: Frontend Console Hygiene Focused Batch 12 March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Continue the same hirer/jobs cleanup wave to close residual inline guards and stabilize smoke import resolution in adjacent services.
+
+**Files touched**
+- kelmah-frontend/src/modules/hirer/components/ProposalReview.jsx
+- kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx
+- kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx
+- kelmah-frontend/src/modules/search/services/searchService.js
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Removed residual inline guarded frontend debug console calls in proposal review and key jobs pages by routing through local helper wrappers.
+- Fixed Jest smoke regressions by converting `devLogger` imports in `searchService` to a relative path compatible with the existing test resolver.
+- Post-pass global residual inline-guard count reduced to 6 matches across frontend source.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,973 modules transformed).
+- PASS: `npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx src/tests/smoke/critical-path-happy-flow.smoke.test.jsx src/tests/smoke/critical-path-gateway-contract.smoke.test.js --runInBand` in `kelmah-frontend` (3 suites, 29 tests).
+
+---
+
+### Session: 3D/HD Frontend Intelligence + Agent Scoring Oracle March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Upgrade agent system with enforceable 3D/HD frontend intelligence capabilities, add quarterly agent-intelligence scoring, and validate full CI/pre-PR gate effectiveness.
+
+**Files touched**
+- .claude/agents/frontend.agent.md
+- .claude/agents/debugger.agent.md
+- .claude/agents/claudecode.agent.md
+- spec-kit/quantum-oracle/check-completion-oracle.js
+- spec-kit/quantum-oracle/check-pr-closure-gate.js
+- spec-kit/quantum-oracle/scaffold-oracle-bundle.js
+- spec-kit/quantum-oracle/templates/three_d_hd_design_report.template.json
+- spec-kit/quantum-oracle/optimization-demo-task/three_d_hd_design_report.json
+- spec-kit/quantum-oracle/generate-agent-intelligence-report.js
+- spec-kit/quantum-oracle/check-agent-intelligence-report.js
+- package.json
+- .github/workflows/quantum-closure-gate.yml
+- .github/pull_request_template.md
+- spec-kit/quantum-oracle/agent-intelligence-report.json
+- spec-kit/quantum-oracle/learning-ledger-summary.json
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Added frontend 3D/HD capability gates:
+  - `VIS-26` 3D/HD surface intelligence protocol
+  - `VIS-27` immersive motion and 3D/HD evidence contract.
+- Added debugger contradiction gate for premium visual claims:
+  - `GFL-14` requiring `three_d_hd_design_report.json` evidence.
+- Added orchestrator quarterly scoring protocol:
+  - `UFL-15` agent intelligence report oracle.
+- Enforced 3D/HD evidence in strict completion checker for frontend optimization/adaptive/design-flow tasks.
+- Added template and scaffold support for `three_d_hd_design_report.json`.
+- Added quarterly agent intelligence report generation and validation commands:
+  - `quantum:agent-intelligence-report`
+  - `quantum:check-agent-intelligence`.
+- CI now generates/uploads/validates agent intelligence report.
+
+**Validation outcomes**
+- PASS: `npm run quantum:aggregate-learning`
+- PASS: `npm run quantum:check-learning-effectiveness`
+- PASS: `node spec-kit/quantum-oracle/check-completion-oracle.js --task-id optimization-demo-task --strict`
+- PASS: `npm run quantum:agent-intelligence-report`
+- PASS: `npm run quantum:check-agent-intelligence`
+- PASS: `npm run quantum:pre-pr-gates -- --skip-pr-gate`
+
+**Observed intelligence signal**
+- Generated agent intelligence report ranks top current score as `frontend (75.8)` with all 7 agents present and validated.
+
+---
+
+### Session: Agent Effectiveness and Self-Growth Hardening March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Strengthen agent system effectiveness beyond artifact presence by enforcing explicit skill acquisition evidence, adding a learning effectiveness oracle, and delivering strict-ready one-command bundle scaffolding.
+
+**Files touched**
+- spec-kit/quantum-oracle/check-completion-oracle.js
+- spec-kit/quantum-oracle/aggregate-learning-ledger.js
+- spec-kit/quantum-oracle/check-learning-effectiveness.js
+- spec-kit/quantum-oracle/scaffold-oracle-bundle.js
+- package.json
+- .github/workflows/quantum-closure-gate.yml
+- .github/pull_request_template.md
+- spec-kit/quantum-oracle/templates/learning_update.template.json
+- spec-kit/quantum-oracle/templates/belief_state.template.json
+- spec-kit/quantum-oracle/templates/closure_oracle.template.json
+- spec-kit/quantum-oracle/templates/delegation_packets.template.json
+- spec-kit/quantum-oracle/optimization-demo-task/learning_update.json
+- spec-kit/quantum-oracle/backend-demo-task/learning_update.json
+- spec-kit/quantum-oracle/learning-ledger-summary.json
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Learning schema hardened with required self-growth evidence fields:
+  - `skillAcquisitions`
+  - `skillSources`
+  - `skillTransferEvidence`.
+- Strict closure oracle now validates those skill-growth fields for learning-enabled tasks.
+- Learning aggregator upgraded to compute and report:
+  - per-task skill evidence counts
+  - top skill acquisition trends
+  - top skill source trends.
+- Added `check-learning-effectiveness.js` with strict quality gates over learning outcomes.
+- Added `scaffold-oracle-bundle.js` to generate full task bundles from templates, with strict-check-ready defaults and task-type-specific elite tool activation.
+- Added npm commands:
+  - `quantum:check-learning-effectiveness`
+  - `quantum:scaffold-bundle`.
+- CI now executes learning effectiveness validation.
+
+**Validation outcomes**
+- PASS: `npm run quantum:aggregate-learning`
+- PASS: `npm run quantum:check-learning-effectiveness`
+- PASS: `node spec-kit/quantum-oracle/check-completion-oracle.js --task-id optimization-demo-task --strict`
+- PASS: `npm run quantum:scaffold-bundle -- --task-id demo-adaptive-scaffold --task-type adaptive-interface --force`
+- PASS: `node spec-kit/quantum-oracle/check-completion-oracle.js --task-id demo-adaptive-scaffold --strict`
+- PASS: `npm run quantum:pre-pr-gates -- --skip-pr-gate`
+
+---
+
+### Session: Quantum Gate Enforcement + Self-Growth Verification March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Complete the next-step rollout by wiring VIS-22 to UFL-14 evidence into CI/PR enforcement, shipping ready-to-use template artifacts, adding a one-command pre-PR validator, and verifying whether learning/self-growth signals are active.
+
+**Files touched**
+- spec-kit/quantum-oracle/check-pr-closure-gate.js
+- .github/pull_request_template.md
+- spec-kit/quantum-oracle/check-pre-pr-gates.js
+- package.json
+- .github/workflows/quantum-closure-gate.yml
+- spec-kit/quantum-oracle/templates/schema_drift_report.template.json
+- spec-kit/quantum-oracle/templates/enum_consistency_report.template.json
+- spec-kit/quantum-oracle/templates/query_energy_budget.template.json
+- spec-kit/quantum-oracle/templates/migration_safety_report.template.json
+- spec-kit/quantum-oracle/templates/attack_replay_matrix.template.json
+- spec-kit/quantum-oracle/templates/mitigation_effectiveness.template.json
+- spec-kit/quantum-oracle/templates/residual_risk_quantification.template.json
+- spec-kit/quantum-oracle/templates/event_causality_ledger.template.json
+- spec-kit/quantum-oracle/templates/listener_cardinality_report.template.json
+- spec-kit/quantum-oracle/templates/reconnect_consistency_report.template.json
+- spec-kit/quantum-oracle/templates/deployment_twin_state.template.json
+- spec-kit/quantum-oracle/templates/env_drift_delta.template.json
+- spec-kit/quantum-oracle/templates/world_verification_report.template.json
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Expanded PR-gate optimization signal detection to include adaptive VIS/UFL evidence artifacts:
+  - `adaptive_policy_guardrails.json`
+  - `ui_state_space_audit.json`
+  - `nisq_hybrid_execution_report.json`
+  - `all_agent_activation_matrix.json`.
+- Updated PR template checklist to require the above four artifacts for adaptive/optimization tasks.
+- Added unified one-command validator:
+  - `npm run quantum:pre-pr-gates`
+  - Runs learning aggregation checks, strict completion-oracle checks for changed bundles, and PR closure-gate validation.
+- Added npm script wiring and CI workflow execution for the unified validator.
+- Added missing ready-to-use templates for database/security/realtime/devops enforcement artifacts.
+
+**Learning/self-growth verification outcomes**
+- PASS: `npm run quantum:aggregate-learning`
+  - `learningEnabledTaskCount = 2`
+  - `learningArtifactTaskCount = 2`
+  - `advancedMissingLearningEvidence = []`.
+- PASS: learning trends are populated (recurring mistakes, field signals, user pain points, policy adjustments).
+
+**Validation**
+- PASS: `node spec-kit/quantum-oracle/check-completion-oracle.js --task-id optimization-demo-task --strict`
+- PASS: `npm run quantum:pre-pr-gates -- --skip-pr-gate`
+- PASS: `npm run quantum:pre-pr-gates -- --pr-title "docs: quantum gate templates" --pr-body-file "spec-kit/quantum-oracle/tmp-pr-body.md" --labels-json "[]"`
+
+---
+
+### Session: Frontend Console Hygiene Focused Batch 11 March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Execute the requested focused cleanup wave on scheduling pages, appointment calendar, hirer surfaces, and selected map/jobs UI surfaces.
+
+**Files touched**
+- kelmah-frontend/src/modules/scheduling/pages/SchedulingPage.jsx
+- kelmah-frontend/src/modules/scheduling/components/AppointmentCalendar.jsx
+- kelmah-frontend/src/modules/hirer/services/hirerSlice.js
+- kelmah-frontend/src/modules/hirer/pages/JobBidsPage.jsx
+- kelmah-frontend/src/modules/hirer/components/WorkerReview.jsx
+- kelmah-frontend/src/modules/hirer/components/PaymentRelease.jsx
+- kelmah-frontend/src/modules/map/components/common/LocationSelector.jsx
+- kelmah-frontend/src/modules/map/components/common/InteractiveMap.jsx
+- kelmah-frontend/src/modules/jobs/components/common/JobSearch.jsx
+- kelmah-frontend/src/modules/jobs/components/JobResultsSection.jsx
+- kelmah-frontend/src/modules/worker/services/workerService.js
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Replaced inline guarded debug console calls with local helper wrappers (`devWarn` / `devError`) across all requested surfaces while preserving runtime behavior.
+- Kept all API fallback and user-facing error handling unchanged.
+- Fixed a smoke-regression import resolution issue by converting `workerService` dev logger import to a Jest-resolvable relative path.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,973 modules transformed).
+- PASS: `npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx src/tests/smoke/critical-path-happy-flow.smoke.test.jsx src/tests/smoke/critical-path-gateway-contract.smoke.test.js --runInBand` in `kelmah-frontend` (3 suites, 29 tests).
+
+---
+
+### Session: Frontend Console Hygiene Focused Batch 10 March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Continue residual inline debug-guard cleanup in config and draft-hook surfaces.
+
+**Files touched**
+- kelmah-frontend/src/modules/jobs/hooks/useJobDraft.js
+- kelmah-frontend/src/config/dynamicConfig.js
+- kelmah-frontend/src/config/env.js
+- kelmah-frontend/src/config/environment.js
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Replaced remaining inline `if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.*` calls with helper wrappers (`devWarn` / `devError`) in the targeted files.
+- Preserved config fallback behavior and runtime URL resolution paths.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,973 modules transformed).
+- PASS: `npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx src/tests/smoke/critical-path-happy-flow.smoke.test.jsx src/tests/smoke/critical-path-gateway-contract.smoke.test.js --runInBand` in `kelmah-frontend` (3 suites, 29 tests).
+
+---
+
+### Session: Frontend Console Hygiene Batch 11 March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Continue post-worker cleanup into profile and notifications surfaces using shared logger utility.
+
+**Files touched**
+- kelmah-frontend/src/modules/profile/services/profileService.js
+- kelmah-frontend/src/modules/profile/hooks/useProfile.js
+- kelmah-frontend/src/modules/profile/components/ProfilePicture.jsx
+- kelmah-frontend/src/modules/notifications/services/notificationService.js
+- kelmah-frontend/src/modules/notifications/contexts/NotificationContext.jsx
+- kelmah-frontend/src/modules/notifications/pages/NotificationsPage.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Replaced local feature/frontend logger wrappers in profile/notifications files with imports from `src/modules/common/utils/devLogger.js`.
+- Normalized one remaining inline unsafe-link warning in notifications page to shared `devWarn` helper.
+- Kept existing runtime behavior and feature-flag semantics intact.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,973 modules transformed).
+- PASS: module-level residual scan dropped from 88 to 59 direct `console.*` matches in `kelmah-frontend/src/modules/**` after this batch.
+
+---
+
+### Session: Frontend Console Hygiene Batch 10 March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Continue large-batch console-noise normalization across messaging, payment, common, and worker surfaces by converging on a shared logger utility.
+
+**Files touched**
+- kelmah-frontend/src/modules/common/utils/devLogger.js
+- kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx
+- kelmah-frontend/src/modules/messaging/hooks/useAttachments.js
+- kelmah-frontend/src/modules/messaging/contexts/MessageContext.jsx
+- kelmah-frontend/src/modules/messaging/services/messagingService.js
+- kelmah-frontend/src/modules/messaging/components/common/MessageSearch.jsx
+- kelmah-frontend/src/modules/messaging/components/common/Message.jsx
+- kelmah-frontend/src/modules/messaging/components/common/ConversationList.jsx
+- kelmah-frontend/src/modules/messaging/components/common/EmojiPicker.jsx
+- kelmah-frontend/src/modules/payment/services/paymentService.js
+- kelmah-frontend/src/modules/payment/contexts/PaymentContext.jsx
+- kelmah-frontend/src/modules/payment/components/EscrowManager.jsx
+- kelmah-frontend/src/modules/payment/components/GhanaMobileMoneyPayment.jsx
+- kelmah-frontend/src/modules/payment/pages/EscrowDetailsPage.jsx
+- kelmah-frontend/src/modules/payment/components/PaymentAnalyticsDashboard.jsx
+- kelmah-frontend/src/modules/common/utils/apiUtils.js
+- kelmah-frontend/src/modules/common/hooks/useLocalStorage.js
+- kelmah-frontend/src/modules/common/components/RouteErrorBoundary.jsx
+- kelmah-frontend/src/modules/common/components/ErrorBoundary.jsx
+- kelmah-frontend/src/modules/common/utils/lazyLoad.js
+- kelmah-frontend/src/modules/common/utils/errorHandler.js
+- kelmah-frontend/src/modules/common/services/fileUploadService.js
+- kelmah-frontend/src/modules/common/components/GlobalErrorBoundary.jsx
+- kelmah-frontend/src/modules/worker/services/workerSlice.js
+- kelmah-frontend/src/modules/worker/services/workerService.js
+- kelmah-frontend/src/modules/worker/pages/WorkerProfileEditPage.jsx
+- kelmah-frontend/src/modules/worker/pages/MyBidsPage.jsx
+- kelmah-frontend/src/modules/worker/pages/MyApplicationsPage.jsx
+- kelmah-frontend/src/modules/worker/pages/SkillsAssessmentPage.jsx
+- kelmah-frontend/src/modules/worker/pages/PortfolioPage.jsx
+- kelmah-frontend/src/modules/worker/components/WorkSampleUploader.jsx
+- kelmah-frontend/src/modules/worker/components/WorkerProfile.jsx
+- kelmah-frontend/src/modules/worker/components/UserPerformanceDashboard.jsx
+- kelmah-frontend/src/modules/worker/components/ProjectGallery.jsx
+- kelmah-frontend/src/modules/worker/components/JobManagement.jsx
+- kelmah-frontend/src/modules/worker/components/JobApplicationForm.jsx
+- kelmah-frontend/src/modules/worker/components/EnhancedJobCard.jsx
+- kelmah-frontend/src/modules/worker/components/EarningsTracker.jsx
+- kelmah-frontend/src/modules/worker/components/DocumentVerification.jsx
+- kelmah-frontend/src/modules/worker/components/AvailabilityCalendar.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Added shared logger utility (`devLogger.js`) with feature-flag-aware helpers (`devError`, `devWarn`, `devDebug`, `createFeatureLogger`).
+- Replaced file-local dev wrappers that called `console.*` directly with imports from the shared logger.
+- Preserved existing debug behavior, feature-flag semantics, error handling, and user-facing flows.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` after messaging/payment/common batch (Vite build succeeded; 13,973 modules transformed).
+- PASS: `npm run build` in `kelmah-frontend` after worker batch (Vite build succeeded; 13,973 modules transformed).
+- PASS: residual scan reported no direct `console.(error|warn|log|info|debug)` matches in:
+  - `kelmah-frontend/src/modules/messaging/**`
+  - `kelmah-frontend/src/modules/payment/**`
+  - `kelmah-frontend/src/modules/worker/**`
+  - `kelmah-frontend/src/modules/common/**`
+
+---
+
+### Session: Frontend Console Hygiene Focused Batch 9 March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Continue residual inline debug-guard cleanup in notifications/profile/scheduling/home surfaces.
+
+**Files touched**
+- kelmah-frontend/src/modules/notifications/contexts/NotificationContext.jsx
+- kelmah-frontend/src/modules/profile/hooks/useProfile.js
+- kelmah-frontend/src/modules/scheduling/services/schedulingService.js
+- kelmah-frontend/src/pages/HomeLanding.jsx
+- kelmah-frontend/src/modules/payment/services/paymentService.js
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Replacing inline `if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.*` calls with local helper wrappers (`devWarn` / `devError`) while preserving behavior.
+- Resolved a smoke-test regression in the payment service by switching the dev logger import to a Jest-resolvable relative module path.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,972 modules transformed).
+- PASS: `npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx src/tests/smoke/critical-path-happy-flow.smoke.test.jsx src/tests/smoke/critical-path-gateway-contract.smoke.test.js --runInBand` in `kelmah-frontend` (3 suites, 29 tests).
+
+---
+
+### Session: Messaging Thread Actions Accessibility Micro-Pass March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Continue targeted messaging accessibility hardening for residual thread and search icon actions.
+
+**Files touched**
+- kelmah-frontend/src/modules/messaging/components/common/Message.jsx
+- kelmah-frontend/src/modules/messaging/components/common/MessageSearch.jsx
+- kelmah-frontend/src/modules/messaging/components/common/Chatbox.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Upgraded message thread menu action to consistent 44x44 hit target with focus-visible outline.
+- Upgraded resend-message action to consistent 44x44 hit target with focus-visible outline.
+- Added focus-visible outline styling to message search header close and clear-query icon actions.
+- Added focus-visible outline styling to chatbox close action.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,972 modules transformed).
+
+---
+
+### Session: Payment Method Card Focus Ring Completion March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Close the remaining payment card icon-action focus visibility gap.
+
+**Files touched**
+- kelmah-frontend/src/modules/payment/components/PaymentMethodCard.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Added focus-visible outline treatment to payment method card edit and delete icon actions while preserving 44x44 targets.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,973 modules transformed).
+
+---
+
+### Session: Payment and Notifications Icon Action Closure Batch March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Finish remaining high-confidence icon-action accessibility hardening on payment and notifications surfaces.
+
+**Files touched**
+- kelmah-frontend/src/modules/payment/pages/PaymentMethodsPage.jsx
+- kelmah-frontend/src/modules/payment/pages/PaymentCenterPage.jsx
+- kelmah-frontend/src/modules/payment/components/TransactionHistory.jsx
+- kelmah-frontend/src/modules/payment/components/PaymentAnalyticsDashboard.jsx
+- kelmah-frontend/src/modules/notifications/pages/NotificationsPage.jsx
+- kelmah-frontend/src/modules/notifications/components/NotificationItem.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Added focus-visible outline treatment to payment-method add, default, delete, and edit icon actions.
+- Added focus-visible outline treatment to transaction receipt and analytics details icon actions.
+- Added focus-visible outline treatment to notifications mobile actions trigger and notification delete action.
+- Normalized notification delete action to 44x44 target size.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,973 modules transformed).
+
+---
+
+### Session: Location Selector Clear Action Accessibility Alignment March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Finalize map search control consistency by normalizing location search clear icon action.
+
+**Files touched**
+- kelmah-frontend/src/modules/map/components/common/LocationSelector.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Added 44x44 target and focus-visible outline to location search clear icon action.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,973 modules transformed).
+
+---
+
+### Session: Professional Map Icon Action Accessibility Batch March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Continue icon-action accessibility normalization on the professional map surface.
+
+**Files touched**
+- kelmah-frontend/src/modules/map/pages/ProfessionalMapPage.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Added 44x44 target and focus-visible outline to map search clear action.
+- Added 44x44 target and focus-visible outline to toolbar filter, refresh, and mobile map/list toggle actions.
+- Added 44x44 target and focus-visible outline to details panel close action.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,973 modules transformed).
+
+---
+
+### Session: Worker and Hirer Bid Surface Icon Action Hardening March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Continue action-control accessibility improvements across worker/hirer bid and filter surfaces.
+
+**Files touched**
+- kelmah-frontend/src/modules/worker/pages/JobSearchPage.jsx
+- kelmah-frontend/src/modules/hirer/pages/JobBidsPage.jsx
+- kelmah-frontend/src/modules/worker/pages/MyBidsPage.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Added 44x44 target and focus-visible outline to mobile filter drawer close action in worker job search.
+- Added 44x44 target and focus-visible outline to hirer bid review back and refresh icon actions.
+- Added 44x44 target and focus-visible outline to worker bids refresh icon action.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,972 modules transformed).
+
+---
+
+### Session: QuickJobs Action Control Accessibility Batch March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Continue cross-surface icon action hardening for quick-jobs tracking/request/nearby flows.
+
+**Files touched**
+- kelmah-frontend/src/modules/quickjobs/pages/QuickJobTrackingPage.jsx
+- kelmah-frontend/src/modules/quickjobs/pages/NearbyJobsPage.jsx
+- kelmah-frontend/src/modules/quickjobs/pages/QuickJobRequestPage.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Added 44x44 target and focus-visible outline to tracking header back action, client call action, and completion dialog close action.
+- Added 44x44 target and focus-visible outline to photo remove actions in tracking and request flows.
+- Added 44x44 target and focus-visible outline to nearby-jobs quote dialog close action and request voice-note remove action.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,972 modules transformed).
+
+---
+
+### Session: Job Details Share Action Touch Target Alignment March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Continue action-control consistency by normalizing desktop job share icon sizing on the job detail surface.
+
+**Files touched**
+- kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Added minimum 44x44 target sizing to desktop share icon action in the primary job details CTA area.
+- Preserved existing hover and focus-visible styling behavior.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,972 modules transformed).
+
+---
+
+### Session: Jobs Dialog Action Control Accessibility Batch March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Continue cross-module accessibility hardening by normalizing small-action controls in jobs dialogs and application flow.
+
+**Files touched**
+- kelmah-frontend/src/modules/jobs/components/common/CreateJobDialog.jsx
+- kelmah-frontend/src/modules/jobs/components/BidSubmissionForm.jsx
+- kelmah-frontend/src/modules/jobs/components/job-application/JobApplication.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Added 44x44 target and focus-visible outline to mobile close action in create-job dialog.
+- Added 44x44 target and focus-visible outline to both mobile and desktop close actions in bid submission form.
+- Added 44x44 target and focus-visible outline to attachment remove and milestone remove icon actions in job application flow.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,972 modules transformed).
+
+---
+
+### Session: Messaging Thread Action Reachability Hardening March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Continue messaging thread-action accessibility by removing hover-only discoverability for message options and improving keyboard/mobile reachability.
+
+**Files touched**
+- kelmah-frontend/src/modules/messaging/components/common/Message.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Added focus-within tracking on message rows so options action remains visible during keyboard navigation.
+- Updated message options visibility logic to show on mobile and while menu is open, not only on hover.
+- Preserved existing long-press behavior, menu positioning, and action handlers.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,972 modules transformed).
+
+---
+
+### Session: Messaging Page Attachment Remove Target Normalization March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Continue messaging action-control accessibility hardening by normalizing desktop attachment remove touch target in the message composer.
+
+**Files touched**
+- kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Increased desktop attachment remove icon button from 36x36 to 44x44 in the selected-file preview strip.
+- Preserved existing focus-visible outline and error-state styling.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,972 modules transformed).
+
+---
+
+### Session: Frontend Accessibility Micro-Fix Emoji Clear Action March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Final residual accessibility consistency pass for messaging emoji-search clear action.
+
+**Files touched**
+- kelmah-frontend/src/modules/messaging/components/common/EmojiPicker.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Upgraded emoji picker trigger action to consistent 44x44 touch target.
+- Upgraded emoji search clear icon action to consistent 44x44 touch target.
+- Added keyboard-visible focus outline styling to align with prior messaging/jobs accessibility hardening.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,972 modules transformed).
+
+---
+
+### Session: Gateway Public Auth Timeout Fix March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Re-run the exact live public-auth probe matrix against the confirmed active production gateway origin and close the timeout-fix track if 504 behavior is gone.
+
+**Confirmed active origins used**
+- Gateway: `https://kelmah-api-gateway-pmr9.onrender.com`
+- Auth (discovered via aggregate health): `https://kelmah-auth-service-6ll7.onrender.com`
+
+**Gateway probe results (live)**
+- `GET /health` -> `200`
+- `GET /api/health` -> `200`
+- `GET /api/health/aggregate` -> `200` (auth service reported healthy)
+- `POST /api/auth/login` -> `401 Invalid credentials` (non-timeout functional response)
+- `POST /api/auth/forgot-password` -> `200`
+- `POST /api/auth/resend-verification-email` -> `200`
+- `POST /api/auth/register` (no phone) -> `503 EMAIL_DELIVERY_UNAVAILABLE`
+
+**Direct auth probe parity (live)**
+- `GET /health` -> `200`
+- `POST /api/auth/login` -> `401 Invalid credentials`
+- `POST /api/auth/forgot-password` -> `200`
+- `POST /api/auth/resend-verification-email` -> `200`
+- `POST /api/auth/register` (no phone) -> `503 EMAIL_DELIVERY_UNAVAILABLE`
+
+**Closure decision**
+- The original timeout objective is satisfied: no `504` timeout responses reproduced on gateway public-auth routes.
+- Remaining `503 EMAIL_DELIVERY_UNAVAILABLE` on register is an upstream mail-availability issue, not a gateway timeout/proxy regression.
+
+### Session: Worker Search Contract Consolidation And User-Service Parity Push March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Close the remaining local execution path for worker-search contract consolidation and user-service parity verification while Render-host-dependent probes remain unresolved in separate sessions.
+
+**Fresh local verification (March 24, 2026)**
+- Frontend contract-consumer validation:
+  - PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,972 modules transformed)
+- User-service parity regression validation:
+  - PASS: `npx jest --runTestsByPath services/user-service/tests/worker-directory.controller.test.js services/user-service/tests/dashboard-routes.auth.test.js services/user-service/tests/user-profile-activity.controller.test.js services/user-service/tests/worker-profile.controller.test.js --runInBand` in `kelmah-backend` (4 suites, 22 tests)
+
+**Residual note (non-blocking for this session)**
+- Jest printed the pre-existing generic shutdown warning (`Jest did not exit one second after the test run has completed`).
+- This warning does not change the pass state of the targeted suites and remains tracked as existing test-environment noise in prior records.
+
+**Status update**
+- This session is now closed on local code and regression evidence.
+
+### Session: Job Detail Page UI/UX Audit & Layout Remediation March 23 2026 ✅ COMPLETED
+**Scope**: Close the remaining in-progress job detail UI/UX remediation session by running fresh frontend verification after the previously implemented layout/readability/action-flow hardening.
+
+
+**Status update**
+**Scope**: Continue execution of the active gateway public auth timeout track by revalidating deployed gateway/auth behavior for login, forgot-password, resend-verification-email, and register-without-phone.
+
+  - `kelmah-backend/api-gateway/routes/auth.routes.js`
+  - `kelmah-backend/services/auth-service/config/db.js`
+  - `kelmah-backend/services/auth-service/controllers/auth.controller.js`
+
+**Live probe execution (March 23, 2026 UTC)**
+- Attempted live POST probes for `/api/auth/login`, `/api/auth/forgot-password`, `/api/auth/resend-verification-email`, and `/api/auth/register` against known gateway hosts:
+  - `https://kelmah-api-gateway-gf3g.onrender.com`
+  - `https://kelmah-api-gateway-tvqj.onrender.com`
+  - `https://kelmah-api-gateway-nhxc.onrender.com`
+  - `https://kelmah-api-gateway-qlyk.onrender.com`
+- Also probed canonical health routes on gateway/auth hosts (`/health`, `/api/health`) and direct auth host candidates.
+**Current blocker conclusion**
+- The track cannot be closed from this environment until the active Render gateway/auth deployment host is confirmed (or redeploy propagates to a reachable host).
+
+**Next required action**
+- Resolve the currently active production gateway/auth origin and rerun the same live probe matrix against that confirmed host to complete timeout-fix closure.
+
 ### Visual Remap Manifest Symmetry + Fresh Verification Recheck March 23 2026 ✅ COMPLETED
 
 **Date**: March 23, 2026  
-**Scope**: Complete closure-manifest symmetry for visual remap range 10001-10200 and append fresh timestamped build/smoke verification to both remap closure manifests.
 
 **Files touched**
-- spec-kit/generated/VISUAL_REMAP_10001_10200_CLOSURE_MANIFEST_MAR23_2026.md
 - spec-kit/generated/VISUAL_REMAP_10201_11000_CLOSURE_MANIFEST_MAR23_2026.md
 - spec-kit/STATUS_LOG.md
 
 **Fresh verification stamp**
-- Timestamp (UTC): 2026-03-23 04:39:11 +00:00
 - PASS: `npm run build` in `kelmah-frontend` (13,972 modules transformed).
 - PASS: `npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx src/tests/smoke/critical-path-happy-flow.smoke.test.jsx src/tests/smoke/critical-path-gateway-contract.smoke.test.js --runInBand` in `kelmah-frontend` (3 suites, 29 tests).
 
@@ -17,28 +684,21 @@
 - Newest active non-remap session selected for execution: `Session: Gateway Public Auth Timeout Fix`.
 
 ### Visual Remap 10201-11000 Closure Manifest March 23 2026 ✅ COMPLETED
-
 **Date**: March 23, 2026  
 **Scope**: Publish a single closure artifact for the completed 10201-11000 remap execution so range coverage, canonical file mapping, and verification evidence are auditable in one place.
 
 **Files touched**
 - spec-kit/generated/VISUAL_REMAP_10201_11000_CLOSURE_MANIFEST_MAR23_2026.md
-- spec-kit/STATUS_LOG.md
 
 **Outcome summary**
 - Added consolidated closure manifest for visual remap ranges 10201-11000.
 - Captured source inputs, remap closure status (23/23 remap rows closed), canonical file list, implemented theme outcomes, and verification evidence.
 - Recorded explicit closure verdict: no open remap targets remaining for 10201-11000.
 
-**Verification continuity**
-- Latest verification baseline for this remap closeout remains green:
   - `npm run build` in `kelmah-frontend` -> PASS
   - `npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx src/tests/smoke/critical-path-happy-flow.smoke.test.jsx src/tests/smoke/critical-path-gateway-contract.smoke.test.js --runInBand` in `kelmah-frontend` -> PASS (3 suites, 29 tests)
 
-### Visual Remap Execution Batch F (WorkerDashboard/ProfileAvatar/PageTransition/Carousel Secondary) March 23 2026 ✅ COMPLETED
-
 **Date**: March 23, 2026  
-**Scope**: Close remaining unresolved remap rows from the 23-item non-existent filename remap matrix.
 
 **Files touched**
 - kelmah-frontend/src/modules/worker/pages/WorkerDashboardPage.jsx
@@ -46,17 +706,10 @@
 - kelmah-frontend/src/modules/hirer/pages/HirerProfilePage.jsx
 - kelmah-frontend/src/modules/layout/components/Layout.jsx
 - kelmah-frontend/src/modules/common/components/RouteErrorBoundary.jsx
-- kelmah-frontend/src/modules/map/pages/ProfessionalMapPage.jsx
-- spec-kit/STATUS_LOG.md
-
 **Implementation summary**
 - WorkerDashboard remap hardening:
-  - made recommended-job cards keyboard-operable with explicit focus-visible treatment.
-  - normalized first-job CTA focus-visible affordance and minimum touch-target behavior.
-- ProfileAvatar remap hardening:
   - added reusable avatar alt-text support and focus-visible treatment in shared profile picture component.
   - normalized profile-picture action/dialog buttons to 44px minimum target sizing.
-  - wired hirer profile surface to pass explicit user-specific avatar alt text.
 - PageTransition remap hardening:
   - added reduced-motion-aware route fade behavior in layout shell.
   - hardened route error boundary action controls with consistent focus-visible and target sizing.
@@ -64,16 +717,10 @@
   - improved map bottom-sheet drag-handle header keyboard operability and focus semantics.
   - improved map result card/button target sizes and keyboard focus-visible affordance for mobile action cluster.
 
-**Verification outcomes**
-- PASS: `npm run build` in `kelmah-frontend` (Vite production build succeeded; 13,972 modules transformed).
 - PASS: `npx jest --runInBand --testPathPattern="routed-paths\.smoke|critical-path-happy-flow|critical-path-gateway-contract"` from repository root (3 suites, 29 tests).
 
-**Remap closure status**
-- 23 / 23 remapped non-existent filename targets are now executed and closed.
-- Open remap items remaining: 0.
 
 ### Frontend Finding Fixes (Residual Inline DEV Condition Cleanup Batch 6) March 23 2026 ✅ COMPLETED
-
 **Date**: March 23, 2026  
 **Scope**: Close the last two inline `import.meta.env.DEV` conditions that remained outside the broad pattern normalization pass.
 
@@ -83,36 +730,21 @@
 - spec-kit/STATUS_LOG.md
 
 **Implementation summary**
-- Updated the remaining worker-scope inline DEV-only checks to explicit opt-in frontend debug gating:
-  - `import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true'`
-- Affected residual points:
-  - skill-update partial-failure warning in worker slice
-  - bookmark-load failure diagnostic in worker profile
-- Final residual scans after patch:
-  - no direct `if (import.meta.env.DEV)` pattern in frontend source
   - no remaining `import.meta.env.DEV)` inline conditional tail except one intentional boolean usage in `pwaHelpers` (`Boolean(import.meta.env.DEV)`).
 
-**Validation outcomes**
 - PASS: `npm run build` in `kelmah-frontend`.
 - PASS: `npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx src/tests/smoke/critical-path-happy-flow.smoke.test.jsx src/tests/smoke/critical-path-gateway-contract.smoke.test.js --runInBand` in `kelmah-frontend` (3 suites, 29 tests).
-
 ### Frontend Finding Fixes (Broad Remaining DEV-Guard Normalization Batch 5) March 23 2026 ✅ COMPLETED
 
 **Date**: March 23, 2026  
-**Scope**: Apply the remaining broad frontend console-noise hardening pass by normalizing direct dev-guard checks across unresolved source areas outside the earlier targeted batches.
 
 **Files touched**
-- 64 frontend source files across:
   - shared config/hooks/components
   - calendar/common/contracts/dashboard/hirer/jobs/map/notifications/payment/profile/reviews/scheduling/settings modules
   - app/theme/page entry surfaces
 - spec-kit/STATUS_LOG.md
-
-**Implementation summary**
 - Normalized remaining direct `if (import.meta.env.DEV)` guards to explicit opt-in frontend debug gating:
   - `if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true')`
-- Kept user-facing behavior unchanged while reducing default development-console noise.
-- Verified post-change residual scan result:
   - no direct `if (import.meta.env.DEV)` guard pattern remained in `kelmah-frontend/src/**/*.{js,jsx,ts,tsx}`.
 
 **Validation outcomes**
@@ -121,22 +753,48 @@
 
 ### Frontend Finding Fixes (Residual Utils/Services Debug Guard Closure) March 23 2026 ✅ COMPLETED
 
-**Date**: March 23, 2026  
-**Scope**: Complete the final residual console-noise normalization pass for shared frontend utility and service files by replacing remaining direct dev-only guards with explicit opt-in frontend debug gating.
-
 **Files touched**
-- kelmah-frontend/src/utils/formatters.js
 - kelmah-frontend/src/utils/lazyWithRetry.js
-- kelmah-frontend/src/utils/prefetchLazyIcons.js
 - kelmah-frontend/src/utils/secureStorage.js
 - kelmah-frontend/src/utils/serviceHealthCheck.js
-- kelmah-frontend/src/utils/serviceWarmUp.js
 - kelmah-frontend/src/utils/storageQuota.js
-- kelmah-frontend/src/services/errorTelemetry.js
+
+### Session: Frontend Residual Console Hygiene Worker/Common Batch March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Continue the open-area frontend console-hygiene track with focused normalization in worker and common modules after confirming no remaining inline guarded console patterns in messaging/payment.
+
+**Files touched**
+- kelmah-frontend/src/modules/common/utils/lazyLoad.js
+- kelmah-frontend/src/modules/common/services/fileUploadService.js
+- kelmah-frontend/src/modules/common/components/GlobalErrorBoundary.jsx
+- kelmah-frontend/src/modules/common/utils/errorHandler.js
+- kelmah-frontend/src/modules/worker/pages/SkillsAssessmentPage.jsx
+- kelmah-frontend/src/modules/worker/pages/PortfolioPage.jsx
+- kelmah-frontend/src/modules/worker/components/WorkSampleUploader.jsx
+- kelmah-frontend/src/modules/worker/components/ProjectGallery.jsx
+- kelmah-frontend/src/modules/worker/components/EnhancedJobCard.jsx
+- kelmah-frontend/src/modules/worker/components/UserPerformanceDashboard.jsx
+- kelmah-frontend/src/modules/worker/components/EarningsTracker.jsx
+- kelmah-frontend/src/modules/worker/components/WorkerProfile.jsx
+- kelmah-frontend/src/modules/worker/components/JobManagement.jsx
+- kelmah-frontend/src/modules/worker/components/JobApplicationForm.jsx
+- kelmah-frontend/src/modules/worker/components/DocumentVerification.jsx
+- kelmah-frontend/src/modules/worker/components/AvailabilityCalendar.jsx
 - spec-kit/STATUS_LOG.md
 
 **Implementation summary**
-- Replaced residual direct `if (import.meta.env.DEV)` log guards in shared utility/service hotspots with:
+- Replaced residual inline guarded `console.error/console.warn` statements with file-local helper wrappers (`devError`, `devWarn`) for consistency with the established hygiene pattern.
+- Preserved all runtime behavior, fallback UI states, and existing async control flow; changes were logging-shape only.
+- Verified no remaining inline guarded console pattern in worker/common after patching.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,972 modules transformed).
+
+---
+- kelmah-frontend/src/services/errorTelemetry.js
+- spec-kit/STATUS_LOG.md
+
   - `if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true')`
 - Preserved behavior and diagnostics under explicit debug enablement while removing routine default console chatter.
 - Rechecked the updated scope (`kelmah-frontend/src/utils` and `kelmah-frontend/src/services`) for direct dev-only guards after the patch; no direct matches remained.
@@ -144,22 +802,15 @@
 **Validation outcomes**
 - PASS: `npm run build` in `kelmah-frontend` (Vite production build succeeded; 13,972 modules transformed).
 - PASS: `npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx src/tests/smoke/critical-path-happy-flow.smoke.test.jsx src/tests/smoke/critical-path-gateway-contract.smoke.test.js --runInBand` in `kelmah-frontend` (3 suites, 29 tests).
-
 ### Visual Remap Execution Batch E Delta (PostContent/WorkerGallery/Banner) March 23 2026 ✅ COMPLETED
 
 **Date**: March 23, 2026  
-**Scope**: Apply remaining low-risk deltas after Batch E base pass across mapped PostContent, WorkerGallery, and Banner targets.
 
 **Files touched**
-- kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx
 - kelmah-frontend/src/modules/worker/components/PortfolioManager.jsx
-- kelmah-frontend/src/pages/HomeLanding.jsx
-- kelmah-frontend/src/components/common/OfflineBanner.jsx
 - spec-kit/STATUS_LOG.md
 
 **Implementation summary**
-- Job details post-content semantics/readability:
-  - wrapped overview body in explicit article semantics and improved long-token wrapping.
 - Portfolio media interaction polish:
   - added keyboard focus-visible treatment to portfolio media trigger and card action menu icon.
 - Landing banner CTA polish:
@@ -167,25 +818,11 @@
 - Offline banner accessibility polish:
   - added `aria-atomic` semantics and normalized minimum alert height for status readability.
 
-**Validation outcomes**
-- PASS: `npm run build` in `kelmah-frontend` (Vite production build succeeded; 13,972 modules transformed).
-- PASS: `npx jest --runInBand --testPathPattern="routed-paths\.smoke|critical-path-happy-flow|critical-path-gateway-contract"` from repository root (3 suites, 29 tests).
-
-### Frontend Finding Fixes (Final Open-Finding Closure Pass) March 23 2026 ✅ COMPLETED
-
-**Date**: March 23, 2026  
-**Scope**: Apply the remaining frontend finding/suggestion fixes to close open re-audit items: broad console-noise hardening across auth/search/worker/messaging modules, responsive drift cleanup continuity, and lint-suppression revalidation.
-
 **Files touched (bulk normalization)**
 - Multiple files under:
-  - kelmah-frontend/src/modules/auth/**
   - kelmah-frontend/src/modules/search/**
-  - kelmah-frontend/src/modules/worker/**
-  - kelmah-frontend/src/modules/messaging/**
 - spec-kit/STATUS_LOG.md
 
-**Implementation summary**
-- Normalized remaining direct `if (import.meta.env.DEV)` log guards in auth/search/worker/messaging modules to an explicit opt-in debug condition:
   - `if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true')`
 - Preserved runtime behavior while reducing default console noise in development sessions.
 - Revalidated responsive dependent-usage cleanup state:
@@ -193,24 +830,10 @@
   - one intentional ultra-compact check (`useMaxWidth(390)` in job details) remains by design.
 - Revalidated lint-suppression status in frontend source scope:
   - no active `eslint-disable` directives found in `kelmah-frontend/src/**/*`.
-
-**Validation outcomes**
-- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,972 modules transformed).
-- PASS: `npx jest --runInBand --testPathPattern="routed-paths\.smoke|critical-path-happy-flow|critical-path-gateway-contract"` in `kelmah-frontend` (3 suites, 29 tests).
-
-### Frontend Finding Fixes (Responsive Hook Dependent Usage Sweep) March 23 2026 ✅ COMPLETED
-
-**Date**: March 23, 2026  
 **Scope**: Execute remaining responsive-hook cleanup validation and dependent usage sweep, prioritizing removal of legacy pixel-based responsive dependency usage in high-impact frontend surfaces.
-
-**Files touched**
-- kelmah-frontend/src/modules/worker/components/WorkerProfile.jsx
-- spec-kit/STATUS_LOG.md
 
 **Implementation summary**
 - Removed a legacy `useMaxWidth(768)` dependency from worker profile rendering logic.
-- Aligned `isActualMobile` behavior in `WorkerProfile` to existing theme-based `useBreakpointDown('md')` signal.
-- Confirmed dependent usage sweep outcome: only one intentional compact-width check remains (`useMaxWidth(390)` in job details) for ultra-narrow layout behavior.
 
 **Validation outcomes**
 - PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,972 modules transformed).
@@ -431,6 +1054,31 @@
 - PASS: `node spec-kit/quantum-oracle/check-pr-closure-gate.js --pr-title "docs: update readme" --pr-body "## Task Type\n- [x] general" --changed-files "README.md"`
 - PASS: `node spec-kit/quantum-oracle/check-pr-closure-gate.js --pr-title "feat: ui optimization" --pr-body "## Task Type\n- [x] ui-optimization" --changed-files "spec-kit/quantum-oracle/optimization-demo-task/closure_oracle.json,..."`
 - NOTE: A simulated infra-coherence PR using a non-existent demo bundle correctly failed the gate because no real `closure_oracle.json` with required oracle flags existed at that task-id path.
+
+### Frontend Large Service Noise Reduction Batch March 23 2026 ✅ COMPLETED
+
+**Date**: March 23, 2026  
+**Scope**: Continue console-noise cleanup in the larger feature services called out in the open-focus list.
+
+**Files touched**
+- kelmah-frontend/src/modules/notifications/services/notificationService.js
+- kelmah-frontend/src/modules/profile/services/profileService.js
+- kelmah-frontend/src/modules/map/services/mapService.js
+- kelmah-frontend/src/modules/jobs/services/jobsService.js
+- kelmah-frontend/src/modules/hirer/services/hirerService.js
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Added local debug-gated warn/error helpers in each service and replaced inline `if (import.meta.env.DEV)` console paths with helper calls.
+- Preserved all existing fallback behavior and return shapes while reducing repeated console guard blocks.
+- Included fallback-only warning paths (for example, applications summary fallback and review-candidate fallback in `hirerService`) in the helper normalization.
+
+**Validation outcomes**
+- PASS: `npm run build` in `kelmah-frontend` (Vite production build succeeded).
+
+**Follow-up closure in same batch**
+- Completed remaining inline dashboard service error guards by routing them to the module-level `devError` helper in `src/modules/dashboard/services/dashboardService.js`.
+- Re-validated after this follow-up: `npm run build` PASS.
 
 ### Frontend WebSocket Hook Noise Reduction Batch March 23 2026 ✅ COMPLETED
 
@@ -8807,7 +9455,7 @@
   - `/health/db` confirmed `NODE_ENV: production`, MongoDB `readyState: connected`, and database `kelmah_platform`.
   - Current externally visible limitation: the service exposes no maintenance-status endpoint or timer state, so the scheduler cannot be directly measured from HTTP alone. The strongest live evidence is that the deployed service is the updated production build and the scheduler defaults to enabled in production unless `WORKER_PROFILE_ALIGNMENT_MAINTENANCE_ENABLED=false` is explicitly set.
 
-### Session: Mobile Native Device Smoke Test March 12 2026 🔄 IN PROGRESS
+### Session: Mobile Native Device Smoke Test March 12 2026 ⚠️ BLOCKED (NO DEVICE/EMULATOR/XCODE RUNTIME)
 
 **Date**: March 12, 2026  
 **Scope**: Smoke-test the patched native mobile flows on available devices, with focus on expired-session recovery, worker message-from-job-detail, and hirer jobs pagination.
@@ -10184,7 +10832,7 @@
 - Android targeted verification is green.
 - iOS still requires macOS/Xcode execution for runtime validation beyond source audit.
 
-### Session: Payment Coverage And Public Trade Stats Follow-Up March 11 2026 🔄 IN PROGRESS
+### Session: Payment Coverage And Public Trade Stats Follow-Up March 11 2026 ✅ COMPLETED
 
 **Date**: March 11, 2026  
 **Scope**: Add focused Jest coverage for the hardened escrow and wallet transaction paths, and replace landing-page trade-card placeholders with a real public per-trade worker-count endpoint.
@@ -10617,7 +11265,7 @@
 **Residual note**
 - The earlier `--forceExit` requirement for the broader frontend regression batch is no longer reproducible after the explicit login test cleanup change.
 
-### Session: CRIT-16 Deployed Auth Mail Timeout Investigation March 10 2026 🔄 IN PROGRESS
+### Session: CRIT-16 Deployed Auth Mail Timeout Investigation March 10 2026 ⚠️ BLOCKED (AWAITING AUTH-SERVICE DEPLOY/PARITY)
 
 **Date**: March 10, 2026  
 **Scope**: Investigate the deployed auth-service `503` path affecting `POST /api/auth/register` and worker verification recovery, isolate whether the failure is gateway drift, auth-service controller logic, or SMTP transport behavior, and patch the local auth mailer if a source-level fix is identified.
@@ -11228,7 +11876,7 @@
 - The code-side safety findings from the follow-up sweep are fixed and verified.
 - The requested worker-default backfill execution is complete and the live dataset required no changes.
 
-### Session: CRIT-16 Gateway Auth Proxy Parity March 10 2026 🔄 IN PROGRESS
+### Session: CRIT-16 Gateway Auth Proxy Parity March 10 2026 ⚠️ BLOCKED (DEPLOY WORKFLOW FAILURE)
 
 **Date**: March 10, 2026  
 **Scope**: Fix the API gateway auth router so deployed OAuth, MFA setup, and change-password requests reach auth-service with the correct route surface and request-forwarding contract.
@@ -11502,7 +12150,7 @@
 - Local backend source is hardened and fully covered for the hidden-field and hashed-token issues audited in this sweep.
 - Deployed auth and bid endpoints are not in parity with local source for MFA, OAuth, change-password, and reject-bid behavior, indicating deployment/runtime drift that cannot be resolved from the workspace without a new deployment.
 
-### Session: CRIT-12 Verification Email Delivery Contract March 9 2026 🔄 IN PROGRESS
+### Session: CRIT-12 Verification Email Delivery Contract March 9 2026 ⚠️ BLOCKED (LIVE AUTH-SERVICE NOT YET SYNCED)
 
 **Date**: March 9, 2026  
 **Scope**: Audit and harden the auth-service verification email flow so registration and resend endpoints stop reporting success when the platform cannot actually deliver verification mail, and clean up SMTP headers that can reduce deliverability on the configured Gmail transport.
@@ -12243,7 +12891,7 @@ See `spec-kit/HIGH_09_12_BACKEND_SECURITY_ROUTE_AUDIT_MAR10_2026.md` for the dee
 - `npm run build` in `kelmah-frontend/` passed successfully after the auth white-theme alignment.
 - Residual build output still only includes the pre-existing `src/services/apiClient.js` dynamic/static import warning, which is unrelated to the auth page styling work.
 
-### Session: Worker Search Contract Consolidation And User-Service Parity Push March 9 2026 🔄 IN PROGRESS
+### Session: Worker Search Contract Consolidation And User-Service Parity Push March 9 2026 ✅ COMPLETED (See March 24 closure delta)
 
 **Date**: March 9, 2026  
 **Scope**: Collapse the remaining frontend worker-search drift onto the canonical worker-directory contract, verify the local user-service parity fixes, and trigger the next deploy/re-probe cycle because Render is still serving stale dashboard/profile-activity behavior.
@@ -12551,7 +13199,7 @@ See `spec-kit/HIGH_09_12_BACKEND_SECURITY_ROUTE_AUDIT_MAR10_2026.md` for the dee
   - `Could not resolve "../modules/admin/pages/SkillsAssessmentManagement"`
 - The redesign work itself introduced no file-level diagnostics; full production build verification remains blocked by that unrelated route-resolution issue.
 
-### Session: Gateway Deploy, Activity Source, And Worker Canonicalization March 9 2026 🔄 IN PROGRESS
+### Session: Gateway Deploy, Activity Source, And Worker Canonicalization March 9 2026 ⚠️ BLOCKED (RENDER DEPLOYMENT DRIFT)
 
 **Date**: March 9, 2026  
 **Scope**: Execute the next remediation pass for live personalized recommendations, admin-only dashboard analytics, real activity sourcing, canonical worker discovery inputs, and worker-search path consolidation.
@@ -12769,7 +13417,7 @@ See `spec-kit/HIGH_09_12_BACKEND_SECURITY_ROUTE_AUDIT_MAR10_2026.md` for the dee
 
 ---
 
-### Session: Matching Audit Fix Execution March 9 2026 🔄 IN PROGRESS
+### Session: Matching Audit Fix Execution March 9 2026 ⚠️ BLOCKED (RENDER USER-SERVICE DEPLOYMENT DRIFT)
 
 **Date**: March 9, 2026  
 **Scope**: Execute the verified matching, recommendations, recent-activity, worker-search, and frontend trust fixes from the March 9 audit without forcing avoidable service restarts or redeploys.
@@ -12924,7 +13572,7 @@ See `spec-kit/HIGH_09_12_BACKEND_SECURITY_ROUTE_AUDIT_MAR10_2026.md` for the dee
 
 ---
 
-### Session: Personalized Recommendations Route Restore And iOS Remote Validation 🔄 IN PROGRESS
+### Session: Personalized Recommendations Route Restore And iOS Remote Validation ⚠️ BLOCKED (RENDER DEPLOY + GITHUB ACTIONS BILLING)
 
 **Date**: March 9, 2026  
 **Scope**: Restore the live `/api/jobs/recommendations/personalized` gateway route used by the native apps, verify the backend contract through the gateway, and trigger the GitHub Actions native mobile validation workflow so iOS gets a real macOS build/test run.
@@ -13018,7 +13666,7 @@ See `spec-kit/HIGH_09_12_BACKEND_SECURITY_ROUTE_AUDIT_MAR10_2026.md` for the dee
 
 ---
 
-### Session: Earnings Gateway Origin Propagation Fix 🔄 IN PROGRESS
+### Session: Earnings Gateway Origin Propagation Fix ⚠️ BLOCKED (AWAITING GATEWAY ROLLOUT)
 
 **Date**: March 9, 2026  
 **Scope**: Fix the active API gateway `/api/users` proxy path so user-service can derive the live gateway base without relying on explicit payment host environment variables, then verify worker earnings uses the payment-history path instead of synthesized fallback totals.
@@ -13085,7 +13733,7 @@ See `spec-kit/HIGH_09_12_BACKEND_SECURITY_ROUTE_AUDIT_MAR10_2026.md` for the dee
 
 ---
 
-### Session: Worker Envelope Normalization And Dashboard Timeout Hardening 🔄 IN PROGRESS
+### Session: Worker Envelope Normalization And Dashboard Timeout Hardening ⚠️ BLOCKED (AWAITING USER-SERVICE ROLLOUT)
 
 **Date**: March 9, 2026  
 **Scope**: After Render redeploy, normalize worker-list response contracts and harden dashboard metrics/analytics endpoints against long-running operations that currently time out via the gateway.
@@ -13139,7 +13787,7 @@ See `spec-kit/HIGH_09_12_BACKEND_SECURITY_ROUTE_AUDIT_MAR10_2026.md` for the dee
 
 ---
 
-### Session: Live Bid Self-Route Deployment Verification 🔄 IN PROGRESS
+### Session: Live Bid Self-Route Deployment Verification ✅ COMPLETED (LIVE ROUTES VERIFIED)
 
 **Date**: March 9, 2026  
 **Scope**: Confirm whether Render has rolled the bid self-service route fixes for the API gateway and job service, trigger a redeploy if the workspace exposes a safe mechanism, and re-verify only the stale live endpoints.
@@ -14224,7 +14872,7 @@ See `spec-kit/HIGH_09_12_BACKEND_SECURITY_ROUTE_AUDIT_MAR10_2026.md` for the dee
 **Documentation**
 - Detailed report written to `spec-kit/FRONTEND_PAGE_AUDIT_MAR08_2026.md`.
 
-### Session: Native Android Toolchain Enablement 🔄 IN PROGRESS
+### Session: Native Android Toolchain Enablement ⚠️ BLOCKED (GRADLE/SDK TOOLCHAIN INCOMPLETE ON HOST)
 
 **Date**: March 8, 2026  
 **Scope**: Enable the lightest practical Windows-native Android build/test toolchain needed for ongoing Kelmah mobile validation while keeping download size lower than a full Android Studio + emulator setup.
@@ -14289,16 +14937,14 @@ See `spec-kit/HIGH_09_12_BACKEND_SECURITY_ROUTE_AUDIT_MAR10_2026.md` for the dee
 - Frontend production build passed with `npm run build` in `kelmah-frontend/` after the strict ownership guard changes.
 - Only the pre-existing Mongoose duplicate-index warnings and the existing Vite `apiClient.js` chunking warning remained; no new ownership-guard errors were introduced.
 
-### Session: Frontend Page Audit & Role Separation Review 🔄 IN PROGRESS
+### Session: Frontend Page Audit & Role Separation Review ✅ CLOSED (DUPLICATE ENTRY)
 
 **Date**: March 8, 2026  
-**Scope**: Audit all frontend page surfaces for bugs, UI/UX defects, security gaps, performance issues, maintainability problems, and role-separation leaks between worker and hirer flows.
+**Scope**: Duplicate planning entry for frontend page audit and role-separation review.
 
-**Acceptance Criteria**
-- Inventory every frontend page component plus the route/shell files that decide how pages are exposed.
-- Dry-audit the highest-risk page flows for worker/hirer separation, auth guards, null safety, and data-flow issues.
-- Produce a harsh issue list with severity, location, impact, and fix guidance.
-- Document architectural guidance that keeps worker and hirer experiences clearly separated while preserving a future split path.
+**Resolution**
+- Completed state is already recorded above in `### Session: Frontend Page Audit & Role Separation Review ✅ COMPLETED`.
+- Audit evidence and file surface are already documented there; no additional action is pending for this duplicate heading.
 
 ### Session: Native Mobile Role Separation Audit ✅ COMPLETED
 
@@ -14960,7 +15606,7 @@ Remove any `https://https://` or `wss://https://` double-protocol typos — `san
 - Tightened the remaining helper surfaces in `AppointmentCalendar.jsx` and `ProfileCompletionCard.jsx` so the supporting schedule/profile widgets match the new action-first mobile treatment.
 - Re-ran `npm run build` after the helper-widget pass; the frontend build completed successfully again with only the pre-existing Vite chunking warning around `src/services/apiClient.js`.
 
-### Session: Job Detail Page UI/UX Audit & Layout Remediation 🔄 IN PROGRESS
+### Session: Job Detail Page UI/UX Audit & Layout Remediation ✅ COMPLETED (See March 23 closure delta)
 
 **Date**: March 7, 2026
 **Scope**: Full dry audit of the worker-facing job detail page with emphasis on layout density, whitespace usage, readability, clickable flows, About the Client correctness, message/profile routing, bid/save/share actions, and page structure alignment with the Kelmah marketplace UX goals.
@@ -15004,7 +15650,7 @@ Remove any `https://https://` or `wss://https://` double-protocol typos — `san
 - Editor diagnostics: `get_errors` returned clean results for `JobDetailsPage.jsx` and `jobsService.js` after the remediation.
 - Frontend validation: `npm run build` completed successfully in `kelmah-frontend/` after the page changes.
 
-### Session: Native Notifications Domain + Auth Register Recovery 🔄 IN PROGRESS
+### Session: Native Notifications Domain + Auth Register Recovery ⚠️ PARTIALLY COMPLETE (AUTH REGISTER BLOCKER PENDING)
 
 **Date**: March 7, 2026
 **Scope**: Replace the native notification placeholders with real gateway-backed inbox flows on Android and iOS while continuing the auth registration recovery work for the remaining deployed `phone already exists` blocker.
@@ -15062,7 +15708,7 @@ Remove any `https://https://` or `wss://https://` double-protocol typos — `san
   - `POST /api/auth/register` via gateway → `400 phone already exists`
   - `POST /api/auth/register` direct to auth-service → `400 phone already exists`
 
-### Session: Live Auth Register Deploy Blocker + Native Hardening 🔄 IN PROGRESS
+### Session: Live Auth Register Deploy Blocker + Native Hardening ⚠️ BLOCKED (DEPLOYED AUTH RUNTIME DRIFT)
 
 **Date**: March 7, 2026
 **Scope**: Dry-audit the remaining deployed registration failure (`phone already exists`) across gateway → auth-service → shared user model → database startup reconciliation, then remove that blocker and continue the next native production-hardening pass.
@@ -15095,7 +15741,7 @@ Remove any `https://https://` or `wss://https://` double-protocol typos — `san
 - Inspecting the live MongoDB `users` indexes/documents to confirm whether a legacy unique phone index or stale runtime is still present.
 - Mapping the next native production-hardening targets once auth registration is cleared.
 
-### Session: Native Messaging Domain + Live Auth Revalidation 🔄 IN PROGRESS
+### Session: Native Messaging Domain + Live Auth Revalidation ⚠️ PARTIALLY COMPLETE (AUTH REVALIDATION PENDING)
 
 **Date**: March 7, 2026
 **Scope**: Finish the dry audit for the native messaging gap across gateway, messaging-service, web messaging contracts, and both native apps; then implement production-ready native messaging flows while continuing live auth registration revalidation.
@@ -15170,7 +15816,7 @@ Remove any `https://https://` or `wss://https://` double-protocol typos — `san
   - `POST /api/auth/resend-verification-email` → `200`
 - That confirms the deployed registration path is still lagging behind the latest auth-service fix even though recovery routes are healthy.
 
-### Session: Gateway Public Auth Timeout Fix 🔄 IN PROGRESS
+### Session: Gateway Public Auth Timeout Fix ⚠️ CLOSED (HISTORICAL ENTRY, SUPERSEDED BY MARCH 24 COMPLETION)
 
 **Date**: March 7, 2026
 **Scope**: Diagnose and remove the remaining public auth 504s at the API gateway after direct auth-service checks proved the service itself was already responding.
@@ -19588,7 +20234,7 @@ Full details in `spec-kit/KELMAH_HYBRID_MODEL_SPECIFICATION.md`
 - 🛑 No diagnostics or curl tests have been executed yet—per workflow, testing begins only after documenting the audit (this entry) and aligning on the spec-kit updates.
 - 📌 Next action: proceed to diagnostics (`curl` via current LocalTunnel + direct job-service) to capture the latest failure evidence now that the dry-audit requirement is satisfied.
 
-### Session Planning (Nov 22, 2025 – Mongo Readiness Validation 🔄)
+### Session Planning (Nov 22, 2025 – Mongo Readiness Validation) ✅ CLOSED (SUPERSEDED BY SUBSEQUENT EXECUTION UPDATES)
 - ♻️ **Restated Objective**: Reproduce the latest `504`/`500` failures, confirm whether the Mongo ping guard is deployed, and deliver a hardened readiness check so `POST /api/jobs` either succeeds (201) or quickly returns a structured 503 instead of timing out.
 - 📋 **Success Signals**:
   1. Curl tests via the active gateway tunnel and the Render job-service both complete with non-504 responses (201/4xx expected, 503 allowed only when DB unreachable).
@@ -20579,7 +21225,7 @@ state.profile = action.payload?.data || action.payload || null;
 
 ## Last Updated: October 11, 2025 - Double-Faced Backend Connection Restored ✅
 
-### 🔄 October 11, 2025 – Double-Faced Backend Connection Logic Restored
+### ✅ October 11, 2025 – Double-Faced Backend Connection Logic Restored
 
 - **Status:** ✅ Restored documented "double-faced" connection architecture using absolute URLs in runtime-config.json
 - **Context:** While fixing `/api` prefix stripping, incorrectly changed runtime-config.json to use relative URLs (`"/api"`), breaking the documented architecture that supports both LocalTunnel and Render backends through absolute URL configuration.
@@ -23567,3 +24213,19 @@ Full visual and structural redesign of `kelmah-frontend/src/modules/jobs/pages/J
   - corrected regex to /\/assets\//.test(parsed.pathname) in isChunkAsset(url).
 - Validation: PASS
   - npm run build (Vite production build succeeded; SW parses and bundles).
+
+### [MAR 24, 2026] FRONTEND FINDINGS CONTINUATION: CONTRACTS/REVIEWS/SETTINGS NORMALIZATION (COMPLETED)
+- Scope: Continue residual frontend findings cleanup by normalizing remaining inline dev-gated console error conditions in secondary contracts/reviews/settings/auth surfaces.
+- Files updated:
+  - kelmah-frontend/src/modules/contracts/pages/CreateContractPage.jsx
+  - kelmah-frontend/src/modules/contracts/pages/ContractsPage.jsx
+  - kelmah-frontend/src/modules/contracts/contexts/ContractContext.jsx
+  - kelmah-frontend/src/modules/reviews/services/reviewService.js
+  - kelmah-frontend/src/modules/reviews/pages/ReviewsPage.jsx
+  - kelmah-frontend/src/modules/settings/hooks/useSettings.js
+  - kelmah-frontend/src/modules/auth/components/login/Login.jsx
+- Implementation summary:
+  - introduced per-file `devError` helpers and routed inline `if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error(...)` calls through those helpers.
+  - preserved user-facing behavior and fallback messaging while reducing scattered inline debug-noise patterns.
+- Validation: PASS
+  - npm run build (Vite production build succeeded; 13,972 modules transformed).

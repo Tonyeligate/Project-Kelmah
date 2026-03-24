@@ -1,0 +1,11 @@
+{
+  "taskId": "<task-id>",
+  "mitigations": [
+    {
+      "name": "input whitelist",
+      "beforeRisk": 0.72,
+      "afterRisk": 0.18
+    }
+  ],
+  "closureVerdict": "PASS"
+}

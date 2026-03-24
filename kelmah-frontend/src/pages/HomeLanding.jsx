@@ -67,6 +67,14 @@ const TESTIMONIALS = [
   },
 ];
 
+const FRONTEND_DEBUG =
+  import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true';
+const devWarn = (...args) => {
+  if (FRONTEND_DEBUG) {
+    console.warn(...args);
+  }
+};
+
 const HomeLanding = () => {
   const navigate = useNavigate();
   const theme = useTheme();
@@ -100,7 +108,7 @@ const HomeLanding = () => {
         if (isMounted) {
           setStatsError('Unable to load live platform metrics. Showing estimated values.');
         }
-        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('HomeLanding platform stats fetch failed:', error);
+        devWarn('HomeLanding platform stats fetch failed:', error);
       });
 
     return () => {
@@ -133,7 +141,7 @@ const HomeLanding = () => {
             prev || 'Some platform statistics are currently unavailable.',
           );
         }
-        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('HomeLanding trade stats fetch failed:', error);
+        devWarn('HomeLanding trade stats fetch failed:', error);
       });
 
     return () => {

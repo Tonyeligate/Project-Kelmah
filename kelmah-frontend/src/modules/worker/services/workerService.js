@@ -1,9 +1,7 @@
 import { api } from '../../../services/apiClient';
 import { unwrapApiData } from '../../../services/responseNormalizer';
 import { captureRecoverableApiError } from '../../../services/errorTelemetry';
-
-const __DEV__ = import.meta.env.DEV;
-const devWarn = (...args) => { if (__DEV__) console.warn(...args); };
+import { devWarn } from '../../common/utils/devLogger';
 
 const WORKERS_BASE = '/users/workers';
 const WORKER_SEARCH_ENDPOINT = `${WORKERS_BASE}/search`;

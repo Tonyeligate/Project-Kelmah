@@ -63,6 +63,7 @@ import {
   resolveJobVisualUrl,
   resolveProfileImageUrl,
 } from '../../common/utils/mediaAssets';
+import { devError, devWarn } from '@/modules/common/utils/devLogger';
 
 const EnhancedJobCard = ({
   job,
@@ -114,7 +115,7 @@ const EnhancedJobCard = ({
           const stats = response?.data || response;
           setBidStats(stats);
         })
-        .catch(err => { if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Bid stats unavailable:', err.message); });
+        .catch(err => { devWarn('Bid stats unavailable:', err.message); });
     }
   }, [user?.id]);
 
@@ -135,7 +136,7 @@ const EnhancedJobCard = ({
       enqueueSnackbar('Bid submitted successfully', { variant: 'success' });
       if (onApply) onApply(job);
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to submit bid:', error);
+      devError('Failed to submit bid:', error);
       enqueueSnackbar('Failed to submit bid. Please try again.', { variant: 'error' });
     } finally {
       setBidLoading(false);

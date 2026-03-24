@@ -2,6 +2,10 @@ import { api } from '../../../services/apiClient';
 import workerService from '../../worker/services/workerService';
 import { unwrapApiData } from '../../../services/responseNormalizer';
 import { captureRecoverableApiError } from '../../../services/errorTelemetry';
+import {
+  createFeatureLogger,
+  devError,
+} from '../../common/utils/devLogger';
 
 const SUGGESTION_DEBOUNCE_MS = 250;
 const STATIC_LOOKUP_TTL_MS = 5 * 60 * 1000;
@@ -20,9 +24,10 @@ const staticLookupCache = {
   skills: { data: null, expiresAt: 0, promise: null },
 };
 
-const __DEV__ = import.meta.env.DEV;
-const devWarn = (...args) => { if (__DEV__) console.warn(...args); };
-const devError = (...args) => { if (__DEV__) console.error(...args); };
+const devWarn = createFeatureLogger({
+  flagName: 'VITE_DEBUG_FRONTEND',
+  level: 'warn',
+});
 
 const isSuggestionAbort = (error) =>
   error?.name === 'AbortError' ||

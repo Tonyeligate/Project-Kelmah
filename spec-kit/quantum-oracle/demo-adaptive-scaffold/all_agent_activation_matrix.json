@@ -1,0 +1,38 @@
+{
+  "taskId": "demo-adaptive-scaffold",
+  "agentActivations": {
+    "frontend": {
+      "activated": true,
+      "role": "layout search and accessibility cloud"
+    },
+    "backend": {
+      "activated": true,
+      "role": "deterministic adaptive APIs"
+    },
+    "database": {
+      "activated": true,
+      "role": "feature-store integrity"
+    },
+    "security": {
+      "activated": true,
+      "role": "privacy and anti-manipulation constraints"
+    },
+    "realtime": {
+      "activated": true,
+      "role": "signal reliability"
+    },
+    "devops": {
+      "activated": true,
+      "role": "canary and rollback telemetry"
+    },
+    "debugger": {
+      "activated": true,
+      "role": "contradiction challenge"
+    }
+  },
+  "verification": {
+    "independentChallengePassed": true,
+    "closureOracleAligned": true
+  },
+  "closureVerdict": "PASS"
+}

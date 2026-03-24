@@ -154,6 +154,14 @@ const PRODUCTION_API_URL = (() => {
   return '/api';
 })();
 
+const FRONTEND_DEBUG =
+  import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true';
+const devWarn = (...args) => {
+  if (FRONTEND_DEBUG) {
+    console.warn(...args);
+  }
+};
+
 const loadRuntimeConfig = async () => {
   if (typeof window !== 'undefined' && !runtimeConfig) {
     try {
@@ -169,7 +177,7 @@ const loadRuntimeConfig = async () => {
       };
       if (CONFIG_DEBUG) console.log('Runtime config loaded:', runtimeConfig);
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('⚠️ Failed to load runtime config:', error.message);
+      devWarn('⚠️ Failed to load runtime config:', error.message);
     }
   }
   return runtimeConfig;

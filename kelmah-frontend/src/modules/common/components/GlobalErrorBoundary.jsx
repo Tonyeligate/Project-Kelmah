@@ -19,6 +19,7 @@ import {
   getServiceStatusMessage,
 } from '../../../utils/serviceHealthCheck';
 import { BRAND_COLORS } from '../../../theme';
+import { devError, devWarn } from '@/modules/common/utils/devLogger';
 
 class GlobalErrorBoundaryInner extends Component {
   constructor(props) {
@@ -35,7 +36,7 @@ class GlobalErrorBoundaryInner extends Component {
   }
 
   componentDidCatch(error, info) {
-    if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('GlobalErrorBoundary caught an error:', error, info);
+    devError('GlobalErrorBoundary caught an error:', error, info);
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -53,7 +54,7 @@ class GlobalErrorBoundaryInner extends Component {
       await checkServiceHealth('aggregate', 10000);
       this.setState({ status: getServiceStatusMessage('aggregate') });
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('GlobalErrorBoundary status check failed:', error);
+      devWarn('GlobalErrorBoundary status check failed:', error);
     }
   };
 

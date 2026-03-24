@@ -54,6 +54,7 @@ import {
 } from '@mui/icons-material';
 import bidApi from '../../jobs/services/bidService';
 import Toast from '../../common/components/common/Toast';
+import { devError } from '@/modules/common/utils/devLogger';
 
 const isAbortError = (error) =>
   error?.name === 'AbortError' ||
@@ -328,7 +329,7 @@ const JobBidsPage = () => {
       }
 
       setError('Failed to load bids. The job may not exist or you may not have permission.');
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('JobBidsPage fetch error:', err);
+      devError('JobBidsPage fetch error:', err);
     } finally {
       if (!signal?.aborted) {
         setLoading(false);
@@ -371,7 +372,7 @@ const JobBidsPage = () => {
         title: 'Could not accept bid',
         message: 'The accept action did not complete. Please try again.',
       });
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Accept bid error:', err);
+      devError('Accept bid error:', err);
     } finally {
       setProcessing(false);
     }
@@ -403,7 +404,7 @@ const JobBidsPage = () => {
         title: 'Could not reject bid',
         message: 'The reject action did not complete. Please try again.',
       });
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Reject bid error:', err);
+      devError('Reject bid error:', err);
     } finally {
       setProcessing(false);
     }
@@ -433,7 +434,20 @@ const JobBidsPage = () => {
 
       {/* Navigation back + header */}
       <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
-        <IconButton onClick={() => navigate(-1)} size="small" aria-label="Go back">
+        <IconButton
+          onClick={() => navigate(-1)}
+          size="small"
+          aria-label="Go back"
+          sx={{
+            minWidth: 44,
+            minHeight: 44,
+            '&:focus-visible': {
+              outline: '3px solid',
+              outlineColor: 'primary.main',
+              outlineOffset: '2px',
+            },
+          }}
+        >
           <BackIcon />
         </IconButton>
         <Typography variant="body2" color="text.secondary">
@@ -452,7 +466,20 @@ const JobBidsPage = () => {
           </Typography>
         </Box>
         <Tooltip title="Refresh">
-          <IconButton onClick={fetchBids} disabled={loading} aria-label="Refresh bids">
+          <IconButton
+            onClick={fetchBids}
+            disabled={loading}
+            aria-label="Refresh bids"
+            sx={{
+              minWidth: 44,
+              minHeight: 44,
+              '&:focus-visible': {
+                outline: '3px solid',
+                outlineColor: 'primary.main',
+                outlineOffset: '2px',
+              },
+            }}
+          >
             <RefreshIcon />
           </IconButton>
         </Tooltip>

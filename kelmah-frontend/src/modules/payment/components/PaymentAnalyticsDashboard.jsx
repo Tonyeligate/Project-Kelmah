@@ -78,6 +78,7 @@ import {
   formatRelativeTime,
 } from '../../../utils/formatters';
 import paymentService from '../services/paymentService';
+import { devError } from '@/modules/common/utils/devLogger';
 
 const PaymentAnalyticsDashboard = ({
   userType = 'worker', // 'worker', 'hirer', 'admin'
@@ -129,7 +130,7 @@ const PaymentAnalyticsDashboard = ({
       setAnalyticsData(response);
     } catch (error) {
       enqueueSnackbar('Failed to load payment analytics', { variant: 'error' });
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Analytics error:', error);
+      devError('Analytics error:', error);
     } finally {
       setLoading(false);
     }
@@ -146,7 +147,7 @@ const PaymentAnalyticsDashboard = ({
       });
       setTransactions(response?.data?.transactions || response?.transactions || []);
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Transaction history error:', error);
+      devError('Transaction history error:', error);
     }
   };
 
@@ -465,7 +466,19 @@ const PaymentAnalyticsDashboard = ({
                       </TableCell>
                       <TableCell>
                         <Tooltip title="View Details">
-                          <IconButton size="small" aria-label="View transaction details">
+                          <IconButton
+                            size="small"
+                            aria-label="View transaction details"
+                            sx={{
+                              width: 44,
+                              height: 44,
+                              '&:focus-visible': {
+                                outline: '3px solid',
+                                outlineColor: 'primary.main',
+                                outlineOffset: '2px',
+                              },
+                            }}
+                          >
                             <ViewIcon />
                           </IconButton>
                         </Tooltip>

@@ -1,0 +1,16 @@
+{
+  "taskId": "<task-id>",
+  "forwardPlan": {
+    "steps": ["backup", "migrate", "verify"]
+  },
+  "rollbackPlan": {
+    "steps": ["restore backup", "re-run validation"]
+  },
+  "validationQueries": [
+    {
+      "name": "sample-read-after-migration",
+      "expected": "no schema violations"
+    }
+  ],
+  "closureVerdict": "PASS"
+}

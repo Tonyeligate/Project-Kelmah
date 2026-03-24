@@ -11,6 +11,7 @@ import {
 } from '../services/dashboardSlice';
 import { useAuth } from '../../auth/hooks/useAuth';
 import { secureStorage } from '../../../utils/secureStorage';
+import { devWarn } from '@/modules/common/utils/devLogger';
 
 export const useDashboard = () => {
   const dispatch = useDispatch();
@@ -29,9 +30,10 @@ export const useDashboard = () => {
         dashboardService.initialize(token);
       }
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') {
-        console.warn('Dashboard initialization skipped due to auth token read failure.', error);
-      }
+      devWarn(
+        'Dashboard initialization skipped due to auth token read failure.',
+        error,
+      );
     }
   }, []);
 

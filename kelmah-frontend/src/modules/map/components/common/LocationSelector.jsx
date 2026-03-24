@@ -21,6 +21,7 @@ import {
   History as HistoryIcon,
 } from '@mui/icons-material';
 import mapService from '../../services/mapService';
+import { devError, devWarn } from '@/modules/common/utils/devLogger';
 
 const LOCATION_QUERY_MAX_LENGTH = 120;
 
@@ -59,7 +60,7 @@ const LocationSelector = ({
         try {
           setRecentLocations(JSON.parse(stored));
         } catch (error) {
-          if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Failed to parse recent locations:', error);
+          devWarn('Failed to parse recent locations:', error);
         }
       }
     }
@@ -86,7 +87,7 @@ const LocationSelector = ({
             });
         })
         .catch((error) => {
-          if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Could not get current location:', error);
+          devWarn('Could not get current location:', error);
         });
     }
   }, [showCurrentLocation]);
@@ -103,7 +104,7 @@ const LocationSelector = ({
       const results = await mapService.geocodeAddress(query);
       setSuggestions(results.slice(0, 5));
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Search error:', error);
+      devError('Search error:', error);
       setSuggestions([]);
     } finally {
       setIsLoading(false);
@@ -191,7 +192,7 @@ const LocationSelector = ({
       setCurrentLocation(locationData);
       handleLocationSelect(locationData, 'current');
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to get current location:', error);
+      devError('Failed to get current location:', error);
     } finally {
       setIsGettingLocation(false);
     }
@@ -248,7 +249,20 @@ const LocationSelector = ({
             <InputAdornment position="end">
               {isLoading && <CircularProgress size={20} />}
               {inputValue && !isLoading && (
-                <IconButton size="small" onClick={handleClear} aria-label="Clear location search">
+                <IconButton
+                  size="small"
+                  onClick={handleClear}
+                  aria-label="Clear location search"
+                  sx={{
+                    width: 44,
+                    height: 44,
+                    '&:focus-visible': {
+                      outline: '3px solid',
+                      outlineColor: 'primary.main',
+                      outlineOffset: '2px',
+                    },
+                  }}
+                >
                   <ClearIcon />
                 </IconButton>
               )}

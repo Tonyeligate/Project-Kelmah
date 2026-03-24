@@ -1,4 +1,5 @@
 import { api } from '../../../services/apiClient';
+import { devError } from '@/modules/common/utils/devLogger';
 
 const SERVICE_TARGETS = {
   user: {
@@ -122,7 +123,7 @@ const fileUploadService = {
         type: uploaded?.fileType || uploaded?.resourceType || file.type,
       };
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error uploading file:', error);
+      devError('Error uploading file:', error);
       throw error;
     }
   },

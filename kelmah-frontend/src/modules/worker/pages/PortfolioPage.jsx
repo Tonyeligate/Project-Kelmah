@@ -7,6 +7,7 @@ import ProjectShowcase from '../components/ProjectShowcase';
 import portfolioService from '../services/portfolioService';
 import { Helmet } from 'react-helmet-async';
 import { useBreakpointDown } from '@/hooks/useResponsive';
+import { devError } from '@/modules/common/utils/devLogger';
 
 const PortfolioPage = () => {
   const navigate = useNavigate();
@@ -30,7 +31,7 @@ const PortfolioPage = () => {
       })
       .catch((err) => {
         if (signal?.aborted) return;
-        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to load portfolio:', err);
+        devError('Failed to load portfolio:', err);
         setError('Failed to load portfolio items. Please try again.');
         setItems([]);
       })

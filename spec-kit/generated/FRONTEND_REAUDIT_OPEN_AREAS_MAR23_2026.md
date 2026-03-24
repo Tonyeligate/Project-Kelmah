@@ -138,6 +138,24 @@ Validation for this batch:
 Current open focus after batch 5:
 - larger feature services with remaining dev-gated console noise, especially dashboard, notifications, profile, jobs, hirer, and map flows
 - any remaining dependency-array suppressions that need explicit behavioral review rather than mechanical removal
+
+## Execution Delta Batch 6 (March 23 2026)
+
+- Large-service console-noise closure pass completed for the previously highlighted feature surfaces:
+	- `src/modules/notifications/services/notificationService.js`
+	- `src/modules/profile/services/profileService.js`
+	- `src/modules/map/services/mapService.js`
+	- `src/modules/jobs/services/jobsService.js`
+	- `src/modules/hirer/services/hirerService.js`
+	- `src/modules/dashboard/services/dashboardService.js`
+- Normalized inline `if (import.meta.env.DEV)` warn/error blocks to local helper calls in each module while preserving fallback behavior and response payload shape.
+
+Validation for this batch:
+- PASS: `npm run build` in `kelmah-frontend`.
+
+Current open focus after batch 6:
+- residual console-noise clusters outside these modules (for example, calendar, notifications hooks, and selected slice/hook utilities)
+- any remaining suppression/dependency items that require behavioral verification before removal.
 - PASS: `npx jest --runInBand --testPathPattern="routed-paths\.smoke|critical-path-happy-flow|critical-path-gateway-contract"` in `kelmah-frontend`.
 
 Current open focus after batch 3:
@@ -187,3 +205,115 @@ Validation for this batch:
 
 Current open focus after batch 6:
 - none in the original March 23 open-findings scope.
+
+## Execution Delta Batch 7 (March 24 2026)
+
+- Secondary-surface normalization pass completed for contracts/reviews/settings/auth pages and services:
+	- `src/modules/contracts/pages/CreateContractPage.jsx`
+	- `src/modules/contracts/pages/ContractsPage.jsx`
+	- `src/modules/contracts/contexts/ContractContext.jsx`
+	- `src/modules/reviews/services/reviewService.js`
+	- `src/modules/reviews/pages/ReviewsPage.jsx`
+	- `src/modules/settings/hooks/useSettings.js`
+	- `src/modules/auth/components/login/Login.jsx`
+- Inline dev-gated `console.error` conditions were normalized to local helper wrappers (`devError`) per module for consistency with prior cleanup waves.
+- Functional behavior remained unchanged; user-facing fallbacks/toasts/errors are preserved.
+
+Validation for this batch:
+- PASS: `npm run build` in `kelmah-frontend`.
+
+Current open focus after batch 7:
+- residual console-noise clusters still present in additional messaging/payment/worker/common surfaces outside this focused sub-batch.
+
+## Execution Delta Batch 8 (March 24 2026)
+
+- Residual module scan and closure pass:
+	- confirmed no remaining inline guarded console patterns in `src/modules/messaging/**` and `src/modules/payment/**` for the targeted condition pattern.
+	- identified and cleaned remaining residuals in `src/modules/worker/**` and `src/modules/common/**`.
+- Worker/common normalization scope:
+	- `src/modules/worker/pages/SkillsAssessmentPage.jsx`
+	- `src/modules/worker/pages/PortfolioPage.jsx`
+	- `src/modules/worker/components/WorkSampleUploader.jsx`
+	- `src/modules/worker/components/ProjectGallery.jsx`
+	- `src/modules/worker/components/EnhancedJobCard.jsx`
+	- `src/modules/worker/components/UserPerformanceDashboard.jsx`
+	- `src/modules/worker/components/EarningsTracker.jsx`
+	- `src/modules/worker/components/WorkerProfile.jsx`
+	- `src/modules/worker/components/JobManagement.jsx`
+	- `src/modules/worker/components/JobApplicationForm.jsx`
+	- `src/modules/worker/components/DocumentVerification.jsx`
+	- `src/modules/worker/components/AvailabilityCalendar.jsx`
+	- `src/modules/common/utils/lazyLoad.js`
+	- `src/modules/common/services/fileUploadService.js`
+	- `src/modules/common/components/GlobalErrorBoundary.jsx`
+	- `src/modules/common/utils/errorHandler.js`
+- All inline `if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error/console.warn` instances in worker/common were normalized to local helper wrappers.
+
+Validation for this batch:
+- PASS: `npm run build` in `kelmah-frontend`.
+
+Current open focus after batch 8:
+- broader non-inline console hygiene outside worker/common remains a potential follow-up if full-repo dev-log minimization is desired.
+
+## Execution Delta Batch 9 (March 24 2026)
+
+- Shared logger consolidation for messaging/payment/common:
+	- introduced `src/modules/common/utils/devLogger.js` as a single feature-flag-aware logger utility.
+	- migrated messaging and payment surfaces from file-local wrappers to shared logger imports.
+	- migrated common utility/error-boundary surfaces to shared logger imports.
+- Scope highlights:
+	- messaging: `pages/MessagingPage.jsx`, `hooks/useAttachments.js`, `contexts/MessageContext.jsx`, `services/messagingService.js`, and common messaging components.
+	- payment: `services/paymentService.js`, `contexts/PaymentContext.jsx`, and major payment components/pages.
+	- common: `apiUtils.js`, `useLocalStorage.js`, `RouteErrorBoundary.jsx`, `ErrorBoundary.jsx`, `GlobalErrorBoundary.jsx`, `lazyLoad.js`, `errorHandler.js`, `fileUploadService.js`.
+
+Validation for batch 9:
+- PASS: `npm run build` in `kelmah-frontend`.
+
+## Execution Delta Batch 10 (March 24 2026)
+
+- Worker-wide logger normalization completed:
+	- removed remaining worker file-local wrappers that directly called `console.*`.
+	- switched worker services/pages/components to shared logger imports and worker-flag logger factories where applicable.
+- Scope highlights:
+	- services: `workerSlice.js`, `workerService.js`.
+	- pages: `WorkerProfileEditPage.jsx`, `MyBidsPage.jsx`, `MyApplicationsPage.jsx`, `SkillsAssessmentPage.jsx`, `PortfolioPage.jsx`.
+	- components: `WorkSampleUploader.jsx`, `WorkerProfile.jsx`, `UserPerformanceDashboard.jsx`, `ProjectGallery.jsx`, `JobManagement.jsx`, `JobApplicationForm.jsx`, `EnhancedJobCard.jsx`, `EarningsTracker.jsx`, `DocumentVerification.jsx`, `AvailabilityCalendar.jsx`.
+
+Validation for batch 10:
+- PASS: `npm run build` in `kelmah-frontend`.
+- PASS: direct-console residual scan returned no `console.(error|warn|log|info|debug)` matches in:
+	- `src/modules/messaging/**`
+	- `src/modules/payment/**`
+	- `src/modules/worker/**`
+	- `src/modules/common/**`
+
+Current open focus after batch 10:
+- continue same consolidation approach in any remaining modules outside messaging/payment/worker/common to complete full-repo logger unification.
+
+## Execution Delta Batch 11 (March 24 2026)
+
+- Continued logger consolidation into profile and notifications domains:
+	- profile: `services/profileService.js`, `hooks/useProfile.js`, `components/ProfilePicture.jsx`.
+	- notifications: `services/notificationService.js`, `contexts/NotificationContext.jsx`, `pages/NotificationsPage.jsx`.
+- Replaced local wrappers and inline warnings with shared logger imports from `src/modules/common/utils/devLogger.js`.
+
+Validation for batch 11:
+- PASS: `npm run build` in `kelmah-frontend`.
+- PASS: broad scan for direct `console.*` usage in `src/modules/**` reduced from 88 to 59 matches after this batch.
+
+Current open focus after batch 11:
+- remaining direct console surfaces are concentrated in settings/search/scheduling/reviews/calendar/auth/jobs/map/hirer/dashboard/contracts modules.
+
+## Execution Delta Batch 12 (March 24 2026)
+
+- Completed the remaining concentrated-module cleanup wave across settings/search/scheduling/reviews/calendar/auth/jobs/map/hirer/dashboard/contracts.
+- Final auth-service residue closure:
+	- replaced direct console wrappers in `src/modules/auth/services/authSlice.js` and `src/modules/auth/services/authService.js` with shared logger utilities.
+	- preserved auth-specific debug-gate behavior via `createFeatureLogger({ flagName: 'VITE_DEBUG_AUTH' })`.
+
+Validation for batch 12:
+- PASS: direct-console residual scan returned no `console.(error|warn|log|info|debug)` matches in `src/modules/**`.
+- PASS: `npm run build` in `kelmah-frontend`.
+
+Current open focus after batch 12:
+- none for direct-console hygiene in `src/modules/**`.

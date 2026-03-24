@@ -1,0 +1,17 @@
+{
+  "taskId": "demo-adaptive-scaffold",
+  "realWorldSignals": [
+    "Intermittent timeout under peak user demand"
+  ],
+  "userPainPoints": [
+    "Delayed feedback on critical actions increases retries"
+  ],
+  "policyAdjustments": [
+    "Introduce deterministic fallback response for degraded dependency"
+  ],
+  "rollbackLessons": {
+    "trigger": "error-rate regression",
+    "lesson": "Rollback criteria must be threshold-based and predeclared"
+  },
+  "closureVerdict": "PASS"
+}

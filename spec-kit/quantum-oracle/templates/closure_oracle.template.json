@@ -9,11 +9,19 @@
   "requiresRealtimeOracle": false,
   "requiresDevopsOracle": false,
   "requiresLearningOracle": false,
-  "oracleState": "PASS|FAIL",
+  "oracleState": "PASS",
   "requiredDelegationsExecuted": true,
   "requiredDiagnosticsExecuted": true,
   "contradictionsResolved": true,
   "evidenceLogged": true,
-  "activatedEliteTools": [],
+  "activatedEliteTools": [
+    "EvidenceArtifactCompiler",
+    "CompletionOracleChecker",
+    "CounterfactualWorldScorer",
+    "DelegationPacketBuilder",
+    "VisualOracleRunner",
+    "AdversarialSelfPlayOrchestrator",
+    "QuantumScoreboardUpdater"
+  ],
   "notes": ""
 }

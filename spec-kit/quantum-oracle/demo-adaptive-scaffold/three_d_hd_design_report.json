@@ -1,0 +1,34 @@
+{
+  "taskId": "demo-adaptive-scaffold",
+  "surfaceTaxonomy": {
+    "glass": "defined",
+    "elevated": "defined",
+    "interactive": "defined",
+    "critical": "defined",
+    "muted": "defined"
+  },
+  "iconLanguageAudit": {
+    "iconSet": "lucide",
+    "emojiControlsDetected": 0,
+    "inlineSvgControlCount": 0
+  },
+  "typographyRhythm": {
+    "scaleUpdated": true,
+    "hierarchyConsistencyScore": 0.92
+  },
+  "motionChoreographyMap": [
+    {
+      "state": "search-to-results",
+      "transitionType": "state-based",
+      "result": "pass"
+    }
+  ],
+  "responsiveDepthBreakpoints": [
+    320,
+    375,
+    768,
+    1024,
+    1440
+  ],
+  "closureVerdict": "PASS"
+}

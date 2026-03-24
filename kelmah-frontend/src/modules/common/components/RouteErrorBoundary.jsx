@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, Typography, Button, Paper } from '@mui/material';
 import { ErrorOutline as ErrorIcon } from '@mui/icons-material';
+import { devError } from '@/modules/common/utils/devLogger';
 
 /**
  * Per-route React Error Boundary.
@@ -19,7 +20,7 @@ class RouteErrorBoundary extends React.Component {
 
   componentDidCatch(error, errorInfo) {
     if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') {
-      console.error(
+      devError(
         `[RouteErrorBoundary] Error in ${this.props.label || 'route'}:`,
         error,
         errorInfo,

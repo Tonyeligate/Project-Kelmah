@@ -2,14 +2,20 @@
   "taskId": "<task-id>",
   "packets": [
     {
-      "agent": "frontend|backend|database|security|realtime|devops|debugger",
-      "triggerRule": "<rule-id-or-pattern>",
-      "filesMeasured": [],
-      "findings": [],
-      "confidence": 0.0,
+      "agent": "debugger",
+      "triggerRule": "adaptive-ux-contradiction-challenge",
+      "filesMeasured": [
+        "spec-kit/quantum-oracle/<task-id>/closure_oracle.json"
+      ],
+      "findings": [
+        "Independent cross-check completed"
+      ],
+      "confidence": 0.9,
       "verification": {
-        "testsRun": [],
-        "status": "pass|fail"
+        "testsRun": [
+          "quantum:check-closure --strict"
+        ],
+        "status": "pass"
       }
     }
   ]

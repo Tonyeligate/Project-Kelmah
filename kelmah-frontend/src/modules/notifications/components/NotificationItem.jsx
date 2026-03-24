@@ -122,6 +122,15 @@ const NotificationItem = ({ notification, sx = {} }) => {
           aria-label="Delete notification"
           onClick={handleDelete}
           size="small"
+          sx={{
+            width: 44,
+            height: 44,
+            '&:focus-visible': {
+              outline: '3px solid',
+              outlineColor: 'primary.main',
+              outlineOffset: '2px',
+            },
+          }}
         >
           <DeleteIcon fontSize="small" />
         </IconButton>

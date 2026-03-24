@@ -134,7 +134,21 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
       {isMobile ? (
         <AppBar sx={{ position: 'relative', bgcolor: 'background.paper', color: 'text.primary', boxShadow: 1 }}>
           <Toolbar>
-            <IconButton edge="start" onClick={onClose} aria-label="Close bid form" sx={{ color: 'text.secondary' }}>
+            <IconButton
+              edge="start"
+              onClick={onClose}
+              aria-label="Close bid form"
+              sx={{
+                color: 'text.secondary',
+                width: 44,
+                height: 44,
+                '&:focus-visible': {
+                  outline: '3px solid',
+                  outlineColor: 'primary.main',
+                  outlineOffset: '2px',
+                },
+              }}
+            >
               <CloseIcon />
             </IconButton>
             <Typography id="place-bid-dialog-title" sx={{ ml: 1, flex: 1, fontWeight: 600 }} variant="subtitle1">
@@ -167,7 +181,20 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
             <GavelIcon />
             Place Your Bid
           </Box>
-          <IconButton onClick={onClose} sx={{ color: 'text.secondary' }} aria-label="Close bid dialog">
+          <IconButton
+            onClick={onClose}
+            sx={{
+              color: 'text.secondary',
+              width: 44,
+              height: 44,
+              '&:focus-visible': {
+                outline: '3px solid',
+                outlineColor: 'primary.main',
+                outlineOffset: '2px',
+              },
+            }}
+            aria-label="Close bid dialog"
+          >
             <CloseIcon />
           </IconButton>
         </DialogTitle>

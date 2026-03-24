@@ -159,7 +159,20 @@ function JobFilters({ open, onClose, filters, onApply }) {
           <Box sx={{ width: 40, height: 4, bgcolor: 'divider', borderRadius: 2, mx: 'auto', mb: 2 }} />
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
             <Typography variant="subtitle1" fontWeight={700}>Filter Jobs</Typography>
-            <IconButton onClick={onClose} size="small" aria-label="Close filters">
+            <IconButton
+              onClick={onClose}
+              size="small"
+              aria-label="Close filters"
+              sx={{
+                width: 44,
+                height: 44,
+                '&:focus-visible': {
+                  outline: '3px solid',
+                  outlineColor: 'primary.main',
+                  outlineOffset: '2px',
+                },
+              }}
+            >
               <Close />
             </IconButton>
           </Box>
@@ -183,7 +196,20 @@ function JobFilters({ open, onClose, filters, onApply }) {
       <DialogTitle>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <span id="job-filters-title">Filter Jobs</span>
-          <IconButton onClick={onClose} size="small" aria-label="Close filters">
+          <IconButton
+            onClick={onClose}
+            size="small"
+            aria-label="Close filters"
+            sx={{
+              width: 44,
+              height: 44,
+              '&:focus-visible': {
+                outline: '3px solid',
+                outlineColor: 'primary.main',
+                outlineOffset: '2px',
+              },
+            }}
+          >
             <Close />
           </IconButton>
         </Box>

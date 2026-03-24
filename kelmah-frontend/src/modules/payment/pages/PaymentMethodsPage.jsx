@@ -293,7 +293,16 @@ const PaymentMethodsPage = () => {
             <IconButton
               color="secondary"
               aria-label="Add credit card"
-              sx={{ boxShadow: '0 2px 8px rgba(255,215,0,0.4)', minWidth: 44, minHeight: 44 }}
+              sx={{
+                boxShadow: '0 2px 8px rgba(255,215,0,0.4)',
+                minWidth: 44,
+                minHeight: 44,
+                '&:focus-visible': {
+                  outline: '3px solid',
+                  outlineColor: 'secondary.main',
+                  outlineOffset: '2px',
+                },
+              }}
               onClick={() => setOpenAddCard(true)}
             >
               <AddIcon />
@@ -303,7 +312,16 @@ const PaymentMethodsPage = () => {
             <IconButton
               color="secondary"
               aria-label="Add mobile money"
-              sx={{ boxShadow: '0 2px 8px rgba(255,215,0,0.4)', minWidth: 44, minHeight: 44 }}
+              sx={{
+                boxShadow: '0 2px 8px rgba(255,215,0,0.4)',
+                minWidth: 44,
+                minHeight: 44,
+                '&:focus-visible': {
+                  outline: '3px solid',
+                  outlineColor: 'secondary.main',
+                  outlineOffset: '2px',
+                },
+              }}
               onClick={() => setOpenAddMobile(true)}
             >
               <MobileIcon />
@@ -313,7 +331,16 @@ const PaymentMethodsPage = () => {
             <IconButton
               color="secondary"
               aria-label="Add bank account"
-              sx={{ boxShadow: '0 2px 8px rgba(255,215,0,0.4)', minWidth: 44, minHeight: 44 }}
+              sx={{
+                boxShadow: '0 2px 8px rgba(255,215,0,0.4)',
+                minWidth: 44,
+                minHeight: 44,
+                '&:focus-visible': {
+                  outline: '3px solid',
+                  outlineColor: 'secondary.main',
+                  outlineOffset: '2px',
+                },
+              }}
               onClick={() => setOpenAddBank(true)}
             >
               <BankIcon />
@@ -512,7 +539,15 @@ const PaymentMethodsPage = () => {
                           size="small"
                           aria-label={`Set ${method.name || 'payment method'} as default`}
                           onClick={() => handleSetDefault(method.id || method._id)}
-                          sx={{ minWidth: 44, minHeight: 44 }}
+                          sx={{
+                            minWidth: 44,
+                            minHeight: 44,
+                            '&:focus-visible': {
+                              outline: '3px solid',
+                              outlineColor: 'primary.main',
+                              outlineOffset: '2px',
+                            },
+                          }}
                         >
                           <CheckCircleIcon color="action" />
                         </IconButton>
@@ -524,7 +559,15 @@ const PaymentMethodsPage = () => {
                         color="error"
                         aria-label={`Remove ${method.name || 'payment method'}`}
                         onClick={() => handleDeleteRequest(method.id || method._id)}
-                        sx={{ minWidth: 44, minHeight: 44 }}
+                        sx={{
+                          minWidth: 44,
+                          minHeight: 44,
+                          '&:focus-visible': {
+                            outline: '3px solid',
+                            outlineColor: 'error.main',
+                            outlineOffset: '2px',
+                          },
+                        }}
                       >
                         <DeleteIcon />
                       </IconButton>

@@ -1,13 +1,14 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import eventsService from './eventsService';
+import {
+  createFeatureLogger,
+  devError,
+} from '@/modules/common/utils/devLogger';
 
-const CALENDAR_DEBUG =
-  import.meta.env.DEV && import.meta.env.VITE_DEBUG_CALENDAR === 'true';
-const calendarLog = (...args) => {
-  if (CALENDAR_DEBUG) {
-    console.log(...args);
-  }
-};
+const calendarLog = createFeatureLogger({
+  flagName: 'VITE_DEBUG_CALENDAR',
+  level: 'log',
+});
 
 const initialState = {
   events: [],
@@ -29,7 +30,7 @@ export const fetchEvents = createAsyncThunk(
       calendarLog('Fetched events:', events);
       return events;
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error in fetchEvents thunk:', error);
+      devError('Error in fetchEvents thunk:', error);
       return rejectWithValue({
         message: error?.message || 'Failed to fetch events',
         code: error?.code || error?.response?.data?.error?.code,

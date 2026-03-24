@@ -9,6 +9,16 @@
   "testOrOracleImprovements": [
     "Added strict checks for backend oracle evidence and learning artifacts"
   ],
+  "skillAcquisitions": [
+    "Route-contract compatibility scoring for backend optimization"
+  ],
+  "skillSources": [
+    "Backend reliability incident review",
+    "Cross-agent debugger challenge outcomes"
+  ],
+  "skillTransferEvidence": [
+    "Added topology and reliability artifact gates into closure validation"
+  ],
   "nextTaskGuards": [
     "Fail closure when debugger challenge evidence is missing"
   ],

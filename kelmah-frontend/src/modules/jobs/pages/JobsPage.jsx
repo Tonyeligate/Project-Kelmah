@@ -185,17 +185,19 @@ import {
   useBreakpointDown,
 } from '../../../hooks/useResponsive';
 import { useJobsFiltersState } from '../hooks/useJobsFiltersState';
+import {
+  createFeatureLogger,
+  devError,
+} from '@/modules/common/utils/devLogger';
 import BreadcrumbNavigation from '../../../components/common/BreadcrumbNavigation';
 import PullToRefresh from '../../../components/common/PullToRefresh';
 import usePrefersReducedMotion from '../../../hooks/usePrefersReducedMotion';
 import useNetworkSpeed from '../../../hooks/useNetworkSpeed';
 
-const JOBS_DEBUG = import.meta.env.DEV && import.meta.env.VITE_DEBUG_JOBS === 'true';
-const jobsDebugLog = (...args) => {
-  if (JOBS_DEBUG) {
-    console.log(...args);
-  }
-};
+const jobsDebugLog = createFeatureLogger({
+  flagName: 'VITE_DEBUG_JOBS',
+  level: 'log',
+});
 
 // ✅ MOBILE-AUDIT P1: Removed dead code — 7 keyframe animations + HeroSection styled component
 // (float, shimmer, pulse, slideInFromBottom, gradientShift, sparkle, rotateGlow)
@@ -1489,7 +1491,7 @@ class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('JobsPage Error:', error, errorInfo);
+    devError('JobsPage Error:', error, errorInfo);
   }
 
   handleRetry() {
@@ -1850,7 +1852,7 @@ const JobsPage = () => {
 
   useEffect(() => {
     if (jobsQueryError) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error fetching jobs via React Query:', jobsQueryError);
+      devError('Error fetching jobs via React Query:', jobsQueryError);
       setError('Unable to load jobs. Please try again.');
       return;
     }

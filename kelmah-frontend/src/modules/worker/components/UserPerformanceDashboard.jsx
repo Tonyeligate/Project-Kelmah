@@ -33,6 +33,7 @@ import {
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import workerService from '../services/workerService';
+import { devWarn } from '@/modules/common/utils/devLogger';
 
 const DEFAULT_PERFORMANCE = {
   performanceTier: 'tier3',
@@ -88,7 +89,7 @@ const UserPerformanceDashboard = ({ userId, onRefresh }) => {
       setServiceNotice('');
       setError(null);
     } catch (err) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Performance API unavailable:', err.message);
+      devWarn('Performance API unavailable:', err.message);
       setPerformance(DEFAULT_PERFORMANCE);
       setServiceNotice(
         'Live performance analytics are unavailable. Showing baseline access values only.',

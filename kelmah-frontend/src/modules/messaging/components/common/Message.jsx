@@ -20,6 +20,7 @@ import {
 import { useInView } from 'react-intersection-observer';
 import MessageAttachments from './MessageAttachments';
 import { useBreakpointDown } from '@/hooks/useResponsive';
+import { devError } from '@/modules/common/utils/devLogger';
 
 // Styled components
 const MessageBubble = styled(Paper)(({ theme, isOwn }) => ({
@@ -72,6 +73,7 @@ const Message = ({
   const [menuAnchorEl, setMenuAnchorEl] = useState(null);
   const [menuPosition, setMenuPosition] = useState(null);
   const [isHovered, setIsHovered] = useState(false);
+  const [isFocusWithin, setIsFocusWithin] = useState(false);
   const messageRef = useRef(null);
   const theme = useTheme();
   const isMobile = useBreakpointDown('md');
@@ -135,12 +137,19 @@ const Message = ({
     handleMenuClose();
   };
 
+  const shouldShowMenuButton =
+    isMobile ||
+    isHovered ||
+    isFocusWithin ||
+    Boolean(menuAnchorEl) ||
+    Boolean(menuPosition);
+
   const formatTime = (timestamp) => {
     if (!timestamp) return '';
     try {
       return format(new Date(timestamp), 'p'); // 'p' = time format like '8:00 PM'
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error formatting time:', error);
+      devError('Error formatting time:', error);
       return '';
     }
   };
@@ -317,6 +326,12 @@ const Message = ({
       ref={setRefs}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onFocusCapture={() => setIsFocusWithin(true)}
+      onBlurCapture={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) {
+          setIsFocusWithin(false);
+        }
+      }}
       {...(isMobile ? longPressHandlers : {})}
       sx={{
         display: 'flex',
@@ -423,7 +438,7 @@ const Message = ({
           )}
 
           {/* Message menu button (visible on hover) */}
-          <Fade in={isHovered}>
+          <Fade in={shouldShowMenuButton}>
             <IconButton
               size="small"
               onClick={handleMenuOpen}
@@ -432,10 +447,15 @@ const Message = ({
                 position: 'absolute',
                 top: 0,
                 [isOwn ? 'left' : 'right']: -8,
-                width: 24,
-                height: 24,
+                width: 44,
+                height: 44,
                 backgroundColor: 'background.paper',
                 '&:hover': { backgroundColor: 'action.hover' },
+                '&:focus-visible': {
+                  outline: '3px solid',
+                  outlineColor: 'primary.main',
+                  outlineOffset: '2px',
+                },
                 boxShadow: 1,
               }}
             >
@@ -468,6 +488,15 @@ const Message = ({
                     size="small"
                     onClick={() => onResend && onResend(message)}
                     aria-label="Resend message"
+                    sx={{
+                      width: 44,
+                      height: 44,
+                      '&:focus-visible': {
+                        outline: '3px solid',
+                        outlineColor: 'primary.main',
+                        outlineOffset: '2px',
+                      },
+                    }}
                   >
                     <ErrorIcon color="error" sx={{ fontSize: '1rem' }} />
                   </IconButton>

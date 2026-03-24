@@ -11,6 +11,7 @@ import {
 import { Link as RouterLink } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectAuthLoading, selectAuthError, login, register } from '../services/authSlice';
+import { devError } from '@/modules/common/utils/devLogger';
 
 const AuthForm = ({ mode = 'login', onSuccess }) => {
   // Use Redux auth system
@@ -91,7 +92,7 @@ const AuthForm = ({ mode = 'login', onSuccess }) => {
       }
     } catch (error) {
       // Error is handled by the auth slice
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Auth error:', error);
+      devError('Auth error:', error);
     }
   };
 

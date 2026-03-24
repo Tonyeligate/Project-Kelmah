@@ -19,6 +19,7 @@ import reviewService from '../services/reviewService';
 import Pagination from '@mui/material/Pagination';
 import { alpha } from '@mui/material/styles';
 import { Helmet } from 'react-helmet-async';
+import { devError } from '@/modules/common/utils/devLogger';
 
 const RatingDistribution = ({ distribution, totalReviews }) => (
   <Box>
@@ -73,7 +74,7 @@ const WorkerReviewsPage = () => {
         setPagination(pagination);
       })
       .catch((err) => {
-        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error(err);
+        devError(err);
         setError('Failed to load reviews. Please try again later.');
       })
       .finally(() => setLoading(false));

@@ -177,9 +177,7 @@ const redirectToLogin = () => {
 
     hasTriggeredAuthRedirect = true;
     const loginUrl = buildLoginRedirectUrl();
-    if (!navigateInApp(loginUrl)) {
-        window.location.assign(loginUrl);
-    }
+    navigateInApp(loginUrl);
 };
 
 const forceLogoutAndRedirect = (error) => {

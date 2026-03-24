@@ -38,14 +38,12 @@ import {
 import { useSnackbar } from 'notistack';
 import PropTypes from 'prop-types';
 import locationService from '../services/locationService';
+import { createFeatureLogger } from '@/modules/common/utils/devLogger';
 
-const __SEARCH_DEBUG__ =
-  import.meta.env.DEV && import.meta.env.VITE_DEBUG_SEARCH === 'true';
-const searchDebugError = (...args) => {
-  if (__SEARCH_DEBUG__) {
-    console.error(...args);
-  }
-};
+const searchDebugError = createFeatureLogger({
+  flagName: 'VITE_DEBUG_SEARCH',
+  level: 'error',
+});
 
 const LocationBasedSearch = ({
   onLocationSelect,

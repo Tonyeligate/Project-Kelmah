@@ -475,7 +475,14 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
                       right: -8,
                       bgcolor: 'error.main',
                       color: 'white',
-                      '&:hover': { bgcolor: 'error.dark' }
+                      width: 44,
+                      height: 44,
+                      '&:hover': { bgcolor: 'error.dark' },
+                      '&:focus-visible': {
+                        outline: '3px solid',
+                        outlineColor: 'error.main',
+                        outlineOffset: '2px',
+                      },
                     }}
                   >
                     <CloseIcon fontSize="small" />
@@ -518,7 +525,21 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2, p: 1.5, border: '1px solid', borderColor: 'success.main', borderRadius: 2, bgcolor: theme.palette.action.hover }}>
                 <MicIcon color="success" />
                 <audio src={voiceNote.url} controls style={{ flex: 1, height: 36 }} />
-                <IconButton size="small" onClick={handleRemoveVoiceNote} color="error" aria-label="Remove voice note">
+                <IconButton
+                  size="small"
+                  onClick={handleRemoveVoiceNote}
+                  color="error"
+                  aria-label="Remove voice note"
+                  sx={{
+                    width: 44,
+                    height: 44,
+                    '&:focus-visible': {
+                      outline: '3px solid',
+                      outlineColor: 'error.main',
+                      outlineOffset: '2px',
+                    },
+                  }}
+                >
                   <CloseIcon fontSize="small" />
                 </IconButton>
               </Box>

@@ -1,0 +1,7 @@
+{
+  "taskId": "<task-id>",
+  "collectionsChecked": ["users", "jobs", "applications"],
+  "driftCount": 0,
+  "driftFindings": [],
+  "closureVerdict": "PASS"
+}

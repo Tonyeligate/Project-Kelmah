@@ -73,6 +73,7 @@ import { useNavigate } from 'react-router-dom';
 import reviewService from '../services/reviewService';
 import MobileFilterSheet from '../../../components/common/MobileFilterSheet';
 import { Helmet } from 'react-helmet-async';
+import { devError } from '@/modules/common/utils/devLogger';
 
 // Enhanced Reviews Page with comprehensive review management
 const EnhancedReviewsPage = () => {
@@ -169,7 +170,7 @@ const EnhancedReviewsPage = () => {
         setReviews(workerReviews?.reviews || []);
       }
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to load reviews:', error);
+      devError('Failed to load reviews:', error);
       showFeedback('Failed to load reviews', 'error');
     } finally {
       setIsLoading(false);
@@ -291,7 +292,7 @@ const EnhancedReviewsPage = () => {
       setSelectedReview(null);
       showFeedback('Reply posted successfully!', 'success');
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to post reply:', error);
+      devError('Failed to post reply:', error);
       showFeedback('Failed to post reply', 'error');
     } finally {
       setReplySubmitting(false);
@@ -324,7 +325,7 @@ const EnhancedReviewsPage = () => {
 
       showFeedback('Thank you for your feedback!', 'success');
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Failed to vote:', error);
+      devError('Failed to vote:', error);
       showFeedback('Failed to record vote', 'error');
     }
   };

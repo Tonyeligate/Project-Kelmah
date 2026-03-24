@@ -16,6 +16,11 @@ import fileUploadService from '../../common/services/fileUploadService';
 import { normalizeAttachmentListVirusScan } from '../utils/virusScanUtils';
 import { MESSAGE_DELIVERY_ALIASES, SOCKET_EVENTS } from '../../../services/socketEvents';
 import { createRealtimeMessageDeduper } from '../utils/realtimeMessageDeduper';
+import {
+  createFeatureLogger,
+  devError,
+  devWarn,
+} from '@/modules/common/utils/devLogger';
 
 const MESSAGING_SOCKET_EVENTS = [
   ...MESSAGE_DELIVERY_ALIASES,
@@ -34,14 +39,10 @@ const MESSAGING_SOCKET_EVENTS = [
 ];
 
 const MessageContext = createContext(null);
-const MESSAGING_DEBUG =
-  import.meta.env.DEV && import.meta.env.VITE_DEBUG_MESSAGING === 'true';
-
-const messagingLog = (...args) => {
-  if (MESSAGING_DEBUG) {
-    console.log(...args);
-  }
-};
+const messagingLog = createFeatureLogger({
+  flagName: 'VITE_DEBUG_MESSAGING',
+  level: 'log',
+});
 
 const normalizeParticipant = (participant = {}) => {
   if (!participant || typeof participant !== 'object') return participant;
@@ -326,8 +327,7 @@ export const MessageProvider = ({ children }) => {
     }
 
     // All retries failed
-    if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true')
-      console.error('Error loading conversations after retries:', lastError);
+    devError('Error loading conversations after retries:', lastError);
     setConversations([]);
     setLoadingConversations(false);
     return [];
@@ -352,10 +352,9 @@ export const MessageProvider = ({ children }) => {
 
       const sharedSocket = websocketService.socket;
       if (!sharedSocket) {
-        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true')
-          console.warn(
-            'WebSocketService socket unavailable — messaging will use REST only',
-          );
+        devWarn(
+          'WebSocketService socket unavailable — messaging will use REST only',
+        );
         setRealtimeIssue('Real-time connection unavailable. Using standard refresh mode.');
         connectingRef.current = false;
         return;
@@ -386,8 +385,7 @@ export const MessageProvider = ({ children }) => {
       };
       const onConnectError = (error) => {
         if (!socketErrorLoggedRef.current) {
-          if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true')
-            console.error('🚨 WebSocket connection error:', error);
+          devError('🚨 WebSocket connection error:', error);
           socketErrorLoggedRef.current = true;
         }
         setRealtimeIssue('Real-time connection failed. Using standard refresh mode.');
@@ -536,7 +534,7 @@ export const MessageProvider = ({ children }) => {
       };
 
       const onError = (error) => {
-        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('🚨 WebSocket error:', error);
+        devError('🚨 WebSocket error:', error);
       };
 
       // Register all named handlers and store references for cleanup
@@ -569,8 +567,7 @@ export const MessageProvider = ({ children }) => {
         connectingRef.current = false;
       }
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true')
-        console.error('Failed to initialize messaging socket:', error);
+      devError('Failed to initialize messaging socket:', error);
       setRealtimeIssue('Real-time connection failed. Using standard refresh mode.');
       connectingRef.current = false;
     }
@@ -753,7 +750,7 @@ export const MessageProvider = ({ children }) => {
           setLoadingMessages(false);
         }
       } catch (error) {
-        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error(
+        devError(
           `Error loading messages for conversation ${normalizedConversation.id}:`,
           error,
         );
@@ -954,7 +951,7 @@ export const MessageProvider = ({ children }) => {
                   ),
                 );
               } catch (e) {
-                if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('REST fallback failed:', e);
+                devError('REST fallback failed:', e);
                 // Mark optimistic message as failed
                 setMessages((prev) =>
                   prev.map((m) =>
@@ -1012,7 +1009,7 @@ export const MessageProvider = ({ children }) => {
           );
         }
       } catch (error) {
-        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Error sending message:', error);
+        devError('Error sending message:', error);
         setSendError(error?.message || 'Failed to send message. Please try again.');
       } finally {
         setSendingMessage(false);
@@ -1037,8 +1034,7 @@ export const MessageProvider = ({ children }) => {
         await selectConversation(fullConvo);
         return fullConvo;
       } catch (error) {
-        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true')
-          console.error('Error creating conversation:', error);
+        devError('Error creating conversation:', error);
         throw error;
       }
     },

@@ -10,6 +10,7 @@ import store from '../../../store';
 import { getServiceStatusMessage } from '../../../utils/serviceHealthCheck';
 import { secureStorage } from '../../../utils/secureStorage';
 import authService from '../../auth/services/authService';
+import { devWarn } from '@/modules/common/utils/devLogger';
 
 /**
  * Call a Vercel serverless bridge endpoint (bypasses API Gateway proxy).
@@ -25,9 +26,6 @@ import authService from '../../auth/services/authService';
 const shouldUseBridge = () =>
   typeof window !== 'undefined' &&
   !['localhost', '127.0.0.1'].includes(window.location?.hostname);
-
-const __DEV__ = import.meta.env.DEV;
-const devWarn = (...args) => { if (__DEV__) console.warn(...args); };
 
 let bridgeUnavailable = false;
 

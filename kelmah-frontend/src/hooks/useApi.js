@@ -6,6 +6,14 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'react-toastify';
 
+const USE_API_DEBUG =
+  import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true';
+const useApiError = (...args) => {
+  if (USE_API_DEBUG) {
+    console.error(...args);
+  }
+};
+
 const parseRetryAfterMs = (error) => {
   const headerValue =
     error?.response?.headers?.['retry-after'] ||
@@ -179,7 +187,7 @@ export const useApi = (apiFunction, options = {}) => {
 
             return result;
           } catch (err) {
-            if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('API Error:', err);
+            useApiError('API Error:', err);
 
             if (attempt < retryAttempts && shouldRetryError(err)) {
               if (
@@ -399,7 +407,7 @@ export const useMultipleApi = (apiCalls, options = {}) => {
           const result = await apiFunction();
           return { key, result, error: null };
         } catch (error) {
-          if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error(`API Error for ${key}:`, error);
+          useApiError(`API Error for ${key}:`, error);
           return { key, result: null, error };
         }
       },
@@ -425,7 +433,7 @@ export const useMultipleApi = (apiCalls, options = {}) => {
         setErrors(newErrors);
       }
     } catch (error) {
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Multiple API calls failed:', error);
+      useApiError('Multiple API calls failed:', error);
     } finally {
       if (canUpdateState()) {
         setLoading(false);
@@ -528,7 +536,7 @@ export const useApiSubmit = (submitFunction, options = {}) => {
 
         return result;
       } catch (err) {
-        if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Submit Error:', err);
+        useApiError('Submit Error:', err);
         const guidance = getRecoveryGuidance(err);
         if (err && typeof err === 'object') {
           err.userMessage = guidance.userMessage;

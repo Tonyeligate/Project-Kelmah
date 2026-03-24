@@ -68,6 +68,7 @@ import 'leaflet/dist/leaflet.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import mapService from '../../services/mapService';
 import { EXTERNAL_SERVICES } from '../../../../config/services';
+import { devError, devWarn } from '@/modules/common/utils/devLogger';
 
 // Enhanced marker icons with sophisticated styling
 delete L.Icon.Default.prototype._getIconUrl;
@@ -290,7 +291,7 @@ const AdvancedMapController = ({
           setCenterOnUser(false);
         })
         .catch((error) => {
-          if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.error('Location error:', error);
+          devError('Location error:', error);
         })
         .finally(() => {
           setIsLocating(false);
@@ -976,7 +977,7 @@ const InteractiveMap = ({
           setUserLocation(location);
         })
         .catch((error) => {
-          if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') console.warn('Could not get user location:', error.message);
+          devWarn('Could not get user location:', error.message);
         });
     }
   }, [showUserLocation]);
