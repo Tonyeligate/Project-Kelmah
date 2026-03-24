@@ -824,7 +824,7 @@ const JobPostingPage = () => {
                       bgcolor: 'rgba(0,0,0,0.6)',
                       color: 'white',
                       '&:hover': { bgcolor: 'rgba(0,0,0,0.8)' },
-                    }}
+                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
                   >
                     <Close fontSize="small" />
                   </IconButton>
@@ -1422,3 +1422,4 @@ const JobPostingPage = () => {
 };
 
 export default JobPostingPage;
+

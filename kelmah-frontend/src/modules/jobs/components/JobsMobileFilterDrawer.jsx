@@ -4,6 +4,30 @@
  * Bottom sheet with all job filters optimized for mobile touch
  * Replaces bulky inline filters (240-280px) with drawer interface
  */
+import { useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
+import {
+  Box,
+  Button,
+  Drawer,
+  FormControl,
+  IconButton,
+  InputLabel,
+  MenuItem,
+  Select,
+  Slider,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material';
+import {
+  Close as CloseIcon,
+  Search as SearchIcon,
+} from '@mui/icons-material';
+
+
+
+
 
 
 
@@ -96,7 +120,7 @@ const JobsMobileFilterDrawer = ({
             Choose simple filters to find suitable jobs faster.
           </Typography>
         </Box>
-        <IconButton onClick={onClose} size="small" aria-label="Close filters" sx={{ width: 44, height: 44 }}>
+        <IconButton onClick={onClose} size="small" aria-label="Close filters" sx={{ width: 44, height: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}>
           <CloseIcon />
         </IconButton>
       </Box>

@@ -289,14 +289,14 @@ const JobProgressTracker = () => {
                 </Box>
               </Box>
               <Box display="flex" gap={1}>
-                <IconButton sx={iconButtonA11ySx}
+                <IconButton sx={{ ...iconButtonA11ySx, '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' } }}
                   size="small"
                   onClick={() => handleDialogOpen('view', job)}
                   aria-label="View job details"
                 >
                   <ViewIcon />
                 </IconButton>
-                <IconButton sx={iconButtonA11ySx}
+                <IconButton sx={{ ...iconButtonA11ySx, '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' } }}
                   size="small"
                   onClick={() => handleMessageWorker(job)}
                   aria-label="Message worker"
@@ -593,4 +593,5 @@ const JobProgressTracker = () => {
 };
 
 export default JobProgressTracker;
+
 

@@ -484,7 +484,7 @@ const HirerJobManagement = () => {
                               {job.description?.substring(0, 60)}...
                             </Typography>
                           </Box>
-                          <IconButton sx={iconButtonA11ySx} size="small" onClick={(e) => handleMenuOpen(e, job)} aria-label="Job actions">
+                          <IconButton sx={{ ...iconButtonA11ySx, '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' } }} size="small" onClick={(e) => handleMenuOpen(e, job)} aria-label="Job actions">
                             <MoreVertIcon />
                           </IconButton>
                         </Box>
@@ -592,7 +592,7 @@ const HirerJobManagement = () => {
                           </Typography>
                         </TableCell>
                         <TableCell align="center">
-                          <IconButton sx={iconButtonA11ySx}
+                          <IconButton sx={{ ...iconButtonA11ySx, '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' } }}
                             size="small"
                             onClick={(e) => handleMenuOpen(e, job)}
                             aria-label={`Open actions for ${job.title || 'job'}`}
@@ -702,4 +702,5 @@ const HirerJobManagement = () => {
 };
 
 export default HirerJobManagement;
+
 

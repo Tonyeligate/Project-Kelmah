@@ -481,7 +481,7 @@ const MobileRegister = () => {
                     <IconButton
                       onClick={() => setShowPassword(!showPassword)}
                       aria-label={showPassword ? 'Hide password' : 'Show password'}
-                      sx={{ color: 'text.secondary', minWidth: 44, minHeight: 44 }}
+                      sx={{ color: 'text.secondary', minWidth: 44, minHeight: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
                     >
                       {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
                     </IconButton>
@@ -530,7 +530,7 @@ const MobileRegister = () => {
                     <IconButton
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                       aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
-                      sx={{ color: 'text.secondary', minWidth: 44, minHeight: 44 }}
+                      sx={{ color: 'text.secondary', minWidth: 44, minHeight: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
                     >
                       {showConfirmPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
                     </IconButton>

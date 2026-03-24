@@ -211,7 +211,7 @@ const AvailabilityCalendar = () => {
       </Box>
       <Box>
         <Tooltip title="Edit">
-          <IconButton sx={iconButtonA11ySx}
+          <IconButton sx={{ ...iconButtonA11ySx, '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' } }}
             size="small"
             onClick={() => handleDialogOpen(slot)}
             disabled={slot.status === 'booked'}
@@ -221,7 +221,7 @@ const AvailabilityCalendar = () => {
           </IconButton>
         </Tooltip>
         <Tooltip title="Delete">
-          <IconButton sx={iconButtonA11ySx}
+          <IconButton sx={{ ...iconButtonA11ySx, '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' } }}
             size="small"
             onClick={() => handleDelete(slot.id)}
             disabled={slot.status === 'booked'}
@@ -365,4 +365,5 @@ const AvailabilityCalendar = () => {
 };
 
 export default AvailabilityCalendar;
+
 

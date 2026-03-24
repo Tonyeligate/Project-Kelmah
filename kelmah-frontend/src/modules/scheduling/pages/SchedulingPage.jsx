@@ -304,7 +304,7 @@ const AppointmentCard = ({
         <IconButton
           size="small"
           aria-label="Edit appointment"
-          sx={{ minWidth: 44, minHeight: 44 }}
+          sx={{ minWidth: 44, minHeight: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
           onClick={(e) => {
             e.stopPropagation();
             onEdit(appointment);
@@ -315,7 +315,7 @@ const AppointmentCard = ({
         <IconButton
           size="small"
           aria-label="Delete appointment"
-          sx={{ minWidth: 44, minHeight: 44 }}
+          sx={{ minWidth: 44, minHeight: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
           onClick={(e) => {
             e.stopPropagation();
             onDelete(appointment.id || appointment._id);

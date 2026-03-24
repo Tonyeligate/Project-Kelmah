@@ -984,7 +984,7 @@ const WorkerDirectoryExperience = ({
           <IconButton
             onClick={() => setShowAdvancedFiltersDialog(false)}
             aria-label="Close advanced filters dialog"
-            sx={{ width: 44, height: 44 }}
+            sx={{ width: 44, height: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
           >
             <CloseIcon />
           </IconButton>
@@ -1016,7 +1016,7 @@ const WorkerDirectoryExperience = ({
           <IconButton
             onClick={() => setShowSavedSearches(false)}
             aria-label="Close saved searches dialog"
-            sx={{ width: 44, height: 44 }}
+            sx={{ width: 44, height: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
           >
             <CloseIcon />
           </IconButton>

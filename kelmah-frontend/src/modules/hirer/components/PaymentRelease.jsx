@@ -477,7 +477,7 @@ const PaymentRelease = () => {
                         Due: {formatDate(payment.dueDate)}
                       </Typography>
                       <Box display="flex" gap={1}>
-                        <IconButton sx={iconButtonA11ySx} size="small" onClick={() => handleDialogOpen('view', payment)} aria-label="View payment details">
+                        <IconButton sx={{ ...iconButtonA11ySx, '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' } }} size="small" onClick={() => handleDialogOpen('view', payment)} aria-label="View payment details">
                             <ViewIcon />
                         </IconButton>
                         {payment.status === 'ready_for_release' && (
@@ -554,7 +554,7 @@ const PaymentRelease = () => {
                       <TableCell align="center">
                         <Box display="flex" gap={1} justifyContent="center">
                           <Tooltip title="View Details">
-                            <IconButton sx={iconButtonA11ySx}
+                            <IconButton sx={{ ...iconButtonA11ySx, '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' } }}
                               size="small"
                               onClick={() => handleDialogOpen('view', payment)}
                               aria-label={`View payment details for ${payment.workerName || 'worker'}`}
@@ -858,4 +858,5 @@ const PaymentRelease = () => {
 };
 
 export default PaymentRelease;
+
 

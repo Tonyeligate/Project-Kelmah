@@ -420,7 +420,7 @@ const AuthWrapper = ({ children }) => {
                           '&:hover': {
                             backgroundColor: isDarkMode ? alpha('#000000', 0.78) : alpha('#FFFFFF', 0.98),
                           },
-                        }}
+                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
                       >
                         {isCarouselAutoPlay ? <PauseIcon fontSize="small" /> : <PlayIcon fontSize="small" />}
                       </IconButton>
@@ -787,4 +787,5 @@ AuthWrapper.propTypes = {
 };
 
 export default AuthWrapper;
+
 

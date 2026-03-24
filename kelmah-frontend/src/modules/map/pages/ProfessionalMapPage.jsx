@@ -274,6 +274,11 @@ const ResultCard = ({ item, viewType, onSelect, onNavigate, onMessage }) => {
                     color: theme.palette.primary.main,
                     width: 44,
                     height: 44,
+                    '&:focus-visible': {
+                      outline: '3px solid',
+                      outlineColor: 'primary.main',
+                      outlineOffset: '2px',
+                    },
                   }}
                 >
                   <NavigationIcon sx={{ fontSize: 16 }} />
@@ -292,6 +297,11 @@ const ResultCard = ({ item, viewType, onSelect, onNavigate, onMessage }) => {
                     color: theme.palette.secondary.main,
                     width: 44,
                     height: 44,
+                    '&:focus-visible': {
+                      outline: '3px solid',
+                      outlineColor: 'primary.main',
+                      outlineOffset: '2px',
+                    },
                   }}
                 >
                   <ChatIcon sx={{ fontSize: 16 }} />

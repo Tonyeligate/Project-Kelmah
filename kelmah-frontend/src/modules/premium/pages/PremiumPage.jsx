@@ -442,6 +442,13 @@ const PremiumPage = () => {
             aria-label="Close upgrade dialog"
             onClick={() => setOpenDialog(false)}
             disabled={isUpgrading}
+            sx={{
+              '&:focus-visible': {
+                outline: '3px solid',
+                outlineColor: 'primary.main',
+                outlineOffset: '2px',
+              },
+            }}
           >
             <CloseIcon />
           </IconButton>

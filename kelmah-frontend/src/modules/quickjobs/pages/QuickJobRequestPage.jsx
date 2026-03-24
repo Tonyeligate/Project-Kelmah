@@ -765,7 +765,7 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
       <Helmet><title>Quick Job Request | Kelmah</title></Helmet>
       {/* Back button & title */}
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-        <IconButton aria-label="Go back" onClick={handleBack} sx={{ mr: 1, minWidth: 44, minHeight: 44 }}>
+        <IconButton aria-label="Go back" onClick={handleBack} sx={{ mr: 1, minWidth: 44, minHeight: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}>
           <ArrowBackIcon />
         </IconButton>
         <Box>

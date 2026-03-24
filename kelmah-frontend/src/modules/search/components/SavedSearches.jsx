@@ -383,7 +383,7 @@ const SavedSearches = ({
           top: 8,
           right: 8,
           zIndex: 1,
-        }}
+                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
         aria-label={`Open actions for saved search ${search.name || 'item'}`}
         onClick={(e) => {
           setAnchorEl(e.currentTarget);
@@ -489,7 +489,7 @@ const SavedSearches = ({
                   : 'Enable alerts for this search'
               }
               color={search.alertsEnabled ? 'primary' : 'default'}
-              sx={{ width: 44, height: 44 }}
+              sx={{ width: 44, height: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
             >
               {search.alertsEnabled ? (
                 <NotificationsIcon />
@@ -504,7 +504,7 @@ const SavedSearches = ({
               size="small"
               aria-label="Edit saved search"
               onClick={() => handleOpenDialog(search)}
-              sx={{ width: 44, height: 44 }}
+              sx={{ width: 44, height: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
             >
               <EditIcon />
             </IconButton>
@@ -853,4 +853,5 @@ const SavedSearches = ({
 };
 
 export default SavedSearches;
+
 

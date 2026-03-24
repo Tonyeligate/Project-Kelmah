@@ -573,7 +573,7 @@ const EarningsTracker = () => {
             >
               Export
             </AnimatedButton>
-            <IconButton sx={iconButtonA11ySx} onClick={loadEarningsData} disabled={loading} aria-label="Refresh earnings data">
+            <IconButton sx={{ ...iconButtonA11ySx, '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' } }} onClick={loadEarningsData} disabled={loading} aria-label="Refresh earnings data">
               <RefreshIcon />
             </IconButton>
           </Box>
@@ -619,7 +619,7 @@ const EarningsTracker = () => {
                       <IconButton
                         size="small"
                         aria-label="View transaction details"
-                        sx={{ minWidth: 44, minHeight: 44 }}
+                        sx={{ minWidth: 44, minHeight: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
                         onClick={() => {
                           setSelectedTransaction(transaction);
                           setDetailsDialog(true);
@@ -705,7 +705,7 @@ const EarningsTracker = () => {
                     </TableCell>
                     <TableCell>
                       <Tooltip title="View Details">
-                        <IconButton sx={iconButtonA11ySx}
+                        <IconButton sx={{ ...iconButtonA11ySx, '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' } }}
                           size="small"
                           aria-label="View transaction details"
                           onClick={() => {
@@ -871,3 +871,4 @@ const EarningsTracker = () => {
 };
 
 export default EarningsTracker;
+

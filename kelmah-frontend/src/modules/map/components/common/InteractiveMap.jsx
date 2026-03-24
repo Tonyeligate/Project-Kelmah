@@ -536,7 +536,7 @@ const SpectacularMarkerPopup = ({
                     '&:hover': {
                       bgcolor: theme.palette.primary.main + '33',
                     },
-                  }}
+                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
                 >
                   <NavigationIcon />
                 </IconButton>
@@ -850,7 +850,7 @@ const SpectacularMarkerPopup = ({
                   '&:hover': {
                     bgcolor: theme.palette.secondary.main + '33',
                   },
-                }}
+                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
               >
                 <NavigationIcon />
               </IconButton>
@@ -1199,7 +1199,7 @@ const InteractiveMap = ({
                             transform: 'scale(1.1)',
                           },
                           transition: 'all 0.3s ease',
-                        }}
+                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
                       >
                         <ZoomInIcon />
                       </IconButton>
@@ -1218,7 +1218,7 @@ const InteractiveMap = ({
                             transform: 'scale(1.1)',
                           },
                           transition: 'all 0.3s ease',
-                        }}
+                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
                       >
                         <ZoomOutIcon />
                       </IconButton>
@@ -1488,4 +1488,5 @@ const InteractiveMap = ({
 };
 
 export default InteractiveMap;
+
 

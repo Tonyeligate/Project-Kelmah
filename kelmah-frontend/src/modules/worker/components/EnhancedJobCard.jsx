@@ -26,6 +26,17 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
 const EnhancedJobCard = ({
   job,
   onApply,
@@ -431,18 +442,36 @@ const EnhancedJobCard = ({
 
           <CardActions sx={{ p: 2, justifyContent: 'space-between' }}>
             <Box>
-              <IconButton sx={iconButtonA11ySx}
+              <IconButton
                 onClick={() => onSave?.(job)}
                 color={job.saved ? 'primary' : 'default'}
                 aria-label={job.saved ? 'Remove from saved jobs' : 'Save job'}
-                sx={{ minWidth: 44, minHeight: 44 }}
+                sx={{
+                  ...iconButtonA11ySx,
+                  minWidth: 44,
+                  minHeight: 44,
+                  '&:focus-visible': {
+                    outline: '3px solid',
+                    outlineColor: 'primary.main',
+                    outlineOffset: '2px',
+                  },
+                }}
               >
                 {job.saved ? <BookmarkIcon /> : <BookmarkBorderIcon />}
               </IconButton>
-              <IconButton sx={iconButtonA11ySx}
+              <IconButton
                 onClick={() => onShare?.(job)}
                 aria-label="Share job"
-                sx={{ minWidth: 44, minHeight: 44 }}
+                sx={{
+                  ...iconButtonA11ySx,
+                  minWidth: 44,
+                  minHeight: 44,
+                  '&:focus-visible': {
+                    outline: '3px solid',
+                    outlineColor: 'primary.main',
+                    outlineOffset: '2px',
+                  },
+                }}
               >
                 <ShareIcon />
               </IconButton>
@@ -598,4 +627,5 @@ const EnhancedJobCard = ({
 };
 
 export default EnhancedJobCard;
+
 

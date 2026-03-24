@@ -348,7 +348,7 @@ const MobileNav = ({ open, onClose }) => {
                   : BRAND_COLORS.black,
               minWidth: 44,
               minHeight: 44,
-            }}
+                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
           >
             <CloseIcon />
           </IconButton>
@@ -517,4 +517,5 @@ MobileNav.propTypes = {
 };
 
 export default MobileNav;
+
 

@@ -389,7 +389,7 @@ const ContractsPage = () => {
                   aria-label={`Open ${contract.title || 'contract'} details`}
                   component={RouterLink}
                   to={`/contracts/${contract.id || contract._id}`}
-                  sx={{ minWidth: 44, minHeight: 44 }}
+                  sx={{ minWidth: 44, minHeight: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
                 >
                   <VisibilityIcon fontSize="small" />
                 </IconButton>

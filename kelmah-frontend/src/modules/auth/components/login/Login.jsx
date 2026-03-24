@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { clearError, login as loginAction } from '../../services/authSlice';
 import {
@@ -120,13 +120,10 @@ const Login = () => {
   const { loading: authLoading, error: authError } = useSelector(
     (state) => state.auth,
   );
-  const errorMessages = Array.from(
-    new Set(
-      [apiError, loginError, authError]
-        .map(normalizeErrorMessage)
-        .filter(Boolean),
-    ),
-  );
+  const activeErrorMessage = [loginError, authError, apiError]
+    .map(normalizeErrorMessage)
+    .find(Boolean);
+  const errorMessages = activeErrorMessage ? [activeErrorMessage] : [];
   const socialProviders = useMemo(
     () => [
       {
@@ -564,7 +561,7 @@ const Login = () => {
                               color: accentColor,
                               minWidth: '44px',
                               minHeight: '44px',
-                            }}
+                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
                           >
                             {showPassword ? (
                               <VisibilityOff fontSize="small" />
@@ -856,5 +853,6 @@ const Login = () => {
 };
 
 export default Login;
+
 
 

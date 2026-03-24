@@ -176,6 +176,13 @@ const SearchHeader = ({ search, setSearch, onSearch, resultCount, isLoading }) =
                       setSearch('');
                       onSearch('');
                     }}
+                    sx={{
+                      '&:focus-visible': {
+                        outline: '3px solid',
+                        outlineColor: 'primary.main',
+                        outlineOffset: '2px',
+                      },
+                    }}
                   >
                     <ClearIcon fontSize="small" />
                   </IconButton>
@@ -471,7 +478,7 @@ const FindWorkJobCard = ({ job, isSaved, onSave, onUnsave }) => {
                   minWidth: 44,
                   minHeight: 44,
                   '&:hover': { color: theme.palette.primary.main },
-                }}
+                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
               >
                 {isSaved ? (
                   <BookmarkIcon fontSize="small" />
@@ -1176,4 +1183,5 @@ const JobSearchPage = () => {
 };
 
 export default JobSearchPage;
+
 

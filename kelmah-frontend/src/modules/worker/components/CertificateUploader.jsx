@@ -19,6 +19,16 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 const CertificateUploader = ({ onCertificatesChange }) => {
   // FIXED: Use standardized user normalization for consistent user data access
   const { user: rawUser } = useSelector((state) => state.auth);
@@ -442,6 +452,13 @@ const CertificateUploader = ({ onCertificatesChange }) => {
               onClick={() => window.open(certificate.fileUrl, '_blank')}
               aria-label={`View certificate file for ${certificate.name}`}
               title="View Document"
+              sx={{
+                '&:focus-visible': {
+                  outline: '3px solid',
+                  outlineColor: 'primary.main',
+                  outlineOffset: '2px',
+                },
+              }}
             >
               <ViewIcon />
             </IconButton>
@@ -457,6 +474,13 @@ const CertificateUploader = ({ onCertificatesChange }) => {
               }}
               aria-label={`Download certificate file for ${certificate.name}`}
               title="Download"
+              sx={{
+                '&:focus-visible': {
+                  outline: '3px solid',
+                  outlineColor: 'primary.main',
+                  outlineOffset: '2px',
+                },
+              }}
             >
               <DownloadIcon />
             </IconButton>
@@ -466,6 +490,13 @@ const CertificateUploader = ({ onCertificatesChange }) => {
             onClick={() => handleOpenDialog(certificate)}
             aria-label={`Edit certificate ${certificate.name}`}
             title="Edit"
+            sx={{
+              '&:focus-visible': {
+                outline: '3px solid',
+                outlineColor: 'primary.main',
+                outlineOffset: '2px',
+              },
+            }}
           >
             <EditIcon />
           </IconButton>
@@ -474,7 +505,7 @@ const CertificateUploader = ({ onCertificatesChange }) => {
             onClick={() => handleDelete(certificate.id || certificate._id)}
             aria-label={`Delete certificate ${certificate.name}`}
             title="Delete"
-            sx={{ color: 'error.main' }}
+            sx={{ color: 'error.main' , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
           >
             <DeleteIcon />
           </IconButton>

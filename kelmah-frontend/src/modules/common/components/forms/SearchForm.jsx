@@ -289,7 +289,7 @@ const SearchForm = ({
                   type="submit"
                   edge="end"
                   aria-label="Run search query"
-                  sx={{ width: 44, height: 44 }}
+                  sx={{ width: 44, height: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
                 >
                   <Search />
                 </IconButton>

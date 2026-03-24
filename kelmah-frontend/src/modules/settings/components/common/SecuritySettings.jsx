@@ -197,6 +197,13 @@ const SecuritySettings = () => {
           edge="end"
           onClick={() => setShowPasswords((prev) => ({ ...prev, [key]: !prev[key] }))}
           aria-label={showPasswords[key] ? 'Hide password' : 'Show password'}
+          sx={{
+            '&:focus-visible': {
+              outline: '3px solid',
+              outlineColor: 'primary.main',
+              outlineOffset: '2px',
+            },
+          }}
         >
           {showPasswords[key] ? <VisibilityOff /> : <Visibility />}
         </IconButton>

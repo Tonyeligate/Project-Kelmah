@@ -55,7 +55,7 @@ const CompactSearchBar = ({
                   size="small"
                   onClick={onSearchSubmit}
                   aria-label="Run worker search"
-                  sx={{ width: 44, height: 44 }}
+                  sx={{ width: 44, height: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
                 >
                   <SearchIcon fontSize="small" />
                 </IconButton>

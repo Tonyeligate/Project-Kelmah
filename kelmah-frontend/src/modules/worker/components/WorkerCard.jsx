@@ -1,4 +1,43 @@
 // IconButton focus-visible styling is enforced globally via MuiIconButton theme overrides.
+import { useCallback, useMemo, useState } from 'react';
+import PropTypes from 'prop-types';
+import {
+  Avatar,
+  Box,
+  Button,
+  Card,
+  CardActions,
+  CardContent,
+  Chip,
+  Divider,
+  Grid,
+  IconButton,
+  Rating,
+  Stack,
+  Tooltip,
+  Typography,
+} from '@mui/material';
+import {
+  Bookmark as BookmarkIcon,
+  BookmarkBorder as BookmarkBorderIcon,
+  Bolt as BoltIcon,
+  LocationOn as LocationIcon,
+  Message as MessageIcon,
+  Schedule as ScheduleIcon,
+  Star as StarIcon,
+  Verified as VerifiedIcon,
+  Visibility as VisibilityIcon,
+  Work as WorkIcon,
+  WorkspacePremium as WorkspacePremiumIcon,
+} from '@mui/icons-material';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useAuthCheck } from '../../../hooks/useAuthCheck';
+
+
+
+
+
+
 
 
 
@@ -508,7 +547,7 @@ const WorkerCard = ({ worker, onSave, isPublicView }) => {
                       color: '#B8860B',
                       bgcolor: 'rgba(184, 134, 11, 0.08)',
                     },
-                  }}
+                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
                 >
                   {isSaved ? <BookmarkIcon /> : <BookmarkBorderIcon />}
                 </IconButton>
@@ -736,3 +775,4 @@ WorkerCard.propTypes = {
 };
 
 export default WorkerCard;
+

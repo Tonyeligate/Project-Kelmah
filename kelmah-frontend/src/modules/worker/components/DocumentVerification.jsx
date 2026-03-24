@@ -381,7 +381,7 @@ const DocumentVerification = () => {
                       <ListItemIcon>{getStatusIcon(doc.status)}</ListItemIcon>
                       <ListItemText primary={doc.title} secondary={doc.type} />
                       <ListItemSecondaryAction>
-                        <IconButton sx={iconButtonA11ySx}
+                        <IconButton sx={{ ...iconButtonA11ySx, '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' } }}
                           edge="end"
                           onClick={() => handleDownload(doc.id)}
                           aria-label={`Download ${doc.title}`}
@@ -407,7 +407,7 @@ const DocumentVerification = () => {
                       <ListItemIcon>{getStatusIcon(doc.status)}</ListItemIcon>
                       <ListItemText primary={doc.title} secondary={doc.type} />
                       <ListItemSecondaryAction>
-                        <IconButton sx={iconButtonA11ySx}
+                        <IconButton sx={{ ...iconButtonA11ySx, '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' } }}
                           edge="end"
                           onClick={() => handleDownload(doc.id)}
                           aria-label={`Download ${doc.title}`}
@@ -548,4 +548,5 @@ const DocumentVerification = () => {
 };
 
 export default DocumentVerification;
+
 

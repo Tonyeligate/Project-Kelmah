@@ -234,7 +234,7 @@ const NearbyJobsPage = () => {
         <Typography variant="h5" fontWeight="bold">
           Nearby Quick Jobs
         </Typography>
-        <IconButton aria-label="Refresh jobs" onClick={() => fetchJobs()} disabled={loading || !location} sx={{ minWidth: 44, minHeight: 44 }}>
+        <IconButton aria-label="Refresh jobs" onClick={() => fetchJobs()} disabled={loading || !location} sx={{ minWidth: 44, minHeight: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}>
           <RefreshIcon />
         </IconButton>
       </Box>

@@ -208,7 +208,7 @@ const MobileLogin = ({ registrationSuccess = false }) => {
                 minWidth: 44,
                 minHeight: 44,
                 '&:hover': { color: 'primary.main' },
-              }}
+                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
               aria-label="Go back to home"
             >
               <ArrowBackIcon />
@@ -346,7 +346,7 @@ const MobileLogin = ({ registrationSuccess = false }) => {
                         onClick={() => setShowPassword(!showPassword)}
                         edge="end"
                         aria-label={showPassword ? 'Hide password' : 'Show password'}
-                        sx={{ color: 'text.disabled', minWidth: 44, minHeight: 44 }}
+                        sx={{ color: 'text.disabled', minWidth: 44, minHeight: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
                       >
                         {showPassword ? <VisibilityOff /> : <Visibility />}
                       </IconButton>
@@ -472,4 +472,5 @@ const MobileLogin = ({ registrationSuccess = false }) => {
 };
 
 export default MobileLogin;
+
 

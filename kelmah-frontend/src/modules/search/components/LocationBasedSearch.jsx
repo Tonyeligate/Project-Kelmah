@@ -609,7 +609,7 @@ const LocationBasedSearch = ({
                 size="small"
                 aria-label="Clear selected location"
                 onClick={() => setCurrentLocation(null)}
-                sx={{ width: 44, height: 44 }}
+                sx={{ width: 44, height: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
               >
                 <ClearIcon />
               </IconButton>
@@ -715,7 +715,7 @@ const LocationBasedSearch = ({
                       size="small"
                       onClick={() => handleSearch(searchQuery)}
                       disabled={!searchQuery.trim() || loading}
-                      sx={{ width: 44, height: 44, ml: 0.5 }}
+                      sx={{ width: 44, height: 44, ml: 0.5 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
                     >
                       <SearchIcon fontSize="small" />
                     </IconButton>

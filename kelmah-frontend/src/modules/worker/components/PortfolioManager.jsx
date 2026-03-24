@@ -872,7 +872,7 @@ const PortfolioManager = () => {
                       <ImageListItemBar
                         actionIcon={
                           <IconButton
-                            sx={{ color: 'rgba(255, 255, 255, 0.54)' }}
+                            sx={{ color: 'rgba(255, 255, 255, 0.54)' , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
                             aria-label={`Remove uploaded image ${index + 1}`}
                             onClick={() => {
                               const newImages = [...formData.images];

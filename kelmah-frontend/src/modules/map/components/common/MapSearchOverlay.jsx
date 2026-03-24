@@ -263,7 +263,7 @@ const PremiumSearchBar = ({
                       transform: 'scale(1.1)',
                     },
                     transition: 'all 0.2s ease',
-                  }}
+                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
                 >
                   <CloseIcon />
                 </IconButton>
@@ -475,7 +475,7 @@ const PremiumFilterPanel = ({
                 transform: 'scale(1.1)',
               },
               transition: 'all 0.2s ease',
-            }}
+                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
           >
             <CloseIcon />
           </IconButton>
@@ -2216,7 +2216,7 @@ const MapSearchOverlay = ({
                           background: 'rgba(255, 215, 0, 0.1)',
                           transform: 'scale(1.1)',
                         },
-                      }}
+                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
                     >
                       <ShareIcon />
                     </IconButton>
@@ -2231,7 +2231,7 @@ const MapSearchOverlay = ({
                           background: 'rgba(255, 215, 0, 0.1)',
                           transform: 'scale(1.1)',
                         },
-                      }}
+                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
                     >
                       <BookmarkIcon />
                     </IconButton>
@@ -2246,7 +2246,7 @@ const MapSearchOverlay = ({
                           background: 'rgba(255, 215, 0, 0.1)',
                           transform: 'scale(1.1)',
                         },
-                      }}
+                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
                     >
                       <LaunchIcon />
                     </IconButton>
@@ -2305,3 +2305,4 @@ const MapSearchOverlay = ({
 };
 
 export default MapSearchOverlay;
+

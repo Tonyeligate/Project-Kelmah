@@ -1254,7 +1254,7 @@ const WorkerProfileEditPage = () => {
                           onClick={() => handleRemoveEducation(index)}
                           color="error"
                           aria-label="Remove education entry"
-                          sx={{ minWidth: 44, minHeight: 44 }}
+                          sx={{ minWidth: 44, minHeight: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
                         >
                           <DeleteIcon />
                         </IconButton>
@@ -1372,7 +1372,7 @@ const WorkerProfileEditPage = () => {
                           onClick={() => handleRemoveLanguage(index)}
                           color="error"
                           aria-label="Remove language entry"
-                          sx={{ minWidth: 44, minHeight: 44 }}
+                          sx={{ minWidth: 44, minHeight: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
                         >
                           <DeleteIcon />
                         </IconButton>
@@ -1433,7 +1433,7 @@ const WorkerProfileEditPage = () => {
                           onClick={() => handleRemovePortfolioItem(index)}
                           color="error"
                           aria-label="Remove portfolio item"
-                          sx={{ minWidth: 44, minHeight: 44 }}
+                          sx={{ minWidth: 44, minHeight: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
                         >
                           <DeleteIcon />
                         </IconButton>

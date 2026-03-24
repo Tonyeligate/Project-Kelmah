@@ -692,7 +692,7 @@ const ProposalReview = () => {
                         <Typography variant="caption" color="text.disabled" noWrap>
                           {formatDate(proposal.submittedAt ?? proposal.createdAt)}
                         </Typography>
-                        <IconButton sx={iconButtonA11ySx}
+                        <IconButton sx={{ ...iconButtonA11ySx, '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' } }}
                           size="small"
                           onClick={(e) => handleMenuOpen(e, proposal)}
                           aria-label="Proposal actions"
@@ -831,7 +831,7 @@ const ProposalReview = () => {
                         />
                       </TableCell>
                       <TableCell align="right">
-                        <IconButton sx={iconButtonA11ySx}
+                        <IconButton sx={{ ...iconButtonA11ySx, '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' } }}
                           size="small"
                           onClick={(event) => handleMenuOpen(event, proposal)}
                           aria-label="Proposal actions"
@@ -1199,4 +1199,5 @@ const ProposalReview = () => {
 };
 
 export default ProposalReview;
+
 

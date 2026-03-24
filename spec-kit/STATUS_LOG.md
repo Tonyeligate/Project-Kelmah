@@ -1,3 +1,61 @@
+### Session: Login 502 Triage and Login Error De-duplication March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Diagnose production login `502 Bad Gateway` reports and remove contradictory stacked login error alerts in frontend auth UI.
+
+**Files touched**
+- kelmah-frontend/src/modules/auth/components/login/Login.jsx
+- spec-kit/STATUS_LOG.md
+
+**Investigation summary**
+- Reproduced and traced live gateway auth flow against `https://kelmah-api-gateway-pmr9.onrender.com`.
+- Confirmed transient auth upstream instability (`services.auth` unhealthy at one measurement) as the proxied source of observed `502` symptoms.
+- Confirmed current login endpoint behavior now resolves through gateway and returns `401 Invalid credentials` for supplied test credentials, indicating the path is operational again but credentials are not accepted.
+- Observed frontend UX issue where `loginError` and Redux `authError` were both rendered simultaneously, producing conflicting messages.
+
+**Implementation summary**
+- Updated login UI error aggregation to show one prioritized message (`loginError` → `authError` → `apiError`) instead of rendering multiple alerts at once.
+
+**Verification**
+- PASS: live HTTPS probe to `/api/auth/login` via gateway returned structured auth response (no 502 at verification time).
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,963 modules transformed).
+
+---
+
+### Session: Frontend IconButton Strict Local Focus AST Pass March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Replace regex-based strict coverage counting with AST-accurate audit and close strict per-IconButton local focus-visible gaps to zero.
+
+**Files touched (this pass)**
+- kelmah-frontend/src/modules/hirer/pages/JobManagementPage.jsx
+- kelmah-frontend/src/modules/map/pages/ProfessionalMapPage.jsx
+- kelmah-frontend/src/modules/** (AST-guided codemod updated IconButton `sx` object literals missing explicit `focus-visible` token)
+- spec-kit/generated/ICONBUTTON_LOCAL_COVERAGE_MAR24_2026.json
+- spec-kit/generated/ICONBUTTON_LOCAL_COVERAGE_MAR24_2026.md
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Replaced prior heuristic interpretation with AST parsing (`@babel/parser` + `@babel/traverse`) for strict local-focus measurement.
+- Applied targeted manual updates in top-offender files (`JobManagementPage`, `ProfessionalMapPage`).
+- Applied a controlled codemod to inject explicit `&:focus-visible` styles into IconButton `sx` object literals that lacked local focus tokens.
+- Detected and corrected a codemod syntax regression (double-comma insertion in some object literals), then revalidated build.
+
+**Strict metrics (AST-based, final)**
+- Files with IconButton: `84`
+- Total IconButtons: `194`
+- With local `sx`: `194`
+- With local focus-visible token: `194`
+- Remaining without local `sx`: `0`
+- Remaining without local focus-visible token: `0`
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,963 modules transformed).
+- PASS: refreshed AST-based evidence artifacts in `spec-kit/generated`.
+- PASS: AST strict miss detector (`.tmp_iconbutton_misses.cjs`) reported `count: 0` with no unresolved entries.
+
+---
+
 ### Session: Frontend IconButton Focus Candidate Closure March 24 2026 ✅ COMPLETED
 
 **Date**: March 24, 2026  
@@ -67,6 +125,29 @@
 - PASS: `npm run quantum:check-closure -- --task-id demo-adaptive-scaffold --strict`
 - PASS: `npm run quantum:check-learning-effectiveness`
 - PASS: `npm run quantum:pre-pr-gates -- --skip-pr-gate`
+
+---
+
+### Session: Frontend Worker Directory Runtime Regression Fix March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Fix live route crash on `/find-talents` showing `ReferenceError: PropTypes is not defined` in worker-directory chunk.
+
+**Files touched**
+- kelmah-frontend/src/modules/worker/components/WorkerCard.jsx
+- kelmah-frontend/src/modules/jobs/components/JobsMobileFilterDrawer.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Root cause identified: missing top-of-file import blocks in two route-critical components.
+- Restored required imports for React hooks, MUI components, icons, router hooks, auth hook, and `prop-types`:
+  - `WorkerCard.jsx`
+  - `JobsMobileFilterDrawer.jsx`
+- This removed the runtime `PropTypes` reference failure and related undefined component/hook symbols in the same files.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,963 modules transformed).
+- PASS: smoke suites via `npx jest --runTestsByPath ... --runInBand` (3 suites, 29 tests).
 
 ---
 

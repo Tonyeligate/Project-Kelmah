@@ -68,7 +68,7 @@ const ForgotPasswordPage = () => {
           >
             <IconButton
               onClick={() => navigate('/login')}
-              sx={{ color: 'text.primary', mr: 2, minWidth: 44, minHeight: 44 }}
+              sx={{ color: 'text.primary', mr: 2, minWidth: 44, minHeight: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
               aria-label="Back to login"
             >
               <ArrowBack />

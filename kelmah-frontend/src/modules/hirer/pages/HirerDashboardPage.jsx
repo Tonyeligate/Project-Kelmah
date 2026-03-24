@@ -971,7 +971,7 @@ const HirerDashboardPage = () => {
                 size="small"
                 disabled={refreshing}
                 aria-label="Refresh dashboard data"
-                sx={{ color: 'text.secondary' }}
+                sx={{ color: 'text.secondary' , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
               >
                 <RefreshIcon sx={{ animation: refreshing ? 'spin 1s linear infinite' : 'none', '@keyframes spin': { '0%': { transform: 'rotate(0deg)' }, '100%': { transform: 'rotate(360deg)' } } }} />
               </IconButton>

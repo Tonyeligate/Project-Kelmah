@@ -191,7 +191,7 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose, collapsed = fal
               ml: collapsed ? 0 : 'auto',
               color: 'var(--nav-collapse-icon)',
               '&:hover': { bgcolor: 'var(--nav-collapse-hover)' },
-            }}
+                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
           >
             {collapsed ? <ChevronRightIcon /> : <ChevronLeftIcon />}
           </IconButton>
@@ -448,4 +448,5 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose, collapsed = fal
 };
 
 export default Sidebar;
+
 

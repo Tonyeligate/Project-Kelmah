@@ -423,7 +423,7 @@ const HirerQuickJobTrackingPage = () => {
       </Helmet>
 
       <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 3 }}>
-        <IconButton sx={iconButtonA11ySx} aria-label="Go back" onClick={() => navigate('/hirer/quick-hire')}>
+        <IconButton sx={{ ...iconButtonA11ySx, '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' } }} aria-label="Go back" onClick={() => navigate('/hirer/quick-hire')}>
           <ArrowBackIcon />
         </IconButton>
         <Typography variant="h5" fontWeight={700}>
@@ -828,3 +828,4 @@ const HirerQuickJobTrackingPage = () => {
 };
 
 export default HirerQuickJobTrackingPage;
+

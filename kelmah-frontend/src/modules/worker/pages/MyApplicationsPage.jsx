@@ -243,7 +243,7 @@ const MyApplicationsPage = () => {
               onClick={() => navigate(-1)}
               aria-label="Go back"
               color="primary"
-              sx={{ minWidth: 44, minHeight: 44 }}
+              sx={{ minWidth: 44, minHeight: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
             >
               <ArrowBackIcon sx={{ fontSize: 20 }} />
             </IconButton>
@@ -555,7 +555,7 @@ const MyApplicationsPage = () => {
                       size="small"
                       onClick={(event) => handleOpenDetails(application, event)}
                       aria-label="View application details"
-                      sx={{ minWidth: 44, minHeight: 44 }}
+                      sx={{ minWidth: 44, minHeight: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
                     >
                       <VisibilityIcon fontSize="small" />
                     </IconButton>
@@ -563,7 +563,7 @@ const MyApplicationsPage = () => {
                       size="small"
                       onClick={(event) => handleOpenMessage(application, event)}
                       aria-label="Send message to employer"
-                      sx={{ minWidth: 44, minHeight: 44 }}
+                      sx={{ minWidth: 44, minHeight: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
                     >
                       <MessageIcon fontSize="small" />
                     </IconButton>
@@ -627,7 +627,7 @@ const MyApplicationsPage = () => {
                             size="small"
                             onClick={(event) => handleOpenDetails(application, event)}
                             aria-label="View application details"
-                            sx={{ minWidth: 44, minHeight: 44 }}
+                            sx={{ minWidth: 44, minHeight: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
                           >
                             <VisibilityIcon fontSize="small" />
                           </IconButton>
@@ -635,7 +635,7 @@ const MyApplicationsPage = () => {
                             size="small"
                             onClick={(event) => handleOpenMessage(application, event)}
                             aria-label="Send message to employer"
-                            sx={{ minWidth: 44, minHeight: 44 }}
+                            sx={{ minWidth: 44, minHeight: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
                           >
                             <MessageIcon fontSize="small" />
                           </IconButton>

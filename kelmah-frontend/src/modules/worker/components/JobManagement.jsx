@@ -249,7 +249,7 @@ const JobManagement = () => {
             Submit Milestone
           </Button>
         )}
-        <IconButton sx={iconButtonA11ySx} size="small" onClick={(e) => handleMenuOpen(e, job)} aria-label={`Open actions for ${job.title || 'job'}`}>
+        <IconButton sx={{ ...iconButtonA11ySx, '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' } }} size="small" onClick={(e) => handleMenuOpen(e, job)} aria-label={`Open actions for ${job.title || 'job'}`}>
           <MoreVertIcon />
         </IconButton>
       </CardActions>
@@ -389,4 +389,5 @@ const JobManagement = () => {
 };
 
 export default JobManagement;
+
 

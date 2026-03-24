@@ -614,7 +614,7 @@ const WorkerDashboardPage = () => {
                   border: '1px solid',
                   borderColor: alpha(theme.palette.warning.main, 0.4),
                   backgroundColor: alpha(theme.palette.warning.main, 0.08),
-                }}
+                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
                 aria-label="Refresh dashboard"
               >
                 <RefreshIcon sx={{ animation: isLoading ? 'spin 1s linear infinite' : 'none', ...spinKeyframes }} />
@@ -1280,4 +1280,5 @@ const WorkerDashboardPage = () => {
 };
 
 export default WorkerDashboardPage;
+
 

@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import { useParams, useNavigate, Link as RouterLink } from 'react-router-dom';
@@ -762,7 +762,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                 '&:hover': { bgcolor: theme.palette.background.paper },
                 width: 44,
                 height: 44,
-              }}
+                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
             >
               {isBookmarked ? (
                 <BookmarkIcon color="primary" />
@@ -778,7 +778,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                 '&:hover': { bgcolor: theme.palette.background.paper },
                 width: 44,
                 height: 44,
-              }}
+                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
             >
               <ShareIcon />
             </IconButton>
@@ -791,7 +791,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                   '&:hover': { bgcolor: theme.palette.background.paper },
                   width: 44,
                   height: 44,
-                }}
+                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
               >
                 <EditIcon />
               </IconButton>
@@ -1017,7 +1017,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                       color: theme.palette.primary.main,
                     }}
                   >
-                    GHâ‚µ {last30}
+                    GH₵ {last30}
                   </Typography>
                   <Typography
                     sx={{
@@ -1026,7 +1026,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                       fontWeight: 500,
                     }}
                   >
-                    7d: GHâ‚µ {last7}
+                    7d: GH₵ {last7}
                   </Typography>
                 </Paper>
               </Grid>
@@ -1148,7 +1148,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                             color: theme.palette.primary.main,
                           }}
                         >
-                          GHâ‚µ {totalAllTime}
+                          GH₵ {totalAllTime}
                         </Typography>
                       </Box>
                     </Grid>
@@ -1264,7 +1264,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
             <MetricCard>
               <PriceIcon color="primary" sx={{ fontSize: 40, mb: 1 }} />
               <Typography variant="h4" fontWeight={700} color="primary">
-                GHâ‚µ {profile.hourly_rate || 0}
+                GH₵ {profile.hourly_rate || 0}
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 Per Hour
@@ -1319,7 +1319,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                           backgroundColor: theme.palette.primary.main,
                           borderRadius: 1,
                         }}
-                        title={`M${m.month}: GHâ‚µ ${m.amount}`}
+                        title={`M${m.month}: GH₵ ${m.amount}`}
                       />
                     );
                   })}
@@ -2041,7 +2041,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                   height: 34,
                   bgcolor: alpha(accent, 0.14),
                   color: accent,
-                }}
+                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
               >
                 {isBookmarked ? <BookmarkIcon sx={{ fontSize: 18 }} /> : <BookmarkBorderIcon sx={{ fontSize: 18 }} />}
               </IconButton>
@@ -2053,7 +2053,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                   height: 34,
                   bgcolor: alpha(accent, 0.14),
                   color: accent,
-                }}
+                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
               >
                 <ShareIcon sx={{ fontSize: 18 }} />
               </IconButton>
@@ -2584,7 +2584,17 @@ function WorkerProfile({ workerId: workerIdProp }) {
                   <Typography variant="h5" fontWeight={600}>
                     {selectedPortfolioItem.title}
                   </Typography>
-                  <IconButton onClick={() => setPortfolioDialogOpen(false)} aria-label="Close portfolio preview dialog">
+                  <IconButton
+                    onClick={() => setPortfolioDialogOpen(false)}
+                    aria-label="Close portfolio preview dialog"
+                    sx={{
+                      '&:focus-visible': {
+                        outline: '3px solid',
+                        outlineColor: 'primary.main',
+                        outlineOffset: '2px',
+                      },
+                    }}
+                  >
                     <CloseIcon />
                   </IconButton>
                 </Box>
@@ -2650,6 +2660,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
 }
 
 export default WorkerProfile;
+
 
 
 

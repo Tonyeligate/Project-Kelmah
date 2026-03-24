@@ -19,6 +19,16 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 // Visibility chip — tells the hirer whether the job appears on the public Jobs page
 const VisibilityChip = ({ visibility }) => {
   const v = visibility || 'public'; // treat missing as public (legacy data)
@@ -368,7 +378,16 @@ const JobManagementPage = () => {
               size="small"
               onClick={(e) => { e.stopPropagation(); handleReviewResponses(job); }}
               aria-label={isBiddingJob(job) ? 'Review bids' : 'View applications'}
-              sx={{ bgcolor: 'action.hover', minWidth: 44, minHeight: 44 }}
+              sx={{
+                bgcolor: 'action.hover',
+                minWidth: 44,
+                minHeight: 44,
+                '&:focus-visible': {
+                  outline: '3px solid',
+                  outlineColor: 'primary.main',
+                  outlineOffset: '2px',
+                },
+              }}
             >
               {isBiddingJob(job) ? <BidIcon fontSize="small" /> : <PersonIcon fontSize="small" />}
             </IconButton>
@@ -376,7 +395,16 @@ const JobManagementPage = () => {
               size="small"
               onClick={(e) => { e.stopPropagation(); handleEditJob(job.id || job._id); }}
               aria-label="Edit job"
-              sx={{ bgcolor: 'action.hover', minWidth: 44, minHeight: 44 }}
+              sx={{
+                bgcolor: 'action.hover',
+                minWidth: 44,
+                minHeight: 44,
+                '&:focus-visible': {
+                  outline: '3px solid',
+                  outlineColor: 'primary.main',
+                  outlineOffset: '2px',
+                },
+              }}
             >
               <EditIcon fontSize="small" />
             </IconButton>
@@ -384,7 +412,16 @@ const JobManagementPage = () => {
               size="small"
               onClick={(e) => { e.stopPropagation(); handleMenuOpen(e, job); }}
               aria-label="Open job actions menu"
-              sx={{ bgcolor: 'action.hover', minWidth: 44, minHeight: 44 }}
+              sx={{
+                bgcolor: 'action.hover',
+                minWidth: 44,
+                minHeight: 44,
+                '&:focus-visible': {
+                  outline: '3px solid',
+                  outlineColor: 'primary.main',
+                  outlineOffset: '2px',
+                },
+              }}
             >
               <MoreIcon fontSize="small" />
             </IconButton>
@@ -533,6 +570,11 @@ const JobManagementPage = () => {
               minWidth: 44,
               minHeight: 44,
               '&:hover': { bgcolor: 'action.selected' },
+              '&:focus-visible': {
+                outline: '3px solid',
+                outlineColor: 'primary.main',
+                outlineOffset: '2px',
+              },
             }}
           >
             <RefreshIcon fontSize="small" />
@@ -808,7 +850,14 @@ const JobManagementPage = () => {
                                   size="small"
                                   aria-label={isBiddingJob(job) ? 'Review bids' : 'View applications'}
                                   onClick={() => handleReviewResponses(job)}
-                                  sx={{ mr: 1 }}
+                                  sx={{
+                                    mr: 1,
+                                    '&:focus-visible': {
+                                      outline: '3px solid',
+                                      outlineColor: 'primary.main',
+                                      outlineOffset: '2px',
+                                    },
+                                  }}
                                 >
                                   {isBiddingJob(job) ? <BidIcon /> : <PersonIcon />}
                                 </IconButton>
@@ -818,7 +867,14 @@ const JobManagementPage = () => {
                                   size="small"
                                   aria-label="View job"
                                   onClick={() => handleViewJob(job.id || job._id)}
-                                  sx={{ mr: 1 }}
+                                  sx={{
+                                    mr: 1,
+                                    '&:focus-visible': {
+                                      outline: '3px solid',
+                                      outlineColor: 'primary.main',
+                                      outlineOffset: '2px',
+                                    },
+                                  }}
                                 >
                                   <ViewIcon />
                                 </IconButton>
@@ -828,7 +884,14 @@ const JobManagementPage = () => {
                                   size="small"
                                   aria-label="Edit job"
                                   onClick={() => handleEditJob(job.id || job._id)}
-                                  sx={{ mr: 1 }}
+                                  sx={{
+                                    mr: 1,
+                                    '&:focus-visible': {
+                                      outline: '3px solid',
+                                      outlineColor: 'primary.main',
+                                      outlineOffset: '2px',
+                                    },
+                                  }}
                                 >
                                   <EditIcon />
                                 </IconButton>
@@ -838,6 +901,13 @@ const JobManagementPage = () => {
                                   size="small"
                                   aria-label="Open job actions menu"
                                   onClick={(e) => handleMenuOpen(e, job)}
+                                  sx={{
+                                    '&:focus-visible': {
+                                      outline: '3px solid',
+                                      outlineColor: 'primary.main',
+                                      outlineOffset: '2px',
+                                    },
+                                  }}
                                 >
                                   <MoreIcon />
                                 </IconButton>

@@ -745,7 +745,7 @@ const SmartJobRecommendations = ({
                       : 'Save job for later'
                   }
                   color={isSaved ? 'primary' : 'default'}
-                  sx={{ width: 44, height: 44 }}
+                  sx={{ width: 44, height: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
                 >
                   {isSaved ? <SaveIcon /> : <SaveBorderIcon />}
                 </IconButton>
@@ -756,7 +756,7 @@ const SmartJobRecommendations = ({
                   size="small"
                   aria-label="View job details"
                   onClick={() => handleViewJob(jobKey)}
-                  sx={{ width: 44, height: 44 }}
+                  sx={{ width: 44, height: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
                 >
                   <ViewIcon />
                 </IconButton>
@@ -766,7 +766,7 @@ const SmartJobRecommendations = ({
                 <IconButton
                   size="small"
                   aria-label="Share job link"
-                  sx={{ width: 44, height: 44 }}
+                  sx={{ width: 44, height: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
                   onClick={() => {
                     const jobUrl = `${window.location.origin}/jobs/${jobKey}`;
                     if (navigator.share) {

@@ -468,7 +468,7 @@ const WorkerReview = () => {
                         )}
                       </TableCell>
                       <TableCell align="center">
-                        <IconButton sx={iconButtonA11ySx}
+                        <IconButton sx={{ ...iconButtonA11ySx, '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' } }}
                           size="small"
                           onClick={(e) => handleMenuOpen(e, job.worker, job)}
                           aria-label={`Open review actions for ${job.worker.name}`}
@@ -790,4 +790,5 @@ const WorkerReview = () => {
 };
 
 export default WorkerReview;
+
 

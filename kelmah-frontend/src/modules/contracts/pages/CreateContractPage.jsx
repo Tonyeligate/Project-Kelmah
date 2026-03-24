@@ -574,7 +574,7 @@ const CreateContractPage = () => {
                         onClick={() => handleRemoveMilestone(index)}
                         size="medium"
                         aria-label={`Remove step ${index + 1}`}
-                        sx={{ minWidth: 44, minHeight: 44 }}
+                        sx={{ minWidth: 44, minHeight: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
                       >
                         <DeleteIcon />
                       </IconButton>

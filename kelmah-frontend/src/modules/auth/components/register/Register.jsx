@@ -814,7 +814,7 @@ const Register = () => {
                 onClick={() => setShowPassword((prev) => !prev)}
                 edge="end"
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
-                sx={{ color: formPanelSoft }}
+                sx={{ color: formPanelSoft , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
               >
                 {showPassword ? <VisibilityOff /> : <Visibility />}
               </IconButton>
@@ -866,7 +866,7 @@ const Register = () => {
                 onClick={() => setShowConfirmPassword((prev) => !prev)}
                 edge="end"
                 aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
-                sx={{ color: formPanelSoft }}
+                sx={{ color: formPanelSoft , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
               >
                 {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
               </IconButton>

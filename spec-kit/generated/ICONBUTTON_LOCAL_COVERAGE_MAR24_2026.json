@@ -1,609 +1,122 @@
 {
   "summary": {
-    "generatedAt": "2026-03-24T02:05:38.375Z",
-    "scope": "kelmah-frontend/src/modules",
-    "filesWithIconButtons": 85,
-    "totalIconButtons": 195,
-    "totalWithLocalSx": 101,
-    "totalWithLocalFocus": 47,
-    "totalWithoutLocalSx": 94,
-    "totalWithoutLocalFocus": 148
+    "generatedAt": "2026-03-24T02:21:28.287Z",
+    "scope": "src/modules",
+    "methodology": "AST-based JSX parse (@babel/parser + @babel/traverse); local focus detected when focus-visible token exists in IconButton opening attributes, primarily sx.",
+    "filesWithIconButtons": 84,
+    "totalIconButtons": 194,
+    "totalWithLocalSx": 194,
+    "totalWithLocalFocus": 194,
+    "totalWithoutLocalSx": 0,
+    "totalWithoutLocalFocus": 0
   },
   "rows": [
     {
-      "file": "kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx",
+      "file": "src/modules/messaging/pages/MessagingPage.jsx",
       "total": 13,
-      "localSx": 4,
-      "localFocus": 4,
-      "noLocalSx": 9,
-      "noLocalFocus": 9
+      "localSx": 13,
+      "localFocus": 13,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
     },
     {
-      "file": "kelmah-frontend/src/modules/hirer/pages/JobManagementPage.jsx",
+      "file": "src/modules/hirer/pages/JobManagementPage.jsx",
       "total": 8,
-      "localSx": 1,
-      "localFocus": 0,
-      "noLocalSx": 7,
-      "noLocalFocus": 8
+      "localSx": 8,
+      "localFocus": 8,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
     },
     {
-      "file": "kelmah-frontend/src/modules/map/pages/ProfessionalMapPage.jsx",
+      "file": "src/modules/map/pages/ProfessionalMapPage.jsx",
       "total": 7,
-      "localSx": 1,
-      "localFocus": 1,
-      "noLocalSx": 6,
-      "noLocalFocus": 6
+      "localSx": 7,
+      "localFocus": 7,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
     },
     {
-      "file": "kelmah-frontend/src/modules/worker/components/WorkerProfile.jsx",
+      "file": "src/modules/worker/components/WorkerProfile.jsx",
       "total": 6,
-      "localSx": 4,
-      "localFocus": 0,
-      "noLocalSx": 2,
-      "noLocalFocus": 6
+      "localSx": 6,
+      "localFocus": 6,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
     },
     {
-      "file": "kelmah-frontend/src/modules/worker/pages/MyApplicationsPage.jsx",
-      "total": 5,
-      "localSx": 0,
-      "localFocus": 0,
-      "noLocalSx": 5,
-      "noLocalFocus": 5
-    },
-    {
-      "file": "kelmah-frontend/src/modules/map/components/common/MapSearchOverlay.jsx",
+      "file": "src/modules/map/components/common/MapSearchOverlay.jsx",
       "total": 5,
       "localSx": 5,
-      "localFocus": 0,
+      "localFocus": 5,
       "noLocalSx": 0,
-      "noLocalFocus": 5
+      "noLocalFocus": 0
     },
     {
-      "file": "kelmah-frontend/src/modules/quickjobs/pages/QuickJobTrackingPage.jsx",
-      "total": 4,
-      "localSx": 0,
-      "localFocus": 0,
-      "noLocalSx": 4,
-      "noLocalFocus": 4
-    },
-    {
-      "file": "kelmah-frontend/src/modules/worker/components/CertificateUploader.jsx",
-      "total": 4,
-      "localSx": 0,
-      "localFocus": 0,
-      "noLocalSx": 4,
-      "noLocalFocus": 4
-    },
-    {
-      "file": "kelmah-frontend/src/modules/map/components/common/InteractiveMap.jsx",
-      "total": 4,
-      "localSx": 2,
-      "localFocus": 0,
-      "noLocalSx": 2,
-      "noLocalFocus": 4
-    },
-    {
-      "file": "kelmah-frontend/src/modules/jobs/components/JobResultsSection.jsx",
-      "total": 3,
-      "localSx": 0,
-      "localFocus": 0,
-      "noLocalSx": 3,
-      "noLocalFocus": 3
-    },
-    {
-      "file": "kelmah-frontend/src/modules/worker/pages/WorkerProfileEditPage.jsx",
-      "total": 3,
-      "localSx": 0,
-      "localFocus": 0,
-      "noLocalSx": 3,
-      "noLocalFocus": 3
-    },
-    {
-      "file": "kelmah-frontend/src/modules/search/components/SavedSearches.jsx",
-      "total": 3,
-      "localSx": 1,
-      "localFocus": 0,
-      "noLocalSx": 2,
-      "noLocalFocus": 3
-    },
-    {
-      "file": "kelmah-frontend/src/modules/search/components/SmartJobRecommendations.jsx",
-      "total": 3,
-      "localSx": 1,
-      "localFocus": 0,
-      "noLocalSx": 2,
-      "noLocalFocus": 3
-    },
-    {
-      "file": "kelmah-frontend/src/modules/worker/pages/JobSearchPage.jsx",
-      "total": 3,
-      "localSx": 1,
-      "localFocus": 0,
-      "noLocalSx": 2,
-      "noLocalFocus": 3
-    },
-    {
-      "file": "kelmah-frontend/src/modules/worker/components/EarningsTracker.jsx",
-      "total": 3,
-      "localSx": 3,
-      "localFocus": 0,
-      "noLocalSx": 0,
-      "noLocalFocus": 3
-    },
-    {
-      "file": "kelmah-frontend/src/modules/auth/components/mobile/MobileLogin.jsx",
-      "total": 2,
-      "localSx": 0,
-      "localFocus": 0,
-      "noLocalSx": 2,
-      "noLocalFocus": 2
-    },
-    {
-      "file": "kelmah-frontend/src/modules/auth/components/mobile/MobileRegister.jsx",
-      "total": 2,
-      "localSx": 0,
-      "localFocus": 0,
-      "noLocalSx": 2,
-      "noLocalFocus": 2
-    },
-    {
-      "file": "kelmah-frontend/src/modules/auth/components/register/Register.jsx",
-      "total": 2,
-      "localSx": 0,
-      "localFocus": 0,
-      "noLocalSx": 2,
-      "noLocalFocus": 2
-    },
-    {
-      "file": "kelmah-frontend/src/modules/jobs/components/job-application/JobApplication.jsx",
-      "total": 2,
-      "localSx": 0,
-      "localFocus": 0,
-      "noLocalSx": 2,
-      "noLocalFocus": 2
-    },
-    {
-      "file": "kelmah-frontend/src/modules/jobs/components/JobsCardsGrid.jsx",
-      "total": 2,
-      "localSx": 0,
-      "localFocus": 0,
-      "noLocalSx": 2,
-      "noLocalFocus": 2
-    },
-    {
-      "file": "kelmah-frontend/src/modules/messaging/components/common/MessageInput.jsx",
-      "total": 3,
-      "localSx": 1,
-      "localFocus": 1,
-      "noLocalSx": 2,
-      "noLocalFocus": 2
-    },
-    {
-      "file": "kelmah-frontend/src/modules/payment/pages/PaymentCenterPage.jsx",
-      "total": 2,
-      "localSx": 0,
-      "localFocus": 0,
-      "noLocalSx": 2,
-      "noLocalFocus": 2
-    },
-    {
-      "file": "kelmah-frontend/src/modules/payment/pages/PaymentMethodsPage.jsx",
+      "file": "src/modules/payment/pages/PaymentMethodsPage.jsx",
       "total": 5,
-      "localSx": 3,
-      "localFocus": 3,
-      "noLocalSx": 2,
-      "noLocalFocus": 2
+      "localSx": 5,
+      "localFocus": 5,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
     },
     {
-      "file": "kelmah-frontend/src/modules/quickjobs/pages/NearbyJobsPage.jsx",
-      "total": 2,
-      "localSx": 0,
-      "localFocus": 0,
-      "noLocalSx": 2,
-      "noLocalFocus": 2
-    },
-    {
-      "file": "kelmah-frontend/src/modules/reviews/pages/ReviewsPage.jsx",
-      "total": 2,
-      "localSx": 0,
-      "localFocus": 0,
-      "noLocalSx": 2,
-      "noLocalFocus": 2
-    },
-    {
-      "file": "kelmah-frontend/src/modules/search/components/LocationBasedSearch.jsx",
-      "total": 2,
-      "localSx": 0,
-      "localFocus": 0,
-      "noLocalSx": 2,
-      "noLocalFocus": 2
-    },
-    {
-      "file": "kelmah-frontend/src/modules/search/components/WorkerDirectoryExperience.jsx",
-      "total": 2,
-      "localSx": 0,
-      "localFocus": 0,
-      "noLocalSx": 2,
-      "noLocalFocus": 2
-    },
-    {
-      "file": "kelmah-frontend/src/modules/worker/components/ProjectGallery.jsx",
+      "file": "src/modules/worker/components/ProjectGallery.jsx",
       "total": 5,
-      "localSx": 3,
-      "localFocus": 3,
-      "noLocalSx": 2,
-      "noLocalFocus": 2
+      "localSx": 5,
+      "localFocus": 5,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
     },
     {
-      "file": "kelmah-frontend/src/modules/messaging/components/common/MessageAttachments.jsx",
+      "file": "src/modules/worker/pages/MyApplicationsPage.jsx",
+      "total": 5,
+      "localSx": 5,
+      "localFocus": 5,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/map/components/common/InteractiveMap.jsx",
       "total": 4,
-      "localSx": 3,
-      "localFocus": 2,
-      "noLocalSx": 1,
-      "noLocalFocus": 2
-    },
-    {
-      "file": "kelmah-frontend/src/modules/quickjobs/pages/QuickJobRequestPage.jsx",
-      "total": 3,
-      "localSx": 2,
-      "localFocus": 1,
-      "noLocalSx": 1,
-      "noLocalFocus": 2
-    },
-    {
-      "file": "kelmah-frontend/src/modules/hirer/components/HirerJobManagement.jsx",
-      "total": 2,
-      "localSx": 2,
-      "localFocus": 0,
+      "localSx": 4,
+      "localFocus": 4,
       "noLocalSx": 0,
-      "noLocalFocus": 2
+      "noLocalFocus": 0
     },
     {
-      "file": "kelmah-frontend/src/modules/hirer/components/JobProgressTracker.jsx",
-      "total": 2,
-      "localSx": 2,
-      "localFocus": 0,
-      "noLocalSx": 0,
-      "noLocalFocus": 2
-    },
-    {
-      "file": "kelmah-frontend/src/modules/hirer/components/PaymentRelease.jsx",
-      "total": 2,
-      "localSx": 2,
-      "localFocus": 0,
-      "noLocalSx": 0,
-      "noLocalFocus": 2
-    },
-    {
-      "file": "kelmah-frontend/src/modules/hirer/components/ProposalReview.jsx",
-      "total": 2,
-      "localSx": 2,
-      "localFocus": 0,
-      "noLocalSx": 0,
-      "noLocalFocus": 2
-    },
-    {
-      "file": "kelmah-frontend/src/modules/messaging/components/common/ConversationList.jsx",
-      "total": 3,
-      "localSx": 3,
-      "localFocus": 1,
-      "noLocalSx": 0,
-      "noLocalFocus": 2
-    },
-    {
-      "file": "kelmah-frontend/src/modules/scheduling/pages/SchedulingPage.jsx",
-      "total": 2,
-      "localSx": 2,
-      "localFocus": 0,
-      "noLocalSx": 0,
-      "noLocalFocus": 2
-    },
-    {
-      "file": "kelmah-frontend/src/modules/worker/components/AdvancedCalendar.jsx",
-      "total": 2,
-      "localSx": 2,
-      "localFocus": 0,
-      "noLocalSx": 0,
-      "noLocalFocus": 2
-    },
-    {
-      "file": "kelmah-frontend/src/modules/worker/components/AvailabilityCalendar.jsx",
-      "total": 2,
-      "localSx": 2,
-      "localFocus": 0,
-      "noLocalSx": 0,
-      "noLocalFocus": 2
-    },
-    {
-      "file": "kelmah-frontend/src/modules/worker/components/DocumentVerification.jsx",
-      "total": 2,
-      "localSx": 2,
-      "localFocus": 0,
-      "noLocalSx": 0,
-      "noLocalFocus": 2
-    },
-    {
-      "file": "kelmah-frontend/src/modules/worker/components/EnhancedJobCard.jsx",
-      "total": 2,
-      "localSx": 2,
-      "localFocus": 0,
-      "noLocalSx": 0,
-      "noLocalFocus": 2
-    },
-    {
-      "file": "kelmah-frontend/src/modules/auth/components/common/AuthWrapper.jsx",
-      "total": 1,
-      "localSx": 0,
-      "localFocus": 0,
-      "noLocalSx": 1,
-      "noLocalFocus": 1
-    },
-    {
-      "file": "kelmah-frontend/src/modules/auth/components/login/Login.jsx",
-      "total": 1,
-      "localSx": 0,
-      "localFocus": 0,
-      "noLocalSx": 1,
-      "noLocalFocus": 1
-    },
-    {
-      "file": "kelmah-frontend/src/modules/auth/pages/ForgotPasswordPage.jsx",
-      "total": 1,
-      "localSx": 0,
-      "localFocus": 0,
-      "noLocalSx": 1,
-      "noLocalFocus": 1
-    },
-    {
-      "file": "kelmah-frontend/src/modules/contracts/components/common/ContractForm.jsx",
-      "total": 1,
-      "localSx": 0,
-      "localFocus": 0,
-      "noLocalSx": 1,
-      "noLocalFocus": 1
-    },
-    {
-      "file": "kelmah-frontend/src/modules/contracts/pages/CreateContractPage.jsx",
-      "total": 1,
-      "localSx": 0,
-      "localFocus": 0,
-      "noLocalSx": 1,
-      "noLocalFocus": 1
-    },
-    {
-      "file": "kelmah-frontend/src/modules/hirer/pages/JobBidsPage.jsx",
-      "total": 2,
-      "localSx": 1,
-      "localFocus": 1,
-      "noLocalSx": 1,
-      "noLocalFocus": 1
-    },
-    {
-      "file": "kelmah-frontend/src/modules/jobs/components/common/JobSearch.jsx",
-      "total": 1,
-      "localSx": 0,
-      "localFocus": 0,
-      "noLocalSx": 1,
-      "noLocalFocus": 1
-    },
-    {
-      "file": "kelmah-frontend/src/modules/messaging/components/common/AttachmentPreview.jsx",
+      "file": "src/modules/messaging/components/common/AttachmentPreview.jsx",
       "total": 4,
-      "localSx": 3,
-      "localFocus": 3,
-      "noLocalSx": 1,
-      "noLocalFocus": 1
-    },
-    {
-      "file": "kelmah-frontend/src/modules/messaging/components/common/Message.jsx",
-      "total": 2,
-      "localSx": 1,
-      "localFocus": 1,
-      "noLocalSx": 1,
-      "noLocalFocus": 1
-    },
-    {
-      "file": "kelmah-frontend/src/modules/messaging/components/common/MessageSearch.jsx",
-      "total": 2,
-      "localSx": 1,
-      "localFocus": 1,
-      "noLocalSx": 1,
-      "noLocalFocus": 1
-    },
-    {
-      "file": "kelmah-frontend/src/modules/notifications/pages/NotificationsPage.jsx",
-      "total": 1,
-      "localSx": 0,
-      "localFocus": 0,
-      "noLocalSx": 1,
-      "noLocalFocus": 1
-    },
-    {
-      "file": "kelmah-frontend/src/modules/premium/pages/PremiumPage.jsx",
-      "total": 1,
-      "localSx": 0,
-      "localFocus": 0,
-      "noLocalSx": 1,
-      "noLocalFocus": 1
-    },
-    {
-      "file": "kelmah-frontend/src/modules/settings/components/common/SecuritySettings.jsx",
-      "total": 1,
-      "localSx": 0,
-      "localFocus": 0,
-      "noLocalSx": 1,
-      "noLocalFocus": 1
-    },
-    {
-      "file": "kelmah-frontend/src/modules/settings/pages/SettingsPage.jsx",
-      "total": 1,
-      "localSx": 0,
-      "localFocus": 0,
-      "noLocalSx": 1,
-      "noLocalFocus": 1
-    },
-    {
-      "file": "kelmah-frontend/src/modules/worker/components/WorkerCard.jsx",
-      "total": 1,
-      "localSx": 0,
-      "localFocus": 0,
-      "noLocalSx": 1,
-      "noLocalFocus": 1
-    },
-    {
-      "file": "kelmah-frontend/src/modules/common/components/forms/SearchForm.jsx",
-      "total": 1,
-      "localSx": 1,
-      "localFocus": 0,
-      "noLocalSx": 0,
-      "noLocalFocus": 1
-    },
-    {
-      "file": "kelmah-frontend/src/modules/contracts/pages/ContractsPage.jsx",
-      "total": 1,
-      "localSx": 1,
-      "localFocus": 0,
-      "noLocalSx": 0,
-      "noLocalFocus": 1
-    },
-    {
-      "file": "kelmah-frontend/src/modules/hirer/components/WorkerReview.jsx",
-      "total": 1,
-      "localSx": 1,
-      "localFocus": 0,
-      "noLocalSx": 0,
-      "noLocalFocus": 1
-    },
-    {
-      "file": "kelmah-frontend/src/modules/hirer/pages/HirerDashboardPage.jsx",
-      "total": 1,
-      "localSx": 1,
-      "localFocus": 0,
-      "noLocalSx": 0,
-      "noLocalFocus": 1
-    },
-    {
-      "file": "kelmah-frontend/src/modules/hirer/pages/HirerQuickJobTrackingPage.jsx",
-      "total": 1,
-      "localSx": 1,
-      "localFocus": 0,
-      "noLocalSx": 0,
-      "noLocalFocus": 1
-    },
-    {
-      "file": "kelmah-frontend/src/modules/hirer/pages/JobPostingPage.jsx",
-      "total": 1,
-      "localSx": 1,
-      "localFocus": 0,
-      "noLocalSx": 0,
-      "noLocalFocus": 1
-    },
-    {
-      "file": "kelmah-frontend/src/modules/jobs/components/JobsMobileFilterDrawer.jsx",
-      "total": 1,
-      "localSx": 1,
-      "localFocus": 0,
-      "noLocalSx": 0,
-      "noLocalFocus": 1
-    },
-    {
-      "file": "kelmah-frontend/src/modules/layout/components/MobileNav.jsx",
-      "total": 1,
-      "localSx": 1,
-      "localFocus": 0,
-      "noLocalSx": 0,
-      "noLocalFocus": 1
-    },
-    {
-      "file": "kelmah-frontend/src/modules/layout/components/sidebar/Sidebar.jsx",
-      "total": 1,
-      "localSx": 1,
-      "localFocus": 0,
-      "noLocalSx": 0,
-      "noLocalFocus": 1
-    },
-    {
-      "file": "kelmah-frontend/src/modules/search/components/common/CompactSearchBar.jsx",
-      "total": 1,
-      "localSx": 1,
-      "localFocus": 0,
-      "noLocalSx": 0,
-      "noLocalFocus": 1
-    },
-    {
-      "file": "kelmah-frontend/src/modules/search/components/common/MobileFilterDrawer.jsx",
-      "total": 1,
-      "localSx": 1,
-      "localFocus": 0,
-      "noLocalSx": 0,
-      "noLocalFocus": 1
-    },
-    {
-      "file": "kelmah-frontend/src/modules/worker/components/JobManagement.jsx",
-      "total": 1,
-      "localSx": 1,
-      "localFocus": 0,
-      "noLocalSx": 0,
-      "noLocalFocus": 1
-    },
-    {
-      "file": "kelmah-frontend/src/modules/worker/components/PortfolioManager.jsx",
-      "total": 2,
-      "localSx": 2,
-      "localFocus": 1,
-      "noLocalSx": 0,
-      "noLocalFocus": 1
-    },
-    {
-      "file": "kelmah-frontend/src/modules/worker/pages/WorkerDashboardPage.jsx",
-      "total": 1,
-      "localSx": 1,
-      "localFocus": 0,
-      "noLocalSx": 0,
-      "noLocalFocus": 1
-    },
-    {
-      "file": "kelmah-frontend/src/modules/common/components/cards/JobCard.jsx",
-      "total": 1,
-      "localSx": 1,
-      "localFocus": 1,
+      "localSx": 4,
+      "localFocus": 4,
       "noLocalSx": 0,
       "noLocalFocus": 0
     },
     {
-      "file": "kelmah-frontend/src/modules/common/components/layout/PageHeader.jsx",
-      "total": 1,
-      "localSx": 1,
-      "localFocus": 1,
+      "file": "src/modules/messaging/components/common/MessageAttachments.jsx",
+      "total": 4,
+      "localSx": 4,
+      "localFocus": 4,
       "noLocalSx": 0,
       "noLocalFocus": 0
     },
     {
-      "file": "kelmah-frontend/src/modules/jobs/components/BidSubmissionForm.jsx",
-      "total": 2,
-      "localSx": 2,
-      "localFocus": 2,
+      "file": "src/modules/quickjobs/pages/QuickJobTrackingPage.jsx",
+      "total": 4,
+      "localSx": 4,
+      "localFocus": 4,
       "noLocalSx": 0,
       "noLocalFocus": 0
     },
     {
-      "file": "kelmah-frontend/src/modules/jobs/components/common/CreateJobDialog.jsx",
-      "total": 1,
-      "localSx": 1,
-      "localFocus": 1,
+      "file": "src/modules/worker/components/CertificateUploader.jsx",
+      "total": 4,
+      "localSx": 4,
+      "localFocus": 4,
       "noLocalSx": 0,
       "noLocalFocus": 0
     },
     {
-      "file": "kelmah-frontend/src/modules/jobs/components/common/JobFilters.jsx",
-      "total": 2,
-      "localSx": 2,
-      "localFocus": 2,
-      "noLocalSx": 0,
-      "noLocalFocus": 0
-    },
-    {
-      "file": "kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx",
+      "file": "src/modules/jobs/components/JobResultsSection.jsx",
       "total": 3,
       "localSx": 3,
       "localFocus": 3,
@@ -611,7 +124,79 @@
       "noLocalFocus": 0
     },
     {
-      "file": "kelmah-frontend/src/modules/layout/components/Footer.jsx",
+      "file": "src/modules/jobs/pages/JobDetailsPage.jsx",
+      "total": 3,
+      "localSx": 3,
+      "localFocus": 3,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/messaging/components/common/ConversationList.jsx",
+      "total": 3,
+      "localSx": 3,
+      "localFocus": 3,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/messaging/components/common/MessageInput.jsx",
+      "total": 3,
+      "localSx": 3,
+      "localFocus": 3,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/quickjobs/pages/QuickJobRequestPage.jsx",
+      "total": 3,
+      "localSx": 3,
+      "localFocus": 3,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/search/components/SavedSearches.jsx",
+      "total": 3,
+      "localSx": 3,
+      "localFocus": 3,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/search/components/SmartJobRecommendations.jsx",
+      "total": 3,
+      "localSx": 3,
+      "localFocus": 3,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/worker/components/EarningsTracker.jsx",
+      "total": 3,
+      "localSx": 3,
+      "localFocus": 3,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/worker/pages/JobSearchPage.jsx",
+      "total": 3,
+      "localSx": 3,
+      "localFocus": 3,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/worker/pages/WorkerProfileEditPage.jsx",
+      "total": 3,
+      "localSx": 3,
+      "localFocus": 3,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/auth/components/mobile/MobileLogin.jsx",
       "total": 2,
       "localSx": 2,
       "localFocus": 2,
@@ -619,23 +204,7 @@
       "noLocalFocus": 0
     },
     {
-      "file": "kelmah-frontend/src/modules/map/components/common/LocationSelector.jsx",
-      "total": 1,
-      "localSx": 1,
-      "localFocus": 1,
-      "noLocalSx": 0,
-      "noLocalFocus": 0
-    },
-    {
-      "file": "kelmah-frontend/src/modules/messaging/components/common/Chatbox.jsx",
-      "total": 1,
-      "localSx": 1,
-      "localFocus": 1,
-      "noLocalSx": 0,
-      "noLocalFocus": 0
-    },
-    {
-      "file": "kelmah-frontend/src/modules/messaging/components/common/EmojiPicker.jsx",
+      "file": "src/modules/auth/components/mobile/MobileRegister.jsx",
       "total": 2,
       "localSx": 2,
       "localFocus": 2,
@@ -643,23 +212,7 @@
       "noLocalFocus": 0
     },
     {
-      "file": "kelmah-frontend/src/modules/notifications/components/NotificationItem.jsx",
-      "total": 1,
-      "localSx": 1,
-      "localFocus": 1,
-      "noLocalSx": 0,
-      "noLocalFocus": 0
-    },
-    {
-      "file": "kelmah-frontend/src/modules/payment/components/PaymentAnalyticsDashboard.jsx",
-      "total": 1,
-      "localSx": 1,
-      "localFocus": 1,
-      "noLocalSx": 0,
-      "noLocalFocus": 0
-    },
-    {
-      "file": "kelmah-frontend/src/modules/payment/components/PaymentMethodCard.jsx",
+      "file": "src/modules/auth/components/register/Register.jsx",
       "total": 2,
       "localSx": 2,
       "localFocus": 2,
@@ -667,7 +220,7 @@
       "noLocalFocus": 0
     },
     {
-      "file": "kelmah-frontend/src/modules/payment/components/TransactionHistory.jsx",
+      "file": "src/modules/hirer/components/HirerJobManagement.jsx",
       "total": 2,
       "localSx": 2,
       "localFocus": 2,
@@ -675,7 +228,207 @@
       "noLocalFocus": 0
     },
     {
-      "file": "kelmah-frontend/src/modules/profile/components/ProfilePicture.jsx",
+      "file": "src/modules/hirer/components/JobProgressTracker.jsx",
+      "total": 2,
+      "localSx": 2,
+      "localFocus": 2,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/hirer/components/PaymentRelease.jsx",
+      "total": 2,
+      "localSx": 2,
+      "localFocus": 2,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/hirer/components/ProposalReview.jsx",
+      "total": 2,
+      "localSx": 2,
+      "localFocus": 2,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/hirer/pages/JobBidsPage.jsx",
+      "total": 2,
+      "localSx": 2,
+      "localFocus": 2,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/jobs/components/BidSubmissionForm.jsx",
+      "total": 2,
+      "localSx": 2,
+      "localFocus": 2,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/jobs/components/common/JobFilters.jsx",
+      "total": 2,
+      "localSx": 2,
+      "localFocus": 2,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/jobs/components/job-application/JobApplication.jsx",
+      "total": 2,
+      "localSx": 2,
+      "localFocus": 2,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/jobs/components/JobsCardsGrid.jsx",
+      "total": 2,
+      "localSx": 2,
+      "localFocus": 2,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/layout/components/Footer.jsx",
+      "total": 2,
+      "localSx": 2,
+      "localFocus": 2,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/messaging/components/common/EmojiPicker.jsx",
+      "total": 2,
+      "localSx": 2,
+      "localFocus": 2,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/messaging/components/common/Message.jsx",
+      "total": 2,
+      "localSx": 2,
+      "localFocus": 2,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/messaging/components/common/MessageSearch.jsx",
+      "total": 2,
+      "localSx": 2,
+      "localFocus": 2,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/payment/components/PaymentMethodCard.jsx",
+      "total": 2,
+      "localSx": 2,
+      "localFocus": 2,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/payment/components/TransactionHistory.jsx",
+      "total": 2,
+      "localSx": 2,
+      "localFocus": 2,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/payment/pages/PaymentCenterPage.jsx",
+      "total": 2,
+      "localSx": 2,
+      "localFocus": 2,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/quickjobs/pages/NearbyJobsPage.jsx",
+      "total": 2,
+      "localSx": 2,
+      "localFocus": 2,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/reviews/pages/ReviewsPage.jsx",
+      "total": 2,
+      "localSx": 2,
+      "localFocus": 2,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/scheduling/pages/SchedulingPage.jsx",
+      "total": 2,
+      "localSx": 2,
+      "localFocus": 2,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/search/components/LocationBasedSearch.jsx",
+      "total": 2,
+      "localSx": 2,
+      "localFocus": 2,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/search/components/WorkerDirectoryExperience.jsx",
+      "total": 2,
+      "localSx": 2,
+      "localFocus": 2,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/worker/components/AdvancedCalendar.jsx",
+      "total": 2,
+      "localSx": 2,
+      "localFocus": 2,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/worker/components/AvailabilityCalendar.jsx",
+      "total": 2,
+      "localSx": 2,
+      "localFocus": 2,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/worker/components/DocumentVerification.jsx",
+      "total": 2,
+      "localSx": 2,
+      "localFocus": 2,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/worker/components/EnhancedJobCard.jsx",
+      "total": 2,
+      "localSx": 2,
+      "localFocus": 2,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/worker/components/PortfolioManager.jsx",
+      "total": 2,
+      "localSx": 2,
+      "localFocus": 2,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/auth/components/common/AuthWrapper.jsx",
       "total": 1,
       "localSx": 1,
       "localFocus": 1,
@@ -683,7 +436,247 @@
       "noLocalFocus": 0
     },
     {
-      "file": "kelmah-frontend/src/modules/worker/pages/MyBidsPage.jsx",
+      "file": "src/modules/auth/components/login/Login.jsx",
+      "total": 1,
+      "localSx": 1,
+      "localFocus": 1,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/auth/pages/ForgotPasswordPage.jsx",
+      "total": 1,
+      "localSx": 1,
+      "localFocus": 1,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/common/components/forms/SearchForm.jsx",
+      "total": 1,
+      "localSx": 1,
+      "localFocus": 1,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/common/components/layout/PageHeader.jsx",
+      "total": 1,
+      "localSx": 1,
+      "localFocus": 1,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/contracts/components/common/ContractForm.jsx",
+      "total": 1,
+      "localSx": 1,
+      "localFocus": 1,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/contracts/pages/ContractsPage.jsx",
+      "total": 1,
+      "localSx": 1,
+      "localFocus": 1,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/contracts/pages/CreateContractPage.jsx",
+      "total": 1,
+      "localSx": 1,
+      "localFocus": 1,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/hirer/components/WorkerReview.jsx",
+      "total": 1,
+      "localSx": 1,
+      "localFocus": 1,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/hirer/pages/HirerDashboardPage.jsx",
+      "total": 1,
+      "localSx": 1,
+      "localFocus": 1,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/hirer/pages/HirerQuickJobTrackingPage.jsx",
+      "total": 1,
+      "localSx": 1,
+      "localFocus": 1,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/hirer/pages/JobPostingPage.jsx",
+      "total": 1,
+      "localSx": 1,
+      "localFocus": 1,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/jobs/components/common/CreateJobDialog.jsx",
+      "total": 1,
+      "localSx": 1,
+      "localFocus": 1,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/jobs/components/common/JobSearch.jsx",
+      "total": 1,
+      "localSx": 1,
+      "localFocus": 1,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/jobs/components/JobsMobileFilterDrawer.jsx",
+      "total": 1,
+      "localSx": 1,
+      "localFocus": 1,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/layout/components/MobileNav.jsx",
+      "total": 1,
+      "localSx": 1,
+      "localFocus": 1,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/layout/components/sidebar/Sidebar.jsx",
+      "total": 1,
+      "localSx": 1,
+      "localFocus": 1,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/map/components/common/LocationSelector.jsx",
+      "total": 1,
+      "localSx": 1,
+      "localFocus": 1,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/messaging/components/common/Chatbox.jsx",
+      "total": 1,
+      "localSx": 1,
+      "localFocus": 1,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/notifications/components/NotificationItem.jsx",
+      "total": 1,
+      "localSx": 1,
+      "localFocus": 1,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/notifications/pages/NotificationsPage.jsx",
+      "total": 1,
+      "localSx": 1,
+      "localFocus": 1,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/payment/components/PaymentAnalyticsDashboard.jsx",
+      "total": 1,
+      "localSx": 1,
+      "localFocus": 1,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/premium/pages/PremiumPage.jsx",
+      "total": 1,
+      "localSx": 1,
+      "localFocus": 1,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/profile/components/ProfilePicture.jsx",
+      "total": 1,
+      "localSx": 1,
+      "localFocus": 1,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/search/components/common/CompactSearchBar.jsx",
+      "total": 1,
+      "localSx": 1,
+      "localFocus": 1,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/search/components/common/MobileFilterDrawer.jsx",
+      "total": 1,
+      "localSx": 1,
+      "localFocus": 1,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/settings/components/common/SecuritySettings.jsx",
+      "total": 1,
+      "localSx": 1,
+      "localFocus": 1,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/settings/pages/SettingsPage.jsx",
+      "total": 1,
+      "localSx": 1,
+      "localFocus": 1,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/worker/components/JobManagement.jsx",
+      "total": 1,
+      "localSx": 1,
+      "localFocus": 1,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/worker/components/WorkerCard.jsx",
+      "total": 1,
+      "localSx": 1,
+      "localFocus": 1,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/worker/pages/MyBidsPage.jsx",
+      "total": 1,
+      "localSx": 1,
+      "localFocus": 1,
+      "noLocalSx": 0,
+      "noLocalFocus": 0
+    },
+    {
+      "file": "src/modules/worker/pages/WorkerDashboardPage.jsx",
       "total": 1,
       "localSx": 1,
       "localFocus": 1,
