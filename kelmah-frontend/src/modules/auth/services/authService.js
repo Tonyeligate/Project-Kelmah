@@ -70,7 +70,7 @@ const authService = {
     try {
       // Use retry wrapper to handle Render cold start delays
       const response = await retryWithBackoff(() =>
-        api.post('/auth/login', credentials)
+        api.post('/auth/login', credentials, { _skipAuthRefresh: true })
       );
 
       // Extract data from response (handle different response structures)

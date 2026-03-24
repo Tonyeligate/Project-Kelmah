@@ -1,9 +1,12 @@
 {
-  "generatedAtUtc": "2026-03-24T01:55:02.615Z",
+  "generatedAtUtc": "2026-03-24T02:27:10.472Z",
   "rootDir": "C:\\Users\\OS\\Desktop\\Project-Kelmah-main\\spec-kit\\quantum-oracle",
   "taskDirectoryCount": 4,
   "learningEnabledTaskCount": 3,
   "learningArtifactTaskCount": 3,
+  "immersiveTaskCount": 2,
+  "immersiveCompleteCount": 2,
+  "immersiveCoveragePct": 100,
   "advancedMissingLearningEvidence": [],
   "trends": {
     "topRecurringMistakes": [
@@ -101,6 +104,20 @@
         "item": "learning ledger trend analysis",
         "count": 1
       }
+    ],
+    "topImmersiveGaps": [
+      {
+        "item": "three_d_hd_design_report.json",
+        "count": 0
+      },
+      {
+        "item": "three_d_hd_render_budget.json",
+        "count": 0
+      },
+      {
+        "item": "immersive_interaction_map.json",
+        "count": 0
+      }
     ]
   },
   "tasks": [
@@ -108,6 +125,7 @@
       "taskId": "backend-demo-task",
       "taskType": "backend-optimization",
       "requiresLearningOracle": true,
+      "activatedEliteToolsCount": 16,
       "mistakesCount": 1,
       "preventiveRulesCount": 1,
       "oracleImprovementsCount": 1,
@@ -117,6 +135,11 @@
       "skillAcquisitionsCount": 1,
       "skillSourcesCount": 2,
       "skillTransferEvidenceCount": 1,
+      "immersiveEvidenceCount": 0,
+      "immersiveEvidenceComplete": false,
+      "hasThreeDHDDesignReport": false,
+      "hasThreeDHDRenderBudget": false,
+      "hasImmersiveInteractionMap": false,
       "hasLearningUpdate": true,
       "hasFieldExperience": true
     },
@@ -124,6 +147,7 @@
       "taskId": "demo-adaptive-scaffold",
       "taskType": "adaptive-interface",
       "requiresLearningOracle": true,
+      "activatedEliteToolsCount": 19,
       "mistakesCount": 1,
       "preventiveRulesCount": 1,
       "oracleImprovementsCount": 1,
@@ -133,6 +157,11 @@
       "skillAcquisitionsCount": 1,
       "skillSourcesCount": 2,
       "skillTransferEvidenceCount": 1,
+      "immersiveEvidenceCount": 3,
+      "immersiveEvidenceComplete": true,
+      "hasThreeDHDDesignReport": true,
+      "hasThreeDHDRenderBudget": true,
+      "hasImmersiveInteractionMap": true,
       "hasLearningUpdate": true,
       "hasFieldExperience": true
     },
@@ -140,6 +169,7 @@
       "taskId": "optimization-demo-task",
       "taskType": "ui-optimization",
       "requiresLearningOracle": true,
+      "activatedEliteToolsCount": 19,
       "mistakesCount": 1,
       "preventiveRulesCount": 1,
       "oracleImprovementsCount": 1,
@@ -149,6 +179,11 @@
       "skillAcquisitionsCount": 1,
       "skillSourcesCount": 2,
       "skillTransferEvidenceCount": 1,
+      "immersiveEvidenceCount": 3,
+      "immersiveEvidenceComplete": true,
+      "hasThreeDHDDesignReport": true,
+      "hasThreeDHDRenderBudget": true,
+      "hasImmersiveInteractionMap": true,
       "hasLearningUpdate": true,
       "hasFieldExperience": true
     }

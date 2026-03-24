@@ -55,12 +55,20 @@ function main() {
     });
 
     report.agents.forEach((a) => {
-      ['growthVelocity', 'transferSuccess', 'regressionPreventionStrength', 'gateMaturity', 'overallScore'].forEach((k) => {
+      ['growthVelocity', 'transferSuccess', 'regressionPreventionStrength', 'gateMaturity', 'toolchainDepth', 'overallScore'].forEach((k) => {
         if (typeof a[k] !== 'number' || Number.isNaN(a[k])) {
           errors.push(`agent ${a.agent}: ${k} must be numeric`);
         }
       });
+
+      if (!(a.immersiveSupportReadiness === null || (typeof a.immersiveSupportReadiness === 'number' && !Number.isNaN(a.immersiveSupportReadiness)))) {
+        errors.push(`agent ${a.agent}: immersiveSupportReadiness must be numeric or null`);
+      }
     });
+  }
+
+  if (!(report.immersiveReadinessGlobal === null || (typeof report.immersiveReadinessGlobal === 'number' && !Number.isNaN(report.immersiveReadinessGlobal)))) {
+    errors.push('immersiveReadinessGlobal must be numeric or null');
   }
 
   if (!report.topAgent || typeof report.topAgent.overallScore !== 'number') {

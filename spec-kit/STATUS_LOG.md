@@ -1,3 +1,28 @@
+### Session: Login 401 and Refresh Cascade Triage March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Investigate persistent `401 Unauthorized` login failures and stop frontend auth interceptor from chaining `/auth/refresh-token` after intentional login rejection.
+
+**Files touched**
+- kelmah-frontend/src/services/apiClient.js
+- kelmah-frontend/src/modules/auth/services/authService.js
+- spec-kit/STATUS_LOG.md
+
+**Investigation summary**
+- Confirmed auth-service health is stable (`/api/health` repeatedly `200`) during failure window.
+- Confirmed auth-service receives login requests and returns `401` for `/api/auth/login` (not gateway outage).
+- Confirmed frontend then triggers `/api/auth/refresh-token` after login rejection, which also returns `401`, producing misleading extra console noise.
+- Attempted direct Mongo user state verification from local terminal but DNS/network path to Atlas was unavailable in this environment (`querySrv ECONNREFUSED`), so account-state inspection could not be completed from this host.
+
+**Implementation summary**
+- Added explicit public-auth request guard in axios interceptor so 401 responses from login/register/password reset flows do **not** start refresh logic.
+- Added explicit `_skipAuthRefresh` marker on login request call to prevent accidental refresh chaining.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,963 modules transformed).
+
+---
+
 ### Session: Login 502 Triage and Login Error De-duplication March 24 2026 ✅ COMPLETED
 
 **Date**: March 24, 2026  
@@ -75,6 +100,40 @@
 - PASS: PowerShell heuristic scan in frontend module groups reported `ICONBUTTON_FOCUS_CANDIDATES=0`.
 - PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,963 modules transformed).
 - PASS: `npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx src/tests/smoke/critical-path-happy-flow.smoke.test.jsx src/tests/smoke/critical-path-gateway-contract.smoke.test.js --runInBand` in `kelmah-frontend` (3 suites, 29 tests).
+
+---
+
+### Session: Quantum Intelligence Scoring Deepening March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Improve agent capability intelligence by adding toolchain-depth and immersive-readiness metrics to the learning and scoring pipeline, and enforce intelligence checks in unified local pre-PR gates.
+
+**Files touched**
+- spec-kit/quantum-oracle/aggregate-learning-ledger.js
+- spec-kit/quantum-oracle/generate-agent-intelligence-report.js
+- spec-kit/quantum-oracle/check-agent-intelligence-report.js
+- spec-kit/quantum-oracle/check-pre-pr-gates.js
+- spec-kit/quantum-oracle/learning-ledger-summary.json
+- spec-kit/quantum-oracle/agent-intelligence-report.json
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Extended learning aggregation with advanced capability signals:
+  - `activatedEliteToolsCount` per task
+  - immersive evidence presence/completeness metrics per task
+  - global immersive coverage metrics and top immersive gap trends.
+- Upgraded agent-intelligence scoring model to include:
+  - `toolchainDepth`
+  - `immersiveSupportReadiness`
+  - global immersive readiness blend in overall score.
+- Hardened report validator to require the new scoring fields and global readiness value.
+- Strengthened unified `quantum:pre-pr-gates` to automatically generate and validate agent intelligence reports on every local run.
+
+**Validation outcomes**
+- PASS: `npm run quantum:aggregate-learning`
+- PASS: `npm run quantum:agent-intelligence-report`
+- PASS: `npm run quantum:check-agent-intelligence`
+- PASS: `npm run quantum:pre-pr-gates -- --skip-pr-gate`
 
 ---
 

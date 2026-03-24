@@ -26,6 +26,8 @@ const TASK_TYPE_TO_AGENT = {
   'infra-coherence': 'devops',
 };
 
+const IMMERSIVE_TASK_TYPES = new Set(['ui-optimization', 'adaptive-interface', 'design-flow-optimization']);
+
 function parseArgs(argv) {
   const parsed = {
     summaryPath: path.resolve(process.cwd(), 'spec-kit', 'quantum-oracle', 'learning-ledger-summary.json'),
@@ -95,6 +97,11 @@ function main() {
     }
   });
 
+  const immersiveTasks = tasks.filter((t) => IMMERSIVE_TASK_TYPES.has(t.taskType));
+  const immersiveReadinessGlobalRaw = immersiveTasks.length > 0
+    ? immersiveTasks.filter((t) => t.immersiveEvidenceComplete === true).length / immersiveTasks.length
+    : null;
+
   const agentScores = AGENTS.map((a) => {
     const agentTasks = perAgentTasks.get(a.id) || [];
     const learningTasks = agentTasks.filter((t) => t.requiresLearningOracle === true);
@@ -108,10 +115,25 @@ function main() {
       ? learningTasks.reduce((acc, t) => acc + ((t.preventiveRulesCount || 0) + (t.oracleImprovementsCount || 0)), 0) / (learningTasks.length * 4)
       : 0;
 
+    const toolchainDepthRaw = learningTasks.length > 0
+      ? learningTasks.reduce((acc, t) => acc + (t.activatedEliteToolsCount || 0), 0) / (learningTasks.length * 20)
+      : 0;
+
     const gateCount = countAgentGates(a.file, a.gatePrefix);
     const gateMaturityRaw = clamp(gateCount / 16, 0, 1);
 
-    const overallRaw = (0.35 * growthVelocityRaw) + (0.30 * transferRaw) + (0.25 * preventionRaw) + (0.10 * gateMaturityRaw);
+    const immersiveReadinessRaw = immersiveReadinessGlobalRaw;
+
+    let overallRaw =
+      (0.30 * growthVelocityRaw)
+      + (0.25 * transferRaw)
+      + (0.20 * preventionRaw)
+      + (0.10 * gateMaturityRaw)
+      + (0.15 * toolchainDepthRaw);
+
+    if (typeof immersiveReadinessRaw === 'number') {
+      overallRaw = (0.90 * overallRaw) + (0.10 * immersiveReadinessRaw);
+    }
 
     return {
       agent: a.id,
@@ -121,6 +143,8 @@ function main() {
       transferSuccess: toPct(transferRaw),
       regressionPreventionStrength: toPct(preventionRaw),
       gateMaturity: toPct(gateMaturityRaw),
+      toolchainDepth: toPct(toolchainDepthRaw),
+      immersiveSupportReadiness: typeof immersiveReadinessRaw === 'number' ? toPct(immersiveReadinessRaw) : null,
       overallScore: toPct(overallRaw),
     };
   });
@@ -135,13 +159,16 @@ function main() {
     advancedMissingLearningEvidence: summary.advancedMissingLearningEvidence || [],
     methodology: {
       weights: {
-        growthVelocity: 0.35,
-        transferSuccess: 0.30,
-        regressionPreventionStrength: 0.25,
+        growthVelocity: 0.30,
+        transferSuccess: 0.25,
+        regressionPreventionStrength: 0.20,
         gateMaturity: 0.10,
+        toolchainDepth: 0.15,
+        immersiveSupportReadinessBlend: 0.10,
       },
-      note: 'Scores are normalized from learning-ledger evidence and gate maturity counts.',
+      note: 'Scores are normalized from learning-ledger evidence, gate maturity, tool activation depth, and immersive readiness coverage.',
     },
+    immersiveReadinessGlobal: typeof immersiveReadinessGlobalRaw === 'number' ? toPct(immersiveReadinessGlobalRaw) : null,
     agents: ranked,
     topAgent: ranked[0] || null,
   };

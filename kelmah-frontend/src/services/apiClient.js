@@ -94,6 +94,10 @@ const isRefreshRequest = (request) =>
 const isAuthVerifyRequest = (request) =>
     typeof request?.url === 'string' && /\/auth\/(verify|me)$/.test(request.url);
 
+const isPublicAuthRequest = (request) =>
+    typeof request?.url === 'string' &&
+    /\/auth\/(login|register|forgot-password|reset-password|resend-verification-email|verify-email|oauth\/exchange)/.test(request.url);
+
 const enqueueUnauthorizedRequest = (request) =>
     new Promise((resolve, reject) => {
         pendingUnauthorizedRequests.push({ request, resolve, reject });
@@ -356,7 +360,9 @@ apiClient.interceptors.response.use(
             error.response?.status === 401 &&
             originalRequest &&
             !originalRequest._retry &&
-            !isRefreshRequest(originalRequest)
+            !isRefreshRequest(originalRequest) &&
+            !isPublicAuthRequest(originalRequest) &&
+            !originalRequest._skipAuthRefresh
         ) {
             const now = Date.now();
             if (now < refreshBlockedUntil) {

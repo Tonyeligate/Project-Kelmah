@@ -1,98 +1,117 @@
 {
-  "generatedAtUtc": "2026-03-24T01:36:43.324Z",
+  "generatedAtUtc": "2026-03-24T02:27:10.575Z",
   "quarter": "Q1-2026",
   "inputSummary": "spec-kit/quantum-oracle/learning-ledger-summary.json",
   "learningEnabledTaskCount": 3,
   "advancedMissingLearningEvidence": [],
   "methodology": {
     "weights": {
-      "growthVelocity": 0.35,
-      "transferSuccess": 0.3,
-      "regressionPreventionStrength": 0.25,
-      "gateMaturity": 0.1
+      "growthVelocity": 0.3,
+      "transferSuccess": 0.25,
+      "regressionPreventionStrength": 0.2,
+      "gateMaturity": 0.1,
+      "toolchainDepth": 0.15,
+      "immersiveSupportReadinessBlend": 0.1
     },
-    "note": "Scores are normalized from learning-ledger evidence and gate maturity counts."
+    "note": "Scores are normalized from learning-ledger evidence, gate maturity, tool activation depth, and immersive readiness coverage."
   },
+  "immersiveReadinessGlobal": 100,
   "agents": [
     {
       "agent": "frontend",
-      "gateCount": 27,
+      "gateCount": 28,
       "learningTasks": 2,
       "growthVelocity": 66.7,
       "transferSuccess": 100,
       "regressionPreventionStrength": 50,
       "gateMaturity": 100,
-      "overallScore": 75.8
+      "toolchainDepth": 95,
+      "immersiveSupportReadiness": 100,
+      "overallScore": 81.3
     },
     {
       "agent": "backend",
-      "gateCount": 12,
+      "gateCount": 13,
       "learningTasks": 1,
       "growthVelocity": 33.3,
       "transferSuccess": 100,
       "regressionPreventionStrength": 50,
-      "gateMaturity": 75,
-      "overallScore": 61.7
+      "gateMaturity": 81.3,
+      "toolchainDepth": 80,
+      "immersiveSupportReadiness": 100,
+      "overallScore": 68.6
     },
     {
       "agent": "debugger",
-      "gateCount": 14,
+      "gateCount": 15,
       "learningTasks": 0,
       "growthVelocity": 0,
       "transferSuccess": 0,
       "regressionPreventionStrength": 0,
-      "gateMaturity": 87.5,
-      "overallScore": 8.8
+      "gateMaturity": 93.8,
+      "toolchainDepth": 0,
+      "immersiveSupportReadiness": 100,
+      "overallScore": 18.4
     },
     {
       "agent": "database",
-      "gateCount": 7,
+      "gateCount": 8,
       "learningTasks": 0,
       "growthVelocity": 0,
       "transferSuccess": 0,
       "regressionPreventionStrength": 0,
-      "gateMaturity": 43.8,
-      "overallScore": 4.4
+      "gateMaturity": 50,
+      "toolchainDepth": 0,
+      "immersiveSupportReadiness": 100,
+      "overallScore": 14.5
     },
     {
       "agent": "security",
-      "gateCount": 7,
+      "gateCount": 8,
       "learningTasks": 0,
       "growthVelocity": 0,
       "transferSuccess": 0,
       "regressionPreventionStrength": 0,
-      "gateMaturity": 43.8,
-      "overallScore": 4.4
+      "gateMaturity": 50,
+      "toolchainDepth": 0,
+      "immersiveSupportReadiness": 100,
+      "overallScore": 14.5
     },
     {
       "agent": "realtime",
-      "gateCount": 7,
+      "gateCount": 8,
       "learningTasks": 0,
       "growthVelocity": 0,
       "transferSuccess": 0,
       "regressionPreventionStrength": 0,
-      "gateMaturity": 43.8,
-      "overallScore": 4.4
+      "gateMaturity": 50,
+      "toolchainDepth": 0,
+      "immersiveSupportReadiness": 100,
+      "overallScore": 14.5
     },
     {
       "agent": "devops",
-      "gateCount": 7,
+      "gateCount": 8,
       "learningTasks": 0,
       "growthVelocity": 0,
       "transferSuccess": 0,
       "regressionPreventionStrength": 0,
-      "gateMaturity": 43.8,
-      "overallScore": 4.4
+      "gateMaturity": 50,
+      "toolchainDepth": 0,
+      "immersiveSupportReadiness": 100,
+      "overallScore": 14.5
     }
   ],
   "topAgent": {
     "agent": "frontend",
-    "gateCount": 27,
+    "gateCount": 28,
     "learningTasks": 2,
     "growthVelocity": 66.7,
     "transferSuccess": 100,
     "regressionPreventionStrength": 50,
     "gateMaturity": 100,
-    "overallScore": 75.8
+    "toolchainDepth": 95,
+    "immersiveSupportReadiness": 100,
+    "overallScore": 81.3
   }
 }

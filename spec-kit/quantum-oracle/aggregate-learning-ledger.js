@@ -75,9 +75,16 @@ function main() {
   const recurringPolicyAdjustments = new Map();
   const recurringSkillAcquisitions = new Map();
   const recurringSkillSources = new Map();
+  const immersiveGapCounters = new Map([
+    ['three_d_hd_design_report.json', 0],
+    ['three_d_hd_render_budget.json', 0],
+    ['immersive_interaction_map.json', 0],
+  ]);
 
   const tasks = [];
   const advancedMissingLearningEvidence = [];
+  let immersiveTaskCount = 0;
+  let immersiveCompleteCount = 0;
 
   taskDirs.forEach((taskId) => {
     const dir = path.join(root, taskId);
@@ -86,6 +93,28 @@ function main() {
     const field = readJson(path.join(dir, 'field_experience_report.json'));
 
     const requiresLearning = !!(closure && closure.requiresLearningOracle === true);
+    const taskType = closure && closure.taskType ? closure.taskType : 'unknown';
+    const activatedEliteToolsCount = Array.isArray(closure && closure.activatedEliteTools)
+      ? closure.activatedEliteTools.length
+      : 0;
+
+    const isImmersiveTask = new Set(['ui-optimization', 'adaptive-interface', 'design-flow-optimization']).has(taskType);
+    const hasThreeDHDDesignReport = exists(path.join(dir, 'three_d_hd_design_report.json'));
+    const hasThreeDHDRenderBudget = exists(path.join(dir, 'three_d_hd_render_budget.json'));
+    const hasImmersiveInteractionMap = exists(path.join(dir, 'immersive_interaction_map.json'));
+    const immersiveEvidenceCount = [hasThreeDHDDesignReport, hasThreeDHDRenderBudget, hasImmersiveInteractionMap].filter(Boolean).length;
+    const immersiveEvidenceComplete = immersiveEvidenceCount === 3;
+
+    if (isImmersiveTask) {
+      immersiveTaskCount += 1;
+      if (immersiveEvidenceComplete) {
+        immersiveCompleteCount += 1;
+      } else {
+        if (!hasThreeDHDDesignReport) immersiveGapCounters.set('three_d_hd_design_report.json', (immersiveGapCounters.get('three_d_hd_design_report.json') || 0) + 1);
+        if (!hasThreeDHDRenderBudget) immersiveGapCounters.set('three_d_hd_render_budget.json', (immersiveGapCounters.get('three_d_hd_render_budget.json') || 0) + 1);
+        if (!hasImmersiveInteractionMap) immersiveGapCounters.set('immersive_interaction_map.json', (immersiveGapCounters.get('immersive_interaction_map.json') || 0) + 1);
+      }
+    }
 
     if (requiresLearning && (!learning || !field)) {
       advancedMissingLearningEvidence.push(taskId);
@@ -138,8 +167,9 @@ function main() {
 
     tasks.push({
       taskId,
-      taskType: closure && closure.taskType ? closure.taskType : 'unknown',
+      taskType,
       requiresLearningOracle: requiresLearning,
+      activatedEliteToolsCount,
       mistakesCount: mistakesObserved.length,
       preventiveRulesCount: preventiveRulesAdded.length,
       oracleImprovementsCount: testOrOracleImprovements.length,
@@ -149,6 +179,11 @@ function main() {
       skillAcquisitionsCount: skillAcquisitions.length,
       skillSourcesCount: skillSources.length,
       skillTransferEvidenceCount: skillTransferEvidence.length,
+      immersiveEvidenceCount,
+      immersiveEvidenceComplete,
+      hasThreeDHDDesignReport,
+      hasThreeDHDRenderBudget,
+      hasImmersiveInteractionMap,
       hasLearningUpdate: !!learning,
       hasFieldExperience: !!field,
     });
@@ -160,6 +195,11 @@ function main() {
     taskDirectoryCount: taskDirs.length,
     learningEnabledTaskCount: tasks.filter((t) => t.requiresLearningOracle).length,
     learningArtifactTaskCount: tasks.length,
+    immersiveTaskCount,
+    immersiveCompleteCount,
+    immersiveCoveragePct: immersiveTaskCount > 0
+      ? Math.round((immersiveCompleteCount / immersiveTaskCount) * 1000) / 10
+      : null,
     advancedMissingLearningEvidence,
     trends: {
       topRecurringMistakes: toTopList(recurringMistakes, 15),
@@ -168,6 +208,7 @@ function main() {
       topPolicyAdjustments: toTopList(recurringPolicyAdjustments, 15),
       topSkillAcquisitions: toTopList(recurringSkillAcquisitions, 15),
       topSkillSources: toTopList(recurringSkillSources, 15),
+      topImmersiveGaps: toTopList(immersiveGapCounters, 10),
     },
     tasks,
   };

@@ -180,6 +180,22 @@ function main() {
     }
   }
 
+  const intelligenceReportResult = runChecked(
+    'node spec-kit/quantum-oracle/generate-agent-intelligence-report.js',
+    'generate agent intelligence report',
+  );
+  if (!intelligenceReportResult.ok) {
+    errors.push('agent intelligence report generation failed');
+  }
+
+  const intelligenceCheckResult = runChecked(
+    'node spec-kit/quantum-oracle/check-agent-intelligence-report.js',
+    'check agent intelligence report',
+  );
+  if (!intelligenceCheckResult.ok) {
+    errors.push('agent intelligence report validation failed');
+  }
+
   bundleIds.forEach((taskId) => {
     const cmd = `node spec-kit/quantum-oracle/check-completion-oracle.js --task-id ${taskId} --strict`;
     const result = runChecked(cmd, `strict completion oracle for ${taskId}`);
