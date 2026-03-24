@@ -534,7 +534,7 @@ const deduplicatedGet = (url, config) => {
     if (inflightGets.has(key)) {
         return inflightGets.get(key);
     }
-    const promise = retryRequest(() => apiClient.get(url, config)).finally(() => {
+    const promise = retryRequest(() => apiClient.get(url, config), 0).finally(() => {
         inflightGets.delete(key);
     });
     inflightGets.set(key, promise);
@@ -544,7 +544,7 @@ const deduplicatedGet = (url, config) => {
 // Export methods — only GET/HEAD use retry logic; mutations are not retried
 export const api = {
     get: deduplicatedGet,
-    head: (url, config) => retryRequest(() => apiClient.head(url, config)),
+    head: (url, config) => retryRequest(() => apiClient.head(url, config), 0),
     post: (url, data, config) => apiClient.post(url, data, config),
     put: (url, data, config) => apiClient.put(url, data, config),
     patch: (url, data, config) => apiClient.patch(url, data, config),

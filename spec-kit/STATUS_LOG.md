@@ -187,6 +187,30 @@
 
 ---
 
+### Session: Frontend Gateway Pressure Mitigation March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Address live `/find-talents`/worker profile degradation with 429/502/504 gateway responses and repeated error bursts in browser console.
+
+**Files touched**
+- kelmah-frontend/src/services/apiClient.js
+- kelmah-frontend/src/tests/smoke/critical-path-gateway-contract.smoke.test.js
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Root behavior identified: global `api.get`/`api.head` wrapper was auto-retrying failed requests (up to 3 attempts), which amplified gateway load under throttling/outage conditions.
+- Mitigation applied:
+  - disabled aggressive automatic retries for `GET`/`HEAD` wrapper paths by setting retry count to `0` in the shared API client export.
+  - retained request deduplication for concurrent identical GETs.
+- Test contract update:
+  - adjusted auth login smoke expectation to include the request config argument (`_skipAuthRefresh`) now passed by auth service.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,963 modules transformed).
+- PASS: smoke suites via `npx jest --runTestsByPath ... --runInBand` (3 suites, 29 tests).
+
+---
+
 ### Session: Frontend Worker Directory Runtime Regression Fix March 24 2026 ✅ COMPLETED
 
 **Date**: March 24, 2026  

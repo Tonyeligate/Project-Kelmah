@@ -131,7 +131,11 @@ describe('critical-path gateway contract smoke suite', () => {
       password: 'Vx7!Rk2#Lm9@Qa4',
     });
 
-    expect(api.post).toHaveBeenCalledWith('/auth/login', expect.any(Object));
+    expect(api.post).toHaveBeenCalledWith(
+      '/auth/login',
+      expect.any(Object),
+      expect.objectContaining({ _skipAuthRefresh: true }),
+    );
     expect(result.success).toBe(true);
     expect(result.user?.email).toBe('giftyafisa@gmail.com');
   });
