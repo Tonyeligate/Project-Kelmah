@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import {
   Box,
   Avatar,
@@ -19,7 +19,7 @@ import { useProfile } from '../hooks/useProfile';
 import { useSelector } from 'react-redux';
 import { selectProfile } from '../../../store/slices/profileSlice.js';
 import { useSnackbar } from 'notistack';
-import { devError } from '';
+import { devError } from '@/modules/common/utils/devLogger';
 
 const ProfilePicture = ({ size = 120, editable = true, altText = 'Profile picture' }) => {
   const { uploadProfilePicture } = useProfile({ autoInitialize: false });
@@ -191,3 +191,4 @@ const ProfilePicture = ({ size = 120, editable = true, altText = 'Profile pictur
 };
 
 export default ProfilePicture;
+

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import {
   Container,
   Typography,
@@ -19,7 +19,7 @@ import reviewService from '../services/reviewService';
 import Pagination from '@mui/material/Pagination';
 import { alpha } from '@mui/material/styles';
 import { Helmet } from 'react-helmet-async';
-import { devError } from '';
+import { devError } from '@/modules/common/utils/devLogger';
 
 const RatingDistribution = ({ distribution, totalReviews }) => (
   <Box>
@@ -238,3 +238,4 @@ const WorkerReviewsPage = () => {
 };
 
 export default WorkerReviewsPage;
+

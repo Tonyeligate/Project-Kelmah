@@ -1,6 +1,6 @@
-import { api } from '../../../services/apiClient';
+﻿import { api } from '../../../services/apiClient';
 import { secureStorage } from '../../../utils/secureStorage';
-import { devWarn } from '';
+import { devWarn } from '@/modules/common/utils/devLogger';
 
 // Use centralized api client
 
@@ -238,3 +238,4 @@ class SchedulingService {
 }
 
 export default new SchedulingService();
+

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { Box, Container, Typography, useTheme, CircularProgress, Alert, Button } from '@mui/material';
 import { CollectionsOutlined as CollectionsOutlinedIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
@@ -7,7 +7,7 @@ import ProjectShowcase from '../components/ProjectShowcase';
 import portfolioService from '../services/portfolioService';
 import { Helmet } from 'react-helmet-async';
 import { useBreakpointDown } from '@/hooks/useResponsive';
-import { devError } from '';
+import { devError } from '@/modules/common/utils/devLogger';
 
 const PortfolioPage = () => {
   const navigate = useNavigate();
@@ -113,3 +113,4 @@ const PortfolioPage = () => {
 };
 
 export default PortfolioPage;
+

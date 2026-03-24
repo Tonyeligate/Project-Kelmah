@@ -1,4 +1,4 @@
-/**
+﻿/**
  * JobsPage - Main Jobs Listing Page
  *
  * DATA FLOW MAP:
@@ -6,53 +6,53 @@
  *
  * 1. JOB LISTINGS FETCH
  *    UI Component: JobsPage.jsx (this file)
- *    ↓
+ *    â†“
  *    Service: jobsService.getJobs()
  *    Location: kelmah-frontend/src/modules/jobs/services/jobsService.js
- *    ↓
+ *    â†“
  *    API Call: GET /api/jobs?status=open&category={}&location={}&search={}
  *    Backend: kelmah-backend/services/job-service/routes/jobRoutes.js
- *    ↓
+ *    â†“
  *    Response: { success: true, items: [...], total: 12, page: 1 }
- *    ↓
+ *    â†“
  *    Transform: transformJobListItem() - handles employer data mapping
- *    ↓
+ *    â†“
  *    State Update: setJobs(transformedData)
- *    ↓
+ *    â†“
  *    UI Render: Job cards displayed with employer info, badges, filters
  *
  * 2. SEARCH/FILTER FLOW
  *    User Input: SearchFilters component (search bar, dropdowns)
- *    ↓
+ *    â†“
  *    State: searchQuery, selectedCategory, selectedLocation
- *    ↓
+ *    â†“
  *    useEffect: Triggers API refetch when filters change
- *    ↓
- *    Re-renders: filteredJobs → uniqueJobs (deduplicated) → UI
+ *    â†“
+ *    Re-renders: filteredJobs â†’ uniqueJobs (deduplicated) â†’ UI
  *
  * 3. JOB CARD CLICK
  *    User Action: Click on job card
- *    ↓
+ *    â†“
  *    Navigation: navigate(`/jobs/${job._id}`)
- *    ↓
- *    Route: /jobs/:id → JobDetailsPage.jsx
+ *    â†“
+ *    Route: /jobs/:id â†’ JobDetailsPage.jsx
  *
  * 4. APPLY BUTTON CLICK
  *    User Action: Click "Apply Now"
- *    ↓
+ *    â†“
  *    Auth Check: useAuthCheck() hook
- *    ↓
+ *    â†“
  *    If not authenticated: navigate('/login', { state: { from, message } })
  *    If authenticated: navigate(`/jobs/${job._id || job.id}/apply`)
- *    ↓
- *    Route: /jobs/:id/apply → JobApplicationForm.jsx
+ *    â†“
+ *    Route: /jobs/:id/apply â†’ JobApplicationForm.jsx
  *
  * EMPLOYER DATA HANDLING:
  * ================================================================================
  * Backend: getJobs() manually populates hirer via direct MongoDB driver query
  *   (firstName, lastName, profileImage, avatar, verified, isVerified, rating, email)
  * Frontend: transformJobListItem() handles multiple fallbacks:
- *   1. Full hirer object (preferred — returned by backend populate)
+ *   1. Full hirer object (preferred â€” returned by backend populate)
  *   2. hirer_name string
  *   3. company/companyName fields
  *   4. Fallback: "Employer Name Pending" with _isFallback + _needsAdminReview flags
@@ -61,7 +61,7 @@
 
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { hasRole } from '../../../utils/userUtils';
-// JobResultsSection removed — cards are rendered inline below
+// JobResultsSection removed â€” cards are rendered inline below
 import JobsCardsGrid from '../components/JobsCardsGrid';
 import JobsCompactSearchBar from '../components/JobsCompactSearchBar';
 import JobsMobileFilterDrawer from '../components/JobsMobileFilterDrawer';
@@ -167,11 +167,11 @@ import {
   NotificationsActive as AlertIcon,
 } from '@mui/icons-material';
 
-// AUD2-H01 FIX: Removed LazyIcons wrapper — all icons are already eagerly imported above.
+// AUD2-H01 FIX: Removed LazyIcons wrapper â€” all icons are already eagerly imported above.
 // Creating React.lazy() wrappers for eagerly-imported modules creates redundant async chunks
 // without any bundle-size benefit.
 import { motion, AnimatePresence } from 'framer-motion';
-// styled + keyframes import removed — HeroSection (only user) was dead code
+// styled + keyframes import removed â€” HeroSection (only user) was dead code
 import { format, formatDistanceToNow } from 'date-fns';
 import { Helmet } from 'react-helmet-async';
 import CountUp from 'react-countup';
@@ -188,7 +188,7 @@ import { useJobsFiltersState } from '../hooks/useJobsFiltersState';
 import {
   createFeatureLogger,
   devError,
-} from '';
+} from '@/modules/common/utils/devLogger';
 import BreadcrumbNavigation from '../../../components/common/BreadcrumbNavigation';
 import PullToRefresh from '../../../components/common/PullToRefresh';
 import usePrefersReducedMotion from '../../../hooks/usePrefersReducedMotion';
@@ -199,7 +199,7 @@ const jobsDebugLog = createFeatureLogger({
   level: 'log',
 });
 
-// ✅ MOBILE-AUDIT P1: Removed dead code — 7 keyframe animations + HeroSection styled component
+// âœ… MOBILE-AUDIT P1: Removed dead code â€” 7 keyframe animations + HeroSection styled component
 // (float, shimmer, pulse, slideInFromBottom, gradientShift, sparkle, rotateGlow)
 // HeroSection was never rendered in JSX.
 
@@ -214,18 +214,18 @@ const AnimatedStatCard = ({ value, suffix = '', label, isLive = false }) => {
     <Paper
       ref={ref}
       sx={{
-        p: { xs: 2, sm: 2.5, md: 3 }, // ✅ Responsive padding
+        p: { xs: 2, sm: 2.5, md: 3 }, // âœ… Responsive padding
         textAlign: 'center',
         bgcolor: 'var(--k-bg-surface)',
         border: '1px solid var(--k-accent-border)',
-        minHeight: { xs: 'auto', sm: '140px', md: '160px' }, // ✅ Auto on mobile
-        display: 'flex', // ✅ Better centering
+        minHeight: { xs: 'auto', sm: '140px', md: '160px' }, // âœ… Auto on mobile
+        display: 'flex', // âœ… Better centering
         flexDirection: 'column',
         justifyContent: 'center',
         '&:hover': {
           border: '1px solid var(--k-gold)',
           boxShadow: '0 8px 32px rgba(212,175,55,0.2)',
-          transform: { xs: 'none', sm: 'translateY(-4px)' }, // ✅ Desktop-only hover
+          transform: { xs: 'none', sm: 'translateY(-4px)' }, // âœ… Desktop-only hover
         },
         transition: 'all 0.3s ease-in-out',
         position: 'relative',
@@ -253,8 +253,8 @@ const AnimatedStatCard = ({ value, suffix = '', label, isLive = false }) => {
         sx={{
           color: 'var(--k-gold)',
           fontWeight: 'bold',
-          mb: { xs: 0.5, sm: 0.75, md: 1 }, // ✅ Responsive margin
-          fontSize: { xs: '1.75rem', sm: '2.25rem', md: '3rem' }, // ✅ Responsive font size
+          mb: { xs: 0.5, sm: 0.75, md: 1 }, // âœ… Responsive margin
+          fontSize: { xs: '1.75rem', sm: '2.25rem', md: '3rem' }, // âœ… Responsive font size
           position: 'relative',
           zIndex: 1,
         }}
@@ -313,7 +313,7 @@ const AnimatedStatCard = ({ value, suffix = '', label, isLive = false }) => {
                   opacity: 0.5,
                 },
               },
-              // ✅ MOBILE-AUDIT: Respect prefers-reduced-motion
+              // âœ… MOBILE-AUDIT: Respect prefers-reduced-motion
               '@media (prefers-reduced-motion: reduce)': {
                 animation: 'none',
               },
@@ -334,7 +334,7 @@ const AnimatedStatCard = ({ value, suffix = '', label, isLive = false }) => {
   );
 };
 
-// Ghana vocational trade categories — matches backend Job.requirements.primarySkills enum
+// Ghana vocational trade categories â€” matches backend Job.requirements.primarySkills enum
 const ghanaTradeCategories = [
   {
     name: 'Plumbing',
@@ -607,7 +607,7 @@ function JobsResultsHeader({
             )}
             {budgetFilterActive && (
               <Chip
-                label={`Budget: GH₵ ${budgetRange[0].toLocaleString()} – ${budgetRange[1].toLocaleString()}`}
+                label={`Budget: GHâ‚µ ${budgetRange[0].toLocaleString()} â€“ ${budgetRange[1].toLocaleString()}`}
                 size="small"
                 onDelete={onClearBudget}
                 sx={{
@@ -777,7 +777,7 @@ function JobsGridStatePanels({
                 mb: 2,
               }}
             >
-              <Typography sx={{ fontSize: 48 }}>⚠️</Typography>
+              <Typography sx={{ fontSize: 48 }}>âš ï¸</Typography>
             </Box>
             <Typography
               variant="h6"
@@ -1258,7 +1258,7 @@ function JobsFiltersPanel({
             <Grid item xs={12} md={6}>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
                 <Typography variant="body2" sx={{ color: 'var(--k-gold)', fontWeight: 'bold' }}>
-                  Budget Range (GH₵)
+                  Budget Range (GHâ‚µ)
                 </Typography>
                 <FormControlLabel
                   control={
@@ -1280,7 +1280,7 @@ function JobsFiltersPanel({
                 value={budgetRange}
                 onChange={(e, newValue) => onBudgetRangeChange(newValue)}
                 valueLabelDisplay="auto"
-                valueLabelFormat={(v) => `GH₵ ${v.toLocaleString()}`}
+                valueLabelFormat={(v) => `GHâ‚µ ${v.toLocaleString()}`}
                 min={0}
                 max={100000}
                 step={500}
@@ -1310,10 +1310,10 @@ function JobsFiltersPanel({
               />
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.5 }}>
                 <Typography variant="caption" sx={{ color: 'var(--k-text-secondary)' }}>
-                  GH₵ {budgetRange[0].toLocaleString()}
+                  GHâ‚µ {budgetRange[0].toLocaleString()}
                 </Typography>
                 <Typography variant="caption" sx={{ color: 'var(--k-text-secondary)' }}>
-                  GH₵ {budgetRange[1].toLocaleString()}+
+                  GHâ‚µ {budgetRange[1].toLocaleString()}+
                 </Typography>
               </Box>
             </Grid>
@@ -1370,8 +1370,8 @@ function JobsFiltersPanel({
                 >
                   <MenuItem value="relevance">Most Relevant</MenuItem>
                   <MenuItem value="newest">Newest First</MenuItem>
-                  <MenuItem value="budget_high">Budget: High → Low</MenuItem>
-                  <MenuItem value="budget_low">Budget: Low → High</MenuItem>
+                  <MenuItem value="budget_high">Budget: High â†’ Low</MenuItem>
+                  <MenuItem value="budget_low">Budget: Low â†’ High</MenuItem>
                 </Select>
               </FormControl>
               {hasActiveFilters && (
@@ -1386,7 +1386,7 @@ function JobsFiltersPanel({
                     '&:hover': { bgcolor: 'rgba(255,107,107,0.1)' },
                   }}
                 >
-                  ✕ Clear filters
+                  âœ• Clear filters
                 </Button>
               )}
             </Grid>
@@ -1476,9 +1476,9 @@ function JobsCategoryBrowseGrid({
 }
 
 // Platform metrics are now derived from real data inside the component via platformStats state.
-// No hardcoded vanity numbers — stats are computed from actual job counts.
+// No hardcoded vanity numbers â€” stats are computed from actual job counts.
 
-// Class-based Error Boundary — React requires class components for getDerivedStateFromError
+// Class-based Error Boundary â€” React requires class components for getDerivedStateFromError
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
@@ -1885,7 +1885,7 @@ const JobsPage = () => {
             loading: false,
           });
         } else if (!cancelled) {
-          // API unavailable — derive available-jobs count from loaded data
+          // API unavailable â€” derive available-jobs count from loaded data
           setPlatformStats((prev) => ({
             ...prev,
             availableJobs: jobsCountRef.current,
@@ -2020,13 +2020,13 @@ const JobsPage = () => {
                         WebkitTextFillColor: 'transparent',
                         mb: { xs: 0.5, md: 1 },
                         fontSize: {
-                          xs: '1.35rem', // ✅ Increased from 1.25rem for better mobile readability
-                          sm: '1.65rem', // ✅ Increased from 1.5rem
+                          xs: '1.35rem', // âœ… Increased from 1.25rem for better mobile readability
+                          sm: '1.65rem', // âœ… Increased from 1.5rem
                           md: '2rem',
                           lg: '2.25rem',
                         },
-                        lineHeight: { xs: 1.3, md: 1.3 }, // ✅ Better line spacing on mobile
-                        wordWrap: 'break-word', // ✅ Prevent text overflow
+                        lineHeight: { xs: 1.3, md: 1.3 }, // âœ… Better line spacing on mobile
+                        wordWrap: 'break-word', // âœ… Prevent text overflow
                       }}
                     >
                       {isSmallMobile
@@ -2037,10 +2037,10 @@ const JobsPage = () => {
                       variant="h6"
                       sx={{
                         color: 'text.secondary',
-                        fontSize: { xs: '0.85rem', sm: '0.95rem', md: '1rem' }, // ✅ Improved readability
-                        lineHeight: { xs: 1.5, md: 1.5 }, // ✅ Better line spacing
+                        fontSize: { xs: '0.85rem', sm: '0.95rem', md: '1rem' }, // âœ… Improved readability
+                        lineHeight: { xs: 1.5, md: 1.5 }, // âœ… Better line spacing
                         maxWidth: { xs: '100%', md: '90%' },
-                        wordWrap: 'break-word', // ✅ Prevent overflow
+                        wordWrap: 'break-word', // âœ… Prevent overflow
                       }}
                     >
                       {isSmallMobile
@@ -2212,9 +2212,9 @@ const JobsPage = () => {
           >
             <Box
               sx={{
-                mt: { xs: 6, md: 8 }, // ✅ Reduced top margin on mobile
-                mb: { xs: 4, md: 6 }, // ✅ Reduced bottom margin on mobile
-                px: { xs: 1, sm: 0 }, // ✅ Add horizontal padding on mobile
+                mt: { xs: 6, md: 8 }, // âœ… Reduced top margin on mobile
+                mb: { xs: 4, md: 6 }, // âœ… Reduced bottom margin on mobile
+                px: { xs: 1, sm: 0 }, // âœ… Add horizontal padding on mobile
               }}
             >
               <Typography
@@ -2223,19 +2223,19 @@ const JobsPage = () => {
                   color: 'var(--k-gold)',
                   fontWeight: 'bold',
                   textAlign: 'center',
-                  mb: { xs: 3, md: 4 }, // ✅ Responsive margin
-                  fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' }, // ✅ Responsive font size
+                  mb: { xs: 3, md: 4 }, // âœ… Responsive margin
+                  fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' }, // âœ… Responsive font size
                 }}
               >
                 Platform Statistics
               </Typography>
               <Grid container spacing={{ xs: 2, sm: 3 }}>
                 {' '}
-                {/* ✅ Responsive spacing */}
+                {/* âœ… Responsive spacing */}
                 {/* Available Jobs Stat */}
                 <Grid item xs={6} sm={6} md={3}>
                   {' '}
-                  {/* ✅ 2 columns on mobile, 4 on desktop */}
+                  {/* âœ… 2 columns on mobile, 4 on desktop */}
                   <AnimatedStatCard
                     value={
                       platformStats.loading
@@ -2249,7 +2249,7 @@ const JobsPage = () => {
                 {/* Active Employers Stat */}
                 <Grid item xs={6} sm={6} md={3}>
                   {' '}
-                  {/* ✅ 2 columns on mobile, 4 on desktop */}
+                  {/* âœ… 2 columns on mobile, 4 on desktop */}
                   <AnimatedStatCard
                     value={
                       platformStats.loading ? 0 : platformStats.activeEmployers
@@ -2261,7 +2261,7 @@ const JobsPage = () => {
                 {/* Skilled Workers Stat */}
                 <Grid item xs={6} sm={6} md={3}>
                   {' '}
-                  {/* ✅ 2 columns on mobile, 4 on desktop */}
+                  {/* âœ… 2 columns on mobile, 4 on desktop */}
                   <AnimatedStatCard
                     value={
                       platformStats.loading ? 0 : platformStats.skilledWorkers
@@ -2273,7 +2273,7 @@ const JobsPage = () => {
                 {/* Success Rate Stat */}
                 <Grid item xs={6} sm={6} md={3}>
                   {' '}
-                  {/* ✅ 2 columns on mobile, 4 on desktop */}
+                  {/* âœ… 2 columns on mobile, 4 on desktop */}
                   <AnimatedStatCard
                     value={
                       platformStats.loading ? 0 : platformStats.successRate
@@ -2295,9 +2295,9 @@ const JobsPage = () => {
           >
             <Paper
               sx={{
-                mt: { xs: 3, md: 4 }, // ✅ Reduced mobile margin
-                p: { xs: 2.5, sm: 3, md: 4 }, // ✅ Responsive padding
-                mx: { xs: 1, sm: 0 }, // ✅ Mobile horizontal spacing
+                mt: { xs: 3, md: 4 }, // âœ… Reduced mobile margin
+                p: { xs: 2.5, sm: 3, md: 4 }, // âœ… Responsive padding
+                mx: { xs: 1, sm: 0 }, // âœ… Mobile horizontal spacing
                 textAlign: 'center',
                 bgcolor: 'var(--k-accent-soft)',
                 border: '1px solid var(--k-accent-border-strong)',
@@ -2308,9 +2308,9 @@ const JobsPage = () => {
                 sx={{
                   color: 'var(--k-gold)',
                   fontWeight: 'bold',
-                  mb: { xs: 1.5, md: 2 }, // ✅ Responsive margin
-                  fontSize: { xs: '1.35rem', sm: '1.75rem', md: '2rem' }, // ✅ Responsive font
-                  px: { xs: 1, sm: 0 }, // ✅ Mobile padding
+                  mb: { xs: 1.5, md: 2 }, // âœ… Responsive margin
+                  fontSize: { xs: '1.35rem', sm: '1.75rem', md: '2rem' }, // âœ… Responsive font
+                  px: { xs: 1, sm: 0 }, // âœ… Mobile padding
                 }}
               >
                 Ready to Take Your Career to the Next Level?
@@ -2319,12 +2319,12 @@ const JobsPage = () => {
                 variant="body1"
                 sx={{
                   color: 'text.secondary',
-                  mb: { xs: 2.5, md: 3 }, // ✅ Responsive margin
-                  fontSize: { xs: '0.9rem', sm: '0.95rem', md: '1rem' }, // ✅ Responsive font
-                  lineHeight: { xs: 1.5, md: 1.6 }, // ✅ Better readability
+                  mb: { xs: 2.5, md: 3 }, // âœ… Responsive margin
+                  fontSize: { xs: '0.9rem', sm: '0.95rem', md: '1rem' }, // âœ… Responsive font
+                  lineHeight: { xs: 1.5, md: 1.6 }, // âœ… Better readability
                   maxWidth: 600,
                   mx: 'auto',
-                  px: { xs: 1, sm: 0 }, // ✅ Mobile padding
+                  px: { xs: 1, sm: 0 }, // âœ… Mobile padding
                 }}
               >
                 Join thousands of skilled professionals who've found their dream
@@ -2334,10 +2334,10 @@ const JobsPage = () => {
               <Box
                 sx={{
                   display: 'flex',
-                  gap: { xs: 1.5, sm: 2 }, // ✅ Responsive gap
+                  gap: { xs: 1.5, sm: 2 }, // âœ… Responsive gap
                   justifyContent: 'center',
                   flexWrap: 'wrap',
-                  px: { xs: 1, sm: 0 }, // ✅ Mobile padding
+                  px: { xs: 1, sm: 0 }, // âœ… Mobile padding
                 }}
               >
                 <Button
@@ -2365,14 +2365,14 @@ const JobsPage = () => {
                     bgcolor: 'var(--k-gold)',
                     color: 'var(--k-text-on-accent)',
                     fontWeight: 'bold',
-                    fontSize: { xs: '0.9rem', sm: '0.95rem', md: '1rem' }, // ✅ Responsive font
-                    px: { xs: 3, sm: 3.5, md: 4 }, // ✅ Responsive padding
-                    minHeight: { xs: '44px', sm: '48px' }, // ✅ Touch target
+                    fontSize: { xs: '0.9rem', sm: '0.95rem', md: '1rem' }, // âœ… Responsive font
+                    px: { xs: 3, sm: 3.5, md: 4 }, // âœ… Responsive padding
+                    minHeight: { xs: '44px', sm: '48px' }, // âœ… Touch target
                     '&:hover': {
                       bgcolor: 'var(--k-gold-dark)',
                     },
                     '&:active': {
-                      transform: 'scale(0.98)', // ✅ Touch feedback
+                      transform: 'scale(0.98)', // âœ… Touch feedback
                     },
                   }}>
                   {isHirerUser ? 'Post a Job' : 'Manage Job Alerts'}
@@ -2397,15 +2397,15 @@ const JobsPage = () => {
                   sx={{
                     borderColor: 'var(--k-gold)',
                     color: 'var(--k-gold)',
-                    fontSize: { xs: '0.9rem', sm: '0.95rem', md: '1rem' }, // ✅ Responsive font
-                    px: { xs: 3, sm: 3.5, md: 4 }, // ✅ Responsive padding
-                    minHeight: { xs: '44px', sm: '48px' }, // ✅ Touch target
+                    fontSize: { xs: '0.9rem', sm: '0.95rem', md: '1rem' }, // âœ… Responsive font
+                    px: { xs: 3, sm: 3.5, md: 4 }, // âœ… Responsive padding
+                    minHeight: { xs: '44px', sm: '48px' }, // âœ… Touch target
                     '&:hover': {
                       borderColor: 'var(--k-gold-dark)',
                       bgcolor: 'var(--k-accent-soft)',
                     },
                     '&:active': {
-                      transform: 'scale(0.98)', // ✅ Touch feedback
+                      transform: 'scale(0.98)', // âœ… Touch feedback
                     },
                   }}>
                   {isHirerUser ? 'Find Talent' : 'Upload CV'}
@@ -2428,5 +2428,6 @@ const JobsPage = () => {
 };
 
 export default JobsPage;
+
 
 

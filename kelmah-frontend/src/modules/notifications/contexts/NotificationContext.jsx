@@ -1,4 +1,4 @@
-import React, {
+﻿import React, {
   createContext,
   useContext,
   useState,
@@ -20,7 +20,7 @@ import {
   createFeatureLogger,
   devError,
   devWarn,
-} from '';
+} from '@/modules/common/utils/devLogger';
 
 const notificationsLog = createFeatureLogger({
   flagName: 'VITE_DEBUG_NOTIFICATIONS',
@@ -66,13 +66,13 @@ export const NotificationProvider = ({ children }) => {
     severity: 'info',
   });
 
-  // ✅ FIXED: Add null-safety check to prevent crashes
+  // âœ… FIXED: Add null-safety check to prevent crashes
   const unreadCount = (notifications || []).filter(
     (n) => !n.read && n.readStatus?.isRead !== true,
   ).length;
 
   // Normalize the user object from Redux or props to extract ONLY the ID
-  // ⚠️ CRITICAL FIX: Only track user.id to prevent re-fetches on user object mutations
+  // âš ï¸ CRITICAL FIX: Only track user.id to prevent re-fetches on user object mutations
   const userId = useMemo(() => {
     if (!user) return null;
     return user.id || user._id || user.userId;
@@ -91,7 +91,7 @@ export const NotificationProvider = ({ children }) => {
       const now = Date.now();
       const withinInterval = now - lastFetchRef.current < MIN_FETCH_INTERVAL;
       if (!force && withinInterval && fetchKey === lastFetchKeyRef.current) {
-        notificationsLog('⏱️ Skipping notification fetch - too soon since last fetch');
+        notificationsLog('â±ï¸ Skipping notification fetch - too soon since last fetch');
         return;
       }
 
@@ -136,7 +136,7 @@ export const NotificationProvider = ({ children }) => {
         if (err?.response?.status === 429) {
           // Rate limited - back off significantly
           devWarn(
-            '⚠️ Rate limited on notifications endpoint - backing off 2 minutes',
+            'âš ï¸ Rate limited on notifications endpoint - backing off 2 minutes',
           );
           lastFetchRef.current = now + 120000; // Block fetches for 2 minutes
           setError(
@@ -149,10 +149,10 @@ export const NotificationProvider = ({ children }) => {
         setLoading(false);
       }
     },
-    [userId], // ⚠️ CRITICAL: Only depend on userId, not entire user object
+    [userId], // âš ï¸ CRITICAL: Only depend on userId, not entire user object
   );
 
-  // ⚠️ FIX: Only fetch on mount and when userId changes (not entire user object)
+  // âš ï¸ FIX: Only fetch on mount and when userId changes (not entire user object)
   // This prevents rapid re-fetches when Redux updates user object properties
   useEffect(() => {
     // Only fetch if we have a userId
@@ -166,7 +166,7 @@ export const NotificationProvider = ({ children }) => {
 
         if (!token) {
           notificationsLog(
-            '⏸️ Notifications: Auth token missing, delaying socket connection',
+            'â¸ï¸ Notifications: Auth token missing, delaying socket connection',
           );
         } else {
           notificationService.onNotification = (payload) => {
@@ -217,7 +217,7 @@ export const NotificationProvider = ({ children }) => {
         );
       }
     };
-  }, [fetchNotifications, userId]); // ⚠️ CRITICAL: Depend on userId, not user object
+  }, [fetchNotifications, userId]); // âš ï¸ CRITICAL: Depend on userId, not user object
 
   const markAsRead = useCallback(async (id) => {
     try {
@@ -360,3 +360,4 @@ export const useNotifications = () => {
 };
 
 export default NotificationContext;
+

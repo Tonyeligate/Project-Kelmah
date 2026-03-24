@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+﻿import React, { useState, useEffect, useCallback, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import { useParams, useNavigate, Link as RouterLink } from 'react-router-dom';
@@ -107,7 +107,7 @@ import {
   resolveMediaAssetUrl,
   resolveProfileImageUrl,
 } from '../../common/utils/mediaAssets';
-import { devError } from '';
+import { devError } from '@/modules/common/utils/devLogger';
 
 const Input = styled('input')({
   display: 'none',
@@ -1017,7 +1017,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                       color: theme.palette.primary.main,
                     }}
                   >
-                    GH₵ {last30}
+                    GHâ‚µ {last30}
                   </Typography>
                   <Typography
                     sx={{
@@ -1026,7 +1026,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                       fontWeight: 500,
                     }}
                   >
-                    7d: GH₵ {last7}
+                    7d: GHâ‚µ {last7}
                   </Typography>
                 </Paper>
               </Grid>
@@ -1148,7 +1148,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                             color: theme.palette.primary.main,
                           }}
                         >
-                          GH₵ {totalAllTime}
+                          GHâ‚µ {totalAllTime}
                         </Typography>
                       </Box>
                     </Grid>
@@ -1264,7 +1264,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
             <MetricCard>
               <PriceIcon color="primary" sx={{ fontSize: 40, mb: 1 }} />
               <Typography variant="h4" fontWeight={700} color="primary">
-                GH₵ {profile.hourly_rate || 0}
+                GHâ‚µ {profile.hourly_rate || 0}
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 Per Hour
@@ -1319,7 +1319,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                           backgroundColor: theme.palette.primary.main,
                           borderRadius: 1,
                         }}
-                        title={`M${m.month}: GH₵ ${m.amount}`}
+                        title={`M${m.month}: GHâ‚µ ${m.amount}`}
                       />
                     );
                   })}
@@ -2650,5 +2650,6 @@ function WorkerProfile({ workerId: workerIdProp }) {
 }
 
 export default WorkerProfile;
+
 
 

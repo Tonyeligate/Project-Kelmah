@@ -1,5 +1,5 @@
-import { api } from '../../../services/apiClient';
-import { devError } from '';
+﻿import { api } from '../../../services/apiClient';
+import { devError } from '@/modules/common/utils/devLogger';
 
 const SERVICE_TARGETS = {
   user: {
@@ -176,3 +176,4 @@ const fileUploadService = {
 };
 
 export default fileUploadService;
+

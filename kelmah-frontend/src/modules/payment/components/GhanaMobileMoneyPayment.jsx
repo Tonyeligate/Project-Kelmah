@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import {
   Box,
   Paper,
@@ -26,7 +26,7 @@ import {
 import { useTheme } from '@mui/material/styles';
 import { styled } from '@mui/material/styles';
 import paymentService from '../services/paymentService';
-import { devError } from '';
+import { devError } from '@/modules/common/utils/devLogger';
 
 // Custom styled components
 const PaymentMethodCard = styled(Paper)(({ theme, selected }) => ({
@@ -489,7 +489,7 @@ const GhanaMobileMoneyPayment = ({
       }}
     >
       <Typography variant="h5" gutterBottom sx={{ textAlign: 'center', mb: 3 }}>
-        🇬🇭 Ghana Mobile Money Payment
+        ðŸ‡¬ðŸ‡­ Ghana Mobile Money Payment
       </Typography>
 
       {renderPaymentContent()}
@@ -498,3 +498,4 @@ const GhanaMobileMoneyPayment = ({
 };
 
 export default GhanaMobileMoneyPayment;
+

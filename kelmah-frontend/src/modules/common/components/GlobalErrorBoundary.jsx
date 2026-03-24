@@ -1,4 +1,4 @@
-import { Component } from 'react';
+﻿import { Component } from 'react';
 import PropTypes from 'prop-types';
 import {
   Box,
@@ -19,7 +19,7 @@ import {
   getServiceStatusMessage,
 } from '../../../utils/serviceHealthCheck';
 import { BRAND_COLORS } from '../../../theme';
-import { devError, devWarn } from '';
+import { devError, devWarn } from '@/modules/common/utils/devLogger';
 
 class GlobalErrorBoundaryInner extends Component {
   constructor(props) {
@@ -93,7 +93,7 @@ class GlobalErrorBoundaryInner extends Component {
         bg: 'rgba(244,67,54,0.12)',
       },
       checking: {
-        label: 'Checking Status…',
+        label: 'Checking Statusâ€¦',
         color: '#0288d1',
         bg: 'rgba(3,169,244,0.12)',
       },
@@ -166,7 +166,7 @@ class GlobalErrorBoundaryInner extends Component {
 
             <Chip
               icon={<SupportAgentIcon />}
-              label={`${chipConfig.label} · ${status.message}`}
+              label={`${chipConfig.label} Â· ${status.message}`}
               sx={{
                 width: 'fit-content',
                 backgroundColor: chipConfig.bg,
@@ -261,3 +261,4 @@ GlobalErrorBoundary.propTypes = {
 };
 
 export default GlobalErrorBoundary;
+

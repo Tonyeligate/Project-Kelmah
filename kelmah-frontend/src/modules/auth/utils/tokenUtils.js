@@ -1,4 +1,4 @@
-import { devError } from '';
+﻿import { devError } from '@/modules/common/utils/devLogger';
 
 export const TOKEN_EXPIRY_TIME = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 export const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes in milliseconds
@@ -6,7 +6,7 @@ export const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes in milliseconds
 const tokenUtilsError = devError;
 
 /**
- * Decode a base64url string (JWT-safe). Replaces `-` → `+` and `_` → `/`
+ * Decode a base64url string (JWT-safe). Replaces `-` â†’ `+` and `_` â†’ `/`
  * before calling atob() so tokens with base64url characters don't crash.
  */
 const decodeBase64Url = (str) => {
@@ -38,3 +38,4 @@ export const getTokenExpiryTime = (token) => {
     return null;
   }
 };
+

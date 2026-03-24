@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+﻿import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   Box,
   Grid,
@@ -60,7 +60,7 @@ import {
   Analytics as AnalyticsIcon,
   Refresh as RefreshIcon,
 } from '@mui/icons-material';
-// ✅ MOBILE-AUDIT P3: framer-motion import removed — all motion.div wrappers replaced with plain divs
+// âœ… MOBILE-AUDIT P3: framer-motion import removed â€” all motion.div wrappers replaced with plain divs
 import { formatDistanceToNow, format } from 'date-fns';
 import { safeFormatDate, safeFormatRelative } from '@/modules/common/utils/formatters';
 import {
@@ -73,7 +73,7 @@ import { useNavigate } from 'react-router-dom';
 import reviewService from '../services/reviewService';
 import MobileFilterSheet from '../../../components/common/MobileFilterSheet';
 import { Helmet } from 'react-helmet-async';
-import { devError } from '';
+import { devError } from '@/modules/common/utils/devLogger';
 
 // Enhanced Reviews Page with comprehensive review management
 const EnhancedReviewsPage = () => {
@@ -490,7 +490,7 @@ const EnhancedReviewsPage = () => {
         </Grid>
       </Grid>
 
-      {/* Recent Trends — computed from actual review data */}
+      {/* Recent Trends â€” computed from actual review data */}
       <Box sx={{ mt: 3, pt: 3, borderTop: '1px solid', borderColor: 'divider' }}>
         <Stack direction="row" alignItems="center" spacing={3}>
           <Box>
@@ -535,7 +535,7 @@ const EnhancedReviewsPage = () => {
             <Typography variant="h6" sx={{ color: 'secondary.main', fontWeight: 700 }}>
               {reviews.length > 0
                 ? `${Math.round((reviews.filter(r => r.hasReply).length / reviews.length) * 100)}%`
-                : '—'}
+                : 'â€”'}
             </Typography>
           </Box>
         </Stack>
@@ -544,7 +544,7 @@ const EnhancedReviewsPage = () => {
   );
 
   // Review Card Component
-  // ✅ MOBILE-AUDIT P3: removed motion.div wrapper from ReviewCard
+  // âœ… MOBILE-AUDIT P3: removed motion.div wrapper from ReviewCard
   const ReviewCard = ({ review }) => {
     const reviewerAvatar = resolveMediaAssetUrl(review.reviewer?.avatar);
     const replyAvatar = resolveProfileImageUrl(user || {});
@@ -553,7 +553,7 @@ const EnhancedReviewsPage = () => {
     return (
       <Card
         sx={{
-          // ✅ MOBILE-AUDIT P4: solid bg, simple top border instead of gradient card + ::before
+          // âœ… MOBILE-AUDIT P4: solid bg, simple top border instead of gradient card + ::before
           bgcolor: 'background.paper',
           border: '1px solid',
           borderColor: 'divider',
@@ -727,8 +727,8 @@ const EnhancedReviewsPage = () => {
                     sx={{ color: 'success.main', fontWeight: 600 }}
                   >
                     {typeof review.job?.budget === 'number'
-                      ? `GH₵${review.job.budget.toLocaleString()}`
-                      : review.job?.budget || '—'}
+                      ? `GHâ‚µ${review.job.budget.toLocaleString()}`
+                      : review.job?.budget || 'â€”'}
                   </Typography>
                   {review.job?.gallery?.length > 1 && (
                     <Chip
@@ -998,7 +998,7 @@ const EnhancedReviewsPage = () => {
       {/* Tabs */}
       <Paper
         sx={{
-          // ✅ MOBILE-AUDIT P5: replaced hardcoded dark gradient with theme surface
+          // âœ… MOBILE-AUDIT P5: replaced hardcoded dark gradient with theme surface
           bgcolor: 'background.paper',
           border: '1px solid',
           borderColor: 'divider',
@@ -1048,7 +1048,7 @@ const EnhancedReviewsPage = () => {
             sx={{
               p: { xs: 2, md: 3 },
               mb: 3,
-              // ✅ MOBILE-AUDIT P4: solid bg instead of gradient
+              // âœ… MOBILE-AUDIT P4: solid bg instead of gradient
               bgcolor: 'background.paper',
               border: '1px solid',
               borderColor: 'divider',
@@ -1183,7 +1183,7 @@ const EnhancedReviewsPage = () => {
               sx={{
                 p: 6,
                 textAlign: 'center',
-                // ✅ MOBILE-AUDIT P5: replaced hardcoded dark gradient with theme surface
+                // âœ… MOBILE-AUDIT P5: replaced hardcoded dark gradient with theme surface
                 bgcolor: 'background.paper',
                 border: '1px solid',
                 borderColor: 'divider',
@@ -1350,7 +1350,7 @@ const EnhancedReviewsPage = () => {
         aria-labelledby="reply-dialog-title"
         PaperProps={{
           sx: {
-            // ✅ MOBILE-AUDIT P5: replaced hardcoded dark gradient with theme surface
+            // âœ… MOBILE-AUDIT P5: replaced hardcoded dark gradient with theme surface
             bgcolor: 'background.paper',
             border: '1px solid',
             borderColor: 'divider',
@@ -1490,5 +1490,6 @@ const EnhancedReviewsPage = () => {
 };
 
 export default EnhancedReviewsPage;
+
 
 

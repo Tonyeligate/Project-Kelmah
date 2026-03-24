@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+﻿import { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Paper,
@@ -38,7 +38,7 @@ import {
 import { useSnackbar } from 'notistack';
 import PropTypes from 'prop-types';
 import locationService from '../services/locationService';
-import { createFeatureLogger } from '';
+import { createFeatureLogger } from '@/modules/common/utils/devLogger';
 
 const searchDebugError = createFeatureLogger({
   flagName: 'VITE_DEBUG_SEARCH',
@@ -617,7 +617,7 @@ const LocationBasedSearch = ({
           >
             <Typography variant="body2">
               <strong>{currentLocation.name}</strong>
-              {currentLocation.region && ` • ${currentLocation.region}`}
+              {currentLocation.region && ` â€¢ ${currentLocation.region}`}
             </Typography>
           </Alert>
         ) : (
@@ -1000,3 +1000,4 @@ LocationBasedSearch.propTypes = {
 };
 
 export default LocationBasedSearch;
+

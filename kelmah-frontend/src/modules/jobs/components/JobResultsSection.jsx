@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import PropTypes from 'prop-types';
 import {
   Box,
@@ -34,7 +34,7 @@ import { format, formatDistanceToNow, isValid } from 'date-fns';
 import CountUp from 'react-countup';
 import { useInView } from 'react-intersection-observer';
 import { captureRecoverableApiError } from '@/services/errorTelemetry';
-import { devWarn } from '';
+import { devWarn } from '@/modules/common/utils/devLogger';
 import {
   ElectricalServices as ElectricalIcon,
   Plumbing as PlumbingIcon,
@@ -727,9 +727,9 @@ const JobResultsSection = ({
                               ? typeof job?.budget === 'object'
                                 ? job.budget.min === job.budget.max ||
                                   !job.budget.max
-                                  ? `GH₵ ${(job.budget.amount || job.budget.min)?.toLocaleString()}`
-                                  : `GH₵ ${job.budget.min?.toLocaleString()} - ${job.budget.max?.toLocaleString()}`
-                                : `GH₵ ${job?.budget?.toLocaleString()}`
+                                  ? `GHâ‚µ ${(job.budget.amount || job.budget.min)?.toLocaleString()}`
+                                  : `GHâ‚µ ${job.budget.min?.toLocaleString()} - ${job.budget.max?.toLocaleString()}`
+                                : `GHâ‚µ ${job?.budget?.toLocaleString()}`
                               : 'Negotiable'}
                           </Typography>
                           <Chip
@@ -750,7 +750,7 @@ const JobResultsSection = ({
                             sx={{ mr: 1, color: '#D4AF37' }}
                           />
                           <Typography variant="body2" sx={{ color: 'white' }}>
-                            {job.rating ? `${job.rating} Rating` : 'No ratings yet'} •{' '}
+                            {job.rating ? `${job.rating} Rating` : 'No ratings yet'} â€¢{' '}
                             {job.proposalCount || 0} Applicants
                           </Typography>
                         </Box>
@@ -1187,4 +1187,5 @@ JobResultsSection.propTypes = {
 };
 
 export default JobResultsSection;
+
 

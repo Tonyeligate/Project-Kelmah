@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { devError } from '';
+﻿import { useState, useEffect } from 'react';
+import { devError } from '@/modules/common/utils/devLogger';
 
 /**
  * Custom hook for storing values in localStorage with serialization
@@ -76,3 +76,4 @@ const useLocalStorage = (key, initialValue) => {
 };
 
 export default useLocalStorage;
+

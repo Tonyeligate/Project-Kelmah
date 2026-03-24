@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+﻿import { useState, useCallback, useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import profileService from '../services/profileService';
 import {
@@ -11,7 +11,7 @@ import {
   createFeatureLogger,
   devError,
   devWarn,
-} from '';
+} from '@/modules/common/utils/devLogger';
 
 const PROFILE_REQUEST_TIMEOUT_MS = 5000;
 let profileInitPromise = null;
@@ -288,3 +288,4 @@ export const useProfile = (options = {}) => {
     activity,
   };
 };
+

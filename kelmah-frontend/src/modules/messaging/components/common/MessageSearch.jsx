@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import {
   Box,
   Drawer,
@@ -24,7 +24,7 @@ import {
 import { styled } from '@mui/material/styles';
 import { safeFormatDate } from '@/modules/common/utils/formatters';
 import { messagingService } from '../../services/messagingService';
-import { devError } from '';
+import { devError } from '@/modules/common/utils/devLogger';
 
 // Styled components
 const SearchHeader = styled(Box)(({ theme }) => ({
@@ -383,4 +383,5 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
 };
 
 export default MessageSearch;
+
 

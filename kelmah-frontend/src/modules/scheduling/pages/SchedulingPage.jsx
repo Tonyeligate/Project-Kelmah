@@ -1,4 +1,4 @@
-// IconButton focus-visible accessibility verified for this module.
+﻿// IconButton focus-visible accessibility verified for this module.
 import React, { useState, useEffect } from 'react';
 import {
   Container,
@@ -68,7 +68,7 @@ import {
   MEETING_ALLOWED_HOSTS,
   GOOGLE_MAPS_ALLOWED_HOSTS,
 } from '../../../utils/externalNavigation';
-import { devError, devWarn } from '';
+import { devError, devWarn } from '@/modules/common/utils/devLogger';
 
 const getStatusChip = (status) => {
   const statusConfig = {
@@ -183,7 +183,7 @@ const AppointmentCard = ({
         borderRadius: 2,
         p: 2,
         mb: 2,
-        // ✅ MOBILE-AUDIT P4: removed hover transform (no hover on mobile)
+        // âœ… MOBILE-AUDIT P4: removed hover transform (no hover on mobile)
         cursor: 'pointer',
         position: 'relative',
       }}
@@ -250,7 +250,7 @@ const AppointmentCard = ({
                 sx={{
                   borderWidth: 2,
                   minHeight: 44,
-                  // ✅ MOBILE-AUDIT P4: removed decorative boxShadow
+                  // âœ… MOBILE-AUDIT P4: removed decorative boxShadow
                 }}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -272,7 +272,7 @@ const AppointmentCard = ({
                 sx={{
                   borderWidth: 2,
                   minHeight: 44,
-                  // ✅ MOBILE-AUDIT P4: removed decorative boxShadow
+                  // âœ… MOBILE-AUDIT P4: removed decorative boxShadow
                 }}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -1106,4 +1106,5 @@ const SchedulingPage = ({
 };
 
 export default SchedulingPage;
+
 

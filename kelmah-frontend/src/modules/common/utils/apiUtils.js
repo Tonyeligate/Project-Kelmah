@@ -1,5 +1,5 @@
-import { api as gatewayClient } from '../../../services/apiClient';
-import { devDebug } from '';
+﻿import { api as gatewayClient } from '../../../services/apiClient';
+import { devDebug } from '@/modules/common/utils/devLogger';
 
 /**
  * Check if the API is reachable
@@ -94,3 +94,4 @@ export const apiService = {
     return gatewayClient.delete(url, options).then((response) => response.data);
   },
 };
+

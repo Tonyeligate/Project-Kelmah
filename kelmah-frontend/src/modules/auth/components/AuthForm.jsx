@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import {
   Box,
   TextField,
@@ -11,7 +11,7 @@ import {
 import { Link as RouterLink } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectAuthLoading, selectAuthError, login, register } from '../services/authSlice';
-import { devError } from '';
+import { devError } from '@/modules/common/utils/devLogger';
 
 const AuthForm = ({ mode = 'login', onSuccess }) => {
   // Use Redux auth system
@@ -235,3 +235,4 @@ const AuthForm = ({ mode = 'login', onSuccess }) => {
 };
 
 export default AuthForm;
+

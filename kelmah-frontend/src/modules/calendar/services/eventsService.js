@@ -1,7 +1,7 @@
-import { api } from '../../../services/apiClient';
+﻿import { api } from '../../../services/apiClient';
 import { unwrapApiData } from '../../../services/responseNormalizer';
 import { captureRecoverableApiError } from '../../../services/errorTelemetry';
-import { devError } from '';
+import { devError } from '@/modules/common/utils/devLogger';
 
 const CALENDAR_ENDPOINTS = ['/events', '/calendar/events'];
 
@@ -109,3 +109,4 @@ const eventsService = {
 };
 
 export default eventsService;
+

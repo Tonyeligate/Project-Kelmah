@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+﻿import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import {
@@ -58,7 +58,7 @@ import {
   Refresh as RefreshIcon,
   ChatBubbleOutline as ChatBubbleOutlineIcon,
 } from '@mui/icons-material';
-// ✅ MOBILE-AUDIT P3: framer-motion import removed — AnimatePresence/motion.div wrappers already replaced
+// âœ… MOBILE-AUDIT P3: framer-motion import removed â€” AnimatePresence/motion.div wrappers already replaced
 import ErrorBoundary from '../../../components/common/ErrorBoundary';
 import { safeFormatDate } from '@/modules/common/utils/formatters';
 import { BOTTOM_NAV_HEIGHT } from '../../../constants/layout';
@@ -71,10 +71,10 @@ import {
   getMessagePreview,
 } from '../utils/conversationUtils';
 import { useBreakpointDown } from '../../../hooks/useResponsive';
-// ConversationList + Chatbox rendered inline — imports removed (dead code)
+// ConversationList + Chatbox rendered inline â€” imports removed (dead code)
 import SEO from '../../common/components/common/SEO';
 import EmptyState from '../../../components/common/EmptyState';
-import { devError, devWarn } from '';
+import { devError, devWarn } from '@/modules/common/utils/devLogger';
 
 // Enhanced Messaging Page with modern features
 const EnhancedMessagingPage = () => {
@@ -972,7 +972,7 @@ const EnhancedMessagingPage = () => {
         </Stack>
       </Box>
 
-      {/* Conversations List — ✅ MOBILE-AUDIT P3: removed motion.div/AnimatePresence */}
+      {/* Conversations List â€” âœ… MOBILE-AUDIT P3: removed motion.div/AnimatePresence */}
       <Box sx={{ flex: 1, overflow: 'auto' }}>
           {filteredConversations.map((conversation, index) => {
             const otherParticipant = getOtherParticipant(conversation);
@@ -1470,7 +1470,7 @@ const EnhancedMessagingPage = () => {
               </Typography>
             </Box>
           ) : null}
-          {/* ✅ MOBILE-AUDIT P3: removed AnimatePresence + motion.div from messages */}
+          {/* âœ… MOBILE-AUDIT P3: removed AnimatePresence + motion.div from messages */}
             {(messages || []).map((message, index) => {
               const senderId = message.sender || message.senderId;
               const isOwn =
@@ -1528,7 +1528,7 @@ const EnhancedMessagingPage = () => {
                         sx={{
                           p: 1.5,
                           borderRadius: 2,
-                          // ✅ MOBILE-AUDIT P4: solid bg instead of gradient, removed speech-bubble tails
+                          // âœ… MOBILE-AUDIT P4: solid bg instead of gradient, removed speech-bubble tails
                           bgcolor: isOwn
                             ? 'primary.main'
                             : alpha(theme.palette.text.primary, 0.08),
@@ -1982,7 +1982,7 @@ const EnhancedMessagingPage = () => {
     );
   }
 
-  // Mobile messaging template — uses isMobile (theme.breakpoints.down('md'))
+  // Mobile messaging template â€” uses isMobile (theme.breakpoints.down('md'))
   if (isMobile) {
     return (
       <Box
@@ -2075,7 +2075,7 @@ const EnhancedMessagingPage = () => {
                   },
                   '& .MuiInputBase-input': {
                     color: 'text.primary',
-                    // ✅ MOBILE-AUDIT: fontSize removed — theme MuiInputBase sets 16px globally
+                    // âœ… MOBILE-AUDIT: fontSize removed â€” theme MuiInputBase sets 16px globally
                     // to prevent iOS keyboard auto-zoom (< 16px triggers zoom)
                   },
                   '& .MuiInputBase-input::placeholder': {
@@ -2096,7 +2096,7 @@ const EnhancedMessagingPage = () => {
               </Typography>
             </Box>
 
-            {/* Conversations List — Real Data */}
+            {/* Conversations List â€” Real Data */}
             <Box sx={{ px: 2 }}>
               <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
                 <Box>
@@ -2283,7 +2283,7 @@ const EnhancedMessagingPage = () => {
               })}
             </Box>
 
-            {/* Bottom spacing for nav — uses shared layout constant */}
+            {/* Bottom spacing for nav â€” uses shared layout constant */}
             <Box sx={{ height: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px) + 16px)` }} />
           </>
         ) : (
@@ -2399,7 +2399,7 @@ const EnhancedMessagingPage = () => {
               )}
             </Box>
 
-            {/* Messages Area — Real Data */}
+            {/* Messages Area â€” Real Data */}
             <Box
               sx={{
                 flex: 1,
@@ -2467,7 +2467,7 @@ const EnhancedMessagingPage = () => {
               <div ref={messagesEndRef} />
             </Box>
 
-            {/* Message Input — Wired to real handlers */}
+            {/* Message Input â€” Wired to real handlers */}
             <Box
               sx={{
                 bgcolor: 'background.default',
@@ -2816,5 +2816,6 @@ const EnhancedMessagingPage = () => {
 };
 
 export default EnhancedMessagingPage;
+
 
 

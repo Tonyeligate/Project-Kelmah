@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useParams, Link as RouterLink } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { usePayments } from '../contexts/PaymentContext';
@@ -25,7 +25,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { Helmet } from 'react-helmet-async';
 import { currencyFormatter } from '@/modules/common/utils/formatters';
 import { getRoleHomePath, hasRole } from '../../../utils/userUtils';
-import { devError } from '';
+import { devError } from '@/modules/common/utils/devLogger';
 
 const EscrowDetailsPage = () => {
   const { escrowId } = useParams();
@@ -52,7 +52,7 @@ const EscrowDetailsPage = () => {
   if (loading) {
     return (
       <Container sx={{ py: 4, display: 'flex', justifyContent: 'center' }}>
-        <Typography variant="body1" color="text.secondary">Loading escrow details…</Typography>
+        <Typography variant="body1" color="text.secondary">Loading escrow detailsâ€¦</Typography>
       </Container>
     );
   }
@@ -264,3 +264,4 @@ const EscrowDetailsPage = () => {
 };
 
 export default EscrowDetailsPage;
+

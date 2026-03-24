@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+﻿import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -54,7 +54,7 @@ import {
   formatRelativeTime,
   formatJobLocation,
 } from '../../../utils/formatters';
-import { createFeatureLogger } from '';
+import { createFeatureLogger } from '@/modules/common/utils/devLogger';
 
 // FIX C2: Stable default object to prevent infinite render loops from {} !== {}
 const EMPTY_FILTER = {};
@@ -429,9 +429,9 @@ const SmartJobRecommendations = ({
   // Get urgency indicator
   const getUrgencyIndicator = (urgency) => {
     const indicators = {
-      high: { color: 'error', label: 'Urgent', icon: '🔥' },
-      medium: { color: 'warning', label: 'Soon', icon: '⏰' },
-      low: { color: 'info', label: 'Flexible', icon: '📅' },
+      high: { color: 'error', label: 'Urgent', icon: 'ðŸ”¥' },
+      medium: { color: 'warning', label: 'Soon', icon: 'â°' },
+      low: { color: 'info', label: 'Flexible', icon: 'ðŸ“…' },
     };
     return indicators[urgency] || indicators.low;
   };
@@ -1103,4 +1103,5 @@ SmartJobRecommendations.propTypes = {
 };
 
 export default SmartJobRecommendations;
+
 

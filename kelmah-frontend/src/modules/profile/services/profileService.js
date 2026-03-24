@@ -1,9 +1,9 @@
-import { api } from '../../../services/apiClient';
+﻿import { api } from '../../../services/apiClient';
 import {
   createFeatureLogger,
   devError,
   devWarn,
-} from '';
+} from '@/modules/common/utils/devLogger';
 
 const profileDebug = createFeatureLogger({
   flagName: 'VITE_DEBUG_PROFILE',
@@ -199,3 +199,4 @@ class ProfileService {
 
 const profileService = new ProfileService();
 export default profileService;
+

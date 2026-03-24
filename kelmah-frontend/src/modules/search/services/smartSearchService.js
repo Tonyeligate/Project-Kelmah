@@ -1,5 +1,5 @@
-import { api } from '../../../services/apiClient';
-import { devWarn } from '';
+﻿import { api } from '../../../services/apiClient';
+import { devWarn } from '@/modules/common/utils/devLogger';
 
 const API_URL = '/search';
 const JOB_RECOMMENDATIONS_ENDPOINT = '/jobs/recommendations/personalized';
@@ -334,3 +334,4 @@ const smartSearchService = {
 // Removed: mock job results generator
 
 export default smartSearchService;
+

@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+﻿import { useState, useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import settingsService from '../services/settingsService';
 import {
@@ -9,7 +9,7 @@ import {
   selectSettingsLoading,
   selectSettingsError,
 } from '../../../store/slices/settingsSlice';
-import { devError } from '';
+import { devError } from '@/modules/common/utils/devLogger';
 
 export const useSettings = () => {
   const dispatch = useDispatch();
@@ -195,3 +195,4 @@ export const useSettings = () => {
 };
 
 export default useSettings;
+

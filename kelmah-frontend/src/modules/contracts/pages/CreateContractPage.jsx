@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
@@ -28,7 +28,7 @@ import {
   selectContractsError,
 } from '../services/contractSlice';
 import { useBreakpointDown } from '@/hooks/useResponsive';
-import { devError } from '';
+import { devError } from '@/modules/common/utils/devLogger';
 
 const initialContractState = {
   title: '',
@@ -523,7 +523,7 @@ const CreateContractPage = () => {
                   type="number"
                   InputProps={{
                     startAdornment: (
-                      <InputAdornment position="start">GH₵</InputAdornment>
+                      <InputAdornment position="start">GHâ‚µ</InputAdornment>
                     ),
                   }}
                   error={!!validationErrors.value}
@@ -647,7 +647,7 @@ const CreateContractPage = () => {
                         type="number"
                         InputProps={{
                           startAdornment: (
-                            <InputAdornment position="start">GH₵</InputAdornment>
+                            <InputAdornment position="start">GHâ‚µ</InputAdornment>
                           ),
                         }}
                         error={validationErrors.milestones?.[index]?.amount}
@@ -693,7 +693,7 @@ const CreateContractPage = () => {
                       Value
                     </Typography>
                     <Typography variant="body1" gutterBottom>
-                      GH₵{parseFloat(contract.value).toFixed(2)}
+                      GHâ‚µ{parseFloat(contract.value).toFixed(2)}
                     </Typography>
                   </Grid>
                   <Grid item xs={12} md={6}>
@@ -768,7 +768,7 @@ const CreateContractPage = () => {
                         {milestone.title}
                       </Typography>
                       <Typography variant="subtitle1">
-                        GH₵{isNaN(parseFloat(milestone.amount)) ? '—' : parseFloat(milestone.amount).toFixed(2)}
+                        GHâ‚µ{isNaN(parseFloat(milestone.amount)) ? 'â€”' : parseFloat(milestone.amount).toFixed(2)}
                       </Typography>
                     </Box>
                     <Typography
@@ -1023,4 +1023,5 @@ const CreateContractPage = () => {
 };
 
 export default CreateContractPage;
+
 

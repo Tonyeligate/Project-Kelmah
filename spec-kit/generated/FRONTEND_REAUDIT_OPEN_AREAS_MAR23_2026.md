@@ -352,3 +352,21 @@ Validation for batch 14:
 
 Current open focus after batch 14:
 - monitor deploy telemetry for any residual chunk mismatch incidents after this SW + bootstrap coherence hardening.
+
+## Execution Delta Batch 15 (March 24 2026)
+
+- New runtime blocker identified from live deploy crash report:
+	- `Uncaught TypeError: Failed to resolve module specifier "". Invalid relative url or base scheme isn't hierarchical.`
+- Root cause:
+	- multiple module files contained invalid ESM imports as `from ''`.
+- Fix applied:
+	- bulk-repaired 69 broken imports under `src/modules/**` to `from '@/modules/common/utils/devLogger'`.
+	- validated zero remaining empty-specifier patterns in `src/**`.
+
+Validation for batch 15:
+- PASS: empty-specifier scan (`from ''`, `from ""`, `import("")`) in `src/**` returned zero matches.
+- PASS: `npm run build` in `kelmah-frontend`.
+- PASS: smoke suites (`routed-paths`, `critical-path-happy-flow`, `critical-path-gateway-contract`) all green.
+
+Current open focus after batch 15:
+- continue monitoring live deploy for residual client cache incidents after import integrity repair.

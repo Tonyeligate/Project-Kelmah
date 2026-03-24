@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../auth/hooks/useAuth';
 import {
   Box,
@@ -78,7 +78,7 @@ import {
   formatRelativeTime,
 } from '../../../utils/formatters';
 import paymentService from '../services/paymentService';
-import { devError } from '';
+import { devError } from '@/modules/common/utils/devLogger';
 
 const PaymentAnalyticsDashboard = ({
   userType = 'worker', // 'worker', 'hirer', 'admin'
@@ -636,4 +636,5 @@ const PaymentAnalyticsDashboard = ({
 };
 
 export default PaymentAnalyticsDashboard;
+
 

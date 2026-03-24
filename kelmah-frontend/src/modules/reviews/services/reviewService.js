@@ -1,10 +1,10 @@
-import { api } from '../../../services/apiClient';
+﻿import { api } from '../../../services/apiClient';
 import {
   resolveMediaAssetUrl,
   resolveMediaAssetUrls,
   resolveProfileImageUrl,
 } from '../../common/utils/mediaAssets';
-import { devError } from '';
+import { devError } from '@/modules/common/utils/devLogger';
 
 const unwrapData = (response) => response?.data?.data ?? response?.data ?? {};
 const unwrapResponse = (response) => response?.data ?? {};
@@ -332,3 +332,4 @@ class ReviewService {
 
 const reviewService = new ReviewService();
 export default reviewService;
+

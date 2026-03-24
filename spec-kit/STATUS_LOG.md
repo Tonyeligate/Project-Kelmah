@@ -70,6 +70,30 @@
 
 ---
 
+### Session: Frontend Empty Module Specifier Crash Fix March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Diagnose and resolve production/runtime crash `Failed to resolve module specifier "". Invalid relative url or base scheme isn't hierarchical.`
+
+**Files touched**
+- kelmah-frontend/src/modules/** (69 files with empty import specifiers)
+- spec-kit/STATUS_LOG.md
+- spec-kit/generated/FRONTEND_REAUDIT_OPEN_AREAS_MAR23_2026.md
+
+**Implementation summary**
+- Root cause identified: broken import statements generated as `from ''` across module files.
+- This is a hard ESM resolution failure in browsers; once any affected chunk is evaluated, app bootstrap halts and renders a blank screen.
+- Bulk-repaired all empty import specifiers to the intended shared logger module:
+  - `from '@/modules/common/utils/devLogger'`.
+- Post-fix scan confirms no empty module specifiers remain in frontend source.
+
+**Verification**
+- PASS: scan for empty specifiers (`from ''`, `from ""`, `import("")`) in `kelmah-frontend/src/**` returned zero matches.
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,963 modules transformed).
+- PASS: smoke suites via `npx jest --runTestsByPath ... --runInBand` (3 suites, 29 tests).
+
+---
+
 ### Session: Frontend Chunk-Coherence Runtime Fix March 24 2026 ✅ COMPLETED
 
 **Date**: March 24, 2026  

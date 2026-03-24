@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import {
@@ -64,7 +64,7 @@ import { safeFormatRelative } from '@/modules/common/utils/formatters';
 import { useMessages } from '../../contexts/MessageContext';
 import searchService from '../../../search/services/searchService';
 import Skeleton from '@mui/material/Skeleton';
-import { devError } from '';
+import { devError } from '@/modules/common/utils/devLogger';
 
 // Styled components
 const ConversationContainer = styled(Paper)(({ theme }) => ({
@@ -265,7 +265,7 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
   const [localConversations, setLocalConversations] = useState([]);
   const [localLoading, setLocalLoading] = useState(true);
 
-  // Sync from MessageContext conversations (single source of truth — avoids duplicate fetches)
+  // Sync from MessageContext conversations (single source of truth â€” avoids duplicate fetches)
   useEffect(() => {
     setLocalConversations(Array.isArray(contextConversations) ? contextConversations : []);
     setLocalLoading(contextLoading);
@@ -744,11 +744,11 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
                               const msg = conversation.latestMessage || conversation.lastMessage;
                               if (!msg) return 'No messages yet';
                               const mType = msg.messageType || '';
-                              // Show human-readable label for media — never show raw URLs
-                              if (mType === 'image') return '🖼️ Photo';
-                              if (mType === 'video') return '🎥 Video';
-                              if (mType === 'audio') return '🎵 Audio';
-                              if (mType === 'file' || mType === 'document') return '📎 File';
+                              // Show human-readable label for media â€” never show raw URLs
+                              if (mType === 'image') return 'ðŸ–¼ï¸ Photo';
+                              if (mType === 'video') return 'ðŸŽ¥ Video';
+                              if (mType === 'audio') return 'ðŸŽµ Audio';
+                              if (mType === 'file' || mType === 'document') return 'ðŸ“Ž File';
                               // Fallback: if content looks like a URL and there are attachments, label it
                               const content = msg.content || msg.text || '';
                                 const isImageUrl = content.match(/\\.(jpeg|jpg|gif|png|webp|bmp)($|\\?)/i) || content.includes('/image/upload/') || content.includes('cloudinary.com/');
@@ -1083,7 +1083,7 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
             )}
           />
 
-          {/* Encryption toggle removed — E2E encryption not implemented */}
+          {/* Encryption toggle removed â€” E2E encryption not implemented */}
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
           <Button
@@ -1117,3 +1117,4 @@ ConversationList.propTypes = {
 };
 
 export default ConversationList;
+

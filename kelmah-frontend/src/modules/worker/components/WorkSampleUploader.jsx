@@ -1,7 +1,7 @@
-import React from 'react';
+﻿import React from 'react';
 import { Box, Typography, Paper, Button, Alert } from '@mui/material';
 import portfolioApi from '../services/portfolioService';
-import { devError } from '';
+import { devError } from '@/modules/common/utils/devLogger';
 
 const WorkSampleUploader = ({ onUpload }) => {
   const fileInputRef = React.useRef(null);
@@ -60,3 +60,4 @@ const WorkSampleUploader = ({ onUpload }) => {
 };
 
 export default WorkSampleUploader;
+

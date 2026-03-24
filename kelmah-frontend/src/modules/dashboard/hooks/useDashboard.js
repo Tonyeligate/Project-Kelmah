@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+﻿import { useState, useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import dashboardService from '../services/dashboardService';
 import {
@@ -11,7 +11,7 @@ import {
 } from '../services/dashboardSlice';
 import { useAuth } from '../../auth/hooks/useAuth';
 import { secureStorage } from '../../../utils/secureStorage';
-import { devWarn } from '';
+import { devWarn } from '@/modules/common/utils/devLogger';
 
 export const useDashboard = () => {
   const dispatch = useDispatch();
@@ -51,7 +51,7 @@ export const useDashboard = () => {
       };
 
       const handleNewJob = (job) => {
-        // Dispatch plain object — setDashboardData merges into state.data
+        // Dispatch plain object â€” setDashboardData merges into state.data
         dispatch(
           setDashboardData({
             quickActions: [
@@ -291,3 +291,4 @@ export const useDashboard = () => {
     loadRealTimeStats,
   };
 };
+

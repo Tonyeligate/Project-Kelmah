@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
   Box,
@@ -68,7 +68,7 @@ import {
   resolveJobVisualUrl,
   resolveProfileImageUrl,
 } from '../../common/utils/mediaAssets';
-import { devError } from '';
+import { devError } from '@/modules/common/utils/devLogger';
 
 // Styled components
 const SectionHeading = ({ children, icon: Icon, sx = {} }) => {
@@ -165,7 +165,7 @@ const maskEmail = (value) => {
   if (!localPart || !domain) return email;
 
   const visibleLocal = localPart.length <= 2 ? localPart.charAt(0) : localPart.slice(0, 2);
-  const maskedTail = '•'.repeat(Math.max(localPart.length - visibleLocal.length, 3));
+  const maskedTail = 'â€¢'.repeat(Math.max(localPart.length - visibleLocal.length, 3));
   return `${visibleLocal}${maskedTail}@${domain}`;
 };
 
@@ -214,7 +214,7 @@ const formatCompactMoney = (value) => {
   return numericValue.toLocaleString();
 };
 
-const getCompactBudgetDisplay = (job, currency = 'GH₵') => {
+const getCompactBudgetDisplay = (job, currency = 'GHâ‚µ') => {
   if (!job?.budget) return 'TBD';
 
   const suffix = getCompactPaymentSuffix(job?.budget?.type || job?.paymentType || 'fixed');
@@ -317,7 +317,7 @@ const JobDetailsPage = () => {
   const fullJobDescription = toDisplayText(job?.description, 'No description available.');
   const condensedJobDescription =
     fullJobDescription.length > 280
-      ? `${fullJobDescription.slice(0, 280)}…`
+      ? `${fullJobDescription.slice(0, 280)}â€¦`
       : fullJobDescription;
   const visibleOverviewText = job?.description
     ? showFullOverview
@@ -332,11 +332,11 @@ const JobDetailsPage = () => {
   useEffect(() => {
     // Validate jobId before fetching
     if (!id || id === 'undefined' || id === 'null') {
-      devError('❌ Invalid job ID:', id);
+      devError('âŒ Invalid job ID:', id);
       return;
     }
 
-    // Fetch job details (public endpoint — no auth required for viewing)
+    // Fetch job details (public endpoint â€” no auth required for viewing)
     dispatch(fetchJobById(id));
   }, [dispatch, id]);
 
@@ -451,7 +451,7 @@ const JobDetailsPage = () => {
         text: `Check out this job: ${job.title}`,
         url: window.location.href,
       }).catch(() => {
-        // User cancelled — not an error
+        // User cancelled â€” not an error
       });
     } else {
       // AUD2-M11 FIX: Copy URL to clipboard and show Snackbar instead of blocking alert()
@@ -569,7 +569,7 @@ const JobDetailsPage = () => {
     );
   }
 
-  // ─── derived hirer info ───────────────────────────────────────────────
+  // â”€â”€â”€ derived hirer info â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const hirerData = job?.hirer || job?.client || job?.createdBy || {};
   const hirerId = hirerData?._id || hirerData?.id || job?.hirerId || job?.clientId || null;
   const hirerName = hirerData?.firstName && hirerData?.lastName
@@ -596,10 +596,10 @@ const JobDetailsPage = () => {
   const clientEmail = toDisplayText(hirerData?.email);
   const maskedClientEmail = maskEmail(clientEmail);
 
-  // ─── budget display ───────────────────────────────────────────────────
+  // â”€â”€â”€ budget display â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const budgetDisplay = (() => {
     if (!job?.budget && job?.budget !== 0) return 'Budget not specified';
-    const currency = 'GH₵';
+    const currency = 'GHâ‚µ';
     if (typeof job.budget === 'object') {
       const { min, max, amount, type } = job.budget;
       const suffix = type || job?.paymentType || 'fixed';
@@ -607,7 +607,7 @@ const JobDetailsPage = () => {
       if (min != null && max != null)
         return min === max
           ? `${currency} ${Number(min).toLocaleString()} / ${suffix}`
-          : `${currency} ${Number(min).toLocaleString()} – ${Number(max).toLocaleString()} / ${suffix}`;
+          : `${currency} ${Number(min).toLocaleString()} â€“ ${Number(max).toLocaleString()} / ${suffix}`;
     }
     return `${currency} ${Number(job.budget).toLocaleString()} / ${job?.paymentType || 'fixed'}`;
   })();
@@ -716,7 +716,7 @@ const JobDetailsPage = () => {
           </Button>
         </motion.div>
 
-        {/* ─── HERO HEADER BAR ─────────────────────────────────────────────── */}
+        {/* â”€â”€â”€ HERO HEADER BAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
           <Paper
             elevation={0}
@@ -902,7 +902,7 @@ const JobDetailsPage = () => {
         </motion.div>
 
         <Grid container spacing={{ xs: 2, sm: 3 }}>
-          {/* ─── MAIN CONTENT ────────────────────────────────────────────────── */}
+          {/* â”€â”€â”€ MAIN CONTENT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           <Grid item xs={12} lg={8}>
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
 
@@ -974,7 +974,7 @@ const JobDetailsPage = () => {
             </motion.div>
           </Grid>
 
-          {/* ─── SIDEBAR ─────────────────────────────────────────────────────── */}
+          {/* â”€â”€â”€ SIDEBAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           <Grid item xs={12} lg={4}>
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.15 }}>
               <Box sx={{ position: { lg: 'sticky' }, top: { lg: 96 } }}>
@@ -991,7 +991,7 @@ const JobDetailsPage = () => {
                       Budget range
                     </Typography>
                     <Typography variant="h6" sx={{ fontWeight: 700, color: accentColor }}>
-                      GH₵ {(job.bidding.minBidAmount || job.budget?.min || 0).toLocaleString()} – {(job.bidding.maxBidAmount || job.budget?.max || 0).toLocaleString()}
+                      GHâ‚µ {(job.bidding.minBidAmount || job.budget?.min || 0).toLocaleString()} â€“ {(job.bidding.maxBidAmount || job.budget?.max || 0).toLocaleString()}
                     </Typography>
                     <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 500 }}>
                       {job.bidding.currentBidders || 0} / {job.bidding.maxBidders || 5} bids placed
@@ -1095,11 +1095,11 @@ const JobDetailsPage = () => {
                   }, {
                     icon: LocationOn, label: 'Location', value: locationLabel,
                   }, {
-                    icon: Category, label: 'Category', value: job?.category || '—',
+                    icon: Category, label: 'Category', value: job?.category || 'â€”',
                   }, {
                     icon: AccessTime, label: 'Deadline', value: job?.endDate ? new Date(job.endDate).toLocaleDateString('en-GH', { day: 'numeric', month: 'long', year: 'numeric' }) : 'No deadline',
                   }, {
-                    icon: CalendarToday, label: 'Posted', value: job?.createdAt ? new Date(job.createdAt).toLocaleDateString('en-GH', { day: 'numeric', month: 'long', year: 'numeric' }) : '—',
+                    icon: CalendarToday, label: 'Posted', value: job?.createdAt ? new Date(job.createdAt).toLocaleDateString('en-GH', { day: 'numeric', month: 'long', year: 'numeric' }) : 'â€”',
                   }, {
                     icon: Groups, label: 'Applicants', value: `${job?.proposalCount || 0} people applied`,
                   }].map(({ icon: Icon, label, value }) => (
@@ -1120,7 +1120,7 @@ const JobDetailsPage = () => {
               <DetailsPaper elevation={2} sx={{ mb: 3 }}>
                 <SectionHeading icon={Person}>About the Client</SectionHeading>
 
-                {/* Profile row — clickable */}
+                {/* Profile row â€” clickable */}
                 <Box
                   onClick={handleOpenClientProfile}
                   sx={{
@@ -1512,4 +1512,5 @@ const JobDetailsPage = () => {
 };
 
 export default JobDetailsPage;
+
 

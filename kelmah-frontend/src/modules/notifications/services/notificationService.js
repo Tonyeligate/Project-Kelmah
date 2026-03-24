@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Notification Service
  * Handles all notification-related API calls with proper service routing and fallbacks
  */
@@ -11,7 +11,7 @@ import {
   createFeatureLogger,
   devError,
   devWarn,
-} from '';
+} from '@/modules/common/utils/devLogger';
 
 const devLog = createFeatureLogger({
   flagName: 'VITE_DEBUG_NOTIFICATIONS',
@@ -143,7 +143,7 @@ class NotificationService {
       });
 
       this.isConnected = true;
-      devLog('📡 Notifications subscribed to shared websocket events');
+      devLog('ðŸ“¡ Notifications subscribed to shared websocket events');
     } catch (error) {
       devError('Failed to connect to notification socket:', error);
     }
@@ -178,7 +178,7 @@ class NotificationService {
         },
       });
 
-      // Normalize response shape — backend should return { data, pagination }
+      // Normalize response shape â€” backend should return { data, pagination }
       const payload = response.data;
       let notifications = [];
       let pagination = null;
@@ -202,7 +202,7 @@ class NotificationService {
         pagination = payload.pagination;
       }
 
-      // Return raw notifications — normalization is handled by NotificationContext
+      // Return raw notifications â€” normalization is handled by NotificationContext
       return {
         notifications,
         data: notifications,
@@ -230,7 +230,7 @@ class NotificationService {
 
       if (statusMsg.status === 'cold') {
         devLog(
-          'Messaging Service is cold starting — this is normal and will take 30-60 seconds...',
+          'Messaging Service is cold starting â€” this is normal and will take 30-60 seconds...',
         );
       }
       return {
@@ -333,7 +333,7 @@ class NotificationService {
 export const notificationService = new NotificationService();
 
 /**
- * Simplified notification API wrapper — default export
+ * Simplified notification API wrapper â€” default export
  * Used by NotificationSettingsPage and other simple consumers.
  * For socket-level access (connect/disconnect), use the named { notificationService } export.
  */
@@ -395,3 +395,4 @@ const notificationServiceUser = {
 };
 
 export default notificationServiceUser;
+

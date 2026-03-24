@@ -1,6 +1,6 @@
-import React from 'react';
+﻿import React from 'react';
 import { Box, Typography, Button } from '@mui/material';
-import { devError } from '';
+import { devError } from '@/modules/common/utils/devLogger';
 
 /**
  * Reusable Error Boundary component.
@@ -62,3 +62,4 @@ class ErrorBoundary extends React.Component {
 }
 
 export default ErrorBoundary;
+

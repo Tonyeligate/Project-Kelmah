@@ -1,4 +1,4 @@
-import React, {
+﻿import React, {
   createContext,
   useContext,
   useState,
@@ -11,7 +11,7 @@ import { useNotifications } from '../../notifications/contexts/NotificationConte
 import {
   createFeatureLogger,
   devError,
-} from '';
+} from '@/modules/common/utils/devLogger';
 
 const contractsLog = createFeatureLogger({
   flagName: 'VITE_DEBUG_CONTRACTS',
@@ -22,7 +22,7 @@ const ContractContext = createContext(null);
 
 export const ContractProvider = ({ children }) => {
   const { user } = useAuth();
-  // Call hook unconditionally (Rules of Hooks) — the context returns null
+  // Call hook unconditionally (Rules of Hooks) â€” the context returns null
   // when there is no NotificationProvider ancestor.
   const notifications = useNotifications();
   const rawShowToast = notifications?.showToast;
@@ -133,4 +133,5 @@ export const useContracts = () => {
   }
   return context;
 };
+
 

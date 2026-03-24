@@ -1,11 +1,11 @@
-import { api } from '../../../services/apiClient';
+﻿import { api } from '../../../services/apiClient';
 // MED-19 FIX: Use shared websocketService instead of creating a third socket connection
 import websocketService from '../../../services/websocketService';
 import { SOCKET_EVENTS } from '../../../services/socketEvents';
 import {
   createFeatureLogger,
   devError,
-} from '';
+} from '@/modules/common/utils/devLogger';
 
 const devLog = createFeatureLogger({
   flagName: 'VITE_DEBUG_DASHBOARD',
@@ -103,11 +103,11 @@ class DashboardService {
 
     const socket = websocketService.socket;
     if (!socket) {
-      devLog('⚠️ Dashboard: shared websocket not connected yet, deferring');
+      devLog('âš ï¸ Dashboard: shared websocket not connected yet, deferring');
       return;
     }
 
-    devLog('📡 Dashboard subscribing to shared websocket events');
+    devLog('ðŸ“¡ Dashboard subscribing to shared websocket events');
 
     // Subscribe to dashboard-specific events on the shared socket
     socket.on(SOCKET_EVENTS.DASHBOARD.UPDATE, this._onDashboardUpdate);
@@ -288,7 +288,7 @@ class DashboardService {
     }
   }
 
-  // MED-22 FIX: Return empty results — no real tasks API exists yet
+  // MED-22 FIX: Return empty results â€” no real tasks API exists yet
   async getUpcomingTasks() {
     return [];
   }
@@ -448,3 +448,4 @@ class DashboardService {
 const dashboardService = new DashboardService();
 
 export default dashboardService;
+

@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import PropTypes from 'prop-types';
 import {
   Box,
@@ -18,7 +18,7 @@ import {
 } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { format, isSameDay } from 'date-fns';
-import { devWarn } from '';
+import { devWarn } from '@/modules/common/utils/devLogger';
 
 /**
  * A reusable calendar component for displaying appointments
@@ -213,3 +213,4 @@ AppointmentCalendar.propTypes = {
 };
 
 export default AppointmentCalendar;
+

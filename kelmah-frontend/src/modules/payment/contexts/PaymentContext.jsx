@@ -1,4 +1,4 @@
-import React, {
+﻿import React, {
   createContext,
   useContext,
   useState,
@@ -11,7 +11,7 @@ import { useNotifications } from '../../notifications/contexts/NotificationConte
 import {
   createFeatureLogger,
   devError,
-} from '';
+} from '@/modules/common/utils/devLogger';
 
 const paymentsLog = createFeatureLogger({
   flagName: 'VITE_DEBUG_PAYMENTS',
@@ -98,7 +98,7 @@ export const PaymentProvider = ({ children }) => {
       }
 
       // Escrows (501/404 -> empty)
-      // getEscrows already returns a normalised array — guard anyway
+      // getEscrows already returns a normalised array â€” guard anyway
       if (escrowsRes.status === 'fulfilled') {
         const ev = escrowsRes.value;
         setEscrows(Array.isArray(ev) ? ev : []);
@@ -143,7 +143,7 @@ export const PaymentProvider = ({ children }) => {
           currency: 'GHS',
           paymentMethodId,
         });
-        showToast(`GH₵${amount.toFixed(2)} deposited successfully.`, 'success');
+        showToast(`GHâ‚µ${amount.toFixed(2)} deposited successfully.`, 'success');
         // Refresh wallet data
         await fetchData();
         return true;
@@ -313,4 +313,5 @@ export const usePayments = () => {
   }
   return context;
 };
+
 

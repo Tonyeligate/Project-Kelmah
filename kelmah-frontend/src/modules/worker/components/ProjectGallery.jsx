@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 import { Box, Dialog, DialogContent, DialogTitle, IconButton, ImageList, ImageListItem, ImageListItemBar, Typography, Chip, Stack, useTheme, Fade, Backdrop } from '@mui/material';
 import {
   Close as CloseIcon,
@@ -10,7 +10,7 @@ import {
 } from '@mui/icons-material';
 import { resolveMediaAssetUrls } from '../../common/utils/mediaAssets';
 import { useBreakpointDown } from '@/hooks/useResponsive';
-import { devError } from '';
+import { devError } from '@/modules/common/utils/devLogger';
 
 const ProjectGallery = ({
   images = [],
@@ -464,4 +464,5 @@ const ProjectGallery = ({
 };
 
 export default ProjectGallery;
+
 

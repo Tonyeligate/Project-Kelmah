@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import {
   Box,
   Paper,
@@ -12,7 +12,7 @@ import {
   Alert,
 } from '@mui/material';
 import paymentService from '../../payment/services/paymentService';
-import { devError } from '';
+import { devError } from '@/modules/common/utils/devLogger';
 
 const EscrowManager = () => {
   const [escrows, setEscrows] = useState([]);
@@ -153,7 +153,7 @@ const EscrowManager = () => {
       )}
       <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} useFlexGap sx={{ mb: 2, flexWrap: 'wrap' }}>
         <TextField
-          label="Amount (GH₵)"
+          label="Amount (GHâ‚µ)"
           value={form.amount}
           onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))}
           inputProps={{ 'aria-label': 'Escrow amount in Ghana cedis' }}
@@ -229,10 +229,10 @@ const EscrowManager = () => {
               }}
             >
               <Typography variant="subtitle1">
-                {e.reference} — {e.status}
+                {e.reference} â€” {e.status}
               </Typography>
               <Typography variant="body2">
-                Amount: {e.amount} {e.currency} • Provider: {e.provider}
+                Amount: {e.amount} {e.currency} â€¢ Provider: {e.provider}
               </Typography>
               <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
                 <Button
@@ -273,3 +273,4 @@ const EscrowManager = () => {
 };
 
 export default EscrowManager;
+

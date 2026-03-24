@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from 'react';
+﻿import { useEffect, useState, useRef, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import {
   Avatar, Box, Typography, IconButton, Menu, MenuItem, ListItemIcon, ListItemText, Tooltip, Paper, Fade, Chip, useTheme } from '@mui/material';
@@ -20,7 +20,7 @@ import {
 import { useInView } from 'react-intersection-observer';
 import MessageAttachments from './MessageAttachments';
 import { useBreakpointDown } from '@/hooks/useResponsive';
-import { devError } from '';
+import { devError } from '@/modules/common/utils/devLogger';
 
 // Styled components
 const MessageBubble = styled(Paper)(({ theme, isOwn }) => ({
@@ -586,4 +586,5 @@ Message.propTypes = {
 };
 
 export default Message;
+
 

@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect, useCallback } from 'react';
+﻿import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { Box, Button, Card, CardActions, CardContent, Chip, Skeleton, Divider, Grid, IconButton, Paper, Stack, TextField, Typography, Alert } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import SearchIcon from '@mui/icons-material/Search';
@@ -19,7 +19,7 @@ import MobileFilterSheet from '../../../components/common/MobileFilterSheet';
 import EmptyState from '../../../components/common/EmptyState';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 import { toUserMessage } from '@/services/responseNormalizer';
-import { devError } from '';
+import { devError } from '@/modules/common/utils/devLogger';
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All contracts' },
@@ -33,8 +33,8 @@ const STATUS_OPTIONS = [
 const SORT_OPTIONS = [
   { value: 'newest', label: 'Newest first' },
   { value: 'oldest', label: 'Oldest first' },
-  { value: 'value-high', label: 'Value high → low' },
-  { value: 'value-low', label: 'Value low → high' },
+  { value: 'value-high', label: 'Value high â†’ low' },
+  { value: 'value-low', label: 'Value low â†’ high' },
 ];
 
 const statusIconMap = {
@@ -207,7 +207,7 @@ const ContractsPage = () => {
             aria-label="Refresh contracts list"
             fullWidth={isMobile}
           >
-            {isRefreshing ? 'Refreshing…' : 'Refresh'}
+            {isRefreshing ? 'Refreshingâ€¦' : 'Refresh'}
           </Button>
           {canCreateContract ? (
             <Button
@@ -324,7 +324,7 @@ const ContractsPage = () => {
                 flexDirection: 'column',
                 borderRadius: 2,
                 border: `1px solid ${alpha('#000', 0.06)}`,
-                // ✅ MOBILE-AUDIT P4: removed deep boxShadow, let theme handle
+                // âœ… MOBILE-AUDIT P4: removed deep boxShadow, let theme handle
               }}
             >
               <CardContent>
@@ -339,7 +339,7 @@ const ContractsPage = () => {
                       {contract.title || 'Untitled Contract'}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      {contract.client?.name || 'Client'}{contract.client?.company ? ` • ${contract.client.company}` : ''}
+                      {contract.client?.name || 'Client'}{contract.client?.company ? ` â€¢ ${contract.client.company}` : ''}
                     </Typography>
                   </Box>
                   <Chip
@@ -355,7 +355,7 @@ const ContractsPage = () => {
                 </Stack>
 
                 <Typography variant="h5" sx={{ mt: 2, fontWeight: 700 }}>
-                  {'GH₵'}
+                  {'GHâ‚µ'}
                   {(contract.budget ?? 0).toLocaleString()}
                 </Typography>
 
@@ -432,3 +432,4 @@ const ContractsPage = () => {
 };
 
 export default ContractsPage;
+

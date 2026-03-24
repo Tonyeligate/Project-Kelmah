@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Grid,
@@ -30,7 +30,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../../../../services/apiClient';
 import { formatJobLocation } from '../../../../../utils/formatters';
-import { devError } from '';
+import { devError } from '@/modules/common/utils/devLogger';
 
 const JobSearch = () => {
   const navigate = useNavigate();
@@ -333,4 +333,5 @@ const JobSearch = () => {
 };
 
 export default JobSearch;
+
 

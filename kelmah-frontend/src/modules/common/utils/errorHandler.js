@@ -1,7 +1,7 @@
-/**
+﻿/**
  * Error handling utility functions
  */
-import { devError } from '';
+import { devError } from '@/modules/common/utils/devLogger';
 
 /**
  * Format error message from API response
@@ -29,3 +29,4 @@ export const logError = (error, context = 'general') => {
   devError(`[${context}]`, error);
   // In production, would send to error monitoring service
 };
+

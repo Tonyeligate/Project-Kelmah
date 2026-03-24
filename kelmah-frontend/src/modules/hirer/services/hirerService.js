@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Hirer Service
  *
  * Service layer for hirer-related operations with proper service routing
@@ -7,7 +7,7 @@
 
 import { API_ENDPOINTS } from '../../../config/environment';
 import { api } from '../../../services/apiClient';
-import { devWarn } from '';
+import { devWarn } from '@/modules/common/utils/devLogger';
 
 const hirerWarn = devWarn;
 
@@ -748,3 +748,4 @@ export const hirerService = {
     }
   },
 };
+

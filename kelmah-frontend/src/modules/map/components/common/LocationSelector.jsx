@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+﻿import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Box,
   TextField,
@@ -21,7 +21,7 @@ import {
   History as HistoryIcon,
 } from '@mui/icons-material';
 import mapService from '../../services/mapService';
-import { devError, devWarn } from '';
+import { devError, devWarn } from '@/modules/common/utils/devLogger';
 
 const LOCATION_QUERY_MAX_LENGTH = 120;
 
@@ -370,3 +370,4 @@ const LocationSelector = ({
 };
 
 export default LocationSelector;
+

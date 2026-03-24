@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import {
   Container,
   Box,
@@ -49,7 +49,7 @@ import {
   openExternalUrl,
   NOTIFICATION_ALLOWED_HOSTS,
 } from '../../../utils/externalNavigation';
-import { devWarn } from '';
+import { devWarn } from '@/modules/common/utils/devLogger';
 
 // --- Reusable Components ---
 
@@ -232,7 +232,7 @@ const PageNotificationItem = ({ notification, onMarkRead }) => {
 
 // --- Main Notifications Page ---
 
-// Tab filter → backend type mapping for grouped tabs
+// Tab filter â†’ backend type mapping for grouped tabs
 const TAB_TYPE_MAP = {
   all: undefined,
   messages: 'message_received',
@@ -316,7 +316,7 @@ const NotificationsPage = () => {
   return (
     <Container maxWidth="md" sx={{ py: { xs: 2, md: 4 }, pb: { xs: 'calc(72px + env(safe-area-inset-bottom, 0px))', md: 4 } }}>
       <Helmet><title>Notifications | Kelmah</title></Helmet>
-      {/* Header — stacks vertically on mobile */}
+      {/* Header â€” stacks vertically on mobile */}
       <Box
         sx={{
           display: 'flex',
@@ -524,4 +524,5 @@ const NotificationsPage = () => {
 };
 
 export default NotificationsPage;
+
 

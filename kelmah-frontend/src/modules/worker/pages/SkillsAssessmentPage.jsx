@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+﻿import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import {
   Box, Container, Grid, Typography, Tabs, Tab, Paper, CircularProgress, Alert, Button, CardContent, CardActions, Chip, LinearProgress, useTheme, Dialog, DialogTitle, DialogContent, DialogActions, Avatar, Tooltip, RadioGroup, FormControlLabel, Radio, Rating, List, ListItem, ListItemIcon, ListItemText, Breadcrumbs, Link, Snackbar, Skeleton } from '@mui/material';
@@ -69,7 +69,7 @@ import {
   TimerDisplay,
 } from '@/modules/worker/components/skillsAssessment/styled';
 import { useBreakpointDown } from '@/hooks/useResponsive';
-import { devError } from '';
+import { devError } from '@/modules/common/utils/devLogger';
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -795,7 +795,7 @@ const SkillsAssessmentPage = () => {
                       navigator
                         .share({
                           title: test.title,
-                          text: `I scored ${test.score ?? ''}% on ${test.title} — Kelmah Skills Assessment`,
+                          text: `I scored ${test.score ?? ''}% on ${test.title} â€” Kelmah Skills Assessment`,
                         })
                         .catch(() => {});
                     } else {
@@ -1520,4 +1520,5 @@ const SkillsAssessmentPage = () => {
 };
 
 export default SkillsAssessmentPage;
+
 

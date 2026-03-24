@@ -1,9 +1,9 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+﻿import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import eventsService from './eventsService';
 import {
   createFeatureLogger,
   devError,
-} from '';
+} from '@/modules/common/utils/devLogger';
 
 const calendarLog = createFeatureLogger({
   flagName: 'VITE_DEBUG_CALENDAR',
@@ -99,3 +99,4 @@ const calendarSlice = createSlice({
 export const { setSelectedDate, clearError } = calendarSlice.actions;
 export const selectCalendarState = (state) => state.calendar;
 export default calendarSlice.reducer;
+

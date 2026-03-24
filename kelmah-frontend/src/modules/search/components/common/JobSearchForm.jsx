@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+﻿import React, { useState, useEffect, useMemo } from 'react';
 import {
   Box,
   TextField,
@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import PropTypes from 'prop-types';
-import { createFeatureLogger } from '';
+import { createFeatureLogger } from '@/modules/common/utils/devLogger';
 
 const EMPTY_SKILLS = [];
 const SEARCH_QUERY_MAX_LENGTH = 120;
@@ -326,3 +326,4 @@ JobSearchForm.propTypes = {
 };
 
 export default JobSearchForm;
+

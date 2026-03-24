@@ -1,6 +1,6 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+﻿import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { api } from '../../../services/apiClient';
-import { createFeatureLogger, devWarn } from '';
+import { createFeatureLogger, devWarn } from '@/modules/common/utils/devLogger';
 
 const devLog = createFeatureLogger({
   flagName: 'VITE_DEBUG_HIRER',
@@ -479,7 +479,7 @@ const hirerSlice = createSlice({
           });
           Object.assign(state.jobs, buckets);
         } else if (status) {
-          // Canonical status key — map 'active' alias to 'open'
+          // Canonical status key â€” map 'active' alias to 'open'
           const key = status === 'active' ? 'open' : status;
           state.jobs[key] = jobs;
         }
@@ -711,3 +711,4 @@ export const {
 
 // Export reducer
 export default hirerSlice.reducer;
+
