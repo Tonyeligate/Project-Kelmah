@@ -58,7 +58,7 @@ import {
   Refresh as RefreshIcon,
   ChatBubbleOutline as ChatBubbleOutlineIcon,
 } from '@mui/icons-material';
-// âœ… MOBILE-AUDIT P3: framer-motion import removed â€” AnimatePresence/motion.div wrappers already replaced
+// MOBILE-AUDIT P3: framer-motion import removed - AnimatePresence/motion.div wrappers already replaced
 import ErrorBoundary from '../../../components/common/ErrorBoundary';
 import { safeFormatDate } from '@/modules/common/utils/formatters';
 import { BOTTOM_NAV_HEIGHT } from '../../../constants/layout';
@@ -71,7 +71,7 @@ import {
   getMessagePreview,
 } from '../utils/conversationUtils';
 import { useBreakpointDown } from '../../../hooks/useResponsive';
-// ConversationList + Chatbox rendered inline â€” imports removed (dead code)
+// ConversationList + Chatbox rendered inline - imports removed (dead code)
 import SEO from '../../common/components/common/SEO';
 import EmptyState from '../../../components/common/EmptyState';
 import { devError, devWarn } from '@/modules/common/utils/devLogger';
@@ -84,6 +84,7 @@ const EnhancedMessagingPage = () => {
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useBreakpointDown('md');
+  const isPhone = useBreakpointDown('sm');
   const isTablet = useBreakpointDown('lg');
 
   // Defense-in-depth: redirect if user is null (ProtectedRoute should catch this, but just in case)
@@ -206,7 +207,7 @@ const EnhancedMessagingPage = () => {
   const canSendMessage = messageText.trim().length > 0 || selectedFiles.length > 0;
   const attachmentGuidance = selectedFiles.length > 0
     ? `${selectedFiles.length} attachment${selectedFiles.length > 1 ? 's' : ''} ready to send`
-    : 'Add photos, video, or documents (10MB max each)';
+    : 'Add photos, video, or documents (up to 10MB each).';
 
   // Revoke preview blob URLs when selectedFiles change or on unmount
   useEffect(() => {
@@ -972,7 +973,7 @@ const EnhancedMessagingPage = () => {
         </Stack>
       </Box>
 
-      {/* Conversations List â€” âœ… MOBILE-AUDIT P3: removed motion.div/AnimatePresence */}
+      {/* Conversations List - MOBILE-AUDIT P3: removed motion.div/AnimatePresence */}
       <Box sx={{ flex: 1, overflow: 'auto' }}>
           {filteredConversations.map((conversation, index) => {
             const otherParticipant = getOtherParticipant(conversation);
@@ -1295,7 +1296,7 @@ const EnhancedMessagingPage = () => {
                 mb: 1,
               }}
             >
-              Select a conversation
+              Pick a conversation to begin
             </Typography>
             <Typography
               variant="body1"
@@ -1305,8 +1306,7 @@ const EnhancedMessagingPage = () => {
                 mx: 'auto',
               }}
             >
-              Choose a conversation from the list to start chatting with clients
-              and colleagues.
+              Open a chat from the list, then send a short intro with timing or location.
             </Typography>
           </Box>
         </Paper>
@@ -1465,12 +1465,17 @@ const EnhancedMessagingPage = () => {
             <MessagePaneLoadingSkeleton rows={5} />
           ) : (messages || []).length === 0 ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-              <Typography variant="body2" sx={{ color: 'text.disabled' }}>
-                No messages yet. Say hello!
-              </Typography>
+              <Box sx={{ textAlign: 'center', maxWidth: 320 }}>
+                <Typography variant="body2" sx={{ color: 'text.disabled', mb: 0.75 }}>
+                  No messages yet.
+                </Typography>
+                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                  Start with a short intro, job location, and expected timing.
+                </Typography>
+              </Box>
             </Box>
           ) : null}
-          {/* âœ… MOBILE-AUDIT P3: removed AnimatePresence + motion.div from messages */}
+          {/* MOBILE-AUDIT P3: removed AnimatePresence + motion.div from messages */}
             {(messages || []).map((message, index) => {
               const senderId = message.sender || message.senderId;
               const isOwn =
@@ -1528,7 +1533,7 @@ const EnhancedMessagingPage = () => {
                         sx={{
                           p: 1.5,
                           borderRadius: 2,
-                          // âœ… MOBILE-AUDIT P4: solid bg instead of gradient, removed speech-bubble tails
+                          // MOBILE-AUDIT P4: solid bg instead of gradient, removed speech-bubble tails
                           bgcolor: isOwn
                             ? 'primary.main'
                             : alpha(theme.palette.text.primary, 0.08),
@@ -1844,7 +1849,7 @@ const EnhancedMessagingPage = () => {
               color: 'text.secondary',
             }}
           >
-            {attachmentGuidance}. Press Enter to send, Shift+Enter for a new line.
+            {attachmentGuidance} Press Enter to send, Shift+Enter for a new line.
           </Typography>
           <Stack direction="row" alignItems="flex-end" spacing={1}>
             <input
@@ -1982,7 +1987,7 @@ const EnhancedMessagingPage = () => {
     );
   }
 
-  // Mobile messaging template â€” uses isMobile (theme.breakpoints.down('md'))
+  // Mobile messaging template - uses isMobile (theme.breakpoints.down('md'))
   if (isMobile) {
     return (
       <Box
@@ -2044,6 +2049,7 @@ const EnhancedMessagingPage = () => {
                 sx={{
                   fontWeight: 700,
                   height: 34,
+                  display: { xs: 'none', sm: 'inline-flex' },
                 }}
               />
             </Box>
@@ -2075,7 +2081,7 @@ const EnhancedMessagingPage = () => {
                   },
                   '& .MuiInputBase-input': {
                     color: 'text.primary',
-                    // âœ… MOBILE-AUDIT: fontSize removed â€” theme MuiInputBase sets 16px globally
+                    // MOBILE-AUDIT: fontSize removed - theme MuiInputBase sets 16px globally
                     // to prevent iOS keyboard auto-zoom (< 16px triggers zoom)
                   },
                   '& .MuiInputBase-input::placeholder': {
@@ -2096,7 +2102,7 @@ const EnhancedMessagingPage = () => {
               </Typography>
             </Box>
 
-            {/* Conversations List â€” Real Data */}
+            {/* Conversations List - Real Data */}
             <Box sx={{ px: 2 }}>
               <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
                 <Box>
@@ -2283,7 +2289,7 @@ const EnhancedMessagingPage = () => {
               })}
             </Box>
 
-            {/* Bottom spacing for nav â€” uses shared layout constant */}
+            {/* Bottom spacing for nav - uses shared layout constant */}
             <Box sx={{ height: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px) + 16px)` }} />
           </>
         ) : (
@@ -2370,22 +2376,24 @@ const EnhancedMessagingPage = () => {
                     </Typography>
                   </Box>
                 </Box>
-                <IconButton
-                  aria-label="Open messaging options"
-                  onClick={(e) => setMoreMenuAnchor(e.currentTarget)}
-                  sx={{
-                    backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                    color: 'primary.main',
-                    minWidth: 44,
-                    minHeight: 44,
-                    '&:focus-visible': {
-                      outline: `3px solid ${theme.palette.primary.main}`,
-                      outlineOffset: '2px',
-                    },
-                  }}
-                >
-                  <MoreVertIcon sx={{ fontSize: 20 }} />
-                </IconButton>
+                {!isPhone && (
+                  <IconButton
+                    aria-label="Open messaging options"
+                    onClick={(e) => setMoreMenuAnchor(e.currentTarget)}
+                    sx={{
+                      backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                      color: 'primary.main',
+                      minWidth: 44,
+                      minHeight: 44,
+                      '&:focus-visible': {
+                        outline: `3px solid ${theme.palette.primary.main}`,
+                        outlineOffset: '2px',
+                      },
+                    }}
+                  >
+                    <InfoIcon sx={{ fontSize: 20 }} />
+                  </IconButton>
+                )}
               </Box>
               {selectedConversation.jobRelated && (
                 <Box sx={{ px: 2, pb: 1.5 }}>
@@ -2399,7 +2407,7 @@ const EnhancedMessagingPage = () => {
               )}
             </Box>
 
-            {/* Messages Area â€” Real Data */}
+            {/* Messages Area - Real Data */}
             <Box
               sx={{
                 flex: 1,
@@ -2418,7 +2426,7 @@ const EnhancedMessagingPage = () => {
                     No messages yet
                   </Typography>
                   <Typography variant="body2" sx={{ color: 'text.disabled', fontSize: '0.9rem' }}>
-                    Say hello to start the conversation!
+                    Send a quick greeting and include location, budget, or timing to get faster replies.
                   </Typography>
                 </Box>
               )}
@@ -2467,7 +2475,7 @@ const EnhancedMessagingPage = () => {
               <div ref={messagesEndRef} />
             </Box>
 
-            {/* Message Input â€” Wired to real handlers */}
+            {/* Message Input - Wired to real handlers */}
             <Box
               sx={{
                 bgcolor: 'background.default',
@@ -2527,7 +2535,7 @@ const EnhancedMessagingPage = () => {
                 </>
               )}
               <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.75 }}>
-                {attachmentGuidance}. Tap send when your message is ready.
+                {attachmentGuidance} Tap send when your message is ready.
               </Typography>
               <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                 <IconButton

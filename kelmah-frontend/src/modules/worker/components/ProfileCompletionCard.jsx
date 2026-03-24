@@ -113,7 +113,7 @@ const ProfileCompletionCard = ({ percentage = 0, missingFields = [], onStepClick
 
         {/* Helper text */}
         <Typography variant="body2" color="text.secondary" sx={{ mb: visibleFields.length > 0 ? 1.5 : 0 }}>
-          Complete your profile to get 3× more job matches
+          Complete your profile to improve your chances of getting matched with relevant jobs.
         </Typography>
 
         {/* Missing-field chips */}
@@ -144,13 +144,13 @@ const ProfileCompletionCard = ({ percentage = 0, missingFields = [], onStepClick
             </Box>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
               <Typography variant="caption" color="text.secondary">
-                {remainingCount > 0 ? `Plus ${remainingCount} more step${remainingCount > 1 ? 's' : ''} to finish.` : 'You are close to complete.'}
+                {remainingCount > 0 ? `Plus ${remainingCount} more step${remainingCount > 1 ? 's' : ''} to finish.` : 'You are close to completing your profile.'}
               </Typography>
               <Button
                 size="small"
                 variant="contained"
                 onClick={() => onStepClick?.('/worker/profile/edit')}
-                sx={{ minHeight: 36, textTransform: 'none', fontWeight: 700 }}
+                sx={{ minHeight: { xs: 44, sm: 36 }, textTransform: 'none', fontWeight: 700 }}
               >
                 Finish Profile
               </Button>

@@ -99,7 +99,7 @@ const HomeLanding = () => {
       })
       .catch((error) => {
         if (isMounted) {
-          setStatsError('Unable to load live platform metrics. Showing estimated values.');
+          setStatsError('Unable to load live platform metrics right now.');
         }
         devWarn('HomeLanding platform stats fetch failed:', error);
       });
@@ -162,8 +162,25 @@ const HomeLanding = () => {
     <Box sx={{ bgcolor: 'background.default', color: 'text.primary', overflowX: 'clip' }}>
       {statsError && (
         <Box sx={{ px: { xs: 2, md: 0 }, pt: 2 }}>
-          <Alert severity="warning" role="status" aria-live="polite" sx={{ mx: 'auto', maxWidth: 960 }}>
-            {statsError}
+          <Alert
+            severity="info"
+            variant="outlined"
+            icon={<TrendingUpIcon fontSize="inherit" />}
+            role="status"
+            aria-live="polite"
+            sx={{
+              mx: 'auto',
+              maxWidth: 960,
+              alignItems: 'flex-start',
+              '& .MuiAlert-icon': { pt: 0.25 },
+            }}
+          >
+            <Typography variant="body2" sx={{ fontWeight: 700, mb: 0.25 }}>
+              Live marketplace stats are delayed right now.
+            </Typography>
+            <Typography variant="caption" sx={{ display: 'block' }}>
+              {statsError}
+            </Typography>
           </Alert>
         </Box>
       )}
@@ -173,10 +190,10 @@ const HomeLanding = () => {
         component="section"
         sx={{
           position: 'relative',
-          minHeight: { xs: 'min(55vh, 440px)', md: '100vh' },
+          minHeight: { xs: 'min(50vh, 400px)', md: '100vh' },
           display: 'flex',
           alignItems: 'center',
-          pt: { xs: '28px', md: '40px' },
+          pt: { xs: '20px', md: '40px' },
           boxSizing: 'border-box',
           color: '#fff',
           backgroundImage: `linear-gradient(160deg, rgba(5,5,7,0.93) 0%, rgba(5,5,7,0.6) 50%, rgba(5,5,7,0.35) 100%), url(${heroBg})`,
@@ -215,10 +232,10 @@ const HomeLanding = () => {
                   component="h1"
                   sx={{
                     fontWeight: 800,
-                    fontSize: { xs: '1.8rem', sm: '2.55rem', md: '3.25rem' },
+                    fontSize: { xs: '1.65rem', sm: '2.55rem', md: '3.25rem' },
                     lineHeight: 1.15,
                     letterSpacing: '-0.012em',
-                    mb: 2,
+                    mb: { xs: 1.5, sm: 2 },
                     fontFamily: 'Montserrat, sans-serif',
                   }}
                 >
@@ -228,14 +245,74 @@ const HomeLanding = () => {
                   </Box>
                 </Typography>
 
+                {isMobile && (
+                  <Stack direction="column" spacing={1.25} sx={{ mb: 2.25 }}>
+                    <Button
+                      variant="contained"
+                      size="large"
+                      startIcon={<SearchIcon />}
+                      aria-label="Find a worker"
+                      onClick={() => navigate('/search')}
+                      sx={{
+                        bgcolor: '#FFD700',
+                        color: '#111',
+                        fontWeight: 700,
+                        textTransform: 'none',
+                        minHeight: 52,
+                        fontSize: '0.95rem',
+                        lineHeight: 1.3,
+                        px: 3,
+                        borderRadius: 2,
+                        boxShadow: '0 4px 16px rgba(255,215,0,0.25)',
+                        '&:hover': { bgcolor: '#F5C800', boxShadow: '0 6px 24px rgba(255,215,0,0.35)' },
+                        '&:focus-visible': {
+                          outline: '3px solid rgba(255,255,255,0.95)',
+                          outlineOffset: 2,
+                        },
+                      }}
+                    >
+                      Find a worker
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      size="large"
+                      startIcon={<WorkIcon />}
+                      aria-label="Browse jobs"
+                      onClick={() => navigate('/jobs')}
+                      sx={{
+                        borderColor: 'rgba(255,255,255,0.55)',
+                        color: '#fff',
+                        fontWeight: 600,
+                        textTransform: 'none',
+                        minHeight: 52,
+                        fontSize: '0.95rem',
+                        lineHeight: 1.3,
+                        px: 3,
+                        borderRadius: 2,
+                        '&:hover': {
+                          borderColor: '#FFD700',
+                          color: '#FFD700',
+                          bgcolor: goldAlpha(0.06),
+                        },
+                        '&:focus-visible': {
+                          outline: '3px solid #FFD700',
+                          outlineOffset: 2,
+                        },
+                      }}
+                    >
+                      Browse jobs
+                    </Button>
+                  </Stack>
+                )}
+
                 <Typography
                   variant="body1"
                   sx={{
                     maxWidth: 560,
-                    fontSize: { xs: '0.98rem', md: '1.08rem' },
-                    lineHeight: 1.72,
+                    fontSize: { xs: '0.92rem', md: '1.08rem' },
+                    lineHeight: { xs: 1.58, md: 1.72 },
                     opacity: 0.92,
-                    mb: 3.5,
+                    mb: { xs: 2.25, md: 3.5 },
                   }}
                 >
                   Kelmah connects vetted carpenters, electricians, plumbers and masons with
@@ -244,7 +321,8 @@ const HomeLanding = () => {
                 </Typography>
 
                 {/* Primary CTAs — large touch targets (min 54px) for accessibility */}
-                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ mb: 3.5 }}>
+                {!isMobile && (
+                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ mb: 3.5 }}>
                   <Button
                     variant="contained"
                     size="large"
@@ -300,12 +378,48 @@ const HomeLanding = () => {
                   >
                     Browse jobs
                   </Button>
+                  </Stack>
+                )}
+
+                <Stack direction="row" spacing={{ xs: 1.25, sm: 2.5 }} flexWrap="wrap" useFlexGap sx={{ mb: 2 }}>
+                  {[
+                    {
+                      key: 'workers',
+                      icon: <VerifiedIcon />,
+                      text: platformStats
+                        ? `${fmtNum(platformStats.skilledWorkers, '0')} verified workers`
+                        : 'Verified worker count pending',
+                    },
+                    { key: 'payments', icon: <SecurityIcon />, text: 'Secure payments' },
+                    {
+                      key: 'satisfaction',
+                      icon: <StarIcon />,
+                      text: platformStats && platformStats.successRate > 0
+                        ? `${platformStats.successRate}% satisfaction`
+                        : 'Satisfaction data pending',
+                    },
+                  ].map((badge) => (
+                    <Stack key={badge.key} direction="row" spacing={0.75} alignItems="center">
+                      {React.cloneElement(badge.icon, { sx: { color: '#FFD700', fontSize: 18 } })}
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          opacity: 0.9,
+                          fontSize: { xs: '0.78rem', sm: '0.84rem' },
+                          lineHeight: 1.35,
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {badge.text}
+                      </Typography>
+                    </Stack>
+                  ))}
                 </Stack>
 
                 <Stack
                   direction={{ xs: 'column', sm: 'row' }}
                   spacing={1}
-                  sx={{ mb: 2.5 }}
+                  sx={{ mb: { xs: 1.75, sm: 2.5 } }}
                 >
                   <Button
                     variant="text"
@@ -353,42 +467,6 @@ const HomeLanding = () => {
                   >
                     I want to hire
                   </Button>
-                </Stack>
-
-                {/* Trust badges */}
-                <Stack direction="row" spacing={{ xs: 1.5, sm: 2.5 }} flexWrap="wrap" useFlexGap>
-                  {[
-                    {
-                      key: 'workers',
-                      icon: <VerifiedIcon />,
-                      text: platformStats
-                        ? `${fmtNum(platformStats.skilledWorkers, '0')} verified workers`
-                        : 'Thousands of verified workers (estimated)',
-                    },
-                    { key: 'payments', icon: <SecurityIcon />, text: 'Secure payments' },
-                    {
-                      key: 'satisfaction',
-                      icon: <StarIcon />,
-                      text: platformStats && platformStats.successRate > 0
-                        ? `${platformStats.successRate}% satisfaction`
-                        : '98% satisfaction (estimated)',
-                    },
-                  ].map((badge) => (
-                    <Stack key={badge.key} direction="row" spacing={0.75} alignItems="center">
-                      {React.cloneElement(badge.icon, { sx: { color: '#FFD700', fontSize: 18 } })}
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          opacity: 0.88,
-                          fontSize: { xs: '0.8rem', sm: '0.84rem' },
-                          lineHeight: 1.4,
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
-                        {badge.text}
-                      </Typography>
-                    </Stack>
-                  ))}
                 </Stack>
               </Box>
             </Grid>
@@ -477,18 +555,18 @@ const HomeLanding = () => {
                     onClick={() => navigate(`/search?category=${cat.query}`)}
                     sx={{
                       width: '100%',
-                      p: { xs: 2, md: 2.5 },
+                      p: { xs: 2.25, md: 2.5 },
                       borderRadius: 3,
                       border: '1px solid',
                       borderColor: cardBorder,
-                      boxShadow: 'none',
-                      bgcolor: 'background.paper',
+                      boxShadow: isDark ? '0 0 0 1px rgba(255,255,255,0.04)' : '0 1px 0 rgba(15,23,42,0.05)',
+                      bgcolor: isDark ? 'rgba(255,255,255,0.02)' : '#ffffff',
                       cursor: 'pointer',
                       display: 'flex',
                       flexDirection: 'column',
                       alignItems: 'center',
-                      gap: 1,
-                      minHeight: { xs: 100, md: 120 },
+                      gap: 1.1,
+                      minHeight: { xs: 116, md: 120 },
                       transition: 'all 0.2s ease',
                       '&:hover': {
                         transform: 'translateY(-4px)',
@@ -515,14 +593,14 @@ const HomeLanding = () => {
                     <Typography
                       variant="body2"
                       fontWeight={700}
-                      sx={{ fontSize: { xs: '0.75rem', md: '0.85rem' }, textAlign: 'center' }}
+                      sx={{ fontSize: { xs: '0.84rem', md: '0.85rem' }, textAlign: 'center', lineHeight: 1.35 }}
                     >
                       {cat.label}
                     </Typography>
                     <Typography
                       variant="caption"
                       color="text.secondary"
-                      sx={{ fontSize: '0.7rem' }}
+                      sx={{ fontSize: { xs: '0.74rem', md: '0.7rem' }, fontWeight: 500, textAlign: 'center' }}
                     >
                       {formatTradeCount(cat.query)}
                     </Typography>
@@ -630,7 +708,7 @@ const HomeLanding = () => {
                 sx={{
                   fontWeight: 600,
                   borderColor: cardBorder,
-                  minHeight: 36,
+                  minHeight: { xs: 44, sm: 36 },
                   '&:hover': { borderColor: '#FFD700', color: '#FFD700' },
                 }}
               />
@@ -639,7 +717,13 @@ const HomeLanding = () => {
               size="small"
               endIcon={<ArrowForwardIcon />}
               onClick={() => navigate('/search')}
-              sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.85rem', minHeight: 36 }}
+              sx={{
+                textTransform: 'none',
+                fontWeight: 600,
+                fontSize: { xs: '0.9rem', sm: '0.85rem' },
+                minHeight: { xs: 44, sm: 36 },
+                px: { xs: 1, sm: 0 },
+              }}
             >
               View all trades
             </Button>
@@ -894,9 +978,9 @@ const HomeLanding = () => {
         <Container maxWidth="lg">
           <Grid container spacing={3} justifyContent="center" textAlign="center">
             {[
-              { key: 'jobs', val: platformStats ? fmtNum(platformStats.availableJobs, '0') : '12,000+', label: 'Jobs available', icon: <WorkIcon /> },
-              { key: 'workers', val: platformStats ? fmtNum(platformStats.skilledWorkers, '0') : '5,000+', label: 'Verified workers', icon: <VerifiedIcon /> },
-              { key: 'satisfaction', val: platformStats && platformStats.successRate > 0 ? `${platformStats.successRate}%` : '98%', label: 'Satisfaction rate', icon: <StarIcon /> },
+              { key: 'jobs', val: platformStats ? fmtNum(platformStats.availableJobs, '0') : '—', label: 'Jobs available', icon: <WorkIcon /> },
+              { key: 'workers', val: platformStats ? fmtNum(platformStats.skilledWorkers, '0') : '—', label: 'Verified workers', icon: <VerifiedIcon /> },
+              { key: 'satisfaction', val: platformStats && platformStats.successRate > 0 ? `${platformStats.successRate}%` : '—', label: 'Satisfaction rate', icon: <StarIcon /> },
               { key: 'support', val: '24/7', label: 'Support available', icon: <SupportIcon /> },
             ].map((stat, i) => (
               <Grid item xs={6} sm={3} key={stat.key}>

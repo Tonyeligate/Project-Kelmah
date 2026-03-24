@@ -6,17 +6,17 @@ import { useBreakpointDown } from '@/hooks/useResponsive';
 const SWIPE_THRESHOLD = 80; // px to commit action
 
 /**
- * SwipeToAction — wraps a list item and reveals a delete action on left-swipe (mobile only).
+ * SwipeToAction — wraps a list item and reveals a delete action on left-swipe on mobile.
  *
  * Accessibility:
  * - A visible "Delete" icon-button appears as keyboard fallback at the end
  *   of the item for users who cannot perform swipe gestures.
  * - aria-label on the swipe region and the fallback button.
  *
- * @param {Function}  onDelete      – called when swipe completes
- * @param {ReactNode} children      – the list item content
- * @param {boolean}   [disabled]    – disable swipe
- * @param {string}    [deleteLabel] – accessible label for delete action
+ * @param {Function}  onDelete      - called when swipe completes
+ * @param {ReactNode} children      - the list item content
+ * @param {boolean}   [disabled]    - disable swipe
+ * @param {string}    [deleteLabel] - accessible label for delete action
  */
 export default function SwipeToAction({ onDelete, children, disabled = false, deleteLabel = 'Delete' }) {
   const theme = useTheme();
@@ -54,32 +54,38 @@ export default function SwipeToAction({ onDelete, children, disabled = false, de
     }
   }, [offset, onDelete]);
 
+  const renderDeleteButton = () => (
+    onDelete && !disabled ? (
+      <IconButton
+        onClick={onDelete}
+        aria-label={deleteLabel}
+        size="small"
+        sx={{
+          color: 'error.main',
+          minWidth: 44,
+          minHeight: 44,
+          ml: isMobile ? 0 : 1,
+          mt: isMobile ? 1 : 0,
+          opacity: 0.72,
+          alignSelf: 'flex-end',
+          '&:hover': { opacity: 1, bgcolor: 'rgba(244,67,54,0.08)' },
+          '&:focus-visible': {
+            outline: '3px solid #D4AF37',
+            outlineOffset: '2px',
+          },
+        }}
+      >
+        <DeleteIcon fontSize="small" />
+      </IconButton>
+    ) : null
+  );
+
   // Desktop: render children with an accessible delete button fallback
   if (!isMobile) {
     return (
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
         <Box sx={{ flex: 1 }}>{children}</Box>
-        {onDelete && !disabled && (
-          <IconButton
-            onClick={onDelete}
-            aria-label={deleteLabel}
-            size="small"
-            sx={{
-              color: 'error.main',
-              minWidth: 44,
-              minHeight: 44,
-              ml: 1,
-              opacity: 0.6,
-              '&:hover': { opacity: 1, bgcolor: 'rgba(244,67,54,0.08)' },
-              '&:focus-visible': {
-                outline: '3px solid #D4AF37',
-                outlineOffset: '2px',
-              },
-            }}
-          >
-            <DeleteIcon fontSize="small" />
-          </IconButton>
-        )}
+        {renderDeleteButton()}
       </Box>
     );
   }
@@ -120,6 +126,9 @@ export default function SwipeToAction({ onDelete, children, disabled = false, de
         role="group"
         aria-label={`Swipe left to ${deleteLabel.toLowerCase()}`}
         sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 0.25,
           transform: `translateX(${offset}px)`,
           transition: swiping.current ? 'none' : 'transform 0.2s ease',
           position: 'relative',
@@ -128,6 +137,7 @@ export default function SwipeToAction({ onDelete, children, disabled = false, de
         }}
       >
         {children}
+        {renderDeleteButton()}
       </Box>
     </Box>
   );

@@ -42,8 +42,8 @@ const ariaDescriptions = {
  * @param {'jobs'|'messages'|'notifications'|'search'|'contracts'|'reviews'|'profile'} variant
  * @param {string}   title
  * @param {string}   [subtitle]
- * @param {string}   [actionLabel]   – CTA button text
- * @param {Function} [onAction]      – CTA callback
+ * @param {string}   [actionLabel]   - CTA button text
+ * @param {Function} [onAction]      - CTA callback
  */
 export default function EmptyState({
   variant = 'search',

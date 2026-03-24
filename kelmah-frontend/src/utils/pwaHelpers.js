@@ -60,7 +60,7 @@ const shouldRecoverFromChunkMismatch = (message) => {
   );
 };
 
-const clearRuntimeCachesAndReload = async () => {
+const clearRuntimeCachesAndNotify = async () => {
   if (typeof window === 'undefined') {
     return;
   }
@@ -73,7 +73,7 @@ const clearRuntimeCachesAndReload = async () => {
   }
 
   if (attempts >= CHUNK_RECOVERY_MAX_ATTEMPTS) {
-    pwaWarn('[PWA] Chunk recovery attempts exceeded; skipping forced reload.');
+    pwaWarn('[PWA] Chunk recovery attempts exceeded; skipping repeated recovery.');
     return;
   }
 
@@ -100,7 +100,13 @@ const clearRuntimeCachesAndReload = async () => {
     // Non-fatal.
   }
 
-  window.location.reload();
+  window.dispatchEvent(
+    new CustomEvent('app:chunkRecoveryNeeded', {
+      detail: {
+        message: 'Kelmah detected a stale app chunk and cleared cached assets. Please retry the page action.',
+      },
+    }),
+  );
 };
 
 const installChunkMismatchRecovery = () => {
@@ -115,7 +121,7 @@ const installChunkMismatchRecovery = () => {
     }
 
     pwaWarn('[PWA] Detected chunk mismatch runtime error. Starting recovery.', message);
-    clearRuntimeCachesAndReload();
+    clearRuntimeCachesAndNotify();
   };
 
   const handleUnhandledRejection = (event) => {
@@ -126,7 +132,7 @@ const installChunkMismatchRecovery = () => {
     }
 
     pwaWarn('[PWA] Detected chunk mismatch promise rejection. Starting recovery.', message);
-    clearRuntimeCachesAndReload();
+    clearRuntimeCachesAndNotify();
   };
 
   window.addEventListener('error', handleWindowError);
@@ -370,21 +376,20 @@ const showUpdateNotification = () => {
 // Update PWA
 const updatePWA = () => {
   if (typeof navigator === 'undefined' || !navigator.serviceWorker) {
-    window.location.reload();
     return Promise.resolve(false);
   }
 
   let fallbackTimer = null;
-  const safeReload = () => {
+  const notifyUpdateApplied = () => {
     if (fallbackTimer) {
       clearTimeout(fallbackTimer);
       fallbackTimer = null;
     }
-    window.location.reload();
+    window.dispatchEvent(new CustomEvent('sw:updateApplied'));
   };
 
   const handleControllerChange = () => {
-    safeReload();
+    notifyUpdateApplied();
   };
 
   navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange, {
@@ -399,19 +404,19 @@ const updatePWA = () => {
       } else if (navigator.serviceWorker.controller) {
         navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
       } else {
-        safeReload();
+        notifyUpdateApplied();
         return false;
       }
 
       // Fallback in case controllerchange is not emitted on this browser.
       fallbackTimer = setTimeout(() => {
-        safeReload();
+        notifyUpdateApplied();
       }, 3000);
 
       return true;
     })
     .catch(() => {
-      safeReload();
+      notifyUpdateApplied();
       return false;
     });
 };

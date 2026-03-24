@@ -148,7 +148,7 @@ const mobileUI = \
                     sx={{ p: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', display: 'flex', flexDirection: 'column', gap: 1 }}
                   >
                     <Typography variant="subtitle1" sx={{ fontWeight: 700, lineHeight: 1.2 }}>{job.title}</Typography>
-                    <Typography variant="caption" color="text.secondary">{job.employer?.name || 'Employer'} • {job.location || 'Remote'}</Typography>
+                    <Typography variant="caption" color="text.secondary">{job.employer?.name || 'Employer'}  {job.location || 'Remote'}</Typography>
                     {job.budget && (
                       <Typography variant="body2" sx={{ fontWeight: 800, color: 'primary.main', mt: 0.5 }}>
                         {job.currency || 'GHS'} {typeof job.budget === 'object' ? \\-\\ : job.budget}

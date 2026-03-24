@@ -3,6 +3,7 @@ import {
   Paper,
   List,
   ListItem,
+  ListItemButton,
   ListItemIcon,
   ListItemText,
   ClickAwayListener,
@@ -93,7 +94,7 @@ const SearchSuggestions = ({
                     onSuggestionSelected({ type: 'search', text: term })
                   }
                   sx={{
-                    minHeight: 36,
+                    minHeight: { xs: 44, sm: 36 },
                     maxWidth: '100%',
                     '& .MuiChip-label': { overflowWrap: 'anywhere' },
                   }}
@@ -123,32 +124,35 @@ const SearchSuggestions = ({
               {suggestions.map((suggestion, index) => (
                 <ListItem
                   key={`${suggestion.type}-${index}`}
-                  button
-                  onClick={() => onSuggestionSelected(suggestion)}
-                  aria-label={`Use suggestion ${suggestion.text}`}
                   divider={index < suggestions.length - 1}
-                  sx={{ minHeight: 52, alignItems: 'flex-start' }}
+                  disablePadding
                 >
-                  <ListItemIcon sx={{ minWidth: 40 }}>
-                    {getIcon(suggestion.type)}
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={suggestion.text}
-                    primaryTypographyProps={{ sx: { wordBreak: 'break-word' } }}
-                    secondary={
-                      suggestion.subText ||
-                      getSuggestionTypeLabel(suggestion.type)
-                    }
-                    secondaryTypographyProps={{
-                      sx: { wordBreak: 'break-word' },
-                    }}
-                  />
-                  <Chip
-                    size="small"
-                    label={getSuggestionTypeLabel(suggestion.type)}
-                    variant="outlined"
-                    sx={{ ml: 1, flexShrink: 0, minHeight: 30 }}
-                  />
+                  <ListItemButton
+                    onClick={() => onSuggestionSelected(suggestion)}
+                    aria-label={`Use suggestion ${suggestion.text}`}
+                    sx={{ minHeight: 56, alignItems: 'flex-start', py: 1.25 }}
+                  >
+                    <ListItemIcon sx={{ minWidth: 40, mt: 0.25 }}>
+                      {getIcon(suggestion.type)}
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={suggestion.text}
+                      primaryTypographyProps={{ sx: { wordBreak: 'break-word' } }}
+                      secondary={
+                        suggestion.subText ||
+                        getSuggestionTypeLabel(suggestion.type)
+                      }
+                      secondaryTypographyProps={{
+                        sx: { wordBreak: 'break-word' },
+                      }}
+                    />
+                    <Chip
+                      size="small"
+                      label={getSuggestionTypeLabel(suggestion.type)}
+                      variant="outlined"
+                      sx={{ ml: 1, flexShrink: 0, minHeight: { xs: 40, sm: 30 } }}
+                    />
+                  </ListItemButton>
                 </ListItem>
               ))}
             </List>

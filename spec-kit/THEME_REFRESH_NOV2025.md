@@ -1,4 +1,4 @@
-# Theme Refresh – November 14, 2025
+# Theme Refresh - November 14, 2025
 
 ## Summary
 - **Problem**: Light/dark theme modes felt artificial and "unwealthy" because brand gold (#FFD700) was used as a background fill instead of an accent, creating harsh contrast and readability issues.
@@ -30,7 +30,7 @@
    - Theme changes mirror to both storage layers, broadcast via the `storage` event for multi-tab sync, and continue following the OS scheme until a user explicitly toggles, closing the “toggle resets on navigation” bug.
 
 ## Verification & Testing
-- `npm --prefix kelmah-frontend run lint` (pending after workspace changes) – ensures the updated theme compiles and respects lint rules.
+- `npm --prefix kelmah-frontend run lint` (pending after workspace changes) - ensures the updated theme compiles and respects lint rules.
 - Manual theme toggle via `KelmahThemeProvider` to confirm:
    - Dark mode: backgrounds are charcoal, paper surfaces show subtle gold borders, and content text is parchment white.
    - Light mode: backgrounds shift to parchment/white, with gold restricted to CTAs and indicators.

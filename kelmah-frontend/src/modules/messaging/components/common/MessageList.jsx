@@ -24,6 +24,19 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Styled components
 const MessageListContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -115,7 +128,7 @@ const MessageList = ({
   onReply,
 }) => {
   const { user } = useAuth();
-  const { getTypingUsers } = useMessages();
+  const { getTypingUsers, messageAnnouncement } = useMessages();
   const messagesEndRef = useRef(null);
   const [menuAnchorEl, setMenuAnchorEl] = useState(null);
   const [selectedMessage, setSelectedMessage] = useState(null);
@@ -478,6 +491,23 @@ const MessageList = ({
   // Main render
   return (
     <MessageListContainer>
+      <Box
+        sx={{
+          position: 'absolute',
+          width: 1,
+          height: 1,
+          p: 0,
+          m: -1,
+          overflow: 'hidden',
+          clip: 'rect(0, 0, 0, 0)',
+          whiteSpace: 'nowrap',
+          border: 0,
+        }}
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        {messageAnnouncement}
+      </Box>
       {isLoading ? (
         renderLoadingState()
       ) : conversation ? (

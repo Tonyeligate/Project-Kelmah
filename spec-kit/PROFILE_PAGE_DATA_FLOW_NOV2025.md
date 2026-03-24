@@ -1,4 +1,4 @@
-# Profile Page Data Flow – November 2025
+# Profile Page Data Flow - November 2025
 
 ## Summary
 - **Issue:** `/profile` skeleton never resolves because the gateway returned `USER_PROFILE_ERROR` (BSON version mismatch) and the UI lacked a timeout or retry path.

@@ -8,9 +8,9 @@ const MAX_PULL = 120; // max visual pull distance
 /**
  * PullToRefresh — wraps scrollable content and adds pull-to-refresh on mobile.
  *
- * @param {Function}  onRefresh   – async function called on pull release
- * @param {ReactNode} children    – scrollable content
- * @param {boolean}   [disabled]  – disable the gesture
+ * @param {Function}  onRefresh   - async function called on pull release
+ * @param {ReactNode} children    - scrollable content
+ * @param {boolean}   [disabled]  - disable the gesture
  */
 export default function PullToRefresh({ onRefresh, children, disabled = false }) {
   const isMobile = useBreakpointDown('md');

@@ -30,6 +30,7 @@ import {
   Skeleton,
   Rating,
   Slide,
+  ButtonBase,
 } from '@mui/material';
 import {
   Work as JobIcon,
@@ -59,7 +60,7 @@ import mapService from '../services/mapService';
 import { Helmet } from 'react-helmet-async';
 
 // ────────────────────────────────────────────────────────────
-//  Bottom Sheet – Uber/Bolt-style pull-up results panel
+//  Bottom Sheet - Uber/Bolt-style pull-up results panel
 // ────────────────────────────────────────────────────────────
 const BottomSheet = ({ open, onToggle, children, title, count, loading }) => {
   const theme = useTheme();
@@ -83,15 +84,8 @@ const BottomSheet = ({ open, onToggle, children, title, count, loading }) => {
         }}
       >
         <Box
+          component={ButtonBase}
           onClick={onToggle}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter' || event.key === ' ') {
-              event.preventDefault();
-              onToggle();
-            }
-          }}
-          tabIndex={0}
-          role="button"
           aria-label="Toggle results panel"
           sx={{
             display: 'flex',
@@ -133,7 +127,7 @@ const BottomSheet = ({ open, onToggle, children, title, count, loading }) => {
 };
 
 // ────────────────────────────────────────────────────────────
-//  Result Card – compact job/worker card for the list
+//  Result Card - compact job/worker card for the list
 // ────────────────────────────────────────────────────────────
 const ResultCard = ({ item, viewType, onSelect, onNavigate, onMessage }) => {
   const theme = useTheme();
@@ -149,10 +143,8 @@ const ResultCard = ({ item, viewType, onSelect, onNavigate, onMessage }) => {
       layout
     >
       <Card
-        role="button"
-        tabIndex={0}
+        component={ButtonBase}
         onClick={() => onSelect(item)}
-        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(item); } }}
         sx={{
           mx: 2,
           mb: 1.5,
@@ -215,7 +207,7 @@ const ResultCard = ({ item, viewType, onSelect, onNavigate, onMessage }) => {
               <Typography variant="caption" color="text.secondary" noWrap>
                 {item.category}
                 {item.distance != null &&
-                  ` · ${mapService.formatDistance(item.distance)}`}
+                  ` | ${mapService.formatDistance(item.distance)}`}
               </Typography>
               <Box sx={{ display: 'flex', gap: 1.5, mt: 0.75, alignItems: 'center' }}>
                 {isJob ? (
@@ -358,7 +350,7 @@ const ResultCard = ({ item, viewType, onSelect, onNavigate, onMessage }) => {
 };
 
 // ────────────────────────────────────────────────────────────
-//  MAIN PAGE – Professional Uber/Bolt-style Map
+//  MAIN PAGE - Professional Uber/Bolt-style Map
 // ────────────────────────────────────────────────────────────
 const ProfessionalMapPage = () => {
   const theme = useTheme();

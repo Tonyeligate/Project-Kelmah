@@ -429,9 +429,9 @@ const SmartJobRecommendations = ({
   // Get urgency indicator
   const getUrgencyIndicator = (urgency) => {
     const indicators = {
-      high: { color: 'error', label: 'Urgent', icon: 'ðŸ”¥' },
-      medium: { color: 'warning', label: 'Soon', icon: 'â°' },
-      low: { color: 'info', label: 'Flexible', icon: 'ðŸ“…' },
+      high: { color: 'error', label: 'Urgent', icon: '🔥' },
+      medium: { color: 'warning', label: 'Soon', icon: '⏰' },
+      low: { color: 'info', label: 'Flexible', icon: '🕒' },
     };
     return indicators[urgency] || indicators.low;
   };

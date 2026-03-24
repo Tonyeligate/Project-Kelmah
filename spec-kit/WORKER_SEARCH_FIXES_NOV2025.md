@@ -1,9 +1,9 @@
-# Worker Search Fixes – November 7, 2025
+# Worker Search Fixes - November 7, 2025
 
 ## Overview
 User regression tests identified that the public worker discovery flow (`/search`) still exhibited seven critical failures despite earlier hirer-dashboard fixes:
 
-1. Trade filter ignored – electricians query returned carpenters/roofers.
+1. Trade filter ignored - electricians query returned carpenters/roofers.
 2. Keyword search stuck showing unrelated trades.
 3. "View Profile" navigated to `/`, not the worker profile.
 4. Sort dropdown reset all filters and navigated away.
@@ -13,7 +13,7 @@ User regression tests identified that the public worker discovery flow (`/search
 
 ## Root Causes
 - `SearchPage.jsx` still issued legacy parameters (`workNeeded`, `where`, `type`) that the consolidated MongoDB worker endpoint no longer understands.
-- No normalization of worker payloads for `WorkerCard` – inconsistent fields prevented deterministic sort/rating display.
+- No normalization of worker payloads for `WorkerCard` - inconsistent fields prevented deterministic sort/rating display.
 - Sort handling depended on `sortOrder` state but never persisted `sort` in `searchParams`, so URL updates cleared context.
 - Filter chips could not pass their values back to the remover, making state clean-up brittle.
 - `WorkerCard.jsx` continued to point at `/workers/:id`, falling afoul of the catch-all redirect to `/` because no such route existed.

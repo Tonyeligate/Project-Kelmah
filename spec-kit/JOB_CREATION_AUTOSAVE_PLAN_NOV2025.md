@@ -1,4 +1,4 @@
-# Job Creation Autosave & Layout Plan – November 19, 2025
+# Job Creation Autosave & Layout Plan - November 19, 2025
 
 ## 1. Data Flow Analysis
 
@@ -62,7 +62,7 @@ Response (success/error) bubbles back → JobCreationForm toggles success/error 
    - Add an optional preview drawer on the right (desktop) that renders a JobCard using current form values, reinforcing how postings will look.
 
 ## 4. Next Steps / Work Breakdown
-1. **Backend:** Already fixed proxy body forwarding – awaiting redeploy.
+1. **Backend:** Already fixed proxy body forwarding - awaiting redeploy.
 2. **Frontend Implementation:**
    - [ ] Build `useJobDraft` hook with tests (Jest) to validate storage lifecycle.
    - [ ] Refactor `JobCreationForm` into modular sections + shared inputs.

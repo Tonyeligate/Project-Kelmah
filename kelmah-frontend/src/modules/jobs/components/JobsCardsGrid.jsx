@@ -11,6 +11,7 @@ import {
   IconButton,
   Tooltip,
   Typography,
+  CardActionArea,
 } from '@mui/material';
 import {
   Bookmark as BookmarkFilledIcon,
@@ -73,6 +74,7 @@ function JobsCardsGrid({
         const employerAvatar = getEmployerAvatar(job);
         const jobId = job._id || job.id;
         const isSaved = savedJobIds.has(job.id || job._id);
+        const isUrgentJob = Boolean(job.urgent || job.proposalCount > 10);
 
         return (
           <Grid item xs={12} sm={6} md={6} lg={4} xl={3} key={job.id || job._id}>
@@ -84,6 +86,7 @@ function JobsCardsGrid({
               {...motionProps}
             >
               <Card
+                component={CardActionArea}
                 sx={{
                   height: '100%',
                   display: 'flex',
@@ -126,14 +129,6 @@ function JobsCardsGrid({
                   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 }}
                 onClick={() => navigate(`/jobs/${jobId}`)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    navigate(`/jobs/${jobId}`);
-                  }
-                }}
-                role="button"
-                tabIndex={0}
                 aria-label={`Job posting: ${job.title}`}
               >
                 <Box
@@ -307,7 +302,7 @@ function JobsCardsGrid({
                         gap: 0.5,
                       }}
                     >
-                      {(job.urgent || job.proposalCount > 10) && (
+                      {isUrgentJob && (
                         <Tooltip
                           title={
                             job.urgent
@@ -365,6 +360,47 @@ function JobsCardsGrid({
                           />
                         </Tooltip>
                       )}
+                    </Box>
+                  </Box>
+
+                  <Box
+                    sx={{
+                      display: { xs: 'grid', sm: 'none' },
+                      gridTemplateColumns: '1fr',
+                      gap: 0.75,
+                      mb: 1.5,
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                      <MonetizationOn fontSize="small" sx={{ color: 'var(--k-gold)' }} />
+                      <Typography
+                        variant="body2"
+                        sx={{ color: 'var(--k-gold)', fontWeight: 800, fontSize: '0.92rem' }}
+                      >
+                        {job?.budget
+                          ? typeof job?.budget === 'object'
+                            ? job.budget.min === job.budget.max || !job.budget.max
+                              ? `GHc ${(job.budget.amount || job.budget.min)?.toLocaleString()}`
+                              : `GHc ${job.budget.min?.toLocaleString()} - ${job.budget.max?.toLocaleString()}`
+                            : `GHc ${job?.budget?.toLocaleString()}`
+                          : 'Negotiable'}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                      <LocationOn fontSize="small" sx={{ color: 'var(--k-gold)' }} />
+                      <Typography variant="body2" sx={{ color: 'text.primary', fontSize: '0.84rem' }}>
+                        {job.location?.city
+                          ? `${job.location.city}${job.location.country ? ', ' + job.location.country : ''}`
+                          : typeof job.location === 'string'
+                            ? job.location
+                            : 'Remote/Flexible'}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                      <FireIcon fontSize="small" sx={{ color: isUrgentJob ? '#ff6b6b' : 'text.secondary' }} />
+                      <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.82rem', fontWeight: 600 }}>
+                        {isUrgentJob ? 'Urgency: high demand now' : 'Urgency: standard'}
+                      </Typography>
                     </Box>
                   </Box>
 

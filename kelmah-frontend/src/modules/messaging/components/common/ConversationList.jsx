@@ -7,6 +7,7 @@ import {
   List,
   ListItem,
   ListItemAvatar,
+  ListItemButton,
   ListItemText,
   Avatar,
   TextField,
@@ -187,7 +188,9 @@ const StyledTab = styled(Tab)(({ theme }) => ({
   },
 }));
 
-const StyledListItem = styled(ListItem)(({ theme, active }) => ({
+const StyledListItem = styled(ListItemButton, {
+  shouldForwardProp: (prop) => prop !== 'active',
+})(({ theme, active }) => ({
   borderRadius: theme.shape.borderRadius,
   transition: 'background-color 0.2s ease',
   cursor: 'pointer',
@@ -265,7 +268,7 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
   const [localConversations, setLocalConversations] = useState([]);
   const [localLoading, setLocalLoading] = useState(true);
 
-  // Sync from MessageContext conversations (single source of truth â€” avoids duplicate fetches)
+  // Sync from MessageContext conversations (single source of truth - avoids duplicate fetches)
   useEffect(() => {
     setLocalConversations(Array.isArray(contextConversations) ? contextConversations : []);
     setLocalLoading(contextLoading);
@@ -613,14 +616,7 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
                   <StyledListItem
                     active={isSelected ? 1 : 0}
                     onClick={() => handleSelectConversation(conversation)}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter' || event.key === ' ') {
-                        event.preventDefault();
-                        handleSelectConversation(conversation);
-                      }
-                    }}
-                    tabIndex={0}
-                    role="button"
+                    selected={isSelected}
                     aria-label={`Open conversation with ${conversation.name || 'Unknown user'}`}
                   >
                     <ListItemAvatar>
@@ -744,23 +740,23 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
                               const msg = conversation.latestMessage || conversation.lastMessage;
                               if (!msg) return 'No messages yet';
                               const mType = msg.messageType || '';
-                              // Show human-readable label for media â€” never show raw URLs
-                              if (mType === 'image') return 'ðŸ–¼ï¸ Photo';
-                              if (mType === 'video') return 'ðŸŽ¥ Video';
-                              if (mType === 'audio') return 'ðŸŽµ Audio';
-                              if (mType === 'file' || mType === 'document') return 'ðŸ“Ž File';
+                              // Show human-readable label for media - never show raw URLs
+                              if (mType === 'image') return 'Photo';
+                              if (mType === 'video') return 'Video';
+                              if (mType === 'audio') return 'Audio';
+                              if (mType === 'file' || mType === 'document') return 'File';
                               // Fallback: if content looks like a URL and there are attachments, label it
                               const content = msg.content || msg.text || '';
                                 const isImageUrl = content.match(/\\.(jpeg|jpg|gif|png|webp|bmp)($|\\?)/i) || content.includes('/image/upload/') || content.includes('cloudinary.com/');
                                 const isVideoUrl = content.match(/\\.(mp4|webm|avi|mov)($|\\?)/i) || content.includes('/video/upload/');
                                 
-                                if (isImageUrl) return '\uD83D\uDDBC\uFE0F Photo';
-                                if (isVideoUrl) return '\uD83C\uDFBA Video';
+                                if (isImageUrl) return 'Photo';
+                                if (isVideoUrl) return 'Video';
 
                                 if (msg.hasAttachment || (Array.isArray(msg.attachments) && msg.attachments.length > 0)) {
-                                  if (!content.trim() || content.startsWith('http')) return '\uD83D\uDCCE Attachment';
+                                  if (!content.trim() || content.startsWith('http')) return 'Attachment';
                                 }
-                                if (content.startsWith('http')) return '\uD83D\uDCCE Attachment';
+                                if (content.startsWith('http')) return 'Attachment';
                                 return content ? truncateText(content) : 'No messages yet';
                             })()}
                           </Typography>
@@ -1083,7 +1079,7 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
             )}
           />
 
-          {/* Encryption toggle removed â€” E2E encryption not implemented */}
+          {/* Encryption toggle removed - E2E encryption not implemented */}
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
           <Button

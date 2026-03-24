@@ -432,28 +432,51 @@ function WorkerProfile({ workerId: workerIdProp }) {
       const viewingOwnProfile =
         authUser?.userId && authUser.userId === resolvedWorkerId;
 
-      const results = await Promise.allSettled([
-        workerService.getWorkHistory(resolvedWorkerId),
-        workerService.getWorkerStats(resolvedWorkerId),
-        reviewService.getWorkerRating(resolvedWorkerId),
+      let profileDetailsThrottled = false;
+      const runOptionalProfileRequest = async (requestFactory) => {
+        if (profileDetailsThrottled) {
+          return null;
+        }
+
+        try {
+          return await requestFactory();
+        } catch (requestError) {
+          if (requestError?.response?.status === 429) {
+            profileDetailsThrottled = true;
+            setFeedbackMessage(
+              'Some profile details are temporarily limited. Please try again shortly.',
+            );
+          }
+
+          return null;
+        }
+      };
+
+      // Load secondary sections sequentially to avoid request bursts that trip gateway throttling.
+      const historyRes = await runOptionalProfileRequest(() =>
+        workerService.getWorkHistory(resolvedWorkerId)
+      );
+      const completionRes = await runOptionalProfileRequest(() =>
+        workerService.getWorkerStats(resolvedWorkerId)
+      );
+      const ratingRes = await runOptionalProfileRequest(() =>
+        reviewService.getWorkerRating(resolvedWorkerId)
+      );
+      const reviewListRes = await runOptionalProfileRequest(() =>
         reviewService.getWorkerReviews(resolvedWorkerId, {
           page: 1,
           limit: 6,
           status: 'approved',
           sortBy: 'createdAt',
           order: 'desc',
-        }),
-        viewingOwnProfile
-          ? workerService.getWorkerEarnings(resolvedWorkerId)
-          : Promise.resolve(null),
-      ]);
-
-      const getValue = (result, fallback = null) =>
-        result.status === 'fulfilled' ? result.value : fallback;
-
-      const [historyRes, completionRes, ratingRes, reviewListRes, earningsRes] = results.map((result) =>
-        getValue(result)
+        })
       );
+      const earningsRes =
+        viewingOwnProfile
+          ? await runOptionalProfileRequest(() =>
+            workerService.getWorkerEarnings(resolvedWorkerId)
+          )
+          : null;
 
       const historyPayload = historyRes?.data?.data || historyRes?.data || [];
       const normalizedHistory = Array.isArray(historyPayload)
@@ -476,7 +499,14 @@ function WorkerProfile({ workerId: workerIdProp }) {
       setProfileCompletion(completionRes || null);
       setEarnings(earningsRes?.data?.data || earningsRes?.data || null);
     } catch (err) {
-      setError('Could not find this worker. Please try again.');
+      const status = err?.response?.status;
+      if (status === 404) {
+        setError('Worker profile not found.');
+      } else if (status === 429) {
+        setError('This profile is temporarily rate-limited. Please wait a few seconds and try again.');
+      } else {
+        setError('Could not load this worker profile. Please try again.');
+      }
       devError(err);
     } finally {
       setLoading(false);
@@ -518,15 +548,11 @@ function WorkerProfile({ workerId: workerIdProp }) {
         setIsBookmarked(ids.includes(resolvedWorkerId));
       })
       .catch((bookmarkError) => {
-        if (
-          bookmarkError?.response?.status !== 401 &&
-          import.meta.env.DEV &&
-          import.meta.env.VITE_DEBUG_FRONTEND === 'true'
-        ) {
+        if (bookmarkError?.response?.status !== 401) {
           devError('Failed to load bookmarks', bookmarkError);
         }
       });
-  }, [authUser, fetchAllData, resolvedWorkerId, workerIdProp]);
+  }, [authUser?.userId, fetchAllData, resolvedWorkerId]);
 
   useEffect(() => {
     if (!isActualMobile) {
@@ -2469,7 +2495,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                 letterSpacing: 0.5,
                 color: accent,
                 border: `1px solid ${accent}`,
-                backgroundColor: isDark ? '#000000' : 'background.paper',
+                backgroundColor: isDark ? '#000000' : theme.palette.background.paper,
                 '&:hover': {
                   backgroundColor: alpha(accent, 0.08),
                 },

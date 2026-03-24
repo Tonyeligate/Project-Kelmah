@@ -5,12 +5,12 @@ import { devError } from '@/modules/common/utils/devLogger';
 const SETTINGS_BASE = '/settings';
 const settingsPath = (suffix = '') => `${SETTINGS_BASE}${suffix}`;
 
-// Static configuration lists â€” the same for all users, no backend call needed.
+// Static configuration lists - the same for all users, no backend call needed.
 const DEFAULT_LANGUAGES = [
-  { code: 'en', name: 'English', flag: 'ðŸ‡ºðŸ‡¸' },
-  { code: 'tw', name: 'Twi', flag: 'ðŸ‡¬ðŸ‡­' },
-  { code: 'ga', name: 'Ga', flag: 'ðŸ‡¬ðŸ‡­' },
-  { code: 'fr', name: 'French', flag: 'ðŸ‡«ðŸ‡·' },
+  { code: 'en', name: 'English', flag: 'US' },
+  { code: 'tw', name: 'Twi', flag: 'GH' },
+  { code: 'ga', name: 'Ga', flag: 'GH' },
+  { code: 'fr', name: 'French', flag: 'FR' },
 ];
 
 const DEFAULT_THEMES = [
@@ -62,7 +62,7 @@ class SettingsService {
     }
   }
 
-  // Get notification preferences â€” tries backend, falls back silently
+  // Get notification preferences - tries backend, falls back silently
   async getNotificationPreferences() {
     try {
       const response = await api.get(settingsPath('/notifications'));
@@ -127,12 +127,12 @@ class SettingsService {
     }
   }
 
-  // Available languages â€” static list, no backend call
+  // Available languages - static list, no backend call
   async getLanguages() {
     return DEFAULT_LANGUAGES;
   }
 
-  // Available themes â€” static list, no backend call
+  // Available themes - static list, no backend call
   async getThemes() {
     return DEFAULT_THEMES;
   }

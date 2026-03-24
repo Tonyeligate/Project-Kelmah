@@ -25,6 +25,19 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 const Input = styled('input')({
   display: 'none',
 });
@@ -679,7 +692,7 @@ const WorkerProfileEditPage = () => {
             Fill the core fields first, then save. Optional sections can wait.
           </Typography>
           <Typography variant="body2">
-            {checklistItems.map((item) => `${item.done ? '[done]' : '[todo]'} ${item.label}`).join(' | ')}
+            {checklistItems.map((item) => `${item.done ? '[done]' : '[pending]'} ${item.label}`).join(' | ')}
           </Typography>
         </Alert>
       </Box>

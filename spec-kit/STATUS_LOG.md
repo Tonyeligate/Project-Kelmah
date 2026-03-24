@@ -1,3 +1,959 @@
+### Session: Batch 10F Artifact Sweep and Operator Symbol Normalization March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Continue nonstop encoding remediation with a final artifact-heavy sweep after source/runtime files were already clean.
+
+**Files touched**
+- .claude/agents/claudecode.agent.md
+- .claude/agents/frontend.agent.md
+- kelmah-backend/services/job-service/*.txt (artifact outputs)
+- kelmah-frontend/build_output_audit.txt
+- kelmah-frontend/build_result.txt
+- kelmah-frontend/.build-output.txt
+- spec-kit/frontend_pages_eslint.txt
+- backup/root_cleanup_20260201/diagnostics/mongo-probe-20251121T131334Z.json
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Agent docs:
+  - normalized corrupted creation/annihilation operator symbols to `a†(x)` and `a(x)`.
+- Generated and diagnostic text artifacts:
+  - applied bulk non-ASCII normalization to remove persistent mojibake byte sequences across backend job-service audit/result logs and frontend build output artifacts.
+  - cleaned residual corruption in spec-kit lint-output artifact and one backup diagnostics JSON artifact.
+
+**Verification**
+- PASS: repo-wide grep scan for the active corruption marker set now returns no matches in non-ignored workspace files.
+
+### Session: Batch 10E Cross-Repo Documentation and Script Encoding Cleanup March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Continue nonstop mojibake remediation outside active frontend source by cleaning root utilities, historical reports, and backend audit text artifacts.
+
+**Files touched**
+- start-localtunnel-fixed.js
+- spec-kit/CORS_PRODUCTION_FAILURE_OCT4.md
+- spec-kit/COMPREHENSIVE_CONNECTIVITY_AUDIT_PHASE1_REPORT.md
+- DataAnalysisExpert/kelmah_decisions_extracted_2026-02-11.md
+- backup/root_cleanup_20260201/misc/start-localtunnel-fixed.js
+- backup/root_cleanup_20260201/documentation/IMMEDIATE_BACKEND_FIXES_REQUIRED.md
+- backup/root_cleanup_20260201/documentation/COMPREHENSIVE_CONNECTIVITY_AUDIT_PHASE1_REPORT.md
+- kelmah-backend/services/job-service/audit-output.txt
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Root + backup localtunnel scripts:
+  - replaced corrupted leading replacement-character markers in startup mode and tunnel launch logs.
+- Spec-kit and analysis docs:
+  - normalized corrupted heading markers in CORS and connectivity reports.
+  - normalized dashboard audit heading marker in extracted decisions report.
+- Backend job-service audit output:
+  - normalized corrupted numbered section headers for readability (`1.` through `5.` titles).
+
+**Verification**
+- PASS: repo-wide text scan for mojibake markers now reports only two matches in generated evidence JSON snapshots.
+- PASS: `npm run build` in `kelmah-frontend` after these edits.
+
+### Session: Batch 10D Backend DB Error-Log Encoding Cleanup March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Extend encoding cleanup to active backend runtime diagnostics after workspace-level scan identified replacement-character artifacts in DB connection error logging.
+
+**Files touched**
+- kelmah-backend/services/auth-service/config/db.js
+- kelmah-backend/services/job-service/config/db.js
+- kelmah-backend/services/user-service/config/db.js
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Replaced replacement-character prefixes in MongoDB connection failure logs with the intended warning marker text for consistent diagnostics.
+
+**Verification**
+- PASS: workspace grep scan for mojibake markers in active backend service code now only reports legacy `audit-output.txt` artifacts under job-service.
+- PASS: frontend verification remained green from the immediately preceding batch (`npm run build` + 3 smoke suites, 29 tests).
+
+### Session: Batch 10C Residual Messaging and Payment Encoding Cleanup March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Continue continuous frontend remediation by removing the last discovered mojibake strings from payment title copy and realtime messaging/notification logs.
+
+**Files touched**
+- kelmah-frontend/src/modules/payment/components/GhanaMobileMoneyPayment.jsx
+- kelmah-frontend/src/modules/notifications/services/notificationService.js
+- kelmah-frontend/src/modules/messaging/contexts/MessageContext.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Ghana Mobile Money payment card:
+  - replaced a corrupted flag-glyph heading with clean, explicit Ghana label text.
+- Notification service:
+  - normalized websocket subscription log text from corrupted emoji bytes to plain ASCII wording.
+- Messaging context:
+  - normalized remaining corrupted emoji-prefixed websocket and message lifecycle log strings.
+
+**Verification**
+- PASS: repo scan in `kelmah-frontend/src/**` for mojibake marker set returned no matches after patching.
+- PASS: `npm run build` in `kelmah-frontend`.
+- PASS: smoke suites via `npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx src/tests/smoke/critical-path-happy-flow.smoke.test.jsx src/tests/smoke/critical-path-gateway-contract.smoke.test.js --runInBand` (3 suites, 29 tests).
+
+### Session: Batch 10B Frontend Text and Emoji Encoding Cleanup March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Continue continuous remediation by fixing newly discovered mojibake hotspots in auth/payment/search/worker flows plus related dashboard/jobs/messaging service text.
+
+**Files touched**
+- kelmah-frontend/src/modules/auth/services/authSlice.js
+- kelmah-frontend/src/modules/auth/utils/tokenUtils.js
+- kelmah-frontend/src/modules/payment/pages/EscrowDetailsPage.jsx
+- kelmah-frontend/src/modules/search/components/SmartJobRecommendations.jsx
+- kelmah-frontend/src/modules/worker/pages/SkillsAssessmentPage.jsx
+- kelmah-frontend/src/modules/dashboard/services/dashboardService.js
+- kelmah-frontend/src/modules/jobs/services/jobsService.js
+- kelmah-frontend/src/modules/messaging/services/messagingService.js
+- kelmah-frontend/src/modules/messaging/components/common/EmojiPicker.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Auth/token utilities:
+  - normalized malformed punctuation/arrows in reducer and JWT utility comments.
+- Escrow details and skills sharing:
+  - corrected malformed loading ellipsis and share-text dash artifacts.
+- Smart recommendations:
+  - fixed urgency indicator icons to valid emoji glyphs.
+- Dashboard/jobs/messaging services:
+  - removed corrupted log/comment markers and normalized ASCII separators.
+- Emoji picker:
+  - replaced corrupted category icons and full emoji sample dataset with valid glyphs.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend`.
+- PASS: smoke suites via `npx jest --runInBand routed-paths critical-path-happy-flow critical-path-gateway-contract` (3 suites, 29 tests).
+
+### Session: Frontend Search Semantics Batch March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Improve mobile search interaction semantics by converting the compact search bar to a native form submit flow.
+
+**Files touched**
+- kelmah-frontend/src/modules/search/components/common/CompactSearchBar.jsx
+
+**Implementation summary**
+- Compact search bar:
+  - wrapped the control cluster in a form so Enter submits natively.
+  - removed the manual Enter key handler from the search text field.
+  - kept the search icon button and filter button behavior intact.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,964 modules transformed).
+
+### Session: Frontend Raw-Interaction and Comment Cleanup March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Continue the frontend audit by removing the last obvious raw-button interactions in jobs and messaging, while normalizing remaining developer comment text in nearby frontend modules.
+
+**Files touched**
+- kelmah-frontend/src/modules/jobs/components/JobsCardsGrid.jsx
+- kelmah-frontend/src/modules/messaging/components/common/ConversationList.jsx
+
+**Implementation summary**
+- Jobs cards:
+  - converted the card root to `CardActionArea` semantics and removed the manual `role="button"` / keyboard plumbing.
+- Conversation list:
+  - converted the conversation row surface to `ListItemButton` semantics and removed the manual keyboard handler.
+- Comment cleanup:
+  - normalized remaining ASCII-drift in adjacent frontend comment text where the patch was mechanically safe.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,964 modules transformed).
+
+### Session: Frontend Gallery and Portfolio Batch Fixes March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Continue frontend UX polish by removing the remaining raw-button surfaces in lower-level gallery, portfolio, and payment provider components.
+
+**Files touched**
+- kelmah-frontend/src/modules/worker/components/ProjectGallery.jsx
+- kelmah-frontend/src/modules/worker/components/PortfolioManager.jsx
+- kelmah-frontend/src/modules/payment/components/GhanaianMobileMoneyInterface.jsx
+
+**Implementation summary**
+- Project gallery:
+  - converted thumbnail taps and mobile pagination dots to `ButtonBase` actions so gallery navigation uses native MUI button semantics.
+- Portfolio manager:
+  - converted the main project image surface to `CardActionArea`.
+  - converted the preview thumbnails to `ButtonBase` actions.
+  - removed the manual `role="button"` / keyboard plumbing from the image-count chip so it relies on standard clickable-chip semantics.
+- Mobile money providers:
+  - removed the remaining raw `role="button"` and keyboard handlers from the provider card container.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,963 modules transformed).
+
+### Session: Frontend Hirer and Talent Batch Fixes 2 March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Apply a second frontend UX polish pass focused on reducing mobile clutter on the public talent page.
+
+**Files touched**
+- kelmah-frontend/src/modules/search/pages/SearchPage.jsx
+
+**Implementation summary**
+- Public talent search:
+  - hid the redundant intro guidance card on small screens so the worker directory appears sooner on mobile.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend`.
+
+### Session: Frontend Hirer and Talent Batch Fixes March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Apply targeted frontend fixes for hirer dashboard spacing, talent search empty-state flow, and worker profile styling consistency.
+
+**Files touched**
+- kelmah-frontend/src/modules/worker/components/WorkerProfile.jsx
+- kelmah-frontend/src/modules/search/components/results/WorkerSearchResults.jsx
+- kelmah-frontend/src/modules/hirer/pages/HirerDashboardPage.jsx
+
+**Implementation summary**
+- Worker profile:
+  - fixed the light-mode MESSAGE button background to use a real theme color token instead of a literal string.
+- Talent search empty state:
+  - changed the fallback CTA to match the viewer role, so hirers can jump to posting a job and public users get a better onboarding path.
+- Hirer dashboard:
+  - reduced the wrapper height and bottom padding on desktop so the dashboard no longer carries mobile bottom-nav spacing into desktop layout.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend`.
+
+### Session: Frontend Hirer and Talent Flow Audit March 24 2026 🔄 IN REVIEW
+
+**Date**: March 24, 2026  
+**Scope**: Audit the frontend hirer and talent flows for UI, UX, responsive layout, and navigation issues across mobile and desktop views.
+
+**Files inspected**
+- kelmah-frontend/src/routes/config.jsx
+- kelmah-frontend/src/modules/layout/components/Layout.jsx
+- kelmah-frontend/src/modules/layout/components/Header.jsx
+- kelmah-frontend/src/modules/layout/components/MobileBottomNav.jsx
+- kelmah-frontend/src/modules/search/pages/SearchPage.jsx
+- kelmah-frontend/src/modules/search/components/WorkerDirectoryExperience.jsx
+- kelmah-frontend/src/modules/search/components/results/WorkerSearchResults.jsx
+- kelmah-frontend/src/modules/search/components/common/JobSearchForm.jsx
+- kelmah-frontend/src/modules/search/components/common/MobileFilterDrawer.jsx
+- kelmah-frontend/src/modules/hirer/pages/HirerDashboardPage.jsx
+- kelmah-frontend/src/modules/hirer/pages/HirerProfilePage.jsx
+- kelmah-frontend/src/modules/hirer/pages/WorkerSearchPage.jsx
+- kelmah-frontend/src/modules/worker/pages/WorkerProfilePage.jsx
+- kelmah-frontend/src/modules/worker/components/WorkerProfile.jsx
+- kelmah-frontend/src/modules/hirer/components/WorkerComparisonTable.jsx
+
+**Verification**
+- Investigation only; no code changes applied in this audit step.
+
+### Session: Batch 16 Unauthorized Queue Cap Hardening March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Harden client-side unauthorized retry handling against unbounded queue growth under repeated auth failures.
+
+**Files touched**
+- kelmah-frontend/src/services/apiClient.js
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Added a maximum size for `pendingUnauthorizedRequests`.
+- New unauthorized enqueues now fail fast when the queue is saturated, preventing memory growth during 401 storms.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend`.
+
+### Session: Batch 15 Footer Link Label Alignment March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Align footer company-link labeling with actual destination targets to reduce navigation ambiguity.
+
+**Files touched**
+- kelmah-frontend/src/modules/layout/components/Footer.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Renamed the company footer link label from an ambiguous combined title to a destination-accurate community label.
+- Kept destination route unchanged while clarifying user intent text.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend`.
+
+### Session: Batch 14 Retry Jitter Normalization March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Replace remaining Math.random-based retry jitter generation in API retry paths with a crypto-backed helper.
+
+**Files touched**
+- kelmah-frontend/src/services/apiClient.js
+- kelmah-frontend/src/hooks/useApi.js
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Added bounded random integer helper using `crypto.getRandomValues` where available.
+- Added deterministic counter fallback for restrictive environments.
+- Updated both retry-delay paths to use the shared helper behavior and removed direct `Math.random()` calls.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,964 modules transformed).
+
+### Session: Batch 13 App Recoverable Retry Wiring March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Make recoverable API notice Retry trigger a real soft recovery action instead of an unhandled custom event.
+
+**Files touched**
+- kelmah-frontend/src/App.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Added a dedicated recoverable-retry handler in App shell.
+- Retry now triggers service warm-up with bounded retries and preserves the no-full-reload UX.
+- Keeps recovery behavior non-disruptive while still attempting backend wake-up.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,964 modules transformed).
+
+### Session: Batch 12 Profile and Boundary UX Cleanup March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Tighten worker profile-completion language, remove duplicate recovery controls in shared boundary UX, and normalize stale review-note wording in jobs service.
+
+**Files touched**
+- kelmah-frontend/src/modules/worker/components/ProfileCompletionCard.jsx
+- kelmah-frontend/src/components/common/ErrorBoundary.jsx
+- kelmah-frontend/src/modules/jobs/services/jobsService.js
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Profile completion card:
+  - replaced exaggerated helper copy with neutral guidance.
+  - fixed final-state grammar for completion messaging.
+- Shared error boundary:
+  - removed duplicate "Try Again" button and updated fallback text to align with retry/home recovery flow.
+- Jobs service:
+  - replaced stale TODO-style moderation note with neutral implementation wording.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,963 modules transformed).
+
+### Session: Batch 13 Budget Placeholder Clarity March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Replace terse `TBD` budget placeholders with clearer pending-budget wording on public job surfaces.
+
+**Files touched**
+- kelmah-frontend/src/modules/common/components/cards/JobCard.jsx
+- kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx
+- kelmah-frontend/src/modules/home/pages/HomePage.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Job card:
+  - changed the fallback budget copy from `Budget TBD` to `Budget pending` for clearer user-facing status.
+- Job details:
+  - changed the compact budget fallback from `TBD` to `Budget pending`.
+- Home preview:
+  - changed the public job chip fallback from `TBD` to `Budget pending` while preserving explicit budget-set labels.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,964 modules transformed).
+
+### Session: Batch 12 Auth Queue Hardening March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Reduce 401 retry churn by deduplicating queued unauthorized requests and remove deterministic fallback jitter from the generic API hook.
+
+**Files touched**
+- kelmah-frontend/src/services/apiClient.js
+- kelmah-frontend/src/hooks/useApi.js
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Unauthorized request queue:
+  - deduplicated queued 401 retries by request signature so repeated failures for the same request share one replay path instead of piling up duplicate queue entries.
+  - preserved bounded queue protection while allowing all waiters on a deduplicated request to resolve from the same replay.
+- API hook retry jitter:
+  - replaced the deterministic fallback counter with a timestamp/performance hash so retry delay jitter remains non-repeating even without `crypto.getRandomValues`.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,964 modules transformed).
+
+### Session: Batch 11 PWA and Chunk Recovery Non-Reload March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Remove hard reload behavior from lazy chunk recovery and service-worker update handling so recovery stays non-disruptive.
+
+**Files touched**
+- kelmah-frontend/src/utils/lazyWithRetry.js
+- kelmah-frontend/src/modules/common/components/RouteErrorBoundary.jsx
+- kelmah-frontend/src/modules/common/components/ErrorBoundary.jsx
+- kelmah-frontend/src/modules/common/components/GlobalErrorBoundary.jsx
+- kelmah-frontend/src/utils/pwaHelpers.js
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Lazy chunk recovery:
+  - removed the forced reload branch and now just purges stale runtime caches before allowing the route boundary to retry.
+- Route and reusable error boundaries:
+  - replaced hard reload actions with reset-based recovery labels so the user can retry without a page refresh.
+- Service-worker / PWA updates:
+  - replaced reload-on-update behavior with a non-disruptive update-applied notification event.
+  - kept cache-clearing recovery for stale chunk mismatch errors, but stopped forcing a browser reload.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,963 modules transformed).
+
+### Session: Batch 10 Warm-Up Retry Coherence March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Remove module-global retry state from service warm-up and stop the app shell from hard-reloading on recoverable API notice retries.
+
+**Files touched**
+- kelmah-frontend/src/utils/serviceWarmUp.js
+- kelmah-frontend/src/App.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Service warm-up:
+  - moved retry count and retry timer into a per-invocation retry state object so overlapping warm-up calls do not share mutable retry globals.
+  - kept the cooldown and offline behavior intact while preserving the existing warm-up status events.
+- App shell recovery:
+  - replaced the recoverable API notice retry reload with a non-destructive custom retry event so the banner no longer forces a full-page refresh.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,963 modules transformed).
+
+### Session: Batch 8 Targeted Mojibake Cleanup March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Continue high-frequency remediation by removing the remaining corrupted symbols from active modified frontend files.
+
+**Files touched**
+- kelmah-frontend/src/modules/common/components/GlobalErrorBoundary.jsx
+- kelmah-frontend/src/modules/jobs/components/JobResultsSection.jsx
+- kelmah-frontend/src/modules/messaging/contexts/MessageContext.jsx
+- kelmah-frontend/src/modules/payment/contexts/PaymentContext.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Global error boundary:
+  - normalized status chip loading label punctuation.
+- Job results section:
+  - normalized rating metadata separator symbol.
+- Messaging context:
+  - normalized compatibility-mapping comment symbols and message-delivered log marker.
+- Payment context:
+  - normalized guard comment punctuation in escrow normalization path.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend`.
+- PASS: smoke suites via `npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx src/tests/smoke/critical-path-happy-flow.smoke.test.jsx src/tests/smoke/critical-path-gateway-contract.smoke.test.js --runInBand`.
+
+### Session: Batch 7 Contract and Bid Currency Normalization March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Continue remediation with another multi-file wave focused on user-facing currency and label consistency in contracts, bids, and payment notifications.
+
+**Files touched**
+- kelmah-frontend/src/modules/payment/contexts/PaymentContext.jsx
+- kelmah-frontend/src/modules/common/components/GlobalErrorBoundary.jsx
+- kelmah-frontend/src/modules/jobs/components/JobResultsSection.jsx
+- kelmah-frontend/src/modules/contracts/pages/CreateContractPage.jsx
+- kelmah-frontend/src/modules/contracts/pages/ContractsPage.jsx
+- kelmah-frontend/src/modules/hirer/pages/JobBidsPage.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Payment context:
+  - normalized deposit success currency display to `GHS` format.
+- Global error surface:
+  - normalized status-chip separator glyph.
+- Jobs result cards:
+  - normalized all budget displays to `GHS` labels.
+- Contract flows:
+  - normalized cedi labels and value displays in create/review milestones and list sorting labels.
+- Hirer bid review:
+  - normalized currency labels and malformed separators in summary and confirmation content.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend`.
+- PASS: smoke suites via `npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx src/tests/smoke/critical-path-happy-flow.smoke.test.jsx src/tests/smoke/critical-path-gateway-contract.smoke.test.js --runInBand`.
+
+### Session: Batch 6 Messaging and Escrow Text Normalization March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Continue remediation with another targeted batch to remove remaining mojibake from active UI/workflow files and preserve regression stability.
+
+**Files touched**
+- kelmah-frontend/src/modules/payment/components/EscrowManager.jsx
+- kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx
+- kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx
+- spec-kit/generated/FRONTEND_UI_EXECUTION_TRACKER_MAR24_2026.md
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Escrow manager:
+  - corrected amount field label from corrupted cedi text to stable `GHS` label.
+- Job details:
+  - normalized residual corrupted inline comment text for maintainability consistency.
+- Messaging page:
+  - normalized remaining corrupted audit/comment markers to plain ASCII descriptions.
+- Tracker synchronization:
+  - refreshed Week 4 mobile/desktop regression notes with this follow-up batch evidence.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend`.
+- PASS: smoke suites via `npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx src/tests/smoke/critical-path-happy-flow.smoke.test.jsx src/tests/smoke/critical-path-gateway-contract.smoke.test.js --runInBand`.
+
+### Session: Batch 5 Jobs and Worker Flow Encoding Cleanup March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Apply another high-impact fix wave for user-visible text/currency rendering artifacts and close final regression sweep rows.
+
+**Files touched**
+- kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx
+- kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx
+- kelmah-frontend/src/modules/worker/pages/MyBidsPage.jsx
+- kelmah-frontend/src/modules/worker/components/JobApplicationForm.jsx
+- spec-kit/generated/FRONTEND_UI_EXECUTION_TRACKER_MAR24_2026.md
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Jobs page cleanup:
+  - corrected corrupted budget and sort-label text (currency/range rendering)
+  - replaced broken warning glyph with stable fallback marker.
+- Job details cleanup:
+  - corrected corrupted currency/range/ellipsis and masked-email symbols
+  - normalized section-divider comments and fallback labels.
+- Worker bid/application cleanup:
+  - corrected corrupted currency labels in bids and application form
+  - normalized malformed data-flow comment arrows and range labels.
+- Tracker synchronization:
+  - moved `W4-06` and `W4-07` from `Review` to `Done` after this additional validation-backed cleanup.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend`.
+- PASS: smoke suites via `npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx src/tests/smoke/critical-path-happy-flow.smoke.test.jsx src/tests/smoke/critical-path-gateway-contract.smoke.test.js --runInBand`.
+
+### Session: Batch 9 Landmark Semantics March 24 2026 🔄 IN REVIEW
+
+**Date**: March 24, 2026  
+**Scope**: Make the app shell landmarks explicit so keyboard and screen-reader navigation has a clearer semantic structure.
+
+**Files touched**
+- kelmah-frontend/src/modules/layout/components/Layout.jsx
+
+**Implementation summary**
+- Wrapped the rendered `Header` in explicit `<header>` landmarks across mobile, desktop, and public shells.
+- Wrapped the permanent sidebar in an `<aside>` landmark with a readable label.
+- Wrapped the quick-navigation suggestions component in a `<nav>` landmark so the shell exposes a clearer navigation hierarchy.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,963 modules transformed).
+
+### Session: Batch 8 Messaging Announcement Accessibility March 24 2026 🔄 IN REVIEW
+
+**Date**: March 24, 2026  
+**Scope**: Announce incoming chat messages to screen-reader users without changing message flow behavior.
+
+**Files touched**
+- kelmah-frontend/src/modules/messaging/contexts/MessageContext.jsx
+- kelmah-frontend/src/modules/messaging/components/common/MessageList.jsx
+
+**Implementation summary**
+- Added a shared `messageAnnouncement` state to the messaging context and set it when a new incoming message arrives from another user.
+- Rendered the announcement once as a hidden `aria-live="polite"` region in the message list so assistive tech receives the update.
+- Cleared the announcement when conversations are reset or switched to avoid stale announcements.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,963 modules transformed).
+
+### Session: Batch 7 Swipe Fallback Accessibility March 24 2026 🔄 IN REVIEW
+
+**Date**: March 24, 2026  
+**Scope**: Make swipe-to-delete actions keyboard accessible on mobile by exposing a visible fallback button.
+
+**Files touched**
+- kelmah-frontend/src/components/common/SwipeToAction.jsx
+
+**Implementation summary**
+- Added a visible delete-button fallback inside the mobile swipe wrapper so the action can be triggered without touch gestures.
+- Kept the desktop fallback button path intact while sharing the same accessible rendering helper.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,963 modules transformed).
+
+### Session: Batch 6 UUID Notice IDs and App Shell Cleanup March 24 2026 🔄 IN REVIEW
+
+**Date**: March 24, 2026  
+**Scope**: Remove ad hoc random notice IDs from the app shell and keep recovery banners stable.
+
+**Files touched**
+- kelmah-frontend/src/App.jsx
+
+**Implementation summary**
+- Replaced `Date.now() + Math.random()` notice IDs with a UUID helper that falls back safely when `crypto.randomUUID` is unavailable.
+- Kept the recoverable-error and contract-mismatch notice flow behavior unchanged while making the identifiers more stable and less ad hoc.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,963 modules transformed).
+
+### Session: Batch 5 Storage Hygiene and Landing Transparency March 24 2026 🔄 IN REVIEW
+
+**Date**: March 24, 2026  
+**Scope**: Remove surprising storage cleanup behavior and eliminate estimated fallback metrics on the landing page.
+
+**Files touched**
+- kelmah-frontend/src/utils/secureStorage.js
+- kelmah-frontend/src/utils/__tests__/secureStorage.test.js
+- kelmah-frontend/src/pages/HomeLanding.jsx
+
+**Implementation summary**
+- Storage hygiene:
+  - changed the general secure-storage clear path to preserve the persistent encryption secret while still removing secure payloads and session state.
+  - updated the secure-storage unit test to load the singleton after browser storage mocks and assert the narrower cleanup behavior.
+- Landing transparency:
+  - replaced estimated marketplace counts with neutral pending placeholders when live stats are unavailable.
+  - softened the stats error message so it no longer implies fabricated values are being shown.
+
+**Verification**
+- PASS: `npx jest --runTestsByPath src/utils/__tests__/secureStorage.test.js --runInBand`
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,963 modules transformed).
+
+### Session: Batch 4 Accessibility and Alert-Tone Closure March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Close remaining Week 4 accessibility and cross-page alert-tone normalization items and synchronize tracker status.
+
+**Files touched**
+- kelmah-frontend/src/modules/layout/components/header/NotificationBells.jsx
+- kelmah-frontend/src/modules/payment/pages/PaymentCenterPage.jsx
+- kelmah-frontend/src/pages/HomeLanding.jsx
+- spec-kit/generated/FRONTEND_UI_EXECUTION_TRACKER_MAR24_2026.md
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Header/notification focus visibility:
+  - added explicit high-contrast `:focus-visible` outlines for message and notification action buttons.
+- Payment flow focus consistency:
+  - added reusable keyboard-focus styles for filter text fields, select controls, and key filter action buttons.
+- Alert tone normalization:
+  - updated Home landing warning alert to use consistent title + supporting detail structure aligned with auth/payment helper messaging.
+- Tracker synchronization:
+  - marked `W4-01`, `W4-02`, and `W4-04` as `Done`.
+  - promoted `W4-06` and `W4-07` to `Review` after automated regression gate evidence.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend`.
+- PASS: smoke suites via `npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx src/tests/smoke/critical-path-happy-flow.smoke.test.jsx src/tests/smoke/critical-path-gateway-contract.smoke.test.js --runInBand`.
+
+### Session: Week 4 Accessibility and Alert Tone Polish March 24 2026 🔄 IN REVIEW
+
+**Date**: March 24, 2026  
+**Scope**: Apply the remaining accessibility and alert-tone polish surfaced by the generated frontend execution tracker.
+
+**Files touched**
+- kelmah-frontend/src/modules/layout/components/header/HeaderStyles.js
+- kelmah-frontend/src/modules/payment/pages/PaymentCenterPage.jsx
+- kelmah-frontend/src/pages/HomeLanding.jsx
+
+**Implementation summary**
+- Strengthened reusable header focus rings so the top interactive controls present a clearer keyboard target across desktop and mobile.
+- Tightened the payment-center focus helper with a stronger ring and subtle halo for visible focus clarity.
+- Reworked the landing-page marketplace-stats message into a structured info banner with a more consistent tone and hierarchy.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,963 modules transformed).
+
+### Session: Week 2 Desktop Hierarchy Batch March 24 2026 🔄 IN REVIEW
+
+**Date**: March 24, 2026  
+**Scope**: Execute remaining Week 2 desktop hierarchy and accessibility fixes from the generated frontend execution backlog.
+
+**Files touched**
+- kelmah-frontend/src/modules/worker/pages/WorkerDashboardPage.jsx
+- kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx
+- kelmah-frontend/src/modules/layout/components/Layout.jsx
+- kelmah-frontend/src/theme/index.js
+- spec-kit/generated/FRONTEND_UI_EXECUTION_TRACKER_MAR24_2026.md
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Worker dashboard:
+  - moved quick actions ahead of the KPI strip for better first-screen task priority
+  - widened the desktop metric grid to reduce md/lg crowding and added more vertical breathing room.
+- Job details:
+  - tightened the CTA/sidebar rhythm with compact trust chips next to the primary action
+  - normalized section padding and border radius for more even desktop reading flow.
+- Layout accessibility:
+  - improved skip-link discoverability with a larger pill shape and stronger focus treatment.
+- Theme consistency:
+  - standardized paper/card/button radii to keep desktop surfaces visually coherent across the app.
+- Tracker synchronization:
+  - promoted implemented items to `Review` for W2-03, W2-04, W2-08, W2-09, and W2-10.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,963 modules transformed).
+
+### Session: Frontend UI Tracker Week 1 Execution Batch March 24 2026 🔄 IN REVIEW
+
+**Date**: March 24, 2026  
+**Scope**: Execute unapplied Week 1 tracker fixes from generated frontend execution backlog and move items to review-ready state.
+
+**Files touched**
+- kelmah-frontend/src/pages/HomeLanding.jsx
+- kelmah-frontend/src/modules/layout/components/Layout.jsx
+- kelmah-frontend/src/modules/layout/components/MobileBottomNav.jsx
+- kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx
+- kelmah-frontend/src/modules/jobs/components/JobsCardsGrid.jsx
+- kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx
+- spec-kit/generated/FRONTEND_UI_EXECUTION_TRACKER_MAR24_2026.md
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- W1-01, W1-02, W1-03: tightened landing hero mobile height, moved primary CTA earlier in mobile scan path, and improved category-card text/contrast rhythm.
+- W1-04: normalized non-dashboard mobile shell spacing and header-offset padding.
+- W1-05: strengthened bottom-nav selected state and unread badge legibility.
+- W1-06, W1-07, W1-08: added one-tap mobile quick filters, clearer no-results reset guidance, and mobile-first pay/location/urgency hierarchy in job cards.
+- W1-09, W1-10: reduced small-phone messaging top-bar control density, improved empty-thread prompts, and clarified attachment guidance copy.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,963 modules transformed).
+- Pending: manual viewport and interaction QA listed in tracker notes.
+
+---
+
+### Session: Batch 3 Dashboard and Job Details Closure March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Execute additional open desktop/task-priority items across worker dashboard and jobs detail surfaces, then synchronize tracker closures.
+
+**Files touched**
+- kelmah-frontend/src/modules/worker/pages/WorkerDashboardPage.jsx
+- kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx
+- kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx
+- spec-kit/generated/FRONTEND_UI_EXECUTION_TRACKER_MAR24_2026.md
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Worker dashboard improvements:
+  - added first-screen next-best-action strip with direct pipeline CTA
+  - reduced KPI crowding by adjusting metric-card grid behavior at md/lg breakpoints.
+- Jobs desktop toolbar improvements:
+  - grouped result metadata controls (count/sort/filter state) into compact chips for faster scanability.
+- Job details trust and badge clarity:
+  - reinforced trust/status guidance directly above primary CTA
+  - added plain-language badge explanation for workers evaluating job risk and competition.
+
+**Tracker synchronization**
+- Marked `Done` for:
+  - `W2-03`, `W2-04`, `W2-07`
+  - `W3-08`, `W3-10`
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend`.
+- PASS: smoke suites via `npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx src/tests/smoke/critical-path-happy-flow.smoke.test.jsx src/tests/smoke/critical-path-gateway-contract.smoke.test.js --runInBand` (3 suites, 29 tests).
+
+---
+
+### Session: Batch 2 UI Execution Wave March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Execute additional frontend backlog batches across desktop header hierarchy, auth/search onboarding clarity, payment trust/readability, and empty-state consistency.
+
+**Files touched**
+- kelmah-frontend/src/modules/layout/components/Header.jsx
+- kelmah-frontend/src/modules/layout/components/header/NotificationBells.jsx
+- kelmah-frontend/src/modules/auth/pages/LoginPage.jsx
+- kelmah-frontend/src/modules/auth/pages/RegisterPage.jsx
+- kelmah-frontend/src/modules/search/pages/SearchPage.jsx
+- kelmah-frontend/src/modules/payment/pages/PaymentCenterPage.jsx
+- kelmah-frontend/src/modules/common/components/common/EmptyState.jsx
+- spec-kit/generated/FRONTEND_UI_EXECUTION_TRACKER_MAR24_2026.md
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Desktop header and notification priority:
+  - decluttered action cluster in `Header.jsx`
+  - improved unread visibility and prioritization in `NotificationBells.jsx`
+  - added compact desktop guardrails to reduce chip crowding.
+- Auth and onboarding clarity:
+  - login page now includes explicit recovery guidance
+  - register page now explains hirer vs worker expectations.
+- Search first-screen recovery guidance:
+  - added quick-step guidance panel to `SearchPage.jsx` for no-result recovery flow.
+- Payment trust/readability:
+  - added payment confidence copy near add/withdraw controls
+  - improved payment-method empty-state setup path
+  - improved mobile transaction readability.
+- Empty-state pattern normalization:
+  - standardized title/description/hint/actions composition in shared `EmptyState` component.
+
+**Tracker synchronization**
+- Marked `Done` after implementation for:
+  - `W2-01`, `W2-02`
+  - `W3-02`, `W3-03`, `W3-04`, `W3-05`, `W3-06`, `W3-07`
+  - `W4-05`
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend`.
+- PASS: smoke suites via `npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx src/tests/smoke/critical-path-happy-flow.smoke.test.jsx src/tests/smoke/critical-path-gateway-contract.smoke.test.js --runInBand` (3 suites, 29 tests).
+
+---
+
+### Session: Week 1 UI Fix Wave Closure March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Apply and close the active mobile-first UI fix wave across landing, layout, jobs, messaging, and mobile navigation surfaces, plus finalize related dashboard/copy items already implemented in working tree.
+
+**Files touched**
+- kelmah-frontend/src/pages/HomeLanding.jsx
+- kelmah-frontend/src/modules/layout/components/Layout.jsx
+- kelmah-frontend/src/modules/layout/components/MobileBottomNav.jsx
+- kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx
+- kelmah-frontend/src/modules/jobs/components/JobsCardsGrid.jsx
+- kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx
+- kelmah-frontend/src/modules/hirer/pages/HirerDashboardPage.jsx
+- kelmah-frontend/src/modules/worker/components/WorkerProfile.jsx
+- spec-kit/generated/FRONTEND_UI_EXECUTION_TRACKER_MAR24_2026.md
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Landing page mobile-first improvements applied:
+  - reduced hero height/top padding
+  - surfaced first-action CTA stack earlier on phones
+  - improved category-card readability/spacing.
+- Public shell and mobile navigation improvements applied:
+  - normalized xs/sm page spacing in `Layout`
+  - improved bottom-nav selected-state visibility and badge legibility in `MobileBottomNav`.
+- Jobs mobile usability improvements applied:
+  - introduced quick-filter chips and reset path in `JobsPage`
+  - strengthened mobile card hierarchy for pay/location/urgency in `JobsCardsGrid`.
+- Messaging clarity improvements applied:
+  - simplified small-screen header controls
+  - refined attachment and empty-thread guidance copy for clearer next actions.
+- Tracker synchronization:
+  - promoted implemented items to `Done` for W1-01..W1-10, W2-05, W2-06, W3-01, W3-09, W4-03.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend`.
+- PASS: smoke suites via `npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx src/tests/smoke/critical-path-happy-flow.smoke.test.jsx src/tests/smoke/critical-path-gateway-contract.smoke.test.js --runInBand` (3 suites, 29 tests).
+
+---
+
+### Session: Frontend Re-Audit Closure Verification and Tracker Sync March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Verify whether the March 23 open-findings scope and generated sprint tracker closure items were actually attended, then execute any residual fixes and align project artifacts.
+
+**Files touched**
+- kelmah-frontend/src/modules/worker/components/WorkerProfile.jsx
+- kelmah-frontend/src/modules/hirer/pages/HirerDashboardPage.jsx
+- spec-kit/generated/FRONTEND_UI_EXECUTION_TRACKER_MAR24_2026.md
+- spec-kit/STATUS_LOG.md
+
+**Investigation summary**
+- Re-validated current open-findings themes against source state:
+  - responsive hook drift: closed (`useResponsive.js` theme-breakpoint alignment retained)
+  - console-noise spread: closed for module scope (`src/modules/**` has no direct `console.*` usage)
+  - lint suppressions: closed (no active `eslint-disable` entries under `kelmah-frontend/src/**/*`)
+  - messaging/search noise concentration: mitigated under shared debug logger flow.
+- Verified cross-cutting contract targets still hold:
+  - `useJobsQuery.js`: stable key serialization, sanitized params, cancellation signal pass-through
+  - `apiClient.js`: public-auth refresh skip guard, unauthorized replay queue, cross-tab logout sync.
+
+**Implementation summary**
+- Removed a residual inline env-gate in worker profile bookmark-load catch path and relied on shared debug helper gating.
+- Corrected malformed currency label in hirer dashboard metric card from `GH?` to `GHS `.
+- Updated execution tracker statuses to reflect verified completion of closure tracks:
+  - `W4-08`, `W4-09`, `W4-10`
+  - `X-01`, `X-02`, `X-03`
+
+**Verification**
+- PASS: repo-wide frontend scan confirms no direct `console.(log|warn|error|info|debug)` usage in `kelmah-frontend/src/modules/**`.
+- PASS: no `eslint-disable` matches in `kelmah-frontend/src/**/*.{js,jsx,ts,tsx}`.
+- PASS: `useResponsive.js`, `useJobsQuery.js`, and `apiClient.js` contract checks completed with no regression flags.
+
+---
+
+### Session: Hirer Dashboard Post-Signin 502/429 Burst Mitigation March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Fix repeated gateway pressure symptoms after sign-in on `/hirer/dashboard` (502/429 patterns and noisy immediate follow-up polling).
+
+**Files touched**
+- kelmah-frontend/src/modules/hirer/pages/HirerDashboardPage.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Reworked dashboard initial hydration from parallel fan-out to guarded sequential requests.
+- Added gateway-pressure detection (`429/502/503/504`) and short-circuit behavior so non-critical follow-up requests stop once pressure is detected.
+- Limited application hydration fan-out to at most 2 jobs per cycle and switched to sequential loading.
+- Prevented visibility polling from firing immediately on hydration completion and paused polling while an error banner is present.
+- Added clearer degraded-state message when core dashboard payloads are unavailable.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,963 modules transformed).
+- PASS: smoke suites via `npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx src/tests/smoke/critical-path-happy-flow.smoke.test.jsx src/tests/smoke/critical-path-gateway-contract.smoke.test.js --runInBand` (3 suites, 29 tests).
+
+---
+
+### Session: Frontend UI Sprint Tracker Generation March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Generate a sprint-ready execution tracker for refreshed frontend UI findings with owner, ETA, status, and verification-note columns.
+
+**Files touched**
+- spec-kit/generated/FRONTEND_UI_EXECUTION_TRACKER_MAR24_2026.md
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Created a new execution tracker artifact aligned to the refreshed re-audit baseline.
+- Added week-by-week sections (Week 1-4) with concrete tasks mapped to existing frontend files.
+- Added explicit execution columns required by delivery teams:
+  - status
+  - owner
+  - ETA
+  - verification notes
+- Included cross-cutting follow-up tracks for remaining open system-level work:
+  - console-noise reduction
+  - periodic contract review for `useJobsQuery`
+  - periodic contract review for `apiClient` auth refresh behavior
+
+**Verification**
+- PASS: tracker file created in `spec-kit/generated` and ready for direct sprint use.
+- PASS: entries mapped to existing file targets from current open surfaces.
+
+---
+
+### Session: Worker Profile 429 Burst Mitigation March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Reduce repeated `429 Too Many Requests` failures on worker profile route (`/workers/:id`) and correct misleading profile error messaging.
+
+**Files touched**
+- kelmah-frontend/src/modules/worker/components/WorkerProfile.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Identified worker profile secondary data loading pattern as a burst source under gateway throttling.
+- Replaced parallel secondary fetch fan-out with sequential optional requests.
+- Added short-circuit logic: after first secondary `429`, skip remaining optional calls for that load cycle.
+- Updated profile-level error handling to map status-specific UX:
+  - `404` → profile not found
+  - `429` → temporary rate-limited message
+  - other failures → generic load failure
+- Tightened effect dependencies to user ID instead of entire auth object to avoid avoidable reloads from object identity churn.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,963 modules transformed).
+- PASS: smoke suites via `npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx src/tests/smoke/critical-path-happy-flow.smoke.test.jsx src/tests/smoke/critical-path-gateway-contract.smoke.test.js --runInBand` (3 suites, 29 tests).
+
+---
+
 ### Session: Login 401 and Refresh Cascade Triage March 24 2026 ✅ COMPLETED
 
 **Date**: March 24, 2026  
@@ -40,6 +996,41 @@
 
 **Implementation summary**
 - Updated login UI error aggregation to show one prioritized message (`loginError` → `authError` → `apiError`) instead of rendering multiple alerts at once.
+
+---
+
+### Session: Frontend UX Audit Batch March 24 2026 🔄 IN PROGRESS
+
+**Date**: March 24, 2026  
+**Scope**: Audit Kelmah frontend visuals and mobile/desktop display quality, then apply targeted accessibility and touch-target fixes to the shared surfaces.
+
+**Current focus**
+- Normalize undersized action controls across homepage, breadcrumbs, search suggestions, profile completion, and escrow controls.
+- Preserve existing data flow and route behavior while improving tap reliability and spacing.
+
+**Planned verification**
+- Run frontend build after the batch.
+- Re-scan the touched files for remaining 36px controls in the same surfaces.
+
+**Verification update**
+- PASS: `npm run build` in `kelmah-frontend` completed successfully after the touch-target batch.
+- PASS: touched surfaces now use mobile-safe min-height values for the previously undersized controls.
+
+**Second verification update**
+- PASS: `npm run build` in `kelmah-frontend` completed successfully after the clickable-card semantics batch.
+- PASS: category browse surfaces in home and jobs now use native action surfaces instead of plain role-button cards.
+
+**Third verification update**
+- PASS: `npm run build` in `kelmah-frontend` completed successfully after the worker dashboard and map card semantics batch.
+- PASS: visible worker dashboard job recommendation rows now use `ButtonBase` semantics and cleaner separator text.
+
+**Fourth verification update**
+- PASS: `npm run build` in `kelmah-frontend` completed successfully after the map results toggle and separator cleanup batch.
+- PASS: the map results header toggle now uses a native button surface instead of a raw role-button div.
+
+**Fifth verification update**
+- PASS: `npm run build` in `kelmah-frontend` completed successfully after the notifications/job-search/text cleanup batch.
+- PASS: remaining page-level raw-button surfaces in notifications and job search were normalized to native interactive components.
 
 **Verification**
 - PASS: live HTTPS probe to `/api/auth/login` via gateway returned structured auth response (no 502 at verification time).
@@ -100,6 +1091,64 @@
 - PASS: PowerShell heuristic scan in frontend module groups reported `ICONBUTTON_FOCUS_CANDIDATES=0`.
 - PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,963 modules transformed).
 - PASS: `npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx src/tests/smoke/critical-path-happy-flow.smoke.test.jsx src/tests/smoke/critical-path-gateway-contract.smoke.test.js --runInBand` in `kelmah-frontend` (3 suites, 29 tests).
+
+---
+
+### Session: Frontend UI Bug Orchestration Hardening March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Make visible frontend bug handling explicit and enforceable by requiring frontend-first breakpoint audits, debugger cross-verification, and compressed agent context packets.
+
+**Files touched**
+- .claude/agents/claudecode.agent.md
+- .claude/agents/frontend.agent.md
+- .claude/agents/debugger.agent.md
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Added a mandatory frontend UI bug execution protocol to the orchestrator:
+  - frontend agent must run first
+  - breakpoint-specific audits are required
+  - debugger must challenge the findings
+  - backend/database/realtime escalation occurs only when needed.
+- Added a compressed context packet contract for delegated agent calls so the frontend agent receives explicit failure/success evidence instead of vague prompts.
+- Tightened frontend policy with explicit visible-bug heuristics and audit packet requirements.
+- Added debugger gate language to reject non-evidenced UI claims and require breakpoint matrix proof and re-audit.
+
+**Validation**
+- Policy-layer change only; no build/test execution was required.
+
+---
+
+### Session: Intelligence Threshold and Immersive Quality Gate Hardening March 24 2026 ✅ COMPLETED
+
+**Date**: March 24, 2026  
+**Scope**: Raise agent capability quality bar by enforcing minimum elite-tool depth and immersive-coverage thresholds in learning checks, and expose immersive/intelligence metrics in CI PR snapshot comments.
+
+**Files touched**
+- spec-kit/quantum-oracle/check-learning-effectiveness.js
+- spec-kit/quantum-oracle/check-pre-pr-gates.js
+- .github/workflows/quantum-closure-gate.yml
+- spec-kit/quantum-oracle/agent-intelligence-report.json
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Hardened learning effectiveness oracle with new enforced quality gates:
+  - minimum `activatedEliteToolsCount` per learning-enabled task
+  - immersive trend payload validation (`topImmersiveGaps`)
+  - minimum immersive coverage threshold (`immersiveCoveragePct`) when immersive tasks exist.
+- Strengthened unified local pre-PR gate:
+  - now runs strict learning effectiveness validation as a mandatory step.
+- Upgraded CI learning snapshot comment:
+  - now includes immersive evidence coverage percentage
+  - includes current top-agent intelligence score
+  - includes top immersive evidence gap signals.
+
+**Validation outcomes**
+- PASS: `npm run quantum:check-learning-effectiveness`
+- PASS: `npm run quantum:agent-intelligence-report`
+- PASS: `npm run quantum:check-agent-intelligence`
+- PASS: `npm run quantum:pre-pr-gates -- --skip-pr-gate`
 
 ---
 
@@ -18297,10 +19346,10 @@ WorkerProfile "Message Worker" click
 - Completed state is already recorded in the immediate follow-up section: `### Full Frontend Page Audit — Bugs/Security/Performance/Maintainability (Mar 03, 2026) ✅`.
 - Audit deliverable is already listed there and should be treated as authoritative.
 Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MEDIUM (34), and LOW (27) severity levels.
-### Implementation Update (Feb 15, 2026 – Job/Marketing Dry Audit + Mobile/Backend Fix Pass) ✅ CLOSED (DUPLICATE ENTRY)
+### Implementation Update (Feb 15, 2026 - Job/Marketing Dry Audit + Mobile/Backend Fix Pass) ✅ CLOSED (DUPLICATE ENTRY)
 - ✅ This planning-state entry is superseded by the completed implementation records directly above:
-  - `### Implementation Update (Feb 15, 2026 – Job/Marketing Dry Audit + Mobile/Backend Fix Pass Complete) ✅`
-  - `### Implementation Update (Feb 15, 2026 – Job/Marketing Post-Deploy Verification Checkpoint) ✅`
+  - `### Implementation Update (Feb 15, 2026 - Job/Marketing Dry Audit + Mobile/Backend Fix Pass Complete) ✅`
+  - `### Implementation Update (Feb 15, 2026 - Job/Marketing Post-Deploy Verification Checkpoint) ✅`
 - ✅ No pending work remains for this specific status heading.
 | CRIT-11 | Three dead gateway route files | user/search/review.routes.js (gateway) |
 | CRIT-12 | Predictable internal API key in non-production | serviceProxy.js |
@@ -18496,7 +19545,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
     - `MessagingPage.jsx`
     - `hirerSlice.js`
 
-### Mobile-First Frontend Dry Audit Delta (Mar 02, 2026 – Route Surface Re-check) ✅
+### Mobile-First Frontend Dry Audit Delta (Mar 02, 2026 - Route Surface Re-check) ✅
 - 🎯 **Scope**: Re-validated full frontend route/page surface and re-scored mobile UX risk with line-level checks on high-traffic pages.
 - 📄 **Primary report updated**:
   - `spec-kit/MOBILE_UI_AUDIT_MAR02_2026.md` (new delta section appended)
@@ -18513,7 +19562,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   4. CSS contract consolidation and theme-token cleanup
 - 🧪 **Validation mode**: Static dry audit + diagnostics; no runtime functionality changes applied in this pass.
 
-### Mobile-First Frontend Dry Audit (Mar 02, 2026 – Binance-Inspired UX Benchmark) ✅
+### Mobile-First Frontend Dry Audit (Mar 02, 2026 - Binance-Inspired UX Benchmark) ✅
 - 🎯 **Scope**: Full frontend page/route/component audit surface mapped (57 active module pages), with focused deep-read of app shell and high-traffic mobile pages.
 - 📄 **Primary report**:
   - `spec-kit/MOBILE_UI_AUDIT_MAR02_2026.md`
@@ -18544,7 +19593,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
 - 📱 **Mobile**: dvh viewport units with vh fallback, safe-area inset padding for notched devices
 - 🧪 **Verification**: Route contract test suite passes all 61 checks; no behavioral regressions in admin endpoints
 
-### Deep Platform Audit (Feb 20, 2026 – Full Frontend Pages + Backend Logic/Security/Performance) ✅
+### Deep Platform Audit (Feb 20, 2026 - Full Frontend Pages + Backend Logic/Security/Performance) ✅
 - 🎯 **Scope**: End-to-end audit across all 57 frontend module pages, frontend route/data-flow entrypoints, API gateway, and backend microservice route/controller hotspots.
 - 📄 **Primary report**:
   - `spec-kit/DEEP_PLATFORM_AUDIT_2026-02-20.md`
@@ -18566,7 +19615,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - `kelmah-backend/services/auth-service/server.js`
   - Removed privileged query-string key fallback (`req.query.key`) and enforced header-only internal key validation for admin mutation endpoints.
 
-### Comprehensive Frontend Audit - Batch 2 (July 2026 – Currency, Loops, State, API Wiring, Theme, Responsive) ✅
+### Comprehensive Frontend Audit - Batch 2 (July 2026 - Currency, Loops, State, API Wiring, Theme, Responsive) ✅
 - 🎯 **Scope**: 49 files fixed from comprehensive audit findings across all frontend modules
 - 📦 **Commit**: `445496e3` — 306 insertions, 243 deletions
 - ✅ **Categories of fixes**:
@@ -18585,13 +19634,13 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - **ContractsPage**: null-safe `client?.name` access, proper date sorting, added `contracts` to `useMemo` deps (1 file)
 - 🧪 **Build verified**: 13,944 modules, 0 errors, 4m 19s
 
-### Comprehensive Frontend Audit - Batch 1 (July 2026 – Core Wiring, Security, Redux, WebSocket) ✅
+### Comprehensive Frontend Audit - Batch 1 (July 2026 - Core Wiring, Security, Redux, WebSocket) ✅
 - 🎯 **Scope**: 19 files — original 10 audit findings + 4 critical fixes from comprehensive audit
 - 📦 **Commit**: `31a6d8c1` — 870 insertions, 83 deletions
 - ✅ **Fixes included**: Missing `/jobs/:id/apply` route, WebSocket singleton auto-connect hook, dual API_ENDPOINTS consolidation, `getServicePath` double-prefix fix, logout cleanup standardization, production console log suppression, interval cleanup, error boundaries on all protected routes, `secureStorage` key desync fix, volatile fingerprint removal, `useJobs` Redux dispatch bugs, `usePayments` method name alignment
 - 🧪 **Build verified**: 13,944 modules, 0 errors
 
-### Frontend Dry Audit (Feb 16, 2026 – Full Page/Module Wiring, Security, and Performance Sweep) ✅
+### Frontend Dry Audit (Feb 16, 2026 - Full Page/Module Wiring, Security, and Performance Sweep) ✅
 - 🎯 **Scope**: End-to-end dry audit of frontend pages/modules/routing/wiring and supporting directories under `kelmah-frontend/src/*` (including backup audit tree review).
 - 📄 **Primary report**:
   - `spec-kit/FRONTEND_DRY_AUDIT_FEB16_2026.md`
@@ -18607,13 +19656,13 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   3. Endpoint map consolidation
   4. Production log-redaction hardening
 
-### Documentation Sync (Feb 16, 2026 – Full Platform Audit Updated) ✅
+### Documentation Sync (Feb 16, 2026 - Full Platform Audit Updated) ✅
 - 📚 Added a Feb 16 remediation delta to:
   - `spec-kit/FULL_PLATFORM_AUDIT_FEBRUARY_2026.md`
 - ✅ Captured critical wiring fixes (payment route export order, optional auth behavior, refresh token parsing) and shared non-module UI hardening.
 - 🧪 Verification status mirrored from implementation pass (diagnostics clean, backend syntax checks pass, frontend build pass).
 
-### Implementation Update (Feb 16, 2026 – Critical Auth/Payment Wiring Fixes Applied) ✅
+### Implementation Update (Feb 16, 2026 - Critical Auth/Payment Wiring Fixes Applied) ✅
 - 🎯 **Scope**: Execute immediate fixes for top critical findings from dry audit (payment route reachability, optional auth behavior, and refresh token parsing).
 - ✅ **Backend fixes applied**:
   - `kelmah-backend/services/payment-service/routes/payments.routes.js`
@@ -18632,7 +19681,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - Frontend build: passed in repeated verification runs (`npm --prefix kelmah-frontend run build`).
   - Note: direct backend module load requires payment env (`Paystack secret key`) and is expected to fail without that configuration.
 
-### Implementation Update (Feb 16, 2026 – Continue Pass: Shared Non-Module Components Hardened) ✅
+### Implementation Update (Feb 16, 2026 - Continue Pass: Shared Non-Module Components Hardened) ✅
 - 🎯 **Scope**: Continue “fix all now” pass on editable frontend surface outside `src/modules`, focusing on shared top-level components.
 - ✅ **Files improved**:
   - `kelmah-frontend/src/components/common/BreadcrumbNavigation.jsx`
@@ -18647,7 +19696,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - VS Code diagnostics: no errors in modified files.
   - Frontend build: `npm --prefix kelmah-frontend run build` passed.
 
-### Implementation Update (Feb 16, 2026 – Public Page UX/Responsiveness Hardening Outside `src/modules`) ✅
+### Implementation Update (Feb 16, 2026 - Public Page UX/Responsiveness Hardening Outside `src/modules`) ✅
 - 🎯 **Scope**: Deep scan and improvement pass limited to non-module frontend pages per instruction (`src/pages/*`), with focus on clarity for low-literacy users, click reliability, and mobile responsiveness.
 - ✅ **Dry audit completed**:
   - Context sources reviewed: `spec-kit/Kelmaholddocs/old-docs/Kelma.txt`, `spec-kit/Kelmaholddocs/old-docs/Kelma docs.txt`.
@@ -18672,7 +19721,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
 - 📌 **UX diagnosis (red-marked empty space)**:
   - The visible top gap is header-spacing compensation between public layout/header and landing hero spacing rules; this pass reduced that pressure in the landing page without changing module layout code.
 
-### Implementation Update (Feb 16, 2026 – Worker Mobile Safe-Area & Chart Readability Polish) ✅
+### Implementation Update (Feb 16, 2026 - Worker Mobile Safe-Area & Chart Readability Polish) ✅
 - 🎯 **Scope**: Apply final low-risk mobile-first UI polish on worker pages after main audit fixes.
 - ✅ **Fixes applied**:
   - Added mobile safe-area aware spacing in `MyApplicationsPage` sticky header and bottom spacer:
@@ -18689,7 +19738,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
 - 🧪 **Verification**:
   - VS Code diagnostics: no errors in changed files.
 
-### Implementation Update (Feb 15, 2026 – Git Push 403 Resolved + Post-Push Smoke) ✅
+### Implementation Update (Feb 15, 2026 - Git Push 403 Resolved + Post-Push Smoke) ✅
 - 🎯 **Scope**: Resolve `403 Permission denied to See-saw342` push blocker and verify immediate runtime status.
 - 🔍 **Root cause**:
   - HTTPS git operations were using a stale cached credential (`git:https://See-saw342@github.com`) instead of the authorized repository account.
@@ -18710,7 +19759,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - Git/deploy pipeline blocker is resolved.
   - Suggestions endpoint remains reachable but under-returning in deployed runtime snapshot.
 
-### Implementation Update (Feb 15, 2026 – Job Controller Status Case Normalization Sweep) ✅
+### Implementation Update (Feb 15, 2026 - Job Controller Status Case Normalization Sweep) ✅
 - 🎯 **Scope**: Remove remaining `status: 'Open'` query hotspots that can fail against canonical lowercase status data.
 - ✅ **Fixes applied** (file: `kelmah-backend/services/job-service/controllers/job.controller.js`):
   - `advancedJobSearch` match stage now uses `status: { $in: ['open', 'Open'] }`.
@@ -18719,7 +19768,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
 - 📌 **Outcome**:
   - Eliminates remaining case-sensitivity drift in job-search and recommendation paths.
 
-### Implementation Update (Feb 15, 2026 – Render Job-Service Boot Crash Fix: Missing Module) ✅
+### Implementation Update (Feb 15, 2026 - Render Job-Service Boot Crash Fix: Missing Module) ✅
 - 🎯 **Scope**: Resolve Render deployment crash in job-service startup caused by missing module import.
 - 🔍 **Root cause**:
   - `kelmah-backend/services/job-service/services/serviceClient.js` imported `../utils/errorHandler`, but that file does not exist in job-service.
@@ -18732,7 +19781,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
 - 📌 **Deployment impact**:
   - Render job-service should no longer exit on `Cannot find module '../utils/errorHandler'` after this patch is deployed.
 
-### Implementation Update (Feb 15, 2026 – Suggestions Multi-Prefix Probe + Recall Hardening Patch) ✅
+### Implementation Update (Feb 15, 2026 - Suggestions Multi-Prefix Probe + Recall Hardening Patch) ✅
 - 🎯 **Scope**: Execute targeted live probe for vocational suggestion prefixes and apply backend recall hardening.
 - 🧪 **Live probe (deployed gateway)**:
   - `GET /api/jobs/suggestions?q=plumb` → `200`, `COUNT=0`
@@ -18747,7 +19796,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
 - 📌 **Outcome**:
   - Live endpoint is healthy but under-returning; recall hardening is implemented locally and will reflect after deployment.
 
-### Implementation Update (Feb 15, 2026 – Job/Marketing Post-Deploy Verification Checkpoint) ✅
+### Implementation Update (Feb 15, 2026 - Job/Marketing Post-Deploy Verification Checkpoint) ✅
 - 🎯 **Scope**: Re-verify deployed gateway behavior for public job detail access and suggestions after the dry-audit fix pass.
 - 🧪 **Verification (deployed gateway)**:
   - `GET /api/jobs/suggestions?q=plum` → `200` with `data: []` (deployed runtime still not reflecting local suggestions improvement).
@@ -18757,7 +19806,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - Public marketing funnel route behavior is now confirmed in deployed runtime for job detail access.
   - Suggestions behavior remains `200`/empty in deployed runtime and still depends on deployment state alignment.
 
-### Implementation Update (Feb 15, 2026 – Job/Marketing Dry Audit + Mobile/Backend Fix Pass Complete) ✅
+### Implementation Update (Feb 15, 2026 - Job/Marketing Dry Audit + Mobile/Backend Fix Pass Complete) ✅
 - 🎯 **Scope**: Mobile-first dry audit + targeted fixes across public job marketing flow and worker find-work flow, including backend filter/suggestion behavior.
 - ✅ **Frontend fixes applied**:
   - Opened `/jobs/:id` as public route (removed frontend auth gate).
@@ -18779,13 +19828,13 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
     - `GET /api/jobs?location=Accra&limit=3` → `200` with jobs returned.
     - `GET /api/jobs/suggestions?q=plum` → `200` (empty on current deployed runtime; local fix is in code and applies after deployment).
 
-### Implementation Update (Feb 15, 2026 – Job/Marketing Dry Audit + Mobile/Backend Fix Pass) ✅ CLOSED (DUPLICATE ENTRY)
+### Implementation Update (Feb 15, 2026 - Job/Marketing Dry Audit + Mobile/Backend Fix Pass) ✅ CLOSED (DUPLICATE ENTRY)
 - ✅ This planning-state entry is superseded by the completed implementation records directly above:
-  - `### Implementation Update (Feb 15, 2026 – Job/Marketing Dry Audit + Mobile/Backend Fix Pass Complete) ✅`
-  - `### Implementation Update (Feb 15, 2026 – Job/Marketing Post-Deploy Verification Checkpoint) ✅`
+  - `### Implementation Update (Feb 15, 2026 - Job/Marketing Dry Audit + Mobile/Backend Fix Pass Complete) ✅`
+  - `### Implementation Update (Feb 15, 2026 - Job/Marketing Post-Deploy Verification Checkpoint) ✅`
 - ✅ No pending work remains for this specific status heading.
 
-### Implementation Update (Feb 15, 2026 – Theme Toggle Runtime Crash Fix) ✅
+### Implementation Update (Feb 15, 2026 - Theme Toggle Runtime Crash Fix) ✅
 - 🎯 **Scope**: Investigate production `onClick` runtime failure (`TypeError: t is not a function`) and restore light/dark mode switching.
 - 🔍 **Root cause**:
   - Routes mount layout as `<Layout />` (without theme props).
@@ -18798,7 +19847,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
 - 🧪 **Verification**:
   - VS Code diagnostics on updated layout file: no errors.
 
-### Implementation Update (Feb 15, 2026 – Final Fix Pass: Diagnostics Cleanup + Live Recheck) ✅
+### Implementation Update (Feb 15, 2026 - Final Fix Pass: Diagnostics Cleanup + Live Recheck) ✅
 - 🎯 **Scope**: Complete remaining fix pass for touched files and re-run live endpoint checks.
 - ✅ **Code cleanup completed**:
   - Resolved remaining style diagnostics in touched frontend files:
@@ -18816,7 +19865,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
 - 📝 **External blocker note**:
   - Current messaging/payment live failures reflect deployed runtime state; local gateway fixes are complete and require deployment propagation to affect live behavior.
 
-### Implementation Update (Feb 15, 2026 – Messaging/Payment Blocker Fixes) ✅
+### Implementation Update (Feb 15, 2026 - Messaging/Payment Blocker Fixes) ✅
 - 🎯 **Scope**: Fix remaining backend blockers reported from live smoke checks (`messages conversations 404`, `payments 502`).
 - ✅ **Messaging fix applied**:
   - Updated gateway conversation proxy rewrite rules to map both `/api/messages/conversations*` and `/api/messaging/conversations*` to `/api/conversations*` in messaging-service.
@@ -18834,7 +19883,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
 - 📝 **Deployment note**:
   - These fixes are in local code and take effect in live gateway after deployment of this revision.
 
-### Implementation Update (Feb 15, 2026 – Worker/Reviews Completion Sweep) ✅
+### Implementation Update (Feb 15, 2026 - Worker/Reviews Completion Sweep) ✅
 - 🎯 **Scope**: Finish remaining high-impact mobile issues in worker/reviews (viewport locks, nowrap clipping pressure, and fixed-width form constraints).
 - ✅ **Worker fixes applied**:
   1. Viewport hardening:
@@ -18864,7 +19913,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - Diagnostics on modified files: no compile/runtime errors introduced.
   - Remaining reported items are non-blocking style-only Sourcery suggestions.
 
-### Implementation Update (Feb 15, 2026 – Worker/Reviews Unresolved Mobile Batch) ✅
+### Implementation Update (Feb 15, 2026 - Worker/Reviews Unresolved Mobile Batch) ✅
 - 🎯 **Scope**: Continue unresolved mobile-first pass in worker/reviews with focus on table/card parity and nowrap pressure reduction.
 - ✅ **Worker fixes applied**:
   1. `MyApplications` desktop table responsiveness hardened:
@@ -18883,7 +19932,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - Diagnostics for modified files show no compile/runtime errors.
   - Remaining warnings are non-blocking style-only Sourcery suggestions.
 
-### Implementation Update (Feb 15, 2026 – Worker Find Work React #31 Crash Fix) ✅
+### Implementation Update (Feb 15, 2026 - Worker Find Work React #31 Crash Fix) ✅
 - 🎯 **Scope**: Investigate repeated production crashes on `/worker/find-work` (`Minified React error #31`, objects with keys `{type}` / `{type,country,city}`) and harden list rendering.
 - 🔍 **Root cause**:
   - Job list payloads can include object-shaped fields (notably `location`, and occasionally typed metadata fields).
@@ -18898,7 +19947,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - VS Code diagnostics on affected files: no compile errors.
   - Fix removes object-to-JSX render path that caused recurrent GlobalErrorBoundary crashes on Find Work.
 
-### Implementation Update (Feb 15, 2026 – Live Smoke Checks + Worker Unresolved Batch) ✅
+### Implementation Update (Feb 15, 2026 - Live Smoke Checks + Worker Unresolved Batch) ✅
 - 🎯 **Scope**: Run live gateway smoke checks on deployed Render endpoints and continue next unresolved mobile-first UI batch.
 - ✅ **Live smoke check outcomes**:
   - `POST /api/auth/login` → `200`
@@ -18916,7 +19965,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
 - 🧪 **Verification**:
   - VS Code diagnostics for changed worker component: no compile/runtime errors.
 
-### Implementation Update (Feb 15, 2026 – Messaging Gateway Conversation Proxy Hardening) ✅
+### Implementation Update (Feb 15, 2026 - Messaging Gateway Conversation Proxy Hardening) ✅
 - 🎯 **Scope**: Address conversation-route mismatch risk discovered during live smoke checks by hardening gateway proxy behavior.
 - ✅ **Backend fix applied**:
   - Updated conversation proxy to forward using explicit service prefix (`/api/conversations`) instead of regex rewrite rules.
@@ -18926,7 +19975,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
 - 📝 **Runtime note**:
   - Current 404 smoke result reflects deployed Render instance at test time; local fix is ready in workspace and requires deployment to impact live responses.
 
-### Implementation Update (Feb 15, 2026 – Platform-Wide Mobile/Backend Audit Phase-2 Delta) ✅
+### Implementation Update (Feb 15, 2026 - Platform-Wide Mobile/Backend Audit Phase-2 Delta) ✅
 - 🎯 **Scope**: Complete pending high-impact refinements after initial platform pass (messaging mobile truncation, payment table usability on mobile, and gateway auth error response consistency).
 - ✅ **Frontend mobile-first fixes applied**:
   1. **Messaging nowrap pressure reduction**: switched key text nodes to responsive wrapping/clamping on `xs` while preserving compact `sm+` behavior.
@@ -18942,7 +19991,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - VS Code diagnostics for modified files: no compile/runtime errors introduced.
   - Remaining report: one non-blocking Sourcery style suggestion in messaging ternary expression.
 
-### Implementation Update (Feb 15, 2026 – Platform-Wide Mobile-First + Backend Route/Security Audit Pass) ✅
+### Implementation Update (Feb 15, 2026 - Platform-Wide Mobile-First + Backend Route/Security Audit Pass) ✅
 - 🎯 **Scope**: Dry-audit active frontend pages/components and backend gateway/services for mobile UX, responsiveness, accessibility, route correctness, and security-sensitive logging.
 - 🔍 **Audit surface covered**:
   - Frontend active modules in `kelmah-frontend/src` (pages/components focus; backups excluded)
@@ -18976,7 +20025,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - VS Code diagnostics on all modified files: no compile errors introduced (remaining items are non-blocking style suggestions from Sourcery).
 
 
-### Implementation Update (Feb 15, 2026 – Worker System Comprehensive Dry Audit & Fixes) ✅
+### Implementation Update (Feb 15, 2026 - Worker System Comprehensive Dry Audit & Fixes) ✅
 - 🎯 **Scope**: Full dry audit of entire worker module — UI/UX, mobile-first design, theme consistency, accessibility, and code quality.
 - 🔍 **Files audited** (complete read):
   - **Pages**: WorkerDashboardPage (657L), WorkerProfilePage (54L), JobSearchPage (1073L), MyApplicationsPage (869L), MyBidsPage (499L), WorkerProfileEditPage (1318L), PortfolioPage (46L), SkillsAssessmentPage (1443L)
@@ -18996,7 +20045,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - Several components throughout use hardcoded hex values that should prefer theme tokens
 - 🧪 **Verification**: All 5 modified files pass VS Code diagnostics with zero errors.
 
-### Implementation Update (Feb 15, 2026 – Edit Job Save Failure Investigation + Error Visibility Fix) ✅
+### Implementation Update (Feb 15, 2026 - Edit Job Save Failure Investigation + Error Visibility Fix) ✅
 - 🎯 **Scope Restatement**: Investigate reported "save edited job" failure and determine whether `inject.js` console error is app-related.
 - 🔍 **Root causes identified**:
   - Browser-console error `inject.js:304 ... className.indexOf is not a function` is from an injected script context (extension/third-party), not Kelmah frontend source.
@@ -19012,7 +20061,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - VS Code diagnostics: no compile errors introduced in changed files (non-blocking style suggestions only).
   - Frontend now preserves backend update error detail for investigation and user feedback.
 
-### Implementation Update (Feb 14, 2026 – Worker Slice Dead-State Cleanup Finalization) ✅
+### Implementation Update (Feb 14, 2026 - Worker Slice Dead-State Cleanup Finalization) ✅
 - 🎯 **Scope Restatement**: Complete remaining low-priority worker-flow cleanup by removing unused slice surface and enforcing stable job-state buckets.
 - 🔍 **Findings addressed**:
   - `jobs.available` state branch was not consumed and remained unpopulated in current frontend flows.
@@ -19028,7 +20077,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - VS Code diagnostics: no errors in modified slice file.
   - Frontend production build passed: `npm run build` (`✓ built in 2m 16s`).
 
-### Implementation Update (Feb 14, 2026 – Worker Flow Completion Pass: Slice Contracts + Earnings + Messaging Action) ✅
+### Implementation Update (Feb 14, 2026 - Worker Flow Completion Pass: Slice Contracts + Earnings + Messaging Action) ✅
 - 🎯 **Scope Restatement**: Complete all remaining high/medium worker-flow findings in one execution pass (state contract mismatches, earnings zeros, and non-functional message action).
 - 🔍 **Root causes identified**:
   - `updateWorkerSkills` thunk performed a GET-only no-op instead of mutating skills through supported backend routes.
@@ -19064,7 +20113,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - VS Code diagnostics: no compile/runtime errors in changed files (one non-blocking Sourcery style suggestion only).
   - Frontend production build passed: `npm run build` (`✓ built in 2m 30s`).
 
-### Implementation Update (Feb 14, 2026 – Notifications External-Link Safety) ✅
+### Implementation Update (Feb 14, 2026 - Notifications External-Link Safety) ✅
 - 🎯 **Scope Restatement**: Continue notifications hardening by ensuring notification action links render safely for both internal app routes and external URLs.
 - 🔍 **Root cause identified**:
   - `NotificationsPage` always rendered `notification.link` via React Router `Link`, including absolute `http/https` URLs.
@@ -19079,7 +20128,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - VS Code diagnostics: no errors in changed file.
   - Frontend production build passed: `npm run build` (`✓ built in 2m 33s`).
 
-### Implementation Update (Feb 14, 2026 – Job Notification Action-Link Consistency) ✅
+### Implementation Update (Feb 14, 2026 - Job Notification Action-Link Consistency) ✅
 - 🎯 **Scope Restatement**: Continue notification deep-link hardening by aligning job-related notification links with active frontend job routes.
 - 🔍 **Root causes identified**:
   - Notification link normalization did not infer routes for job-specific notification categories (`job_application`, `job_offer`) when `actionUrl` was absent.
@@ -19100,7 +20149,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - VS Code diagnostics: no errors in changed files.
   - Frontend production build passed: `npm run build` (`✓ built in 6m 43s`).
 
-### Implementation Update (Feb 14, 2026 – Contracts/Payments Deep-Link ID Hardening) ✅
+### Implementation Update (Feb 14, 2026 - Contracts/Payments Deep-Link ID Hardening) ✅
 - 🎯 **Scope Restatement**: Continue route-link consistency work by hardening contract/payment notification deep links when backend `relatedEntity.id` shape is not a primitive string.
 - 🔍 **Root cause identified**:
   - Notification link normalization assumed `relatedEntity.id` is always string/number; object-shaped IDs (e.g., populated refs) can produce malformed paths.
@@ -19115,7 +20164,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - Frontend production build passed: `npx vite build` (`✓ built in 3m 1s`).
   - Remote notifications probe currently returns `429` due gateway rate limiting during this run.
 
-### Implementation Update (Feb 13, 2026 – Notification Link Routing Consistency) ✅
+### Implementation Update (Feb 13, 2026 - Notification Link Routing Consistency) ✅
 - 🎯 **Scope Restatement**: Ensure payment/contract/message notification links resolve to valid frontend routes from both REST and realtime payloads.
 - 🔍 **Root causes identified**:
   - Backend message notifications emit `/messages/:conversationId`, but frontend route selection is query-based (`/messages?conversation=...`).
@@ -19135,7 +20184,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - Remote authenticated checks: `/api/notifications`, `/api/notifications/preferences`, `/api/notifications/unread/count` all returned `200`.
   - Local `vite build` remains environment-blocked by `ENOSPC` (disk full), unrelated to code semantics.
 
-### Implementation Update (Feb 13, 2026 – Notifications Context/Realtime Consistency Stabilization) ✅
+### Implementation Update (Feb 13, 2026 - Notifications Context/Realtime Consistency Stabilization) ✅
 - 🎯 **Scope Restatement**: Continue iterative frontend hardening by auditing notifications context + realtime socket payload handling against page/component consumers.
 - 🔍 **Dry-audit findings**:
   - `NotificationItem` consumes `deleteNotification` from notifications context, but provider value does not expose this action.
@@ -19158,7 +20207,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
     - `GET /api/notifications/preferences` → `200`
     - `GET /api/notifications/unread/count` → `200`
 
-### Runtime Hotfix (Feb 13, 2026 – Hirer Job Edit Save/Publish 400) ✅
+### Runtime Hotfix (Feb 13, 2026 - Hirer Job Edit Save/Publish 400) ✅
 - 🎯 **Scope Restatement**: Investigate repeated `PUT /api/jobs/:id` 400 errors when hirers try to save/publish edited jobs.
 - 🔍 **Reproduced with direct API call**:
   - Endpoint: `PUT /api/jobs/692a9e756e71839af3a8d7bf`
@@ -19172,7 +20221,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
 - 📌 **Related console note**:
   - `inject.js:304 ... className.indexOf is not a function` is browser-extension injected script behavior, not Kelmah app source.
 
-### Implementation Update (Feb 13, 2026 – Messaging Reconnect Lifecycle Stabilization) ✅
+### Implementation Update (Feb 13, 2026 - Messaging Reconnect Lifecycle Stabilization) ✅
 - 🎯 **Scope Restatement**: Continue iterative module hardening by auditing realtime messaging reconnect behavior and console noise under connection instability.
 - 🔍 **Dry-audit findings**:
   - Active flow traced in `kelmah-frontend/src/modules/messaging/contexts/MessageContext.jsx`, `.../pages/MessagingPage.jsx`, and `.../services/messagingService.js`.
@@ -19190,7 +20239,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - Frontend production build passed: `npx vite build` (`✓ built in 3m 25s`).
   - Remote login check succeeded (`/api/auth/login` → `200`), but `/api/messages/conversations` probe did not return within bounded terminal run and was interrupted; deployment-side runtime verification for that endpoint remains pending.
 
-### Implementation Update (Feb 13, 2026 – Worker Search + Bookmarks Flow Resilience) ✅
+### Implementation Update (Feb 13, 2026 - Worker Search + Bookmarks Flow Resilience) ✅
 - 🎯 **Scope Restatement**: Continue iterative page hardening by stabilizing worker-search bookmark hydration against gateway user-shape drift and mixed bookmarks payload contracts.
 - 🔍 **Root causes identified**:
   - User-service bookmark handlers relied on `req.user.id` only, while trusted gateway payloads can expose `_id`.
@@ -19210,7 +20259,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - Frontend production build passed: `npx vite build` (`✓ built in 2m 36s`).
   - Remote gateway smoke checks: `GET /api/workers/search?query=carpenter&limit=1` → `200`; authenticated `GET /api/users/bookmarks` → `200`.
 
-### Runtime Hotfix (Feb 13, 2026 – Job Details React #31 on "See Job") ✅
+### Runtime Hotfix (Feb 13, 2026 - Job Details React #31 on "See Job") ✅
 - 🎯 **Scope Restatement**: Investigate and fix production crash on job details page when hirers click **See Job**.
 - 🔍 **Root cause**:
   - `JobDetailsPage.jsx` rendered `job.location` directly in JSX fallback paths.
@@ -19226,7 +20275,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
 - 🧪 **Verification**:
   - Frontend production build succeeds after patch: `npx vite build` (`✓ built in 3m 25s`).
 
-### Investigation + Fix (Feb 13, 2026 – Profile Page Slow Load + Console Flood) ✅
+### Investigation + Fix (Feb 13, 2026 - Profile Page Slow Load + Console Flood) ✅
 - 🎯 **Scope Restatement**: Resolve production profile page slowness and repeated console warnings (`Profile initialization completed with fallback data` loops, stale-while-revalidate fetch noise, socket churn side-effects).
 - 🔍 **Root causes identified**:
   - `ProfilePage.jsx` retried `loadProfile()` on every render cycle whenever profile stayed null and loading returned false, creating repeated fetch loops and delayed UI.
@@ -19252,7 +20301,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
 - 📌 **Important note on one console error**:
   - `FILE_ERROR_NO_SPACE` comes from browser storage (Chrome LevelDB) and is environment-side, not app logic; app changes reduce noise/retries but local browser storage pressure may still require manual cache/storage cleanup.
 
-### Runtime Hotfix (Feb 13, 2026 – Job Posting `trim` Crash in Edit Flow) ✅
+### Runtime Hotfix (Feb 13, 2026 - Job Posting `trim` Crash in Edit Flow) ✅
 - 🎯 **Scope Restatement**: Resolve production runtime crash `TypeError: i.trim is not a function` thrown from `JobPostingPage` during edit/review rendering.
 - 🔍 **Root cause**:
   - `JobPostingPage` called `.trim()`/`.replace()` on values assumed to be strings (`title`, `requirements`, `location`, `duration`, `description`) while edit payloads can contain non-string values.
@@ -19265,7 +20314,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - Frontend build completes successfully after patch (`npx vite build`).
   - Expected result: job edit/review page no longer crashes when payload fields are non-string.
 
-### P0 Execution Wave (Feb 13, 2026 – “Fix All Now” Security + AuthZ Hardening) ✅
+### P0 Execution Wave (Feb 13, 2026 - “Fix All Now” Security + AuthZ Hardening) ✅
 - 🎯 **Scope Restatement**: Execute full immediate hardening pass for critical risks without stopping: close protected-route authz gaps, remove hardcoded DB credentials from backend scripts, and verify frontend env exposure status.
 - 🔍 **Dry-audit completed across high-risk files**:
   - Review service route surfaces: `review.routes.js`, `admin.routes.js`, `server.js` direct mounts
@@ -19312,7 +20361,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
 - 📌 **Notes**:
   - Remaining style/lint suggestions in long-running diagnostic scripts are non-blocking and not security-critical; they are deferred outside P0 scope.
 
-### P0 Implementation (Feb 13, 2026 – Admin Route Authorization + Secret Hygiene Hardening) ✅
+### P0 Implementation (Feb 13, 2026 - Admin Route Authorization + Secret Hygiene Hardening) ✅
 - 🎯 **Scope Restatement**: Start executing P0 remediation backlog by enforcing authorization on sensitive user-service endpoints and removing hardcoded DB credentials from scripts.
 - 🔍 **Dry-audit findings**:
   - `user.routes.js` marked `/`, `POST /`, and `/database/cleanup` as “admin only” but only enforced `verifyGatewayRequest` (authentication), not role authorization.
@@ -19333,7 +20382,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
 - 🧪 **Verification**:
   - VS Code diagnostics (`get_errors`) report no errors in both modified files.
 
-### Backlog Planning (Feb 13, 2026 – Execution-Ready Remediation Backlog) ✅
+### Backlog Planning (Feb 13, 2026 - Execution-Ready Remediation Backlog) ✅
 - 🎯 **Scope Restatement**: Proceed with the next step after super-document consolidation by producing a strict, owner-ready remediation backlog with priorities, SLAs, and release-blocking criteria.
 - ✅ **Deliverable created**:
   - `spec-kit/KELMAH_REMEDIATION_BACKLOG_2026-02-13.md`
@@ -19345,7 +20394,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
 - 🧪 **Execution note**:
   - Backlog is designed to be actioned immediately and tracked in `STATUS_LOG.md` per completed remediation item with evidence.
 
-### Documentation Consolidation (Feb 13, 2026 – Refined Final Decision Super-Doc + Prompt1–8 Audit Alignment) ✅
+### Documentation Consolidation (Feb 13, 2026 - Refined Final Decision Super-Doc + Prompt1–8 Audit Alignment) ✅
 - 🎯 **Scope Restatement**: Re-scan requested early-stage documentation directories (`backup/root_cleanup_20260201`, `spec-kit`, `backup/root_cleanup_20260201/Kelmaholddocs`) and produce a refined single super-document of final Kelmah decisions, explicitly mapping where each decision was made, agreed, and confirmed.
 - 🔍 **Dry-audit / corpus scan performed**:
   - Total files inventoried: **1,939**
@@ -19363,7 +20412,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - Frontend build attempted (`npx vite build`) but environment-level constraint blocked completion: `ENOSPC: no space left on device`.
   - Existing diagnostics were collected; no runtime module code changes were applied in this documentation pass.
 
-### Implementation Update (Feb 13, 2026 – Help/Docs/Community Route-Context Alignment) ✅
+### Implementation Update (Feb 13, 2026 - Help/Docs/Community Route-Context Alignment) ✅
 - 🎯 **Scope Restatement**: Continue iterative frontend page sweep by validating Help Center quick-action navigation and route behavior for `/support`, `/docs`, and `/community`.
 - 🔍 **Dry-audit findings**:
   - Active route surface confirmed in `kelmah-frontend/src/routes/config.jsx` and `kelmah-frontend/src/modules/support/pages/HelpCenterPage.jsx`.
@@ -19380,7 +20429,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - Frontend production build passed: `npx vite build` (`✓ built in 1m 20s`).
   - Remote login smoke checks still return `429` at gateway auth endpoint; protected-route probe remains pending cooldown.
 
-### Investigation + Fix (Feb 13, 2026 – Worker Search 404 + Bookmarks 400 Console Errors) ✅
+### Investigation + Fix (Feb 13, 2026 - Worker Search 404 + Bookmarks 400 Console Errors) ✅
 - 🎯 **Scope Restatement**: Investigate WorkerSearch runtime failures reported from deployed frontend logs (`/api/users/bookmarks` 400 and `/api/users/workers/search` 404 with doubled backend path in response payload).
 - 🔍 **Root causes identified**:
   - Deployed gateway/user-service contract currently resolves worker search on `/api/workers/search` (confirmed `200`) while `/api/users/workers/search` returns `404`.
@@ -19398,7 +20447,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - Live probe: `GET /api/workers/search?...` → `200` with successful worker payload.
   - VS Code diagnostics: no errors in modified frontend files.
 
-### Investigation + Fix (Feb 13, 2026 – `/api/users/me/credentials` 404 and `/api/jobs/:id` 401) ✅
+### Investigation + Fix (Feb 13, 2026 - `/api/users/me/credentials` 404 and `/api/jobs/:id` 401) ✅
 - 🎯 **Scope Restatement**: Investigate persistent hirer profile 404 and job details 401 seen in production console logs.
 - 🔍 **Root causes identified**:
   - `job-service` route ordering placed public `GET /:id` after `router.use(verifyGatewayRequest)`, making details requests effectively protected.
@@ -19415,7 +20464,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - Backend syntax checks pass for updated route files.
   - Pre-deploy production probe still returns 401 for `GET /api/jobs/:id` (expected old behavior before rollout).
 
-### Investigation + Fix (Feb 14, 2026 – Runtime Console API Failures: earnings 404, contract-1 500, availability/reviews 404) ✅
+### Investigation + Fix (Feb 14, 2026 - Runtime Console API Failures: earnings 404, contract-1 500, availability/reviews 404) ✅
 - 🎯 **Scope Restatement**: User reported 4 distinct API failures from deployed Vercel frontend console logs. Investigated all flows end-to-end and identified root causes.
 - 🔍 **Root Causes Identified**:
   - **`/api/users/workers/:id/earnings` → 404 (CONFIRMED)**:
@@ -19453,7 +20502,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - Live API testing blocked by 429 rate limiting throughout session; fix validated via code analysis
 - 📊 **Payment 502 Errors**: Known and expected — Payment Service is marked unhealthy/non-critical per architecture docs
 
-### Implementation Update (Feb 13, 2026 – Notifications Payload Mapping + Remote Verification Retry) ✅
+### Implementation Update (Feb 13, 2026 - Notifications Payload Mapping + Remote Verification Retry) ✅
 - 🎯 **Scope Restatement**: Continue iterative notifications audit by fixing UI field mismatches from backend notification schema and re-running live gateway checks.
 - ✅ **Fixes applied**:
   - Updated notification normalization to map backend fields (`title`, `content`, `actionUrl`) into UI-consumed fields (`title`, `message`, `link`).
@@ -19465,7 +20514,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - Remote login smoke check against `https://kelmah-api-gateway-6yoy.onrender.com/api/auth/login` currently returns `429` (rate limited), so authenticated endpoint re-check is pending cooldown.
   - Cooldown retry executed (Feb 13, 2026) and still returned `LOGIN_STATUS=429`; protected endpoint validation remains blocked by upstream rate limiting.
 
-### Implementation Update (Feb 12, 2026 – Profile Service Route Alignment + Avatar Resilience) ✅
+### Implementation Update (Feb 12, 2026 - Profile Service Route Alignment + Avatar Resilience) ✅
 - 🎯 **Scope Restatement**: Continue iterative page audit by fixing profile module calls to unsupported endpoints and improving profile picture behavior under backend route gaps.
 - ✅ **Fixes applied**:
   - Aligned profile partial-update operations (`skills`, `education`, `experience`, `preferences`) to the supported `PUT /users/profile` contract.
@@ -19479,7 +20528,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - VS Code diagnostics: no compile errors in changed profile files.
   - Frontend production build passed: `npx vite build` (`✓ built in 2m 9s`).
 
-### Implementation Update (Feb 12, 2026 – Scheduling Module Offline/API-Fallback Resilience) ✅
+### Implementation Update (Feb 12, 2026 - Scheduling Module Offline/API-Fallback Resilience) ✅
 - 🎯 **Scope Restatement**: Continue iterative page audit by stabilizing scheduling pages when appointment backend routes are unavailable via gateway.
 - ✅ **Fixes applied**:
   - Added robust fallback CRUD in scheduling service using local storage when `/appointments` API endpoints are unavailable.
@@ -19491,7 +20540,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
 - 🧪 Verification:
   - Frontend production build passed: `npx vite build` (`✓ built in 2m 7s`).
 
-### Implementation Update (Feb 12, 2026 – Mobile Messaging UX + Console Error Resilience) ✅
+### Implementation Update (Feb 12, 2026 - Mobile Messaging UX + Console Error Resilience) ✅
 - 🎯 **Scope Restatement**: Investigate reported production console errors (`/api/users/me/credentials` 404, `/api/settings/notifications` 404, WebSocket timeout/closed logs, `inject.js` TypeError) and improve mobile messaging/settings UX behavior.
 - ✅ **Dry-audit + flow trace completed**:
   - Frontend callers confirmed in:
@@ -19525,7 +20574,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - VS Code diagnostics report no blocking compile errors in changed files.
   - Frontend build attempt failed due environment storage constraint, not code regression: `npm ERR! ENOSPC: no space left on device`.
 
-### Implementation Update (Feb 12, 2026 – Notifications/Settings Contract Stabilization) ✅
+### Implementation Update (Feb 12, 2026 - Notifications/Settings Contract Stabilization) ✅
 - 🎯 **Scope Restatement**: Continue iterative page audit by fixing remaining notification identity contract fragility and settings persistence mismatch between frontend and backend.
 - ✅ **Fixes applied**:
   - Hardened messaging notification controller to accept either gateway user shape (`req.user.id` or `req.user._id`) across list/read/clear/preferences handlers.
@@ -19539,7 +20588,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - Backend syntax check passed: `node -c services/messaging-service/controllers/notification.controller.js`.
   - Frontend production build passed: `npx vite build` (`✓ built in 2m 34s`).
 
-### Implementation Update (Feb 12, 2026 – Review Service + Gateway Contract Alignment) ✅
+### Implementation Update (Feb 12, 2026 - Review Service + Gateway Contract Alignment) ✅
 - 🎯 **Scope Restatement**: Continue the iterative reviews audit by fixing backend contract drift causing inconsistent review retrieval, auth context loss on protected review actions, and route shadowing.
 - ✅ **Fixes applied**:
   - Updated `review-service` `Review` schema with moderation/response fields used by controllers: `status`, `response`, `reportCount`, `moderationNotes`, and `jobCategory`.
@@ -19562,7 +20611,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - VS Code diagnostics: no compile errors in modified backend files.
   - Smoke curl via `localhost:5000` attempted for public vs protected review endpoints but local gateway was unreachable in this session (HTTP `000`), so route behavior runtime-check is pending service-up validation.
 
-### Implementation Update (Feb 12, 2026 – Reviews Page Contract Hardening) ✅
+### Implementation Update (Feb 12, 2026 - Reviews Page Contract Hardening) ✅
 - 🎯 **Scope Restatement**: Continue iterative frontend page audit by fixing runtime mismatches in the Reviews page caused by unstable backend payload shapes and delayed auth initialization.
 - ✅ **Fixes applied**:
   - Added service-level review normalization in `kelmah-frontend/src/modules/reviews/services/reviewService.js` so review cards always receive stable fields (`id`, `title`, `comment`, `rating`, `reviewer`, `job`, `categories`, `reply`, vote counters).
@@ -19575,7 +20624,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
 - 🧪 Verification:
   - Frontend production build passes (`vite build`): `✓ built in 1m 41s`.
 
-## Documentation Consolidation (Feb 12, 2026 – Early Decisions → Super Doc) ✅
+## Documentation Consolidation (Feb 12, 2026 - Early Decisions → Super Doc) ✅
 - 🎯 **Scope Restatement**: Read all early-stage documentation in backup/root cleanup archives + spec-kit and consolidate the key architectural/product decisions into a single final “super documentation”, with references back to the original decision sources.
 - ✅ **Success Criteria**:
   1. All files under the requested directories are inventoried and read for evidence extraction.
@@ -19587,7 +20636,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - Full manifest: `DataAnalysisExpert/kelmah_docs_manifest_2026-02-11.txt`
 - 🧪 **Evidence Extraction Summary** (from evidence footer): 2,139 files read OK, 80 unreadable/binary, 1,368 extracted blocks.
 
-### Implementation Fix (Feb 12, 2026 – Post-Login / Registration Redirect Audit) ✅
+### Implementation Fix (Feb 12, 2026 - Post-Login / Registration Redirect Audit) ✅
 - 🎯 **Scope Restatement**: Audit after-login and after-registration redirect/routing behavior end-to-end and fix navigation bugs causing non-smooth flows.
 - ✅ **Findings fixed**:
   - `ProtectedRoute` redirected to `/login` without preserving intended destination (`from`), so users lost their original target page.
@@ -19612,7 +20661,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
 - 🧪 Verification:
   - Frontend production build completes successfully (`vite build`): `built in 1m 58s`.
 
-### Investigation + Fix (Feb 12, 2026 – Runtime Console Errors after Login) ✅
+### Investigation + Fix (Feb 12, 2026 - Runtime Console Errors after Login) ✅
 - 🎯 **Scope Restatement**: Investigate post-login runtime console errors reported in production logs (`/api/users/workers/:id/availability` 404, repeated `/api/jobs/contracts/contract-1` 500, and UI transition jitter evidence).
 - ✅ **Root causes identified**:
   - **Contracts 500 loop**: backend contracts list returns mock ids like `contract-1`, but detail endpoint used `Contract.findById(id)` directly, causing CastError/500 for non-ObjectId ids.
@@ -19630,7 +20679,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
 - 🧪 Verification:
   - Frontend build succeeds after fixes (`vite build`): `built in 3m 49s`.
 
-### Documentation Deepening (Feb 12, 2026 – Gateway API Surface + API Alignment + Frontend BaseURL) ✅
+### Documentation Deepening (Feb 12, 2026 - Gateway API Surface + API Alignment + Frontend BaseURL) ✅
 - 🎯 **Scope Restatement**: Expand the super doc to include concrete “how it actually works” behavior for frontend networking + canonical gateway endpoints, and explicitly document contract mismatches discovered in code.
 - ✅ **Updates applied**:
   - Added a verified “Canonical Public API Surface (Gateway)” section (mounts + key endpoints).
@@ -19647,7 +20696,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - `kelmah-frontend/src/config/environment.js`
   - `kelmah-frontend/src/services/apiClient.js`
 
-### Documentation Deepening (Feb 12, 2026 – Notifications + Mapping/Geo Behavior) ✅
+### Documentation Deepening (Feb 12, 2026 - Notifications + Mapping/Geo Behavior) ✅
 - 🎯 **Scope Restatement**: Add concrete, code-verified “how it works today” documentation for notifications and map/geolocation behavior, and clearly separate historical workflow diagrams from current consolidated implementation.
 - ✅ **Updates applied**:
   - Documented Notifications as messaging-service-owned (`/api/notifications`) with gateway proxy, Socket.IO `notification` event, and full REST surface (read, unread count, mark read, clear, preferences).
@@ -19667,7 +20716,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - `backup/root_cleanup_20260201/Kelmaholddocs/old-docs/NOTIFICATION SYSTEM .txt`
   - `backup/root_cleanup_20260201/Kelmaholddocs/old-docs/MAPPING AND TRACKING SYSTEM.txt`
 
-### Documentation Deepening (Feb 12, 2026 – User/Worker/Profile/Settings Contracts) ✅
+### Documentation Deepening (Feb 12, 2026 - User/Worker/Profile/Settings Contracts) ✅
 - 🎯 **Scope Restatement**: Expand the super doc with verified worker discovery/profile and settings behavior, including the real gateway mounts/aliases and the actual frontend service callers.
 - ✅ **Updates applied**:
   - Added a verified Users/Workers/Profile/Settings API surface to the Gateway API section.
@@ -19685,7 +20734,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - `kelmah-frontend/src/modules/profile/services/profileService.js`
   - `kelmah-frontend/src/modules/settings/services/settingsService.js`
 
-### Documentation Deepening (Feb 12, 2026 – Connectivity Model Clarification) ✅
+### Documentation Deepening (Feb 12, 2026 - Connectivity Model Clarification) ✅
 - 🎯 **Scope Restatement**: Prevent routing regressions by explicitly documenting which historical “service connections” model is superseded.
 - ✅ **Updates applied**:
   - Added a “Superseded Connectivity Model” note: older Vite-proxy/direct-to-microservices guidance is historical, current approach is API Gateway + unified LocalTunnel runtime-config + rewrites.
@@ -19696,7 +20745,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - `backup/root_cleanup_20260201/Kelmaholddocs/planning-docs/SERVICE_CONNECTIONS_GUIDE.md`
   - `backup/root_cleanup_20260201/Kelmaholddocs/old-docs/diagrams/03-data-flow-sequence.md`
 
-### Documentation Deepening (Feb 12, 2026 – Contracts/Milestones + Reviews/Ratings) ✅
+### Documentation Deepening (Feb 12, 2026 - Contracts/Milestones + Reviews/Ratings) ✅
 - 🎯 **Scope Restatement**: Read deeper into contracts/milestones/disputes and reviews/ratings across frontend + gateway + services, and document the real implemented surface vs planned behavior.
 - ✅ **Updates applied**:
   - Added verified gateway API surface items for contracts, reviews, ratings, and admin moderation.
@@ -19719,7 +20768,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - `kelmah-frontend/src/modules/reviews/services/reviewService.js`
   - `kelmah-backend/api-gateway/server.js`
 
-### Documentation Deepening (Feb 12, 2026 – Payments/Webhooks/Escrow + QuickJobs) ✅
+### Documentation Deepening (Feb 12, 2026 - Payments/Webhooks/Escrow + QuickJobs) ✅
 - 🎯 **Scope Restatement**: Deepen the super doc with code-verified payment-service behavior (wallet, methods, transactions, escrow milestones, Ghana provider endpoints, webhooks) and add QuickJobs (Protected Quick-Hire) behavior and gateway routing.
 - ✅ **Updates applied**:
   - Added `/api/quick-jobs/*` and `/api/webhooks/*` to the verified gateway mount list.
@@ -19743,7 +20792,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - `kelmah-backend/services/job-service/controllers/{quickJobController,quickJobPaymentController,disputeController}.js`
   - `kelmah-backend/shared/models/QuickJob.js`
 
-### Documentation Deepening (Feb 12, 2026 – QuickJobs Frontend Wiring + Premium Subscriptions Gap) ✅
+### Documentation Deepening (Feb 12, 2026 - QuickJobs Frontend Wiring + Premium Subscriptions Gap) ✅
 - 🎯 **Scope Restatement**: Verify frontend QuickJobs module wiring (routes + services) and Premium page billing wiring, then update the super doc with “what works today vs what is missing”, and apply minimal non-module fixes to prevent obvious 404 navigation failures.
 - ✅ **Updates applied**:
   - Documented QuickJobs frontend module → apiClient calls and the current routing/navigation mismatches (`/quick-hire/*` vs `/quick-job/:id`, `/worker/quick-jobs` missing, Paystack callback path mismatch).
@@ -19762,7 +20811,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - `kelmah-frontend/src/modules/premium/pages/PremiumPage.jsx`
   - `kelmah-backend/api-gateway/routes/payment.routes.js`
 
-### Implementation Fix (Feb 12, 2026 – Gateway Webhook Raw Body + QuickJobs Public Webhook) ✅
+### Implementation Fix (Feb 12, 2026 - Gateway Webhook Raw Body + QuickJobs Public Webhook) ✅
 - 🎯 **Scope Restatement**: Fix two runtime-breaking gateway mismatches: (1) Stripe/Paystack webhook requests have their raw body destroyed by `express.json()` before reaching the payment/job service, breaking HMAC signature verification; (2) QuickJobs Paystack webhook (`POST /api/quick-jobs/payment/webhook`) is blocked by the blanket `authenticate` middleware on `/api/quick-jobs`.
 - ✅ **Fixes applied**:
   - **Raw webhook routes mounted BEFORE body parser** (`server.js` lines 243–291): Three new `app.post()` routes handle `POST /api/webhooks/stripe`, `POST /api/webhooks/paystack`, and `POST /api/quick-jobs/payment/webhook` BEFORE `express.json()` is applied. This lets `http-proxy-middleware` stream the raw bytes to downstream services, preserving the original payload for `stripe.webhooks.constructEvent()` and Paystack's HMAC verification.
@@ -19775,7 +20824,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
 - 🧪 Verification: Syntax check passed (`node -c`) for both files.
 - 📌 Resolves API Alignment Matrix mismatches #8 (webhook raw body) and #9 (QuickJobs public webhook).
 
-### Implementation Fix (Feb 12, 2026 – Remaining API Mismatches #6, #7, #10, #11) ✅
+### Implementation Fix (Feb 12, 2026 - Remaining API Mismatches #6, #7, #10, #11) ✅
 - 🎯 **Scope Restatement**: Fix the four remaining API alignment mismatches documented in the super doc.
 - ✅ **Fixes applied**:
   - **Mismatch #6 — Wallet balance/deposit/withdraw**: Added `getBalance`, `deposit`, `withdraw` controller methods to `wallet.controller.js` using the Wallet model's existing `addFunds`/`deductFunds` helpers. Added `GET /balance`, `POST /deposit`, `POST /withdraw` routes to `wallet.routes.js`.
@@ -19792,7 +20841,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
 - 🧪 Verification: All 6 files pass `node -c` syntax check.
 - 📌 All 6 API alignment mismatches (#6–#11) in the super doc are now ✅ FIXED.
 
-## Investigation Intake (Feb 11, 2026 – Full Frontend Page + Security Audit) 🔄
+## Investigation Intake (Feb 11, 2026 - Full Frontend Page + Security Audit) 🔄
 - 🎯 **Scope Restatement**: Audit every active frontend page and core cross-cutting infrastructure (routing, auth, API client, storage, websocket) to find bugs, UI/UX issues, security issues, and maintenance risks; document each finding with file references and actionable fixes.
 - ✅ **Success Criteria**:
   1. All active page components are inventoried (single checklist) and each is reviewed for runtime bugs, broken UI states, and unsafe patterns.
@@ -19802,13 +20851,13 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
 - 🗂️ **Primary Audit Doc**:
   - `spec-kit/FRONTEND_PAGE_AUDIT_20260211.md`
 
-### Implementation Update (Feb 11, 2026 – Auth Bootstrap Token Detection)
+### Implementation Update (Feb 11, 2026 - Auth Bootstrap Token Detection)
 - ✅ Fixed `App` bootstrap auth detection to use `secureStorage.getAuthToken()` (actual source of truth) instead of reading `AUTH_CONFIG.tokenKey` (which may not match secureStorage keys).
 - 🧾 Files updated:
   - `kelmah-frontend/src/App.jsx`
 - 🧪 Verification: Not run yet (recommended: reload app with an active session and confirm protected routes work and `verifyAuth` runs).
 
-### Implementation Update (Feb 11, 2026 – Messaging/Search Crash + URL Fixes)
+### Implementation Update (Feb 11, 2026 - Messaging/Search Crash + URL Fixes)
 - ✅ Messaging: hardened conversation filtering in the Messages page to prevent null/undefined crashes when payloads are incomplete.
 - ✅ Search: fixed location query param round-trip (avoid double encoding) and switched suggestions call to the backend-supported `/jobs/suggestions` endpoint.
 - 🧾 Files updated:
@@ -19816,14 +20865,14 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - `kelmah-frontend/src/modules/search/pages/SearchPage.jsx`
 - 🧪 Verification: Not run yet (recommended: load `/messages` with empty/partial conversations; use `/find-talents` with location filters and confirm URL parsing works after refresh).
 
-### Implementation Update (Feb 12, 2026 – PWA Helper XSS Hardening)
+### Implementation Update (Feb 12, 2026 - PWA Helper XSS Hardening)
 - ✅ Refactored PWA banners/modals to avoid `innerHTML` + inline `onclick` handlers; now uses DOM node creation + `addEventListener`.
 - ✅ Removed `window.updatePWA` / `window.installPWA` global exports (no longer needed).
 - 🧾 Files updated:
   - `kelmah-frontend/src/utils/pwaHelpers.js`
 - 🧪 Verification: `kelmah-frontend` production build **PASS** (`vite build`).
 
-### Implementation Update (Feb 12, 2026 – MFA Route Protection + Wallet Crash Hardening)
+### Implementation Update (Feb 12, 2026 - MFA Route Protection + Wallet Crash Hardening)
 - ✅ Protected `/mfa/setup` route with `ProtectedRoute` to prevent unauthenticated MFA enrollment attempts.
 - ✅ Hardened Wallet transactions summary rendering to avoid `transactions.length` crashes when `transactions` is not an array.
 - 🧾 Files updated:
@@ -19831,13 +20880,13 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - `kelmah-frontend/src/modules/payment/pages/WalletPage.jsx`
 - 🧪 Verification: `kelmah-frontend` production build **PASS** (`vite build`).
 
-### Implementation Update (Feb 12, 2026 – Fix Missing /payment/methods Route)
+### Implementation Update (Feb 12, 2026 - Fix Missing /payment/methods Route)
 - ✅ Added a protected `/payment/methods` route to match existing UI links from Payment Center (prevents 404 navigation failure).
 - 🧾 Files updated:
   - `kelmah-frontend/src/routes/config.jsx`
 - 🧪 Verification: `kelmah-frontend` production build **PASS** (`vite build`).
 
-### Implementation Update (Feb 12, 2026 – Wire Payment Center Method Actions)
+### Implementation Update (Feb 12, 2026 - Wire Payment Center Method Actions)
 - ✅ Wired Payment Center payment method actions so:
   - “Edit” navigates to `/payment/methods`
   - “Delete” prompts for confirmation and then removes the method via API
@@ -19848,7 +20897,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - `kelmah-frontend/src/modules/payment/pages/PaymentCenterPage.jsx`
 - 🧪 Verification: `kelmah-frontend` production build **PASS** (`vite build`).
 
-### Implementation Update (Feb 12, 2026 – Logout Storage Cleanup + WS Token Leak Hardening)
+### Implementation Update (Feb 12, 2026 - Logout Storage Cleanup + WS Token Leak Hardening)
 - ✅ Logout: ensured `logoutUser` clears `secureStorage` even when the logout API call fails (prevents “partial logout” with encrypted token remaining).
 - ✅ Messaging: removed `?token=` WebSocket URL usage from legacy `Messages` component to reduce token leakage risk if re-imported.
 - 🧾 Files updated:
@@ -19856,13 +20905,13 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - `kelmah-frontend/src/modules/messaging/components/common/Messages.jsx`
 - 🧪 Verification: `kelmah-frontend` production build **PASS** (`vite build`).
 
-### Implementation Update (Feb 12, 2026 – Job Details Sign-in Redirect Crash Fix)
+### Implementation Update (Feb 12, 2026 - Job Details Sign-in Redirect Crash Fix)
 - ✅ Fixed `JobDetailsPage` to define `location` before using `location.pathname` in `handleSignIn()`.
 - 🧾 Files updated:
   - `kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx`
 - 🧪 Verification: `kelmah-frontend` production build **PASS** (`vite build`).
 
-### Implementation Update (Feb 12, 2026 – Payments API Runtime Fixes + UI Guard)
+### Implementation Update (Feb 12, 2026 - Payments API Runtime Fixes + UI Guard)
 - ✅ Backend: fixed payment-service controller runtime errors by importing missing validators + shared `handleError` helper.
 - ✅ Backend: relaxed payment method `billingAddress` validation (now optional) to match current frontend payloads.
 - ✅ Frontend: disabled “Add mobile money” payment method button (backend does not support `type: mobile_money` yet).
@@ -19877,13 +20926,13 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - Controllers load via `node -e "require(...)"` (no ReferenceError)
   - `kelmah-frontend` production build **PASS** (`vite build`).
 
-### Implementation Update (Feb 12, 2026 – Fix Broken Legacy ResetPasswordPage Module)
+### Implementation Update (Feb 12, 2026 - Fix Broken Legacy ResetPasswordPage Module)
 - ✅ Replaced the syntactically broken legacy module page with a thin re-export to the active reset password page (prevents future accidental imports from breaking builds).
 - 🧾 Files updated:
   - `kelmah-frontend/src/modules/auth/pages/ResetPasswordPage.jsx`
 - 🧪 Verification: `kelmah-frontend` production build **PASS** (`vite build`).
 
-### Implementation Update (Feb 12, 2026 – Add Mobile Money Saved Payment Methods)
+### Implementation Update (Feb 12, 2026 - Add Mobile Money Saved Payment Methods)
 - ✅ Backend: added `mobile_money` support for saved payment methods (schema + validation + controller create/list).
 - ✅ Backend: mobile money methods are returned with masked phone display fields to reduce PII exposure.
 - ✅ Frontend: re-enabled “Add mobile money” payment method flow.
@@ -19896,25 +20945,25 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - Backend modules load via `node -e "require(...)"`
   - `kelmah-frontend` production build **PASS** (`vite build`).
 
-### Implementation Update (Feb 12, 2026 – Fix Hirer Dashboard Payment Navigation)
+### Implementation Update (Feb 12, 2026 - Fix Hirer Dashboard Payment Navigation)
 - ✅ Added routes for `/hirer/payments` and `/payments` using the existing `PaymentsPage` (wrapped in `PaymentProvider`) so Hirer dashboard payment buttons don’t 404.
 - 🧾 Files updated:
   - `kelmah-frontend/src/routes/config.jsx`
 - 🧪 Verification: `kelmah-frontend` production build **PASS** (`vite build`).
 
-### Implementation Update (Feb 12, 2026 – Worker Dashboard Timeout Cleanup)
+### Implementation Update (Feb 12, 2026 - Worker Dashboard Timeout Cleanup)
 - ✅ Prevented Worker dashboard loading timeout from firing after unmount (clears pending `setTimeout`), reducing runtime warnings and intermittent UI glitches.
 - 🧾 Files updated:
   - `kelmah-frontend/src/modules/worker/pages/WorkerDashboardPage.jsx`
 - 🧪 Verification: `kelmah-frontend` production build **PASS** (`vite build`).
 
-### Implementation Update (Feb 12, 2026 – Hirer Dashboard Remove Hard Reload)
+### Implementation Update (Feb 12, 2026 - Hirer Dashboard Remove Hard Reload)
 - ✅ Replaced `window.location.reload()` in the Hirer dashboard loading-timeout alert with the existing in-app `handleRefresh()`.
 - 🧾 Files updated:
   - `kelmah-frontend/src/modules/hirer/pages/HirerDashboardPage.jsx`
 - 🧪 Verification: `kelmah-frontend` production build **PASS** (`vite build`).
 
-### Implementation Update (Feb 12, 2026 – Fix Missing /payment/bill Route + Bills Normalization)
+### Implementation Update (Feb 12, 2026 - Fix Missing /payment/bill Route + Bills Normalization)
 - ✅ Added `/payment/bill` route (used by Payments actions menu) and wrapped it with `PaymentProvider`.
 - ✅ Normalized Bills payload shape so `bills` is always an array (prevents `.filter` crashes).
 - 🧾 Files updated:
@@ -19923,7 +20972,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - `kelmah-frontend/src/modules/payment/pages/BillPage.jsx`
 - 🧪 Verification: `kelmah-frontend` production build **PASS** (`vite build`).
 
-### Implementation Update (Feb 12, 2026 – Hirer Edit Job Flow (Fix /jobs/edit 404))
+### Implementation Update (Feb 12, 2026 - Hirer Edit Job Flow (Fix /jobs/edit 404))
 - ✅ Added `/hirer/jobs/edit/:jobId` route and implemented edit mode in `JobPostingPage`.
 - ✅ Added `updateHirerJob` thunk (PUT `/jobs/:id`) so edits update the existing job instead of creating duplicates.
 - ✅ Updated `JobManagementPage` Edit action to use the new route and show a message when editing is not allowed.
@@ -19934,7 +20983,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - `kelmah-frontend/src/modules/hirer/pages/JobPostingPage.jsx`
 - 🧪 Verification: `kelmah-frontend` production build **PASS** (`vite build`).
 
-### Implementation Update (Feb 12, 2026 – Fix Hirer Application Management Runtime Errors)
+### Implementation Update (Feb 12, 2026 - Fix Hirer Application Management Runtime Errors)
 - ✅ Added missing `hirerService.getJobApplications` and `hirerService.updateApplicationStatus` methods (backed by `/jobs/:id/applications` endpoints).
 - ✅ Normalized application objects so the page can render worker name/avatar/rating reliably.
 - ✅ Fixed messaging navigation to use `/messages?conversation=...` (router-supported deep link) and removed unsupported `messagingService.initialize()` call.
@@ -19943,7 +20992,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - `kelmah-frontend/src/modules/hirer/pages/ApplicationManagementPage.jsx`
 - 🧪 Verification: `kelmah-frontend` production build **PASS** (`vite build`).
 
-### Implementation Update (Feb 12, 2026 – Fix Worker Profile Edit Save/Availability Contract Mismatch)
+### Implementation Update (Feb 12, 2026 - Fix Worker Profile Edit Save/Availability Contract Mismatch)
 - ✅ Reworked `WorkerProfileEditPage` profile submit flow to send JSON payload compatible with `PUT /api/users/workers/:id` (previous multipart `FormData` path was not parsed by the current backend route).
 - ✅ Normalized availability API mapping (`daySlots`/`status`) into page state (`availableHours`/`availabilityStatus`) so edit UI now loads real backend availability consistently.
 - ✅ Updated worker availability save thunk to call active user-service availability endpoint (`PUT /api/availability/:userId`) and translate UI schedule into backend `daySlots` payload.
@@ -19953,7 +21002,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - `kelmah-frontend/src/modules/worker/services/workerSlice.js`
 - 🧪 Verification: `kelmah-frontend` production build **PASS** (`vite build`).
 
-### Implementation Update (Feb 12, 2026 – Fix WorkerSearch API Endpoint/Filter Contract)
+### Implementation Update (Feb 12, 2026 - Fix WorkerSearch API Endpoint/Filter Contract)
 - ✅ Updated hirer `WorkerSearch` data fetch to use canonical endpoint `GET /users/workers/search` instead of `/workers`.
 - ✅ Aligned query params to backend contract (`query`, `location`, `skills`, `minRating`, `maxRate`, `availability`, `sortBy`, `page`, `limit`) and mapped UI sort options accordingly.
 - ✅ Included `primaryTrade` in text search terms to keep specialization filtering effective with current backend API.
@@ -19961,20 +21010,20 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - `kelmah-frontend/src/modules/hirer/components/WorkerSearch.jsx`
 - 🧪 Verification: `kelmah-frontend` production build **PASS** (`vite build`).
 
-### Implementation Update (Feb 12, 2026 – SkillsAssessment Pause-State Reset Hardening)
+### Implementation Update (Feb 12, 2026 - SkillsAssessment Pause-State Reset Hardening)
 - ✅ Added explicit `setPaused(false)` when loading a test via `fetchTestDetails()` so deep-linking/opening another assessment cannot inherit stale paused state.
 - ✅ Confirmed timer/test flow compiles cleanly with no page-level errors.
 - 🧾 Files updated:
   - `kelmah-frontend/src/modules/worker/pages/SkillsAssessmentPage.jsx`
 - 🧪 Verification: `kelmah-frontend` production build **PASS** (`vite build`).
 
-### Implementation Update (Feb 12, 2026 – Fix Map "Message" Action Deep-Link)
+### Implementation Update (Feb 12, 2026 - Fix Map "Message" Action Deep-Link)
 - ✅ Fixed `ProfessionalMapPage` messaging navigation to use `/messages?recipient=<userId>` (MessagingPage-supported) instead of incorrectly using `/messages?conversation=<userId>`.
 - 🧾 Files updated:
   - `kelmah-frontend/src/modules/map/pages/ProfessionalMapPage.jsx`
 - 🧪 Verification: `kelmah-frontend` production build **PASS** (`vite build`).
 
-### Implementation Update (Feb 12, 2026 – Contracts Flow Runtime Hardening)
+### Implementation Update (Feb 12, 2026 - Contracts Flow Runtime Hardening)
 - ✅ Implemented missing `contractService` methods used by `contractSlice` (`createContract`, `signContract`, `sendContractForSignature`, milestones CRUD helpers, cancel, dispute, templates) to prevent runtime `undefined is not a function` failures.
 - ✅ Added contract/milestone response normalization in `contractService` so pages/components receive stable fields (`id`, `client`, `hirer`, `budget`, `value`, `milestones`, `lastUpdated`) from current job-service payloads.
 - ✅ Fixed `ContractDetailsPage` route-param mismatch (`:id` vs `contractId`) and updated all action dispatches/navigation to use resolved id.
@@ -19986,7 +21035,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - `kelmah-frontend/src/modules/contracts/pages/CreateContractPage.jsx`
 - 🧪 Verification: `kelmah-frontend` production build **PASS** (`vite build`).
 
-### Implementation Update (Feb 12, 2026 – ContractsPage Action Wiring)
+### Implementation Update (Feb 12, 2026 - ContractsPage Action Wiring)
 - ✅ Fixed malformed `New Contract` CTA JSX and wired it to `/contracts/create`.
 - ✅ Wired contract card actions:
   - `View Details` now routes to `/contracts/:id`
@@ -19996,7 +21045,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - `kelmah-frontend/src/modules/contracts/pages/ContractsPage.jsx`
 - 🧪 Verification: `kelmah-frontend` production build **PASS** (`vite build`).
 
-### Implementation Update (Feb 11, 2026 – Auth Route Wiring + Job Details Guard)
+### Implementation Update (Feb 11, 2026 - Auth Route Wiring + Job Details Guard)
 - ✅ Added missing auth/account recovery routes that are already linked from the UI: `/forgot-password`, `/reset-password` (and `/:token`), `/verify-email/:token`, `/role-selection`, `/mfa/setup`.
 - ✅ Wrapped `/jobs/:id` in `ProtectedRoute` to match current page behavior and avoid an auth-required crash path.
 - ✅ Added a non-module reset page to avoid importing a syntactically broken legacy module file.
@@ -20005,7 +21054,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - `kelmah-frontend/src/pages/ResetPassword.jsx`
 - 🧪 Verification: Not run yet (recommended: click “Forgot password” from login, open reset link route, and visit `/jobs/:id` while logged out to confirm redirect).
 
-## Investigation Update (Feb 12, 2026 – Full Frontend Page Audit Pass) ✅
+## Investigation Update (Feb 12, 2026 - Full Frontend Page Audit Pass) ✅
 - 🎯 **Scope Restatement**: Re-audit active frontend pages route-by-route for bugs, UI/UX navigation issues, security leaks, and performance/maintainability risks.
 - ✅ **Dry Audit Coverage**:
   - Active route map reviewed from `kelmah-frontend/src/routes/config.jsx`
@@ -20023,7 +21072,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
 - 🧾 Documentation updated:
   - `spec-kit/FRONTEND_PAGE_AUDIT_20260211.md`
 
-## Investigation Intake (Feb 10, 2026 – Mobile Footer Covers Viewport) 🔄
+## Investigation Intake (Feb 10, 2026 - Mobile Footer Covers Viewport) 🔄
 - 🎯 **Scope Restatement**: Identify the exact layout/footer relationship causing the mobile homepage footer to appear immediately and dominate the viewport, and document the true root cause with file/line references before any fixes.
 - ✅ **Success Criteria**:
   1. Layout, header, footer, and homepage components involved are enumerated with file paths.
@@ -20037,7 +21086,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - `kelmah-frontend/src/pages/HomeLanding.jsx`
   - `kelmah-frontend/src/routes/config.jsx`
 
-### Implementation Update (Feb 10, 2026 – Mobile Footer Covers Viewport)
+### Implementation Update (Feb 10, 2026 - Mobile Footer Covers Viewport)
 - ✅ Root cause confirmed: public layout uses `minHeight: 100vh` with a flex-growing main, while the mobile header is fixed and the hero was sized to `calc(100vh - 48px)`, making the first viewport fully consumed and the footer appear immediately on mobile.
 - ✅ Adjusted the layout so the homepage handles header compensation locally: removed home-page top padding from the public layout and made the hero a true 100vh section with `pt` + `boxSizing: 'border-box'` to account for the fixed header without shrinking the hero.
 - 🧾 Files updated:
@@ -20045,14 +21094,14 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - `kelmah-frontend/src/pages/HomeLanding.jsx`
 - 🧪 Verification: Not run (UI-only changes; recommend visual check on mobile and desktop breakpoints).
 
-### Follow-up Update (Feb 10, 2026 – Deeper Layout Audit)
+### Follow-up Update (Feb 10, 2026 - Deeper Layout Audit)
 - ✅ Verified the deeper root cause: the public layout wraps header, main, and footer in a flex column with `minHeight: 100vh` and `flexGrow: 1` on the main, which forces the footer to consume part of the first viewport even when content should flow below.
 - ✅ Implemented the structural fix: removed the public layout flex/minHeight behavior and the main flexGrow so the footer renders only after full homepage content (natural document flow).
 - 🧾 Files updated:
   - `kelmah-frontend/src/modules/layout/components/Layout.jsx`
 - 🧪 Verification: Not run (UI-only changes; recommend visual check on mobile and desktop breakpoints).
 
-## Investigation Intake (Feb 11, 2026 – Mobile Header Menu Alignment & Header Bugs) 🔄
+## Investigation Intake (Feb 11, 2026 - Mobile Header Menu Alignment & Header Bugs) 🔄
 - 🎯 **Scope Restatement**: Move the mobile menu trigger to the right and perform a dry audit of header behavior for duplicate actions, layout bugs, and runtime errors. Map the file surface and document findings before any edits.
 - ✅ **Success Criteria**:
   1. Mobile header menu alignment issue is traced to exact component code and CSS.
@@ -20072,7 +21121,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
 - ✅ Mobile drawer logout repeats a similar “navigate then reload” pattern; same double-action risk when triggered from the drawer.
 - ✅ No other duplicate click handlers found in header/menu buttons; most actions are single onClick callbacks wired to routing.
 
-### Implementation Update (Feb 11, 2026 – Mobile Header Menu Alignment & Logout Fix)
+### Implementation Update (Feb 11, 2026 - Mobile Header Menu Alignment & Logout Fix)
 - ✅ Moved the mobile menu trigger into the right-side action cluster so it renders on the far right of the header.
 - ✅ Removed hard reloads from header and mobile drawer logout flows to avoid double navigation behavior.
 - 🧾 Files updated:
@@ -20080,7 +21129,7 @@ Full-stack audit fixed **all 101 findings** across CRITICAL (16), HIGH (24), MED
   - `kelmah-frontend/src/modules/layout/components/MobileNav.jsx`
 - 🧪 Verification: Not run (UI-only changes; recommend visual check on mobile).
 
-## Investigation Intake (Feb 11, 2026 – Find Workers Navigation Stuck) 🔄
+## Investigation Intake (Feb 11, 2026 - Find Workers Navigation Stuck) 🔄
 - 🎯 **Scope Restatement**: Investigate why clicking from the Find Workers page does not redirect (navigation appears stuck), trace the UI → router flow, and identify any search-side effects that override or block navigation.
 - ✅ **Success Criteria**:
   1. Exact UI elements and routes involved in Find Workers navigation are mapped with file/line references.
@@ -20123,7 +21172,7 @@ WorkerProfile.jsx fetches worker data via workerService.getWorkerById(workerId)
 UI Render: Worker profile page
 ```
 
-### Implementation Update (Feb 11, 2026 – Find Workers Navigation Stuck)
+### Implementation Update (Feb 11, 2026 - Find Workers Navigation Stuck)
 - ✅ Removed `onBlur` auto-search triggers in `JobSearchForm` to prevent blur-driven URL replaces from overriding outbound navigation.
 - ✅ Removed `CardActions`-level `preventDefault/stopPropagation` in `WorkerCard` so the surrounding `RouterLink` can handle navigation consistently.
 - 🧾 Files updated:
@@ -20131,7 +21180,7 @@ UI Render: Worker profile page
   - `kelmah-frontend/src/modules/worker/components/WorkerCard.jsx`
 - 🧪 Verification: Not run (UI behavior change; recommend clicking header links + worker cards on `/find-talents`).
 
-## Investigation Intake (Feb 11, 2026 – Find Workers Navigation Still Stuck) 🔄
+## Investigation Intake (Feb 11, 2026 - Find Workers Navigation Still Stuck) 🔄
 - 🎯 **Scope Restatement**: Re-audit Find Workers navigation failures after user reports the issue persists, focusing on worker card routing, header/nav clicks on `/find-talents`, and any event-handling that blocks router navigation.
 - ✅ **Success Criteria**:
   1. Confirm the exact click targets that fail (worker cards, header links, CTAs) and map their handlers.
@@ -20146,18 +21195,18 @@ UI Render: Worker profile page
   - `kelmah-frontend/src/components/common/SmartNavigation.jsx`
   - `kelmah-frontend/src/hooks/useNavLinks.js`
 
-### Dry Audit Findings (Feb 11, 2026 – Recheck)
+### Dry Audit Findings (Feb 11, 2026 - Recheck)
 - ✅ `WorkerCard` wraps the entire card in a `RouterLink`, while action buttons inside the card call `stopPropagation`/`preventDefault`. This makes navigation dependent on link behavior and nested event handling.
 - ✅ `SearchPage` does not explicitly block navigation, and `routes/config.jsx` confirms `/worker-profile/:workerId` is a valid public route.
 
-### Implementation Update (Feb 11, 2026 – Make WorkerCard Navigation Explicit)
+### Implementation Update (Feb 11, 2026 - Make WorkerCard Navigation Explicit)
 - ✅ Removed the `RouterLink` wrapper and moved navigation onto the card itself using `navigate()` and keyboard support.
 - ✅ Simplified action button handlers to stop propagation only (no redundant `preventDefault` on non-link buttons).
 - 🧾 Files updated:
   - `kelmah-frontend/src/modules/worker/components/WorkerCard.jsx`
 - 🧪 Verification: Not run (UI change; verify by clicking worker card and header nav from `/find-talents`).
 
-## Investigation Intake (Feb 9, 2026 – Homepage Mobile Marketing Gap) 🔄
+## Investigation Intake (Feb 9, 2026 - Homepage Mobile Marketing Gap) 🔄
 - 🎯 **Scope Restatement**: Identify why the mobile homepage is missing background imagery and Kelmah marketing content, map the full frontend file surface and data flow involved in the homepage render, and propose fixes that restore visual storytelling and brand messaging without breaking existing routing/layout behavior.
 - ✅ **Success Criteria**:
   1. The exact homepage component(s), layout wrapper(s), and any theme/global style files governing mobile render are documented with file paths.
@@ -20170,7 +21219,7 @@ UI Render: Worker profile page
   - `kelmah-frontend/src/modules/layout/components/Layout.jsx`
   - `kelmah-frontend/src/routes/config.jsx`
 
-### Implementation Update (Feb 9, 2026 – Homepage Marketing & Imagery Restore)
+### Implementation Update (Feb 9, 2026 - Homepage Marketing & Imagery Restore)
 - ✅ Routed the landing page to a new non-module `HomeLanding` component that restores branded imagery, a clear "What Kelmah does" value block, and an About-style narrative section tuned for mobile.
 - ✅ Added hero background imagery, category imagery cards, and an assurance banner to re-establish Kelmah's marketing message while keeping actions for hirers and workers prominent.
 - 🧾 Files updated:
@@ -20178,7 +21227,7 @@ UI Render: Worker profile page
   - `kelmah-frontend/src/routes/config.jsx`
 - 🧪 Verification: Not run (UI-only changes; recommend visual check on mobile and desktop breakpoints).
 
-## Investigation Intake (Feb 9, 2026 – Header/Footer CTA & Layout Audit) 🔄
+## Investigation Intake (Feb 9, 2026 - Header/Footer CTA & Layout Audit) 🔄
 - 🎯 **Scope Restatement**: Map the visible design/UX issues in the live header/footer (mobile + desktop) to exact frontend components/files, then propose a tightened layout system and CTA hierarchy without touching `@/modules` code.
 - ✅ **Success Criteria**:
   1. Each issue is mapped to a concrete component and file path with exact UI responsibility.
@@ -20191,7 +21240,7 @@ UI Render: Worker profile page
   - `kelmah-frontend/src/modules/common/components/layout/PageHeader.jsx`
   - `kelmah-frontend/src/hooks/useAutoShowHeader.js`
 
-### Implementation Update (Feb 9, 2026 – Header/Footer CTA & Layout Fixes)
+### Implementation Update (Feb 9, 2026 - Header/Footer CTA & Layout Fixes)
 - ✅ Simplified auth CTAs: auth pages now show only the complementary action, and mobile header no longer duplicates CTAs already present in the drawer.
 - ✅ Tightened header/nav density: reduced desktop nav padding/icon presence for narrower screens and standardized toolbar spacing.
 - ✅ Simplified mobile footer: replaced accordion layout with a compact two-column link grid and reduced spacing across desktop/footer sections.
@@ -20284,7 +21333,7 @@ Full details in `spec-kit/KELMAH_HYBRID_MODEL_SPECIFICATION.md`
 
 ---
 
-## Investigation Intake (Nov 29, 2025 – Worker Profile Deep-Link Bug)
+## Investigation Intake (Nov 29, 2025 - Worker Profile Deep-Link Bug)
 - 🎯 **Scope Restatement**: Users can open a worker profile from the Find Workers page only after forcing a full reload; client-side navigation updates the URL to `/worker-profile/:id` but the WorkerProfile view does not refresh. Need to trace the React Router flow (cards → routes/config → WorkerProfilePage → WorkerProfile component) and ensure navigating between profiles re-mounts the page without manual refreshes.
 - ✅ **Success Criteria**:
   1. Clicking "View Profile" or any card surface immediately renders the selected worker’s profile on first navigation and when switching between workers.
@@ -20299,15 +21348,15 @@ Full details in `spec-kit/KELMAH_HYBRID_MODEL_SPECIFICATION.md`
   - `kelmah-frontend/src/modules/worker/components/WorkerProfile.jsx`
 - 📝 **Next Actions**: Perform the mandated dry audit across the listed files, trace the UI → state → router → service flow, reproduce the bug locally/tunnel if needed, design the fix (likely ensuring component remount + state resets), implement, and re-verify via browser navigation.
 
-### Implementation Progress (Nov 30, 2025 – Worker Profile Deep-Link Bug)
+### Implementation Progress (Nov 30, 2025 - Worker Profile Deep-Link Bug)
 - ✅ `WorkerProfile.jsx` now derives a single `resolvedWorkerId` (prop → route param → auth fallback) that every fetch/bookmark/contact/hire handler uses, preventing stale references when navigating between profiles. Guard clauses short-circuit data work when no ID is available.
 - ✅ `WorkerProfilePage.jsx` forwards `workerId` as a prop while retaining `key={workerId}`, ensuring the component receives the new ID synchronously and still remounts for fresh state.
 - 🧪 `cd kelmah-frontend && npm run lint` still fails because of long-standing worker module lint debt (PropTypes/unused imports across JobSearchPage, WorkerProfile, JobManagement, etc.); no new errors stem from today’s routing changes. Terminal output captured for reference.
 - 📓 Updated `spec-kit/WORKER_PROFILE_ROUTING_DEBUG_NOV2025.md` with the deterministic ID design, data-flow adjustment, and verification notes to keep the investigation trail current.
 
-## Active Work: November 19, 2025 – Optimization Opportunity Planning 🔄
+## Active Work: November 19, 2025 - Optimization Opportunity Planning 🔄
 
-### Work Intake (Nov 25, 2025 – Legacy Axios Client Retirement)
+### Work Intake (Nov 25, 2025 - Legacy Axios Client Retirement)
 - 🎯 **Scope Restatement**: Complete the `useAuth` context removal initiative by refactoring every remaining frontend service that still imports the deprecated `./axios` helpers (e.g., `userServiceClient`, `messagingServiceClient`, `jobServiceClient`) so they instead consume the consolidated `services/apiClient` exports. Resolve the resulting build failures and ensure the Redux slices/services compile against the new clients.
 - ✅ **Success Criteria**:
   1. `npm run build --prefix kelmah-frontend` finishes without the `Could not resolve './axios'` error and no new regressions appear in the bundler output.
@@ -20323,23 +21372,23 @@ Full details in `spec-kit/KELMAH_HYBRID_MODEL_SPECIFICATION.md`
   - Any remaining `services/*Service.js` files that reference `userServiceClient`, `messagingServiceClient`, or `jobServiceClient`
 - 📝 **Next Actions**: Perform the mandated dry audit across the listed files, map API/data flows into the spec-kit, design the replacement strategy for each helper, implement the changes, and re-run the frontend build to confirm the migration succeeds.
 
-### Implementation Kickoff (Nov 25, 2025 – Legacy Axios Client Retirement)
+### Implementation Kickoff (Nov 25, 2025 - Legacy Axios Client Retirement)
 - 🔄 Logged dry-audit completion inside `spec-kit/LEGACY_AXIOS_CLIENT_RETIREMENT.md` and began the implementation phase focused on `fileUploadService.js`, `apiUtils.js`, `hirerService.js`, and `dashboardSlice.js`.
 - 🧭 Confirmed the replacement plan: each helper now routes through `services/apiClient` with explicit endpoint constants from `config/environment.js`, while uploads derive messaging vs. user-service targets from a shared map so attachments/profile updates share the same flow.
 - 🛠️ Next action: execute the code edits per plan, then re-run `npm run build --prefix kelmah-frontend` to verify the missing `./axios` helper no longer blocks the bundle; results plus data-flow notes will land back in this log + the dedicated spec doc.
 
-### Progress Update (Nov 25, 2025 – Legacy Axios Client Retirement)
+### Progress Update (Nov 25, 2025 - Legacy Axios Client Retirement)
 - ✅ Replaced every outstanding `./axios` consumer with the consolidated `api` helper: `fileUploadService.js` now chooses upload targets via a map, `apiUtils.js` imports `{ api as gatewayClient }`, `hirerService.js` routes through `API_ENDPOINTS.USER/JOB`, and `dashboardSlice.js` uses `api.patch` for job status updates.
 - ✅ Corrected ancillary regressions surfaced during the build: `routes/config.jsx` now points to existing modules (Home, Messaging, NotFound), a lightweight `modules/common/pages/NotFoundPage.jsx` was added for the wildcard route, and `authService.js` regained its lost tail (profile update, password/MFA helpers, token refresh scheduling) so referenced methods compile.
 - ✅ Fixed lingering `apiClient` import paths inside the hirer/job application components to match the new directory depth, ensuring Vite resolves the centralized client consistently.
 - 🧪 Verification: `npm run build --prefix kelmah-frontend` now succeeds after ~7m 27s (Vite still emits the existing >500 kB chunk warnings for vendor bundles). Output snapshot recorded below for traceability.
 
-### Follow-up (Nov 26, 2025 – Legacy Axios Mock Cleanup)
+### Follow-up (Nov 26, 2025 - Legacy Axios Mock Cleanup)
 - 🔍 Searched the repo for `modules/common/services/__mocks__/axios.js`, `jobServiceClient`, and `./services/axios` imports; confirmed all remaining references live in historical documentation only, with no tests or runtime code pulling in the deleted helper.
 - 🗑️ Removed the unused Jest manual mock at `kelmah-frontend/src/modules/common/services/__mocks__/axios.js` to keep the test harness aligned with the single `services/apiClient` entry point.
 - 🗒️ Updated `spec-kit/LEGACY_AXIOS_CLIENT_RETIREMENT.md` implementation outcomes to capture the audit/removal and cleared the residual-risk note referencing the mock.
 
-### Work Intake (Nov 22, 2025 – Phase 3 Task 3.1 React Query Migration)
+### Work Intake (Nov 22, 2025 - Phase 3 Task 3.1 React Query Migration)
 - 🎯 **Scope Restatement**: Begin Phase 3 by migrating the jobs domain data fetching (public jobs list, worker search, hirer job creation/applications) from Redux thunks in `jobSlice.js`/`jobsService.js` to React Query hooks per `IMPLEMENTATION_GUIDE_PHASE_3_4_5.md` Task 3.1.
 - ✅ **Success Criteria**:
   1. Query hooks exist in `src/modules/jobs/hooks/useJobsQuery.js` (listing, detail, my jobs, CRUD mutations with optimistic updates and invalidations).
@@ -20359,19 +21408,19 @@ Full details in `spec-kit/KELMAH_HYBRID_MODEL_SPECIFICATION.md`
   - `kelmah-frontend/src/modules/hirer/services/hirerSlice.js`
 - 📝 **Next Actions**: Execute the mandated dry audit (read and catalog the files above, trace UI→service→API flows, document findings in a new spec-kit note) before writing any React Query code or running diagnostics.
 
-### Dry Audit Completion (Nov 22, 2025 – Phase 3 Task 3.1 React Query Migration)
+### Dry Audit Completion (Nov 22, 2025 - Phase 3 Task 3.1 React Query Migration)
 - ✅ Read every file listed in the intake (job slice/service, JobsPage, JobCreationForm, JobApplication, worker job pages/components/slice, hirer slice) and captured their roles, current Redux thunk usage, and UI→API chains in `spec-kit/PHASE3_REACT_QUERY_MIGRATION.md`.
 - 🧭 Documented three data-flow templates (JobsPage listing, hirer job creation, worker job search), enumerated issues (duplicate fetch logic, Redux store bloat, missing cache semantics, save/apply UX gaps), and outlined the upcoming hook/mutation design plus Redux slim-down plan.
 - 📌 Next action: proceed to hook implementation + component refactors per the documented plan, then update this log after React Query wiring and verification commands (`npm run lint`, `npm run build --prefix kelmah-frontend`).
 
-### Implementation Progress (Nov 22, 2025 – Phase 3 Task 3.1 React Query Migration)
+### Implementation Progress (Nov 22, 2025 - Phase 3 Task 3.1 React Query Migration)
 - ✅ Created `src/modules/jobs/hooks/useJobsQuery.js` with normalized filter helpers, canonical `jobKeys`, and the first hook set (`useJobsQuery`, `useJobQuery`, `useCreateJobMutation`, `useApplyToJobMutation`) so React Query can handle listings + mutations with 30s stale windows.
 - ✅ Migrated `JobsPage.jsx` to the new hook, removing the inline `jobsService.getJobs` effect in favor of the query object for loading/error handling while preserving the existing hero/filters UI. Error copy now reflects React Query state, and icon prefetch waits on the derived loading flag.
 - ✅ Updated `JobCreationForm.jsx` to call `useCreateJobMutation` instead of dispatching the Redux `createJob` thunk, so hirer submissions now invalidate shared job caches without bloating the slice.
 - 🧪 Verification: `npm run build --prefix kelmah-frontend` (Nov 22) succeeds in ~1m57s with only the known chunk-size warnings, confirming the new hooks integrate cleanly.
 - 🔜 Next steps: migrate JobApplication + worker job search/save flows to React Query, then strip the remaining async thunks/data arrays from `jobSlice.js` before another lint/build pass.
 
-### Work Intake (Nov 26, 2025 – Worker Job Search & Application React Query Migration)
+### Work Intake (Nov 26, 2025 - Worker Job Search & Application React Query Migration)
 - 🎯 **Scope Restatement**: Complete the next React Query migration slice by moving `JobApplication.jsx`, `worker/pages/JobSearchPage.jsx`, `worker/pages/JobApplicationPage.jsx`, and the worker saved-job entry points (`SmartJobRecommendations.jsx`, `dashboard/components/worker/AvailableJobs.jsx`, shared `JobCard.jsx`) off Redux thunks/manual `jobsService` calls so they rely on the new hook/mutation suite. Once consumers stop dispatching `fetchJobs`, `saveJobToServer`, etc., collapse `jobSlice.js` down to UI filter state only.
 - ✅ **Success Criteria**:
   1. `JobApplication` + worker job search pages use `useJobQuery`/`useJobsQuery` for reads and `useApplyToJobMutation` + new saved-job mutations for writes; no direct `jobsApi` calls or job thunks remain in those components.
@@ -20388,7 +21437,7 @@ Full details in `spec-kit/KELMAH_HYBRID_MODEL_SPECIFICATION.md`
   - `kelmah-frontend/src/modules/jobs/services/jobSlice.js`
 - 📝 **Next Actions**: Document the UI→API data flows for each component in `spec-kit/PHASE3_REACT_QUERY_MIGRATION.md`, design the saved-job/query mutation plan, then implement the hook migrations + slice cleanup before running lint/build and updating this log with verification evidence.
 
-### Implementation Prep (Nov 27, 2025 – Worker JobSearchPage Hook Migration)
+### Implementation Prep (Nov 27, 2025 - Worker JobSearchPage Hook Migration)
 - 🎯 **Scope Restatement**: Replace the Worker JobSearchPage Redux data dependencies (`fetchJobs`, `fetchSavedJobs`, `saveJobToServer`, `unsaveJobFromServer`) with the React Query hook suite so listings, filter persistence, and saved-job toggles share the centralized caches introduced earlier in Phase 3.
 - ✅ **Success Criteria**:
   1. `JobSearchPage.jsx` no longer imports job thunks/selectors except for `setFilters`/`selectJobFilters`; listings read from `useJobsQuery`, and saved jobs rely on `useSavedJobsQuery` + `useSavedJobIds`.
@@ -20398,16 +21447,16 @@ Full details in `spec-kit/KELMAH_HYBRID_MODEL_SPECIFICATION.md`
 - 🧭 **Investigation Notes**: Re-read `JobSearchPage.jsx`, `jobSlice.js`, and `useJobsQuery.js` to catalog every thunk/selectors dependency and map the UI→API flow into `PHASE3_REACT_QUERY_MIGRATION.md`. Confirmed the component only needs Redux for auth + filters; all other derived data can come from the query layer.
 - 🛠️ **Next Steps**: Update the spec doc with the new data-flow mapping, then refactor `JobSearchPage.jsx` to consume `useJobsQuery`, `useSavedJobsQuery`, and the save/unsave mutations before circling back to trim `jobSlice.js`.
 
-### Implementation Progress (Nov 27, 2025 – Worker JobSearchPage Hook Migration)
+### Implementation Progress (Nov 27, 2025 - Worker JobSearchPage Hook Migration)
 - ✅ `JobSearchPage.jsx` now derives listings from `useJobsQuery(buildQueryFilters(filters))`, which memoizes the Redux filter payload into canonical API params (status/page/limit/budget/category/type/sort). The Redux slice retains only UI filters; data arrays and thunk dispatches were removed from this page.
 - ✅ Saved-job UX switched to `useSavedJobsQuery` + `useSavedJobIds` with the new `useSaveJobMutation`/`useUnsaveJobMutation` handlers, so bookmark toggles optimistically update the shared cache without re-dispatching `fetchSavedJobs`.
 - ✅ `buildQueryFilters` consolidates the ad-hoc filter cleaning logic from `handleSearch`, keeping query keys stable while still respecting the worker UI sliders and sort chips. Personalized recommendation hooks continue to read from the normalized query results.
 - 🧪 **Verification**: `cd kelmah-frontend && npx eslint src/modules/worker/pages/JobSearchPage.jsx` still reports the long-standing unused-import/dependency warnings that predated this migration (React, dozens of MUI icons, etc.), so lint fails for the same legacy reasons even though the new hook code compiles. No new errors were introduced by the refactor.
 - 🔜 **Next Steps**: Extend the same hook adoption to `SmartJobRecommendations`, worker dashboard cards, and shared `JobCard` so `jobSlice.js` can finally shed the remaining saved-job state before the final lint/build pass.
 
-### Implementation Prep (Nov 28, 2025 – Worker Smart Recommendations & Dashboard Hooks)
+### Implementation Prep (Nov 28, 2025 - Worker Smart Recommendations & Dashboard Hooks)
 - 🎯 **Scope Restatement**: Finish the worker-facing React Query migration by updating `SmartJobRecommendations.jsx`, `dashboard/components/worker/AvailableJobs.jsx`, and shared `common/components/cards/JobCard.jsx` to consume the saved-job query/mutation hooks, then remove the remaining saved-job arrays and thunks from `jobSlice.js` so only UI filters remain.
-- 🧭 **Dry-Audit Status**: Re-read all three components plus `jobSlice.js` and recorded their UI → service → API flows inside `spec-kit/PHASE3_REACT_QUERY_MIGRATION.md` (see "Smart Recommendations & Dashboard Widgets – Implementation Plan"). Each file still dispatches `saveJobToServer`/`fetchSavedJobs` and manages its own job arrays, confirming they are next in line for hook adoption.
+- 🧭 **Dry-Audit Status**: Re-read all three components plus `jobSlice.js` and recorded their UI → service → API flows inside `spec-kit/PHASE3_REACT_QUERY_MIGRATION.md` (see "Smart Recommendations & Dashboard Widgets - Implementation Plan"). Each file still dispatches `saveJobToServer`/`fetchSavedJobs` and manages its own job arrays, confirming they are next in line for hook adoption.
 - 🗂️ **Planned File Surface**:
   - `kelmah-frontend/src/modules/search/components/SmartJobRecommendations.jsx`
   - `kelmah-frontend/src/modules/dashboard/components/worker/AvailableJobs.jsx`
@@ -20417,7 +21466,7 @@ Full details in `spec-kit/KELMAH_HYBRID_MODEL_SPECIFICATION.md`
 - ✅ **Documentation Updates**: Added the implementation plan + success criteria to `spec-kit/PHASE3_REACT_QUERY_MIGRATION.md`, satisfying the investigation-first workflow before edits.
 - 🔜 **Next Actions**: Implement the hook migrations, trim `jobSlice.js`, rerun `npm run lint --prefix kelmah-frontend` and `npm run build --prefix kelmah-frontend`, then update this log with verification evidence.
 
-### Implementation Progress (Nov 29, 2025 – Worker Smart Recommendations & Dashboard Hooks)
+### Implementation Progress (Nov 29, 2025 - Worker Smart Recommendations & Dashboard Hooks)
 - ✅ `SmartJobRecommendations.jsx` now sources saved metadata from `useSavedJobsQuery`/`useSavedJobIds` and routes bookmark toggles through the React Query save/unsave mutations, retiring the Redux `saveJobToServer`/`fetchSavedJobs` chain. Mutation callbacks surface snackbar feedback so workers see immediate confirmation without triggering redundant refetches.
 - ✅ `dashboard/components/worker/AvailableJobs.jsx` consumes `useJobsQuery` for its listings feed, decorates results via a deterministic helper, and funnels apply/save actions into `useApplyToJobMutation`, `useSaveJobMutation`, and `useUnsaveJobMutation`. A lightweight `jobStatuses` map manages optimistic UI state while the shared query caches keep other surfaces synchronized.
 - 📓 Updated `spec-kit/PHASE3_REACT_QUERY_MIGRATION.md` with the completed migrations and remaining TODOs (`JobCard.jsx` decoupling, `jobSlice.js` slimming, lint/build verification) so the documentation trail stays current.
@@ -20427,7 +21476,7 @@ Full details in `spec-kit/KELMAH_HYBRID_MODEL_SPECIFICATION.md`
 - 🧪 `npm run build --prefix kelmah-frontend` (Nov 29) succeeds in ~3m30s with the usual Vite chunk-size warnings, confirming the jobSlice slimming and JobCard prop updates compile cleanly.
 - 🔜 Next up: continue chipping away at the legacy lint debt so ESLint can pass end-to-end, then expand the React Query hook adoption to the remaining worker widgets once prioritized.
 
-### Work Intake (Nov 29, 2025 – Worker Module Lint Debt Reduction)
+### Work Intake (Nov 29, 2025 - Worker Module Lint Debt Reduction)
 - 🎯 **Scope Restatement**: Eliminate the legacy ESLint backlog blocking `npm run lint --prefix kelmah-frontend`, starting with the shared `JobCard.jsx` prop validation gaps and the unused imports/useless state scattered across worker dashboards, recommendations, and route configs. Ensure every worker-surface component that now relies on the React Query hooks exports accurate PropTypes, trims unused dependencies, and matches project formatting standards.
 - ✅ **Success Criteria**:
   1. `JobCard.jsx`, `SmartJobRecommendations.jsx`, `dashboard/components/worker/AvailableJobs.jsx`, `worker/pages/JobSearchPage.jsx`, `worker/pages/JobApplicationPage.jsx`, and `src/routes/workerRoutes.jsx` contain no ESLint `prop-types`, `no-unused-vars`, or `import/no-unused-modules` violations.
@@ -20444,142 +21493,142 @@ Full details in `spec-kit/KELMAH_HYBRID_MODEL_SPECIFICATION.md`
   - `kelmah-frontend/src/routes/config.jsx`
 - 📝 **Next Actions**: Perform the mandated dry audit on the files above, log the UI→API data flows inside a new spec-kit note (`WORKER_MODULE_LINT_REDUCTION_DEC2025.md`), design the prop-type/unused-import cleanup plan, and then execute the fixes before rerunning ESLint to document the verification output.
 
-### Dry Audit Completion (Nov 29, 2025 – Worker Module Lint Debt Reduction)
+### Dry Audit Completion (Nov 29, 2025 - Worker Module Lint Debt Reduction)
 - ✅ Read every file in the scoped surface (JobCard, SmartJobRecommendations, Worker AvailableJobs, JobSearchPage, JobApplicationPage, workerRoutes, routes/config plus `jobs/hooks/useJobsQuery.js` and `jobs/services/jobsService.js`) to confirm current logic, prop usage, and React Query wiring.
 - 🧭 Updated `spec-kit/WORKER_MODULE_LINT_REDUCTION_DEC2025.md` with full UI→state→service→API traces for each component, documenting how bookmark/apply/navigation flows rely on the React Query mutations and API Gateway routes.
 - 🔍 Identified concrete lint targets: missing `PropTypes` + defaultProps in JobCard, unused icon imports + redundant state in worker widgets, dangling `Navigate` import/CRLF formatting in `src/routes/config.jsx`, and console-heavy debug logging in `workerRoutes.jsx` that can be trimmed without impacting role-gate telemetry.
 - 🔜 Next action: implement the lint fixes (props, unused imports, formatting) and rerun the targeted ESLint command, then capture the verification output back in this log and the spec doc.
 
-### Implementation Kickoff (Nov 22, 2025 – Worker Module Lint Debt Reduction)
+### Implementation Kickoff (Nov 22, 2025 - Worker Module Lint Debt Reduction)
 - 🔄 Began the remediation phase documented in `spec-kit/WORKER_MODULE_LINT_REDUCTION_DEC2025.md`, starting with `JobCard.jsx`, `SmartJobRecommendations.jsx`, `JobApplicationPage.jsx`, and `src/routes/config.jsx` so prop validation gaps, unused imports, and CRLF formatting stop blocking targeted ESLint runs.
 - 🧭 Captured the lint output from `cd kelmah-frontend && npx eslint src/modules/common/components/cards/JobCard.jsx src/modules/worker/pages/JobSearchPage.jsx src/modules/worker/pages/JobApplicationPage.jsx src/modules/dashboard/components/worker/AvailableJobs.jsx src/modules/search/components/SmartJobRecommendations.jsx src/routes/workerRoutes.jsx src/routes/config.jsx` as the baseline error list (prop-types, hooks order, unused icons, missing Alert import, Prettier drift) to measure progress against after each file is fixed.
 - 🛠️ Upcoming edits: add explicit `PropTypes`/`defaultProps` + consistent hook ordering to JobCard, prune unused helpers/icons, wire `useNavigate` where `window.location` was still used, import `Alert` where referenced, and reformat `routes/config.jsx` with LF line endings and proper indentation before tackling the larger Worker dashboard/search files.
 
-### Implementation Progress (Nov 22, 2025 – Worker Module Lint Debt Reduction)
+### Implementation Progress (Nov 22, 2025 - Worker Module Lint Debt Reduction)
 - ✅ Completed the first pass of lint fixes from the plan above: `JobCard.jsx` now exports PropTypes/defaultProps with hooks safely ordered, `SmartJobRecommendations.jsx` drops unused icons, logs mutation errors, and swaps `window.location` navigations for `useNavigate`, `JobApplicationPage.jsx` trims unused MUI imports/state, and `routes/config.jsx` is reformatted with its route registry kept internal so Fast Refresh stops warning.
 - 🧪 Verification: `cd kelmah-frontend && npx eslint src/modules/common/components/cards/JobCard.jsx src/modules/search/components/SmartJobRecommendations.jsx src/modules/worker/pages/JobApplicationPage.jsx src/routes/config.jsx` exits 0 (Nov 22), proving the cleaned files are lint-compliant. Full worker command still pending until `AvailableJobs.jsx`, `JobSearchPage.jsx`, and `workerRoutes.jsx` receive the same treatment.
 - 📓 Updated `spec-kit/WORKER_MODULE_LINT_REDUCTION_DEC2025.md` Implementation Log with the completed work + verification output for traceability. Next steps: continue with the dashboard/search mega-files before rerunning the larger ESLint target.
 
-### Planning Update (Nov 23, 2025 – Worker Module Lint Debt Reduction)
+### Planning Update (Nov 23, 2025 - Worker Module Lint Debt Reduction)
 - 🧪 Captured the current failure surface for the outstanding worker files via `cd kelmah-frontend && npx eslint src/modules/dashboard/components/worker/AvailableJobs.jsx src/modules/worker/pages/JobSearchPage.jsx src/routes/workerRoutes.jsx`, which reports 134 errors / 7 warnings (PropTypes omissions for the reusable job render helpers, unused Material UI imports/icons, `useMemo`/`useCallback` dependency drift, Prettier indentation issues, and pending `workerRoutes.jsx` cleanups).
 - 📝 Logged these findings plus the targeted remediation plan back into `spec-kit/WORKER_MODULE_LINT_REDUCTION_DEC2025.md`, satisfying the investigation-first requirement before touching the large worker components.
 - 🔜 Next actions: prune unused imports/state, add PropTypes/defaults, fix the hook dependency warnings inside `AvailableJobs.jsx` and `JobSearchPage.jsx`, then audit `workerRoutes.jsx` so the expanded lint command can pass.
 
-### Progress Update (Nov 30, 2025 – Worker Module Lint Debt Reduction)
+### Progress Update (Nov 30, 2025 - Worker Module Lint Debt Reduction)
 - ✅ `AvailableJobs.jsx` now defines a shared `jobPropType` near the imports, assigns PropTypes within the inline `JobCard`, and relies on Prettier-formatting to keep the gradient/button style objects compliant—eliminating the earlier `react/prop-types` + indentation failures.
 - ✅ `JobSearchPage.jsx` fixes the malformed icon import, memoizes fallback filters (`rawFilters → useMemo`) plus `jobsFromQuery`, and updates the geolocation/preference effects to depend on `authState.isAuthenticated`, clearing the hook dependency warnings.
 - 🧪 Verification: `cd kelmah-frontend && npx eslint src/modules/dashboard/components/worker/AvailableJobs.jsx src/modules/worker/pages/JobSearchPage.jsx src/routes/workerRoutes.jsx` → exits 0 after running Prettier on `AvailableJobs.jsx`. Command output captured in the local terminal transcript.
 - 🗒️ Documentation: Logged the remediation steps + verification snippet in `spec-kit/WORKER_MODULE_LINT_REDUCTION_DEC2025.md` under “AvailableJobs + JobSearch Remediation,” keeping the investigation-first trail current.
 
-### Planning Update (Dec 2, 2025 – Worker Module Lint Debt Reduction)
+### Planning Update (Dec 2, 2025 - Worker Module Lint Debt Reduction)
 - 🧪 Captured the next batch’s lint surface via `cd kelmah-frontend && npx eslint src/modules/search/components/SmartJobRecommendations.jsx src/modules/worker/pages/JobApplicationPage.jsx src/modules/common/components/cards/JobCard.jsx src/routes/config.jsx`, which now only fails on Prettier formatting for `JobCard.jsx` (hover-state block lines 157‑159) and `src/routes/config.jsx` (40+ indentation violations); the other two files pass.
 - 🔍 Re-read `SmartJobRecommendations.jsx`, `JobApplicationPage.jsx`, `JobCard.jsx`, and `routes/config.jsx` end-to-end to reconfirm their data flows and pinpoint exactly where formatting/prop-type tweaks are needed, logging the findings in `spec-kit/WORKER_MODULE_LINT_REDUCTION_DEC2025.md`.
 - 🛠️ Plan: reformat `JobCard.jsx` and `routes/config.jsx` per Prettier rules, rerun the scoped ESLint command to verify zero errors, then expand the lint surface to the full Success Criteria command.
 
-### Progress Update (Dec 2, 2025 – Worker Module Lint Debt Reduction)
+### Progress Update (Dec 2, 2025 - Worker Module Lint Debt Reduction)
 - ✅ Ran Prettier on `kelmah-frontend/src/modules/common/components/cards/JobCard.jsx` and `kelmah-frontend/src/routes/config.jsx`, restoring the 2-space indentation/spacing the lint run flagged while keeping all logic intact.
 - 🧪 Verification: `cd kelmah-frontend && npx eslint src/modules/search/components/SmartJobRecommendations.jsx src/modules/worker/pages/JobApplicationPage.jsx src/modules/common/components/cards/JobCard.jsx src/routes/config.jsx` now exits 0 (Dec 2). Output: _no findings_; captured in the terminal transcript and mirrored here for traceability.
 - 📓 Documentation: Updated `spec-kit/WORKER_MODULE_LINT_REDUCTION_DEC2025.md` with the completed fixes + verification step so the investigation-first trail stays current.
 
-### Regression Alert (Dec 2, 2025 – Worker Module Lint Debt Reduction)
+### Regression Alert (Dec 2, 2025 - Worker Module Lint Debt Reduction)
 - ⚠️ Running the full worker lint command (`cd kelmah-frontend && npx eslint src/modules/common/components/cards/JobCard.jsx src/modules/search/components/SmartJobRecommendations.jsx src/modules/dashboard/components/worker/AvailableJobs.jsx src/modules/worker/pages/JobSearchPage.jsx src/modules/worker/pages/JobApplicationPage.jsx src/routes/workerRoutes.jsx src/routes/config.jsx`) now fails exclusively on `JobSearchPage.jsx` with 51 errors (missing icon/component imports, unused animation constants/state, undefined `gtag`, Prettier multi-line import drift).
 - 📋 Dry audit confirms the regression: the component references dozens of icons (`ElectricalIcon`, `PlumbingIcon`, etc.) and Material UI helpers (`Collapse`, `Avatar`, `Alert`, etc.) that are no longer imported, while previously-used animations (`slideInFromLeft`, `slideInFromRight`) and state (`isTablet`, `skillOptions`, `availableJobsForPersonalization`) remain defined but unused.
 - 🔧 Next actions recorded in `spec-kit/WORKER_MODULE_LINT_REDUCTION_DEC2025.md`: restore/import the needed icons/components, trim unused declarations, apply Prettier, and rerun the full lint command before updating this log with verification output.
 
-### Progress Update (Dec 2, 2025 – JobSearchPage Cleanup)
+### Progress Update (Dec 2, 2025 - JobSearchPage Cleanup)
 - ✅ Restored all required MUI imports (`Avatar`, `IconButton`, `LinearProgress`, `Collapse`, `Alert`, plus the Electrical/Plumbing/Construction/... icon set) and removed unused helpers (`AnimatePresence`, `formatDistanceToNow`, `slideInFromLeft/Right`, `isTablet`, `isXs`, `availableJobsForPersonalization`, `skillOptions`, `animateCards`, `filterDialog`, `jobsError`) while guarding the analytics call with `window.gtag`.
 - 🧼 Ran `npx prettier --write src/modules/worker/pages/JobSearchPage.jsx` followed by `npx eslint src/modules/worker/pages/JobSearchPage.jsx` to confirm the file is lint-clean on its own.
 - 🧪 Full worker command `cd kelmah-frontend && npx eslint src/modules/common/components/cards/JobCard.jsx src/modules/search/components/SmartJobRecommendations.jsx src/modules/dashboard/components/worker/AvailableJobs.jsx src/modules/worker/pages/JobSearchPage.jsx src/modules/worker/pages/JobApplicationPage.jsx src/routes/workerRoutes.jsx src/routes/config.jsx` now exits 0 (Dec 2). Output captured in the terminal transcript.
 - 📓 `spec-kit/WORKER_MODULE_LINT_REDUCTION_DEC2025.md` updated with the cleanup details and verification evidence.
 
-### Progress Update (Nov 22, 2025 – WorkerRoutes Guard Cleanup)
+### Progress Update (Nov 22, 2025 - WorkerRoutes Guard Cleanup)
 - ✅ `workerRoutes.jsx` drops the debug `console.log` instrumentation inside the memoized `isWorkerAllowed` guard and replaces it with succinct early returns for loading, unauthenticated, and missing-user race conditions so ESLint’s `no-console` rule stays satisfied without changing behavior.
 - 🧪 Verification: `cd kelmah-frontend && npx eslint src/modules/dashboard/components/worker/AvailableJobs.jsx src/modules/worker/pages/JobSearchPage.jsx src/routes/workerRoutes.jsx` now passes with zero findings post-cleanup (output recorded in the terminal transcript above).
 - 🗒️ Documentation: Added a “WorkerRoutes Guard Cleanup” entry to `spec-kit/WORKER_MODULE_LINT_REDUCTION_DEC2025.md`, aligning with the investigation-first policy before expanding the lint target set further.
 
-### Progress Update (Nov 25, 2025 – Auth Context Redux Shim)
+### Progress Update (Nov 25, 2025 - Auth Context Redux Shim)
 - ✅ Replaced the legacy context implementation inside `kelmah-frontend/src/modules/auth/contexts/AuthContext.jsx` with a Redux-powered hook that proxies `login`, `register`, `logoutUser`, and `verifyAuth` thunks plus the direct `authService` helpers (password reset, MFA, profile updates). The exported `useAuth` hook now sources `user`, `token`, `loading`, and `error` from `state.auth`, while `AuthProvider` downgraded to a pass-through component so existing tree wrappers remain no-ops until full removal.
 - ✅ Normalized role checks via a helper (`roleMatches`) so every consumer of `useAuth().hasRole()` now honors both scalar and array-based role requirements, aligning with the consolidated Redux auth model.
 - ⚙️ Verification: `npm run build --prefix kelmah-frontend` still pending (next action once remaining context consumers migrate), but eslint on the touched file (`cd kelmah-frontend && npx eslint src/modules/auth/contexts/AuthContext.jsx`) passes aside from the repository’s standing warnings. Components importing `useAuth` continue working without runtime providers, unblocking the outstanding context-to-Redux migration tasks.
 - 📓 Next Steps: continue auditing files that still import from `modules/auth/contexts/AuthContext`, refactor them to use the Redux selectors/hooks directly, then remove the shim file once the dependency graph is clear. Update this log and `CONTEXT_TO_REDUX_MIGRATION.md` again when the final context references are retired.
 
-### Work Intake (Nov 19, 2025 – Registration Flow Redesign Audit)
+### Work Intake (Nov 19, 2025 - Registration Flow Redesign Audit)
 - 🔄 Audit the desktop + mobile registration experiences (`Register.jsx`, `MobileRegister.jsx`) to catalog current UX, validation, and Redux/auth flows compared to the new schema-driven, multi-step brief.
 - 🧠 Document how each step maps to react-hook-form, local component state, Redux thunks, and secureStorage draft logic so we can plan the consolidation into a single shared schema + hook set.
 - 🗂️ Update this status log and create/refresh a spec-kit note summarizing identified gaps (missing schema validation, inconsistent UX on desktop vs. mobile, limited worker-specific questions) before coding changes.
 
-### Progress Update (Nov 19, 2025 – Registration Schema Foundation)
+### Progress Update (Nov 19, 2025 - Registration Schema Foundation)
 - ✅ Added a shared Zod schema + defaults in `kelmah-frontend/src/modules/auth/utils/registrationSchema.js`, covering account type, Ghana phone validation, strength-checked passwords, hirer company guardrails, and worker trade requirements so both layouts can rely on identical rules.
 - ✅ Introduced secure draft utilities via `registrationDraftStorage.js` plus a reusable `useRegistrationForm` hook that wires the schema into react-hook-form, normalizes defaults with any saved draft, throttles autosave to secureStorage, and exposes password-strength metadata for UI meters.
 - 🧪 Verification: `cd kelmah-frontend && npx eslint src/modules/auth/utils/registrationSchema.js src/modules/auth/utils/registrationDraftStorage.js src/modules/auth/hooks/useRegistrationForm.js` now passes cleanly after Prettier formatting.
 
-### Progress Update (Nov 19, 2025 – Desktop Register Rebuild)
+### Progress Update (Nov 19, 2025 - Desktop Register Rebuild)
 - ✅ Rebuilt `src/modules/auth/components/register/Register.jsx` around `useRegistrationForm`, keeping the four-step wizard (role → personal → security → review), restoring autosave/load, and wiring Redux submission + draft clear so the desktop flow matches the schema + storage utilities.
 - ✅ Added worker trade multi-select + experience years fields, hirer company validation, password strength chips, manual save CTA, and responsive state that falls back to `MobileRegister` on small screens while preserving Framer Motion step transitions.
 - 🧠 Documented the data flow (UI handlers → react-hook-form → autosave → Redux `register`) inline with targeted comments and synced the spec-kit roadmap with this update.
 - 🧪 Verification: `cd kelmah-frontend && npx eslint src/modules/auth/components/register/Register.jsx` and `npm run build` both succeed (only longstanding Vite chunk-size warnings remain).
 
-### Work Intake (Nov 19, 2025 – Navigation Auth Alignment)
+### Work Intake (Nov 19, 2025 - Navigation Auth Alignment)
 - 🔄 Re-align `DesktopNav` + `MobileNav` with the Redux-only auth stack via `useAuthCheck` so the navigation bar never flashes guest CTAs during refresh-token verification.
 - 🧭 Validate role-aware links (Dashboard, Applications, Post a Job) pull from normalized user data and stay consistent with `useNavLinks`/header logic.
 - 📓 Produce a fresh spec-kit data flow note for the navigation shortcuts + update this log once validation (manual + lint) completes.
 
-### Progress Update (Nov 19, 2025 – Job Creation Gateway Timeout)
+### Progress Update (Nov 19, 2025 - Job Creation Gateway Timeout)
 - 🚨 Hirers hit `504 Gateway Timeout` on every `POST /api/jobs` request through `https://kelmah-api-gateway-kubd.onrender.com`, while direct calls to the job service returned instantly, proving the gateway proxy hung during write operations.
 - ✅ `kelmah-backend/api-gateway/proxy/job.proxy.js` now re-streams parsed JSON bodies (express.json had consumed the stream), setting the correct `Content-Length` and writing the serialized payload into the proxied request so the job service no longer waits for bytes that never arrive.
 - 📘 Root cause, commands, and follow-up items documented in `spec-kit/JOB_CREATION_GATEWAY_FIX_NOV2025.md`; verification involves re-running the login → job creation curl flow once the gateway redeploys.
 - 🔜 Draft persistence + layout restructuring captured in `spec-kit/JOB_CREATION_AUTOSAVE_PLAN_NOV2025.md`, outlining the react-hook-form → Redux → API chain and the autosave/sticky-footer plan for the Post Job dialog.
 
-### Progress Update (Nov 19, 2025 – Navigation Auth Alignment)
+### Progress Update (Nov 19, 2025 - Navigation Auth Alignment)
 - ✅ `DesktopNav.jsx` now blocks rendering until `useAuthCheck` reports `isReady`, removing the lingering dependency on the deprecated `useAuth` context and eliminating the Sign In/Get Started flash while refresh-token verification runs.
 - ✅ `MobileNav.jsx` consumes the same `useAuthCheck` + `secureStorage` helpers as the main header, normalizes worker/hirer routing, and reuses the Redux `logoutUser` thunk so drawer logouts clear all tokens before forcing a reload.
 - 📘 Auth flow + CTA mapping documented in `spec-kit/NAVIGATION_BAR_DATA_FLOW_NOV2025.md`, covering the UI chain, logout interactions, and expected state transitions.
 - 🧪 Verification: `cd kelmah-frontend && npx eslint src/modules/layout/components/DesktopNav.jsx src/modules/layout/components/MobileNav.jsx` (passes aside from the known workspace npm warning); manual drawer tests confirm profile options stay hidden until auth resolves and logouts redirect cleanly home.
 
-### Progress Update (Nov 19, 2025 – Auth Verify Route Guard)
+### Progress Update (Nov 19, 2025 - Auth Verify Route Guard)
 - 🚨 Workers hit an endless spinner after login because `/api/auth/verify` was proxied as a public route, so the gateway never forwarded `x-authenticated-user` headers and the auth service crashed at `req.user.id`, returning 500s with exponential retries.
 - ✅ Re-classified `/api/auth/verify` as a protected route in `kelmah-backend/api-gateway/routes/auth.routes.js`, ensuring the API Gateway’s `authenticate` middleware attaches the signed-in user payload before proxying to the auth service.
 - ✅ Added a defensive guard inside `kelmah-backend/services/auth-service/controllers/auth.controller.js#verifyAuth` so missing gateway context now yields a 401 (“Authenticated user context required”) instead of an uncaught TypeError bubbling into 500s.
 - 🧪 Verification: `npx eslint kelmah-backend/api-gateway/routes/auth.routes.js kelmah-backend/services/auth-service/controllers/auth.controller.js` currently fails due to pre-existing Prettier/no-unused rules throughout both legacy files, but the modified sections lint clean locally; next manual step is to re-run the worker login flow once the backend redeploy finishes to confirm `/api/auth/verify` responds 200 with the gateway headers.
 
-### Progress Update (Nov 19, 2025 – Auth Verify DB Timeout Fix)
+### Progress Update (Nov 19, 2025 - Auth Verify DB Timeout Fix)
 - 🚨 Fresh reproduction via `curl -i -X POST …/api/auth/login` (giftyafisa credentials) + `curl -i …/api/auth/verify -H "Authorization: Bearer <token>"` showed the gateway now forwarded auth context but the auth service still returned `500 Authentication verification failed: Operation users.findOne() buffering timed out after 10000ms`, confirming Mongo reconnection lag was still breaking the route.
 - ✅ `kelmah-backend/services/auth-service/controllers/auth.controller.js#verifyAuth` now mirrors the hardened login flow: it checks `mongoose.connection.readyState`, short-circuits with a 503 when the cluster is still waking, and falls back to the raw MongoDB driver (`mongoose.connection.getClient().db().collection('users')`) to fetch the latest profile without relying on buffered Mongoose models.
 - ✅ Invalid ObjectIds are caught early (400), successful lookups return the normalized JSON shape, and every failure path logs context to `logger.warn`/`logger.error` so Render logs show whether the DB was disconnected, the ID was malformed, or Mongo responded slowly.
 - 🧪 Verification: `curl -i …/api/auth/verify -H 'Authorization: Bearer <token>'` now returns 200 locally once the service picks up the change; `npx eslint kelmah-backend/services/auth-service/controllers/auth.controller.js` still surfaces the long-standing Prettier/no-unused noise across the legacy controller, but the new block conforms to the local style guide and can ship with the existing lint suppressions.
 
-### Progress Update (Nov 19, 2025 – Worker Rating Proxy Fix)
+### Progress Update (Nov 19, 2025 - Worker Rating Proxy Fix)
 - 🚨 Worker search/bookmarks triggered repeated 500s from `/api/ratings/worker/:workerId`, but a direct `curl` reproduced a 404 body `Cannot GET /worker/...`, proving the API Gateway dropped the `/api/ratings` prefix before forwarding to the review service so the rating controller never ran.
 - ✅ Updated `kelmah-backend/api-gateway/server.js` so the ratings proxy now rewrites every request path with `pathRewrite: (path) => \\`/api/ratings${path}\\``; the review service once again receives the fully qualified route it exposes (`/api/ratings/worker/:workerId` and `/api/ratings/worker/:workerId/signals`).
 - 🧪 Next verification: redeploy API Gateway, then re-run `curl -i https://kelmah-api-gateway-kubd.onrender.com/api/ratings/worker/<id>` and front-end WorkerSearch to confirm 200 responses with rating payloads; linting (`npx eslint kelmah-backend/api-gateway/server.js`) still fails due to pre-existing 500+ Prettier/no-unused violations across the file, unchanged by this scoped proxy fix.
 
-### Progress Update (Nov 20, 2025 – Ratings Endpoint Health Check)
+### Progress Update (Nov 20, 2025 - Ratings Endpoint Health Check)
 - ✅ Direct `curl -i https://kelmah-review-service-bp4r.onrender.com/health` now reports `200 OK` with Mongo connected and ~6-minute uptime, confirming the Render-hosted review service recovered from the earlier outage.
 - 🧪 `curl -i https://kelmah-api-gateway-kubd.onrender.com/api/ratings/worker/6892f4c06c0c9f13ca24e145` returns `200` with the normalized payload (averageRating 0 when no reviews exist), verifying the gateway proxy path rewrite works end-to-end as soon as the downstream service is healthy.
 - ⚠️ `/api/health/aggregate` still shows the payment service + provider lookup endpoints returning `502`; treat any lingering 5xxs there as availability issues and re-test after the Render pods restart.
 
-### Progress Update (Nov 20, 2025 – User Service Availability Crash)
+### Progress Update (Nov 20, 2025 - User Service Availability Crash)
 - 🚨 Gateway request `GET /api/users/workers/6892f4c06c0c9f13ca24e145/availability` returned a Render-branded 502 page; the controller’s catch block referenced undefined identifiers (`User`, `Availability`) when logging errors, so any upstream exception triggered a `ReferenceError` and crashed the pod.
 - ✅ Updated `kelmah-backend/services/user-service/controllers/worker.controller.js#getWorkerAvailability` and `#getProfileCompletion` to log model readiness via `modelsModule?.User`, `modelsModule?.WorkerProfile`, and `modelsModule?.Availability`, preventing the fallback diagnostics from throwing before `handleServiceError` can reply.
 - 🧪 Next step: redeploy user-service, then re-run `curl -i https://kelmah-api-gateway-kubd.onrender.com/api/users/workers/<id>/availability` and the matching `/profile-completion` route to confirm they now return JSON (200 fallback or 4xx validation) instead of crashing the service; keep monitoring `/api/health/aggregate` for the lingering payment/provider 502s.
 
-### Progress Update (Nov 20, 2025 – BSON Version Guardrails)
+### Progress Update (Nov 20, 2025 - BSON Version Guardrails)
 - 🚨 After redeploy, `/api/users/workers/:id/availability` and `/completeness` still returned 500 because Mongo threw `BSONVersionError: Unsupported BSON version, bson types must be from bson 6.x.x` whenever the request filter used legacy `ObjectId` instances supplied by Mongoose.
 - ✅ Added a defensive branch in both controller catch blocks so any `BSONVersionError` now returns the structured fallback payload (`BSON_VERSION_MISMATCH`) rather than bubbling a 500 and crashing the worker pod. This keeps the Worker Profile page responsive while we evaluate a deeper dependency upgrade to align the driver + bson versions.
 - 🧪 After shipping, redeploy the user-service and re-test both endpoints via the gateway; expect a `200` fallback JSON while the underlying BSON mismatch is triaged, instead of repeating the previous Render 500 loop.
 
-### Progress Update (Nov 20, 2025 – Hirer Post Job Route Alignment)
+### Progress Update (Nov 20, 2025 - Hirer Post Job Route Alignment)
 - 🚨 Hirers clicking "Post New Job" (dashboard quick action, empty-state CTAs, footer link, smart navigation chip) were redirected to home because these entry points still targeted `/post-job` or `/hirer/post-job`, paths no longer registered in `App.jsx`. The catch-all route immediately navigated to `/`, which users perceived as a page refresh.
 - ✅ Updated every active CTA to use the consolidated `'/hirer/jobs/post'` route: `EnhancedHirerDashboard.jsx` (quick action, info alert, empty-state button), `JobResultsSection.jsx`, `JobsPage.jsx`, `Footer.jsx`, and `SmartNavigation.jsx`. All navigation helpers now converge on the protected route already exposed via `hirerRoutes.jsx`.
 - 🧪 Verification: local navigation between `/hirer/dashboard`, `/jobs`, and `/search` now opens the multi-step hirer posting wizard instead of resetting to home; lint still reflects historic workspace violations, but touched files pass Prettier formatting. Next step is to smoke test the CTA through the current LocalTunnel URL once deployments sync.
 
-### Investigation (Nov 21, 2025 – Job Creation 504 Regression)
+### Investigation (Nov 21, 2025 - Job Creation 504 Regression)
 - 🚨 Fresh QA logs show `504 Gateway Timeout` on every `POST /api/jobs` plus occasional `refresh-token` hangs, so we re-opened the job creation investigation despite the earlier gateway body re-stream fix.
 - 🔍 Re-verified all hirer CTAs (`SmartNavigation.jsx`, `EnhancedHirerDashboard.jsx`, `HirerDashboardPage.jsx`, `JobResultsSection.jsx`, `JobsPage.jsx`, `Footer.jsx`) still point to `/hirer/jobs/post` and confirmed Redux `hirerSlice` continues to submit via `jobServiceClient.post(JOB.CREATE, payload)`.
 - 🔍 Reviewed `api-gateway/server.js` job proxy path ordering, rate limiting, and the enhanced proxy (`proxy/job.proxy.js`) to ensure auth headers plus JSON restreaming remain intact before moving deeper into service health triage.
 - 📋 Next steps: capture live gateway logs around `/api/jobs` POST attempts, curl the job service directly to isolate whether the timeout is upstream (gateway) vs. downstream (job-service Mongo/blocking), and update this log with root cause + remediation once identified.
 
-### Work Intake (Nov 21, 2025 – Job Posting Reliability & Cleanup)
+### Work Intake (Nov 21, 2025 - Job Posting Reliability & Cleanup)
 - 🎯 **Scope Restatement**: Ensure the entire hirer job-posting pipeline (`JobCreationForm` → Redux/service thunks → API Gateway proxy → job-service controller/model) consistently succeeds, reorganize any confusing files or duplicate helpers tied to this flow, and remove redundant assets while preserving professional naming and wiring.
 - ✅ **Success Criteria**:
   1. `POST /api/jobs` succeeds via the frontend wizard using standard payloads (201 success or descriptive 4xx validation errors instead of 504/500 timeouts).
@@ -20593,7 +21642,7 @@ Full details in `spec-kit/KELMAH_HYBRID_MODEL_SPECIFICATION.md`
 - 🔍 **Immediate Tasks**: map the UI→API data flow with the mandated template, reproduce the failure through the current LocalTunnel host, gather gateway + job-service logs, and identify any mismatched paths (e.g., missing `/api` prefix), stale environment hints, or Mongo readiness gaps causing the regression.
 - 📅 **Deliverables Due**: Investigation doc + remediation PR-level summary before any structural cleanup merges, followed by verification evidence and spec-kit updates once the fix ships.
 
-### Work Intake (Nov 24, 2025 – Job Posting Diagnostics & Logging Enhancements)
+### Work Intake (Nov 24, 2025 - Job Posting Diagnostics & Logging Enhancements)
 - 🎯 **Scope Restatement**: Produce actionable telemetry and tooling for the `POST /api/jobs` pipeline so every failure can be traced from the UI through the gateway to Mongo, eliminating blind 504/500 debugging.
 - ✅ **Success Criteria**:
   1. Job-service logs emit request + readiness metadata (`job.create.request`, `job.create.dbReady`, `job.create.dbError`) at `info` level with gateway-provided `x-request-id` values so Render dashboards show root causes without switching to debug mode.
@@ -20602,7 +21651,7 @@ Full details in `spec-kit/KELMAH_HYBRID_MODEL_SPECIFICATION.md`
 - 🔍 **Planned Touchpoints**: `services/job-service/config/db.js`, `services/job-service/controllers/job.controller.js`, shared logger utilities, new `diagnostics/mongo-probe.js`, and the `spec-kit/JOB_POSTING_PIPELINE_DATA_FLOW_NOV2025.md` + `STATUS_LOG.md` documentation trail.
 - 🛠️ **Immediate Tasks**: document logger capabilities + correlation ID handling, design the probe script interface/output, then implement logging + tooling before rerunning curls.
 
-### Progress Update (Nov 24, 2025 – Job Posting Diagnostics & Logging)
+### Progress Update (Nov 24, 2025 - Job Posting Diagnostics & Logging)
 - ✅ `services/job-service/config/db.js` now wraps `ensureMongoReady` with structured logging hooks (`mongo.ensureReady.start|pingSuccess|success`) so we can emit readiness telemetry at INFO/WARN without flipping the service to debug mode; helper utilities map `readyState` codes to human-readable labels.
 - ✅ `job.controller.js#createJob` captures normalized request metadata (content length fallback, payload summaries, request/correlation IDs) and logs `job.create.request|dbReady|success|failed` with latency metrics plus sanitized payment/location/bidding stats; DB readiness now calls `ensureMongoReady({ logger, context, requestId, correlationId })`.
 - ✅ Added `diagnostics/mongo-probe.js`, a standalone CLI that pings Atlas, runs an insert/delete probe, and outputs JSON. First run recorded in `diagnostics/mongo-probe-2025-11-21T0256Z.json` (connect 2.49s, ping 168ms, insert 360ms, delete 181ms).
@@ -20611,36 +21660,36 @@ Full details in `spec-kit/KELMAH_HYBRID_MODEL_SPECIFICATION.md`
   - Direct job service POST → `diagnostics/direct-job-response-2025-11-21T030627Z.*` (`HTTP_STATUS:500 TOTAL:10.87s`, body `jobs.insertOne() buffering timed out…`).
 - 🧾 Spec-kit doc `JOB_POSTING_PIPELINE_DATA_FLOW_NOV2025.md` updated with the implementation details + diagnostic file references; reran `cd kelmah-backend/services/job-service && npm test` (stub still echoes “Tests not implemented yet”).
 
-### Diagnostics Snapshot (Nov 21, 2025 – Gateway 504 Reproduction)
+### Diagnostics Snapshot (Nov 21, 2025 - Gateway 504 Reproduction)
 - ✅ Captured fresh login artifacts via `curl -X POST https://kelmah-api-gateway-kubd.onrender.com/api/auth/login` (files `diagnostics/login-headers-20251121T131334Z.txt` + `diagnostics/login-response-20251121T131334Z.json`), confirming hirer `6891595768c3cdade00f564f` still authenticates in ~3.3 s.
 - ❌ `POST https://kelmah-api-gateway-kubd.onrender.com/api/jobs` with the standard payload (`diagnostics/job-payload-20251121T131334Z.json`) continues to time out after ~15.8 s; gateway headers show `x-request-id: 62801dbf-6c7f-454a-8a9e-65e4dadb4d1a` and the usual `Error occurred while trying to proxy…` body.
 - ⚠️ Direct POST to the Render job service (`curl -X POST https://kelmah-job-service-xo0q.onrender.com/api/jobs -H "x-authenticated-user: {...}" ...`) returns immediately with `HTTP_STATUS:400` complaining that `requirements`/`bidding` fields are disallowed, demonstrating the service responds quickly when hit directly even though the gateway request hangs.
 - ✅ `node diagnostics/mongo-probe.js --uri='mongodb+srv://TonyGate:0553366244Aj@kelmah-messaging.xyqcurn.mongodb.net/kelmah_platform'` succeeded (connect 2.78 s, ping 179 ms, insert 436 ms, delete 189 ms) and stored the output at `diagnostics/mongo-probe-20251121T131334Z.json`, indicating Atlas was healthy during the failed gateway calls.
 
-### Progress Update (Nov 21, 2025 – Job Proxy Body Termination Fix)
+### Progress Update (Nov 21, 2025 - Job Proxy Body Termination Fix)
 - ✅ `kelmah-backend/api-gateway/proxy/job.proxy.js` now finalizes every manually re-streamed request body by turning the parsed payload into a Buffer, setting `Content-Length`, writing it to the upstream request, and calling `proxyReq.end()`. The prior implementation wrote the bytes but never ended the stream, so the job service waited indefinitely and the gateway returned a 504 after ~15 s.
 - 🛡️ Added defensive logging + `proxyReq.destroy(writeErr)` when the manual write fails so we surface stream issues without attempting to write partial responses from inside `onProxyReq`.
 - 🧪 Verification (local syntax guard): `node -e "require('C:/Users/aship/Desktop/Project-Kelmah/kelmah-backend/api-gateway/proxy/job.proxy.js'); console.log('proxy loaded');"` now succeeds, confirming the proxy module loads with the new logic. Full HTTP verification will run once the API Gateway deploy picks up this change so we can capture matching 400/201 responses via curl.
 
-### Progress Update (Nov 24, 2025 – Job-Service Readiness Reuse Guard)
+### Progress Update (Nov 24, 2025 - Job-Service Readiness Reuse Guard)
 - ✅ `kelmah-backend/services/job-service/middlewares/dbReady.js` exposes cached readiness metadata on `req.mongoReady`, and `job.controller.js#createJob` now trusts that cache for up to 2 seconds when `mongoose.connection.readyState === 1`, avoiding duplicate ping traffic when requests arrive in bursts.
 - ✅ When the cache is stale or missing, the controller still runs `ensureMongoReady` with request/correlation IDs, logging `job.create.dbReady` or `job.create.dbUnavailable` plus the measured latency; failures short-circuit with structured `503 DB_UNAVAILABLE` responses so the gateway surfaces an actionable error instead of timing out.
 - ✅ Success logs (`job.create.success`) now include readiness source (middleware cache vs. controller), ready/write latency, and total duration, giving Render dashboards the full trace across retries.
 - 🧾 Documentation: Added this update plus controller flow notes to `spec-kit/JOB_POSTING_PIPELINE_DATA_FLOW_NOV2025.md`; verification curls still pending until the next Render deploy pulls the change.
 
-### Work Intake (Nov 21, 2025 – Dry Audit Compliance Reset)
+### Work Intake (Nov 21, 2025 - Dry Audit Compliance Reset)
 - 🔄 Re-opened the job-posting investigation to explicitly follow the mandated **dry-audit-first** workflow: before running diagnostics, catalog every file in the UI → gateway → job-service flow, read them end-to-end, and capture findings inside the spec-kit data-flow note plus this status log.
 - 🗂️ File list confirmed for audit: `JobCreationForm.jsx`, `jobSlice.js`, `jobsService.js`, shared axios/environment helpers, hirer routing shells, gateway `server.js` + `proxy/job.proxy.js` + `routes/job.routes.js`, job-service `server.js`, `routes/job.routes.js`, `controllers/job.controller.js`, `middleware/dbReady.js`, `models/index.js`, and shared `Job.js`/`User.js` models.
 - 📝 Documentation requirements: each file’s role, observed issues, and TODOs must be written to `spec-kit/JOB_POSTING_PIPELINE_DATA_FLOW_NOV2025.md` before any `curl`/diagnostic commands execute; only after that written audit may we run POST `/api/jobs` reproductions.
 - ⚠️ Compliance reminder recorded here so future regression hunts reference this entry before engaging the services.
 
-### Progress Update (Nov 23, 2025 – Job Posting Dry Audit Completed)
+### Progress Update (Nov 23, 2025 - Job Posting Dry Audit Completed)
 - ✅ Read and catalogued every file in the mandated UI → gateway → job-service flow (`JobCreationForm.jsx`, `HirerDashboardPage.jsx`, `jobSlice.js`, `jobsService.js`, `hirerSlice.js`, shared axios/env config, API Gateway `server.js` + `proxy/job.proxy.js`, job-service `server.js`, `routes/job.routes.js`, `controllers/job.controller.js`, `middlewares/dbReady.js`, `config/db.js`, `models/index.js`, shared `serviceTrust.js`).
 - 📝 Updated `spec-kit/JOB_POSTING_PIPELINE_DATA_FLOW_NOV2025.md` with a “Dry Audit Findings (Nov 23, 2025)” section covering frontend entry points, networking, gateway/proxy behavior, job-service readiness, and compliance notes; also refreshed the file inventory tables to reflect hirer dashboard + slice participation.
 - 🛑 No diagnostics or curl tests have been executed yet—per workflow, testing begins only after documenting the audit (this entry) and aligning on the spec-kit updates.
 - 📌 Next action: proceed to diagnostics (`curl` via current LocalTunnel + direct job-service) to capture the latest failure evidence now that the dry-audit requirement is satisfied.
 
-### Session Planning (Nov 22, 2025 – Mongo Readiness Validation) ✅ CLOSED (SUPERSEDED BY SUBSEQUENT EXECUTION UPDATES)
+### Session Planning (Nov 22, 2025 - Mongo Readiness Validation) ✅ CLOSED (SUPERSEDED BY SUBSEQUENT EXECUTION UPDATES)
 - ♻️ **Restated Objective**: Reproduce the latest `504`/`500` failures, confirm whether the Mongo ping guard is deployed, and deliver a hardened readiness check so `POST /api/jobs` either succeeds (201) or quickly returns a structured 503 instead of timing out.
 - 📋 **Success Signals**:
   1. Curl tests via the active gateway tunnel and the Render job-service both complete with non-504 responses (201/4xx expected, 503 allowed only when DB unreachable).
@@ -20651,36 +21700,36 @@ Full details in `spec-kit/KELMAH_HYBRID_MODEL_SPECIFICATION.md`
   - Inspect job-service readiness middleware + controller path to verify ping guard shipping status; patch or extend as needed without bypassing shared helpers.
   - Re-run diagnostics post-fix and update spec-kit documents with outcomes + verification commands.
 
-### Progress Update (Nov 23, 2025 – Job-Service Mongo Readiness Helper)
+### Progress Update (Nov 23, 2025 - Job-Service Mongo Readiness Helper)
 - ⚠️ Render logs at 01:17–01:55 UTC still show `Operation jobs.insertOne() buffering timed out after 10000ms` even though `/health` stays green, confirming controllers must reject writes before Mongoose buffers.
 - ✅ `kelmah-backend/services/job-service/config/db.js` now reduces `mongoose.set('bufferTimeoutMS')` to 2000ms and exports shared `pingDatabase`/`ensureMongoReady` helpers that run an admin ping with a timeout before marking the connection ready.
 - ✅ `job.controller.js#createJob` swaps the inline `ensureConnection` + manual ping block for `ensureMongoReady({ timeoutMs })`, emitting `job.create.dbReady` logs on success and returning immediate `503 DB_UNAVAILABLE` responses (with `reason`) when Mongo cannot respond.
 - 🧪 `cd kelmah-backend/services/job-service && npm test` executes (script currently echoes “Tests not implemented yet”), providing a basic regression guard while deeper diagnostics await the next Render deployment.
 - 📝 Updated `spec-kit/JOB_POSTING_PIPELINE_DATA_FLOW_NOV2025.md` remediation + next-step sections to reflect the new helper work and remind us to capture fresh curls once the service redeploys.
 
-### Progress Update (Nov 22, 2025 – Job-Service Mongo Ping Guard) ✅
+### Progress Update (Nov 22, 2025 - Job-Service Mongo Ping Guard) ✅
 - ✅ **Diagnostics**: `curl -D - -w "HTTP_STATUS:%{http_code} TOTAL:%{time_total}s" -X POST https://kelmah-api-gateway-kubd.onrender.com/api/jobs ...` reproduced `HTTP_STATUS:504 TOTAL:52.23s` with gateway request ID `016ee691-9786-4dc1-9213-ab5229d05c66`. Direct POST to `https://kelmah-job-service-xo0q.onrender.com/api/jobs` (with `x-authenticated-user` + `x-auth-source`) returned `HTTP_STATUS:500 TOTAL:11.23s` and body `Operation jobs.insertOne() buffering timed out after 10000ms`, confirming Mongo buffering is the downstream bottleneck.
 - 🔧 **Fix**: `kelmah-backend/services/job-service/controllers/job.controller.js` now imports `mongoose` from `config/db`, re-validates `readyState`, and pings `mongoose.connection.db.admin().command({ ping: 1 })` before every `Job.create`. Ping failures short-circuit with `503 DB_UNAVAILABLE` so hirers receive an actionable response, while successful pings log `job.create.dbPing` latency for Render traces.
 - 🧪 **Verification Status**: Local lint (`npx eslint services/job-service/controllers/job.controller.js`) still fails on the controller's long-standing Prettier issues (500+ existing errors); the new block conforms to the surrounding style and introduces no additional errors beyond the pre-existing backlog. Remote curl verification will succeed once the job-service auto-deploys this change.
 - 📘 **Docs**: Added diagnostics + remediation summary to `spec-kit/JOB_POSTING_PIPELINE_DATA_FLOW_NOV2025.md` and captured curl evidence/request IDs here for traceability.
 
-### Investigation Update (Nov 20, 2025 – Direct Job Service Curl Benchmarks)
+### Investigation Update (Nov 20, 2025 - Direct Job Service Curl Benchmarks)
 - ✅ `curl -s -D - -o NUL -w @curl-format.txt https://kelmah-job-service-xo0q.onrender.com/api/jobs` now returns `HTTP_STATUS:200 TOTAL:0.937s`, proving the Render-hosted job service is reachable and responsive when bypassing the gateway.
 - ✅ Direct `POST https://kelmah-job-service-xo0q.onrender.com/api/jobs` with gateway-equivalent headers succeeds in authenticating; the first attempt (payload still included the disallowed `requirements` object) failed fast with `400 Validation error` in `0.550s`, confirming validation happens immediately inside the service rather than timing out upstream.
 - ⚠️ Resubmitting the sanitized payload (skills only) triggered `500 Operation jobs.insertOne() buffering timed out after 10000ms`, aligning with a Mongo connection stall after ~10 seconds even though the gateway reported `504` after ~16 seconds—suggesting the job service never reaches Mongo and the gateway’s timeout is just the proxy waiting on this downstream hang.
 - 📌 Gateway log file (`logs/gateway.log`) still stops at Sept 28 entries despite today’s tests, so we likely need to re-enable winston log rotation or pull logs from the Render dashboard before the next capture round.
 
-### Fix Implemented (Nov 21, 2025 – Frontend Job Create Route Alignment)
+### Fix Implemented (Nov 21, 2025 - Frontend Job Create Route Alignment)
 - 🚨 `jobServiceClient.post('/jobs', payload)` bypassed the `/api/jobs` proxy whenever `getApiBaseUrl()` resolved to the absolute gateway origin, so hirer submissions hit `https://<gateway-host>/jobs`, a route the API Gateway never registers, resulting in consistent 504s.
 - ✅ Updated `kelmah-frontend/src/modules/jobs/services/jobsService.js#createJob` to call `jobServiceClient.post('/api/jobs', payload)`, matching every other jobs API call and allowing the gateway to authenticate + forward the request to job-service.
 - 🧪 Verification: `cd kelmah-frontend && npm run build` (Nov 21) succeeds with the usual chunk-size warnings only, and job creation requests now reach `/api/jobs` when replayed through the network inspector.
 
 
-### Fix Implemented (Nov 20, 2025 – MongoDB Ping Guard for Job Creation) ✅
+### Fix Implemented (Nov 20, 2025 - MongoDB Ping Guard for Job Creation) ✅
 - 🚨 **Root Cause Confirmed**: Job service `dbReady` middleware checked `mongoose.connection.readyState === 1` (connected) but Mongoose still buffered write operations for up to 10 seconds when the MongoDB Atlas cluster was warming up or experiencing network issues, causing every `POST /api/jobs` to timeout at the gateway after 15+ seconds.
 - ✅ **Solution**: Added explicit MongoDB ping verification in `kelmah-backend/services/job-service/controllers/job.controller.js#createJob` that calls `await mongoose.connection.db.admin().ping()` before attempting `Job.create()`. This ensures the cluster is genuinely responsive, not just marked as "connected" while still negotiating the Atlas handshake or dealing with connection pool exhaustion.
 - ✅ **Fail-Fast Logic**: When ping fails, controller returns `503 Database temporarily unavailable` with error code `DB_UNAVAILABLE`, allowing the frontend retry logic to kick in immediately instead of waiting 10s for buffering timeout → 15s for gateway timeout.
-- �� **Code Changes**: 
+- **Code Changes**: 
   ```javascript
   // Ensure MongoDB connection is truly ready (not just buffering)
   if (mongoose.connection.readyState !== 1) {
@@ -20701,27 +21750,27 @@ Full details in `spec-kit/KELMAH_HYBRID_MODEL_SPECIFICATION.md`
   3. ⏳ **PENDING**: Test job creation via frontend - expect 201 success or 503 (DB unavailable) instead of 504 timeout
   4. ⏳ **PENDING**: If 503 persists, investigate MongoDB Atlas network allowlist for Render IP ranges
   5. ⏳ **PENDING**: Address `MaxListenersExceededWarning` in gateway (separate from timeout fix)
-### Fix Implemented (Nov 20, 2025 – MongoDB Ping Guard for Job Creation) ✅
+### Fix Implemented (Nov 20, 2025 - MongoDB Ping Guard for Job Creation) ✅
 - ✅ Normalized hirer applications inside `kelmah-frontend/src/modules/hirer/services/hirerSlice.js` so every job keys into `{ jobId, buckets, fetchedAt }`, preserving previously loaded submissions while new thunks hydrate individual jobs.
 - ✅ `kelmah-frontend/src/modules/hirer/pages/HirerDashboardPage.jsx` now consumes `selectHirerApplications`/`selectHirerPendingProposalCount`, reuses a 2‑minute TTL guard before re-fetching `/api/jobs/:id/applications`, and limits pending proposal math to the normalized buckets, preventing runaway polling when flipping tabs or refreshing.
 - 🧠 Data Flow: Dashboard → Redux selector → `fetchHirerJobs('active'|'completed')` → filtered job IDs → `fetchJobApplications({ jobId, status: 'pending' })` → normalized bucket map → summary cards + HirerJobManagement tabs (pending badge uses selector-driven counts).
 - 🧪 Verification (post-change): `cd kelmah-frontend` then `npx eslint src/modules/hirer/services/hirerSlice.js src/modules/hirer/pages/HirerDashboardPage.jsx` passes locally; dashboard refresh fetches only untouched jobs and preserves previously cached proposals across tabs.
 
-### Progress Update (Nov 19, 2025 – Consolerrorsfix Bug #1: Dashboard Profile Menu)
+### Progress Update (Nov 19, 2025 - Consolerrorsfix Bug #1: Dashboard Profile Menu)
 - 🚨 Bug #1 called out that the hirer/worker dashboard avatars were static images; the shared header dropdown worked, but `/hirer/dashboard` and `/worker/dashboard` offered no access to Settings, Profile, or Logout when the layout header unmounted.
 - ✅ `kelmah-frontend/src/modules/hirer/pages/HirerDashboardPage.jsx` now tracks `profileMenuAnchor`, wires the hero avatar to a Material UI `Menu`, and reuses `logoutUser` so hirers can open Profile/Settings or log out without relying on the global header.
 - ✅ `kelmah-frontend/src/modules/worker/pages/WorkerDashboardPage.jsx` mirrors the same menu, adds a role badge chip plus tooltip, and ensures worker logouts clear Redux + `secureStorage` before redirecting to `/login`.
 - 📘 Data flow + UI/API mapping captured in `spec-kit/DASHBOARD_PROFILE_MENU_DATA_FLOW_NOV2025.md`, covering the avatar → redux auth thunk chain for both dashboards.
 - 🧪 Verification: `cd kelmah-frontend && npx eslint src/modules/hirer/pages/HirerDashboardPage.jsx src/modules/worker/pages/WorkerDashboardPage.jsx` (passes aside from the known npm workspace warning), and manual avatar clicks confirm menus render with Profile/Manage/Logout options across both dashboards.
 
-### Progress Update (Nov 19, 2025 – Consolerrorsfix Bug #2: Settings Sidebar & Logout)
+### Progress Update (Nov 19, 2025 - Consolerrorsfix Bug #2: Settings Sidebar & Logout)
 - 🚨 QA reported the Settings sidebar disappeared on tablets/phones (vertical tabs overflowed) and Account Settings lacked any logout control, forcing users to leave the page to sign out.
 - ✅ `kelmah-frontend/src/modules/settings/pages/SettingsPage.jsx` now switches the navigation between sticky vertical tabs (desktop) and wrapping horizontal tabs (mobile), adds independent scrolling, and keeps icons legible so every section stays reachable on smaller screens.
 - ✅ `kelmah-frontend/src/modules/settings/components/common/AccountSettings.jsx` introduces a dedicated "Logout of Kelmah" button tied to `logoutUser`, complete with snackbar feedback and a redirect to `/login`, alongside the existing save CTA.
 - 📘 Implementation details + logout data flow documented in `spec-kit/SETTINGS_SIDEBAR_AND_LOGOUT_FIX_NOV2025.md`.
 - 🧪 Verification: `cd kelmah-frontend && npx eslint src/modules/settings/pages/SettingsPage.jsx src/modules/settings/components/common/AccountSettings.jsx` (clean), and manual tests confirm the tabs reflow under 768px while the logout button signs the user out without leaving Settings.
 
-### Audit Intake (Nov 19, 2025 – Consolerrorsfix Critical Bug List)
+### Audit Intake (Nov 19, 2025 - Consolerrorsfix Critical Bug List)
 - ✅ **Jobs module chunk recovery already in place** via `src/utils/lazyWithRetry.js` + the wrapped imports in `src/routes/publicRoutes.jsx`/`src/App.jsx`. The helper now purges Cache Storage + unregisters the service worker before reloading, which directly guards the `Failed to fetch dynamically imported module` error called out for `/jobs`.
 - ✅ **Session/auth persistence fixes confirmed** in `src/modules/auth/services/authSlice.js` (refresh-token fallback, stricter initial state), `src/App.jsx` (boot-time `verifyAuth()` triggers whenever tokens exist), and `src/modules/layout/components/Header.jsx` (profile menu visibility tied to Redux auth instead of stale local UI state).
 - ✅ **Worker messaging CTA regression resolved** in `src/modules/worker/components/WorkerCard.jsx`, which now normalizes the viewer role, blocks self-messaging, and swaps “Sign in to message” vs. “Message” based on `useAuthCheck()`.
@@ -20729,122 +21778,122 @@ Full details in `spec-kit/KELMAH_HYBRID_MODEL_SPECIFICATION.md`
 - ✅ **Theme toggle persistence overhaul** lives in `src/theme/ThemeProvider.jsx`, persisting `{ mode, updatedAt, version }` across storage layers, syncing tabs, and applying `<html data-theme>` before first paint to stop route-by-route resets.
 - 🔄 **Next verification steps:** re-run the deployed frontend through the latest LocalTunnel URL after a forced cache clear to ensure `/jobs` pulls the regenerated chunk, hit `/dashboard` + `/profile` directly post-refresh to watch the refresh-token bootstrap, and exercise `/find-talents` as a hirer + guest to validate the CTA permutations noted above.
 
-### Progress Update (Nov 19, 2025 – Header Theme Palette & Docs)
+### Progress Update (Nov 19, 2025 - Header Theme Palette & Docs)
 - ✅ Header now exposes an explicit theme palette menu (ColorLens icon near notifications) that lets users pick Light/Dark directly via `setThemeMode` while preserving a "Quick Toggle" fallback tied to `toggleTheme`. The menu matches the Ghana gold/onyx branding, remembers the last selection, and keeps the mobile header compact thanks to the earlier `setThemeMode` plumbing through `App.jsx` → `Layout.jsx`.
 - ✅ Theme menu additions documented in `spec-kit/THEME_TOGGLE_DATA_FLOW_NOV2025.md`, updating the UI chain + recommendations to reflect the new explicit selection path.
 - 🧪 Verification: `cd kelmah-frontend && npx eslint src/modules/layout/components/Header.jsx --max-warnings=0` (passes aside from pre-existing warnings); manual test confirmed Light/Dark options swap instantly, theme persistence remains intact across refreshes/tabs, and the Quick Toggle action still flips modes when tapping rapidly.
 
-### Progress Update (Nov 19, 2025 – Header Bookmark Icon Import)
+### Progress Update (Nov 19, 2025 - Header Bookmark Icon Import)
 - 🚨 Worker profile menu rendered a blank slot (and emitted `ReferenceError: BookmarkBorderIcon is not defined`) whenever authenticated workers opened the avatar dropdown because the `Saved Jobs` item referenced `BookmarkBorderIcon` without importing it.
 - ✅ Added the missing `BookmarkBorder as BookmarkBorderIcon` import in `kelmah-frontend/src/modules/layout/components/Header.jsx`, restoring the iconography for the worker workflow section without altering menu layout.
 - 🧪 Verification: `cd kelmah-frontend && npx eslint src/modules/layout/components/Header.jsx --max-warnings=0` (passes aside from unrelated historical warnings); manual check of the worker dropdown now shows the Saved Jobs entry with its bookmark outline icon and no console errors.
 
-### Progress Update (Nov 19, 2025 – Help Center Route & Data Flow)
+### Progress Update (Nov 19, 2025 - Help Center Route & Data Flow)
 - 🚨 The new "Help & Support" entry inside the header dropdown pointed to `/support/help-center`, but no public route or page handled that path, leaving users with an immediate 404 and no documented escalation paths.
 - ✅ Added `HelpCenterPage.jsx` under `src/modules/support/pages/`, a Ghana-branded support hub that surfaces live aggregate health (`/api/health/aggregate`), quick navigation shortcuts (support tickets, docs, community), and direct escalation channels (email, hotline, trust & safety). Wired the component into `publicRoutes.jsx` so both `/support` and `/support/help-center` resolve through `lazyWithRetry` with chunk retry protection.
 - ✅ Documented the UI→API chain in `spec-kit/HELP_CENTER_DATA_FLOW_NOV2025.md`, covering how the hero chip maps to `checkServiceHealth('aggregate')`, which endpoints are touched, and how quick actions route users into existing modules.
 - 🧪 Verification: `cd kelmah-frontend && npx eslint src/modules/support/pages/HelpCenterPage.jsx src/routes/publicRoutes.jsx --max-warnings=0`; manual check confirmed the header dropdown now loads the Help Center, shows service status after a brief polling period, and contact buttons open their respective mailto/tel handlers.
 
-### Progress Update (Nov 19, 2025 – Global Error Boundary)
+### Progress Update (Nov 19, 2025 - Global Error Boundary)
 - 🚨 Consolerrorsfix flagged the absence of actionable error messaging—runtime crashes left blank screens with the default React overlay, offering no retry, home navigation, or context around backend cold starts.
 - ✅ Introduced `src/modules/common/components/GlobalErrorBoundary.jsx`, a branded fallback that captures uncaught errors, pings `/api/health/aggregate` via `checkServiceHealth`, and surfaces status chips plus actionable buttons (Try Again, Go Home, Reload). Wrapped `<Layout>` in `App.jsx` with `<GlobalErrorBoundary resetKey={location.pathname}>` so every route now benefits from the guard.
 - ✅ Documented the UI / API flow in `spec-kit/GLOBAL_ERROR_BOUNDARY_DATA_FLOW_NOV2025.md`, detailing reset logic, aggregate health usage, and verification instructions.
 - 🧪 Verification: `cd kelmah-frontend && npx eslint src/modules/common/components/GlobalErrorBoundary.jsx src/App.jsx --max-warnings=0`; manual smoke test by throwing inside `HomePage` confirmed the boundary renders, aggregate status resolves, and Try Again clears once the error is removed.
 - 🔁 Follow-up (Nov 19, 2025, later pass): formatted both files via Prettier, swapped the hard reload helper to `window.location.reload()`, and re-ran `npx eslint src/modules/common/components/GlobalErrorBoundary.jsx src/App.jsx --max-warnings=0` to confirm lint now passes cleanly.
 
-### Progress Update (Nov 19, 2025 – Pre-paint Theme Bootstrap)
+### Progress Update (Nov 19, 2025 - Pre-paint Theme Bootstrap)
 - 🚨 Even with the reconciled ThemeProvider, cold loads briefly flashed the wrong palette because `<html data-theme>` didn’t update until React mounted, so the initial paint always matched the browser’s `prefers-color-scheme` instead of the stored preference.
 - ✅ Added an inline bootstrap script to `kelmah-frontend/index.html` that mirrors the provider’s resolver, reading `kelmah-theme-mode` from localStorage/sessionStorage, falling back to any existing `<html data-theme>`, and finally to `matchMedia('(prefers-color-scheme: dark)')`. The script updates `<html data-theme>` and `<meta name="theme-color">` before any stylesheets or app code execute, eliminating the flash-of-wrong-theme on reloads and fresh installs.
 - 🧪 Verification: hard-refresh `/` (or open in a new private window), confirm the background color now matches the last chosen theme immediately, and inspect DevTools Elements panel to see `data-theme` + `meta[name="theme-color"]` set before the React bundle downloads. Optional: clear only `sessionStorage` and reload to ensure localStorage still drives the bootstrap script.
 
-### Progress Update (Nov 19, 2025 – Jobs Chunk Error Boundary UI)
+### Progress Update (Nov 19, 2025 - Jobs Chunk Error Boundary UI)
 - 🚨 QA reported that even with `lazyWithRetry` in place, `/jobs` could occasionally recover with a blank screen because Suspense never surfaced user-friendly guidance after the retry purge.
 - ✅ Introduced `src/routes/ChunkErrorBoundary.jsx`, a reusable error boundary that detects chunk mismatch errors, logs them in dev mode, provides contextual messaging, and offers a one-click refresh that also clears any `lazy-retry-*` markers so users are never stuck.
 - ✅ Updated `src/routes/publicRoutes.jsx` so `/jobs` is wrapped with `withSuspense(..., { enableChunkBoundary: true, retryKey: 'jobs-page' })`, giving the route a graceful fallback whenever a CDN edge serves stale assets.
 - 🧪 Verification: `cd kelmah-frontend && npx eslint src/routes/ChunkErrorBoundary.jsx src/routes/publicRoutes.jsx` (passes) plus `npm run build` (Vite build succeeded with only the known chunk-size warnings). Manual refresh confirmed the boundary renders its CTA before forcing a reload on demand.
 
-### Progress Update (Nov 19, 2025 – Auth Bootstrap Verification Guard)
+### Progress Update (Nov 19, 2025 - Auth Bootstrap Verification Guard)
 - 🚨 BUG #2 from Consolerrorsfix showed that the hero still said “Welcome back” while `/dashboard` redirected to `/login` after a refresh because the app trusted stale `isAuthenticated` state without re-validating the stored token/refresh pair.
 - ✅ Added an `authBootstrapRef` inside `src/App.jsx` so the boot effect now runs `verifyAuth()` whenever *either* token exists, even if Redux thinks the user is already authenticated, and resets the ref as soon as both tokens are gone. This ensures refreshes always revalidate the session instead of relying on cached flags.
 - ✅ The same guard re-dispatches `verifyAuth` if Redux drops to `isAuthenticated === false` while tokens remain, clearing zombie greetings and keeping protected routes in sync with the backend.
 - 🧪 Verification: `cd kelmah-frontend && npx eslint src/App.jsx` passes, and manual reproduction (delete access token, keep refresh token, refresh `/`) now triggers the refresh flow before visiting `/dashboard`, keeping the header + protected routes consistent.
 
-### Progress Update (Nov 19, 2025 – Header Profile Menu Restoration)
+### Progress Update (Nov 19, 2025 - Header Profile Menu Restoration)
 - 🚨 BUG #3 from Consolerrorsfix: Header continued to render the “Sign In / Get Started” pair while logged-in users attempted to navigate because the component showed auth buttons whenever Redux briefly said `isAuthenticated === false` during boot, even if a refresh token existed and verification was underway.
 - ✅ Updated `src/hooks/useAuthCheck.js` so `canShowUserFeatures`/`shouldShowAuthButtons` now respect Redux’ loading flag, guaranteeing we never render guest CTAs while a token-backed verification request is running.
 - ✅ Adjusted `src/modules/layout/components/Header.jsx` to consume the new loading signal, suppress auth buttons until verification completes, and show a compact spinner instead. Once the session resolves, the avatar + profile dropdown appear consistently, eliminating the confusing dual-button state.
 - 🧪 Verification: `cd kelmah-frontend && npx eslint src/hooks/useAuthCheck.js src/modules/layout/components/Header.jsx` (fails only on longstanding pre-existing lint issues unrelated to these sections); manual flow—log in, refresh `/`, wait for verify call—now keeps the primary action area blank (spinner) until the avatar renders instead of flashing Sign In.
 
-### Progress Update (Nov 18, 2025 – User Profile Data Enrichment)
+### Progress Update (Nov 18, 2025 - User Profile Data Enrichment)
 - ✅ Added `scripts/enrich-user-profiles.js` to hydrate missing `city`, `state`, `location`, `profession`, and `phone` fields directly in Mongo using the consolidated WorkerProfile data plus the Ghana reference locations JSON.
 - ✅ Script iterates every user, merges worker profile skills/professions when available, assigns defaults (`Accra`, `Greater Accra`) when no explicit location exists, and fills deterministic Ghana phone numbers for the two legacy test accounts lacking contact info.
 - ✅ Ran `node scripts/enrich-user-profiles.js` twice (initial pass populated professions/phones; second pass added fallback cities/states) and validated via ad-hoc queries that **all 43 users now have complete city/state/profession/phone coverage**.
 - 📊 Verification: `node -e "...countDocuments..."` now reports `{ total: 43, withoutCity: 0, withoutState: 0, withoutProfession: 0, withoutPhone: 0 }`, ensuring downstream profile/settings flows receive the required personal data.
 
-### Progress Update (Nov 18, 2025 – Vercel Build Failure Root Cause)
+### Progress Update (Nov 18, 2025 - Vercel Build Failure Root Cause)
 - 🚨 Production deploy failed because `.gitignore` was globally ignoring every `data/` directory, so the freshly added `kelmah-frontend/src/modules/jobs/data/*.json` assets never made it to git and Vite couldn’t resolve `../data/tradeCategories.json` during Vercel builds.
 - ✅ Scoped the ignore rule to the repo root (`/data/`) so nested `src/modules/**/data` folders remain trackable, then committed both the source JSON files and their mirrored public copies under `kelmah-frontend/public/data/jobs/`.
 - ✅ Local verification: `npm --prefix kelmah-frontend run build` now succeeds (only the longstanding dynamic-import warnings remain), confirming all environments have access to the trade categories and Ghana locations datasets.
 
-- **Status:** 🔄 In progress – mapped next-wave frontend perf initiatives requested after the JobsPage refactor (route cleanup, service-worker caching, deeper code splitting, Lighthouse CI, idle icon prefetch).
-- **Progress Update (Nov 19, 2025 – Gateway Bootstrap TTL Alignment)**
+- **Status:** 🔄 In progress - mapped next-wave frontend perf initiatives requested after the JobsPage refactor (route cleanup, service-worker caching, deeper code splitting, Lighthouse CI, idle icon prefetch).
+- **Progress Update (Nov 19, 2025 - Gateway Bootstrap TTL Alignment)**
   - ✅ Synced `src/config/environment.js` and `src/utils/pwaHelpers.js` so both store the bootstrap gateway hint with a `updatedAt` timestamp and a shared 6-hour TTL. Session storage now receives `{ origin, updatedAt }` rather than bare strings, and stale hints automatically expire before `selectHealthyBase()` probes Render/LocalTunnel hosts.
   - ✅ When the service worker hands back a cached healthy gateway (IndexedDB entry), the initializer verifies freshness before seeding session storage, preventing cold loads from reusing decommissioned tunnels like `kelmah-api-gateway-5loa`.
   - ✅ `fetchRuntimeHints()` mirrors the runtime-config gateway URL into session storage the moment `/runtime-config.json` resolves, ensuring new users inherit the deployed gateway immediately while still notifying the service worker for background caching.
   - 🧪 Verification plan: refresh the app after 6 hours or by manually clearing `kelmah:bootstrapGateway` in DevTools, confirm `sessionStorage` now holds a JSON blob with `updatedAt`, and watch the Network panel to ensure stale hosts are skipped once TTL elapses.
-- **Progress Update (Nov 19, 2025 – Worker Recommendations Deploy Fix)**
+- **Progress Update (Nov 19, 2025 - Worker Recommendations Deploy Fix)**
   - ✅ Render deployment of user-service failed due to a duplicate `const metadata` inside `controllers/worker.controller.js#getRecentJobs`, introduced during the circuit-breaker retrofit. Node 22 treats redeclarations as syntax errors, so the service crashed before Express booted.
   - ✅ Consolidated the logic so `normalizedJobs` is computed once, followed by a single `metadata` construction reused for circuit success recording and responses. Requiring the controller locally now prints `WORKER_CONTROLLER_OK`, matching the runtime expectation.
   - 🧪 Verification plan: trigger Render redeploy (or run `node start-user-service.js`) to confirm the service boots, then hit `/api/users/workers/recommendations` through the gateway to ensure metadata + circuit snapshot still return as before.
-- **Progress Update (Nov 19, 2025 – JobsPage Electrical Icon Regression)**
+- **Progress Update (Nov 19, 2025 - JobsPage Electrical Icon Regression)**
   - 🚨 Vercel `/jobs` route crashed with `ReferenceError: ElectricalIcon is not defined` after the JobsPage modularization because the hero category cards reference `ElectricalIcon`, `PlumbingIcon`, `ConstructionIcon`, `HvacIcon`, `CarpenterIcon`, `HomeIcon`, `WhatshotIcon`, and `PsychologyIcon` without importing them.
   - ✅ Added the missing icon imports from `@mui/icons-material` in `src/modules/jobs/pages/JobsPage.jsx` so the category metadata renders safely. This mirrors the worker JobSearchPage imports to keep icon usage consistent while we evaluate a future lazy wrapper.
   - 🧪 Verification plan: reload `/jobs` on the deployed site, confirm the page no longer falls into the error boundary, and watch DevTools console for the absence of `ElectricalIcon` reference errors.
-- **Progress Update (Nov 19, 2025 – JobsPage Metric Icon Regression)**
+- **Progress Update (Nov 19, 2025 - JobsPage Metric Icon Regression)**
   - 🚨 Follow-up production logs showed `ReferenceError: AttachMoneyIcon is not defined` (and related metric icons) because the hero KPI cards render `AttachMoneyIcon`, `TrendingUpIcon`, `FlashOnIcon`, `FireIcon`, `Visibility`, `BookmarkBorder`, `Share`, and `RefreshIcon` directly without local imports.
   - ✅ Extended the immediate icon import list within `src/modules/jobs/pages/JobsPage.jsx` to include those KPI/action icons while keeping the lazy-loading map for non-critical variants. This ensures the hero metrics, job action buttons, and CTA toolbar no longer reference undefined components during SSR or hydration.
   - 🧪 Verification plan: reload `/jobs` on Vercel, confirm the error boundary no longer triggers for AttachMoney/TrendingUp, and spot-check the console for the absence of `... is not defined` references. Longer term we still plan to move these hero metrics to lazy wrappers once the lint backlog is addressed.
-- **Progress Update (Nov 19, 2025 – Theme Persistence & Sync)**
+- **Progress Update (Nov 19, 2025 - Theme Persistence & Sync)**
   - 🚨 QA reported that the light/dark toggle sporadically reset when navigating between routes or opening a new tab, leaving the header buttons at odds with the global palette.
   - ✅ Rebuilt `src/theme/ThemeProvider.jsx` so initial mode resolution prefers stored user choice, falls back to the OS `prefers-color-scheme`, mirrors the mode into both `localStorage` and `sessionStorage`, and applies the `<html data-theme>` + `<meta name="theme-color">` attributes before the first paint to stop the flash-of-wrong-theme.
   - ✅ Added cross-tab synchronization via the `storage` event plus passive listeners for system preference changes until a user explicitly toggles, ensuring all open pages stay aligned without manual refreshes.
   - 🧪 Verification plan: toggle to light mode, navigate across `/`, `/jobs`, `/find-talents`, and `/hirer/dashboard` to confirm the palette stays light; open a second tab and observe it switches instantly when the first tab toggles; reload to ensure the stored mode persists and the browser chrome (`theme-color`) updates accordingly.
-- **Progress Update (Nov 19, 2025 – Auth Session Persistence Fix)**
+- **Progress Update (Nov 19, 2025 - Auth Session Persistence Fix)**
   - 🚨 Users saw “Welcome back” on the hero while any protected route kicked them to `/login` because `user_data` survived in secureStorage long after the access token expired, leaving Redux with `user ≠ null` but `isAuthenticated === false`.
   - ✅ Added a resolver in `authSlice` so the initial Redux state only hydrates when both encrypted token + user payload exist, preventing stale greetings when the token is gone.
   - ✅ Enhanced `verifyAuth` to auto-attempt a refresh-token exchange whenever the access token is missing, then re-run the server verification and persist the refreshed token/user in state. Failures now classify network vs. session-expired errors so we only clear storage when the session truly needs a re-login.
   - ✅ Updated `HomePage.jsx` to gate the welcome banner on `isAuthenticated` in addition to `user` so marketing copy can’t promise an active session when the guard would redirect.
   - 🧪 Verification plan: (1) Log in, then manually delete `auth_token` but keep `user_data` to confirm the hero no longer shows the welcome banner; (2) Repeat but leave `refresh_token` intact to ensure `verifyAuth` silently refreshes and protected routes load; (3) Force a bad refresh token and confirm state is cleared + `/login?reason=` displays after the next guarded navigation.
-- **Progress Update (Nov 19, 2025 – Header Profile Menu Restoration)**
+- **Progress Update (Nov 19, 2025 - Header Profile Menu Restoration)**
   - 🚨 BUG #3: Header kept showing “Sign In / Get Started” even for returning users because on reload only the refresh token remained; the app skipped `verifyAuth()` entirely, so Redux never reclaimed `isAuthenticated` and the profile menu stayed hidden.
   - ✅ Updated `App.jsx`’s boot effect to dispatch `verifyAuth()` whenever either an access token **or** a refresh token exists. The revised `verifyAuth`/refresh flow now rehydrates Redux, which feeds `useAuthCheck` and in turn unlocks `showUserFeatures`, so the avatar + dropdown render across all public pages.
   - 🧪 Verification plan: (1) Log in, hard-refresh `/` after manually expiring the access token while leaving the refresh token -> header should render avatar immediately after the verify call completes; (2) Inspect `/worker/dashboard` to ensure the worker menu + chips still appear; (3) Clear all tokens and confirm the header falls back to “Sign In / Get Started”.
-- **Progress Update (Nov 19, 2025 – Worker Messaging CTA Fix)**
+- **Progress Update (Nov 19, 2025 - Worker Messaging CTA Fix)**
   - 🚨 BUG #4: “Sign In” buttons on `/find-talents` stayed disabled even for authenticated hirers because the UI compared `user.role` with a lowercase literal; the backend emits `"Hirer"`, so `canMessage` never turned true and the CTA never changed.
   - ✅ `WorkerCard.jsx` now consumes `useAuthCheck`, normalizes the viewer’s role to lowercase, prevents self-messaging, and presents context-aware CTAs: hirers see an active “Message” button, guests get an actionable “Sign in to message” link, and non-hirer accounts receive a clear tooltip explaining the restriction.
   - 🧪 Verification plan: (1) Log in as `giftyafisa@gmail.com` (hirer) and confirm `/find-talents` cards show an enabled “Message” CTA that opens `/messages?recipient=...`; (2) Log out and ensure the button copy switches to “Sign in to message” and routes to `/login` instead of staying disabled; (3) Log in as a worker and validate the tooltip explains hirer-only messaging while preventing self-messages.
-- **Progress Update (Nov 19, 2025 – Platform Status Badge Accuracy)**
+- **Progress Update (Nov 19, 2025 - Platform Status Badge Accuracy)**
   - 🚨 BUG #5: The Home hero’s “Platform Online” badge still pinged the deprecated `checkApiHealth` helper, so it rendered stale Online/Offline toggles that ignored granular service health and often contradicted `/api/health/aggregate`.
   - ✅ `HomePage.jsx` now sources status from `checkServiceHealth('aggregate')`, caches the derived indicator/label/message in `platformStatus`, polls every 60 seconds, and displays the result via a tooltip-backed Chip whose color reflects `healthy | cold | error | checking | unknown` states.
   - ✅ Error toast messaging now reuses the same aggregate response, ensuring offline/cold-start warnings match the badge copy instead of firing independently.
   - 🧪 Verification plan: load `/` through the current LocalTunnel URL, observe the tooltip updates as services recover from cold starts, toggle Airplane Mode (or stop a service) to confirm the badge switches to “Platform Offline” with the error toast, then restore connectivity and ensure it returns to “Platform Online” after the next interval or manual reload.
 
-  ### Progress Update (Nov 19, 2025 – Worker CTA & Trust Badges)
+  ### Progress Update (Nov 19, 2025 - Worker CTA & Trust Badges)
   - 🚨 Hirer accounts labeled `Business Owner`, `Company`, or stored inside the `roles` array still saw the disabled “Hirer access required” button because WorkerCard only compared the top-level `role` string (lowercase `hirer`). Guests navigating with query parameters also lost their search context after hitting “Sign in to message.”
   - ✅ `src/modules/worker/components/WorkerCard.jsx` now normalizes every known role source (role, userType, accountType, account_type, roles[], permissions[]), accepts whitespace/hyphen variants, and treats any of the business-owner synonyms as hirer accounts. The unauthenticated CTA now preserves both `pathname` and `search` when redirecting to `/login`, so returning users land back on their filtered `/find-talents` view without recreating search criteria.
   - ✅ Added a trust badge row beneath the worker name that surfaces “Kelmah Verified,” availability, response-time, and performance chips by deriving data from `isVerified`, `availabilityStatus`, response-time metrics, success rates, and completed job counts. This mirrors the Kelmah Marketplace trust HUD and gives guests confidence that vetted workers respond quickly.
   - 🧪 Verification: `cd kelmah-frontend && npx eslint src/modules/worker/components/WorkerCard.jsx` passes; manual sanity check toggling between guest, hirer, and worker roles confirms CTA labels (“Message”, “Sign in to message”, “Hirer access required”) and renders the new badge stack only when the source data exists.
-- **Progress Update (Nov 19, 2025 – Theme Toggle Persistence)**
+- **Progress Update (Nov 19, 2025 - Theme Toggle Persistence)**
   - 🚨 BUG #6: Theme mode flips back to the system default after navigating because the provider stored bare strings in both localStorage and sessionStorage without reconciling which copy was fresher; on mobile Safari and desktop tab restores the emptied session store won the race and `resolveInitialMode` reverted to light mode mid-session.
   - ✅ `src/theme/ThemeProvider.jsx` now serializes theme preferences with `{ mode, updatedAt, version }`, reconciles the freshest copy across storages/`data-theme`, reapplies preferences on `visibilitychange`, and keeps tabs in sync through the existing storage listener so navigation + background resumes no longer drop user selections.
   - ✅ Added regression coverage in `src/theme/__tests__/ThemeProvider.test.jsx` to assert metadata persistence across remounts and verify storage events trigger resyncs; Jest/Babel configs were renamed to `.cjs` to keep CommonJS loaders working inside the ESM frontend package.
   - 🧪 Verification: `cd kelmah-frontend && npx jest src/theme/__tests__/ThemeProvider.test.jsx --runInBand` plus manual browser toggle → navigate to `/jobs`, refresh, and ensure the chosen mode stays applied and cross-tab storage updates flip the header chip within a second.
-- **Progress Update (Nov 19, 2025 – Jobs Route Chunk Reload Guard)**
+- **Progress Update (Nov 19, 2025 - Jobs Route Chunk Reload Guard)**
   - 🚨 `/jobs` continued to sporadically crash with `ChunkLoadError: Loading chunk <n> failed` whenever CDN nodes served an outdated bundle right after deploys, forcing users to clear the site cache before the route would load again.
   - ✅ Introduced `src/utils/lazyWithRetry.js`, a thin wrapper around `React.lazy` that catches chunk-load failures, stores a single retry marker in `sessionStorage`, and performs a safe one-time reload to grab the fresh assets instead of leaving Suspense fallbacks stuck forever.
   - ✅ Updated `src/routes/publicRoutes.jsx`, `src/routes/workerRoutesConfig.js`, `src/routes/realTimeRoutes.jsx`, and the lazy imports inside `src/App.jsx` to consume the helper so `/jobs`, worker dashboards, messaging, map/search, and contract pages all benefit from the same guard.
   - 🧪 Verification plan: deploy a fresh frontend build, open `/jobs` while the old chunk is cached to confirm the route reloads once and renders normally; repeat for `/worker/dashboard` and `/messages` to ensure the helper clears its retry flag after a successful import.
-- **Progress Update (Nov 19, 2025 – Cache Purge Before Chunk Retries)**
+- **Progress Update (Nov 19, 2025 - Cache Purge Before Chunk Retries)**
   - 🚨 Some users still hit the chunk-load wall after the first reload because the service worker + Cache Storage continued serving the stale HTML bundle, meaning the retried request fetched the same missing file and left `/jobs` unusable.
   - ✅ Enhanced `src/utils/lazyWithRetry.js` so the reload routine now attempts to delete relevant Cache Storage buckets (`kelmah*`, `vite*`, `workbox*`, `assets*`) and unregister any active service workers before forcing a navigation. When a chunk import fails, we send a `KELMAH_CLEAR_RUNTIME_CACHES` message to the controller, purge caches, and only then trigger the reload so the browser grabs the latest manifest.
   - ✅ Guarded the purge with idempotent checks (one purge per failure window) and preserved the existing sessionStorage retry tracking so users never enter an infinite reload loop if the error is unrelated to caching.
@@ -20858,9 +21907,9 @@ Full details in `spec-kit/KELMAH_HYBRID_MODEL_SPECIFICATION.md`
 - **Idle Icon Prefetch:** ✅ Implemented `prefetchLazyIcons(LazyIconsMap)` helper and wired it into `JobsPage.jsx` so, once the initial job fetch clears `loading`, we schedule a `requestIdleCallback` warm-up (with timeout fallback) that touches every lazy MUI icon factory and cancels on unmount—this eliminates the icon flash when users open accordions or quick actions.
 - **Reference Data Seeding:** Added `scripts/seed-core-reference-data.js` (plus `npm run db:seed:reference`) to upsert the shared job categories + Ghana location metadata from the frontend JSON sources into the consolidated `kelmah_platform` database, ensuring `/api/jobs/categories` and future lookup endpoints always return the canonical datasets even after a fresh cluster deployment.
 
-## Active Work: November 18, 2025 – JobsPage Performance Optimization Complete ✅
+## Active Work: November 18, 2025 - JobsPage Performance Optimization Complete ✅
 
-- **Status:** ✅ **COMPLETED** – JobsPage modularization + performance optimizations implemented
+- **Status:** ✅ **COMPLETED** - JobsPage modularization + performance optimizations implemented
 - **Scope:**
   1. ✅ Extract hero/filter section into `HeroFiltersSection` component
   2. ✅ Extract jobs grid, stats, and CTA into `JobResultsSection` component
@@ -20897,11 +21946,11 @@ Full details in `spec-kit/KELMAH_HYBRID_MODEL_SPECIFICATION.md`
   - Metadata externalized to JSON files for code-splitting
   
 - **Files Modified:**
-  - `kelmah-frontend/src/config/environment.js` – Parallel API probing
-  - `kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx` – Lazy icons + modularization
-  - `kelmah-frontend/src/modules/jobs/components/HeroFiltersSection.jsx` – 420 lines
-  - `kelmah-frontend/src/modules/jobs/components/JobResultsSection.jsx` – 891 lines
-  - `kelmah-frontend/src/modules/jobs/data/*.json` – Shared filter metadata
+  - `kelmah-frontend/src/config/environment.js` - Parallel API probing
+  - `kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx` - Lazy icons + modularization
+  - `kelmah-frontend/src/modules/jobs/components/HeroFiltersSection.jsx` - 420 lines
+  - `kelmah-frontend/src/modules/jobs/components/JobResultsSection.jsx` - 891 lines
+  - `kelmah-frontend/src/modules/jobs/data/*.json` - Shared filter metadata
   
 - **Expected Performance Gains:**
   - **Startup Speed:** 3-4x faster API base detection (12s → 4s worst case)
@@ -20915,9 +21964,9 @@ Full details in `spec-kit/KELMAH_HYBRID_MODEL_SPECIFICATION.md`
   - Implement service worker for offline API base caching
   - Add Lighthouse CI monitoring for regression detection
 
-## Previous Work: November 18, 2025 – Job Posting Reliability Pass 🔄
+## Previous Work: November 18, 2025 - Job Posting Reliability Pass 🔄
 
-- **Status:** 🔄 In progress – QA flagged inconsistent Post-a-Job validation, uneven preview sync, non-standard create responses, and thin logging around hirer submissions.
+- **Status:** 🔄 In progress - QA flagged inconsistent Post-a-Job validation, uneven preview sync, non-standard create responses, and thin logging around hirer submissions.
 - **Scope:**
   1. Refresh Job Posting wizard validation UX (step-level guards, inline helper text, draft protection)
   2. Standardize job-service create/update responses to `{ success, data, message }`
@@ -20933,38 +21982,38 @@ Full details in `spec-kit/KELMAH_HYBRID_MODEL_SPECIFICATION.md`
   - Memoized preview formatter with graceful empty-state copy
   - Structured logging appended to job-service create/update controllers with correlation IDs
 
-### Progress Update (Nov 18, 2025 – Post Job Validation UX)
+### Progress Update (Nov 18, 2025 - Post Job Validation UX)
 - ✅ Added per-step validation tracking inside `kelmah-frontend/src/modules/hirer/pages/JobPostingPage.jsx`, surfacing an inline error summary whenever users try to advance with incomplete required fields. The wizard now lists the exact blockers, marks inputs touched, and keeps the existing helper text for context.
 - ✅ Preserved the forward navigation flow (Next button remains enabled) so hirers still receive immediate inline feedback instead of being stuck on a disabled control with no explanation.
 
-### Progress Update (Nov 18, 2025 – Job API Response Envelope Compliance)
+### Progress Update (Nov 18, 2025 - Job API Response Envelope Compliance)
 - ✅ Updated the job-service route guards (`routes/job.routes.js`, `routes/bid.routes.js`, `routes/userPerformance.routes.js`) to reuse `errorResponse`, ensuring authorization failures now emit the standard `{ success, error, meta }` structure with machine-readable codes (`NOT_AUTHENTICATED`, `FORBIDDEN`).
 - ✅ This keeps frontend error handling consistent even when requests fail before hitting the controllers, matching the QA requirement for standardized API payloads.
 
-### Progress Update (Nov 18, 2025 – Preview Snapshot & Tracing)
+### Progress Update (Nov 18, 2025 - Preview Snapshot & Tracing)
 - ✅ Memoized a sanitized preview snapshot in `JobPostingPage.jsx`, feeding both preview panels with trimmed titles/descriptions, capped skill chips (stable keys), and friendly empty-state copy so the live preview no longer lags or drops tags during rapid edits.
 - ✅ Introduced request correlation IDs at the job-service entrypoint (`server.js`) and propagated them through the HTTP logger + success responses. `createJob` now logs request/success/failure events with `requestId`, `userId`, budget, payment type, and status, giving Render logs the granularity QA needs for tracing hirer submissions.
 
-### Progress Update (Nov 18, 2025 – Ratings & Profile API Triage)
+### Progress Update (Nov 18, 2025 - Ratings & Profile API Triage)
 - ✅ Rebuilt `review-service/controllers/rating.controller.js` so `/api/ratings/worker/:id` queries by `reviewee`, consumes the canonical `rating` field, and produces safe aggregates (average, distribution, derived “recommendation” signal) even when historical documents only store a single star value. Both the summary and rank-signal endpoints now guard against missing nested objects, clamp distribution buckets, and emit consistent `{ success: true, data: { ... } }` payloads instead of 500s.
 - ✅ Hardened `user-service/controllers/user.controller.js` by introducing lazy `getUserModel()`/`getWorkerProfileModel()` helpers + `require*` guards. `fetchProfileDocuments` no longer dereferences undefined models, and the statistics/activity/preferences handlers simply call `fetchProfileDocuments({ userId })`, eliminating the race that previously broke `/api/users/profile/(statistics|activity|preferences)` after cold starts.
 - 🧪 Validation: `npm run lint` inside `kelmah-backend/services/review-service` currently fails on pre-existing Prettier/eslint formatting violations across the service (see console output for the full list). No new lint errors were introduced in the touched controllers; follow-up formatting cleanup remains a separate tracked task.
 
-### Progress Update (Nov 18, 2025 – Worker Matches Circuit Breaker)
+### Progress Update (Nov 18, 2025 - Worker Matches Circuit Breaker)
 - ✅ Wrapped `user-service/controllers/worker.controller.js#getRecentJobs` with a module-level circuit breaker so the service stops hammering `/api/jobs/recommendations` after three consecutive failures. When the breaker is open, the controller now returns cached matches (if available) or curated fallbacks, tagging every payload with `metadata.circuitBreaker` so the dashboard can display “cached vs. live” context.
 - ✅ Cached the last healthy recommendation payload (jobs/total/metadata) and surfaced the same structure through `respondWithCachedJobs`, ensuring workers continue to see actionable matches even while the job service is unavailable. Missing gateway auth context also returns the standardized fallback envelope instead of a raw warning string.
 - ⚠️ Next: export a lightweight `/api/users/debug/job-service` endpoint to expose breaker stats for ops dashboards (tracked separately).
 
-### Investigation (Nov 18, 2025 – Jobs Page Initial Render Profiling)
+### Investigation (Nov 18, 2025 - Jobs Page Initial Render Profiling)
 - 🔍 Ran `npm --prefix kelmah-frontend run build` to capture bundle diagnostics: Vite transformed 14,068 modules in **2m26s** and emitted a **2.43 MB** main chunk (`index-DxzN6SDa.js`, 663 kB gzip). The dedicated `mui-vendor-D7ExPqd1.js` chunk alone weighs **515 kB** (155 kB gzip), confirming `/jobs` drags nearly the entire MUI icon/component catalog into the first paint.
 - 🔍 Build warnings show `ProfilePage.jsx` and `ContractManagementPage.jsx` are imported both dynamically (lazy routes) and statically (`publicRoutes.jsx`/`workerRoutes.jsx`), preventing code-splitting from peeling weight away from the initial bundle. As a result, `/jobs` inherits every dashboard/page dependency even before navigation.
 - 📌 `JobsPage.jsx` itself spans **2,445 lines** with ~80 icon imports, dozens of large configuration arrays, and stacked `framer-motion` animations. All of that is inlined in the default route chunk, so users sit on a blank charcoal background while the browser parses/executes ~2.5 MB of JS.
 - ⚠️ `getApiBaseUrl()` serially probes cached LocalTunnel/Render hosts (4 s timeout each) before the first `/api/jobs` call. When the stored tunnel is stale, the page idles for up to 8–12 s (two failing probes) before data fetching even begins, compounding the blank-load perception.
 - ✅ Findings documented here to justify the upcoming remediation (hero code-splitting, icon pruning, concurrent base probing, and skeleton-first render plan). Next profiling pass will re-run `npm --prefix kelmah-frontend run build` plus Lighthouse against `npm run preview` once optimizations land.
 
-## Active Work: November 11, 2025 – Smart Recommendations & Profile Hydration 🔄
+## Active Work: November 11, 2025 - Smart Recommendations & Profile Hydration 🔄
 
-- **Status:** 🔄 In progress – addressing regression report from Nov 11 QA pass
+- **Status:** 🔄 In progress - addressing regression report from Nov 11 QA pass
 - **Scope:**
   1. Resolve Find Talents smart recommendation failures (red banners)
   2. Unblock hirer dashboard loading spinner regression
@@ -20980,27 +22029,27 @@ Full details in `spec-kit/KELMAH_HYBRID_MODEL_SPECIFICATION.md`
   - Spec-kit addendum documenting data flow per component touched
   - Automated regression test additions where feasible (dashboard/profile service mocks)
 
-### Progress Update (Nov 12, 2025 – Account Settings Hydration Bug)
+### Progress Update (Nov 12, 2025 - Account Settings Hydration Bug)
 - ✅ Added Mongo-backed `GET/PUT /users/profile` endpoints in user-service with normalized responses
 - ✅ Updated frontend `profileService.getProfile` to respect `{ success, data }` structure and surface API errors
 - ✅ Refreshed `AccountSettings.jsx` with skeleton loader, validation, and success/error feedback
 - ✅ Documented flow in `spec-kit/ACCOUNT_SETTINGS_DATA_FLOW_NOV2025.md`
 - 🔍 Verification pending: smoke test Settings › Account via LocalTunnel (GET + PUT) to confirm hydrated fields
 
-### Progress Update (Nov 13, 2025 – Profile Page Skeleton Bug)
+### Progress Update (Nov 13, 2025 - Profile Page Skeleton Bug)
 - ✅ Added BSON-version fallback loader in user-service `getUserProfile`/`updateUserProfile` so legacy documents read/write via the native driver when Mongoose balks
 - ✅ Implemented 5s timeout, lifecycle logging, and friendly error messaging in `useProfile.loadProfile`
 - ✅ Wrapped `ProfilePage` in shared `ErrorBoundary`, added retry button, and hardened skills/education/experience mutations against missing arrays
 - 📝 Documented full flow in `spec-kit/PROFILE_PAGE_DATA_FLOW_NOV2025.md`
 - 🔍 Verification pending: redeploy user-service then smoke test `/api/users/profile` + `/profile` UI through LocalTunnel
 
-### Work Intake (Nov 13, 2025 – Hirer Dashboard Infinite Loading Regression)
+### Work Intake (Nov 13, 2025 - Hirer Dashboard Infinite Loading Regression)
 - 🔄 QA regression report identifies three blocking issues on `/hirer/dashboard`: infinite loading below the fold, tab navigation triggering stuck spinners, and a lingering dark overlay during transitions.
 - 📌 Reproduction confirmed on Vercel (`https://kelmah-frontend-cyan.vercel.app/hirer/dashboard`) post-refresh and when switching tabs (Jobs, Proposals, Payments, Progress, Reviews, Find Talent).
 - 🧭 Next Steps: trace `HirerDashboardPage` data flow, inspect `useHirerDashboard` hooks/services, review Redux slice loading flags, and verify overlay component unmount conditions.
 - ✅ Status log updated prior to code changes per spec-kit protocol; investigation now in progress.
 
-### Progress Update (Nov 13, 2025 – Hirer Dashboard Loading Fix)
+### Progress Update (Nov 13, 2025 - Hirer Dashboard Loading Fix)
 - ✅ Refactored `HirerDashboardPage` hydration to rely on a dedicated `isHydrating` flag and timeout guard instead of the global Redux `loading` selector that was stuck toggling from repeated thunks.
 - ✅ Removed the `activeJobs` dependency loop by sourcing the job list from the thunk payload, preventing the infinite re-fetch and overlay lock.
 - ✅ Centralised manual refresh and tab-triggered fetches through the shared hydrator so content stays visible while data updates.
@@ -21008,195 +22057,195 @@ Full details in `spec-kit/KELMAH_HYBRID_MODEL_SPECIFICATION.md`
 - 📝 Captured investigation + resolution details in `spec-kit/HIRER_DASHBOARD_INFINITE_LOADING_NOV2025.md`.
 - 🔍 Verification pending on production tunnel once Render redeploy completes; local lint indicates only pre-existing warnings remain.
 
-### Progress Update (Nov 14, 2025 – Theme Refresh)
+### Progress Update (Nov 14, 2025 - Theme Refresh)
 - ✅ Rebuilt light/dark palettes so Kelmah gold (#FFD700) stays the hero accent while surfaces leverage charcoal (`#050507`) and parchment (`#F9F7ED`) neutrals for a wealthier presentation.
 - ✅ Updated component overrides (Paper, Card, AppBar, Drawer, Dialog, Tabs, alerts, progress bars, etc.) to apply the new surfaces, balanced depth, and hover treatments without touching the brand color.
 - ✅ Synced `themeValidator` to accept the expanded neutral palette, preventing compliance scripts from flagging the refreshed tones.
 - 📝 Documented the refresh plus verification plan in `spec-kit/THEME_REFRESH_NOV2025.md`.
 - 🔍 Pending: run `npm --prefix kelmah-frontend run lint` and capture QA screenshots of both modes once deployments roll out.
 
-### Follow-up (Nov 14, 2025 – Theme Lint Verification)
+### Follow-up (Nov 14, 2025 - Theme Lint Verification)
 - ✅ Removed the stray blank line that Prettier flagged inside `kelmah-frontend/src/theme/index.js` (line 70) so the new surface tokens respect the repo formatter.
 - ✅ Targeted lint pass via `npx eslint src/theme/index.js src/utils/themeValidator.js` now exits with code 0 (only the known npm workspace warning prints).
 - ⚠️ Full `npm --prefix kelmah-frontend run lint` still reports ~3.7k legacy violations (unused React imports, prop-types, and Prettier drift) unrelated to the theme work—captured earlier in this session and earmarked for a dedicated clean-up.
 
-### Investigation (Nov 14, 2025 – Worker Profile Endpoint Gaps)
+### Investigation (Nov 14, 2025 - Worker Profile Endpoint Gaps)
 - 🚨 Frontend worker profile view (`WorkerProfilePage.jsx`) is calling `/api/users/workers/:id/(skills|certificates|work-history|portfolio)` via `workerService.js`, but `kelmah-backend/services/user-service/routes/user.routes.js` only exposes `/workers`, `/workers/:id`, `/workers/:id/availability`, `/workers/:id/completeness`, `/workers/:id/bookmark`, and `/workers/:workerId/earnings`. Anything under `/skills`, `/certificates`, `/work-history`, etc. falls through Express and returns 404.
 - ⚠️ `portfolio.controller.js` (mounted at `/api/profile/*`) still relies on legacy Sequelize models (`WorkerProfile.findOne({ where: ... })`), so even the correct `/api/profile/workers/:id/portfolio` call returns 404 because no SQL worker rows exist post-Mongo consolidation.
 - ⚠️ `/api/users/workers/:workerId/earnings` bubbles a 500 when the internal axios proxy hits `PAYMENT_SERVICE_URL` (unset in Vercel). Need to short-circuit when no payment host is configured and return a deterministic fallback instead of crashing the controller.
 - 📝 Captured full mapping + remediation plan in `spec-kit/WORKER_PROFILE_ENDPOINT_GAPS_NOV2025.md` so we can add the missing routes/controllers before the next QA pass.
 
-### Progress Update (Nov 14, 2025 – Worker Profile Subresource Routes)
+### Progress Update (Nov 14, 2025 - Worker Profile Subresource Routes)
 - ✅ Added authenticated CRUD endpoints for worker portfolio and certificates under `/api/users/workers/:workerId/(portfolio|certificates)` so the frontend `workerService` no longer gets 404s when saving entries.
 - ✅ Implemented new user-service controllers that reuse the consolidated WorkerProfile + shared models, enforce ownership via `verifyGatewayRequest`, and return standardized `{ success, data }` payloads.
 - ✅ Public GET routes remain lenient (optional gateway verification) to power worker profile pages, while POST/PUT/DELETE paths honor the service trust middleware and per-route rate limiter.
 - 📝 Documented the change set plus verification curls in `spec-kit/WORKER_PROFILE_ENDPOINT_GAPS_NOV2025.md`; pending follow-up to harden earnings fallback + review-service rating proxy.
 
-### Progress Update (Nov 14, 2025 – Portfolio/Earnings/Rating Hardening)
+### Progress Update (Nov 14, 2025 - Portfolio/Earnings/Rating Hardening)
 - ✅ Migrated legacy `portfolio.controller.js` from Sequelize to the consolidated Mongo models, aligning `/api/profile/*` routes with the same schema/helpers as the new worker subroutes. All collection queries now support ownership checks, pagination, stats, search, likes/shares, and the consolidated `{ success, data }` responses.
 - ✅ Hardened `/api/users/workers/:workerId/earnings` by introducing deterministic fallbacks when the payment service host is missing or unreachable. The controller now aggregates totals only when history endpoints respond, otherwise returns predictable synthetic data derived from `WorkerProfile` stats without throwing 500s.
 - ✅ Corrected the frontend `reviewService.getWorkerRating` path to hit `/api/reviews/ratings/worker/:id`, matching the API gateway proxy so worker profiles can display ratings without 404s.
 - 📝 Status log updated; spec-kit addendum pending for detailed data-flow verification.
 
-### Progress Update (Nov 15, 2025 – Profile Subresource Coverage)
+### Progress Update (Nov 15, 2025 - Profile Subresource Coverage)
 - ✅ Added `/api/users/profile/statistics`, `/api/users/profile/activity`, and `/api/users/profile/preferences` so the frontend can load each section of the profile page through the gateway without hitting 404/500 responses.
 - ✅ Normalized preferences payloads, activity timelines, and statistics summaries to reuse centralized helpers and stay tolerant of missing worker documents.
 - 📝 Documented the new data flow mapping plus verification curls in `spec-kit/PROFILE_SUBRESOURCE_DATA_FLOW_NOV2025.md`.
 - 🔍 Verification plan: `curl $TUNNEL/api/users/profile/statistics` and `/profile/activity|/preferences` with a bearer token to confirm `{ success, data }` responses before CI departs.
 
-### Progress Update (Nov 15, 2025 – Targeted Lint Remediation)
+### Progress Update (Nov 15, 2025 - Targeted Lint Remediation)
 - ✅ Ran `npm --prefix kelmah-frontend run lint` to gauge repository health; confirmed ~3.7k legacy violations persist (unused React imports, missing prop-types, Prettier drift) across search, scheduling, and reviews modules.
 - ✅ Focused remediation on the files touched during the recent API routing fixes so new warnings don’t mask historic debt: formatted `profileService.js` + `reviewService.js` with Prettier, replaced undefined `API_URL` constants in `searchService.js` with `/api` helpers, and wired `SecuritySettings.jsx` to `authService.changePassword` while removing the unused default React import.
 - ✅ Spot-checked the updated files with `npx eslint` (targeted paths) to ensure clean results despite the repo-wide baseline failures.
 - 📝 Logged the lint posture and remediation details here so future runs can distinguish inherited violations from the freshly updated surfaces.
 
-### Progress Update (Nov 15, 2025 – Job Listings Timeout Mitigation)
+### Progress Update (Nov 15, 2025 - Job Listings Timeout Mitigation)
 - ✅ Added cursor `maxTimeMS` guard on the Mongo direct driver query powering `/api/jobs` so the service bails after 20 seconds instead of hanging the hirer dashboard.
 - ✅ Wrapped `countDocuments` in a conditional + hint-aware options with a 5-second cap, skipping the expensive total lookup when the current page already determines the bounds and falling back to a derived total on timeout.
 - ✅ Retained instrumentation logs but now include branch details (“skipping total lookup”, “count timed out fallback”) to clarify behaviour during future incident reviews.
 - 📝 Follow-up: re-run `/api/jobs` via LocalTunnel after indexes finish building to confirm latency stays under the dashboard watchdog threshold.
 
-### Progress Update (Nov 16, 2025 – Hirer Dashboard Overlay Regression)
+### Progress Update (Nov 16, 2025 - Hirer Dashboard Overlay Regression)
 - ✅ Added a hydration snapshot check that clears the blocking dashboard overlay as soon as cached jobs or profile data exist, so returning hirers see content immediately instead of a persistent dimmed screen.
 - ✅ Wired the guard to the existing timeout canceller to ensure manual refreshes and cached data both dismiss the overlay without waiting the full 10-second watchdog.
 - 📝 Pending: QA sanity check on `/hirer/dashboard` via Vercel to confirm the overlay no longer lingers after navigation or refresh.
 
-### Progress Update (Nov 16, 2025 – Worker Earnings Fallback Reliability)
+### Progress Update (Nov 16, 2025 - Worker Earnings Fallback Reliability)
 - ✅ Softened `/api/users/workers/:workerId/earnings` so missing worker profiles return synthesized lifetime totals instead of a 404 that bubbles up to the frontend error boundary.
 - ✅ Tagged every fallback branch with a `source` marker and expanded the payment service host checks so Render deployments without `PAYMENT_SERVICE_URL` respond gracefully with deterministic data.
 - 📝 Follow-up: Exercise the endpoint through LocalTunnel (with and without payment service availability) to capture the new `source` metadata in Spec-Kit verification notes.
 
-### Progress Update (Nov 16, 2025 – Messaging Service Lint Compliance)
+### Progress Update (Nov 16, 2025 - Messaging Service Lint Compliance)
 - ✅ Restored the Socket.IO authentication middleware after an earlier paste collision, ensuring `User.findById(...).select('firstName lastName email role isActive')` runs before room joins and reinstating `socket.userId` assignments.
 - ✅ Updated `handleMarkRead` to reuse the `updateResult.modifiedCount` inside the `messages_read` broadcast so the lint runner no longer flags unused variables while exposing read counts to listeners.
 - ✅ Cleaned ancillary utilities: removed redundant `/* global jest */` flag in `tests/setup.js`, ensured tracing/monitoring stubs return the passed `serviceName`, and made the virus scan helpers include buffer/filename metadata, eliminating the remaining `no-redeclare`/`no-unused-vars` violations.
 - ✅ `npm --prefix kelmah-backend/services/messaging-service run lint -- --fix` now exits 0, giving us a clean baseline before the next WebSocket validation pass.
 
-### Progress Update (Nov 16, 2025 – Proposal Review Restoration)
+### Progress Update (Nov 16, 2025 - Proposal Review Restoration)
 - ✅ Rebuilt `kelmah-frontend/src/modules/hirer/components/ProposalReview.jsx` after removing corrupted duplicates, adding guarded fetch logic with AbortController timeouts, retry backoff, and a 60s cache to stabilise proposal hydration.
 - ✅ Restored accept/reject flows with dialog-driven `PATCH` calls, refreshed statistics cards, table pagination summaries, and empty/loading states that surface actionable retry messaging instead of silent failures.
 - 📝 Documented the end-to-end data flow in `spec-kit/PROPOSAL_REVIEW_DATA_FLOW_NOV2025.md`; next step is `npm --prefix kelmah-frontend run build` to confirm bundler compatibility and verify backend support for the pending `PATCH /api/jobs/proposals/:id` route.
 
-### Progress Update (Nov 17, 2025 – Proposal Actions & Error UX)
+### Progress Update (Nov 17, 2025 - Proposal Actions & Error UX)
 - ✅ Hooked the new `useProposals` shared hook into `ProposalReview.jsx`, ensuring list hydration, manual refresh, and pagination all consume the same cached timeout-aware fetcher that now targets the existing `/api/jobs/proposals` endpoint (fixes the hirer dashboard 404).
 - ✅ Updated the proposal action handler to call the canonical job-service route (`PUT /api/jobs/:jobId/applications/:applicationId`), emit per-request snackbars, and invalidate the cache via `refresh()` so the grid immediately reflects accept/reject updates.
 - ✅ Added explicit empty vs. error fallback cards, consolidated `actionError` with the hook error, and exposed retry/force-refresh controls plus timestamp metadata so hirers see actionable guidance when timeouts occur.
 - ✅ Production build verified via `npm --prefix kelmah-frontend run build` (only the long-standing dynamic import + chunk-size warnings remain), confirming the refactor keeps the bundle healthy.
 
-### Progress Update (Nov 17, 2025 – Analytics Card Text Wrap)
+### Progress Update (Nov 17, 2025 - Analytics Card Text Wrap)
 - ✅ Updated `HirerJobManagement.jsx` analytics summary cards with responsive flex layouts, break-word typography, and stacked icon alignment on small screens so currency values like “GHS 125,000” plus the “Total Amount Spent” label no longer truncate when the dashboard grid collapses.
 - ✅ Applied the same responsive treatment to the remaining metric cards (jobs posted, applications, success rate) to keep typography legible across breakpoints without clipping.
 - 📝 No build rerun required—the change is purely presentational, but the status log captures the regression + remediation for future dashboard QA references.
 
-### Progress Update (Nov 17, 2025 – Messaging Virus Scan Utilities)
+### Progress Update (Nov 17, 2025 - Messaging Virus Scan Utilities)
 - ✅ Rebuilt `kelmah-backend/services/messaging-service/utils/virusScan.js` with a configurable strategy layer so we can toggle between CLAMD, HTTP-based scanners, or the stub fallback without touching call sites.
 - ✅ Added rich metadata capture (sha256, mime hints, S3 bucket/key context, timestamps) plus consistent response envelopes that downstream workers and controllers can log or persist.
 - ✅ Implemented optional S3 stream downloads (AWS SDK v3) gated by `ENABLE_S3_STREAM_SCAN=true`, allowing the worker to pull the object and reuse the buffer scanner when CLAMD is enabled, while HTTP scanners receive signed payload metadata instead.
 - 🔍 Smoke tested via `node -e "const scan=require('./kelmah-backend/services/messaging-service/utils/virusScan');(async()=>{console.log(await scan.scanBuffer(Buffer.from('hello'),'hello.txt'));console.log(await scan.scanS3Object('attachments/demo-file.pdf'));})();"` to ensure stub mode stays backwards compatible.
 
-### Progress Update (Nov 18, 2025 – Messaging Attachment Metadata Wiring)
+### Progress Update (Nov 18, 2025 - Messaging Attachment Metadata Wiring)
 - ✅ Added `utils/virusScanState.js` helpers that normalize each attachment’s `virusScan` payload, merge scanner verdicts, and preserve metadata/status history for auditing.
 - ✅ Updated message REST controller, Socket.IO send handlers, and attachment upload routes to run every attachment through the new initializer so Mongo documents now persist sha256/mime/S3 context immediately instead of waiting for a worker pass.
 - ✅ Virus scan worker now feeds `scanS3Object` richer context and merges the returned envelope, keeping attachments’ status history + metadata intact when scans complete.
 - 🔍 Verification: `node -e "const {ensureAttachmentScanState, mergeScanResult}=require('./kelmah-backend/services/messaging-service/utils/virusScanState');const attachment=ensureAttachmentScanState({fileName:'demo.pdf', mimeType:'application/pdf', size:1024,s3Key:'attachments/demo.pdf'});console.log('init', attachment.virusScan);mergeScanResult(attachment,{status:'clean',engine:'stub',details:'ok',metadata:{sha256:'abc'}});console.log('after', attachment.virusScan);"` confirms helpers behave as expected.
 
-### Progress Update (Nov 18, 2025 – Messaging Attachment Safety UX)
+### Progress Update (Nov 18, 2025 - Messaging Attachment Safety UX)
 - ✅ `MessageContext.jsx` now normalizes every inbound/outbound message via `normalizeAttachmentListVirusScan`, ensuring optimistic messages, REST fallbacks, and socket hydrations all ship the enriched `virusScan` metadata to the UI.
 - ✅ `MessageAttachments.jsx` surfaces the scanner verdict with Chip-based badges, blocks previews/downloads until files are marked `clean`, and tooltips infected/failed states so recipients understand why a file is unavailable.
 - ✅ Read-only transcript views pass `readonly` into `MessageAttachments`, while composer uploads retain removal controls but still show `Scanning…` chips until the worker updates the record.
 - 🛠️ Backfill strategy: keep using `scripts/backfill-virus-scan-metadata.js` per environment (run after deployments) so legacy attachments inherit the normalized envelope before the UI enforces download blocking.
 
-### Investigation (Nov 18, 2025 – Notification Socket Failures)
+### Investigation (Nov 18, 2025 - Notification Socket Failures)
 - 🔍 Reproduced the production error via `curl https://kelmah-api-gateway-nhxc.onrender.com/socket.io/?EIO=4\&transport=polling`, which returns `HTTP/1.1 404 Not Found` instead of proxying to the messaging service — confirming the gateway never forwards Socket.IO traffic right now.
 - 🔍 `curl https://kelmah-api-gateway-nhxc.onrender.com/api/notifications -H "Authorization: Bearer <token>"` also responds with a 404, and hitting the messaging service directly (`https://kelmah-message-service.onrender.com/health`, `/api/health`, `/api/notifications`) produces the same 404 body from Render/Cloudflare.
 - ⚠️ `/api/health/aggregate` currently lists the messaging service as `status: "unhealthy"` with `error: "Request failed with status code 404"`, so both the REST notifications proxy and the Socket.IO proxy fail because the upstream Render app is either down or not serving the expected Express server.
 - 📌 Root cause for the frontend socket error is therefore upstream availability — the API gateway’s `/socket.io` path exists, but it cannot reach a healthy messaging-service target, so every WebSocket attempt sees a 404 before the handshake completes.
 - ✅ Next actions recorded here so we can coordinate a messaging-service redeploy / health fix (proxy changes unnecessary until the Render instance responds 200 on `/health` and `/socket.io`).
 
-### Verification Attempt (Nov 18, 2025 – Messaging Redeploy Check)
+### Verification Attempt (Nov 18, 2025 - Messaging Redeploy Check)
 - 🔁 After the reported redeploy, re-ran: `curl https://kelmah-message-service.onrender.com/health`, `/api/health`, and `/api/notifications` — all still return the Render edge `HTTP/1.1 404 Not Found` body, indicating the service container is still unreachable.
 - 🔐 Logged in via `/api/auth/login`, then hit `/api/notifications` through the gateway; response remains 404 (request id `5fb37f47-a834-4133-a783-2d397b44b513`).
 - 🌐 Socket tests (`curl .../socket.io/?EIO=4&transport=polling` and `npx wscat -c wss://kelmah-api-gateway-nhxc.onrender.com/socket.io/?EIO=4&transport=websocket&token=<jwt>`) still return `Unexpected server response: 404`, confirming the gateway cannot upgrade connections yet.
 - 📊 `/api/health/aggregate` continues to flag both messaging and payment services as unhealthy (404), so gateway-side proxies remain blocked until the upstream hosts respond.
 - 📎 Findings documented here; no code changes required until the Render deployment begins answering 200 on `/health`.
 
-### Progress Update (Nov 18, 2025 – Socket Proxy Path Restoration)
+### Progress Update (Nov 18, 2025 - Socket Proxy Path Restoration)
 - 🔍 Dug further into the gateway responses by running `curl -i "https://kelmah-api-gateway-nhxc.onrender.com/socket.io/?EIO=4&transport=polling"` and a token-authenticated `node -e "const { io } = require('socket.io-client'); ..."` test. Both calls hit the API Gateway but still returned 404, even though the messaging service itself was healthy, which ruled out upstream downtime.
 - 🧠 Root cause: Express strips the mount path when using `app.use('/socket.io', handler)`, so the proxy forwarded requests to the messaging service as `/` instead of `/socket.io`. Engine.IO rejected the malformed path, and the gateway bubbled a 404, killing both the polling handshake and the websocket upgrade.
 - 🛠️ Fix: Updated `kelmah-backend/api-gateway/server.js` in `socketIoProxyHandler` to restore `req.url = req.originalUrl` before delegating to `http-proxy-middleware`. This keeps the `/socket.io` prefix intact for all HTTP polling hits while the existing `server.on('upgrade', ...)` path still covers native websocket upgrades.
 - 🧪 Verification plan: after the next Render deploy, re-run (1) `curl -i $GATEWAY/socket.io/?EIO=4&transport=polling` to confirm a 200 with Engine.IO payload, and (2) the `socket.io-client` script with the hirer JWT to ensure `connect` events fire. Document request IDs plus console logs in this log once deployment completes.
 - ⚠️ `npm --prefix kelmah-backend/api-gateway run lint` is unavailable (`Missing script: "lint"`), so no formatter run was possible; tracked in terminal log for follow-up when a lint script is added.
 
-### Progress Update (Nov 18, 2025 – Messaging Virus Scan UI Lint Cleanup)
+### Progress Update (Nov 18, 2025 - Messaging Virus Scan UI Lint Cleanup)
 - ✅ Added PropTypes enforcement to `MessageContext.jsx` and `MessageAttachments.jsx`, formatted the new virus-scan UI props per Prettier, and hardened the socket cleanup path with an explicit warning so eslint no longer flags empty `catch` blocks.
 - ✅ Narrowed `sendMessage` dependencies to the fields actually used and removed the unused `theme` argument from `ImageOverlay`, clearing the `react-hooks/exhaustive-deps` and `no-unused-vars` warnings introduced during the attachment safety pass.
 - ✅ Targeted verification via `npx eslint kelmah-frontend/src/modules/messaging/contexts/MessageContext.jsx kelmah-frontend/src/modules/messaging/components/common/MessageAttachments.jsx` now exits 0, keeping the messaging module lint-clean while the repo-wide legacy violations remain tracked separately.
 
-### Progress Update (Nov 18, 2025 – Notifications & Service Health Lint Hygiene)
+### Progress Update (Nov 18, 2025 - Notifications & Service Health Lint Hygiene)
 - ✅ Normalized line endings, added PropTypes, and restructured hook usage inside `kelmah-frontend/src/modules/notifications/components/NotificationItem.jsx` so eslint no longer reports `react-hooks` or CRLF-related Prettier failures. Verified via `npx eslint kelmah-frontend/src/modules/notifications/components/NotificationItem.jsx` after a Prettier write.
 - ✅ Updated `kelmah-frontend/src/utils/serviceHealthCheck.js` to drop the dynamic `import('../modules/common/services/axios')` warmup path in favor of a lightweight `fetch` + `AbortController`, eliminating the build-time warning about modules being both statically and dynamically imported.
 - ✅ Refreshed the Browserslist dataset with `npx update-browserslist-db@latest` so future Vite builds stop emitting the stale caniuse-lite reminder; no target browser shifts were detected.
 
-### Progress Update (Nov 17, 2025 – Login Illustration Indicator)
+### Progress Update (Nov 17, 2025 - Login Illustration Indicator)
 - ✅ Replaced the bare image array in `kelmah-frontend/src/modules/auth/components/common/AuthWrapper.jsx` with a metadata-driven `cartoonScenes` config so each rotating visual has a title and descriptive copy.
 - ✅ Added a Chip + caption overlay beneath the hero illustration (aria-live enabled) that announces whether the scene spotlights artisans or hirer planning, keeping users oriented when the artwork cycles.
 - ✅ Production build verified via `npm --prefix kelmah-frontend run build`; only the established dynamic import + chunk-size warnings surface, confirming the new overlay doesn’t introduce regressions.
 
-### Progress Update (Nov 16, 2025 – TDZ Runtime Guard)
+### Progress Update (Nov 16, 2025 - TDZ Runtime Guard)
 - ✅ Eliminated the remaining inline `await import()` calls that were mixing with static imports and triggering the production “Cannot access 'Y' before initialization” TDZ error. `JobCard.jsx` now imports `saveJobToServer`/`unsaveJobFromServer` statically from the jobs slice, so saving/unsaving doesn’t lazily reach into Redux at runtime.
 - ✅ Replaced `src/api/dynamic-importer.js` with static worker API imports while retaining the lightweight cache so future callers still get the same interface without bundler side‑effects.
 - ✅ `npm --prefix kelmah-frontend run build` now finishes successfully (only the longstanding chunk-size warnings remain), confirming the TDZ regression is addressed ahead of the next Vercel deploy.
 - 🔄 Follow-up (Nov 17, 2025): reordered the initial `/find-talents` URL parsing `useEffect` in `SearchPage.jsx` so it runs after `performSearch` is defined, removing the lingering TDZ reference the production bundle surfaced. Fresh `npm --prefix kelmah-frontend run build` completed successfully with the usual chunk-size warnings.
 
-### Progress Update (Nov 15, 2025 – Location Search Lint & UX Cleanup)
+### Progress Update (Nov 15, 2025 - Location Search Lint & UX Cleanup)
 - ✅ Refactored `kelmah-frontend/src/modules/search/components/LocationBasedSearch.jsx` to drop unused imports/state, add PropTypes, and control the Autocomplete input so eslint no longer reports unused React symbols or handlers.
 - ✅ Enhanced the UX while cleaning lint: memoized `loadNearbyLocations` with `useCallback`, added a manual search trigger + Enter key handling, surfaced API errors via snackbars, and wired the "Popular Locations" list to prefer live data from `locationService` when available.
 - ✅ Targeted verification via `npx eslint src/modules/search/components/LocationBasedSearch.jsx` now exits 0 (only the known npm workspace warning remains), confirming the component is lint-clean despite the broader repo debt.
 
-### Progress Update (Nov 15, 2025 – Search Page Lint Remediation)
+### Progress Update (Nov 15, 2025 - Search Page Lint Remediation)
 - ✅ Cleaned `kelmah-frontend/src/modules/search/pages/SearchPage.jsx` by removing legacy imports/state, memoizing `executeWorkerSearch`/`performSearch` with `useCallback`, and formatting the entire file via Prettier to align with repo standards.
 - ✅ Hardened the initial URL parsing effect to log JSON parse failures, always respect `/find-talents` vs `/search` routing, and rely on the memoized `performSearch`, eliminating the prior hook dependency warnings.
 - ✅ Verified the page with `npx eslint src/modules/search/pages/SearchPage.jsx`, which now passes cleanly (aside from the known npm workspace warning), keeping the lint backlog moving in the search module.
 
-### Progress Update (Nov 15, 2025 – Worker Search Results Lint & UX Pass)
+### Progress Update (Nov 15, 2025 - Worker Search Results Lint & UX Pass)
 - ✅ Updated `kelmah-frontend/src/modules/search/components/results/WorkerSearchResults.jsx` to drop the unused default React import, add PropTypes, and expose the map toggle button whenever `onToggleView` is provided so eslint no longer flags constant boolean expressions.
 - ✅ Prettier pass cleaned the legacy inline formatting in the empty-state card, and `npx eslint src/modules/search/components/results/WorkerSearchResults.jsx` now exits 0 (aside from the known npm workspace warning).
 
-### Progress Update (Nov 14, 2025 – Hirer Payments Reliability)
+### Progress Update (Nov 14, 2025 - Hirer Payments Reliability)
 - ✅ `PaymentRelease.jsx` now enforces a 60s TTL cache, 8s timeout watchdog, and a three-attempt exponential backoff loop so the Payments tab never stays in a stuck loading state.
 - ✅ Added persistent refresh controls (timestamp, button with spinner) plus contextual alerts that distinguish API failures from timeout slowdowns, giving hirers actionable feedback instead of silent spinners.
 - ✅ Behind the scenes, `fetchPaymentSummary` continues to stitch wallet, escrow, and transaction data, but foreground UI now keeps previously fetched totals visible while background refreshes stream in via `LinearProgress`.
 - 📝 Documented the end-to-end flow, UI states, and verification steps in `spec-kit/HIRER_PAYMENTS_DATA_FLOW_NOV2025.md`.
 
-### Progress Update (Nov 11, 2025 – Smart Recommendations)
+### Progress Update (Nov 11, 2025 - Smart Recommendations)
 - ✅ Rewired frontend smart recommendations service to call `/api/jobs/recommendations/worker` through the gateway, matching job-service routing.
 - ✅ Upgraded job-service `getJobRecommendations` controller to transform payloads for the frontend, attach AI insight summary, and respect optional breakdown/reasons flags.
 - ✅ Guarded frontend `SmartJobRecommendations.jsx` to show role-specific messaging (worker-only) and friendly empty states instead of error banners.
 - ✅ Added memoized saved job tracking + graceful handling for unauthenticated users; prevents undefined setter exceptions raised in QA logs.
 - 📝 Spec-kit data-flow addendum drafted (see `SMART_JOB_RECOMMENDATIONS_DATA_FLOW_NOV2025.md`).
 
-### Progress Update (Nov 12, 2025 – UI Page Title & Placeholder Audit)
+### Progress Update (Nov 12, 2025 - UI Page Title & Placeholder Audit)
 - ✅ Replaced the placeholder `SEO` helper with a Helmet-based metadata wrapper that sets titles/descriptions without leaking UI labels.
 - ✅ Wired `MessagingPage.jsx` into the shared `SEO` component so `/messages` now loads with the correct "Messages | Kelmah" browser title.
 - 📝 Logged the updated flow in `spec-kit/MESSAGING_PAGE_SEO_DATA_FLOW_NOV2025.md` and verified `npm run build` succeeds after the changes.
 
-### Progress Update (Nov 12, 2025 – Navigation Visibility & Empty States)
+### Progress Update (Nov 12, 2025 - Navigation Visibility & Empty States)
 - ✅ Smart navigation card now appears instantly on desktop dashboards, messaging, search, and job hubs without waiting for the legacy timer; also hides itself when routes fall outside the eligible set.
 - ✅ Worker search empty state upgraded with actionable tips, reset button, and a jobs shortcut so QA no longer sees the stark "No workers found" placeholder.
 - 📝 Added `spec-kit/SMART_NAVIGATION_VISIBILITY_FLOW_NOV2025.md` and `spec-kit/WORKER_SEARCH_RESULTS_EMPTY_STATE_DATA_FLOW_NOV2025.md` covering the new UI flows and verification steps.
 
-### Progress Update (Nov 12, 2025 – Hirer Credentials 400 Regression)
+### Progress Update (Nov 12, 2025 - Hirer Credentials 400 Regression)
 - ✅ Root cause traced to `/api/users/me/credentials` bypassing `verifyGatewayRequest`, so the user-service never received `req.user` and returned 400.
 - ✅ Added the gateway verification middleware to both `/me/availability` and `/me/credentials` so personal endpoints always hydrate `req.user` before hitting controllers.
 - 🔍 Verification pending: rerun `/api/users/me/credentials` via Vercel once deployment completes to confirm 200 payload.
 
-### Progress Update (Nov 12, 2025 – API Best Practices Enforcement)
+### Progress Update (Nov 12, 2025 - API Best Practices Enforcement)
 - ✅ Added comprehensive **API Routing & Design Best Practices** section to copilot instructions (`.github/copilot-instructions.md`).
 - ✅ Enforces professional REST standards: resource naming, HTTP methods, route ordering, middleware patterns, response structures, status codes, and gateway routing.
 - ✅ Includes mandatory checklist for all API routing fixes to prevent regressions like route shadowing and missing authentication middleware.
 - 📝 Updated documentation header to reflect professional API standards enforcement as of November 11, 2025.
 
-### Progress Update (Nov 11, 2025 – Hirer UI/UX Enhancements)
+### Progress Update (Nov 11, 2025 - Hirer UI/UX Enhancements)
 - ✅ Dashboard loading screen now shows skeleton metrics, clearer copy (“Fetching your jobs, applications, and recent activity…”) and retains the timeout warning for slow responses.
 - ✅ New hirer onboarding card surfaces “Post Your First Job” and “Find Talented Workers” CTAs whenever activity metrics are empty.
 - ✅ Quick Navigation panel slides in, includes pin/dismiss controls with tooltip guidance, and remembers user preference per session.
@@ -21205,7 +22254,7 @@ Full details in `spec-kit/KELMAH_HYBRID_MODEL_SPECIFICATION.md`
 - ✅ Page titles standardized (`Dashboard | Kelmah`, `Manage Jobs | Kelmah`, `Applications | Kelmah`, `Find Talent | Kelmah`) to align with SEO plan.
 - 🧪 `npm --prefix kelmah-frontend run build` passed locally after UI updates.
 
-## Current Work: September 2025 – Critical Dashboard Production Fixes ✅ DEPLOYED
+## Current Work: September 2025 - Critical Dashboard Production Fixes ✅ DEPLOYED
 
 - **Status:** ✅ COMPLETED AND DEPLOYED TO PRODUCTION
 - **Commits:** 
@@ -21287,7 +22336,7 @@ state.profile = action.payload?.data || action.payload || null;
 
 ---
 
-## In Progress: November 11, 2025 – Dashboard/Profile/Find Talent Reliability 🔄
+## In Progress: November 11, 2025 - Dashboard/Profile/Find Talent Reliability 🔄
 
 - **Status:** 🔄 Investigating dashboard reliability and completing reducer hardening.
 - **Latest Work (Nov 11, 2025):**
@@ -21315,7 +22364,7 @@ state.profile = action.payload?.data || action.payload || null;
 - **Progress Update (Nov 10, 2025):** Refactored `kelmah-frontend/src/modules/worker/services/workerService.js` to route all worker discovery and bookmarking calls through `API_ENDPOINTS.USER.WORKERS`/`workerPath(...)`, eliminating lingering `/api` duplication and aligning the Find Talent flow with the gateway helpers introduced earlier today.
 - **Progress Update (Nov 10, 2025):** Resolved production login 404 by switching `kelmah-frontend/src/modules/auth/services/authService.js` to consume `API_ENDPOINTS.AUTH.*`, ensuring every auth request hits `/api/auth/*` when the axios base URL is the Render gateway host.
 
-## Last Updated: November 7, 2025 – Worker Profile Route Guard ✅
+## Last Updated: November 7, 2025 - Worker Profile Route Guard ✅
 
 - **Status:** ✅ Worker profile navigation now respects route transitions; SearchPage no longer overrides `/worker-profile/:workerId`.
 - **Context:** QA still saw the worker list after clicking “View Profile.” `SearchPage.updateSearchURL` continued running post-navigation and forced a silent redirect back to `/find-talents`.
@@ -21323,9 +22372,9 @@ state.profile = action.payload?.data || action.payload || null;
   - Added a search-route guard inside `kelmah-frontend/src/modules/search/pages/SearchPage.jsx` so URL sync aborts once the user leaves `/find-talents`/`/search`.
   - Avoid redundant replaces by comparing the current query string before navigating, preventing route flicker.
   - Documented the regression and fix path here and in `WORKER_SEARCH_FIXES_NOV2025.md`.
-- **Verification:** Manual navigation reasoning – URL stays on `/worker-profile/:id` and the profile view renders without being replaced by the search grid.
+- **Verification:** Manual navigation reasoning - URL stays on `/worker-profile/:id` and the profile view renders without being replaced by the search grid.
 
-## Previous Update: November 7, 2025 – Search Suggestions Endpoint Build ✅
+## Previous Update: November 7, 2025 - Search Suggestions Endpoint Build ✅
 
 - **Status:** ✅ `/api/search/suggestions` implemented to unblock autosuggest requests from `SearchPage.jsx`.
 - **Context:** Frontend debounced fetch hit `/api/search/suggestions`, but the job-service lacked a handler, returning 404 via gateway. Autosuggest UI hid results and logged errors.
@@ -21336,7 +22385,7 @@ state.profile = action.payload?.data || action.payload || null;
   - Updated spec-kit with verification steps and curl regression plan once endpoint responds 200.
 - **Verification:** curl `/api/search/suggestions?q=elec` via LocalTunnel returns `{ success, data: [...] }`; frontend autosuggest now populates results.
 
-## Previous Update: November 7, 2025 – Worker Profile Layout Routing Fixed ✅
+## Previous Update: November 7, 2025 - Worker Profile Layout Routing Fixed ✅
 
 - **Status:** ✅ Public worker profile pages now render with the correct public layout instead of the dashboard shell.
 - **Context:** `Layout.jsx` classified every `/worker*` route as a dashboard page, so `/worker-profile/:id` loaded the dashboard sidebar and suppressed the dedicated `WorkerProfile` view.
@@ -21346,9 +22395,9 @@ state.profile = action.payload?.data || action.payload || null;
   - Reviewed surrounding layout conditions to confirm hirer/worker dashboard routes remain unaffected.
 - **Verification:** Manual route check confirms navigating from Find Workers → “View Profile” now renders the full profile experience without dashboard chrome. Desktop/mobile layouts both respect the public variant.
 
-## Previous Update: November 7, 2025 – Workers Endpoint 404 Fixed ✅
+## Previous Update: November 7, 2025 - Workers Endpoint 404 Fixed ✅
 
-- **Status:** ✅ Worker search endpoint 404 error RESOLVED – Vercel proxy configuration corrected
+- **Status:** ✅ Worker search endpoint 404 error RESOLVED - Vercel proxy configuration corrected
 - **Context:** Frontend worker search was calling `/workers` instead of `/api/workers`, resulting in 404 errors. Root cause was outdated Vercel rewrite configuration pointing to wrong Render service URL.
 - **Work Completed (November 7, 2025):**
   - **Root Cause Identified:** Three-part issue:
@@ -21366,7 +22415,7 @@ state.profile = action.payload?.data || action.payload || null;
   - Awaiting Vercel deployment completion for frontend verification
 - **Impact:** Worker search functionality will be restored after deployment completes (~1-2 minutes)
 
-## Previous Update: November 7, 2025 – Render Keep-Alive Hardening ✅
+## Previous Update: November 7, 2025 - Render Keep-Alive Hardening ✅
 
 - **Status:** ✅ Keep-alive scheduler upgraded with retries, broader endpoint coverage, and longer tolerance windows to better handle Render cold starts and throttling.
 - **Context:** Initial heartbeat implementation still produced 502s whenever Render services needed >5s to wake or ignored `/health`. We expanded the scheduler to probe multiple readiness endpoints with retry backoff so dynos stay warm even during heavier restarts.
@@ -21378,7 +22427,7 @@ state.profile = action.payload?.data || action.payload || null;
   - Updated `spec-kit/RENDER_KEEP_ALIVE_SCHEDULER.md` to document the enhanced behaviour and configuration surface.
 - **Verification:** Local smoke run via `node -e "require('./kelmah-backend/api-gateway/utils/serviceKeepAlive');"` confirmed no runtime errors. Pending Render deploy log review for `Keep-alive recovered`/`Keep-alive tick complete` telemetry after idle windows.
 
-## Previous Update: November 7, 2025 – Worker Profile Public Page Build 🔄
+## Previous Update: November 7, 2025 - Worker Profile Public Page Build 🔄
 
 - **Status:** 🔄 Implementing public worker profile route so `/worker-profile/:workerId` renders dedicated profile content instead of the worker list fallback.
 - **Context:** Navigation from “View Profile” updates the URL correctly, but the page continues to show the search results grid because no public WorkerProfile page is wired up.
@@ -21389,9 +22438,9 @@ state.profile = action.payload?.data || action.payload || null;
   - Restore `reviewService` coverage so WorkerProfile and ReviewSystem can reach review/rating endpoints without crashing the page load.
 - **Verification Plan:** Manual run through the `/worker-profile/:id` route, confirm Helmet title change, inspect API responses, ensure fallback and error handling cover inactive/missing workers.
 
-## Previous Update: November 7, 2025 – Worker Profile Enrichment In Progress 🔄
+## Previous Update: November 7, 2025 - Worker Profile Enrichment In Progress 🔄
 
-- **Status:** 🔄 Follow-up improvements underway – enriching worker payload, adding targeted tests, and updating documentation.
+- **Status:** 🔄 Follow-up improvements underway - enriching worker payload, adding targeted tests, and updating documentation.
 - **Context:** After stabilizing `GET /api/users/workers/:id`, the response still omits WorkerProfile details (portfolio, certifications, availability), lacks explicit inactive-user guards, and has no automated coverage.
 - **Current Work (November 7, 2025):**
   - Expand controller merge logic to surface WorkerProfile fields (portfolio entries, certifications, availability schedule, stats).
@@ -21400,9 +22449,9 @@ state.profile = action.payload?.data || action.payload || null;
   - Document changes across `STATUS_LOG.md` and related spec-kit notes once complete.
 - **Verification Plan:** New supertest suite, manual curl regression via LocalTunnel, confirm frontend renders enriched data without regressions.
 
-## Previous Update: November 7, 2025 – Worker Profile Operational + Auth Error Resolved ✅
+## Previous Update: November 7, 2025 - Worker Profile Operational + Auth Error Resolved ✅
 
-- **Status:** ✅ BOTH ISSUES RESOLVED – Worker profile endpoint live; Auth "errors" identified as Render cold start (NOT a bug).
+- **Status:** ✅ BOTH ISSUES RESOLVED - Worker profile endpoint live; Auth "errors" identified as Render cold start (NOT a bug).
 - **Context:** Worker profile navigation broken (404s); Console showed 401/502 auth errors after login - both investigated and resolved.
 
 ### Issue 1: Worker Profile Endpoint ✅ FIXED
@@ -21449,9 +22498,9 @@ state.profile = action.payload?.data || action.payload || null;
 
 **Next Priority:** Frontend enhancements or new feature development (no critical bugs remaining)
 
-## Last Updated: November 7, 2025 – Worker Search Experience Stabilized ✅
+## Last Updated: November 7, 2025 - Worker Search Experience Stabilized ✅
 
-- **Status:** ✅ DEPLOYMENT-READY – Worker discovery now respects trade, location, keyword, and sort selections without redirect regressions.
+- **Status:** ✅ DEPLOYMENT-READY - Worker discovery now respects trade, location, keyword, and sort selections without redirect regressions.
 - **Context:** Regression report highlighted 7 critical issues (#1, #3, #4, #10, #11, #12, #13) on `/search` → filters ignored, keyword search idle, sort resets, profile links redirecting home, and “Clear filters” jumping to `/`.
 - **Root Causes:** Legacy SearchPage.jsx still posted obsolete query params (`workNeeded`, `where`, `trade`) and lacked normalization, the desktop `JobSearchForm` never fired because `onSearch` was not wired to its `onSubmit` prop, and WorkerCard kept routing to `/workers/:id`, hitting the wildcard redirect.
 - **Fixes Implemented:**
@@ -21469,7 +22518,7 @@ state.profile = action.payload?.data || action.payload || null;
 
 ## Last Updated: December 23, 2024 - Jobs Section UI/UX Enhancements Complete ✅
 
-### 🎨 December 23, 2024 – Jobs Section Comprehensive Audit & Enhancement (Phase 4: Animated Stats)
+### 🎨 December 23, 2024 - Jobs Section Comprehensive Audit & Enhancement (Phase 4: Animated Stats)
 
 - **Status:** ✅ COMPLETE - Platform statistics now feature smooth CountUp animations
 - **Context:** User requested animated platform stats for modern, engaging effect as part of comprehensive jobs section improvements
@@ -21511,7 +22560,7 @@ state.profile = action.payload?.data || action.payload || null;
 
 ## Last Updated: October 15, 2025 - Microservices Model Refactoring Complete ✅
 
-### 🏗️ October 15, 2025 – Microservices Best Practices Model Architecture Complete
+### 🏗️ October 15, 2025 - Microservices Best Practices Model Architecture Complete
 
 - **Status:** ✅ COMPLETE - All service-specific models moved to local services
 - **Context:** User questioned Portfolio model placement in shared folder. Comprehensive audit revealed 6 service-specific models incorrectly placed in shared folder, violating microservices best practices.
@@ -21544,7 +22593,7 @@ state.profile = action.payload?.data || action.payload || null;
 
 ## Last Updated: October 15, 2025 - Final /api/ Duplication Cleanup ✅
 
-### 🔥 October 15, 2025 – Eliminated ALL Remaining /api/api/* Duplications
+### 🔥 October 15, 2025 - Eliminated ALL Remaining /api/api/* Duplications
 
 - **Status:** ✅ COMPLETE - Zero `/api/api/*` patterns remaining in codebase
 - **Context:** Despite October 13 fixes, production console (`Consolerrorsfix.txt`) still showed `GET /api/api/health 404` errors. Deep investigation revealed additional service files with hardcoded `/api/` prefixes that were missed in the initial sweep.
@@ -21575,7 +22624,7 @@ state.profile = action.payload?.data || action.payload || null;
 
 ## Last Updated: October 13, 2025 - Double /api/ Prefix Fix Complete ✅
 
-### 🔥 October 13, 2025 – Systemic Double /api/ Prefix Bug Fixed
+### 🔥 October 13, 2025 - Systemic Double /api/ Prefix Bug Fixed
 
 - **Status:** ✅ CRITICAL FIX COMPLETE - All 404 errors resolved
 - **Context:** Production console showed repeating 404 errors: `GET /api/api/health 404`, `POST /api/login 404`, `GET /api/api/workers 404`. Root cause analysis revealed that service clients have `baseURL: '/api'` but code was calling endpoints with `/api/auth/login`, `/api/jobs`, etc., creating duplicate paths like `/api/api/auth/login` → 404.
@@ -21631,7 +22680,7 @@ state.profile = action.payload?.data || action.payload || null;
 
 ## Last Updated: October 11, 2025 - Double-Faced Backend Connection Restored ✅
 
-### ✅ October 11, 2025 – Double-Faced Backend Connection Logic Restored
+### ✅ October 11, 2025 - Double-Faced Backend Connection Logic Restored
 
 - **Status:** ✅ Restored documented "double-faced" connection architecture using absolute URLs in runtime-config.json
 - **Context:** While fixing `/api` prefix stripping, incorrectly changed runtime-config.json to use relative URLs (`"/api"`), breaking the documented architecture that supports both LocalTunnel and Render backends through absolute URL configuration.
@@ -21670,7 +22719,7 @@ state.profile = action.payload?.data || action.payload || null;
 
 ## Last Updated: October 10, 2025 - Worker Dashboard Resilience Pass ✅
 
-### 🛠️ October 10, 2025 – Worker Dashboard Resilience Pass
+### 🛠️ October 10, 2025 - Worker Dashboard Resilience Pass
 
 - **Status:** ✅ Completed targeted backend and frontend hardening for worker dashboard availability, recent jobs, and notifications.
 - **Context:** Continued console traces showed intermittent 500s on availability, 401s on recent jobs after Render redeploys, and WebSocket handshake failures when runtime config lagged behind the active tunnel. Investigation confirmed controllers still assumed perfect gateway headers and socket clients retried against stale hosts when `/runtime-config.json` was unreachable.
@@ -21693,7 +22742,7 @@ state.profile = action.payload?.data || action.payload || null;
 
 ## Last Updated: October 9, 2025 - Console Error Trace Audit Logged ✅
 
-### 🧾 October 9, 2025 – Console Error Trace Audit Logged
+### 🧾 October 9, 2025 - Console Error Trace Audit Logged
 
 - **Status:** ✅ Documented the active worker dashboard console errors and mapped the full frontend → gateway → service → database chains.
 - **Context:** Consolidated the repeated 500s/401s/WebSocket closures recorded during worker dashboard warm-up into a single trace document for downstream debugging and service verification.
@@ -21705,7 +22754,7 @@ state.profile = action.payload?.data || action.payload || null;
   - Monitor gateway logs once job-service `/worker/recent` endpoint ships to retire the mock data pathway.
   - Re-validate Socket.IO handshake once the runtime LocalTunnel URL rotates again to ensure secure storage continues to supply tokens.
 
-### 🔐 October 9, 2025 – Worker Recent Jobs Authentication Fix
+### 🔐 October 9, 2025 - Worker Recent Jobs Authentication Fix
 
 - **Status:** ✅ Patched the user-service route so recent jobs inherit authenticated user context from the API Gateway.
 - **Context:** Worker dashboard continued to log `401 Unauthorized` responses for `/api/users/workers/jobs/recent`. The controller expects `req.user` (populated via `verifyGatewayRequest`), but the route never invoked that middleware, so requests arriving from the gateway dropped the authenticated user payload before reaching the controller.
@@ -21715,7 +22764,7 @@ state.profile = action.payload?.data || action.payload || null;
 - **Verification:** Static analysis; confirmed controller now receives `req.user` via shared gateway headers and will bypass the 401 branch. Awaiting next production warm-up to observe 200 responses (with live or fallback data) in console traces.
 - **Follow-Up:** After deployment, monitor dashboard logs to confirm the 401s disappear. Next, continue with websocket/rate-limit review to stabilize notification polling.
 
-### 🛡️ October 9, 2025 – Dashboard Cold-Start Resilience & Notifications Stabilization
+### 🛡️ October 9, 2025 - Dashboard Cold-Start Resilience & Notifications Stabilization
 
 - **Status:** ✅ Dashboard widgets and notifications now degrade gracefully during Mongo cold starts and messaging bursts.
 - **Context:** Render cold boots still produced 500s on `/availability` and `/completeness` despite fallback builders; the controllers waited on `ensureConnection`, which timed out before returning the fallback. Concurrently, Socket.IO failed to authenticate because the client sent `token: null`, and notification polling tripped 429s because the rate limiter bucketed by shared Render IPs.
@@ -21725,7 +22774,7 @@ state.profile = action.payload?.data || action.payload || null;
   - Reworked the messaging-service notification rate limiter to key on the authenticated user (with gateway header fallback) rather than raw IP + email, eliminating false-positive 429s for legitimate dashboard polling.
 - **Verification:** Static analysis; checked console trace documentation and ensured gateway/messaging headers continue to propagate user context for the new limiter key. Pending live verification during the next Render cold start.
 
-### 🛡️ October 9, 2025 – Worker Dashboard DB Fallbacks (Profile & Availability)
+### 🛡️ October 9, 2025 - Worker Dashboard DB Fallbacks (Profile & Availability)
 
 - **Status:** ✅ Implemented graceful fallback responses for `/workers/:id/completeness` and `/workers/:id/availability` when MongoDB is still warming up on Render.
 - **Context:** Console traces showed 500s persisting in production even though local code was patched. Render cold starts continue to throw connection timeout errors before Mongoose models finish hydrating, causing the controllers to bubble 500s back to the dashboard.
@@ -21736,7 +22785,7 @@ state.profile = action.payload?.data || action.payload || null;
 - **Verification:** Code review; awaiting next Render deploy to confirm cold-start requests now produce fallback payloads (HTTP 200) instead of 500s. Frontend already tolerates the normalized structures.
 - **Follow-Up:** After redeploy, monitor Render logs to confirm `fallback: true` responses appear only during cold starts. Once confirmed, consider surfacing a lightweight banner in the UI when fallback data is delivered.
 
-### 🔌 October 9, 2025 – WebSocket Fallback URL Fix & Availability Verification
+### 🔌 October 9, 2025 - WebSocket Fallback URL Fix & Availability Verification
 
 - **Status:** ✅ Fixed hardcoded WebSocket fallback URL; confirmed availability endpoint was already resolved in prior session.
 - **Context:** Console error audit revealed the notification service still used an outdated `kelmah-api-gateway-5loa.onrender.com` fallback URL while runtime-config pointed to `kelmah-api-gateway-qlyk.onrender.com`. This mismatch caused unnecessary reconnection attempts and confusion when the runtime config couldn't be loaded. Additionally, the availability endpoint 500 error was listed in the report but investigation confirmed it was already fixed in an earlier October 9 session.
@@ -21752,7 +22801,7 @@ state.profile = action.payload?.data || action.payload || null;
 
 ## Last Updated: October 9, 2025 - Dashboard Metrics & Job Feed Hardened ✅
 
-### 📈 October 9, 2025 – Dashboard Metrics & Job Feed Resilience
+### 📈 October 9, 2025 - Dashboard Metrics & Job Feed Resilience
 
 - **Status:** ✅ Fixes deployed for `/api/users/dashboard/metrics` (user-service) and `/api/jobs/dashboard` (job-service).
 - **Context:** Worker dashboard still triggered 500s when loading metrics and job cards. The metrics handler queried shared models before the connection/model registry was fully ready, and unexpected job-service failures bubbled up as uncaught errors. The job-service dashboard endpoint relied on synchronous `Job.find`/`countDocuments` calls without guarding connection readiness, so cold starts or model registration races produced 500s instead of graceful fallbacks.
@@ -21767,7 +22816,7 @@ state.profile = action.payload?.data || action.payload || null;
 
 ## Last Updated: October 9, 2025 - Profile Completion & Analytics Hardened ✅
 
-### 📊 October 9, 2025 – User-Service Profile Completion & Analytics Hardening
+### 📊 October 9, 2025 - User-Service Profile Completion & Analytics Hardening
 
 - **Status:** ✅ Fixes implemented in `services/user-service/controllers/worker.controller.js` and `services/user-service/controllers/user.controller.js`.
 - **Context:** Worker dashboard continued to register 500s when loading profile completeness and analytics. Controllers assumed models were immediately available after service boot and dereferenced optional profile arrays without null guards, leading to crashes when Render instances were cold or worker documents lacked optional fields. Analytics also chained several sequential queries and axios calls without guarding against initialization races or remote job-service failures.
@@ -21780,7 +22829,7 @@ state.profile = action.payload?.data || action.payload || null;
   - Align `getDashboardMetrics` with the hardened analytics pattern and verify Render `JOB_SERVICE_URL` points to the deployed job service to replace fallback counts.
   - Monitor Render logs for successful `GET /workers/:id/completeness` and `/dashboard/analytics` responses in production.
 
-### 🔧 October 9, 2025 – Worker Availability Endpoint Patch
+### 🔧 October 9, 2025 - Worker Availability Endpoint Patch
 
 - **Status:** ✅ Fix implemented in `services/user-service/controllers/worker.controller.js`.
 - **Context:** Worker dashboard availability widget triggered 500s because the controller queried `{ userId: ... }` against the consolidated `Availability` model that stores the reference in the `user` field. The controller also assumed a legacy `schedule` shape and skipped the connection readiness guard, leaving requests vulnerable to null dereferences and connection buffering errors.
@@ -21791,7 +22840,7 @@ state.profile = action.payload?.data || action.payload || null;
 - **Verification:** `npm test` (user-service) → prints "Tests not implemented yet" (current baseline). Manual inspection confirms the response payload now aligns with the consolidated schema.
 - **Follow-Up:** Monitor Render logs for successful `GET /workers/:id/availability` responses and backfill any existing availability documents missing `daySlots` data if UI needs richer scheduling.
 
-### 🔍 October 9, 2025 – Worker Dashboard Console Errors Triage
+### 🔍 October 9, 2025 - Worker Dashboard Console Errors Triage
 
 - **Status:** ✅ Documentation captured in `Consolerrorsfix.txt` (worker dashboard console trace).
 - **Context:** Multiple 500s surfaced on worker dashboard load for availability, completeness, analytics, and job metrics, plus a WebSocket handshake failure and a 401 on recent jobs.
@@ -22569,7 +23618,7 @@ Debug logs will reveal:
 
 ### ✅ Render Gateway Alignment Verification (kelmah-api-gateway-5loa)
 
-**Status:** Completed – configuration audit & documentation refresh
+**Status:** Completed - configuration audit & documentation refresh
 
 - Confirmed API Gateway service discovery resolves the messaging service using Render cloud URLs and keeps auth header forwarding enabled for `/api/notifications`, `/api/conversations`, and Socket.IO proxies.
 - Updated the messaging React context WebSocket fallback to `https://kelmah-api-gateway-5loa.onrender.com` so production clients connect to the new gateway when runtime config is unavailable.
@@ -24220,7 +25269,7 @@ WalletPage, PaymentsPage, PaymentSettingsPage, NotificationsPage, NotificationSe
 
 ---
 
-## ? COMPLETED � JobDetailsPage Full UI/UX Redesign
+## COMPLETED: JobDetailsPage Full UI/UX Redesign
 
 **Commit:** `87eb579`
 **Date:** 2025-11
@@ -24233,8 +25282,8 @@ Full visual and structural redesign of `kelmah-frontend/src/modules/jobs/pages/J
 
 | Area | Before | After |
 |------|--------|-------|
-| Container width | `maxWidth="lg"` | `maxWidth="xl"` � full screen use |
-| Grid breakpoints | `md={8}` + `md={4}` | `lg={8}` + `lg={4}` � proper 2-col at 1200px+ |
+| Container width | `maxWidth="lg"` | `maxWidth="xl"` full screen use |
+| Grid breakpoints | `md={8}` + `md={4}` | `lg={8}` + `lg={4}` proper 2-col at 1200px+ |
 | Title styling | Gradient text-fill (unreadable on dark bg) | Solid text.primary, fontWeight 800 |
 | Header layout | Title buried inside body card | Separate full-width Hero Paper above grid |
 | Meta info row | Plain text string | Styled MetaPill components (icon + label) |
@@ -24246,8 +25295,8 @@ Full visual and structural redesign of `kelmah-frontend/src/modules/jobs/pages/J
 | Budget display | Inline logic scattered | Extracted budgetDisplay computed variable |
 
 ### New Micro-Components Added (inline)
-- SectionHeading � icon + bold title for every card section
-- MetaPill � pill badge for meta row (location, budget, deadline, applicants)
+- SectionHeading icon + bold title for every card section
+- MetaPill pill badge for meta row (location, budget, deadline, applicants)
 
 ### All Actions Verified Working
 - Apply / Bid Now ? /jobs/id/apply

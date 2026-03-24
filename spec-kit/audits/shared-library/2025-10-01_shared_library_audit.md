@@ -1,4 +1,4 @@
-# Shared Library Sector Dry Audit – October 1, 2025
+# Shared Library Sector Dry Audit - October 1, 2025
 
 ## Overview
 - **Scope:** Backend shared resource layer (`kelmah-backend/shared/`) serving as the single source of truth for models, middlewares, and utilities across all microservices.

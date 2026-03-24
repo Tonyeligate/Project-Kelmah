@@ -1,5 +1,5 @@
 ﻿import React, { useMemo, useState } from 'react';
-import { Box, Dialog, DialogContent, DialogTitle, IconButton, ImageList, ImageListItem, ImageListItemBar, Typography, Chip, Stack, useTheme, Fade, Backdrop } from '@mui/material';
+import { Box, ButtonBase, Dialog, DialogContent, DialogTitle, IconButton, ImageList, ImageListItem, ImageListItemBar, Typography, Chip, Stack, useTheme, Fade, Backdrop } from '@mui/material';
 import {
   Close as CloseIcon,
   ZoomIn as ZoomInIcon,
@@ -380,34 +380,29 @@ const ProjectGallery = ({
                       opacity: 1,
                     },
                   }}
-                  onClick={() => {
-                    setCurrentIndex(index);
-                    setImageLoaded(false);
-                  }}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter' || event.key === ' ') {
-                      event.preventDefault();
+                >
+                  <ButtonBase
+                    onClick={() => {
                       setCurrentIndex(index);
                       setImageLoaded(false);
-                    }
-                  }}
-                  tabIndex={0}
-                  role="button"
-                  aria-label={`Open gallery image ${index + 1}`}
-                >
-                  <img
-                    src={image}
-                    alt={`Thumbnail ${index + 1}`}
-                    loading="lazy"
-                    decoding="async"
-                    width="60"
-                    height="40"
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
                     }}
-                  />
+                    aria-label={`Open gallery image ${index + 1}`}
+                    sx={{ width: '100%', height: '100%' }}
+                  >
+                    <img
+                      src={image}
+                      alt={`Thumbnail ${index + 1}`}
+                      loading="lazy"
+                      decoding="async"
+                      width="60"
+                      height="40"
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                      }}
+                    />
+                  </ButtonBase>
                 </ImageListItem>
               ))}
             </ImageList>
@@ -427,32 +422,35 @@ const ProjectGallery = ({
             }}
           >
             {galleryImages.map((image, index) => (
-              <Box
+              <ButtonBase
                 key={`${image || 'dot'}-${index}`}
                 onClick={() => {
                   setCurrentIndex(index);
                   setImageLoaded(false);
                 }}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault();
-                    setCurrentIndex(index);
-                    setImageLoaded(false);
-                  }
-                }}
-                tabIndex={0}
-                role="button"
                 aria-label={`Open gallery image ${index + 1}`}
                 sx={{
-                  width: 8,
-                  height: 8,
+                  width: 16,
+                  height: 16,
                   borderRadius: '50%',
-                  backgroundColor:
-                    index === currentIndex
-                      ? 'white'
-                      : 'rgba(255, 255, 255, 0.4)',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
+                  minWidth: 16,
+                  minHeight: 16,
+                  p: 0,
+                  backgroundColor: 'transparent',
+                  transition: 'transform 0.2s ease',
+                  '&::before': {
+                    content: '""',
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    backgroundColor:
+                      index === currentIndex
+                        ? 'white'
+                        : 'rgba(255, 255, 255, 0.4)',
+                  },
+                  '&:hover': {
+                    transform: 'scale(1.15)',
+                  },
                 }}
               />
             ))}

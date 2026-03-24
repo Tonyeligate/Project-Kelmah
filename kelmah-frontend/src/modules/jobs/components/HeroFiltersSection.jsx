@@ -29,6 +29,8 @@ import {
 import { motion } from 'framer-motion';
 import tradeCategories from '../data/tradeCategories.json';
 import ghanaLocations from '../data/ghanaLocations.json';
+import { formatGhanaCurrency } from '@/utils/formatters';
+import { formatGhanaCurrency } from '@/utils/formatters';
 
 const CATEGORY_ICONS = {
   Electrical: ElectricalIcon,
@@ -418,13 +420,13 @@ const HeroFiltersSection = ({
                           variant="caption"
                           sx={{ color: 'rgba(255,255,255,0.7)' }}
                         >
-                          GH₵ {budgetRange[0]}
+                          {formatGhanaCurrency(budgetRange[0])}
                         </Typography>
                         <Typography
                           variant="caption"
                           sx={{ color: 'rgba(255,255,255,0.7)' }}
                         >
-                          GH₵ {budgetRange[1]}+
+                          {formatGhanaCurrency(budgetRange[1])}+
                         </Typography>
                       </Box>
                     </Grid>

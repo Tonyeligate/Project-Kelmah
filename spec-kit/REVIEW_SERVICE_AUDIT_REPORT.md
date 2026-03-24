@@ -7,7 +7,7 @@
 ## Executive Summary
 The Review Service represents a catastrophic failure of software architecture principles. All business logic, database schemas, and API endpoints are embedded directly in server.js (1094 lines), completely violating MVC patterns, the consolidated Kelmah architecture, and basic software engineering practices. This service requires a complete rewrite from scratch to comply with established patterns.
 
-### Nov 18, 2025 – Incremental Hotfix Noted
+### Nov 18, 2025 - Incremental Hotfix Noted
 - `controllers/rating.controller.js` now queries by `reviewee`, consumes the canonical `Review.rating` field, and derives distributions/averages without assuming nested `ratings` objects. This was a surgical fix to stop `/api/ratings/worker/:workerId` from returning 500s while the full rewrite remains pending.
 - Helper functions (`buildWorkerFilter`, `buildRatingDistribution`, `buildRatingsBreakdown`) encapsulate the temporary aggregation logic and default to `DEFAULT_RATING_RESPONSE` when no reviews exist, ensuring consistent `{ success: true, data }` envelopes.
 - The broader architectural violations detailed below still stand; this note simply tracks the emergency change that restored production functionality for the worker ratings endpoint.

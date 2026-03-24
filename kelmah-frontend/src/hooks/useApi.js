@@ -44,6 +44,28 @@ const shouldRetryError = (error) => {
   return true;
 };
 
+const randomIntInclusive = (maxInclusive) => {
+  const cappedMax = Math.max(0, Math.floor(maxInclusive));
+  if (cappedMax === 0) {
+    return 0;
+  }
+
+  if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+    const bytes = new Uint32Array(1);
+    crypto.getRandomValues(bytes);
+    return bytes[0] % (cappedMax + 1);
+  }
+
+  const entropySource = `${Date.now()}:${Math.floor((typeof performance !== 'undefined' ? performance.now() : 0) * 1000)}`;
+  let hash = 0;
+
+  for (let index = 0; index < entropySource.length; index += 1) {
+    hash = (hash * 31 + entropySource.charCodeAt(index)) >>> 0;
+  }
+
+  return hash % (cappedMax + 1);
+};
+
 const computeRetryDelay = (error, attempt, baseDelay) => {
   const retryAfterMs = parseRetryAfterMs(error);
   const backoffBase = Number.isFinite(retryAfterMs)
@@ -51,7 +73,7 @@ const computeRetryDelay = (error, attempt, baseDelay) => {
     : baseDelay * 2 ** attempt;
   const boundedBackoff = Math.max(250, Math.min(backoffBase, 10000));
   const jitterCap = Math.max(100, Math.floor(boundedBackoff * 0.2));
-  const jitter = Math.floor(Math.random() * (jitterCap + 1));
+  const jitter = randomIntInclusive(jitterCap);
   return boundedBackoff + jitter;
 };
 

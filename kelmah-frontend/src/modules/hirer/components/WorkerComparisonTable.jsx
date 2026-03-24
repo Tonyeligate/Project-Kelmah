@@ -16,6 +16,7 @@ import StarIcon from '@mui/icons-material/Star';
 import WorkIcon from '@mui/icons-material/Work';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import { useBreakpointDown } from '@/hooks/useResponsive';
+import { formatGhanaCurrency } from '@/utils/formatters';
 
 const compactChipSx = {
   height: 20,
@@ -204,7 +205,7 @@ const WorkerComparisonTable = ({ workers = [] }) => {
                       sx={{ fontSize: 14, color: 'info.main' }}
                     />
                     <Typography variant="caption" fontWeight={600}>
-                      {w?.avgRate != null ? `₵${w.avgRate}` : 'N/A'}
+                      {w?.avgRate != null ? formatCurrency(w.avgRate) : 'N/A'}
                     </Typography>
                   </Box>
                 </Stack>
@@ -241,7 +242,7 @@ const WorkerComparisonTable = ({ workers = [] }) => {
               <TableCell scope="col">Skills</TableCell>
               <TableCell scope="col">Rating</TableCell>
               <TableCell scope="col">Completed Jobs</TableCell>
-              <TableCell scope="col">Avg Rate (GH₵)</TableCell>
+              <TableCell scope="col">Avg Rate (₵)</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -270,7 +271,7 @@ const WorkerComparisonTable = ({ workers = [] }) => {
                 </TableCell>
                 <TableCell>{w?.completedJobs ?? 'N/A'}</TableCell>
                 <TableCell>
-                  {w?.avgRate != null ? `₵${w.avgRate}` : 'N/A'}
+                  {w?.avgRate != null ? formatGhanaCurrency(w.avgRate) : 'N/A'}
                 </TableCell>
               </TableRow>
             ))}

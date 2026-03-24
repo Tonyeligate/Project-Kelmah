@@ -1,4 +1,4 @@
-# Job Sector Dry Audit – October 1, 2025
+# Job Sector Dry Audit - October 1, 2025
 
 ## Overview
 - **Scope:** Backend job-service, API gateway job routing, shared models leveraged by job flows, and frontend jobs module (Redux + service client).
@@ -67,9 +67,9 @@
 | ~~P2~~ | ~~Initialize saved job filters & verify UI wiring~~ | Frontend | ℹ️ **DEFERRED** | `jobSlice.js` (UI clarification needed) |
 
 ## Secondary Dependencies Added to Audit Queue
-- `kelmah-backend/shared/models/Job.js` – confirm bidding defaults align with controller assumptions.
-- `kelmah-backend/api-gateway/routes/job.routes.js` – ensure proxy order stays consistent once controller split occurs.
-- `kelmah-frontend/src/modules/jobs/components/JobListingPage.jsx` (and related) – validate they consume normalized fields post-cleanup.
+- `kelmah-backend/shared/models/Job.js` - confirm bidding defaults align with controller assumptions.
+- `kelmah-backend/api-gateway/routes/job.routes.js` - ensure proxy order stays consistent once controller split occurs.
+- `kelmah-frontend/src/modules/jobs/components/JobListingPage.jsx` (and related) - validate they consume normalized fields post-cleanup.
 
 ## Verification Gaps
 - ~~No automated tests cover bidding endpoints or job application thunk. Once fixes land, add Jest integration tests (backend) and Redux thunk tests (frontend) as part of remediation.~~ ✅ **ADDRESSED**: Jest regression test added at `kelmah-frontend/src/modules/jobs/services/__tests__/jobsApi.test.js` covering `applyForJob` alias.

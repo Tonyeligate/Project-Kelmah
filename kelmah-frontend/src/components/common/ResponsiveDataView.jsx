@@ -9,11 +9,11 @@ import { useBreakpointDown } from '@/hooks/useResponsive';
  * - Mobile card list uses role="list" + role="listitem" for proper AT semantics
  * - Empty state announced via role="status" + aria-live
  *
- * @param {ReactNode}  children       – the desktop Table/TableContainer
- * @param {Array}      rows           – data array for mobile cards
- * @param {Function}   renderCard     – (row, index) => ReactNode
- * @param {string}     [emptyMessage] – shown when rows is empty
- * @param {string}     [listLabel]    – accessible label for the mobile list
+ * @param {ReactNode}  children       - the desktop Table/TableContainer
+ * @param {Array}      rows           - data array for mobile cards
+ * @param {Function}   renderCard     - (row, index) => ReactNode
+ * @param {string}     [emptyMessage] - shown when rows is empty
+ * @param {string}     [listLabel]    - accessible label for the mobile list
  */
 export default function ResponsiveDataView({ children, rows = [], renderCard, emptyMessage = 'No data found.', listLabel = 'Data list' }) {
   const theme = useTheme();

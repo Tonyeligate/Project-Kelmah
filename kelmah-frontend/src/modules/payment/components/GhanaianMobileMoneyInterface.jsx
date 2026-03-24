@@ -12,6 +12,13 @@
 
 
 
+
+
+
+
+
+
+
 const GhanaianMobileMoneyInterface = ({
   amount,
   currency = 'GHS',
@@ -307,9 +314,6 @@ const GhanaianMobileMoneyInterface = ({
         },
       }}
       onClick={() => handleProviderSelect(provider.id)}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleProviderSelect(provider.id); } }}
     >
       <CardContent>
         <Box display="flex" alignItems="center" gap={2} mb={2}>

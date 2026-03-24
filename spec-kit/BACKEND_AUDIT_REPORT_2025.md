@@ -101,8 +101,8 @@ Anyone on the network can trigger reconciliation. The fake `{ _id: 'scheduler' }
 `reportReview` uses `$addToSet: { reporters: userId }`, but the Review schema has no `reporters` array. In `strict` mode (Mongoose default), the field is silently ignored — meaning **reports are never persisted** and the threshold logic never triggers.
 
 ```js
-// Review.js – field NOT defined
-// Controller – writes to it:
+// Review.js - field NOT defined
+// Controller - writes to it:
 const review = await Review.findByIdAndUpdate(
   reviewId,
   { $addToSet: { reporters: userId } },

@@ -1,6 +1,6 @@
 # Kelmah Platform Dry Audit Execution Plan
 **Prepared:** October 3, 2025  
-**Owner:** Engineering Ops – Audit Task Force
+**Owner:** Engineering Ops - Audit Task Force
 
 This document operationalizes the comprehensive codebase audit request by defining the execution workflow, sector boundaries, documentation artifacts, and progress tracking expectations. It aligns with the existing [Comprehensive Codebase Audit Framework](../COMPREHENSIVE_CODEBASE_AUDIT_FRAMEWORK.md) and expands it with actionable steps for day-to-day auditing.
 
@@ -105,7 +105,7 @@ Use consistent labels:
 ### 4.2 Sector Summary Snapshot
 At the end of a sector pass, append to the sector audit report:
 ```markdown
-## Sector Snapshot – <Sector Name>
+## Sector Snapshot - <Sector Name>
 - **Files Audited**: X/Y
 - **Critical Issues**: (list)
 - **High Priority Fixes**: (list)

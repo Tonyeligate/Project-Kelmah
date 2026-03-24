@@ -86,6 +86,9 @@ const WalletSummary = ({ balance, onDepositClick, onWithdrawClick }) => (
       <Typography variant="body2" sx={{ opacity: 0.85, mb: 1.5 }}>
         Available funds can be added or withdrawn. Escrow amounts are released after work is confirmed.
       </Typography>
+      <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary', mb: 1.25 }}>
+        Confidence note: every wallet action creates a transaction record you can review below.
+      </Typography>
     <Typography variant="h3" fontWeight="bold" sx={{ my: 1, fontSize: { xs: '1.75rem', md: '3rem' } }}>
       {currencyFormatter.format(balance)}
     </Typography>
@@ -109,10 +112,18 @@ const WalletSummary = ({ balance, onDepositClick, onWithdrawClick }) => (
         Withdraw Funds
       </Button>
     </Box>
+    <Box sx={{ mt: 1.25, display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
+      <Chip size="small" color="success" label="Receipts available" />
+      <Chip size="small" color="info" label="Escrow-protected flow" />
+      <Chip size="small" color="warning" label="Review before confirm" />
+    </Box>
   </Paper>
 );
 
-const TransactionHistory = ({ transactions }) => (
+const TransactionHistory = ({ transactions }) => {
+  const isNarrowMobile = useBreakpointDown('sm');
+
+  return (
   <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 2 }}>
     <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
       Recent Transactions
@@ -123,7 +134,7 @@ const TransactionHistory = ({ transactions }) => (
     <List>
       {(transactions || []).slice(0, 5).map((tx, idx) => (
         <React.Fragment key={tx.id || tx._id}>
-          <ListItem>
+          <ListItem sx={{ alignItems: isNarrowMobile ? 'flex-start' : 'center' }}>
             <ListItemIcon>
               <Avatar
                 sx={{
@@ -146,13 +157,20 @@ const TransactionHistory = ({ transactions }) => (
                 } catch { return 'Date unavailable'; }
               })()}
             />
-            <Typography
-              color={tx.type === 'deposit' ? 'success.main' : 'error.main'}
-              fontWeight="bold"
-            >
-              {(tx.type === 'deposit' ? '+' : '-') +
-                currencyFormatter.format(tx.amount)}
-            </Typography>
+            <Box sx={{ minWidth: isNarrowMobile ? 0 : 140, ml: isNarrowMobile ? 0 : 1.5 }}>
+              <Typography
+                color={tx.type === 'deposit' ? 'success.main' : 'error.main'}
+                fontWeight="bold"
+                sx={{ textAlign: isNarrowMobile ? 'left' : 'right', fontSize: isNarrowMobile ? '0.95rem' : '1rem' }}
+              >
+                {(tx.type === 'deposit' ? '+' : '-') + currencyFormatter.format(tx.amount)}
+              </Typography>
+              {isNarrowMobile && (
+                <Typography variant="caption" color="text.secondary">
+                  {tx.type === 'deposit' ? 'Money in' : 'Money out'}
+                </Typography>
+              )}
+            </Box>
           </ListItem>
           {idx < transactions.slice(0, 4).length && (
             <Divider variant="inset" component="li" />
@@ -161,7 +179,8 @@ const TransactionHistory = ({ transactions }) => (
       ))}
     </List>
   </Paper>
-);
+  );
+};
 
 const PaymentMethodsView = ({ methods, onEditMethod, onRequestDelete, paymentMethodsPath }) => {
   // Empty state
@@ -174,6 +193,9 @@ const PaymentMethodsView = ({ methods, onEditMethod, onRequestDelete, paymentMet
         </Typography>
         <Typography color="text.secondary" sx={{ mb: 2 }}>
           Add a payment method to send and receive payments securely.
+        </Typography>
+        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
+          Setup path: choose provider, add account details, then set one method as default for faster checkout.
         </Typography>
         <Button
           variant="contained"
@@ -773,6 +795,23 @@ const PaymentCenterPage = () => {
   const closeWithdrawDialog = () => setWithdrawOpen(false);
 
   const handleTabChange = (_, newVal) => setTabIndex(newVal);
+  const focusVisibleButtonSx = {
+    '&:focus-visible': {
+      outline: `3px solid ${theme.palette.mode === 'dark' ? '#FFD700' : '#111827'}`,
+      outlineOffset: 3,
+      boxShadow: theme.palette.mode === 'dark'
+        ? '0 0 0 4px rgba(255, 215, 0, 0.18)'
+        : '0 0 0 4px rgba(17, 24, 39, 0.12)',
+    },
+  };
+  const focusVisibleFieldSx = {
+    '& .MuiOutlinedInput-root.Mui-focused': {
+      boxShadow:
+        theme.palette.mode === 'dark'
+          ? '0 0 0 2px rgba(255, 215, 0, 0.28)'
+          : '0 0 0 2px rgba(17, 24, 39, 0.2)',
+    },
+  };
 
   if (loading)
     return (
@@ -919,6 +958,7 @@ const PaymentCenterPage = () => {
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
                     InputLabelProps={{ shrink: true }}
+                    sx={focusVisibleFieldSx}
                   />
                 </Tooltip>
                 <Tooltip title="Transactions up to this date">
@@ -928,10 +968,11 @@ const PaymentCenterPage = () => {
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
                     InputLabelProps={{ shrink: true }}
+                    sx={focusVisibleFieldSx}
                   />
                 </Tooltip>
                 <Tooltip title="Filter by type">
-                  <FormControl sx={{ minWidth: 140 }}>
+                  <FormControl sx={{ minWidth: 140, ...focusVisibleFieldSx }}>
                     <InputLabel>Type</InputLabel>
                     <Select
                       value={filterType}
@@ -945,7 +986,7 @@ const PaymentCenterPage = () => {
                   </FormControl>
                 </Tooltip>
                 <Tooltip title="Filter">
-                  <Button variant="outlined" onClick={applyFilters}>
+                  <Button variant="outlined" onClick={applyFilters} sx={focusVisibleButtonSx}>
                     Filter
                   </Button>
                 </Tooltip>
@@ -1015,7 +1056,7 @@ const PaymentCenterPage = () => {
                 sx={{ mb: 3, display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}
               >
                 <Tooltip title="Filter by status">
-                  <FormControl sx={{ minWidth: 140 }}>
+                  <FormControl sx={{ minWidth: 140, ...focusVisibleFieldSx }}>
                     <InputLabel>Status</InputLabel>
                     <Select
                       value={escrowStatusFilter}
@@ -1031,7 +1072,7 @@ const PaymentCenterPage = () => {
                   </FormControl>
                 </Tooltip>
                 <Tooltip title="Filter">
-                  <Button variant="outlined" onClick={applyEscrowFilters}>
+                  <Button variant="outlined" onClick={applyEscrowFilters} sx={focusVisibleButtonSx}>
                     Filter
                   </Button>
                 </Tooltip>
@@ -1062,6 +1103,7 @@ const PaymentCenterPage = () => {
                     value={billStartDate}
                     onChange={(e) => setBillStartDate(e.target.value)}
                     InputLabelProps={{ shrink: true }}
+                    sx={focusVisibleFieldSx}
                   />
                 </Tooltip>
                 <Tooltip title="Bills up to this date">
@@ -1071,10 +1113,11 @@ const PaymentCenterPage = () => {
                     value={billEndDate}
                     onChange={(e) => setBillEndDate(e.target.value)}
                     InputLabelProps={{ shrink: true }}
+                    sx={focusVisibleFieldSx}
                   />
                 </Tooltip>
                 <Tooltip title="Filter by status">
-                  <FormControl sx={{ minWidth: 140 }}>
+                  <FormControl sx={{ minWidth: 140, ...focusVisibleFieldSx }}>
                     <InputLabel>Status</InputLabel>
                     <Select
                       value={billStatusFilter}
@@ -1089,7 +1132,7 @@ const PaymentCenterPage = () => {
                   </FormControl>
                 </Tooltip>
                 <Tooltip title="Filter">
-                  <Button variant="outlined" onClick={applyBillFilters}>
+                  <Button variant="outlined" onClick={applyBillFilters} sx={focusVisibleButtonSx}>
                     Filter
                   </Button>
                 </Tooltip>
@@ -1098,6 +1141,7 @@ const PaymentCenterPage = () => {
                     variant="outlined"
                     color="secondary"
                     onClick={clearBillFilters}
+                    sx={focusVisibleButtonSx}
                   >
                     Clear
                   </Button>

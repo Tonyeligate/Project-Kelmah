@@ -1,10 +1,10 @@
 ﻿/**
- * JobBidsPanel â€” Hirer's bid review panel for a specific job
+ * JobBidsPanel - Hirer's bid review panel for a specific job
  *
  * DATA FLOW:
- *   JobBidsPanel â†’ bidApi.getJobBids(jobId) â†’ GET /api/bids/job/:jobId â†’ Gateway â†’ Job Service
- *   Accept bid â†’ bidApi.acceptBid(bidId) â†’ PATCH /api/bids/:id/accept â†’ Gateway â†’ Job Service
- *   Reject bid â†’ bidApi.rejectBid(bidId) â†’ PATCH /api/bids/:id/reject â†’ Gateway â†’ Job Service
+ *   JobBidsPanel -> bidApi.getJobBids(jobId) -> GET /api/bids/job/:jobId -> Gateway -> Job Service
+ *   Accept bid -> bidApi.acceptBid(bidId) -> PATCH /api/bids/:id/accept -> Gateway -> Job Service
+ *   Reject bid -> bidApi.rejectBid(bidId) -> PATCH /api/bids/:id/reject -> Gateway -> Job Service
  *
  * Usage: Embedded in JobManagementPage or standalone at /hirer/jobs/:jobId/bids
  */
@@ -54,6 +54,7 @@ import {
 } from '@mui/icons-material';
 import bidApi from '../../jobs/services/bidService';
 import Toast from '../../common/components/common/Toast';
+import { formatGhanaCurrency } from '@/utils/formatters';
 import { devError } from '@/modules/common/utils/devLogger';
 
 const isAbortError = (error) =>
@@ -77,7 +78,7 @@ const BidReviewCard = ({ bid, onAccept, onReject, isProcessing }) => {
 
   const formatAmount = (amount) => {
     const num = Number(amount);
-    return Number.isFinite(num) ? `GHâ‚µ${num.toLocaleString()}` : 'N/A';
+    return Number.isFinite(num) ? formatGhanaCurrency(num) : 'N/A';
   };
 
   const formatDate = (date) => {
@@ -227,7 +228,7 @@ const BidReviewCard = ({ bid, onAccept, onReject, isProcessing }) => {
           </Stack>
         )}
 
-        {/* Action buttons â€” only for pending bids */}
+        {/* Action buttons - only for pending bids */}
         {bid.status === 'pending' && (
           <Stack direction="row" spacing={1.5} justifyContent="flex-end">
             <Button
@@ -462,7 +463,7 @@ const JobBidsPage = () => {
           </Typography>
           <Typography variant="body2" color="text.secondary">
             {bids.length} bid{bids.length !== 1 ? 's' : ''} received
-            {pendingCount > 0 && ` Â· ${pendingCount} pending review`}
+            {pendingCount > 0 && ` - ${pendingCount} pending review`}
           </Typography>
         </Box>
         <Tooltip title="Refresh">
@@ -489,7 +490,7 @@ const JobBidsPage = () => {
       {acceptedBid && (
         <Alert severity="success" icon={<AcceptIcon />} sx={{ mb: 2 }}>
           You accepted <strong>{acceptedBid.worker?.name || 'a worker'}</strong>'s bid of{' '}
-          <strong>GHâ‚µ{(acceptedBid.bidAmount ?? 0).toLocaleString()}</strong>.
+          <strong>GHS {(acceptedBid.bidAmount ?? 0).toLocaleString()}</strong>.
         </Alert>
       )}
 
@@ -562,7 +563,7 @@ const JobBidsPage = () => {
         <DialogContent>
           <DialogContentText>
             Accepting <strong>{acceptDialog.bid?.worker?.name || 'this worker'}</strong>'s bid of{' '}
-            <strong>GHâ‚µ{(acceptDialog.bid?.bidAmount ?? 0).toLocaleString()}</strong> will automatically
+            <strong>GHS {(acceptDialog.bid?.bidAmount ?? 0).toLocaleString()}</strong> will automatically
             reject all other pending bids for this job. This action cannot be undone.
           </DialogContentText>
         </DialogContent>

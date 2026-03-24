@@ -6,6 +6,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Alert } from '@mui/material';
 import { Helmet } from 'react-helmet-async';
 import { useBreakpointDown } from '@/hooks/useResponsive';
+import { Typography } from '@mui/material';
 
 const LoginPage = () => {
   const location = useLocation();
@@ -42,6 +43,14 @@ const LoginPage = () => {
           {infoMessage}
         </Alert>
       )}
+      <Alert severity="info" sx={{ mb: 2 }}>
+        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+          Sign in with the email and password used during registration.
+        </Typography>
+        <Typography variant="caption" sx={{ display: 'block', mt: 0.5 }}>
+          If login fails after two attempts, use Forgot password to reset access securely.
+        </Typography>
+      </Alert>
       <Login />
     </AuthWrapper>
   );

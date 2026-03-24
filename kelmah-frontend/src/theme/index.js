@@ -325,7 +325,7 @@ const darkTheme = createTheme({
           backgroundColor: SURFACE_TOKENS.dark.surface,
           backgroundImage: 'none',
           border: '1px solid rgba(255, 255, 255, 0.08)',
-          borderRadius: 14,
+          borderRadius: 16,
           transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
           boxShadow: '0 12px 30px rgba(3, 3, 5, 0.35)',
           '&:hover': {
@@ -365,7 +365,7 @@ const darkTheme = createTheme({
         root: {
           backgroundColor: SURFACE_TOKENS.dark.raised,
           border: '1px solid rgba(255, 255, 255, 0.07)',
-          borderRadius: 14,
+          borderRadius: 16,
           transition: 'transform 0.3s ease, border-color 0.3s ease',
           '@media (hover: hover)': {
             '&:hover': {
@@ -389,7 +389,7 @@ const darkTheme = createTheme({
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: 8,
+          borderRadius: 10,
           textTransform: 'none',
           fontWeight: 600,
           padding: 'clamp(8px, 1vw, 10px) clamp(16px, 2vw, 26px)',
@@ -881,7 +881,7 @@ const lightTheme = createTheme({
           backgroundColor: SURFACE_TOKENS.light.surface,
           backgroundImage: 'none',
           border: '1px solid rgba(0, 0, 0, 0.08)',
-          borderRadius: 14,
+          borderRadius: 16,
           transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
           boxShadow: '0 20px 55px rgba(15, 15, 23, 0.08)',
           '&:hover': {
@@ -920,7 +920,7 @@ const lightTheme = createTheme({
         root: {
           backgroundColor: SURFACE_TOKENS.light.raised,
           border: '1px solid rgba(0, 0, 0, 0.08)',
-          borderRadius: 14,
+          borderRadius: 16,
           transition: 'transform 0.3s ease, border-color 0.3s ease',
           '&:hover': {
             borderColor: 'rgba(0, 0, 0, 0.18)',
@@ -941,7 +941,7 @@ const lightTheme = createTheme({
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: 8,
+          borderRadius: 10,
           textTransform: 'none',
           fontWeight: 600,
           padding: 'clamp(8px, 1vw, 10px) clamp(16px, 2vw, 26px)',

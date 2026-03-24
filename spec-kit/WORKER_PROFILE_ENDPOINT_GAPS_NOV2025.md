@@ -33,8 +33,8 @@ reviewService.getWorkerRating(id) → GET /api/reviews/ratings/worker/:id → 40
 ## Next Steps
 1. **Add worker sub-resource router**: create `worker-detail.routes.js` under user-service that mounts `/workers/:workerId/(skills|portfolio|certificates|work-history|analytics)` and wire to new controller methods backed by Mongo `WorkerProfile`, `Portfolio`, and `Certificate` collections.
 2. **Refactor portfolio & certificate controllers**: remove Sequelize usage and query the Mongo models defined in `models/index.js`. Ensure public GETs bypass auth per API gateway logic.
-3. **Harden earnings controller** ✅ (Nov 14) – Guarded payment-service axios calls with deterministic fallbacks, short-circuit when the payment host is missing, and return predictable data even when downstream services are unavailable. Controller now returns 404 only when the worker profile is missing.
-4. **Review-service rating proxy alignment** ✅ (Nov 14) – Gateway already exposes `/api/reviews/ratings/worker/:workerId`; frontend `reviewService` updated to hit the correct path so worker profiles can fetch ratings without 404s.
+3. **Harden earnings controller** ✅ (Nov 14) - Guarded payment-service axios calls with deterministic fallbacks, short-circuit when the payment host is missing, and return predictable data even when downstream services are unavailable. Controller now returns 404 only when the worker profile is missing.
+4. **Review-service rating proxy alignment** ✅ (Nov 14) - Gateway already exposes `/api/reviews/ratings/worker/:workerId`; frontend `reviewService` updated to hit the correct path so worker profiles can fetch ratings without 404s.
 
 Document owner: Copilot agent (Nov 14, 2025).
 

@@ -149,7 +149,7 @@ Clear separation of responsibilities:
 ```
 ✅ 🔍 HEADER AUTH STATE: { pathname: "/dashboard", isAuthenticated: true, ... }
 ✅ Authentication initialized successfully - Synced with Redux
-✅ User already authenticated – skipping verifyAuth
+✅ User already authenticated - skipping verifyAuth
 ✅ 🚧 ServiceWorker temporarily disabled due to deployment issues
 ✅ Using temporary contract fallback data during service deployment fix...
 ```

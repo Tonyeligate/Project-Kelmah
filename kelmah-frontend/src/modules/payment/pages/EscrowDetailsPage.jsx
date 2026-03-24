@@ -52,7 +52,7 @@ const EscrowDetailsPage = () => {
   if (loading) {
     return (
       <Container sx={{ py: 4, display: 'flex', justifyContent: 'center' }}>
-        <Typography variant="body1" color="text.secondary">Loading escrow detailsâ€¦</Typography>
+        <Typography variant="body1" color="text.secondary">Loading escrow details...</Typography>
       </Container>
     );
   }

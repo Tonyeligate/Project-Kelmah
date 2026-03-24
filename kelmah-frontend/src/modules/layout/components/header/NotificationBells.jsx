@@ -44,6 +44,7 @@ const NotificationBells = ({
   onViewAll,
 }) => {
   const theme = useTheme();
+  const totalUnread = (Number(unreadMessages) || 0) + (Number(unreadNotifications) || 0);
 
   return (
     <>
@@ -52,8 +53,44 @@ const NotificationBells = ({
         <ActionButton
           onClick={onMessagesClick}
           aria-label={`Open messages${unreadMessages > 0 ? `, ${unreadMessages} unread` : ''}`}
+          sx={{
+            minWidth: 44,
+            px: 1.25,
+            borderColor:
+              unreadMessages > 0
+                ? theme.palette.mode === 'dark'
+                  ? 'rgba(255, 215, 0, 0.45)'
+                  : 'rgba(18, 24, 39, 0.32)'
+                : undefined,
+            backgroundColor:
+              unreadMessages > 0
+                ? theme.palette.mode === 'dark'
+                  ? 'rgba(255, 215, 0, 0.08)'
+                  : 'rgba(18, 24, 39, 0.06)'
+                : undefined,
+            '& .MuiSvgIcon-root': {
+              fontSize: '1.25rem',
+            },
+            '&:focus-visible': {
+              outline:
+                theme.palette.mode === 'dark'
+                  ? '3px solid rgba(255, 215, 0, 0.95)'
+                  : '3px solid rgba(17, 24, 39, 0.9)',
+              outlineOffset: 2,
+            },
+          }}
         >
-          <StyledBadge badgeContent={unreadMessages} color="primary">
+          <StyledBadge
+            badgeContent={unreadMessages}
+            color="primary"
+            sx={{
+              '& .MuiBadge-badge': {
+                fontWeight: 800,
+                minWidth: unreadMessages > 9 ? 22 : 18,
+                height: unreadMessages > 9 ? 22 : 18,
+              },
+            }}
+          >
             <MessageIcon />
           </StyledBadge>
         </ActionButton>
@@ -64,8 +101,44 @@ const NotificationBells = ({
         <ActionButton
           onClick={onNotificationsClick}
           aria-label={`Open notifications${unreadNotifications > 0 ? `, ${unreadNotifications} unread` : ''}`}
+          sx={{
+            minWidth: 44,
+            px: 1.25,
+            borderColor:
+              unreadNotifications > 0
+                ? theme.palette.mode === 'dark'
+                  ? 'rgba(255, 215, 0, 0.55)'
+                  : 'rgba(18, 24, 39, 0.4)'
+                : undefined,
+            backgroundColor:
+              unreadNotifications > 0
+                ? theme.palette.mode === 'dark'
+                  ? 'rgba(255, 215, 0, 0.13)'
+                  : 'rgba(18, 24, 39, 0.09)'
+                : undefined,
+            '& .MuiSvgIcon-root': {
+              fontSize: '1.25rem',
+            },
+            '&:focus-visible': {
+              outline:
+                theme.palette.mode === 'dark'
+                  ? '3px solid rgba(255, 215, 0, 0.95)'
+                  : '3px solid rgba(17, 24, 39, 0.9)',
+              outlineOffset: 2,
+            },
+          }}
         >
-          <StyledBadge badgeContent={unreadNotifications} color="primary">
+          <StyledBadge
+            badgeContent={unreadNotifications}
+            color="primary"
+            sx={{
+              '& .MuiBadge-badge': {
+                fontWeight: 800,
+                minWidth: unreadNotifications > 9 ? 22 : 18,
+                height: unreadNotifications > 9 ? 22 : 18,
+              },
+            }}
+          >
             <NotificationsIcon />
           </StyledBadge>
         </ActionButton>
@@ -104,6 +177,9 @@ const NotificationBells = ({
           </Typography>
           <Typography variant="body2" color="text.secondary">
             You have {unreadNotifications} unread notifications
+          </Typography>
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+            Unread inbox total: {totalUnread}
           </Typography>
         </Box>
 

@@ -6,7 +6,7 @@ export const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes in milliseconds
 const tokenUtilsError = devError;
 
 /**
- * Decode a base64url string (JWT-safe). Replaces `-` â†’ `+` and `_` â†’ `/`
+ * Decode a base64url string (JWT-safe). Replaces `-` -> `+` and `_` -> `/`
  * before calling atob() so tokens with base64url characters don't crash.
  */
 const decodeBase64Url = (str) => {

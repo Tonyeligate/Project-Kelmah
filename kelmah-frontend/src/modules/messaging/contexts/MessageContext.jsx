@@ -9,7 +9,7 @@
 import PropTypes from 'prop-types';
 import { messagingService } from '../services/messagingService';
 import { useAuth } from '../../auth/hooks/useAuth';
-// CRIT-08 FIX: Removed direct `import io` â€” reuse the global websocketService
+// CRIT-08 FIX: Removed direct `import io` - reuse the global websocketService
 // singleton instead of creating a second Socket.IO connection.
 import websocketService from '../../../services/websocketService';
 import fileUploadService from '../../common/services/fileUploadService';
@@ -172,7 +172,7 @@ const normalizeMessageAttachments = (message = {}) => {
       message.sender && typeof message.sender === 'object'
         ? normalizeParticipant(message.sender)
         : null,
-    // Map contentâ†”text and createdAtâ†”timestamp for UI compatibility
+    // Map content<->text and createdAt<->timestamp for UI compatibility
     text: message.text || message.content || '',
     content: message.content || message.text || '',
     timestamp: message.timestamp || message.createdAt,
@@ -290,6 +290,7 @@ export const MessageProvider = ({ children }) => {
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [sendingMessage, setSendingMessage] = useState(false);
   const [sendError, setSendError] = useState(null);
+  const [messageAnnouncement, setMessageAnnouncement] = useState('');
 
   useEffect(() => {
     selectedConversationRef.current = selectedConversation;
@@ -353,14 +354,14 @@ export const MessageProvider = ({ children }) => {
       const sharedSocket = websocketService.socket;
       if (!sharedSocket) {
         devWarn(
-          'WebSocketService socket unavailable â€” messaging will use REST only',
+          'WebSocketService socket unavailable - messaging will use REST only',
         );
         setRealtimeIssue('Real-time connection unavailable. Using standard refresh mode.');
         connectingRef.current = false;
         return;
       }
 
-      messagingLog('ðŸ”Œ MessageContext: reusing shared WebSocket connection');
+      messagingLog('MessageContext: reusing shared WebSocket connection');
 
       // Remove ONLY the listeners WE registered (named references), not all listeners
       const msgListeners = msgListenersRef.current;
@@ -385,14 +386,14 @@ export const MessageProvider = ({ children }) => {
       };
       const onConnectError = (error) => {
         if (!socketErrorLoggedRef.current) {
-          devError('ðŸš¨ WebSocket connection error:', error);
+          devError('WebSocket connection error:', error);
           socketErrorLoggedRef.current = true;
         }
         setRealtimeIssue('Real-time connection failed. Using standard refresh mode.');
         connectingRef.current = false;
       };
       const onConnected = (data) => {
-        messagingLog('ðŸŽ‰ Messaging service connected:', data);
+        messagingLog('Messaging service connected:', data);
         if (data.conversations) {
           setConversations((prev) => {
             if (Array.isArray(prev) && prev.length > 0) {
@@ -408,7 +409,7 @@ export const MessageProvider = ({ children }) => {
         }
       };
       const onNewMessage = (messageData) => {
-        messagingLog('ðŸ“¨ New message received:', messageData);
+        messagingLog('New message received:', messageData);
         const hydratedMessage = normalizeMessageAttachments(messageData);
         if (realtimeMessageDeduperRef.current.mark(hydratedMessage)) {
           return;
@@ -447,6 +448,15 @@ export const MessageProvider = ({ children }) => {
         }
 
         const activeConvId = activeConversation?.id;
+        if (hydratedMessage.senderId && String(hydratedMessage.senderId) !== String(user?.id)) {
+          const senderName =
+            hydratedMessage.senderName ||
+            hydratedMessage.sender?.name ||
+            hydratedMessage.sender?.fullName ||
+            'New message';
+          setMessageAnnouncement(`${senderName} sent a new message.`);
+        }
+
         setConversations((prev) =>
           sortConversationsByActivity(
             prev.map((conv) =>
@@ -490,7 +500,7 @@ export const MessageProvider = ({ children }) => {
         });
       };
       const onMessagesRead = (data) => {
-        messagingLog('ðŸ“– Messages marked as read:', data);
+        messagingLog('Messages marked as read:', data);
         const activeConversation = selectedConversationRef.current;
         if (
           activeConversation &&
@@ -522,7 +532,7 @@ export const MessageProvider = ({ children }) => {
       const onUserOffline = (data) => onUserStatusChanged({ userId: data.userId, status: 'offline' });
 
       const onMessageDelivered = (data) => {
-        messagingLog('âœ“ Message delivered:', data);
+        messagingLog('Message delivered:', data);
         const activeConversation = selectedConversationRef.current;
         if (activeConversation && data.conversationId === activeConversation.id) {
           setMessages((prev) =>
@@ -534,7 +544,7 @@ export const MessageProvider = ({ children }) => {
       };
 
       const onError = (error) => {
-        devError('ðŸš¨ WebSocket error:', error);
+        devError('WebSocket error:', error);
       };
 
       // Register all named handlers and store references for cleanup
@@ -575,7 +585,7 @@ export const MessageProvider = ({ children }) => {
 
   // Disconnect WebSocket
   // CRIT-08 FIX: Only remove messaging-specific listeners from the shared
-  // socket. Do NOT call activeSocket.disconnect() â€” that would kill the
+  // socket. Do NOT call activeSocket.disconnect() - that would kill the
   // connection for notifications and all other features too.
   const disconnectWebSocket = useCallback(() => {
     const activeSocket = socketRef.current;
@@ -584,7 +594,7 @@ export const MessageProvider = ({ children }) => {
       conversationLoadTimeoutRef.current = null;
     }
     if (activeSocket) {
-      messagingLog('ðŸ”Œ MessageContext: detaching messaging listeners from shared socket');
+      messagingLog('MessageContext: detaching messaging listeners from shared socket');
       const msgListeners = msgListenersRef.current;
       try {
         MESSAGING_SOCKET_EVENTS.forEach((evt) => {
@@ -619,6 +629,7 @@ export const MessageProvider = ({ children }) => {
       setConversations([]);
       setSelectedConversation(null);
       setMessages([]);
+      setMessageAnnouncement('');
       setLoadingConversations(Boolean(authLoading));
     }
 
@@ -709,7 +720,7 @@ export const MessageProvider = ({ children }) => {
               clearTimeout(conversationLoadTimeoutRef.current);
               conversationLoadTimeoutRef.current = null;
             }
-            messagingLog('ðŸ  Joined conversation:', data);
+            messagingLog('Joined conversation:', data);
             setMessages(normalizeMessageList(data.messages || []));
             setLoadingMessages(false);
             loadingMessagesRef.current = false;
@@ -718,7 +729,7 @@ export const MessageProvider = ({ children }) => {
           conversationJoinHandlerRef.current = handleConversationJoined;
           socket.on(SOCKET_EVENTS.CONVERSATION.JOINED, handleConversationJoined);
 
-          // MED-21 FIX: Fallback timeout â€” fetch via REST if WS doesn't respond in time
+          // MED-21 FIX: Fallback timeout - fetch via REST if WS doesn't respond in time
           const conversationId = normalizedConversation.id;
           conversationLoadTimeoutRef.current = setTimeout(async () => {
             if (loadingMessagesRef.current) {
@@ -830,7 +841,7 @@ export const MessageProvider = ({ children }) => {
 
         // Use WebSocket for real-time messaging if available
         if (socket && isConnected) {
-          messagingLog('ðŸ“¤ Sending message via WebSocket');
+          messagingLog('Sending message via WebSocket');
           // Create optimistic message with clientId
           const clientId = `${currentUserId}_${Date.now()}`;
           const now = new Date().toISOString();
@@ -964,7 +975,7 @@ export const MessageProvider = ({ children }) => {
           // Message will be added to UI via 'new_message' event
         } else {
           // Fallback to REST API
-          messagingLog('ðŸ“¤ Sending message via REST API (WebSocket unavailable)');
+          messagingLog('Sending message via REST API (WebSocket unavailable)');
           const recipient = activeConversation.participants.find(
             (participant) => {
               const participantId = resolveParticipantId(participant);
@@ -1068,6 +1079,7 @@ export const MessageProvider = ({ children }) => {
     setSelectedConversation(tempConversation);
     setMessages([]);
     setLoadingMessages(false);
+    setMessageAnnouncement('');
     loadingMessagesRef.current = false;
 
     return tempConversation;
@@ -1100,6 +1112,7 @@ export const MessageProvider = ({ children }) => {
     }
     setSelectedConversation(null);
     setMessages([]);
+    setMessageAnnouncement('');
   }, [selectedConversation, socket]);
 
   // Real-time typing functions
@@ -1150,6 +1163,7 @@ export const MessageProvider = ({ children }) => {
     loadingMessages,
     sendingMessage,
     sendError,
+    messageAnnouncement,
     unreadCount,
 
     // Core messaging actions

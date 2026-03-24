@@ -5,11 +5,11 @@ import { useCallback, useRef } from 'react';
  * Cancels on scroll (>10 px move) or early release.
  * Optionally triggers haptic feedback via navigator.vibrate.
  *
- * @param {Function} onLongPress   – called with the original TouchEvent
+ * @param {Function} onLongPress   - called with the original TouchEvent
  * @param {Object}   [options]
- * @param {number}   [options.delay=500]      – hold duration in ms
- * @param {number}   [options.moveThreshold=10] – px movement to cancel
- * @param {boolean}  [options.vibrate=true]    – haptic feedback
+ * @param {number}   [options.delay=500]      - hold duration in ms
+ * @param {number}   [options.moveThreshold=10] - px movement to cancel
+ * @param {boolean}  [options.vibrate=true]    - haptic feedback
  * @returns {{ onTouchStart, onTouchMove, onTouchEnd, onContextMenu }}
  */
 export default function useLongPress(onLongPress, options = {}) {

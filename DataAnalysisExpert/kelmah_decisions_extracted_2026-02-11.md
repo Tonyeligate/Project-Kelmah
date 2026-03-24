@@ -4406,7 +4406,7 @@ Check browser console - you should see:
 - ❌ ServiceWorker registration failed: A bad HTTP response code (404)
 - ✅ 🔍 HEADER AUTH STATE: { pathname: "/dashboard", isAuthenticated: true, ... }
 - ✅ Authentication initialized successfully - Synced with Redux
-- ✅ User already authenticated – skipping verifyAuth
+- ✅ User already authenticated - skipping verifyAuth
 - ✅ 🚧 ServiceWorker temporarily disabled due to deployment issues
 - ✅ Using temporary contract fallback data during service deployment fix...
 - #### **✅ Login Page (`/login`):**
@@ -4450,7 +4450,7 @@ Check browser console - you should see:
 - ❌ ServiceWorker registration failed: A bad HTTP response code (404)
 - ✅ 🔍 HEADER AUTH STATE: { pathname: "/dashboard", isAuthenticated: true, ... }
 - ✅ Authentication initialized successfully - Synced with Redux
-- ✅ User already authenticated – skipping verifyAuth
+- ✅ User already authenticated - skipping verifyAuth
 - ✅ 🚧 ServiceWorker temporarily disabled due to deployment issues
 - ✅ Using temporary contract fallback data during service deployment fix...
 - #### **✅ Login Page (`/login`):**
@@ -5901,7 +5901,7 @@ const result = await hirersApi.getDashboardData();
 ### Backend Services Dry Audit Inventory
 
 **Prepared:** October 3, 2025  
-**Owner:** Audit Task Force – Backend Sector
+**Owner:** Audit Task Force - Backend Sector
 
 This inventory establishes the baseline for the dry audit across all backend services, the API gateway, and shared backend resources. It maps each components structure, highlights primary integration seams, and captures notable audit hotspots to guide detailed file-by-file reviews per the [Dry Audit Execution Plan](../DRY_AUDIT_EXECUTION_PLAN.md).
 
@@ -5926,7 +5926,7 @@ This inventory establishes the baseline for the dry audit across all backend ser
 ### Frontend Dry Audit Inventory
 
 **Prepared:** October 3, 2025  
-**Owner:** Audit Task Force – Frontend Sector
+**Owner:** Audit Task Force - Frontend Sector
 
 This inventory scopes the dry audit effort across the React/Vite frontend. It enumerates every major sector, highlights their substructures, and documents integration seams that must be validated to guarantee clean data flow with the backend API gateway. Use it alongside the [Dry Audit Execution Plan](../DRY_AUDIT_EXECUTION_PLAN.md) to drive file-by-file reviews, ensuring each dependency uncovered during a primary audit is queued for its own primary pass.
 
@@ -6146,7 +6146,7 @@ Frontend → API Gateway → Services with Inter-Service Communication
 
 ## Source: spec-kit/audits/2025-10-01_full_codebase_audit_plan.md
 
-### Kelmah Platform – Full Codebase Dry Audit Plan
+### Kelmah Platform - Full Codebase Dry Audit Plan
 
 **Prepared:** October 1, 2025  
 **Author:** GitHub Copilot automation agent
@@ -6157,7 +6157,7 @@ Frontend → API Gateway → Services with Inter-Service Communication
 
 ## Source: spec-kit/audits/2025-10-01_sector_index.md
 
-### Kelmah Platform – Sector Audit Index
+### Kelmah Platform - Sector Audit Index
 
 **Generated:** October 1, 2025  
 **Purpose:** Provide a master index of audit sectors, associated directories, and priority order for the end-to-end dry audit cycle.
@@ -7859,9 +7859,9 @@ grep -r "import.*secureStorage" src/modules/ | wc -l
 
 ### Secondary Dependencies Added to Audit Queue
 
-- `kelmah-backend/shared/models/Job.js` – confirm bidding defaults align with controller assumptions.
-- `kelmah-backend/api-gateway/routes/job.routes.js` – ensure proxy order stays consistent once controller split occurs.
-- `kelmah-frontend/src/modules/jobs/components/JobListingPage.jsx` (and related) – validate they consume normalized fields post-cleanup.
+- `kelmah-backend/shared/models/Job.js` - confirm bidding defaults align with controller assumptions.
+- `kelmah-backend/api-gateway/routes/job.routes.js` - ensure proxy order stays consistent once controller split occurs.
+- `kelmah-frontend/src/modules/jobs/components/JobListingPage.jsx` (and related) - validate they consume normalized fields post-cleanup.
 
 ---
 
@@ -9821,7 +9821,7 @@ Final URL: '/api/users' + '/profile' = '/api/users/profile' ✅
 ### Kelmah Platform Dry Audit Execution Plan
 
 **Prepared:** October 3, 2025  
-**Owner:** Engineering Ops – Audit Task Force
+**Owner:** Engineering Ops - Audit Task Force
 
 This document operationalizes the comprehensive codebase audit request by defining the execution workflow, sector boundaries, documentation artifacts, and progress tracking expectations. It aligns with the existing [Comprehensive Codebase Audit Framework](../COMPREHENSIVE_CODEBASE_AUDIT_FRAMEWORK.md) and expands it with actionable steps for day-to-day auditing.
 
@@ -10387,7 +10387,7 @@ const wsUrl = '/socket.io'; // Let API Gateway handle proxying
 
 ## Source: spec-kit/FRONTEND_PAGE_AUDIT_20260211.md
 
-### Kelmah Frontend – Page + Security Audit
+### Kelmah Frontend - Page + Security Audit
 
 **Date started**: Feb 11, 2026  
 **Goal**: Audit every active frontend page + cross-cutting frontend infrastructure to find bugs, UI errors, security issues, and maintainability risks.
@@ -14195,7 +14195,7 @@ Check browser console - you should see:
 - ❌ ServiceWorker registration failed: A bad HTTP response code (404)
 - ✅ 🔍 HEADER AUTH STATE: { pathname: "/dashboard", isAuthenticated: true, ... }
 - ✅ Authentication initialized successfully - Synced with Redux
-- ✅ User already authenticated – skipping verifyAuth
+- ✅ User already authenticated - skipping verifyAuth
 - ✅ 🚧 ServiceWorker temporarily disabled due to deployment issues
 - ✅ Using temporary contract fallback data during service deployment fix...
 - #### **✅ Login Page (`/login`):**
@@ -15835,7 +15835,7 @@ Remote Server (Production):
    - Errors are swallowed with warn-level logs to avoid crashing the gateway during transient outages.
 
 2. **Environment Guards**
-   - `detectEnvironment()` drives behaviour – scheduler auto-enables only for `production` detections (Render, Vercel, etc.).
+   - `detectEnvironment()` drives behaviour - scheduler auto-enables only for `production` detections (Render, Vercel, etc.).
    - Local developers can force-enable via `FORCE_RENDER_KEEP_ALIVE=true` or disable in production with `DISABLE_RENDER_KEEP_ALIVE=true`.
 
 3. **HTTP Behaviour**
@@ -15846,14 +15846,14 @@ Remote Server (Production):
    - Logs track misses at `debug`, recoveries at `info`, and final failures at `error` with endpoint/status/error metadata.
 
 4. **Configuration Flags**
-   - `RENDER_KEEP_ALIVE_INTERVAL_MS` – override interval (default 480000 ms ≈ 8 minutes).
-   - `RENDER_KEEP_ALIVE_TIMEOUT_MS` – override per-request timeout (default 20000 ms).
-   - `RENDER_KEEP_ALIVE_RETRY_COUNT` – number of attempts per tick (default 3, minimum 1).
-   - `RENDER_KEEP_ALIVE_RETRY_DELAY_MS` – delay between attempts (default 15000 ms).
-   - `RENDER_KEEP_ALIVE_ENDPOINTS` – comma-separated fallback list shared by all services.
-   - `<SERVICE_NAME>_KEEP_ALIVE_ENDPOINTS` – service-specific endpoint list (e.g. `AUTH_KEEP_ALIVE_ENDPOINTS=/healthz,/readyz`).
-   - `DISABLE_RENDER_KEEP_ALIVE` – explicit opt-out in any environment.
-   - `FORCE_RENDER_KEEP_ALIVE` – opt-in when running locally.
+   - `RENDER_KEEP_ALIVE_INTERVAL_MS` - override interval (default 480000 ms ≈ 8 minutes).
+   - `RENDER_KEEP_ALIVE_TIMEOUT_MS` - override per-request timeout (default 20000 ms).
+   - `RENDER_KEEP_ALIVE_RETRY_COUNT` - number of attempts per tick (default 3, minimum 1).
+   - `RENDER_KEEP_ALIVE_RETRY_DELAY_MS` - delay between attempts (default 15000 ms).
+   - `RENDER_KEEP_ALIVE_ENDPOINTS` - comma-separated fallback list shared by all services.
+   - `<SERVICE_NAME>_KEEP_ALIVE_ENDPOINTS` - service-specific endpoint list (e.g. `AUTH_KEEP_ALIVE_ENDPOINTS=/healthz,/readyz`).
+   - `DISABLE_RENDER_KEEP_ALIVE` - explicit opt-out in any environment.
+   - `FORCE_RENDER_KEEP_ALIVE` - opt-in when running locally.
 
 ---
 
@@ -16509,7 +16509,7 @@ The templates include comprehensive checklists that act as "unit tests" for the 
 
 ## Source: spec-kit/STATUS_LOG.md
 
-### Investigation Intake (Feb 11, 2026 – Full Frontend Page + Security Audit) 🔄
+### Investigation Intake (Feb 11, 2026 - Full Frontend Page + Security Audit) 🔄
 
 - 🎯 **Scope Restatement**: Audit every active frontend page and core cross-cutting infrastructure (routing, auth, API client, storage, websocket) to find bugs, UI/UX issues, security issues, and maintenance risks; document each finding with file references and actionable fixes.
 - ✅ **Success Criteria**:
@@ -16520,7 +16520,7 @@ The templates include comprehensive checklists that act as "unit tests" for the 
 - 🗂️ **Primary Audit Doc**:
   - `spec-kit/FRONTEND_PAGE_AUDIT_20260211.md`
 
-### Follow-up Update (Feb 10, 2026 – Deeper Layout Audit)
+### Follow-up Update (Feb 10, 2026 - Deeper Layout Audit)
 
 - ✅ Verified the deeper root cause: the public layout wraps header, main, and footer in a flex column with `minHeight: 100vh` and `flexGrow: 1` on the main, which forces the footer to consume part of the first viewport even when content should flow below.
 - ✅ Implemented the structural fix: removed the public layout flex/minHeight behavior and the main flexGrow so the footer renders only after full homepage content (natural document flow).
@@ -16542,12 +16542,12 @@ The templates include comprehensive checklists that act as "unit tests" for the 
 - ✅ `JobSearchForm` triggers `emitSearch()` on input `onBlur`, which calls `handleSearch()` → `updateSearchURL()`; this performs a `navigate(..., { replace: true })` while still on `/find-talents`.
 - ✅ `SearchPage` only guards `updateSearchURL()` by checking it is still on a search context; it does not detect outbound navigation intent when a nav link is clicked while a field is focused.
 
-### Dry Audit Findings (Feb 11, 2026 – Recheck)
+### Dry Audit Findings (Feb 11, 2026 - Recheck)
 
 - ✅ `WorkerCard` wraps the entire card in a `RouterLink`, while action buttons inside the card call `stopPropagation`/`preventDefault`. This makes navigation dependent on link behavior and nested event handling.
 - ✅ `SearchPage` does not explicitly block navigation, and `routes/config.jsx` confirms `/worker-profile/:workerId` is a valid public route.
 
-### Implementation Update (Feb 9, 2026 – Homepage Marketing & Imagery Restore)
+### Implementation Update (Feb 9, 2026 - Homepage Marketing & Imagery Restore)
 
 - ✅ Routed the landing page to a new non-module `HomeLanding` component that restores branded imagery, a clear "What Kelmah does" value block, and an About-style narrative section tuned for mobile.
 - ✅ Added hero background imagery, category imagery cards, and an assurance banner to re-establish Kelmah's marketing message while keeping actions for hirers and workers prominent.
@@ -16556,7 +16556,7 @@ The templates include comprehensive checklists that act as "unit tests" for the 
   - `kelmah-frontend/src/routes/config.jsx`
 - 🧪 Verification: Not run (UI-only changes; recommend visual check on mobile and desktop breakpoints).
 
-### Investigation Intake (Feb 9, 2026 – Header/Footer CTA & Layout Audit) 🔄
+### Investigation Intake (Feb 9, 2026 - Header/Footer CTA & Layout Audit) 🔄
 
 - 🎯 **Scope Restatement**: Map the visible design/UX issues in the live header/footer (mobile + desktop) to exact frontend components/files, then propose a tightened layout system and CTA hierarchy without touching `@/modules` code.
 - ✅ **Success Criteria**:
@@ -16570,7 +16570,7 @@ The templates include comprehensive checklists that act as "unit tests" for the 
   - `kelmah-frontend/src/modules/common/components/layout/PageHeader.jsx`
   - `kelmah-frontend/src/hooks/useAutoShowHeader.js`
 
-### Work Intake (Nov 22, 2025 – Phase 3 Task 3.1 React Query Migration)
+### Work Intake (Nov 22, 2025 - Phase 3 Task 3.1 React Query Migration)
 
 - 🎯 **Scope Restatement**: Begin Phase 3 by migrating the jobs domain data fetching (public jobs list, worker search, hirer job creation/applications) from Redux thunks in `jobSlice.js`/`jobsService.js` to React Query hooks per `IMPLEMENTATION_GUIDE_PHASE_3_4_5.md` Task 3.1.
 - ✅ **Success Criteria**:
@@ -16591,13 +16591,13 @@ The templates include comprehensive checklists that act as "unit tests" for the 
   - `kelmah-frontend/src/modules/hirer/services/hirerSlice.js`
 - 📝 **Next Actions**: Execute the mandated dry audit (read and catalog the files above, trace UI→service→API flows, document findings in a new spec-kit note) before writing any React Query code or running diagnostics.
 
-### Dry Audit Completion (Nov 22, 2025 – Phase 3 Task 3.1 React Query Migration)
+### Dry Audit Completion (Nov 22, 2025 - Phase 3 Task 3.1 React Query Migration)
 
 - ✅ Read every file listed in the intake (job slice/service, JobsPage, JobCreationForm, JobApplication, worker job pages/components/slice, hirer slice) and captured their roles, current Redux thunk usage, and UI→API chains in `spec-kit/PHASE3_REACT_QUERY_MIGRATION.md`.
 - 🧭 Documented three data-flow templates (JobsPage listing, hirer job creation, worker job search), enumerated issues (duplicate fetch logic, Redux store bloat, missing cache semantics, save/apply UX gaps), and outlined the upcoming hook/mutation design plus Redux slim-down plan.
 - 📌 Next action: proceed to hook implementation + component refactors per the documented plan, then update this log after React Query wiring and verification commands (`npm run lint`, `npm run build --prefix kelmah-frontend`).
 
-### Implementation Progress (Nov 22, 2025 – Phase 3 Task 3.1 React Query Migration)
+### Implementation Progress (Nov 22, 2025 - Phase 3 Task 3.1 React Query Migration)
 
 - ✅ Created `src/modules/jobs/hooks/useJobsQuery.js` with normalized filter helpers, canonical `jobKeys`, and the first hook set (`useJobsQuery`, `useJobQuery`, `useCreateJobMutation`, `useApplyToJobMutation`) so React Query can handle listings + mutations with 30s stale windows.
 - ✅ Migrated `JobsPage.jsx` to the new hook, removing the inline `jobsService.getJobs` effect in favor of the query object for loading/error handling while preserving the existing hero/filters UI. Error copy now reflects React Query state, and icon prefetch waits on the derived loading flag.
@@ -16605,7 +16605,7 @@ The templates include comprehensive checklists that act as "unit tests" for the 
 - 🧪 Verification: `npm run build --prefix kelmah-frontend` (Nov 22) succeeds in ~1m57s with only the known chunk-size warnings, confirming the new hooks integrate cleanly.
 - 🔜 Next steps: migrate JobApplication + worker job search/save flows to React Query, then strip the remaining async thunks/data arrays from `jobSlice.js` before another lint/build pass.
 
-### Work Intake (Nov 26, 2025 – Worker Job Search & Application React Query Migration)
+### Work Intake (Nov 26, 2025 - Worker Job Search & Application React Query Migration)
 
 - 🎯 **Scope Restatement**: Complete the next React Query migration slice by moving `JobApplication.jsx`, `worker/pages/JobSearchPage.jsx`, `worker/pages/JobApplicationPage.jsx`, and the worker saved-job entry points (`SmartJobRecommendations.jsx`, `dashboard/components/worker/AvailableJobs.jsx`, shared `JobCard.jsx`) off Redux thunks/manual `jobsService` calls so they rely on the new hook/mutation suite. Once consumers stop dispatching `fetchJobs`, `saveJobToServer`, etc., collapse `jobSlice.js` down to UI filter state only.
 - ✅ **Success Criteria**:
@@ -16623,7 +16623,7 @@ The templates include comprehensive checklists that act as "unit tests" for the 
   - `kelmah-frontend/src/modules/jobs/services/jobSlice.js`
 - 📝 **Next Actions**: Document the UI→API data flows for each component in `spec-kit/PHASE3_REACT_QUERY_MIGRATION.md`, design the saved-job/query mutation plan, then implement the hook migrations + slice cleanup before running lint/build and updating this log with verification evidence.
 
-### Implementation Prep (Nov 27, 2025 – Worker JobSearchPage Hook Migration)
+### Implementation Prep (Nov 27, 2025 - Worker JobSearchPage Hook Migration)
 
 - 🎯 **Scope Restatement**: Replace the Worker JobSearchPage Redux data dependencies (`fetchJobs`, `fetchSavedJobs`, `saveJobToServer`, `unsaveJobFromServer`) with the React Query hook suite so listings, filter persistence, and saved-job toggles share the centralized caches introduced earlier in Phase 3.
 - ✅ **Success Criteria**:
@@ -16634,7 +16634,7 @@ The templates include comprehensive checklists that act as "unit tests" for the 
 - 🧭 **Investigation Notes**: Re-read `JobSearchPage.jsx`, `jobSlice.js`, and `useJobsQuery.js` to catalog every thunk/selectors dependency and map the UI→API flow into `PHASE3_REACT_QUERY_MIGRATION.md`. Confirmed the component only needs Redux for auth + filters; all other derived data can come from the query layer.
 - 🛠️ **Next Steps**: Update the spec doc with the new data-flow mapping, then refactor `JobSearchPage.jsx` to consume `useJobsQuery`, `useSavedJobsQuery`, and the save/unsave mutations before circling back to trim `jobSlice.js`.
 
-### Implementation Progress (Nov 27, 2025 – Worker JobSearchPage Hook Migration)
+### Implementation Progress (Nov 27, 2025 - Worker JobSearchPage Hook Migration)
 
 - ✅ `JobSearchPage.jsx` now derives listings from `useJobsQuery(buildQueryFilters(filters))`, which memoizes the Redux filter payload into canonical API params (status/page/limit/budget/category/type/sort). The Redux slice retains only UI filters; data arrays and thunk dispatches were removed from this page.
 - ✅ Saved-job UX switched to `useSavedJobsQuery` + `useSavedJobIds` with the new `useSaveJobMutation`/`useUnsaveJobMutation` handlers, so bookmark toggles optimistically update the shared cache without re-dispatching `fetchSavedJobs`.
@@ -16642,34 +16642,34 @@ The templates include comprehensive checklists that act as "unit tests" for the 
 - 🧪 **Verification**: `cd kelmah-frontend && npx eslint src/modules/worker/pages/JobSearchPage.jsx` still reports the long-standing unused-import/dependency warnings that predated this migration (React, dozens of MUI icons, etc.), so lint fails for the same legacy reasons even though the new hook code compiles. No new errors were introduced by the refactor.
 - 🔜 **Next Steps**: Extend the same hook adoption to `SmartJobRecommendations`, worker dashboard cards, and shared `JobCard` so `jobSlice.js` can finally shed the remaining saved-job state before the final lint/build pass.
 
-### Dry Audit Completion (Nov 29, 2025 – Worker Module Lint Debt Reduction)
+### Dry Audit Completion (Nov 29, 2025 - Worker Module Lint Debt Reduction)
 
 - ✅ Read every file in the scoped surface (JobCard, SmartJobRecommendations, Worker AvailableJobs, JobSearchPage, JobApplicationPage, workerRoutes, routes/config plus `jobs/hooks/useJobsQuery.js` and `jobs/services/jobsService.js`) to confirm current logic, prop usage, and React Query wiring.
 - 🧭 Updated `spec-kit/WORKER_MODULE_LINT_REDUCTION_DEC2025.md` with full UI→state→service→API traces for each component, documenting how bookmark/apply/navigation flows rely on the React Query mutations and API Gateway routes.
 - 🔍 Identified concrete lint targets: missing `PropTypes` + defaultProps in JobCard, unused icon imports + redundant state in worker widgets, dangling `Navigate` import/CRLF formatting in `src/routes/config.jsx`, and console-heavy debug logging in `workerRoutes.jsx` that can be trimmed without impacting role-gate telemetry.
 - 🔜 Next action: implement the lint fixes (props, unused imports, formatting) and rerun the targeted ESLint command, then capture the verification output back in this log and the spec doc.
 
-### Work Intake (Nov 19, 2025 – Registration Flow Redesign Audit)
+### Work Intake (Nov 19, 2025 - Registration Flow Redesign Audit)
 
 - 🔄 Audit the desktop + mobile registration experiences (`Register.jsx`, `MobileRegister.jsx`) to catalog current UX, validation, and Redux/auth flows compared to the new schema-driven, multi-step brief.
 - 🧠 Document how each step maps to react-hook-form, local component state, Redux thunks, and secureStorage draft logic so we can plan the consolidation into a single shared schema + hook set.
 - 🗂️ Update this status log and create/refresh a spec-kit note summarizing identified gaps (missing schema validation, inconsistent UX on desktop vs. mobile, limited worker-specific questions) before coding changes.
 
-### Work Intake (Nov 21, 2025 – Dry Audit Compliance Reset)
+### Work Intake (Nov 21, 2025 - Dry Audit Compliance Reset)
 
 - 🔄 Re-opened the job-posting investigation to explicitly follow the mandated **dry-audit-first** workflow: before running diagnostics, catalog every file in the UI → gateway → job-service flow, read them end-to-end, and capture findings inside the spec-kit data-flow note plus this status log.
 - 🗂️ File list confirmed for audit: `JobCreationForm.jsx`, `jobSlice.js`, `jobsService.js`, shared axios/environment helpers, hirer routing shells, gateway `server.js` + `proxy/job.proxy.js` + `routes/job.routes.js`, job-service `server.js`, `routes/job.routes.js`, `controllers/job.controller.js`, `middleware/dbReady.js`, `models/index.js`, and shared `Job.js`/`User.js` models.
 - 📝 Documentation requirements: each file’s role, observed issues, and TODOs must be written to `spec-kit/JOB_POSTING_PIPELINE_DATA_FLOW_NOV2025.md` before any `curl`/diagnostic commands execute; only after that written audit may we run POST `/api/jobs` reproductions.
 - ⚠️ Compliance reminder recorded here so future regression hunts reference this entry before engaging the services.
 
-### Progress Update (Nov 23, 2025 – Job Posting Dry Audit Completed)
+### Progress Update (Nov 23, 2025 - Job Posting Dry Audit Completed)
 
 - ✅ Read and catalogued every file in the mandated UI → gateway → job-service flow (`JobCreationForm.jsx`, `HirerDashboardPage.jsx`, `jobSlice.js`, `jobsService.js`, `hirerSlice.js`, shared axios/env config, API Gateway `server.js` + `proxy/job.proxy.js`, job-service `server.js`, `routes/job.routes.js`, `controllers/job.controller.js`, `middlewares/dbReady.js`, `config/db.js`, `models/index.js`, shared `serviceTrust.js`).
 - 📝 Updated `spec-kit/JOB_POSTING_PIPELINE_DATA_FLOW_NOV2025.md` with a “Dry Audit Findings (Nov 23, 2025)” section covering frontend entry points, networking, gateway/proxy behavior, job-service readiness, and compliance notes; also refreshed the file inventory tables to reflect hirer dashboard + slice participation.
 - 🛑 No diagnostics or curl tests have been executed yet—per workflow, testing begins only after documenting the audit (this entry) and aligning on the spec-kit updates.
 - 📌 Next action: proceed to diagnostics (`curl` via current LocalTunnel + direct job-service) to capture the latest failure evidence now that the dry-audit requirement is satisfied.
 
-### Audit Intake (Nov 19, 2025 – Consolerrorsfix Critical Bug List)
+### Audit Intake (Nov 19, 2025 - Consolerrorsfix Critical Bug List)
 
 - ✅ **Jobs module chunk recovery already in place** via `src/utils/lazyWithRetry.js` + the wrapped imports in `src/routes/publicRoutes.jsx`/`src/App.jsx`. The helper now purges Cache Storage + unregisters the service worker before reloading, which directly guards the `Failed to fetch dynamically imported module` error called out for `/jobs`.
 - ✅ **Session/auth persistence fixes confirmed** in `src/modules/auth/services/authSlice.js` (refresh-token fallback, stricter initial state), `src/App.jsx` (boot-time `verifyAuth()` triggers whenever tokens exist), and `src/modules/layout/components/Header.jsx` (profile menu visibility tied to Redux auth instead of stale local UI state).
@@ -16678,20 +16678,20 @@ The templates include comprehensive checklists that act as "unit tests" for the 
 - ✅ **Theme toggle persistence overhaul** lives in `src/theme/ThemeProvider.jsx`, persisting `{ mode, updatedAt, version }` across storage layers, syncing tabs, and applying `<html data-theme>` before first paint to stop route-by-route resets.
 - 🔄 **Next verification steps:** re-run the deployed frontend through the latest LocalTunnel URL after a forced cache clear to ensure `/jobs` pulls the regenerated chunk, hit `/dashboard` + `/profile` directly post-refresh to watch the refresh-token bootstrap, and exercise `/find-talents` as a hirer + guest to validate the CTA permutations noted above.
 
-### Progress Update (Nov 19, 2025 – Header Profile Menu Restoration)
+### Progress Update (Nov 19, 2025 - Header Profile Menu Restoration)
 
 - 🚨 BUG #3 from Consolerrorsfix: Header continued to render the “Sign In / Get Started” pair while logged-in users attempted to navigate because the component showed auth buttons whenever Redux briefly said `isAuthenticated === false` during boot, even if a refresh token existed and verification was underway.
 - ✅ Updated `src/hooks/useAuthCheck.js` so `canShowUserFeatures`/`shouldShowAuthButtons` now respect Redux’ loading flag, guaranteeing we never render guest CTAs while a token-backed verification request is running.
 - ✅ Adjusted `src/modules/layout/components/Header.jsx` to consume the new loading signal, suppress auth buttons until verification completes, and show a compact spinner instead. Once the session resolves, the avatar + profile dropdown appear consistently, eliminating the confusing dual-button state.
 - 🧪 Verification: `cd kelmah-frontend && npx eslint src/hooks/useAuthCheck.js src/modules/layout/components/Header.jsx` (fails only on longstanding pre-existing lint issues unrelated to these sections); manual flow—log in, refresh `/`, wait for verify call—now keeps the primary action area blank (spinner) until the avatar renders instead of flashing Sign In.
 
-### Progress Update (Nov 16, 2025 – Proposal Review Restoration)
+### Progress Update (Nov 16, 2025 - Proposal Review Restoration)
 
 - ✅ Rebuilt `kelmah-frontend/src/modules/hirer/components/ProposalReview.jsx` after removing corrupted duplicates, adding guarded fetch logic with AbortController timeouts, retry backoff, and a 60s cache to stabilise proposal hydration.
 - ✅ Restored accept/reject flows with dialog-driven `PATCH` calls, refreshed statistics cards, table pagination summaries, and empty/loading states that surface actionable retry messaging instead of silent failures.
 - 📝 Documented the end-to-end data flow in `spec-kit/PROPOSAL_REVIEW_DATA_FLOW_NOV2025.md`; next step is `npm --prefix kelmah-frontend run build` to confirm bundler compatibility and verify backend support for the pending `PATCH /api/jobs/proposals/:id` route.
 
-### Progress Update (Nov 18, 2025 – Socket Proxy Path Restoration)
+### Progress Update (Nov 18, 2025 - Socket Proxy Path Restoration)
 
 - 🔍 Dug further into the gateway responses by running `curl -i "https://kelmah-api-gateway-nhxc.onrender.com/socket.io/?EIO=4&transport=polling"` and a token-authenticated `node -e "const { io } = require('socket.io-client'); ..."` test. Both calls hit the API Gateway but still returned 404, even though the messaging service itself was healthy, which ruled out upstream downtime.
 - 🧠 Root cause: Express strips the mount path when using `app.use('/socket.io', handler)`, so the proxy forwarded requests to the messaging service as `/` instead of `/socket.io`. Engine.IO rejected the malformed path, and the gateway bubbled a 404, killing both the polling handshake and the websocket upgrade.
@@ -16699,13 +16699,13 @@ The templates include comprehensive checklists that act as "unit tests" for the 
 - 🧪 Verification plan: after the next Render deploy, re-run (1) `curl -i $GATEWAY/socket.io/?EIO=4&transport=polling` to confirm a 200 with Engine.IO payload, and (2) the `socket.io-client` script with the hirer JWT to ensure `connect` events fire. Document request IDs plus console logs in this log once deployment completes.
 - ⚠️ `npm --prefix kelmah-backend/api-gateway run lint` is unavailable (`Missing script: "lint"`), so no formatter run was possible; tracked in terminal log for follow-up when a lint script is added.
 
-### Progress Update (Nov 12, 2025 – UI Page Title & Placeholder Audit)
+### Progress Update (Nov 12, 2025 - UI Page Title & Placeholder Audit)
 
 - ✅ Replaced the placeholder `SEO` helper with a Helmet-based metadata wrapper that sets titles/descriptions without leaking UI labels.
 - ✅ Wired `MessagingPage.jsx` into the shared `SEO` component so `/messages` now loads with the correct "Messages | Kelmah" browser title.
 - 📝 Logged the updated flow in `spec-kit/MESSAGING_PAGE_SEO_DATA_FLOW_NOV2025.md` and verified `npm run build` succeeds after the changes.
 
-### Previous Update: November 7, 2025 – Worker Profile Layout Routing Fixed ✅
+### Previous Update: November 7, 2025 - Worker Profile Layout Routing Fixed ✅
 
 - **Status:** ✅ Public worker profile pages now render with the correct public layout instead of the dashboard shell.
 - **Context:** `Layout.jsx` classified every `/worker*` route as a dashboard page, so `/worker-profile/:id` loaded the dashboard sidebar and suppressed the dedicated `WorkerProfile` view.
@@ -16715,7 +16715,7 @@ The templates include comprehensive checklists that act as "unit tests" for the 
   - Reviewed surrounding layout conditions to confirm hirer/worker dashboard routes remain unaffected.
 - **Verification:** Manual route check confirms navigating from Find Workers → “View Profile” now renders the full profile experience without dashboard chrome. Desktop/mobile layouts both respect the public variant.
 
-### 🎨 December 23, 2024 – Jobs Section Comprehensive Audit & Enhancement (Phase 4: Animated Stats)
+### 🎨 December 23, 2024 - Jobs Section Comprehensive Audit & Enhancement (Phase 4: Animated Stats)
 
 - **Status:** ✅ COMPLETE - Platform statistics now feature smooth CountUp animations
 - **Context:** User requested animated platform stats for modern, engaging effect as part of comprehensive jobs section improvements
@@ -16755,7 +16755,7 @@ The templates include comprehensive checklists that act as "unit tests" for the 
   - Contact support / request callback options
   - Multi-select advanced filters
 
-### 🏗️ October 15, 2025 – Microservices Best Practices Model Architecture Complete
+### 🏗️ October 15, 2025 - Microservices Best Practices Model Architecture Complete
 
 - **Status:** ✅ COMPLETE - All service-specific models moved to local services
 - **Context:** User questioned Portfolio model placement in shared folder. Comprehensive audit revealed 6 service-specific models incorrectly placed in shared folder, violating microservices best practices.
@@ -16786,7 +16786,7 @@ The templates include comprehensive checklists that act as "unit tests" for the 
 - **Documentation:** Complete refactoring documented in `MICROSERVICES_BEST_PRACTICES_REFACTOR.md`
 - **Next Steps:** Test all refactored endpoints after deployment completes
 
-### 🔄 October 11, 2025 – Double-Faced Backend Connection Logic Restored
+### 🔄 October 11, 2025 - Double-Faced Backend Connection Logic Restored
 
 - **Status:** ✅ Restored documented "double-faced" connection architecture using absolute URLs in runtime-config.json
 - **Context:** While fixing `/api` prefix stripping, incorrectly changed runtime-config.json to use relative URLs (`"/api"`), breaking the documented architecture that supports both LocalTunnel and Render backends through absolute URL configuration.
@@ -16812,7 +16812,7 @@ The templates include comprehensive checklists that act as "unit tests" for the 
   - Restoration: `spec-kit/DOUBLE_FACED_CONNECTION_RESTORATION.md` (new, comprehensive)
 - **Key Learning:** When user says "read my whole api codes" and references "documented on spec-kit", ALWAYS check spec-kit documentation FIRST before making architectural changes.
 
-### 🧾 October 9, 2025 – Console Error Trace Audit Logged
+### 🧾 October 9, 2025 - Console Error Trace Audit Logged
 
 - **Status:** ✅ Documented the active worker dashboard console errors and mapped the full frontend → gateway → service → database chains.
 - **Context:** Consolidated the repeated 500s/401s/WebSocket closures recorded during worker dashboard warm-up into a single trace document for downstream debugging and service verification.
@@ -17354,7 +17354,7 @@ A systematic sector-by-sector dry audit of the entire Kelmah platform has been c
    - Status: Functionally complete with security/performance concerns
    - P1 Issues: Tokens in localStorage (XSS risk), no code splitting (2MB bundle)
 
-### 🔍 Additional Audit – API Gateway Service Discovery Verification (October 1, 2025)
+### 🔍 Additional Audit - API Gateway Service Discovery Verification (October 1, 2025)
 
 - **Scope**: Validated API Gateway environment loading, intelligent service discovery behavior, and potential manual overrides across `.env` files.
 - **Gateway Environment**: `kelmah-backend/api-gateway/.env` remains the active source for gateway startup. It runs on port **5000**, ships with the Render cloud URLs, and leaves `*_SERVICE_URL` overrides unset so health-check discovery retains control.
@@ -17716,7 +17716,7 @@ Note: The platform has transitioned to LocalTunnel for current development conne
 
 - `kelmah-frontend/src/config/securityConfig.js` allows `https://shaggy-snake-43.loca.lt` for connections.
 
-### � Dashboard WebSocket Audit
+### Dashboard WebSocket Audit
 
 - Audited dashboard services and components. Confirmed `dashboardService.js` already initializes Socket.IO using relative `/socket.io`.
 - Identified legacy direct WebSocket usage in older messaging components (e.g., `Messages.jsx`) pointing to `ws://localhost:3000/ws` — these are deprecated paths and will be migrated or removed in a subsequent cleanup.
@@ -18473,7 +18473,7 @@ This **dual API architecture** is the **exact cause** of your original request i
 | `kelmah-frontend/src/routes/workerRoutes.jsx` | Worker route wrapper | Ensure Suspense/ErrorBoundary wiring matches lint expectations, remove noisy console statements after findings |
 | `kelmah-frontend/src/routes/config.jsx` | Global route declarations | CRLF + unused imports flagged by ESLint/Prettier |
 
-### 2025-12-02 – JobSearchPage Regression Audit
+### 2025-12-02 - JobSearchPage Regression Audit
 
 - 🧪 Expanded ESLint command (`cd kelmah-frontend && npx eslint src/modules/common/components/cards/JobCard.jsx src/modules/search/components/SmartJobRecommendations.jsx src/modules/dashboard/components/worker/AvailableJobs.jsx src/modules/worker/pages/JobSearchPage.jsx src/modules/worker/pages/JobApplicationPage.jsx src/routes/workerRoutes.jsx src/routes/config.jsx`) now fails exclusively on `JobSearchPage.jsx`, reporting 51 errors (missing Material UI icon imports, unused animation variants/state, undefined globals like `gtag`, and Prettier multi-line formatting drift).
 - 🔍 Per dry-audit policy, re-read the first 400 lines plus the statistics/CTA sections of `JobSearchPage.jsx` to confirm: most icons (ElectricalIcon, PlumbingIcon, etc.) and components (Collapse, Avatar, Alert) are referenced in JSX but no longer imported after the recent refactor; animation helpers such as `slideInFromLeft`/`slideInFromRight`, `isTablet`, `availableJobsForPersonalization`, etc., are defined but unused, matching the lint findings.
@@ -18519,8 +18519,8 @@ This **dual API architecture** is the **exact cause** of your original request i
 ### Signal lines
 
 -    - Frontend calls `/api/reviews/ratings/worker/:id`, but no matching route exists in `kelmah-backend/services/review-service/routes`. This always returns 404 from the gateway.
-- 3. **Harden earnings controller** ✅ (Nov 14) – Guarded payment-service axios calls with deterministic fallbacks, short-circuit when the payment host is missing, and return predictable data even when downstream services are unavailable. Controller now returns 404 only when the worker profile is missing.
-- 4. **Review-service rating proxy alignment** ✅ (Nov 14) – Gateway already exposes `/api/reviews/ratings/worker/:workerId`; frontend `reviewService` updated to hit the correct path so worker profiles can fetch ratings without 404s.
+- 3. **Harden earnings controller** ✅ (Nov 14) - Guarded payment-service axios calls with deterministic fallbacks, short-circuit when the payment host is missing, and return predictable data even when downstream services are unavailable. Controller now returns 404 only when the worker profile is missing.
+- 4. **Review-service rating proxy alignment** ✅ (Nov 14) - Gateway already exposes `/api/reviews/ratings/worker/:workerId`; frontend `reviewService` updated to hit the correct path so worker profiles can fetch ratings without 404s.
 - - ✅ Implemented Mongo-backed worker detail controllers and routes for skills + work history, returning `{ success, data }` payloads and enforcing ownership via `verifyGatewayRequest` on mutations.
 - - ✅ Added authenticated CRUD coverage for portfolio and certificate resources under `/api/users/workers/:workerId/(portfolio|certificates)`, keeping GET endpoints public (optional gateway verification) while protecting write operations with service trust middleware + rate limiter.
 - - ✅ Normalized payloads using the new WorkerProfile schema fields (`skillEntries`, `workHistory`) and shared model formatters so WorkerProfilePage now receives consistent structures across all nested resources.

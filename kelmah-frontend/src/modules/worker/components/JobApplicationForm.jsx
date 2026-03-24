@@ -3,14 +3,14 @@
  * Handles the complete job application process for vocational workers
  *
  * DATA FLOW:
- *   /jobs/:id/apply route â†’ JobApplicationForm â†’ api.get(/jobs/:id) â†’ display job
- *   Worker submits â†’ api.post(/jobs/:id/apply, { proposedRate, coverLetter }) â†’ applyToJob
+ *   /jobs/:id/apply route -> JobApplicationForm -> api.get(/jobs/:id) -> display job
+ *   Worker submits -> api.post(/jobs/:id/apply, { proposedRate, coverLetter }) -> applyToJob
  *
  * CRITICAL FIXES (Audit March 2026):
  *   - FIX-001: Removed duplicate /api prefix (api client already has /api base)
- *   - FIX-002: Replaced job.company.name â†’ job.hirer (backend returns hirer object)
- *   - FIX-003: Renamed expectedSalary â†’ proposedRate (matches Application model)
- *   - FIX-004: Replaced job.applyBy â†’ job.expiresAt || job.bidding?.bidDeadline
+ *   - FIX-002: Replaced job.company.name -> job.hirer (backend returns hirer object)
+ *   - FIX-003: Renamed expectedSalary -> proposedRate (matches Application model)
+ *   - FIX-004: Replaced job.applyBy -> job.expiresAt || job.bidding?.bidDeadline
  *   - FIX-005: Added null guards for job.skills, job.budget, etc.
  *   - FIX-006: Improved UX for vocational workers (simple language, large touch targets)
  *   - FIX-007: Added proper loading, error, and success states
@@ -66,12 +66,12 @@ const getHirerName = (job) => {
 const formatBudget = (job) => {
   if (!job) return 'Not specified';
   const b = job.budget;
-  const currency = job.currency === 'GHS' ? 'GHâ‚µ' : (job.currency || 'GHâ‚µ');
+  const currency = job.currency === 'GHS' ? 'GHS' : (job.currency || 'GHS');
   if (!b && b !== 0) return 'Not specified';
   if (typeof b === 'number') return `${currency} ${b.toLocaleString()}`;
   if (typeof b === 'object') {
     if (b.min && b.max && b.min !== b.max)
-      return `${b.currency || currency} ${b.min.toLocaleString()} â€“ ${b.max.toLocaleString()}`;
+      return `${b.currency || currency} ${b.min.toLocaleString()} - ${b.max.toLocaleString()}`;
     const amount = b.amount || b.min || b.max || 0;
     return `${b.currency || currency} ${amount.toLocaleString()}`;
   }
@@ -90,7 +90,7 @@ const JobApplicationForm = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
 
-  // Application form state â€” field names match Application model
+  // Application form state - field names match Application model
   const [applicationData, setApplicationData] = useState({
     coverLetter: '',
     proposedRate: '',
@@ -106,7 +106,7 @@ const JobApplicationForm = () => {
       setLoading(true);
       setError(null);
       try {
-        // FIX-001: Use /jobs/:id â€” api client already prepends /api
+        // FIX-001: Use /jobs/:id - api client already prepends /api
         const response = await api.get(`/jobs/${jobId}`);
         const data = response.data?.data || response.data;
         if (data) {
@@ -178,7 +178,7 @@ const JobApplicationForm = () => {
                 : { value: 1, unit: 'month' },
       };
 
-      // FIX-001: Correct path â€” no double /api
+      // FIX-001: Correct path - no double /api
       const response = await api.post(`/jobs/${jobId}/apply`, submissionData);
 
       if (response.data) {
@@ -543,11 +543,11 @@ const JobApplicationForm = () => {
                     />
                   </Grid>
 
-                  {/* Proposed Rate â€” FIX-003 */}
+                  {/* Proposed Rate - FIX-003 */}
                   <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
-                      label="Your Price (GHâ‚µ) *"
+                      label="Your Price (GHS) *"
                       type="number"
                       placeholder="e.g., 2000"
                       value={applicationData.proposedRate}
@@ -559,7 +559,7 @@ const JobApplicationForm = () => {
                         startAdornment: (
                           <InputAdornment position="start">
                             <MoneyIcon color="action" sx={{ mr: 0.5 }} />
-                            GHâ‚µ
+                            GHS
                           </InputAdornment>
                         ),
                       }}
@@ -595,9 +595,9 @@ const JobApplicationForm = () => {
                         label="Years of experience"
                       >
                         <MenuItem value="0-1">Less than 1 year</MenuItem>
-                        <MenuItem value="2-3">2â€“3 years</MenuItem>
-                        <MenuItem value="4-5">4â€“5 years</MenuItem>
-                        <MenuItem value="6-10">6â€“10 years</MenuItem>
+                        <MenuItem value="2-3">2-3 years</MenuItem>
+                        <MenuItem value="4-5">4-5 years</MenuItem>
+                        <MenuItem value="6-10">6-10 years</MenuItem>
                         <MenuItem value="10+">More than 10 years</MenuItem>
                       </Select>
                     </FormControl>

@@ -62,14 +62,14 @@ WorkerProfile state updates → UI re-renders with new worker info
 ---
 *Document owner: Investigation logged by Copilot (GPT-5.1-Codex Preview) on Nov 29, 2025 to satisfy the mandated dry-audit + data-flow documentation workflow prior to implementation.*
 
-## Implementation Progress (Nov 30, 2025 – Deterministic Worker ID Resolution)
+## Implementation Progress (Nov 30, 2025 - Deterministic Worker ID Resolution)
 - ✅ **Prop-driven ID Source**: `WorkerProfile.jsx` now accepts an explicit `workerId` prop and derives a `resolvedWorkerId` that falls back to `useParams()` or the authenticated worker ID only when the prop is absent. Every fetch/bookmark/navigation handler now keys off this resolved value, eliminating stale closures that previously referenced an outdated param.
 - ✅ **Page Wiring**: `WorkerProfilePage.jsx` forwards the `workerId` from `useParams()` to the component while keeping `key={workerId}` so React still remounts between profile transitions.
 - 🔄 **Data Flow Adjustment**: The documented UI → API flow now guarantees that the ID selected on `WorkerCard` (or deep-linked URL) travels as a prop directly into `WorkerProfile`, triggering `fetchAllData(resolvedWorkerId)` without depending on Router context timing.
 - 🧪 **Verification**: `cd kelmah-frontend && npm run lint` continues to fail for the pre-existing worker module lint debt (missing PropTypes/unused imports across JobSearchPage, MyApplicationsPage, etc.). No new errors were introduced by this fix; captured the failing command in the terminal transcript for traceability. Manual navigation testing still pending once the lint backlog is cleared.
 - ⚠️ **Follow-ups**: Re-run browser navigation tests after the deterministic ID change deploys, then validate whether service worker caching needs further tweaks. Update this doc once end-to-end verification through the LocalTunnel gateway is complete.
 
-## Debug Build (Nov 30, 2025 – Build 48a56042)
+## Debug Build (Nov 30, 2025 - Build 48a56042)
 - 🔍 **Added Explicit Prop Dependency**: Modified useEffect to include `workerIdProp` in dependency array: `[workerIdProp, resolvedWorkerId, fetchAllData, authUser]`. This ensures the effect re-runs even if React's diffing doesn't detect the change through the memoized `fetchAllData` callback alone.
 - 📊 **Console Logging Added**: Inserted debug output at component render to trace:
   ```javascript

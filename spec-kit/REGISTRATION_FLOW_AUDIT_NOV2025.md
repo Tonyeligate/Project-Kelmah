@@ -1,4 +1,4 @@
-# Registration Flow Audit – November 19, 2025
+# Registration Flow Audit - November 19, 2025
 
 ## Objective
 Document the current state of Kelmah's desktop (`Register.jsx`) and mobile (`MobileRegister.jsx`) registration experiences to prepare for the UX + state management redesign requested (schema-driven form, Redux-aligned auth workflow, and productivity aids like autosave + guided steps).
@@ -15,11 +15,11 @@ Document the current state of Kelmah's desktop (`Register.jsx`) and mobile (`Mob
 - **Redux/Auth**: `authSlice.register` thunk persists tokens + normalized user to `secureStorage`. Desktop + mobile components call the same thunk but do not share schema/validation utilities.
 
 ## Key Gaps vs. Target Brief
-1. **Schema Duplication** – Both components maintain their own validation logic (regex + manual checks). No shared schema (zod/yup) or react-hook-form integration, making consistency + localization difficult.
-2. **State Fragmentation** – Desktop wizard stores each field in individual state variables and manual draft persistence. Mobile form maintains an object but still performs imperative validation. Neither reuses a shared hook.
-3. **Role-Specific Data** – Mobile flow asks workers for `trades`, but desktop wizard lacks skills/trade capture, leading to asymmetry at the API level.
-4. **UX Divergence** – Desktop uses Stepper + Save Draft CTA; mobile focuses on single-page animation. Neither offers a consolidated experience across breakpoints.
-5. **Feedback / Error Handling** – Both rely on component-level error strings without leveraging a centralized error mapper from `authSlice`. Success feedback diverges (desktop immediate redirect, mobile shows success card first).
+1. **Schema Duplication** - Both components maintain their own validation logic (regex + manual checks). No shared schema (zod/yup) or react-hook-form integration, making consistency + localization difficult.
+2. **State Fragmentation** - Desktop wizard stores each field in individual state variables and manual draft persistence. Mobile form maintains an object but still performs imperative validation. Neither reuses a shared hook.
+3. **Role-Specific Data** - Mobile flow asks workers for `trades`, but desktop wizard lacks skills/trade capture, leading to asymmetry at the API level.
+4. **UX Divergence** - Desktop uses Stepper + Save Draft CTA; mobile focuses on single-page animation. Neither offers a consolidated experience across breakpoints.
+5. **Feedback / Error Handling** - Both rely on component-level error strings without leveraging a centralized error mapper from `authSlice`. Success feedback diverges (desktop immediate redirect, mobile shows success card first).
 
 ## Data Flow Notes
 ```

@@ -35,6 +35,7 @@ import CountUp from 'react-countup';
 import { useInView } from 'react-intersection-observer';
 import { captureRecoverableApiError } from '@/services/errorTelemetry';
 import { devWarn } from '@/modules/common/utils/devLogger';
+import { formatGhanaCurrency } from '@/utils/formatters';
 import {
   ElectricalServices as ElectricalIcon,
   Plumbing as PlumbingIcon,
@@ -727,9 +728,9 @@ const JobResultsSection = ({
                               ? typeof job?.budget === 'object'
                                 ? job.budget.min === job.budget.max ||
                                   !job.budget.max
-                                  ? `GHâ‚µ ${(job.budget.amount || job.budget.min)?.toLocaleString()}`
-                                  : `GHâ‚µ ${job.budget.min?.toLocaleString()} - ${job.budget.max?.toLocaleString()}`
-                                : `GHâ‚µ ${job?.budget?.toLocaleString()}`
+                                  ? formatGhanaCurrency(job.budget.amount || job.budget.min)
+                                  : `${formatGhanaCurrency(job.budget.min)} - ${formatGhanaCurrency(job.budget.max)}`
+                                : formatGhanaCurrency(job?.budget)
                               : 'Negotiable'}
                           </Typography>
                           <Chip
@@ -750,7 +751,7 @@ const JobResultsSection = ({
                             sx={{ mr: 1, color: '#D4AF37' }}
                           />
                           <Typography variant="body2" sx={{ color: 'white' }}>
-                            {job.rating ? `${job.rating} Rating` : 'No ratings yet'} â€¢{' '}
+                            {job.rating ? `${job.rating} Rating` : 'No ratings yet'} -{' '}
                             {job.proposalCount || 0} Applicants
                           </Typography>
                         </Box>

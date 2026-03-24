@@ -98,7 +98,7 @@ export const PaymentProvider = ({ children }) => {
       }
 
       // Escrows (501/404 -> empty)
-      // getEscrows already returns a normalised array â€” guard anyway
+      // getEscrows already returns a normalised array - guard anyway
       if (escrowsRes.status === 'fulfilled') {
         const ev = escrowsRes.value;
         setEscrows(Array.isArray(ev) ? ev : []);
@@ -143,7 +143,7 @@ export const PaymentProvider = ({ children }) => {
           currency: 'GHS',
           paymentMethodId,
         });
-        showToast(`GHâ‚µ${amount.toFixed(2)} deposited successfully.`, 'success');
+        showToast(`GHS ${amount.toFixed(2)} deposited successfully.`, 'success');
         // Refresh wallet data
         await fetchData();
         return true;

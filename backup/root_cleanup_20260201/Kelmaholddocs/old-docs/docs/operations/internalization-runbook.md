@@ -1,4 +1,4 @@
-## Kelmah Platform – ECS Internalization Runbook
+## Kelmah Platform - ECS Internalization Runbook
 
 This runbook captures what was done, and how to repeat it, to stabilize deployments and internalize service-to-service traffic over private networking.
 
@@ -329,7 +329,7 @@ aws ecs register-task-definition --cli-input-json file://api-gateway-task-defini
 aws ecs update-service --cluster Project-Kelmah --service kelmah-api-gateway-service-gg6bf9h1 --task-definition api-gateway-task:<REV> --force-new-deployment --region eu-north-1
 ```
 
-#### Cutover – scale down legacy services
+#### Cutover - scale down legacy services
 ```bash
 for s in auth-service user-service job-service payment-service messaging-service review-service; do \
   aws ecs update-service --cluster Project-Kelmah --service $s --desired-count 0 --region eu-north-1; \

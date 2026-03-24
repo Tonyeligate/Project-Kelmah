@@ -1,4 +1,4 @@
-# Messaging Sector Dry Audit – October 1, 2025
+# Messaging Sector Dry Audit - October 1, 2025
 
 ## Scope & Inventory
 

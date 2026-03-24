@@ -402,7 +402,7 @@ const WorkerDirectoryExperience = ({
         ) {
           return;
         }
-        setError('Search did not work. Please try again.');
+        setError('Search could not load workers right now. Please try again.');
         setSearchResults([]);
       } finally {
         if (activeSearchControllerRef.current === controller) {
@@ -734,6 +734,7 @@ const WorkerDirectoryExperience = ({
       showMap={WORKER_DIRECTORY_MAP_ENABLED && showMap}
       onToggleView={WORKER_DIRECTORY_MAP_ENABLED ? handleToggleView : undefined}
       onOpenFilters={handleOpenFilterControls}
+      onRetry={() => executeWorkerSearch(searchParams, { sortOption: sortOrder })}
       onSaveWorker={handleSaveWorker}
       isPublicView={isPublicView}
     />

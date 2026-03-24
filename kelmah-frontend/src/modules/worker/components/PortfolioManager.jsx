@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import portfolioService from '../services/portfolioService';
 import fileUploadService from '../../common/services/fileUploadService';
 import {
-  Box, Paper, Typography, Button, Grid, Card, CardContent, CardMedia, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Chip, Alert, CircularProgress, ImageList, ImageListItem, ImageListItemBar, Fab, Menu, MenuItem, Skeleton, Stack, Divider, Tooltip, useTheme, alpha } from '@mui/material';
+  Box, Paper, Typography, Button, Grid, Card, CardActionArea, CardContent, CardMedia, ButtonBase, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Chip, Alert, CircularProgress, ImageList, ImageListItem, ImageListItemBar, Fab, Menu, MenuItem, Skeleton, Stack, Divider, Tooltip, useTheme, alpha } from '@mui/material';
 import {
   Add as AddIcon,
   Edit as EditIcon,
@@ -350,31 +350,25 @@ const PortfolioManager = () => {
       </IconButton>
 
       {item.imageCount > 0 ? (
-        <CardMedia
-          component="img"
-          height={isMobile ? 176 : 200}
-          image={item.heroImage}
-          alt={item.title}
+        <CardActionArea
+          onClick={() => handleOpenGallery(item)}
+          aria-label={`Open image gallery for ${item.title}`}
           sx={{
-            objectFit: 'cover',
-            cursor: 'pointer',
             '&:focus-visible': {
               outline: `3px solid ${theme.palette.primary.main}`,
               outlineOffset: -3,
             },
           }}
-          onClick={() => handleOpenGallery(item)}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter' || event.key === ' ') {
-              event.preventDefault();
-              handleOpenGallery(item);
-            }
-          }}
-          tabIndex={0}
-          role="button"
-          aria-label={`Open image gallery for ${item.title}`}
-          onError={(e) => { e.target.onerror = null; e.target.src = ''; e.target.style.display = 'none'; }}
-        />
+        >
+          <CardMedia
+            component="img"
+            height={isMobile ? 176 : 200}
+            image={item.heroImage}
+            alt={item.title}
+            sx={{ objectFit: 'cover' }}
+            onError={(e) => { e.target.onerror = null; e.target.src = ''; e.target.style.display = 'none'; }}
+          />
+        </CardActionArea>
       ) : (
         <Box
           sx={{
@@ -397,14 +391,6 @@ const PortfolioManager = () => {
           size="small"
           color="secondary"
           onClick={() => handleOpenGallery(item)}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter' || event.key === ' ') {
-              event.preventDefault();
-              handleOpenGallery(item);
-            }
-          }}
-          role="button"
-          tabIndex={0}
           aria-label={`Open ${item.imageCount} gallery image${item.imageCount === 1 ? '' : 's'} for ${item.title}`}
           sx={{
             position: 'absolute',
@@ -429,14 +415,6 @@ const PortfolioManager = () => {
           component="h3"
           gutterBottom
           sx={{
-            fontSize: { xs: '1rem', sm: '1.125rem' },
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            overflowWrap: 'anywhere',
-            lineHeight: 1.3,
             mb: 0.75,
           }}
         >
@@ -445,7 +423,6 @@ const PortfolioManager = () => {
 
         <Typography
           variant="body2"
-          color="text.secondary"
           paragraph
           sx={{
             display: '-webkit-box',
@@ -473,7 +450,7 @@ const PortfolioManager = () => {
             </Typography>
             <Stack direction="row" spacing={1} sx={{ mt: 0.75, flexWrap: 'wrap', rowGap: 1 }}>
               {item.previewImages.slice(0, 3).map((imageUrl, index) => (
-                <Box
+                <ButtonBase
                   key={`${item.id}-preview-${index}`}
                   sx={{
                     width: 58,
@@ -484,16 +461,9 @@ const PortfolioManager = () => {
                     borderColor: 'divider',
                     cursor: 'pointer',
                     bgcolor: 'action.hover',
+                    p: 0,
                   }}
                   onClick={() => handleOpenGallery(item, index)}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter' || event.key === ' ') {
-                      event.preventDefault();
-                      handleOpenGallery(item, index);
-                    }
-                  }}
-                  tabIndex={0}
-                  role="button"
                   aria-label={`Open ${item.title} image ${index + 1}`}
                 >
                   <Box
@@ -502,7 +472,7 @@ const PortfolioManager = () => {
                     alt={`${item.title} preview ${index + 1}`}
                     sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   />
-                </Box>
+                </ButtonBase>
               ))}
             </Stack>
           </Box>

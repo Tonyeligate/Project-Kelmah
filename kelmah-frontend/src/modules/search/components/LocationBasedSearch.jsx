@@ -617,7 +617,7 @@ const LocationBasedSearch = ({
           >
             <Typography variant="body2">
               <strong>{currentLocation.name}</strong>
-              {currentLocation.region && ` â€¢ ${currentLocation.region}`}
+              {currentLocation.region && ` | ${currentLocation.region}`}
             </Typography>
           </Alert>
         ) : (
@@ -669,7 +669,14 @@ const LocationBasedSearch = ({
       </Paper>
 
       {/* Location Search */}
-      <Paper sx={{ p: 2, mb: 2 }}>
+      <Paper
+        component="form"
+        onSubmit={(event) => {
+          event.preventDefault();
+          handleSearch(searchQuery);
+        }}
+        sx={{ p: 2, mb: 2 }}
+      >
         <Autocomplete
           options={allCities}
           getOptionLabel={(option) => option.label || option.name}
@@ -694,12 +701,6 @@ const LocationBasedSearch = ({
                 'aria-label': 'Search location by city, town, or area',
               }}
               helperText="Type a city, town, or area name. If live search is unavailable, use Popular Locations or Browse by Region below."
-              onKeyDown={(event) => {
-                if (event.key === 'Enter') {
-                  event.preventDefault();
-                  handleSearch(searchQuery);
-                }
-              }}
               InputProps={{
                 ...params.InputProps,
                 startAdornment: (

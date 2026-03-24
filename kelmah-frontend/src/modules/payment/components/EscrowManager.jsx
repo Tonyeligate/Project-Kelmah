@@ -153,7 +153,7 @@ const EscrowManager = () => {
       )}
       <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} useFlexGap sx={{ mb: 2, flexWrap: 'wrap' }}>
         <TextField
-          label="Amount (GHâ‚µ)"
+          label="Amount (GHS)"
           value={form.amount}
           onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))}
           inputProps={{ 'aria-label': 'Escrow amount in Ghana cedis' }}
@@ -229,10 +229,10 @@ const EscrowManager = () => {
               }}
             >
               <Typography variant="subtitle1">
-                {e.reference} â€” {e.status}
+                {e.reference} - {e.status}
               </Typography>
               <Typography variant="body2">
-                Amount: {e.amount} {e.currency} â€¢ Provider: {e.provider}
+                Amount: {e.amount} {e.currency} | Provider: {e.provider}
               </Typography>
               <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
                 <Button
@@ -240,7 +240,7 @@ const EscrowManager = () => {
                   onClick={() => releaseEscrow(e._id)}
                   aria-label={`Release escrow ${e.reference}`}
                   disabled={e.status !== 'active'}
-                  sx={{ minHeight: 36 }}
+                  sx={{ minHeight: { xs: 44, sm: 36 } }}
                 >
                   Release
                 </Button>
@@ -249,7 +249,7 @@ const EscrowManager = () => {
                   onClick={() => refundEscrow(e._id)}
                   aria-label={`Refund escrow ${e.reference}`}
                   disabled={!(e.status === 'active' || e.status === 'disputed')}
-                  sx={{ minHeight: 36 }}
+                  sx={{ minHeight: { xs: 44, sm: 36 } }}
                 >
                   Refund
                 </Button>

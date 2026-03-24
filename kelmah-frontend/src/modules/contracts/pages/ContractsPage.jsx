@@ -33,8 +33,8 @@ const STATUS_OPTIONS = [
 const SORT_OPTIONS = [
   { value: 'newest', label: 'Newest first' },
   { value: 'oldest', label: 'Oldest first' },
-  { value: 'value-high', label: 'Value high â†’ low' },
-  { value: 'value-low', label: 'Value low â†’ high' },
+  { value: 'value-high', label: 'Value high to low' },
+  { value: 'value-low', label: 'Value low to high' },
 ];
 
 const statusIconMap = {
@@ -207,7 +207,7 @@ const ContractsPage = () => {
             aria-label="Refresh contracts list"
             fullWidth={isMobile}
           >
-            {isRefreshing ? 'Refreshingâ€¦' : 'Refresh'}
+            {isRefreshing ? 'Refreshing...' : 'Refresh'}
           </Button>
           {canCreateContract ? (
             <Button
@@ -324,7 +324,7 @@ const ContractsPage = () => {
                 flexDirection: 'column',
                 borderRadius: 2,
                 border: `1px solid ${alpha('#000', 0.06)}`,
-                // âœ… MOBILE-AUDIT P4: removed deep boxShadow, let theme handle
+                // MOBILE-AUDIT P4: removed deep boxShadow, let theme handle
               }}
             >
               <CardContent>
@@ -339,7 +339,7 @@ const ContractsPage = () => {
                       {contract.title || 'Untitled Contract'}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      {contract.client?.name || 'Client'}{contract.client?.company ? ` â€¢ ${contract.client.company}` : ''}
+                      {contract.client?.name || 'Client'}{contract.client?.company ? ` - ${contract.client.company}` : ''}
                     </Typography>
                   </Box>
                   <Chip
@@ -355,7 +355,7 @@ const ContractsPage = () => {
                 </Stack>
 
                 <Typography variant="h5" sx={{ mt: 2, fontWeight: 700 }}>
-                  {'GHâ‚µ'}
+                  {'GHS '}
                   {(contract.budget ?? 0).toLocaleString()}
                 </Typography>
 

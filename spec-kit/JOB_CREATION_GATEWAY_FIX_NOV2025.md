@@ -1,4 +1,4 @@
-# Job Creation Gateway Fix – November 19, 2025
+# Job Creation Gateway Fix - November 19, 2025
 
 ## Incident Summary
 - **Symptom:** Every `POST /api/jobs` call returned a `504 Gateway Timeout` via `https://kelmah-api-gateway-kubd.onrender.com`. Hirers could browse jobs, but publishing new postings failed after ~60s.

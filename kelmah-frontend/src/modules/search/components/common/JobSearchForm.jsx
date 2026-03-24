@@ -14,6 +14,7 @@ import {
 import SearchIcon from '@mui/icons-material/Search';
 import PropTypes from 'prop-types';
 import { createFeatureLogger } from '@/modules/common/utils/devLogger';
+import { JOB_CATEGORIES, JOB_TYPES } from '../../utils/searchOptions';
 
 const EMPTY_SKILLS = [];
 const SEARCH_QUERY_MAX_LENGTH = 120;
@@ -86,39 +87,6 @@ const JobSearchForm = ({
   }, [normalizedInitialSkills]);
 
   const submitHandler = onSearch || onSubmit;
-
-  // Vocational job categories for Ghana's skilled trades
-  const jobCategories = [
-    'Carpentry',
-    'Masonry',
-    'Plumbing',
-    'Emergency Plumbing',
-    'Electrical Work',
-    'Rewiring & Switchboard',
-    'Painting',
-    'Exterior Painting',
-    'Welding',
-    'Certified Welding',
-    'Roofing',
-    'Roof Repair',
-    'Flooring',
-    'HVAC',
-    'AC & Refrigeration',
-    'Cabinet Making',
-    'Landscaping',
-    'General Construction',
-    'Maintenance',
-    'Maintenance Callout',
-  ];
-
-  // Job types relevant to skilled trades
-  const jobTypes = [
-    'Full-time',
-    'Part-time',
-    'Contract',
-    'Daily Work',
-    'Project-based',
-  ];
 
   const getSnapshot = (overrides = {}) => ({
     keyword: overrides.keyword !== undefined ? overrides.keyword : keyword,
@@ -219,7 +187,7 @@ const JobSearchForm = ({
                 inputProps={{ 'aria-label': 'Filter by job type' }}
               >
                 <MenuItem value="">Any</MenuItem>
-                {jobTypes.map((type) => (
+                {JOB_TYPES.map((type) => (
                   <MenuItem key={type} value={type}>
                     {type}
                   </MenuItem>
@@ -242,7 +210,7 @@ const JobSearchForm = ({
                 inputProps={{ 'aria-label': 'Filter by trade category' }}
               >
                 <MenuItem value="">Any</MenuItem>
-                {jobCategories.map((cat) => (
+                {JOB_CATEGORIES.map((cat) => (
                   <MenuItem key={cat} value={cat}>
                     {cat}
                   </MenuItem>

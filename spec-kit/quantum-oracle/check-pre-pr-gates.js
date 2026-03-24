@@ -180,6 +180,14 @@ function main() {
     }
   }
 
+  const learningEffectivenessResult = runChecked(
+    'node spec-kit/quantum-oracle/check-learning-effectiveness.js --strict',
+    'check learning effectiveness',
+  );
+  if (!learningEffectivenessResult.ok) {
+    errors.push('learning effectiveness validation failed');
+  }
+
   const intelligenceReportResult = runChecked(
     'node spec-kit/quantum-oracle/generate-agent-intelligence-report.js',
     'generate agent intelligence report',

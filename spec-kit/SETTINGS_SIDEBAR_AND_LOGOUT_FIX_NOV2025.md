@@ -1,4 +1,4 @@
-# Settings Sidebar & Logout Fix – Consolerrorsfix Bug #2 (Nov 19, 2025)
+# Settings Sidebar & Logout Fix - Consolerrorsfix Bug #2 (Nov 19, 2025)
 
 ## Problem Summary
 - **Sidebar Visibility:** QA reported the left Settings navigation vanished or was clipped on tablets/phones. Tabs were locked to a vertical column that overflowed the viewport, so crucial sections (including Account) became unreachable.

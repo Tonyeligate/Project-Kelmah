@@ -150,7 +150,7 @@ const normalizeMessage = (message = {}) => {
       message.sender && typeof message.sender === 'object'
         ? normalizeParticipant(message.sender)
         : null,
-    // Map contentâ†”text and createdAtâ†”timestamp for UI compatibility
+    // Map content<->text and createdAt<->timestamp for UI compatibility
     text: message.text || message.content || '',
     content: message.content || message.text || '',
     timestamp: message.timestamp || message.createdAt,
@@ -193,7 +193,7 @@ const normalizeConversationList = (list = []) =>
 const normalizeMessageList = (list = []) =>
   Array.isArray(list) ? list.map((message) => normalizeMessage(message)) : [];
 
-// âœ… FIXED: Clear export to resolve import errors
+// FIXED: Clear export to resolve import errors
 export const messagingService = {
   // Get all conversations for the current user
   async getConversations() {
@@ -335,7 +335,7 @@ export const messagingService = {
         const response = await bridgePost('/api/send-message', payload, 30000);
         const msg = response.data?.data || response.data;
         if (msg && !msg.error) return normalizeMessage(msg);
-        // Bridge returned an error body â€” fall through to gateway
+        // Bridge returned an error body - fall through to gateway
         devWarn('[sendMessage] Bridge returned error, trying gateway:', response.data);
       } catch (bridgeErr) {
         devWarn('[sendMessage] Bridge threw, trying gateway:', bridgeErr.message);
@@ -411,6 +411,6 @@ export const messagingService = {
   },
 };
 
-// âœ… ADDED: Default export for compatibility
+// ADDED: Default export for compatibility
 export default messagingService;
 

@@ -103,11 +103,11 @@ class DashboardService {
 
     const socket = websocketService.socket;
     if (!socket) {
-      devLog('âš ï¸ Dashboard: shared websocket not connected yet, deferring');
+      devLog('Dashboard: shared websocket not connected yet, deferring');
       return;
     }
 
-    devLog('ðŸ“¡ Dashboard subscribing to shared websocket events');
+    devLog('Dashboard subscribing to shared websocket events');
 
     // Subscribe to dashboard-specific events on the shared socket
     socket.on(SOCKET_EVENTS.DASHBOARD.UPDATE, this._onDashboardUpdate);
@@ -288,7 +288,7 @@ class DashboardService {
     }
   }
 
-  // MED-22 FIX: Return empty results â€” no real tasks API exists yet
+  // MED-22 FIX: Return empty results - no real tasks API exists yet
   async getUpcomingTasks() {
     return [];
   }

@@ -146,7 +146,7 @@ const BreadcrumbNavigation = () => {
                   display: 'flex',
                   alignItems: 'center',
                   gap: 0.5,
-                  minHeight: 36,
+                    minHeight: { xs: 44, sm: 36 },
                 }}
               >
                 {icon && React.cloneElement(icon, { 'aria-hidden': true })}
@@ -177,8 +177,8 @@ const BreadcrumbNavigation = () => {
                 gap: 0.5,
                 color: 'var(--k-text-secondary)',
                 textDecoration: 'none',
-                minHeight: 36,
-                px: 0.5,
+                minHeight: { xs: 44, sm: 36 },
+                px: { xs: 1, sm: 0.5 },
                 fontSize: { xs: '0.8rem', sm: '0.875rem' },
                 '&:hover': {
                   color: 'var(--k-gold)',

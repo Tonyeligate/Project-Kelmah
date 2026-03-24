@@ -43,6 +43,7 @@ import dashboardService from '../../dashboard/services/dashboardService';
 import { useVisibilityPolling } from '../../../hooks/useVisibilityPolling';
 import { BOTTOM_NAV_HEIGHT } from '../../../constants/layout';
 import { useBreakpointDown } from '@/hooks/useResponsive';
+import { formatGhanaCurrency } from '@/utils/formatters';
 
 /* ---------- Extracted sub-component (stable reference) ---------- */
 const LoadingOverviewSkeleton = () => (
@@ -58,6 +59,9 @@ const LoadingOverviewSkeleton = () => (
 const DASHBOARD_LOADING_TIMEOUT_MS = 10000;
 const APPLICATION_REFRESH_TTL_MS = 2 * 60 * 1000; // 2 minutes
 const AUTO_REFRESH_INTERVAL_MS = 60 * 1000; // DASH-001: Auto-refresh every 60 seconds
+const MAX_APPLICATION_HYDRATE_PER_CYCLE = 2;
+
+const isGatewayPressureStatus = (status) => [429, 502, 503, 504].includes(status);
 
 const HirerDashboardPage = () => {
   const theme = useTheme();
@@ -189,18 +193,40 @@ const HirerDashboardPage = () => {
           }
         }, DASHBOARD_LOADING_TIMEOUT_MS);
 
-        const fetchPromises = [
-          dispatch(fetchHirerProfile()).unwrap(),
-          dispatch(fetchHirerJobs('active')).unwrap(),
-          dispatch(fetchHirerJobs('completed')).unwrap(),
-          dispatch(fetchPaymentSummary()).unwrap().catch(() => null), // non-critical; payment service may be down
-          dashboardService.getRecentActivity(1, 5).catch(() => ({ activities: [] })),
-        ];
+        let gatewayUnderPressure = false;
 
-        fetchPromiseRef.current = Promise.allSettled(fetchPromises);
-        const results = await fetchPromiseRef.current;
-        const activePayload = results[1]?.status === 'fulfilled' ? results[1].value : null;
-        const activityPayload = results[4]?.status === 'fulfilled' ? results[4].value : { activities: [] };
+        const runDashboardRequest = async (requestFactory) => {
+          if (gatewayUnderPressure) {
+            return null;
+          }
+
+          try {
+            return await requestFactory();
+          } catch (requestError) {
+            if (isGatewayPressureStatus(requestError?.response?.status)) {
+              gatewayUnderPressure = true;
+            }
+            return null;
+          }
+        };
+
+        const profilePayload = await runDashboardRequest(() =>
+          dispatch(fetchHirerProfile()).unwrap()
+        );
+        const activePayload = await runDashboardRequest(() =>
+          dispatch(fetchHirerJobs('active')).unwrap()
+        );
+        const completedPayload = await runDashboardRequest(() =>
+          dispatch(fetchHirerJobs('completed')).unwrap()
+        );
+        await runDashboardRequest(() =>
+          dispatch(fetchPaymentSummary()).unwrap()
+        );
+        const activityPayload = await runDashboardRequest(() =>
+          dashboardService.getRecentActivity(1, 5)
+        );
+
+        fetchPromiseRef.current = null;
 
         if (!isMountedRef.current) {
           return;
@@ -218,17 +244,27 @@ const HirerDashboardPage = () => {
             : [];
 
         const jobIdsToHydrate = getJobsRequiringApplications(activeList);
-        if (jobIdsToHydrate.length > 0) {
-          await Promise.allSettled(
-            jobIdsToHydrate.map((jobId) =>
-              dispatch(
+        if (!gatewayUnderPressure && jobIdsToHydrate.length > 0) {
+          const limitedJobIds = jobIdsToHydrate.slice(0, MAX_APPLICATION_HYDRATE_PER_CYCLE);
+          for (const jobId of limitedJobIds) {
+            try {
+              await dispatch(
                 fetchJobApplications({
                   jobId,
                   status: 'pending',
                 }),
-              ).unwrap(),
-            ),
-          );
+              ).unwrap();
+            } catch (applicationError) {
+              if (isGatewayPressureStatus(applicationError?.response?.status)) {
+                gatewayUnderPressure = true;
+                break;
+              }
+            }
+          }
+        }
+
+        if (!profilePayload && !activePayload && !completedPayload) {
+          setError('Backend services are temporarily unavailable. Please retry in a few seconds.');
         }
       } catch (err) {
         // Error captured in state — no console logging in production
@@ -306,7 +342,9 @@ const HirerDashboardPage = () => {
     enabled: autoRefreshEnabled && !isHydrating,
     intervalMs: AUTO_REFRESH_INTERVAL_MS,
     maxIntervalMs: AUTO_REFRESH_INTERVAL_MS * 4,
-    shouldPause: () => refreshing || !isMountedRef.current,
+    shouldPause: () => refreshing || !isMountedRef.current || Boolean(error),
+    immediate: false,
+    resumeImmediately: false,
     callback: async () => {
       await dispatch(fetchHirerJobs('active')).unwrap();
       if (isMountedRef.current) {
@@ -359,6 +397,132 @@ const HirerDashboardPage = () => {
 
   // LC Portal-inspired Dashboard Overview - IMPROVED with empty state CTAs
   const renderDashboardOverview = () => (
+    isMobile ? (
+      <Fade in timeout={400}>
+        <Box
+          sx={{
+            background:
+              theme.palette.mode === 'dark'
+                ? 'linear-gradient(180deg, rgba(6,10,18,0.98), rgba(10,19,34,0.96))'
+                : 'linear-gradient(180deg, #f7f9fd 0%, #eef3fa 100%)',
+            minHeight: 'auto',
+            fontFamily: dashboardFontFamily,
+            p: 1.5,
+            pb: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px) + 18px)`,
+            overflowX: 'hidden',
+          }}
+        >
+          <Paper
+            elevation={0}
+            sx={{
+              p: 2,
+              mb: 2,
+              borderRadius: 3,
+              border: '1px solid',
+              borderColor:
+                theme.palette.mode === 'dark'
+                  ? 'rgba(255,215,0,0.2)'
+                  : 'rgba(20,24,35,0.12)',
+              background:
+                theme.palette.mode === 'dark'
+                  ? 'linear-gradient(150deg, rgba(6,10,18,0.97) 0%, rgba(10,19,34,0.96) 100%)'
+                  : 'linear-gradient(145deg, #ffffff 0%, #f2f7ff 100%)',
+            }}
+          >
+            <Typography variant="h5" sx={{ fontWeight: 800, letterSpacing: -0.3, mb: 0.75 }}>
+              {getGreeting()}, {hirerProfile?.firstName || user?.firstName || 'there'}
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+              Hiring cockpit: launch opportunities, shortlist top talent, and keep every live role moving.
+            </Typography>
+            <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ mb: 1.5 }}>
+              <Chip label={`Active ${summaryData.activeJobs}`} size="small" sx={{ fontWeight: 700 }} />
+              <Chip label={`Applications ${summaryData.pendingProposals}`} size="small" sx={{ fontWeight: 700 }} />
+              <Chip label={`Spent ${formatGhanaCurrency(summaryData.totalSpent)}`} size="small" sx={{ fontWeight: 700 }} />
+            </Stack>
+            <Chip
+              size="small"
+              label={autoRefreshEnabled ? `Live • ${timeSinceRefresh}` : 'Live updates paused'}
+              color={autoRefreshEnabled ? 'success' : 'default'}
+              variant="outlined"
+              onClick={() => setAutoRefreshEnabled((prev) => !prev)}
+              sx={{ fontWeight: 700, cursor: 'pointer' }}
+            />
+          </Paper>
+
+          <Grid container spacing={1.25} sx={{ mb: 2 }}>
+            {[
+              { title: 'Pipeline', value: summaryData.pendingProposals, helper: 'Applications waiting for review', tone: theme.palette.warning.main },
+              { title: 'Active jobs', value: summaryData.activeJobs, helper: 'Open listings currently running', tone: theme.palette.info.main },
+              { title: 'Completed jobs', value: summaryData.completedJobs, helper: 'Contracts delivered successfully', tone: theme.palette.success.main },
+            ].map((item) => (
+              <Grid item xs={12} key={`mobile-summary-${item.title}`}>
+                <Box
+                  sx={{
+                    p: 1.5,
+                    borderRadius: 2,
+                    border: '1px solid',
+                    borderColor: alpha(item.tone, 0.32),
+                    backgroundColor: alpha(item.tone, theme.palette.mode === 'dark' ? 0.12 : 0.08),
+                  }}
+                >
+                  <Typography variant="caption" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, color: 'text.secondary' }}>
+                    {item.title}
+                  </Typography>
+                  <Typography variant="h5" sx={{ fontWeight: 800, mt: 0.25 }}>
+                    {item.value}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {item.helper}
+                  </Typography>
+                </Box>
+              </Grid>
+            ))}
+          </Grid>
+
+          <Grid container spacing={1.5} sx={{ mb: 2 }}>
+            <Grid item xs={6}>
+              <Button fullWidth variant="contained" startIcon={<PostAddIcon />} onClick={() => navigate('/hirer/jobs/post')} sx={{ minHeight: 44, textTransform: 'none', fontWeight: 700 }}>
+                Post Job
+              </Button>
+            </Grid>
+            <Grid item xs={6}>
+              <Button fullWidth variant="outlined" startIcon={<PeopleIcon />} onClick={() => navigate('/hirer/find-talents')} sx={{ minHeight: 44, textTransform: 'none', fontWeight: 700 }}>
+                Find Talent
+              </Button>
+            </Grid>
+            <Grid item xs={6}>
+              <Button fullWidth variant="outlined" startIcon={<ProposalIcon />} onClick={() => navigate('/hirer/applications')} sx={{ minHeight: 44, textTransform: 'none', fontWeight: 700 }}>
+                Applications
+              </Button>
+            </Grid>
+            <Grid item xs={6}>
+              <Button fullWidth variant="outlined" startIcon={<MessageIcon />} onClick={() => navigate('/messages')} sx={{ minHeight: 44, textTransform: 'none', fontWeight: 700 }}>
+                Messages
+              </Button>
+            </Grid>
+          </Grid>
+
+          {isNewHirer && (
+            <Paper elevation={0} sx={{ p: 2, mb: 2, borderRadius: 2, backgroundColor: 'background.paper', border: '1px solid', borderColor: alpha(theme.palette.primary.main, 0.35) }}>
+              <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 0.75 }}>
+                Welcome to Kelmah! 🎉
+              </Typography>
+              <Typography variant="body2" sx={{ mb: 1.5, opacity: 0.9 }}>
+                Get started by posting your first job to connect with skilled workers in your area.
+              </Typography>
+              <Button variant="contained" startIcon={<PostAddIcon />} onClick={() => navigate('/hirer/jobs/post')}>
+                Post Your First Job
+              </Button>
+            </Paper>
+          )}
+
+          <Box sx={{ mb: 2 }}>
+            <RecentActivityFeed jobs={activeJobs || []} applications={applicationRecords || {}} activities={recentActivity} />
+          </Box>
+        </Box>
+      </Fade>
+    ) : (
     <Fade in timeout={500}>
       <Box
         sx={{
@@ -366,10 +530,10 @@ const HirerDashboardPage = () => {
             theme.palette.mode === 'dark'
               ? 'radial-gradient(circle at 10% 4%, rgba(255,215,0,0.16), transparent 45%), radial-gradient(circle at 88% 8%, rgba(56,189,248,0.14), transparent 40%), radial-gradient(circle at 54% 86%, rgba(34,197,94,0.13), transparent 38%), #04060C'
               : 'linear-gradient(180deg, #f7f9fd 0%, #eef3fa 58%, #edf3fb 100%)',
-          minHeight: '100dvh',
+          minHeight: { xs: '100dvh', md: 'auto' },
           fontFamily: dashboardFontFamily,
           p: { xs: 1.5, sm: 2, md: 3 },
-          pb: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px) + 18px)`,
+          pb: { xs: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px) + 18px)`, md: 3 },
           overflowX: 'hidden',
         }}
       >
@@ -442,7 +606,7 @@ const HirerDashboardPage = () => {
               <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
                 <Chip label={`Active ${summaryData.activeJobs}`} size="small" sx={{ fontWeight: 700 }} />
                 <Chip label={`Applications ${summaryData.pendingProposals}`} size="small" sx={{ fontWeight: 700 }} />
-                <Chip label={`Spent GH₵${summaryData.totalSpent.toLocaleString()}`} size="small" sx={{ fontWeight: 700 }} />
+                <Chip label={`Spent ${formatGhanaCurrency(summaryData.totalSpent)}`} size="small" sx={{ fontWeight: 700 }} />
                 <Chip
                   size="small"
                   label={autoRefreshEnabled ? `Live • ${timeSinceRefresh}` : 'Live updates paused'}
@@ -619,7 +783,7 @@ const HirerDashboardPage = () => {
             },
             {
               title: 'Total Spent',
-              value: 'GH?' + summaryData.totalSpent.toLocaleString(),
+              value: formatGhanaCurrency(summaryData.totalSpent),
               tone: theme.palette.info.main,
               icon: <PaymentIcon sx={{ fontSize: { xs: 32, sm: 42 }, color: alpha(theme.palette.info.main, 0.28) }} />,
               onClick: () => navigate('/hirer/payments'),
@@ -881,6 +1045,7 @@ const HirerDashboardPage = () => {
         </Box>
       </Box>
     </Fade>
+    )
   );
 
   if (isHydrating) {

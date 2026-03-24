@@ -827,3 +827,18 @@ Required evidence:
   - immersive_interaction_map.json
   - three_d_hd_design_report.json
 ```
+
+### GFL-16: Visible UI Bug Challenge Gate
+```
+For any user-visible frontend defect:
+  - verify the frontend audit includes all required breakpoints
+  - reject claims that do not name the exact failing component or layout layer
+  - reject fixes that do not mention the observed visual or interaction failure mode
+  - confirm the issue is not actually caused by backend, data, or realtime state drift
+
+Required evidence:
+  - breakpoint audit matrix
+  - component/file inspection list
+  - root cause proof
+  - re-audit after fix
+```

@@ -1,4 +1,4 @@
-## Kelmah – Configuration and Credentials Guide
+## Kelmah - Configuration and Credentials Guide
 
 This document summarizes configuration variables, where to store them, and how services discover each other after internalization.
 

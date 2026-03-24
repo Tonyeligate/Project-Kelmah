@@ -1,4 +1,4 @@
-# Kelmah Platform – Sector Audit Index
+# Kelmah Platform - Sector Audit Index
 
 **Generated:** October 1, 2025  
 **Purpose:** Provide a master index of audit sectors, associated directories, and priority order for the end-to-end dry audit cycle.

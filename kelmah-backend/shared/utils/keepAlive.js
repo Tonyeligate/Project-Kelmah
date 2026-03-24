@@ -15,8 +15,8 @@ const axios = require('axios');
 // Render free tier spins down after ~15 min of inactivity.
 // Ping every 14 minutes to stay inside the window.
 const DEFAULT_INTERVAL_MS = parseInt(process.env.KEEP_ALIVE_INTERVAL || '840000', 10); // 14 min
-const PING_TIMEOUT_MS = 25000; // 25s – Render cold starts can take 20s+
-const INITIAL_DELAY_MS = 15000; // 15s – let the service finish booting first
+const PING_TIMEOUT_MS = 25000; // 25s - Render cold starts can take 20s+
+const INITIAL_DELAY_MS = 15000; // 15s - let the service finish booting first
 
 /**
  * Determine whether we're running on Render (or another cloud host)
@@ -46,9 +46,9 @@ const buildServiceMap = (selfName) => {
 
   for (const [name, url] of Object.entries(raw)) {
     if (!url) continue;
-    // In production, skip localhost URLs – they can't reach other containers
+    // In production, skip localhost URLs - they can't reach other containers
     if (cloud && url.includes('localhost')) continue;
-    // Skip self – self-ping is handled separately
+    // Skip self - self-ping is handled separately
     if (name === selfName) continue;
     map[name] = url;
   }
@@ -99,7 +99,7 @@ class KeepAliveManager {
       interval: `${this.interval / 1000}s`,
       siblings: siblingCount,
       selfPing: hasSelf,
-      selfUrl: this.selfUrl || '(none – set <SERVICE>_URL env var)'
+      selfUrl: this.selfUrl || '(none - set <SERVICE>_URL env var)'
     });
 
     // --- Self-ping: runs every 14 minutes to keep THIS service alive ---

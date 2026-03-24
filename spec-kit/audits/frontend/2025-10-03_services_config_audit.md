@@ -37,7 +37,7 @@
 - **Connectivity:**
   1. Development host map swaps messaging and payment ports (`MESSAGING_SERVICE` → `http://localhost:5004`, `PAYMENT_SERVICE` → `http://localhost:5005`). Should align with backend consolidation (payment 5004, messaging 5005).
   2. `getServicePath('MESSAGING_SERVICE', '/messages')` returns `/api/messages/messages`, conflicting with gateway routes that expect `/api/messages`.
-  3. Messaging conversation helpers (`/conversations`) do not match gateway rewrite rules (`/api/messages/conversations` → `/api/conversations`). Resulting endpoints are `/api/messages/conversations`, which the proxy transforms to `/api/conversations` – acceptable, but the base builder should reflect intent explicitly.
+  3. Messaging conversation helpers (`/conversations`) do not match gateway rewrite rules (`/api/messages/conversations` → `/api/conversations`). Resulting endpoints are `/api/messages/conversations`, which the proxy transforms to `/api/conversations` - acceptable, but the base builder should reflect intent explicitly.
 - **Responsibility:**
   1. Module duplicates endpoint definitions already present in `environment.js`, creating two partially diverging maps.
   2. `getServicePath` mixes gateway-aware logic with environment branching, making it hard to trace actual URLs during audits.
@@ -68,4 +68,4 @@
 
 ---
 
-**Next Primary Audit Candidate:** `src/config/dynamicConfig.js` (pending) – resolve tunnel detection redundancy and circular dependencies surfaced during this review.
+**Next Primary Audit Candidate:** `src/config/dynamicConfig.js` (pending) - resolve tunnel detection redundancy and circular dependencies surfaced during this review.

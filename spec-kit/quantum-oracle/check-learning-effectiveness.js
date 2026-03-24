@@ -8,6 +8,8 @@ function parseArgs(argv) {
     summaryPath: path.resolve(process.cwd(), 'spec-kit', 'quantum-oracle', 'learning-ledger-summary.json'),
     minLearningTasks: 1,
     requireSkillEvidence: true,
+    minActivatedEliteTools: 10,
+    minImmersiveCoveragePct: 90,
     strict: false,
   };
 
@@ -21,6 +23,12 @@ function parseArgs(argv) {
       i += 1;
     } else if (token === '--allow-no-skill-evidence') {
       parsed.requireSkillEvidence = false;
+    } else if (token === '--min-activated-elite-tools') {
+      parsed.minActivatedEliteTools = Number(argv[i + 1] || parsed.minActivatedEliteTools);
+      i += 1;
+    } else if (token === '--min-immersive-coverage-pct') {
+      parsed.minImmersiveCoveragePct = Number(argv[i + 1] || parsed.minImmersiveCoveragePct);
+      i += 1;
     } else if (token === '--strict') {
       parsed.strict = true;
     }
@@ -86,6 +94,10 @@ function main() {
         errors.push(`${taskId}: policyAdjustmentsCount must be >= 1`);
       }
 
+      if ((task.activatedEliteToolsCount || 0) < args.minActivatedEliteTools) {
+        errors.push(`${taskId}: activatedEliteToolsCount (${task.activatedEliteToolsCount || 0}) is below minimum required (${args.minActivatedEliteTools})`);
+      }
+
       if (args.requireSkillEvidence) {
         if ((task.skillAcquisitionsCount || 0) < 1) {
           errors.push(`${taskId}: skillAcquisitionsCount must be >= 1`);
@@ -108,9 +120,28 @@ function main() {
   if (!Array.isArray(trends.topPolicyAdjustments) || trends.topPolicyAdjustments.length === 0) {
     errors.push('topPolicyAdjustments trend must be non-empty');
   }
+  if (!Array.isArray(trends.topImmersiveGaps) || trends.topImmersiveGaps.length === 0) {
+    errors.push('topImmersiveGaps trend must be non-empty');
+  }
   if (args.requireSkillEvidence) {
     if (!Array.isArray(trends.topSkillAcquisitions) || trends.topSkillAcquisitions.length === 0) {
       errors.push('topSkillAcquisitions trend must be non-empty');
+    }
+  }
+
+  if (typeof summary.immersiveTaskCount !== 'number') {
+    errors.push('immersiveTaskCount must be a number');
+  }
+
+  if (typeof summary.immersiveCoveragePct !== 'number' && summary.immersiveCoveragePct !== null) {
+    errors.push('immersiveCoveragePct must be a number or null');
+  }
+
+  if ((summary.immersiveTaskCount || 0) > 0) {
+    if (typeof summary.immersiveCoveragePct !== 'number') {
+      errors.push('immersiveCoveragePct must be numeric when immersiveTaskCount > 0');
+    } else if (summary.immersiveCoveragePct < args.minImmersiveCoveragePct) {
+      errors.push(`immersiveCoveragePct (${summary.immersiveCoveragePct}) is below minimum required (${args.minImmersiveCoveragePct})`);
     }
   }
 

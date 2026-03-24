@@ -1,4 +1,4 @@
-# Help Center & Status Desk – Data Flow (Nov 2025)
+# Help Center & Status Desk - Data Flow (Nov 2025)
 
 ## Component Chain
 - **Primary Component**: `kelmah-frontend/src/modules/support/pages/HelpCenterPage.jsx`

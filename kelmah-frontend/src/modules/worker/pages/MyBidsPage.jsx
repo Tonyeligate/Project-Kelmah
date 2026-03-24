@@ -1,10 +1,10 @@
 ﻿/**
- * MyBidsPage â€” Worker's bid dashboard
+ * MyBidsPage - Worker's bid dashboard
  *
  * DATA FLOW:
- *   MyBidsPage â†’ bidApi.getMyBids() â†’ GET /api/bids/me â†’ Gateway â†’ Job Service
- *   MyBidsPage â†’ bidApi.withdrawBid(bidId) â†’ PATCH /api/bids/:id/withdraw â†’ Gateway â†’ Job Service
- *   MyBidsPage â†’ bidApi.getMyBidStats() â†’ GET /api/bids/stats/me â†’ Gateway â†’ Job Service
+ *   MyBidsPage -> bidApi.getMyBids() -> GET /api/bids/me -> Gateway -> Job Service
+ *   MyBidsPage -> bidApi.withdrawBid(bidId) -> PATCH /api/bids/:id/withdraw -> Gateway -> Job Service
+ *   MyBidsPage -> bidApi.getMyBidStats() -> GET /api/bids/stats/me -> Gateway -> Job Service
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
@@ -84,7 +84,7 @@ const BidCard = ({ bid, onWithdraw, onViewJob }) => {
 
   const formatAmount = (amount) => {
     const num = Number(amount);
-    return Number.isFinite(num) ? `GHâ‚µ${num.toLocaleString()}` : 'N/A';
+    return Number.isFinite(num) ? `GHS ${num.toLocaleString()}` : 'N/A';
   };
 
   const formatDate = (date) => {
@@ -147,7 +147,7 @@ const BidCard = ({ bid, onWithdraw, onViewJob }) => {
               {job.title || 'Job Title'}
             </Typography>
             <Typography variant="caption" color="text.secondary">
-              {job.category || ''} Â· Bid placed {formatDate(bid.createdAt)}
+              {job.category || ''} - Bid placed {formatDate(bid.createdAt)}
             </Typography>
           </ButtonBase>
           <Chip
@@ -561,7 +561,7 @@ const MyBidsPage = () => {
         <DialogContent>
           <DialogContentText sx={{ mb: 2 }}>
             Are you sure you want to withdraw your bid of{' '}
-            <strong>GHâ‚µ{withdrawDialog.bid?.bidAmount?.toLocaleString()}</strong>? This action
+            <strong>GHS {withdrawDialog.bid?.bidAmount?.toLocaleString()}</strong>? This action
             cannot be undone.
           </DialogContentText>
           <TextField

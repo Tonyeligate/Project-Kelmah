@@ -13,6 +13,7 @@ import {
   ArrowDownward as ArrowDownwardIcon,
   HourglassTop as HourglassTopIcon,
 } from '@mui/icons-material';
+import { formatGhanaCurrency } from '@/utils/formatters';
 
 const StatCard = ({ title, value, icon, color }) => (
   <Card
@@ -27,7 +28,7 @@ const StatCard = ({ title, value, icon, color }) => (
         </Typography>
       </Box>
       <Typography variant="h5" component="div" color={color}>
-        GH₵{value.toFixed(2)}
+        {formatGhanaCurrency(value)}
       </Typography>
     </CardContent>
   </Card>
@@ -73,7 +74,7 @@ const WalletSummary = ({
               Available Balance
             </Typography>
             <Typography variant="h3" color="black" fontWeight="bold">
-              GH₵{walletBalance.toFixed(2)}
+              {formatGhanaCurrency(walletBalance)}
             </Typography>
             <Typography variant="body2" color="black" sx={{ mt: 0.5, textAlign: 'center' }}>
               Available now. Funds in escrow are released after milestone confirmation.

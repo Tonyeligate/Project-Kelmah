@@ -31,18 +31,18 @@
 ---
 
 ## Issues Identified
-- **Primary Issue 1 – Backend Sequelize Drift:**
+- **Primary Issue 1 - Backend Sequelize Drift:**
   - `portfolio.controller.js` references `findAndCountAll`, `Op.iLike`, and Sequelize associations (`include`, `as`), but the user-service is consolidated on Mongoose. Every portfolio query will throw `TypeError` or return undefined until the controller is rewritten for MongoDB.
   - Routes are registered, so frontend helpers will 404 or 500 instead of returning portfolio data.
 
-- **Secondary Issue 2 – Multipart Upload Config Mismatch:**
+- **Secondary Issue 2 - Multipart Upload Config Mismatch:**
   - The `uploadWorkSamples` and `uploadCertificates` helpers still target `/api/profile/portfolio/upload` and `/api/profile/certificates/upload`, but the backend stubs these routes in production (`ENABLE_S3_UPLOADS !== 'true'`) and returns HTTP 400 "Direct uploads disabled."
   - Frontend has no fallback to presigned URLs, so uploads break entirely in production environments.
 
-- **Secondary Issue 3 – DTO Envelope Drift:**
+- **Secondary Issue 3 - DTO Envelope Drift:**
   - The `portfolioApi` unwraps responses with `data?.data || data`, but backend sends Sequelize pagination envelopes (`{ count, rows }`) while Mongoose handlers would send `{ total, items }` or similar—this inconsistency creates confusion when the controller is eventually fixed.
   
-- **Secondary Issue 4 – Missing Error Context:**
+- **Secondary Issue 4 - Missing Error Context:**
   - Helpers silently rethrow axios errors without adding contextual messages, making debugging harder when backend returns 500 or validation failures.
 
 ---

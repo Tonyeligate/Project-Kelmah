@@ -1,7 +1,7 @@
 import React from 'react';
 import Register from '../components/register/Register';
 import MobileRegister from '../components/mobile/MobileRegister';
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, Stack, Chip } from '@mui/material';
 import { Helmet } from 'react-helmet-async';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 
@@ -10,13 +10,19 @@ const RegisterPage = () => {
 
   const pageTitle = <Helmet><title>Sign Up | Kelmah</title></Helmet>;
   const helperCopy = (
-    <Typography
-      variant="body2"
-      color="text.secondary"
-      sx={{ mb: 2, lineHeight: 1.5 }}
-    >
-      Create your account to post jobs, apply quickly, and chat safely on Kelmah.
-    </Typography>
+    <Box sx={{ mb: 2 }}>
+      <Typography
+        variant="body2"
+        color="text.secondary"
+        sx={{ mb: 1.25, lineHeight: 1.5 }}
+      >
+        Create your account to post jobs, apply quickly, and chat safely on Kelmah.
+      </Typography>
+      <Stack direction="row" spacing={0.75} useFlexGap flexWrap="wrap">
+        <Chip size="small" label="Hirer: Post jobs and review proposals" />
+        <Chip size="small" label="Worker: Build profile and apply to jobs" />
+      </Stack>
+    </Box>
   );
 
   if (isMobile) {

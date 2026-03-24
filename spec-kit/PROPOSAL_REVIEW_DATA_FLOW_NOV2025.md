@@ -1,4 +1,4 @@
-# Proposal Review Data Flow – November 2025
+# Proposal Review Data Flow - November 2025
 
 ## Component Chain
 - **UI Component:** `kelmah-frontend/src/modules/hirer/components/ProposalReview.jsx`

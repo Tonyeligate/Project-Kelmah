@@ -178,20 +178,24 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
         left: 16,
         top: -48,
         zIndex: 1500,
-        px: 2,
-        py: 1,
-        borderRadius: 1,
+        px: 2.5,
+        py: 1.25,
+        borderRadius: 999,
         bgcolor: 'primary.main',
         color: 'primary.contrastText',
         textDecoration: 'none',
         fontWeight: 600,
-        transition: 'top 0.2s ease',
+        fontSize: '0.95rem',
+        lineHeight: 1.2,
+        boxShadow: '0 12px 28px rgba(0, 0, 0, 0.28)',
+        transition: 'top 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease',
         '&:focus, &:focus-visible': {
-          top: 12,
+          top: 14,
           outline: '3px solid',
           outlineColor: 'primary.contrastText',
-          outlineOffset: 2,
-          boxShadow: '0 0 0 3px rgba(0,0,0,0.2)',
+          outlineOffset: 3,
+          boxShadow: '0 0 0 4px rgba(0,0,0,0.22), 0 16px 32px rgba(0,0,0,0.35)',
+          transform: 'translateY(0) scale(1.01)',
         },
       }}
     >
@@ -218,11 +222,13 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
         >
           {skipToContentLink}
           {!isMessagesPage && (
-            <Header
-              toggleTheme={resolvedToggleTheme}
-              mode={resolvedMode}
-              setThemeMode={resolvedSetThemeMode}
-            />
+            <Box component="header">
+              <Header
+                toggleTheme={resolvedToggleTheme}
+                mode={resolvedMode}
+                setThemeMode={resolvedSetThemeMode}
+              />
+            </Box>
           )}
           {/* Main content area — flex-based height, safe-area aware */}
           <Box
@@ -255,13 +261,17 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
     return (
       <Box sx={{ display: 'flex', minHeight: '100vh', width: '100%' }}>
           {skipToContentLink}
-        <Header
-          toggleTheme={resolvedToggleTheme}
-          mode={resolvedMode}
-          autoShowMode={true}
-          setThemeMode={resolvedSetThemeMode}
-        />
-        <Sidebar variant="permanent" collapsed={sidebarCollapsed} onToggleCollapse={handleToggleSidebar} />
+        <Box component="header">
+          <Header
+            toggleTheme={resolvedToggleTheme}
+            mode={resolvedMode}
+            autoShowMode={true}
+            setThemeMode={resolvedSetThemeMode}
+          />
+        </Box>
+        <Box component="aside" aria-label="Sidebar navigation">
+          <Sidebar variant="permanent" collapsed={sidebarCollapsed} onToggleCollapse={handleToggleSidebar} />
+        </Box>
         <Box
           component="main"
           id="main-content"
@@ -281,7 +291,9 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
           {sessionExpired && sessionExpiredBanner}
           {content}
         </Box>
-        <SmartNavigation />
+        <Box component="nav" aria-label="Quick navigation suggestions">
+          <SmartNavigation />
+        </Box>
       </Box>
     );
   }
@@ -297,11 +309,13 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
     >
       {skipToContentLink}
       {!isAuthPage && (
-        <Header
-          toggleTheme={resolvedToggleTheme}
-          mode={resolvedMode}
-          setThemeMode={resolvedSetThemeMode}
-        />
+        <Box component="header">
+          <Header
+            toggleTheme={resolvedToggleTheme}
+            mode={resolvedMode}
+            setThemeMode={resolvedSetThemeMode}
+          />
+        </Box>
       )}
       <Fade in timeout={prefersReducedMotion ? 0 : 500}>
         <Box
@@ -318,12 +332,12 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
               : isHomePage
               ? 0
               : {
-                  xs: `calc(${HEADER_HEIGHT_MOBILE}px + env(safe-area-inset-top, 0px) + 12px)`,
-                  sm: `calc(${HEADER_HEIGHT_MOBILE}px + 16px)`,
+                  xs: `calc(${HEADER_HEIGHT_MOBILE}px + env(safe-area-inset-top, 0px) + 16px)`,
+                  sm: `calc(${HEADER_HEIGHT_MOBILE}px + 20px)`,
                   md: 3,
                 },
-            pb: isAuthPage ? 0 : isHomePage ? 0 : { xs: 2, sm: 2.5, md: 3 },
-            px: isAuthPage ? 0 : isHomePage ? 0 : { xs: 1, sm: 2, md: 3 },
+            pb: isAuthPage ? 0 : isHomePage ? 0 : { xs: 2.5, sm: 3, md: 3 },
+            px: isAuthPage ? 0 : isHomePage ? 0 : { xs: 1.5, sm: 2.5, md: 3 },
             overflowX: 'hidden',
             overflowY: 'visible',
             '@media (min-width: 1px)': {

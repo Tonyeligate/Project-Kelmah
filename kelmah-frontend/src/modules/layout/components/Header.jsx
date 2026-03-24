@@ -61,6 +61,7 @@ const Header = ({
 
   // ✅ FIXED: Enable proper mobile responsiveness based on screen size
   const isMobile = useBreakpointDown('md');
+  const isCompactDesktop = useBreakpointDown('lg');
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [notificationsAnchor, setNotificationsAnchor] = useState(null);
@@ -199,6 +200,7 @@ const Header = ({
   // H39 fix: Wire to messaging context for real unread message count
   const messageCtx = useContext(MessageContext);
   const unreadMessages = showUserFeatures ? messageCtx?.unreadCount || 0 : 0;
+  const unreadTotal = unreadMessages + unreadNotifications;
   const isUserOnline = showUserFeatures
     ? messageCtx?.isUserOnline?.(user?.id || user?._id || user?.userId) || false
     : false;
@@ -431,95 +433,99 @@ const Header = ({
             </Box>
           ) : showUserFeatures ? (
             <>
-              {/* Worker quick status chips - Desktop only (takes too much space on mobile) */}
-              {!isMobile && user?.role === 'worker' && (
-                <Stack direction="row" spacing={0.75} sx={{ mr: 0.5 }}>
-                  {headerAvailability && (
-                    <Chip
-                      size="small"
-                      label={
-                        headerAvailability.isAvailable
-                          ? 'Available'
-                          : headerAvailability.status || 'Busy'
-                      }
-                      sx={{
-                        backgroundColor: headerAvailability.isAvailable
-                          ? (theme.palette.mode === 'dark'
-                              ? 'rgba(102, 187, 106, 0.22)'
-                              : 'rgba(76, 175, 80, 0.2)')
-                          : (theme.palette.mode === 'dark'
-                              ? 'rgba(255, 183, 77, 0.25)'
-                              : 'rgba(255, 152, 0, 0.22)'),
-                        color: headerAvailability.isAvailable
-                          ? (theme.palette.mode === 'dark'
-                              ? '#c8e6c9'
-                              : '#1b5e20')
-                          : (theme.palette.mode === 'dark'
-                              ? '#ffe0b2'
-                              : '#7a3e00'),
-                        border:
-                          theme.palette.mode === 'dark'
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mr: { xs: 0, md: 0.75 } }}>
+                {!isMobile && (
+                  <NotificationBells
+                    unreadMessages={unreadMessages}
+                    unreadNotifications={unreadNotifications}
+                    notifications={notifList}
+                    onMessagesClick={() => navigate('/messages')}
+                    onNotificationsClick={handleNotificationsOpen}
+                    notificationsAnchor={notificationsAnchor}
+                    onNotificationsClose={handleNotificationsClose}
+                    onMarkAllRead={() => { try { markAllAsRead?.(); } catch (_) {} }}
+                    onViewAll={() => navigate('/notifications')}
+                  />
+                )}
+
+                {!isMobile && unreadTotal > 0 && (
+                  <Chip
+                    size="small"
+                    label={`${unreadTotal} unread`}
+                    onClick={() => navigate(unreadMessages > 0 ? '/messages' : '/notifications')}
+                    clickable
+                    sx={{
+                      ml: 0.5,
+                      height: 24,
+                      borderRadius: 1.5,
+                      fontWeight: 700,
+                      backgroundColor:
+                        theme.palette.mode === 'dark'
+                          ? 'rgba(255, 215, 0, 0.18)'
+                          : 'rgba(18, 24, 39, 0.1)',
+                      color:
+                        theme.palette.mode === 'dark'
+                          ? '#ffe082'
+                          : 'rgba(18, 24, 39, 0.9)',
+                    }}
+                  />
+                )}
+
+                {!isMobile && !isCompactDesktop && user?.role === 'worker' && (
+                  <Stack direction="row" spacing={0.75} sx={{ ml: 0.25 }}>
+                    {headerAvailability && (
+                      <Chip
+                        size="small"
+                        label={headerAvailability.isAvailable ? 'Available' : headerAvailability.status || 'Busy'}
+                        sx={{
+                          backgroundColor: headerAvailability.isAvailable
+                            ? (theme.palette.mode === 'dark' ? 'rgba(102, 187, 106, 0.22)' : 'rgba(76, 175, 80, 0.2)')
+                            : (theme.palette.mode === 'dark' ? 'rgba(255, 183, 77, 0.25)' : 'rgba(255, 152, 0, 0.22)'),
+                          color: headerAvailability.isAvailable
+                            ? (theme.palette.mode === 'dark' ? '#c8e6c9' : '#1b5e20')
+                            : (theme.palette.mode === 'dark' ? '#ffe0b2' : '#7a3e00'),
+                          border: theme.palette.mode === 'dark'
                             ? '1px solid rgba(255, 224, 178, 0.35)'
                             : '1px solid rgba(0, 0, 0, 0.2)',
-                        '& .MuiChip-label': {
-                          fontSize: '0.78rem',
-                          lineHeight: 1.35,
-                          letterSpacing: '0.01em',
-                          fontWeight: 600,
-                        },
-                      }}
-                      onClick={() =>
-                        navigate('/worker/profile/edit?section=availability')
-                      }
-                      clickable
-                    />
-                  )}
-                  {typeof headerCompletion?.completion === 'number' && (
-                    <Chip
-                      size="small"
-                      label={`${Math.round(headerCompletion.completion)}%`}
-                      sx={{
-                        backgroundColor:
-                          theme.palette.mode === 'dark'
+                          '& .MuiChip-label': {
+                            fontSize: '0.76rem',
+                            lineHeight: 1.3,
+                            fontWeight: 600,
+                          },
+                        }}
+                        onClick={() => navigate('/worker/profile/edit?section=availability')}
+                        clickable
+                      />
+                    )}
+                    {typeof headerCompletion?.completion === 'number' && (
+                      <Chip
+                        size="small"
+                        label={`${Math.round(headerCompletion.completion)}%`}
+                        sx={{
+                          backgroundColor: theme.palette.mode === 'dark'
                             ? 'rgba(255, 213, 79, 0.28)'
                             : 'rgba(255, 215, 0, 0.3)',
-                        color:
-                          theme.palette.mode === 'dark' ? '#fff3c4' : '#6b5200',
-                        border:
-                          theme.palette.mode === 'dark'
+                          color: theme.palette.mode === 'dark' ? '#fff3c4' : '#6b5200',
+                          border: theme.palette.mode === 'dark'
                             ? '1px solid rgba(255, 213, 79, 0.42)'
                             : '1px solid rgba(0, 0, 0, 0.22)',
-                        '& .MuiChip-label': {
-                          fontSize: '0.78rem',
-                          lineHeight: 1.35,
-                          letterSpacing: '0.01em',
-                          fontWeight: 600,
-                        },
-                      }}
-                      onClick={() => navigate('/worker/profile/edit')}
-                      clickable
-                    />
-                  )}
-                </Stack>
-              )}
-              {/* Messages + Notifications bells — Desktop only */}
-              {!isMobile && (
-                <NotificationBells
-                  unreadMessages={unreadMessages}
-                  unreadNotifications={unreadNotifications}
-                  notifications={notifList}
-                  onMessagesClick={() => navigate('/messages')}
-                  onNotificationsClick={handleNotificationsOpen}
-                  notificationsAnchor={notificationsAnchor}
-                  onNotificationsClose={handleNotificationsClose}
-                  onMarkAllRead={() => { try { markAllAsRead?.(); } catch (_) {} }}
-                  onViewAll={() => navigate('/notifications')}
-                />
-              )}
+                          '& .MuiChip-label': {
+                            fontSize: '0.76rem',
+                            lineHeight: 1.3,
+                            fontWeight: 600,
+                          },
+                        }}
+                        onClick={() => navigate('/worker/profile/edit')}
+                        clickable
+                      />
+                    )}
+                  </Stack>
+                )}
+              </Box>
 
               {/* User Avatar */}
               <Tooltip title={isMobile ? 'Profile' : 'Account menu'} arrow>
-                <Box sx={{ position: 'relative', ml: 1 }}>
+                <Box sx={{ position: 'relative', ml: 0.75 }}>
                   <UserAvatar
                     ref={profileMenuButtonRef}
                     onClick={handleProfileMenuOpen}

@@ -1,4 +1,4 @@
-# Messaging Service Virus Scan Strategy – November 2025
+# Messaging Service Virus Scan Strategy - November 2025
 
 ## Overview
 - Replaced the minimalist stub in `kelmah-backend/services/messaging-service/utils/virusScan.js` with a strategy-driven helper that supports:

@@ -26,6 +26,16 @@ import { devWarn } from './modules/common/utils/devLogger';
 
 const PWA_BANNER_DISMISS_KEY = 'pwa_banner_dismissed';
 const PWA_BANNER_DISMISS_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+let noticeSequence = 0;
+
+const createNoticeId = () => {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+
+  noticeSequence += 1;
+  return `notice-${Date.now()}-${noticeSequence}`;
+};
 
 const shouldShowInstallPrompt = () => {
   if (typeof window === 'undefined') {
@@ -107,6 +117,23 @@ const App = () => {
     await applyPwaUpdate();
   };
 
+  const handleRecoverableNoticeRetry = async () => {
+    setApiRecoveryNotice(null);
+
+    if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
+      return;
+    }
+
+    setServicesWakingUp(true);
+    try {
+      await warmUpServices({ force: true, maxRetries: 1 });
+    } catch (error) {
+      devWarn('Recoverable API retry warm-up failed:', error);
+    } finally {
+      setServicesWakingUp(false);
+    }
+  };
+
   useEffect(() => {
     const handleRecoverableApiError = (event) => {
       const detail = event?.detail || {};
@@ -115,7 +142,7 @@ const App = () => {
       }
 
       setApiRecoveryNotice({
-        id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        id: createNoticeId(),
         message:
           detail.userMessage ||
           'We had trouble completing that request. You can try again.',
@@ -129,7 +156,7 @@ const App = () => {
     const handleContractMismatch = (event) => {
       const detail = event?.detail || {};
       setApiRecoveryNotice({
-        id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        id: createNoticeId(),
         message:
           detail.userMessage ||
           'A temporary service mismatch was detected. Please retry in a moment.',
@@ -433,10 +460,7 @@ const App = () => {
                   <Button
                     color="inherit"
                     size="small"
-                    onClick={() => {
-                      setApiRecoveryNotice(null);
-                      window.location.reload();
-                    }}
+                    onClick={handleRecoverableNoticeRetry}
                     sx={{ minHeight: 44 }}
                   >
                     Retry

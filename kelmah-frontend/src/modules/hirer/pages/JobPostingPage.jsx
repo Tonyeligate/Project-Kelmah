@@ -58,7 +58,7 @@ const getBudgetPreview = (formData) => {
     const min = Number(formData.budget.min);
     const max = Number(formData.budget.max);
     if (Number.isFinite(min) && Number.isFinite(max) && min && max) {
-      return `${formatCurrency(min)} – ${formatCurrency(max)} / hr`;
+      return `${formatCurrency(min)} - ${formatCurrency(max)} / hr`;
     }
     if (Number.isFinite(min) && min) {
       return `From ${formatCurrency(min)} / hr`;

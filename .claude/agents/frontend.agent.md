@@ -258,6 +258,39 @@ RULE F-004: Frontend agent's verdict is PROVISIONAL until debugger agent
             cross-verifies (see contradiction-resolve protocol).
 ```
 
+### Frontend UI Failure Heuristics
+```
+When inspecting a visible defect, always test for these classes first:
+
+- mobile overflow and horizontal scroll bleed
+- text truncation or unreadable contrast
+- touch targets below 44px
+- sticky header/footer overlap
+- dropdowns, drawers, and dialogs clipping off-screen
+- z-index collisions and hidden buttons
+- empty/loading/error state drift between breakpoints
+- layout jump after hydration or data load
+
+If a bug is visible to the user, the frontend agent must return:
+  - exact breakpoint evidence
+  - what component or layout layer caused it
+  - whether the issue is visual, interaction, state, or responsive geometry
+  - a specific fix and a rollback-safe fallback
+```
+
+### Frontend Audit Packet Contract
+```
+Every audit response must include:
+  - breakpoint matrix results
+  - component/file names inspected
+  - affected state/data flow
+  - accessibility impact
+  - design-system impact
+  - verification result after the fix
+
+Do not collapse a bug into a generic summary. The agent must name the exact UI failure mode.
+```
+
 
 ```javascript
 primary:    Red (#C8102E) — call-to-action, highlights
@@ -424,8 +457,8 @@ STEP 4 │ FINAL VERIFICATION
 FIELD DESCRIPTION:
   Vacuum State |Ω_UI⟩:      Empty DOM — no components mounted
   Field Excitations:         Mounted components — each is a quantum of UI
-  Creation Operator â†(x):   React.createElement / JSX rendering
-  Annihilation Operator â(x): Component unmount
+  Creation Operator a†(x):   React.createElement / JSX rendering
+  Annihilation Operator a(x): Component unmount
   Propagator G(x,y):         State change at component x → re-render at component y
 
 FEYNMAN DIAGRAMS FOR REACT:

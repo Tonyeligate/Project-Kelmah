@@ -1,6 +1,6 @@
 // ARCHIVED PAGE: intentionally not route-mounted. Active home experience lives in src/pages/HomeLanding.
 import React, { useState, useEffect } from 'react';
-import { Box, Container, Typography, Button, Grid, Card, Stack, useTheme, Avatar, Rating, Chip, Skeleton, TextField, InputAdornment } from '@mui/material';
+import { Box, Container, Typography, Button, Grid, Card, CardActionArea, Stack, useTheme, Avatar, Rating, Chip, Skeleton, TextField, InputAdornment } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -287,7 +287,17 @@ const HeroSection = () => {
             </Typography>
 
             {/* Search bar — primary hero interaction */}
-            <Box sx={{ maxWidth: 520, mx: 'auto', mb: 3 }}>
+            <Box
+              component="form"
+              onSubmit={(event) => {
+                event.preventDefault();
+                const searchValue = event.currentTarget.querySelector('input')?.value?.trim();
+                if (searchValue) {
+                  navigate(`/search?q=${encodeURIComponent(searchValue)}`);
+                }
+              }}
+              sx={{ maxWidth: 520, mx: 'auto', mb: 3 }}
+            >
               <TextField
                 fullWidth
                 placeholder={
@@ -296,11 +306,7 @@ const HeroSection = () => {
                     : 'Try "plumber in Accra" or "electrician"'
                 }
                 variant="outlined"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && e.target.value.trim()) {
-                    navigate(`/search?q=${encodeURIComponent(e.target.value.trim())}`);
-                  }
-                }}
+                type="search"
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -408,13 +414,8 @@ const CategoriesSection = () => {
           <Grid item xs={6} sm={4} md={2} key={cat.name}>
             <Reveal delay={i * 0.06}>
               <Card
-                role="button"
-                tabIndex={0}
-                onClick={() => navigate(cat.path)}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(cat.path); } }}
                 sx={{
                   ...CARD_SX,
-                  cursor: 'pointer',
                   textAlign: 'center',
                   transition: 'border-color 0.2s, box-shadow 0.2s, transform 0.2s',
                   '&:hover': {
@@ -424,25 +425,27 @@ const CategoriesSection = () => {
                   },
                 }}
               >
-                <Avatar
-                  sx={{
-                    width: { xs: 56, sm: 64 },
-                    height: { xs: 56, sm: 64 },
-                    mx: 'auto',
-                    mb: 1.5,
-                    bgcolor: alpha(cat.color, 0.12),
-                    color: cat.color,
-                    '& svg': { fontSize: { xs: 28, sm: 32 } },
-                  }}
-                >
-                  {cat.icon}
-                </Avatar>
-                <Typography variant="body2" fontWeight={600} sx={{ mb: 0.25 }}>
-                  {cat.name}
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
-                  {cat.jobs} jobs
-                </Typography>
+                <CardActionArea onClick={() => navigate(cat.path)} sx={{ p: 2, minHeight: 172 }}>
+                  <Avatar
+                    sx={{
+                      width: { xs: 56, sm: 64 },
+                      height: { xs: 56, sm: 64 },
+                      mx: 'auto',
+                      mb: 1.5,
+                      bgcolor: alpha(cat.color, 0.12),
+                      color: cat.color,
+                      '& svg': { fontSize: { xs: 28, sm: 32 } },
+                    }}
+                  >
+                    {cat.icon}
+                  </Avatar>
+                  <Typography variant="body2" fontWeight={600} sx={{ mb: 0.25 }}>
+                    {cat.name}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                    {cat.jobs} jobs
+                  </Typography>
+                </CardActionArea>
               </Card>
             </Reveal>
           </Grid>
@@ -857,7 +860,7 @@ const FeaturedJobsSection = () => {
                         </Typography>
                         <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ mb: 2 }}>
                           <Chip label={job.location || 'Ghana'} size="small" variant="outlined" />
-                          <Chip label={typeof job.budget === 'object' ? 'Budget set' : `GH₵${job.budget || 'TBD'}`} size="small" variant="outlined" />
+                          <Chip label={typeof job.budget === 'object' ? 'Budget set' : `GH₵${job.budget || 'Budget pending'}`} size="small" variant="outlined" />
                         </Stack>
                         <Button variant="text" sx={{ p: 0, textTransform: 'none', fontWeight: 700 }}>
                           View job details

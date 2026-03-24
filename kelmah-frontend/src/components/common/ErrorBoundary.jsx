@@ -118,8 +118,8 @@ class ErrorBoundary extends React.Component {
           >
             <AlertTitle>Something went wrong</AlertTitle>
             <Typography variant="body2" sx={{ mt: 1 }}>
-              We're sorry, but something unexpected happened. This usually means
-              the page needs to be refreshed.
+              We're sorry, but something unexpected happened. You can try again
+              or return home.
             </Typography>
           </Alert>
 
@@ -146,28 +146,6 @@ class ErrorBoundary extends React.Component {
           </Button>
 
           <Button
-            variant="outlined"
-            startIcon={<RefreshIcon />}
-            onClick={() => window.location.reload()}
-            sx={{
-              mb: 2,
-              minHeight: 54,
-              minWidth: 180,
-              fontSize: '1rem',
-              fontWeight: 600,
-              borderColor: 'rgba(212,175,55,0.5)',
-              color: '#D4AF37',
-              '&:hover': { borderColor: '#D4AF37', bgcolor: 'rgba(212,175,55,0.08)' },
-              '&:focus-visible': {
-                outline: '3px solid #D4AF37',
-                outlineOffset: '3px',
-              },
-            }}
-          >
-            Refresh Page
-          </Button>
-
-          <Button
             variant="text"
             startIcon={<HomeIcon />}
             onClick={this.handleGoHome}
@@ -187,7 +165,7 @@ class ErrorBoundary extends React.Component {
 
           <Alert severity="info" sx={{ mb: 2.5, maxWidth: 600, textAlign: 'left' }}>
             <Typography variant="body2">
-              Recovery steps: 1) tap Try Again, 2) if it fails, tap Refresh Page, 3) contact support if the problem continues.
+              Recovery steps: 1) tap Try Again, 2) use Go Home if needed, 3) contact support if the problem continues.
             </Typography>
           </Alert>
 

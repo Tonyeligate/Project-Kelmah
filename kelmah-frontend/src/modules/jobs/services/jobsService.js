@@ -118,9 +118,9 @@ const transformJobListItem = (job) => {
 
     // Fallback: Flag for admin review
     jobsWarn(
-      `âš ï¸ Job ${job._id || job.id} missing employer data - flagged for admin review`,
+      `Job ${job._id || job.id} missing employer data - flagged for admin review`,
     );
-    // U-06 FIX: Neutral fallback â€” â€œAnonymous Employerâ€ is honest, not misleading
+    // U-06 FIX: Neutral fallback - "Anonymous Employer" is honest, not misleading
     return {
       name: 'Anonymous Employer',
       logo: null,
@@ -164,7 +164,7 @@ const transformJobListItem = (job) => {
     skills: normalizeSkills(job.skills),
     // Map API date fields to frontend expected fields
     postedDate: job.createdAt ? new Date(job.createdAt) : new Date(),
-    // U-05 FIX: Use actual bid deadline or null â€” never fabricate a deadline
+    // U-05 FIX: Use actual bid deadline or null - never fabricate a deadline
     deadline: job.endDate
       ? new Date(job.endDate)
       : (job.bidding?.bidDeadline ? new Date(job.bidding.bidDeadline) : null),
@@ -178,7 +178,7 @@ const transformJobListItem = (job) => {
     // Additional fields for display
     proposalCount: job.proposalCount || 0,
     viewCount: job.viewCount || 0,
-    // U-03 FIX: Only show rating if it actually exists on the job â€” null hides the stars widget
+    // U-03 FIX: Only show rating if it actually exists on the job - null hides the stars widget
     rating: job.rating || null,
     // LOW-15 FIX: Only use server-side urgent flag (don't auto-fabricate urgency)
     urgent: !!job.urgent,
@@ -261,11 +261,10 @@ const jobsApi = {
       // Log jobs needing admin review
       if (jobsNeedingReview.length > 0) {
         jobsWarn(
-          `âš ï¸ ${jobsNeedingReview.length} jobs missing employer data:`,
+          `${jobsNeedingReview.length} jobs missing employer data:`,
           jobsNeedingReview,
         );
-        // TODO: Send notification to admin dashboard
-        // adminNotificationService.flagJobsForReview(jobsNeedingReview);
+        // Keep this review signal in the client response until moderation alerts are wired.
       }
 
       return {
@@ -277,7 +276,7 @@ const jobsApi = {
         jobsNeedingReview: jobsNeedingReview.length, // Include count in response
       };
     } catch (error) {
-      jobsWarn('âŒ Job service API error:', error.message, {
+      jobsWarn('Job service API error:', error.message, {
         status: error.response?.status,
         statusText: error.response?.statusText,
         data: error.response?.data,
@@ -289,9 +288,9 @@ const jobsApi = {
   /**
    * Normalize raw form data to match the canonical Job model shape.
    * Maps flat UI fields to the nested objects the backend expects:
-   *   budget  â†’ Number
-   *   duration â†’ { value: Number, unit: String }
-   *   location â†’ { type: String, country?: String, city?: String }
+    *   budget -> Number
+    *   duration -> { value: Number, unit: String }
+    *   location -> { type: String, country?: String, city?: String }
    */
   normalizeJobPayload(raw) {
     const payload = { ...raw };
@@ -397,7 +396,7 @@ const jobsApi = {
   async getJobById(jobId, requestOptions = {}) {
     // Validate jobId before making API call
     if (!jobId || jobId === 'undefined' || jobId === 'null') {
-      jobsError('âŒ Invalid job ID provided to getJobById:', jobId);
+      jobsError('Invalid job ID provided to getJobById:', jobId);
       throw new Error('Invalid job ID');
     }
 

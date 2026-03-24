@@ -6,6 +6,7 @@ import {
   Box,
   Button,
   Card,
+  CardActionArea,
   CardActions,
   CardContent,
   Chip,
@@ -398,27 +399,6 @@ const WorkerCard = ({ worker, onSave, isPublicView }) => {
   return (
     <Card
       elevation={2}
-      role="link"
-      tabIndex={0}
-      aria-label={
-        profileUrl ? `View worker profile ${worker.name || ''}` : 'Worker profile'
-      }
-      onClick={(e) => {
-        if (!profileUrl) {
-          e.stopPropagation();
-          return;
-        }
-        handleViewProfile(e);
-      }}
-      onKeyDown={(e) => {
-        if (!profileUrl) {
-          return;
-        }
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          handleViewProfile(e);
-        }
-      }}
       sx={{
         height: '100%',
         display: 'flex',
@@ -431,14 +411,37 @@ const WorkerCard = ({ worker, onSave, isPublicView }) => {
         },
       }}
     >
-      <CardContent
+      <CardActionArea
+        component="div"
+        onClick={(e) => {
+          if (!profileUrl) {
+            e.stopPropagation();
+            return;
+          }
+          handleViewProfile(e);
+        }}
+        aria-label={
+          profileUrl ? `View worker profile ${worker.name || ''}` : 'Worker profile'
+        }
         sx={{
           flexGrow: 1,
-          textDecoration: 'none',
-          color: 'inherit',
-          display: 'block',
+          display: 'flex',
+          alignItems: 'stretch',
+          cursor: profileUrl ? 'pointer' : 'default',
+          '& .MuiCardActionArea-focusHighlight': {
+            opacity: profileUrl ? 0.08 : 0,
+          },
         }}
       >
+        <CardContent
+          sx={{
+            flexGrow: 1,
+            textDecoration: 'none',
+            color: 'inherit',
+            display: 'block',
+            width: '100%',
+          }}
+        >
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
             <Avatar
               src={
@@ -652,6 +655,7 @@ const WorkerCard = ({ worker, onSave, isPublicView }) => {
             )}
           </Grid>
         </CardContent>
+      </CardActionArea>
 
         {/* Contact Action Buttons */}
       <CardActions

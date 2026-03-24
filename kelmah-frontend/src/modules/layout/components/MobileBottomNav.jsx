@@ -4,6 +4,7 @@ import {
   BottomNavigationAction,
   Paper,
   Badge,
+  useTheme,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import {
@@ -56,6 +57,8 @@ const StyledBottomNavigationAction = styled(BottomNavigationAction)(
     minHeight: 56,
     minWidth: 44,
     padding: '6px 4px 8px',
+    borderTop: '3px solid transparent',
+    borderRadius: 10,
     transition: 'all 0.2s ease',
     '&:focus-visible': {
       outline: `3px solid ${theme.palette.mode === 'dark' ? BRAND_COLORS.gold : theme.palette.primary.main}`,
@@ -64,13 +67,18 @@ const StyledBottomNavigationAction = styled(BottomNavigationAction)(
     },
     '&.Mui-selected': {
       color: theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
+      borderTopColor: theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
+      backgroundColor:
+        theme.palette.mode === 'dark'
+          ? 'rgba(255, 215, 0, 0.12)'
+          : 'rgba(17, 24, 39, 0.07)',
       '& .MuiBottomNavigationAction-label': {
-        fontSize: '0.78rem',
+        fontSize: '0.8rem',
         fontWeight: 700,
         opacity: 1,
       },
       '& .MuiSvgIcon-root': {
-        transform: 'scale(1.15)',
+        transform: 'scale(1.12)',
       },
     },
     '& .MuiBottomNavigationAction-label': {
@@ -108,6 +116,7 @@ const StyledBottomNavigationAction = styled(BottomNavigationAction)(
 );
 
 const MobileBottomNav = () => {
+  const theme = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const path = location.pathname;
@@ -185,7 +194,6 @@ const MobileBottomNav = () => {
 
   // Navigation items based on user role - capped at 5 primary actions for clean UX.
   const navigationItems = useMemo(() => {
-    const applicationsLabel = isMobile ? 'Apps' : 'Applications';
     if (isHirer) {
       return [
         {
@@ -195,25 +203,25 @@ const MobileBottomNav = () => {
           path: '/hirer/dashboard',
         },
         {
-          label: isMobile ? 'Post' : 'Post Job',
+          label: 'Post Job',
           value: 'postJob',
           icon: <PostJobIcon />,
           path: '/hirer/jobs/post',
         },
         {
-          label: isMobile ? 'Talent' : 'Find Talent',
+          label: 'Find Talent',
           value: 'findTalent',
           icon: <SearchIcon />,
           path: '/hirer/find-talents',
         },
         {
-          label: applicationsLabel,
+          label: 'Applications',
           value: 'applications',
           icon: <ApplicationsIcon />,
           path: '/hirer/applications',
         },
         {
-          label: isMobile ? 'Inbox' : 'Messages',
+          label: 'Messages',
           value: 'messages',
           icon: <MessagesIcon />,
           path: '/messages',
@@ -230,19 +238,19 @@ const MobileBottomNav = () => {
         path: '/worker/dashboard',
       },
       {
-        label: isMobile ? 'Find' : 'Find Work',
+        label: 'Find Work',
         value: 'findWork',
         icon: <JobsIcon />,
         path: '/worker/find-work',
       },
       {
-        label: applicationsLabel,
+        label: 'Applications',
         value: 'applications',
         icon: <ApplicationsIcon />,
         path: '/worker/applications',
       },
       {
-        label: isMobile ? 'Inbox' : 'Messages',
+        label: 'Messages',
         value: 'messages',
         icon: <MessagesIcon />,
         path: '/messages',
@@ -289,9 +297,12 @@ const MobileBottomNav = () => {
                   aria-label={`${item.badge} unread ${item.badge === 1 ? 'message' : 'messages'}`}
                   sx={{ 
                     '& .MuiBadge-badge': { 
-                      fontSize: '0.72rem',
-                      minWidth: 18,
-                      height: 18,
+                      fontSize: '0.74rem',
+                      fontWeight: 800,
+                      minWidth: 20,
+                      height: 20,
+                      border: '2px solid',
+                      borderColor: theme.palette.background.paper,
                     }
                   }}
                 >

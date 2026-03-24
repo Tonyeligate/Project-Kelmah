@@ -1,4 +1,4 @@
-[dotenv@17.2.3] injecting env (0) from .env -- tip: ­ƒöÉ prevent committing .env to code: https://dotenvx.com/precommit
+[dotenv@17.2.3] injecting env (0) from .env -- tip:  prevent committing .env to code: https://dotenvx.com/precommit
 {
   "timestamp": "2025-11-21T13:18:41.000Z",
   "target": {
@@ -26,3 +26,4 @@
   },
   "success": true
 }
+

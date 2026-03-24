@@ -1,4 +1,4 @@
-# Legacy Axios Client Retirement – Dry Audit (Nov 25, 2025)
+# Legacy Axios Client Retirement - Dry Audit (Nov 25, 2025)
 
 ## Scope Snapshot
 - Consolidate every lingering frontend service that still imports the removed `modules/common/services/axios.js` helper or its exported `userServiceClient`, `jobServiceClient`, and `messagingServiceClient` variants.

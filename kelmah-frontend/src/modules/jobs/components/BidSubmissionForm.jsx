@@ -216,7 +216,7 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
             <Chip
               size="small"
               icon={<AttachMoney sx={{ fontSize: 14 }} />}
-              label={`GH₵ ${minBid.toLocaleString()} – ${maxBid.toLocaleString()}`}
+              label={`GH₵ ${minBid.toLocaleString()} - ${maxBid.toLocaleString()}`}
               sx={{ bgcolor: alpha(theme.palette.primary.main, 0.15), color: 'primary.main' }}
             />
             <Chip

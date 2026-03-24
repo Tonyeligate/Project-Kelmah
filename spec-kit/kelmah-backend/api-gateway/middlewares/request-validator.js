@@ -234,7 +234,7 @@ const handleCors = (req, res, next) => {
 };
 
 /**
- * Per-user tier rate limiter shim – expects upstream Redis limiter for enforcement
+ * Per-user tier rate limiter shim - expects upstream Redis limiter for enforcement
  */
 const enforceTierLimits = (limits = { basic: 100, premium: 500, enterprise: 1000 }) => {
   return (req, res, next) => {

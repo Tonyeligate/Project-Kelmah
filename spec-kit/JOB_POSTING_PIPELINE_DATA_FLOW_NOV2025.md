@@ -114,10 +114,10 @@ UI Update: JobCreationForm resets, draft cleared via `useJobDraft`, success Aler
 	2. A standalone Mongo probe script (CLI) can ping the Atlas cluster using the shared `MONGODB_URI`, reporting connection time, ping duration, and whether insert commands succeed with a minimal document.
 	3. Gateway/job-service curls include precise timestamps, headers, and response JSON saved under `diagnostics/` for auditing.
 - **File Surface To Touch**:
-	- `kelmah-backend/services/job-service/config/db.js` – expose structured log helpers + configurable timeouts for `ensureMongoReady`.
-	- `kelmah-backend/services/job-service/controllers/job.controller.js` – log request metadata upfront, reuse shared log helpers, propagate request IDs, and capture Mongo failure reasons before responding.
-	- `diagnostics/mongo-probe.js` (new) – CLI tool to ping the Atlas cluster, run a lightweight insert + delete cycle, and print JSON results for spec-kit referencing.
-	- `spec-kit/JOB_POSTING_PIPELINE_DATA_FLOW_NOV2025.md` & `STATUS_LOG.md` – record probe output, curl evidence, and remediation notes per workflow mandate.
+	- `kelmah-backend/services/job-service/config/db.js` - expose structured log helpers + configurable timeouts for `ensureMongoReady`.
+	- `kelmah-backend/services/job-service/controllers/job.controller.js` - log request metadata upfront, reuse shared log helpers, propagate request IDs, and capture Mongo failure reasons before responding.
+	- `diagnostics/mongo-probe.js` (new) - CLI tool to ping the Atlas cluster, run a lightweight insert + delete cycle, and print JSON results for spec-kit referencing.
+	- `spec-kit/JOB_POSTING_PIPELINE_DATA_FLOW_NOV2025.md` & `STATUS_LOG.md` - record probe output, curl evidence, and remediation notes per workflow mandate.
 - **Investigation Tasks (Pre-Code)**:
 	1. Confirm existing loggers (`logger` from `../../shared/utils/logger`) support structured metadata; document required fields.
 	2. Identify how request IDs travel from gateway (`x-request-id`, `x-correlation-id`) into job-service logs; ensure controllers capture them before additional middleware runs.

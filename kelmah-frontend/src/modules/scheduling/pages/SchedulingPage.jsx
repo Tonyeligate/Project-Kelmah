@@ -183,7 +183,7 @@ const AppointmentCard = ({
         borderRadius: 2,
         p: 2,
         mb: 2,
-        // âœ… MOBILE-AUDIT P4: removed hover transform (no hover on mobile)
+        // MOBILE-AUDIT P4: removed hover transform (no hover on mobile)
         cursor: 'pointer',
         position: 'relative',
       }}
@@ -250,7 +250,7 @@ const AppointmentCard = ({
                 sx={{
                   borderWidth: 2,
                   minHeight: 44,
-                  // âœ… MOBILE-AUDIT P4: removed decorative boxShadow
+                  // MOBILE-AUDIT P4: removed decorative boxShadow
                 }}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -272,7 +272,7 @@ const AppointmentCard = ({
                 sx={{
                   borderWidth: 2,
                   minHeight: 44,
-                  // âœ… MOBILE-AUDIT P4: removed decorative boxShadow
+                  // MOBILE-AUDIT P4: removed decorative boxShadow
                 }}
                 onClick={(e) => {
                   e.stopPropagation();

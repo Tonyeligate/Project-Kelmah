@@ -96,7 +96,7 @@ export const login = createAsyncThunk(
       const canUseCookieSessionWithoutToken = AUTH_CONFIG.httpOnlyCookieAuth;
 
       if (token || canUseCookieSessionWithoutToken) {
-        // Return structured data for the reducer â€” storage is handled by authService.login()
+        // Return structured data for the reducer - storage is handled by authService.login()
         return {
           token: token || null,
           user: normalizedUser,
@@ -125,7 +125,7 @@ export const verifyAuth = createAsyncThunk(
     try {
       devLog('Verifying auth status...');
 
-      // Development mock authentication disabled â€“ always verify via API
+      // Development mock authentication disabled - always verify via API
 
       // Production mode auth verification logic - cookie and token aware
       let token = secureStorage.getAuthToken();

@@ -489,7 +489,7 @@ const GhanaMobileMoneyPayment = ({
       }}
     >
       <Typography variant="h5" gutterBottom sx={{ textAlign: 'center', mb: 3 }}>
-        ðŸ‡¬ðŸ‡­ Ghana Mobile Money Payment
+        Ghana Mobile Money Payment (Ghana)
       </Typography>
 
       {renderPaymentContent()}

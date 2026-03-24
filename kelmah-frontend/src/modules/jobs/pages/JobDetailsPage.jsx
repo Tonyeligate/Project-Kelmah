@@ -69,6 +69,7 @@ import {
   resolveProfileImageUrl,
 } from '../../common/utils/mediaAssets';
 import { devError } from '@/modules/common/utils/devLogger';
+import { formatGhanaCurrency } from '@/utils/formatters';
 
 // Styled components
 const SectionHeading = ({ children, icon: Icon, sx = {} }) => {
@@ -110,8 +111,8 @@ const MetaPill = ({ icon: Icon, label }) => {
 };
 
 const DetailsPaper = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(4),
-  borderRadius: theme.spacing(2),
+  padding: theme.spacing(3.5),
+  borderRadius: theme.spacing(2.25),
   background:
     theme.palette.mode === 'dark'
       ? 'rgba(26, 26, 26, 0.8)'
@@ -165,7 +166,7 @@ const maskEmail = (value) => {
   if (!localPart || !domain) return email;
 
   const visibleLocal = localPart.length <= 2 ? localPart.charAt(0) : localPart.slice(0, 2);
-  const maskedTail = 'â€¢'.repeat(Math.max(localPart.length - visibleLocal.length, 3));
+  const maskedTail = '*'.repeat(Math.max(localPart.length - visibleLocal.length, 3));
   return `${visibleLocal}${maskedTail}@${domain}`;
 };
 
@@ -214,8 +215,8 @@ const formatCompactMoney = (value) => {
   return numericValue.toLocaleString();
 };
 
-const getCompactBudgetDisplay = (job, currency = 'GHâ‚µ') => {
-  if (!job?.budget) return 'TBD';
+const getCompactBudgetDisplay = (job) => {
+  if (!job?.budget) return 'Budget pending';
 
   const suffix = getCompactPaymentSuffix(job?.budget?.type || job?.paymentType || 'fixed');
   const appendSuffix = (amountLabel) => `${amountLabel}${suffix.startsWith('/') ? suffix : ` ${suffix}`}`;
@@ -224,19 +225,19 @@ const getCompactBudgetDisplay = (job, currency = 'GHâ‚µ') => {
     const { min, max, amount } = job.budget;
 
     if (amount != null) {
-      return appendSuffix(`${currency}${formatCompactMoney(amount)}`);
+      return appendSuffix(formatGhanaCurrency(amount));
     }
 
     if (min != null && max != null) {
       if (Number(min) === Number(max)) {
-        return appendSuffix(`${currency}${formatCompactMoney(min)}`);
+        return appendSuffix(formatGhanaCurrency(min));
       }
 
-      return appendSuffix(`${currency}${formatCompactMoney(min)}-${formatCompactMoney(max)}`);
+      return appendSuffix(`${formatGhanaCurrency(min)}-${formatGhanaCurrency(max)}`);
     }
   }
 
-  return appendSuffix(`${currency}${formatCompactMoney(job.budget)}`);
+  return appendSuffix(formatGhanaCurrency(job.budget));
 };
 
 const formatReadableDate = (value, options) => {
@@ -317,7 +318,7 @@ const JobDetailsPage = () => {
   const fullJobDescription = toDisplayText(job?.description, 'No description available.');
   const condensedJobDescription =
     fullJobDescription.length > 280
-      ? `${fullJobDescription.slice(0, 280)}â€¦`
+      ? `${fullJobDescription.slice(0, 280)}...`
       : fullJobDescription;
   const visibleOverviewText = job?.description
     ? showFullOverview
@@ -332,11 +333,11 @@ const JobDetailsPage = () => {
   useEffect(() => {
     // Validate jobId before fetching
     if (!id || id === 'undefined' || id === 'null') {
-      devError('âŒ Invalid job ID:', id);
+      devError('Invalid job ID:', id);
       return;
     }
 
-    // Fetch job details (public endpoint â€” no auth required for viewing)
+    // Fetch job details (public endpoint, no auth required for viewing)
     dispatch(fetchJobById(id));
   }, [dispatch, id]);
 
@@ -451,7 +452,7 @@ const JobDetailsPage = () => {
         text: `Check out this job: ${job.title}`,
         url: window.location.href,
       }).catch(() => {
-        // User cancelled â€” not an error
+        // User cancelled - not an error
       });
     } else {
       // AUD2-M11 FIX: Copy URL to clipboard and show Snackbar instead of blocking alert()
@@ -569,7 +570,7 @@ const JobDetailsPage = () => {
     );
   }
 
-  // â”€â”€â”€ derived hirer info â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Derived hirer info
   const hirerData = job?.hirer || job?.client || job?.createdBy || {};
   const hirerId = hirerData?._id || hirerData?.id || job?.hirerId || job?.clientId || null;
   const hirerName = hirerData?.firstName && hirerData?.lastName
@@ -596,20 +597,19 @@ const JobDetailsPage = () => {
   const clientEmail = toDisplayText(hirerData?.email);
   const maskedClientEmail = maskEmail(clientEmail);
 
-  // â”€â”€â”€ budget display â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Budget display
   const budgetDisplay = (() => {
     if (!job?.budget && job?.budget !== 0) return 'Budget not specified';
-    const currency = 'GHâ‚µ';
     if (typeof job.budget === 'object') {
       const { min, max, amount, type } = job.budget;
       const suffix = type || job?.paymentType || 'fixed';
-      if (amount) return `${currency} ${Number(amount).toLocaleString()} / ${suffix}`;
+      if (amount) return `${formatGhanaCurrency(amount)} / ${suffix}`;
       if (min != null && max != null)
         return min === max
-          ? `${currency} ${Number(min).toLocaleString()} / ${suffix}`
-          : `${currency} ${Number(min).toLocaleString()} â€“ ${Number(max).toLocaleString()} / ${suffix}`;
+          ? `${formatGhanaCurrency(min)} / ${suffix}`
+          : `${formatGhanaCurrency(min)} - ${formatGhanaCurrency(max)} / ${suffix}`;
     }
-    return `${currency} ${Number(job.budget).toLocaleString()} / ${job?.paymentType || 'fixed'}`;
+    return `${formatGhanaCurrency(job.budget)} / ${job?.paymentType || 'fixed'}`;
   })();
 
   const postedDateLabel = formatReadableDate(job?.createdAt || job?.created_at || job?.postedDate, {
@@ -716,7 +716,7 @@ const JobDetailsPage = () => {
           </Button>
         </motion.div>
 
-        {/* â”€â”€â”€ HERO HEADER BAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {/* HERO HEADER BAR */}
         <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
           <Paper
             elevation={0}
@@ -902,7 +902,7 @@ const JobDetailsPage = () => {
         </motion.div>
 
         <Grid container spacing={{ xs: 2, sm: 3 }}>
-          {/* â”€â”€â”€ MAIN CONTENT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+          {/* MAIN CONTENT */}
           <Grid item xs={12} lg={8}>
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
 
@@ -974,7 +974,7 @@ const JobDetailsPage = () => {
             </motion.div>
           </Grid>
 
-          {/* â”€â”€â”€ SIDEBAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+          {/* SIDEBAR */}
           <Grid item xs={12} lg={4}>
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.15 }}>
               <Box sx={{ position: { lg: 'sticky' }, top: { lg: 96 } }}>
@@ -991,7 +991,7 @@ const JobDetailsPage = () => {
                       Budget range
                     </Typography>
                     <Typography variant="h6" sx={{ fontWeight: 700, color: accentColor }}>
-                      GHâ‚µ {(job.bidding.minBidAmount || job.budget?.min || 0).toLocaleString()} â€“ {(job.bidding.maxBidAmount || job.budget?.max || 0).toLocaleString()}
+                      {formatGhanaCurrency(job.bidding.minBidAmount || job.budget?.min || 0)} - {formatGhanaCurrency(job.bidding.maxBidAmount || job.budget?.max || 0)}
                     </Typography>
                     <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 500 }}>
                       {job.bidding.currentBidders || 0} / {job.bidding.maxBidders || 5} bids placed
@@ -1007,7 +1007,28 @@ const JobDetailsPage = () => {
                 ) : null}
 
                 <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1.25 }}>
-                  Review the budget, location, and required skills before you respond.
+                  Review the budget, client trust markers, and required skills before you respond.
+                </Typography>
+
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mb: 1.5 }}>
+                  {hirerVerified && (
+                    <Chip size="small" color="success" icon={<VerifiedUser sx={{ fontSize: 14 }} />} label="Verified client" />
+                  )}
+                  <Chip
+                    size="small"
+                    variant="outlined"
+                    label={job?.bidding?.bidStatus === 'open' ? 'Bidding open' : 'Applications open'}
+                  />
+                  <Chip size="small" variant="outlined" label={`${job?.proposalCount || 0} applicants`} />
+                  <Chip
+                    size="small"
+                    variant="outlined"
+                    label={job?.visibility === 'private' ? 'Private listing' : 'Public listing'}
+                  />
+                </Box>
+
+                <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 1.5, lineHeight: 1.45 }}>
+                  Badge guide: Verified client means profile checks passed, Applications/Bidding open means you can submit now, and applicant count shows current competition.
                 </Typography>
 
                 <ActionButton
@@ -1095,11 +1116,11 @@ const JobDetailsPage = () => {
                   }, {
                     icon: LocationOn, label: 'Location', value: locationLabel,
                   }, {
-                    icon: Category, label: 'Category', value: job?.category || 'â€”',
+                    icon: Category, label: 'Category', value: job?.category || '-',
                   }, {
                     icon: AccessTime, label: 'Deadline', value: job?.endDate ? new Date(job.endDate).toLocaleDateString('en-GH', { day: 'numeric', month: 'long', year: 'numeric' }) : 'No deadline',
                   }, {
-                    icon: CalendarToday, label: 'Posted', value: job?.createdAt ? new Date(job.createdAt).toLocaleDateString('en-GH', { day: 'numeric', month: 'long', year: 'numeric' }) : 'â€”',
+                    icon: CalendarToday, label: 'Posted', value: job?.createdAt ? new Date(job.createdAt).toLocaleDateString('en-GH', { day: 'numeric', month: 'long', year: 'numeric' }) : '-',
                   }, {
                     icon: Groups, label: 'Applicants', value: `${job?.proposalCount || 0} people applied`,
                   }].map(({ icon: Icon, label, value }) => (
@@ -1120,7 +1141,7 @@ const JobDetailsPage = () => {
               <DetailsPaper elevation={2} sx={{ mb: 3 }}>
                 <SectionHeading icon={Person}>About the Client</SectionHeading>
 
-                {/* Profile row â€” clickable */}
+                {/* Profile row - clickable */}
                 <Box
                   onClick={handleOpenClientProfile}
                   sx={{

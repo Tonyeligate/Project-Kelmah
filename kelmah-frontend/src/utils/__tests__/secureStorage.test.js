@@ -1,6 +1,4 @@
 /* eslint-env jest */
-import { secureStorage } from '../secureStorage';
-
 // Mock localStorage
 const localStorageMock = {
   getItem: jest.fn(),
@@ -28,10 +26,13 @@ Object.defineProperty(window, 'sessionStorage', {
   value: sessionStorageMock,
 });
 
+let secureStorage;
+
 describe('secureStorage', () => {
   beforeEach(() => {
     // Clear all mocks
     jest.clearAllMocks();
+    jest.resetModules();
     localStorageMock.getItem.mockReturnValue(null);
     localStorageMock.setItem.mockReturnValue(undefined);
     localStorageMock.removeItem.mockReturnValue(undefined);
@@ -40,6 +41,8 @@ describe('secureStorage', () => {
     sessionStorageMock.setItem.mockReturnValue(undefined);
     sessionStorageMock.removeItem.mockReturnValue(undefined);
     sessionStorageMock.clear.mockReturnValue(undefined);
+
+    secureStorage = require('../secureStorage').secureStorage;
   });
 
   describe('setAuthToken', () => {
@@ -48,7 +51,7 @@ describe('secureStorage', () => {
       secureStorage.setAuthToken(token);
 
       expect(localStorageMock.setItem).toHaveBeenCalled();
-      const callArgs = localStorageMock.setItem.mock.calls[0];
+      const callArgs = localStorageMock.setItem.mock.calls.find(([key]) => key === 'kelmah_secure_data');
       expect(callArgs[0]).toBe('kelmah_secure_data');
       // Should be encrypted, so not equal to plain token
       expect(callArgs[1]).not.toBe(token);
@@ -58,14 +61,20 @@ describe('secureStorage', () => {
   describe('getAuthToken', () => {
     test('retrieves and decrypts token', () => {
       const token = 'test-token-123';
-      secureStorage.setAuthToken(token);
-
-      // Mock the encrypted data retrieval
-      const mockEncryptedData = localStorageMock.setItem.mock.calls[0][1];
-      localStorageMock.getItem.mockReturnValue(mockEncryptedData);
+      const decryptSpy = jest.spyOn(secureStorage, 'decrypt').mockReturnValue({
+        auth_token: {
+          value: token,
+          timestamp: Date.now(),
+          ttl: 2 * 60 * 60 * 1000,
+        },
+        _timestamp: Date.now(),
+        _version: '1.0',
+      });
+      localStorageMock.getItem.mockImplementation((key) => (key === 'kelmah_secure_data' ? 'encrypted-payload' : null));
 
       const retrievedToken = secureStorage.getAuthToken();
       expect(retrievedToken).toBe(token);
+      decryptSpy.mockRestore();
     });
 
     test('returns null when no token exists', () => {
@@ -93,6 +102,7 @@ describe('secureStorage', () => {
 
       expect(localStorageMock.removeItem).toHaveBeenCalledWith('kelmah_secure_data');
       expect(sessionStorageMock.removeItem).toHaveBeenCalledWith('kelmah_secure_session_data');
+      expect(localStorageMock.removeItem).not.toHaveBeenCalledWith('kelmah_encryption_secret');
     });
   });
 });

@@ -1,6 +1,6 @@
 # Frontend Dry Audit Inventory
 **Prepared:** October 3, 2025  
-**Owner:** Audit Task Force – Frontend Sector
+**Owner:** Audit Task Force - Frontend Sector
 
 This inventory scopes the dry audit effort across the React/Vite frontend. It enumerates every major sector, highlights their substructures, and documents integration seams that must be validated to guarantee clean data flow with the backend API gateway. Use it alongside the [Dry Audit Execution Plan](../DRY_AUDIT_EXECUTION_PLAN.md) to drive file-by-file reviews, ensuring each dependency uncovered during a primary audit is queued for its own primary pass.
 

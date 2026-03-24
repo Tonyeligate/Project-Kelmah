@@ -44,6 +44,13 @@ export const formatCurrency = (amount, currency = 'GHS', locale = 'en-GH') => {
 };
 
 /**
+ * Format Ghana cedi values for user-facing labels.
+ * Keeps the cedi symbol but trims trailing .00 for cleaner dashboard and card copy.
+ */
+export const formatGhanaCurrency = (amount) =>
+  formatCurrency(amount, 'GHS', 'en-GH').replace(/\.00$/, '');
+
+/**
  * Get currency symbol for a given currency code
  * @param {string} currency - Currency code
  * @returns {string} Currency symbol

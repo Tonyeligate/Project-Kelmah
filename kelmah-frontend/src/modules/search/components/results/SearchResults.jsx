@@ -128,7 +128,7 @@ const SearchResults = ({
               onClick={() => onRemoveFilter('all')}
               size="small"
               color="secondary"
-              sx={{ minHeight: 36 }}
+              sx={{ minHeight: { xs: 44, sm: 36 } }}
             />
           )}
         </Box>

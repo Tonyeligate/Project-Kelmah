@@ -795,7 +795,7 @@ const SkillsAssessmentPage = () => {
                       navigator
                         .share({
                           title: test.title,
-                          text: `I scored ${test.score ?? ''}% on ${test.title} â€” Kelmah Skills Assessment`,
+                          text: `I scored ${test.score ?? ''}% on ${test.title} - Kelmah Skills Assessment`,
                         })
                         .catch(() => {});
                     } else {

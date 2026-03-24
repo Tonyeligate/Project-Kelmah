@@ -1,4 +1,4 @@
-# Dashboard Profile Menu Data Flow – Consolerrorsfix Bug #1 (Nov 19, 2025)
+# Dashboard Profile Menu Data Flow - Consolerrorsfix Bug #1 (Nov 19, 2025)
 
 ## Summary
 Bug #1 from `Consolerrorsfix.txt` described an "Inconsistent Profile Icon on Dashboard" where the shared header had a working account dropdown, but the hirer/worker dashboards rendered static avatars with no menu, logout, or navigation affordances. Both dashboards now embed the same Material UI `Avatar + Menu` interaction pattern that wires into the canonical Redux auth slice, preserving role chips and logout flows after route transitions.

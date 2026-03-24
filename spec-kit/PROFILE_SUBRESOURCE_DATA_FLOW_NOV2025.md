@@ -1,4 +1,4 @@
-# Profile Subresource Data Flow – Nov 15, 2025
+# Profile Subresource Data Flow - Nov 15, 2025
 
 ## Purpose
 Document the newly added `/api/users/profile/(statistics|activity|preferences)` endpoints so downstream teams can trace how frontend components map to backend controllers, services, and middleware.
@@ -31,7 +31,7 @@ Document the newly added `/api/users/profile/(statistics|activity|preferences)` 
 - Mirror same helper outputs on frontend `profileService` to avoid undefined responses.
 - Document difference between worker stats and account settings fields so QA knows what to expect during tests.
 
-## Nov 18, 2025 Update – Cold Start Guardrails
+## Nov 18, 2025 Update - Cold Start Guardrails
 - Added lazy model loading helpers in `user.controller.js` (`ensureModelsLoaded`, `getUserModel`, `getWorkerProfileModel`, and `requireUserModel`). `fetchProfileDocuments` now calls these helpers before any query so `/profile/*` endpoints no longer crash when the service boots before `db.loadModels()` resolves.
 - Native-driver fallback in `fetchProfileDocuments` was updated to reference the actual collection names returned by the helpers (`users`, `workerprofiles`), eliminating the mismatch that previously caused empty documents under cold starts.
 - The statistics/activity/preferences handlers simply invoke `fetchProfileDocuments({ userId: req.user._id })`, keeping the higher-level logic unchanged while guaranteeing both docs exist (or throw a descriptive `AppError(404, 'User profile not found')`).

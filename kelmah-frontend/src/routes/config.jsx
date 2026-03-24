@@ -410,7 +410,7 @@ const routes = [
         path: 'search',
         element: <FindWorkersPage />,
       },
-      // Professional Map – Uber/Bolt-style live map for jobs & workers
+      // Professional Map - Uber/Bolt-style live map for jobs & workers
       {
         path: 'map',
         element: <ProfessionalMapPage />,
@@ -1101,7 +1101,7 @@ const routes = [
       },
 
       // ==========================================
-      // CONTRACTS – TOP-LEVEL ALIASES
+      // CONTRACTS - TOP-LEVEL ALIASES
       // (ContractManagementPage, PaymentCenter, etc. link here)
       // ==========================================
       {
@@ -1159,7 +1159,7 @@ const routes = [
       },
 
       // ==========================================
-      // REVIEWS – TOP-LEVEL
+      // REVIEWS - TOP-LEVEL
       // ==========================================
       {
         path: 'reviews',

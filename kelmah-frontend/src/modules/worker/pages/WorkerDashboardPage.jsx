@@ -630,6 +630,33 @@ const WorkerDashboardPage = () => {
 
           <Box
             sx={{
+              p: 1.25,
+              borderRadius: 2,
+              border: '1px solid',
+              borderColor: alpha(theme.palette.primary.main, 0.3),
+              backgroundColor: alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.12 : 0.08),
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 1,
+              flexWrap: 'wrap',
+            }}
+          >
+            <Typography variant="body2" sx={{ color: 'text.primary', fontWeight: 700 }}>
+              Next best action: review pending applications before opening new searches.
+            </Typography>
+            <Button
+              size="small"
+              variant="contained"
+              onClick={() => navigate('/worker/applications')}
+              sx={{ textTransform: 'none', fontWeight: 700, minHeight: 40 }}
+            >
+              Open Pipeline
+            </Button>
+          </Box>
+
+          <Box
+            sx={{
               display: 'grid',
               gridTemplateColumns: { xs: 'repeat(2, minmax(0, 1fr))', sm: 'repeat(4, minmax(0, 1fr))' },
               gap: 1,
@@ -761,11 +788,31 @@ const WorkerDashboardPage = () => {
         <LoadingSkeleton />
       ) : (
         <>
+          {/* Quick Actions Row (Phase 2) */}
+          {!isLoading && (
+            <Box
+              sx={{
+                mb: 3,
+                p: { xs: 1.5, sm: 2 },
+                borderRadius: 2.5,
+                border: '1px solid',
+                borderColor: 'divider',
+                backgroundColor: alpha(theme.palette.background.paper, 0.86),
+                backdropFilter: 'blur(4px)',
+              }}
+            >
+              <Typography variant="body2" fontWeight={600} sx={{ mb: 1.5, color: 'text.primary' }}>
+                Quick Actions
+              </Typography>
+              <QuickActionsRow />
+            </Box>
+          )}
+
           {/* Metric Cards - 4 colored cards LC Portal style */}
-          <Grid container spacing={{ xs: 1.5, sm: 3, md: 2.5, lg: 2 }} sx={{ mb: 4 }}>
+          <Grid container spacing={{ xs: 1.5, sm: 2.5, md: 3, lg: 3 }} sx={{ mb: 4 }}>
             {metricCards.map((card, index) => (
               <Fade in timeout={420} style={{ transitionDelay: `${200 + index * 80}ms` }} key={`metric-fade-${card.title}`}>
-                <Grid item xs={6} sm={6} md={3} key={card.title}>
+                <Grid item xs={12} sm={6} md={6} lg={4} key={card.title}>
                   <Tooltip title={card.tooltip} arrow placement="top">
                     <ButtonBase
                       onClick={card.onClick}
@@ -793,7 +840,7 @@ const WorkerDashboardPage = () => {
                         color: 'text.primary',
                         position: 'relative',
                         overflow: 'hidden',
-                        minHeight: { xs: 96, sm: 132 },
+                        minHeight: { xs: 96, sm: 132, md: 144 },
                         display: 'flex',
                         flexDirection: 'column',
                         justifyContent: 'space-between',
@@ -845,26 +892,6 @@ const WorkerDashboardPage = () => {
         </>
       )}
 
-      {/* Quick Actions Row (Phase 2) */}
-      {!isLoading && (
-        <Box
-          sx={{
-            mb: 3,
-            p: { xs: 1.5, sm: 2 },
-            borderRadius: 2.5,
-            border: '1px solid',
-            borderColor: 'divider',
-            backgroundColor: alpha(theme.palette.background.paper, 0.86),
-            backdropFilter: 'blur(4px)',
-          }}
-        >
-          <Typography variant="body2" fontWeight={600} sx={{ mb: 1.5, color: 'text.primary' }}>
-            Quick Actions
-          </Typography>
-          <QuickActionsRow />
-        </Box>
-      )}
-
       {/* U-01 FIX: Job Recommendations Section */}
       {!isLoading && (
         <Box
@@ -905,14 +932,7 @@ const WorkerDashboardPage = () => {
                 <Grid item xs={12} sm={6} md={3} key={job.id}>
                   <Paper
                     elevation={0}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter' || event.key === ' ') {
-                        event.preventDefault();
-                        navigate(`/jobs/${job.id}`);
-                      }
-                    }}
+                    component={ButtonBase}
                     sx={{
                       p: 2,
                       borderRadius: 2,
@@ -938,7 +958,7 @@ const WorkerDashboardPage = () => {
                       {job.title}
                     </Typography>
                     <Typography variant="caption" color="text.secondary" noWrap>
-                      {job.employer?.name || 'Employer'} • {job.location || 'Remote'}
+                      {job.employer?.name || 'Employer'} | {job.location || 'Remote'}
                     </Typography>
                     <Box sx={{ mt: 1, display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
                       {(job.skills || []).slice(0, 3).map((skill) => (

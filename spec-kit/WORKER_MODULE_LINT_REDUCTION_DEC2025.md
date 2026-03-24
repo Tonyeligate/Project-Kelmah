@@ -1,4 +1,4 @@
-# Worker Module Lint Reduction – December 2025
+# Worker Module Lint Reduction - December 2025
 
 ## 1. Scope & Objectives
 - **Goal**: Clear the blocking ESLint backlog across worker-facing UI (JobCard, Smart Recommendations, Worker Dashboard listings, Job Search/Application pages, and route configs) so `npm run lint --prefix kelmah-frontend` can complete without inherited `prop-types`, `no-unused-vars`, or `import/no-unused-modules` failures.
@@ -85,7 +85,7 @@ searchService.trackJobInteraction(jobId, action)
 Window navigates to `/jobs/:jobId[/apply]` triggering JobDetails/JobApplication components which call `useJobQuery`/`useApplyToJobMutation`
 ```
 
-### 4.3 Worker Dashboard – AvailableJobs.jsx
+### 4.3 Worker Dashboard - AvailableJobs.jsx
 - **Component**: `kelmah-frontend/src/modules/dashboard/components/worker/AvailableJobs.jsx`
 - **Hooks**: `useJobsQuery(queryFilters)`, `useSavedJobsQuery`, `useSaveJobMutation`, `useUnsaveJobMutation`, `useApplyToJobMutation`
 - **Backend Endpoints**: `GET /api/jobs?status=open&nearby=true`, `POST /api/jobs/:jobId/save`, `DELETE /api/jobs/:jobId/save`, `POST /api/jobs/:jobId/apply`
@@ -183,7 +183,7 @@ These traces satisfy the UI→state→service→API documentation requirement an
 
 ## 6. Implementation Log
 
-### 2025-11-22 – Pass 1 (Prop validations + worker lint cleanup)
+### 2025-11-22 - Pass 1 (Prop validations + worker lint cleanup)
 - **Focus**: Kick off the implementation phase by cleaning `JobCard.jsx` prop validation + hook ordering, trimming unused imports/state across `SmartJobRecommendations.jsx` and Worker job pages, and realigning `src/routes/config.jsx` with Prettier so the scoped ESLint command can start passing file-by-file.
 - **Plan**:
   1. Normalize `JobCard` hooks (hooks before guards) and add shape-accurate `PropTypes`/`defaultProps` to match the React Query-powered parents; remove dead destructured fields like `deadline`.
@@ -196,7 +196,7 @@ These traces satisfy the UI→state→service→API documentation requirement an
 - Targeted lint command: `cd kelmah-frontend && npx eslint src/modules/common/components/cards/JobCard.jsx src/modules/search/components/SmartJobRecommendations.jsx src/modules/worker/pages/JobApplicationPage.jsx src/routes/config.jsx` → **passes cleanly** (0 errors) as of Nov 22, confirming the first set of files is compliant.
 - Next focus area: worker dashboard (`AvailableJobs.jsx`), worker search mega-page, and `workerRoutes.jsx` to continue reducing the ESLint backlog until the full command listed in Success Criteria exits zero.
 
-### 2025-11-23 – Lint Scope Planning (AvailableJobs + JobSearch + workerRoutes)
+### 2025-11-23 - Lint Scope Planning (AvailableJobs + JobSearch + workerRoutes)
 - **Command**: `cd kelmah-frontend && npx eslint src/modules/dashboard/components/worker/AvailableJobs.jsx src/modules/worker/pages/JobSearchPage.jsx src/routes/workerRoutes.jsx`
 - **Result**: 134 errors / 7 warnings remain across the large worker surfaces (prop-types omissions for the inline `job` render helpers, dozens of unused MUI imports/icons, `useMemo`/`useCallback` dependency noise, Prettier indentation drift around the recommendation cards, and `workerRoutes.jsx` issues still pending audit).
 - **Action Items**:
@@ -207,7 +207,7 @@ These traces satisfy the UI→state→service→API documentation requirement an
 
 _Last updated: Nov 23, 2025._
 
-### 2025-11-30 – AvailableJobs + JobSearch Remediation
+### 2025-11-30 - AvailableJobs + JobSearch Remediation
 - **AvailableJobs.jsx**: Replaced the inline `JobCard` prop typing with a shared `jobPropType` near the imports, assigned PropTypes inside the component scope to avoid scope warnings, and formatted the gradient/button style branches via Prettier so the dashboard card no longer triggers `react/prop-types` or indentation errors.
 - **JobSearchPage.jsx**: Fixed the broken icon import block, memoized fallback filters (`rawFilters` → `useMemo`) plus `jobsFromQuery` to stabilize React Hook dependencies, and updated the geolocation/preferences effects to depend on `authState.isAuthenticated` (the value they read) so `react-hooks/exhaustive-deps` is satisfied.
 - **Verification**: `cd kelmah-frontend && npx eslint src/modules/dashboard/components/worker/AvailableJobs.jsx src/modules/worker/pages/JobSearchPage.jsx src/routes/workerRoutes.jsx` → **passes (0 errors / 0 warnings)** on Nov 30 following a Prettier run over AvailableJobs. Command output recorded in STATUS_LOG.
@@ -215,30 +215,30 @@ _Last updated: Nov 23, 2025._
 
 _Last updated: Nov 30, 2025._
 
-### 2025-12-02 – Smart Recommendations Batch Planning
+### 2025-12-02 - Smart Recommendations Batch Planning
 - 🧪 Re-ran the scoped ESLint command `cd kelmah-frontend && npx eslint src/modules/search/components/SmartJobRecommendations.jsx src/modules/worker/pages/JobApplicationPage.jsx src/modules/common/components/cards/JobCard.jsx src/routes/config.jsx` to measure the remaining lint issues on the next worker batch. Output: `JobCard.jsx` failed with Prettier indentation on the hover style block (lines 157‑159) and `routes/config.jsx` reported 40+ formatting violations due to inconsistent indentation/spacing; the other two files passed.
 - 🔍 Completed a fresh dry-audit pass on `SmartJobRecommendations.jsx`, `JobApplicationPage.jsx`, `JobCard.jsx`, and `routes/config.jsx` to reconfirm their UI→React Query→API flows (see Sections 4.1–4.5) and pinpoint the exact formatting/prop-type adjustments required.
 - 🛠️ Plan: 1) Reformat `JobCard.jsx` around the hover-state style object so the two-space Prettier indentation is restored without touching logic, 2) run Prettier/ESLint formatting over `src/routes/config.jsx` to align with project standards, 3) rerun the scoped lint command to ensure both files exit 0, and 4) document the verification output here plus in `STATUS_LOG.md`.
 - 🔜 Follow-up: After this batch is green, widen the ESLint surface back to the full Success Criteria command so we can close out the worker module lint initiative.
 
-### 2025-12-02 – JobCard & Routes Formatting Fixes
+### 2025-12-02 - JobCard & Routes Formatting Fixes
 - ✅ Applied Prettier formatting to `JobCard.jsx` (hover-state style block) and `src/routes/config.jsx` so both files now follow the project-standard two-space indentation; no logic changes were required.
 - 🧪 Verification: `cd kelmah-frontend && npx eslint src/modules/search/components/SmartJobRecommendations.jsx src/modules/worker/pages/JobApplicationPage.jsx src/modules/common/components/cards/JobCard.jsx src/routes/config.jsx` now exits 0 (Dec 2). Output recorded in STATUS_LOG.
 - 📓 Documentation: Captured the update in `STATUS_LOG.md` and retained the command/result details here for traceability.
 
-### 2025-12-02 – JobSearchPage Regression Audit
+### 2025-12-02 - JobSearchPage Regression Audit
 - 🧪 Expanded ESLint command (`cd kelmah-frontend && npx eslint src/modules/common/components/cards/JobCard.jsx src/modules/search/components/SmartJobRecommendations.jsx src/modules/dashboard/components/worker/AvailableJobs.jsx src/modules/worker/pages/JobSearchPage.jsx src/modules/worker/pages/JobApplicationPage.jsx src/routes/workerRoutes.jsx src/routes/config.jsx`) now fails exclusively on `JobSearchPage.jsx`, reporting 51 errors (missing Material UI icon imports, unused animation variants/state, undefined globals like `gtag`, and Prettier multi-line formatting drift).
 - 🔍 Per dry-audit policy, re-read the first 400 lines plus the statistics/CTA sections of `JobSearchPage.jsx` to confirm: most icons (ElectricalIcon, PlumbingIcon, etc.) and components (Collapse, Avatar, Alert) are referenced in JSX but no longer imported after the recent refactor; animation helpers such as `slideInFromLeft`/`slideInFromRight`, `isTablet`, `availableJobsForPersonalization`, etc., are defined but unused, matching the lint findings.
 - 🛠️ Plan: 1) Restore/import the required Material UI icons/components, 2) remove or repurpose the unused hooks/state/constants, 3) run Prettier across the file to clear multi-line import formatting, and 4) rerun the full worker lint command to verify the batch passes before updating STATUS_LOG.
 
-### 2025-12-02 – JobSearchPage Cleanup & Verification
+### 2025-12-02 - JobSearchPage Cleanup & Verification
 - ✅ Added the missing MUI components (`Avatar`, `IconButton`, `LinearProgress`, `Collapse`, `Alert`) plus the icon set (Electrical→Diamond, WorkspacePremium, Map, ExpandLess/More, Clear, Verified, Bookmark, LocationOn, Schedule, AccessTime, Visibility, Handshake, Share, NotificationsActive, Dashboard) so every JSX reference resolves.
 - 🔧 Removed unused artifacts flagged by ESLint (AnimatePresence import, `formatDistanceToNow`, `slideInFromLeft/Right` keyframes, `isTablet`, `isXs`, `availableJobsForPersonalization`, `skillOptions`, `animateCards`, `filterDialog`, `jobsError` alias) and wrapped the analytics call with `window.gtag` guarding to eliminate the `no-undef` warning.
 - 🧼 Ran `npx prettier --write src/modules/worker/pages/JobSearchPage.jsx` to normalize the multi-line import declarations and memo blocks, then re-tested the file via `npx eslint src/modules/worker/pages/JobSearchPage.jsx`.
 - 🧪 Full command `cd kelmah-frontend && npx eslint src/modules/common/components/cards/JobCard.jsx src/modules/search/components/SmartJobRecommendations.jsx src/modules/dashboard/components/worker/AvailableJobs.jsx src/modules/worker/pages/JobSearchPage.jsx src/modules/worker/pages/JobApplicationPage.jsx src/routes/workerRoutes.jsx src/routes/config.jsx` exits 0 post-cleanup (Dec 2).
 - 📓 STATUS_LOG updated with the regression resolution and verification details to keep the investigation trail complete.
 
-### 2025-11-22 – WorkerRoutes Guard Cleanup
+### 2025-11-22 - WorkerRoutes Guard Cleanup
 - **WorkerRoutes.jsx**: Removed the temporary debugging `console.log` statements from the memoized guard and simplified the logic to return early for loading, unauthenticated, or missing user states while still deferring to `hasRole('worker')` when user data is available. This eliminates the `no-console` lint spam and keeps the guard behavior identical.
 - **Verification**: `cd kelmah-frontend && npx eslint src/modules/dashboard/components/worker/AvailableJobs.jsx src/modules/worker/pages/JobSearchPage.jsx src/routes/workerRoutes.jsx` → exits 0 (Nov 22) confirming the route cleanup kept the scoped lint command green.
 - **Next Step**: Expand the lint surface (Smart Recommendations, JobApplicationPage, shared JobCard) once the remaining worker modules are similarly cleaned.

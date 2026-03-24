@@ -1,4 +1,4 @@
-# Global Error Boundary – Data Flow (Nov 2025)
+# Global Error Boundary - Data Flow (Nov 2025)
 
 ## Component Chain
 - **Wrapper**: `kelmah-frontend/src/modules/common/components/GlobalErrorBoundary.jsx`

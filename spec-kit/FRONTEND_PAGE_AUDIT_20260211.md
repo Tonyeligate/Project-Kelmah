@@ -1,6 +1,6 @@
-# Kelmah Frontend – Page + Security Audit
+# Kelmah Frontend - Page + Security Audit
 
-## Iteration Update (Feb 14, 2026 – Worker Slice Dead-State Cleanup Finalization) ✅
+## Iteration Update (Feb 14, 2026 - Worker Slice Dead-State Cleanup Finalization) ✅
 
 - **Scope**:
   - `kelmah-frontend/src/modules/worker/services/workerSlice.js`
@@ -18,7 +18,7 @@
   - VS Code diagnostics: no errors in modified slice file.
   - Frontend production build passed (`npm run build`, `built in 2m 16s`).
 
-## Iteration Update (Feb 14, 2026 – Worker Flow Completion Pass: Contracts + Earnings + Messaging Action) ✅
+## Iteration Update (Feb 14, 2026 - Worker Flow Completion Pass: Contracts + Earnings + Messaging Action) ✅
 
 - **Scope**:
   - `kelmah-frontend/src/modules/worker/services/workerSlice.js`
@@ -50,7 +50,7 @@
   - VS Code diagnostics: no errors in modified files (one non-blocking style advisory only).
   - Frontend production build passed (`npm run build`, `built in 2m 30s`).
 
-## Iteration Update (Feb 14, 2026 – Notifications External-Link Safety) ✅
+## Iteration Update (Feb 14, 2026 - Notifications External-Link Safety) ✅
 
 - **Scope**:
   - `kelmah-frontend/src/modules/notifications/pages/NotificationsPage.jsx`
@@ -70,7 +70,7 @@
   - VS Code diagnostics: no errors in modified file.
   - Frontend production build passed (`npm run build`, `built in 2m 33s`).
 
-## Iteration Update (Feb 14, 2026 – Job Notification Action-Link Consistency) ✅
+## Iteration Update (Feb 14, 2026 - Job Notification Action-Link Consistency) ✅
 
 - **Scope**:
   - `kelmah-frontend/src/modules/notifications/services/notificationService.js`
@@ -94,7 +94,7 @@
   - VS Code diagnostics: no errors in changed files.
   - Frontend production build passed (`npm run build`, `built in 6m 43s`).
 
-## Iteration Update (Feb 14, 2026 – Contracts/Payments Deep-Link ID Hardening) ✅
+## Iteration Update (Feb 14, 2026 - Contracts/Payments Deep-Link ID Hardening) ✅
 
 - **Scope**:
   - `kelmah-frontend/src/modules/notifications/services/notificationService.js`
@@ -114,7 +114,7 @@
   - Frontend production build passed (`npx vite build`, `built in 3m 1s`).
   - Remote notification endpoint check was rate-limited (`429`) in this run.
 
-## Iteration Update (Feb 13, 2026 – Notification Link Routing Consistency) ✅
+## Iteration Update (Feb 13, 2026 - Notification Link Routing Consistency) ✅
 
 - **Scope**:
   - `kelmah-frontend/src/modules/notifications/services/notificationService.js`
@@ -137,7 +137,7 @@
   - Remote notifications endpoints healthy (authenticated `200` responses for list/preferences/unread count).
   - Local build command remains blocked by environment storage limit (`ENOSPC`).
 
-## Iteration Update (Feb 13, 2026 – Notifications Context + Realtime Payload Consistency) ✅
+## Iteration Update (Feb 13, 2026 - Notifications Context + Realtime Payload Consistency) ✅
 
 - **Scope**:
   - `kelmah-frontend/src/modules/notifications/contexts/NotificationContext.jsx`
@@ -164,7 +164,7 @@
     - `/api/notifications/unread/count` → `200`
   - Local frontend build blocked by environment disk-space issue (`ENOSPC`), unrelated to notification code changes.
 
-## Iteration Update (Feb 13, 2026 – Messaging Reconnect Lifecycle Stabilization) ✅
+## Iteration Update (Feb 13, 2026 - Messaging Reconnect Lifecycle Stabilization) ✅
 
 - **Scope**:
   - `kelmah-frontend/src/modules/messaging/contexts/MessageContext.jsx`
@@ -185,7 +185,7 @@
   - Frontend production build passed (`npx vite build`, `built in 3m 25s`).
   - Remote login endpoint check passed (`200`), while remote `/api/messages/conversations` probe remained non-responsive during bounded terminal check.
 
-## Iteration Update (Feb 13, 2026 – Worker Search + Bookmarks Contract Hardening) ✅
+## Iteration Update (Feb 13, 2026 - Worker Search + Bookmarks Contract Hardening) ✅
 
 - **Scope**:
   - `kelmah-frontend/src/modules/hirer/components/WorkerSearch.jsx`
@@ -212,7 +212,7 @@
     - `GET /api/workers/search?query=carpenter&limit=1` → `200`
     - `GET /api/users/bookmarks` (authenticated) → `200`
 
-## Iteration Update (Feb 13, 2026 – Help/Docs/Community Route-Context Alignment) ✅
+## Iteration Update (Feb 13, 2026 - Help/Docs/Community Route-Context Alignment) ✅
 
 - **Scope**:
   - `kelmah-frontend/src/modules/support/pages/HelpCenterPage.jsx`
@@ -234,7 +234,7 @@
   - Frontend production build passed (`npx vite build`, `built in 1m 20s`).
   - Remote auth smoke checks remain rate-limited (`429`) at gateway login endpoint.
 
-## Iteration Update (Feb 13, 2026 – Notification Payload Mapping Alignment) ✅
+## Iteration Update (Feb 13, 2026 - Notification Payload Mapping Alignment) ✅
 
 - **Scope**:
   - `kelmah-frontend/src/modules/notifications/services/notificationService.js`
@@ -248,7 +248,7 @@
   - Frontend production build passed (`npx vite build`, `built in 1m 20s`).
   - Remote gateway login probe returned `429 Too Many Requests`; deployment verification for authenticated endpoint responses is pending rate-limit cooldown.
 
-## Iteration Update (Feb 12, 2026 – Profile Module API Contract Alignment) ✅
+## Iteration Update (Feb 12, 2026 - Profile Module API Contract Alignment) ✅
 
 - **Scope**:
   - `kelmah-frontend/src/modules/profile/services/profileService.js`
@@ -263,7 +263,7 @@
 - **Verification**:
   - Frontend production build passed (`npx vite build`, `built in 2m 9s`).
 
-## Iteration Update (Feb 12, 2026 – Scheduling Page Service Contract Resilience) ✅
+## Iteration Update (Feb 12, 2026 - Scheduling Page Service Contract Resilience) ✅
 
 - **Scope**:
   - `kelmah-frontend/src/modules/scheduling/services/schedulingService.js`
@@ -277,7 +277,7 @@
 - **Verification**:
   - Frontend production build passed (`npx vite build`, `built in 2m 7s`).
 
-## Iteration Update (Feb 12, 2026 – Notifications + Settings Data-Flow Hardening) ✅
+## Iteration Update (Feb 12, 2026 - Notifications + Settings Data-Flow Hardening) ✅
 
 - **Scope**:
   - `kelmah-frontend/src/modules/settings/services/settingsService.js`
@@ -292,7 +292,7 @@
   - Messaging notification controller syntax check passed.
   - Frontend production build passed (`npx vite build`, `built in 2m 34s`).
 
-## Iteration Update (Feb 12, 2026 – Reviews Backend/Gateway Flow Alignment) ✅
+## Iteration Update (Feb 12, 2026 - Reviews Backend/Gateway Flow Alignment) ✅
 
 - **Scope**:
   - `kelmah-backend/api-gateway/server.js`
@@ -310,7 +310,7 @@
   - Modified backend files pass diagnostics in VS Code Problems scan.
   - Runtime smoke check via `localhost:5000` attempted; blocked because gateway not reachable in current session.
 
-## Iteration Update (Feb 12, 2026 – ReviewsPage Runtime Stability) ✅
+## Iteration Update (Feb 12, 2026 - ReviewsPage Runtime Stability) ✅
 
 - **Scope**: `kelmah-frontend/src/modules/reviews/pages/ReviewsPage.jsx` and `kelmah-frontend/src/modules/reviews/services/reviewService.js`.
 - **Root cause**:
@@ -329,20 +329,20 @@
 
 ## Prompt1 (Session Context)
 
-**Project**: Kelmah Platform – freelance marketplace connecting vocational workers and hirers.
+**Project**: Kelmah Platform - freelance marketplace connecting vocational workers and hirers.
 
 **Stack**: React 18 (Vite) + Express microservices via API Gateway + MongoDB/Mongoose.
 
 **Current focus**: Frontend-wide page audit (bugs/UI/security) and cross-cutting fixes where safe.
 
 **Key files**:
-- kelmah-frontend/src/main.jsx – app bootstrap, global providers, global error fallback (react-error-boundary).
-- kelmah-frontend/src/App.jsx – PWA init, service warm-up, initial auth verification, health banner.
-- kelmah-frontend/src/routes/config.jsx – routing table + lazy-loaded pages + ProtectedRoute wrappers.
-- kelmah-frontend/src/services/apiClient.js – axios client, token attach/refresh, retry logic.
-- kelmah-frontend/src/utils/secureStorage.js – encrypted client-side storage abstraction.
-- kelmah-frontend/src/config/environment.js – API base URL resolution (runtime-config + fallback).
-- kelmah-frontend/src/modules/auth/services/authSlice.js – auth state + login/verify/logout flows.
+- kelmah-frontend/src/main.jsx - app bootstrap, global providers, global error fallback (react-error-boundary).
+- kelmah-frontend/src/App.jsx - PWA init, service warm-up, initial auth verification, health banner.
+- kelmah-frontend/src/routes/config.jsx - routing table + lazy-loaded pages + ProtectedRoute wrappers.
+- kelmah-frontend/src/services/apiClient.js - axios client, token attach/refresh, retry logic.
+- kelmah-frontend/src/utils/secureStorage.js - encrypted client-side storage abstraction.
+- kelmah-frontend/src/config/environment.js - API base URL resolution (runtime-config + fallback).
+- kelmah-frontend/src/modules/auth/services/authSlice.js - auth state + login/verify/logout flows.
 
 **Conventions observed**:
 - Frontend routing via React Router v6 `useRoutes()`.
@@ -887,7 +887,7 @@ UI page → module service/hook → `api` (axios wrapper) → API Gateway `/api/
 
 ---
 
-## Hirer Flow Audit (Feb 13, 2026 – Job Posting / Job Management / Job Details)
+## Hirer Flow Audit (Feb 13, 2026 - Job Posting / Job Management / Job Details)
 
 ### Scope
 - `kelmah-frontend/src/modules/hirer/pages/JobPostingPage.jsx` (1113 lines)
@@ -952,7 +952,7 @@ User opens /jobs/:id → ProtectedRoute → JobDetailsPage
   → UI: details paper with map embed, budget, skills, hirer profile, apply/save/share
 ```
 
-### Findings – Fixed ✅
+### Findings - Fixed ✅
 
 #### 1) JobDetailsPage: `handleMessageHirer` used wrong query param
 - **Severity**: High
@@ -1008,7 +1008,7 @@ User opens /jobs/:id → ProtectedRoute → JobDetailsPage
 - **Fix**: hydrates both `min` and `max` from `existing.budget.min/max` with fallback
 - **Status**: Fixed ✅
 
-### Findings – Open ❌
+### Findings - Open ❌
 
 #### 9) JobApplication component doesn't honor `open`/`onClose`/`jobId` props
 - **Severity**: Critical (UX)

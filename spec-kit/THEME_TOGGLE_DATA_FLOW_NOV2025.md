@@ -1,4 +1,4 @@
-# Theme Toggle Data Flow – November 19, 2025
+# Theme Toggle Data Flow - November 19, 2025
 
 ## Feature Name
 Theme toggle & persistence system

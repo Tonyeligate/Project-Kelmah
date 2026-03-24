@@ -28,20 +28,20 @@
 ---
 
 ## Issues Identified
-- **Primary Issue 1 – Dead Route Path:**
+- **Primary Issue 1 - Dead Route Path:**
   - Frontend helpers still treat `/api/users/workers/:id/availability` as the canonical endpoint. The user-service only defines a GET handler there; PUT is missing, so updates through the gateway always 404. Redux thunk has no fallback, breaking the profile editor outright.
 
-- **Primary Issue 2 – Fallback Never Engages:**
+- **Primary Issue 2 - Fallback Never Engages:**
   - `workerService.getWorkerAvailability` catches only non-404/405 errors before falling back to `/api/availability/:id`. Because the legacy worker controller responds `200 OK` with placeholder data, the fallback never runs and the UI consumes stale `status: 'not_set'` payloads.
 
-- **Primary Issue 3 – Legacy Controller Schema Drift:**
+- **Primary Issue 3 - Legacy Controller Schema Drift:**
   - `worker.controller.getWorkerAvailability` queries `Availability.findOne({ userId })` even though the schema stores the reference under `user`. As a result the handler always returns the placeholder response, guaranteeing wrong data for every worker despite documents existing.
   - The same handler references `availability.schedule`, but the schema exposes `daySlots`; returned object omits `isAvailable`, forcing the frontend to infer availability from `status` (which defaults to `'not_set'`).
 
-- **Primary Issue 4 – DTO Mismatch on Update:**
+- **Primary Issue 4 - DTO Mismatch on Update:**
   - The profile editor dispatches `availabilityData` with keys like `availabilityStatus`, `availableHours`, `pausedUntil`. The backend availability controller whitelists `['timezone','isAvailable','pausedUntil','daySlots','holidays','notes','dailyHours','weeklyHoursCap']`, so nearly all submitted fields are dropped. Even when the fallback PUT succeeds, no meaningful state changes.
 
-- **Secondary Issue – UI Default Behaviour:**
+- **Secondary Issue - UI Default Behaviour:**
   - Dashboard widget converts the placeholder payload into `isAvailable === false`, making workers appear "Busy" by default. It then stores that state locally, hiding real availability.
   - Multiple code paths (dashboard vs profile editor) diverge between direct helper usage and Redux thunks, increasing the risk of inconsistent fixes.
 

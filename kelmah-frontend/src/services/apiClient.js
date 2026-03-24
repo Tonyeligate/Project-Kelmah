@@ -47,6 +47,8 @@ const uuidv4 = () => {
 // GET request deduplication — concurrent identical GETs share one in-flight promise
 const inflightGets = new Map();
 const pendingUnauthorizedRequests = [];
+const pendingUnauthorizedRequestMap = new Map();
+const MAX_PENDING_UNAUTHORIZED_REQUESTS = 50;
 let hasTriggeredAuthRedirect = false;
 let refreshBlockedUntil = 0;
 let isForceLogoutInProgress = false;
@@ -98,9 +100,54 @@ const isPublicAuthRequest = (request) =>
     typeof request?.url === 'string' &&
     /\/auth\/(login|register|forgot-password|reset-password|resend-verification-email|verify-email|oauth\/exchange)/.test(request.url);
 
+const getUnauthorizedRequestKey = (request) => {
+    const method = String(request?.method || 'get').toLowerCase();
+    const url = String(request?.url || '');
+    const stableSerialize = (value) => {
+        if (Array.isArray(value)) {
+            return value.map((entry) => stableSerialize(entry));
+        }
+
+        if (value && typeof value === 'object') {
+            return Object.keys(value)
+                .sort()
+                .reduce((acc, key) => {
+                    acc[key] = stableSerialize(value[key]);
+                    return acc;
+                }, {});
+        }
+
+        return value;
+    };
+
+    return `${method}:${url}:${JSON.stringify(stableSerialize({
+        params: request?.params,
+        data: request?.data,
+    }))}`;
+};
+
 const enqueueUnauthorizedRequest = (request) =>
     new Promise((resolve, reject) => {
-        pendingUnauthorizedRequests.push({ request, resolve, reject });
+        const requestKey = getUnauthorizedRequestKey(request);
+
+        if (pendingUnauthorizedRequestMap.has(requestKey)) {
+            pendingUnauthorizedRequestMap.get(requestKey).resolveQueue.push({ resolve, reject });
+            return;
+        }
+
+        if (pendingUnauthorizedRequests.length >= MAX_PENDING_UNAUTHORIZED_REQUESTS) {
+            reject(new Error('Unauthorized retry queue is full'));
+            return;
+        }
+
+        const queueEntry = {
+            key: requestKey,
+            request,
+            resolveQueue: [{ resolve, reject }],
+        };
+
+        pendingUnauthorizedRequests.push(queueEntry);
+        pendingUnauthorizedRequestMap.set(requestKey, queueEntry);
     });
 
 const processUnauthorizedQueue = (error, token = null) => {
@@ -110,8 +157,10 @@ const processUnauthorizedQueue = (error, token = null) => {
             continue;
         }
 
+        pendingUnauthorizedRequestMap.delete(queued.key);
+
         if (error) {
-            queued.reject(error);
+            queued.resolveQueue.forEach(({ reject }) => reject(error));
             continue;
         }
 
@@ -121,7 +170,11 @@ const processUnauthorizedQueue = (error, token = null) => {
         } else {
             delete queued.request.headers.Authorization;
         }
-        queued.resolve(apiClient(queued.request));
+
+        const replay = apiClient(queued.request);
+        queued.resolveQueue.forEach(({ resolve, reject }) => {
+            replay.then(resolve).catch(reject);
+        });
     }
 };
 
@@ -259,10 +312,28 @@ const parseRetryAfterMs = (error) => {
     return null;
 };
 
+let retryJitterCounter = 0;
+
+const randomIntInclusive = (maxInclusive) => {
+    const cappedMax = Math.max(0, Math.floor(maxInclusive));
+    if (cappedMax === 0) {
+        return 0;
+    }
+
+    if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+        const bytes = new Uint32Array(1);
+        crypto.getRandomValues(bytes);
+        return bytes[0] % (cappedMax + 1);
+    }
+
+    retryJitterCounter = (retryJitterCounter + 1) % (cappedMax + 1);
+    return retryJitterCounter;
+};
+
 const applyBackoffJitter = (baseDelayMs) => {
     const safeDelay = Math.max(250, Math.min(baseDelayMs, 10_000));
     const jitterCap = Math.max(100, Math.floor(safeDelay * 0.2));
-    const jitter = Math.floor(Math.random() * (jitterCap + 1));
+    const jitter = randomIntInclusive(jitterCap);
     return safeDelay + jitter;
 };
 

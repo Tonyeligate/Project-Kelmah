@@ -40,11 +40,6 @@ class RouteErrorBoundary extends React.Component {
   };
 
   handleReset = () => {
-    if (this.isChunkLoadFailure()) {
-      window.location.reload();
-      return;
-    }
-
     this.setState({ hasError: false, error: null });
   };
 
@@ -114,7 +109,7 @@ class RouteErrorBoundary extends React.Component {
                   },
                 }}
               >
-                {this.isChunkLoadFailure() ? 'Reload App' : 'Try Again'}
+                {this.isChunkLoadFailure() ? 'Retry Route' : 'Try Again'}
               </Button>
               <Button
                 variant="outlined"

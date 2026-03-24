@@ -51,7 +51,7 @@ Image URI to use in ECS Task Definition:
 # Example used: 992350137489.dkr.ecr.eu-north-1.amazonaws.com/api-gateway:latest
 ```
 
-### ECS Task Definition (Fargate) – api-gateway
+### ECS Task Definition (Fargate) - api-gateway
 - Family: `kelmah-api-gateway`
 - Launch type: `Fargate`, Platform: `LATEST`, OS/Arch: `Linux/x86_64`
 - Task size: `0.5 vCPU`, `1 GB` (tune later)

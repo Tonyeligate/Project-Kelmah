@@ -27,22 +27,29 @@ const CompactSearchBar = ({
   const theme = useTheme();
 
   return (
-    <Paper elevation={2} sx={{ p: 1, mb: 2 }}>
-      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+    <Paper elevation={2} sx={{ p: { xs: 0.75, sm: 1 }, mb: 2 }}>
+      <Box
+        component="form"
+        onSubmit={(event) => {
+          event.preventDefault();
+          onSearchSubmit();
+        }}
+        sx={{
+          display: 'flex',
+          gap: 1,
+          alignItems: { xs: 'stretch', sm: 'center' },
+          flexDirection: { xs: 'column', sm: 'row' },
+        }}
+      >
         {/* Compact Search Input */}
         <TextField
           fullWidth
           placeholder={placeholder}
           variant="outlined"
           size="small"
+          type="search"
           value={keyword}
           onChange={(event) => onKeywordChange(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter') {
-              event.preventDefault();
-              onSearchSubmit();
-            }
-          }}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -55,7 +62,15 @@ const CompactSearchBar = ({
                   size="small"
                   onClick={onSearchSubmit}
                   aria-label="Run worker search"
-                  sx={{ width: 44, height: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
+                  sx={{
+                    width: 44,
+                    height: 44,
+                    '&:focus-visible': {
+                      outline: '3px solid',
+                      outlineColor: 'primary.main',
+                      outlineOffset: '2px',
+                    },
+                  }}
                 >
                   <SearchIcon fontSize="small" />
                 </IconButton>
@@ -83,8 +98,8 @@ const CompactSearchBar = ({
           onClick={onFilterClick}
           aria-label="Open advanced worker filters"
           sx={{
-            minWidth: '48px',
-            width: '48px',
+            minWidth: { xs: '100%', sm: '48px' },
+            width: { xs: '100%', sm: '48px' },
             height: '48px',
             p: 0,
             bgcolor: theme.palette.mode === 'dark' ? '#FFD700' : '#000000',
@@ -100,7 +115,7 @@ const CompactSearchBar = ({
       <Typography
         variant="caption"
         color="text.secondary"
-        sx={{ display: 'block', mt: 0.75, px: 0.5 }}
+        sx={{ display: { xs: 'none', sm: 'block' }, mt: 0.75, px: 0.5 }}
       >
         Tip: combine trade and area first, then use filters to narrow by rate,
         availability, or work type.

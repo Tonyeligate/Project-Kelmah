@@ -17,12 +17,12 @@ class LocalTunnelManager {
         console.log('============================');
 
         if (this.unifiedMode) {
-            console.log('� UNIFIED MODE: Single tunnel for HTTP + WebSocket');
+            console.log('🔗 UNIFIED MODE: Single tunnel for HTTP + WebSocket');
         } else {
             console.log('🔀 DUAL MODE: Separate tunnels for HTTP and WebSocket');
         }
 
-        console.log('�🚀 Starting LocalTunnel tunnels...');
+        console.log('🚀 Starting LocalTunnel tunnels...');
 
         try {
             // Start API Gateway tunnel (port 5000)

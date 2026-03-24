@@ -1,4 +1,4 @@
-# Render Keep-Alive Scheduler – November 7, 2025
+# Render Keep-Alive Scheduler - November 7, 2025
 
 ## Summary
 - **Problem:** Render free-tier services power down after ~15 minutes of inactivity, so the first public request (e.g. `/api/users/workers/:id`) returns 502/504 while each microservice spins back up.
@@ -13,7 +13,7 @@
    - Errors are swallowed with warn-level logs to avoid crashing the gateway during transient outages.
 
 2. **Environment Guards**
-   - `detectEnvironment()` drives behaviour – scheduler auto-enables only for `production` detections (Render, Vercel, etc.).
+   - `detectEnvironment()` drives behaviour - scheduler auto-enables only for `production` detections (Render, Vercel, etc.).
    - Local developers can force-enable via `FORCE_RENDER_KEEP_ALIVE=true` or disable in production with `DISABLE_RENDER_KEEP_ALIVE=true`.
 
 3. **HTTP Behaviour**
@@ -24,14 +24,14 @@
    - Logs track misses at `debug`, recoveries at `info`, and final failures at `error` with endpoint/status/error metadata.
 
 4. **Configuration Flags**
-   - `RENDER_KEEP_ALIVE_INTERVAL_MS` – override interval (default 480000 ms ≈ 8 minutes).
-   - `RENDER_KEEP_ALIVE_TIMEOUT_MS` – override per-request timeout (default 20000 ms).
-   - `RENDER_KEEP_ALIVE_RETRY_COUNT` – number of attempts per tick (default 3, minimum 1).
-   - `RENDER_KEEP_ALIVE_RETRY_DELAY_MS` – delay between attempts (default 15000 ms).
-   - `RENDER_KEEP_ALIVE_ENDPOINTS` – comma-separated fallback list shared by all services.
-   - `<SERVICE_NAME>_KEEP_ALIVE_ENDPOINTS` – service-specific endpoint list (e.g. `AUTH_KEEP_ALIVE_ENDPOINTS=/healthz,/readyz`).
-   - `DISABLE_RENDER_KEEP_ALIVE` – explicit opt-out in any environment.
-   - `FORCE_RENDER_KEEP_ALIVE` – opt-in when running locally.
+   - `RENDER_KEEP_ALIVE_INTERVAL_MS` - override interval (default 480000 ms ≈ 8 minutes).
+   - `RENDER_KEEP_ALIVE_TIMEOUT_MS` - override per-request timeout (default 20000 ms).
+   - `RENDER_KEEP_ALIVE_RETRY_COUNT` - number of attempts per tick (default 3, minimum 1).
+   - `RENDER_KEEP_ALIVE_RETRY_DELAY_MS` - delay between attempts (default 15000 ms).
+   - `RENDER_KEEP_ALIVE_ENDPOINTS` - comma-separated fallback list shared by all services.
+   - `<SERVICE_NAME>_KEEP_ALIVE_ENDPOINTS` - service-specific endpoint list (e.g. `AUTH_KEEP_ALIVE_ENDPOINTS=/healthz,/readyz`).
+   - `DISABLE_RENDER_KEEP_ALIVE` - explicit opt-out in any environment.
+   - `FORCE_RENDER_KEEP_ALIVE` - opt-in when running locally.
 
 ## Verification Steps
 1. **Local smoke test:** `node -e "require('./kelmah-backend/api-gateway/utils/serviceKeepAlive'); console.log('ok');"` (already executed).

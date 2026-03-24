@@ -158,7 +158,10 @@ export const ActionButton = styled(IconButton)(({ theme }) => ({
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   '&:focus-visible': {
     outline: theme.palette.mode === 'dark' ? KELMAH_FOCUS_RING.dark : KELMAH_FOCUS_RING.light,
-    outlineOffset: '2px',
+    outlineOffset: '3px',
+    boxShadow: theme.palette.mode === 'dark'
+      ? '0 0 0 4px rgba(255, 215, 0, 0.18)'
+      : '0 0 0 4px rgba(0, 0, 0, 0.12)',
   },
   [theme.breakpoints.down('sm')]: {
     margin: theme.spacing(0, 0.5),
@@ -227,7 +230,10 @@ export const UserAvatar = styled(Avatar)(({ theme }) => ({
   },
   '&:focus-visible': {
     outline: theme.palette.mode === 'dark' ? KELMAH_FOCUS_RING.dark : KELMAH_FOCUS_RING.light,
-    outlineOffset: 2,
+    outlineOffset: 3,
+    boxShadow: theme.palette.mode === 'dark'
+      ? '0 0 0 4px rgba(255, 215, 0, 0.18)'
+      : '0 0 0 4px rgba(0, 0, 0, 0.12)',
   },
 }));
 
@@ -298,7 +304,10 @@ export const AuthButton = styled(Button)(({ theme, variant }) => ({
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   '&:focus-visible': {
     outline: `3px solid ${theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black}`,
-    outlineOffset: 2,
+    outlineOffset: 3,
+    boxShadow: theme.palette.mode === 'dark'
+      ? '0 0 0 4px rgba(255, 215, 0, 0.18)'
+      : '0 0 0 4px rgba(0, 0, 0, 0.12)',
   },
   [theme.breakpoints.down('sm')]: {
     padding: '6px 12px',

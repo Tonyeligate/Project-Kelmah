@@ -117,9 +117,9 @@ const Footer = () => {
         { label: 'Privacy Policy', href: '/privacy', intent: 'Review privacy and data handling policy' },
         { label: 'Terms of Service', href: '/terms', intent: 'Review service terms and user responsibilities' },
         {
-          label: 'Careers & Community',
+          label: 'Community Updates',
           href: '/community',
-          intent: 'See community updates and opportunities',
+          intent: 'See community discussions, updates, and opportunities',
         },
       ],
     },

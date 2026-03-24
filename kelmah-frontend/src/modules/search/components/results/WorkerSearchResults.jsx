@@ -27,6 +27,7 @@ import {
 import { useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 import { useBreakpointDown } from '@/hooks/useResponsive';
+import { formatCurrency } from '@/utils/formatters';
 import WorkerCard from '../../../worker/components/WorkerCard';
 
 const INITIAL_RENDERED_WORKERS = 12;
@@ -43,12 +44,15 @@ const WorkerSearchResults = ({
   showMap = false,
   onToggleView,
   onOpenFilters,
+  onRetry,
   onSaveWorker,
   isPublicView = false,
 }) => {
   const isMobile = useBreakpointDown('md');
   const { isAuthenticated } = useSelector((state) => state.auth);
+  const userRole = useSelector((state) => state.auth?.user?.role);
   const isPublicMode = isPublicView || !isAuthenticated;
+  const isHirerUser = userRole === 'hirer' || userRole === 'admin';
   const navigate = useNavigate();
   const [renderedWorkerCount, setRenderedWorkerCount] = useState(
     INITIAL_RENDERED_WORKERS,
@@ -132,8 +136,10 @@ const WorkerSearchResults = ({
     if (filters.budgetMin || filters.budgetMax || filters.maxRate) {
       entries.push({
         key: 'budget',
-        value: `GH₵${filters.budgetMin || 0} - GH₵${
-          filters.budgetMax || filters.maxRate || 'Any'
+        value: `${formatCurrency(filters.budgetMin || 0)} - ${
+          filters.budgetMax || filters.maxRate
+            ? formatCurrency(filters.budgetMax || filters.maxRate)
+            : 'Any'
         }`,
       });
     }
@@ -297,13 +303,24 @@ const WorkerSearchResults = ({
 
   // Renders empty state
   const renderEmptyState = () => {
+    const hasFilters = activeFilters.length > 0;
     const handleClearFilters = () => {
       if (onRemoveFilter) {
         onRemoveFilter('all');
       }
     };
 
-    const handleBrowseJobs = () => {
+    const handlePrimaryCta = () => {
+      if (isHirerUser) {
+        navigate('/hirer/jobs/post');
+        return;
+      }
+
+      if (isPublicMode) {
+        navigate('/register?role=hirer');
+        return;
+      }
+
       navigate('/jobs');
     };
 
@@ -313,6 +330,13 @@ const WorkerSearchResults = ({
       'Try adding related skills or trades instead of exact matches',
       'Toggle between job types (Full-time, Contract, Gig)',
     ];
+
+    const title = hasFilters
+      ? 'No workers match these filters yet'
+      : 'No workers available yet';
+    const message = hasFilters
+      ? 'Relax one filter at a time to widen the match set and uncover more skilled workers.'
+      : 'Try a trade, skill, or location to start surfacing nearby workers.';
 
     return (
       <Paper
@@ -356,14 +380,13 @@ const WorkerSearchResults = ({
           sx={{ color: 'text.primary', fontWeight: 'bold' }}
           gutterBottom
         >
-          We could not find matching workers yet
+          {title}
         </Typography>
         <Typography
           variant="body1"
           sx={{ color: 'text.secondary', mb: 4, wordBreak: 'break-word' }}
         >
-          Adjust your filters or broaden your location to discover more skilled
-          professionals.
+          {message}
         </Typography>
 
         <Stack
@@ -412,14 +435,14 @@ const WorkerSearchResults = ({
           </Button>
           <Button
             variant="outlined"
-            onClick={handleBrowseJobs}
+            onClick={handlePrimaryCta}
             sx={{
               borderColor: 'divider',
               color: 'text.primary',
               minHeight: 44,
             }}
           >
-            Browse open jobs
+            {isHirerUser ? 'Post a job' : isPublicMode ? 'Create hirer account' : 'Browse open jobs'}
           </Button>
         </Stack>
 
@@ -507,8 +530,9 @@ const WorkerSearchResults = ({
       <Box
         sx={{
           display: 'flex',
+          flexDirection: { xs: 'column', sm: 'row' },
           justifyContent: 'space-between',
-          alignItems: 'center',
+          alignItems: { xs: 'stretch', sm: 'center' },
           flexWrap: 'wrap',
           gap: { xs: 1, sm: 2 },
           py: 1,
@@ -553,6 +577,7 @@ const WorkerSearchResults = ({
                 textTransform: 'none',
                 whiteSpace: 'nowrap',
                 minHeight: { xs: 44, sm: 40 },
+                width: { xs: '100%', sm: 'auto' },
               }}
             >
               {filterButtonLabel}
@@ -562,7 +587,8 @@ const WorkerSearchResults = ({
           <FormControl
             size="small"
             sx={{
-              minWidth: { xs: 100, sm: 140 },
+              minWidth: { xs: '100%', sm: 140 },
+              width: { xs: '100%', sm: 'auto' },
               '& .MuiInputBase-root': {
                 fontSize: { xs: '0.85rem', sm: '0.875rem' },
               },
@@ -598,7 +624,7 @@ const WorkerSearchResults = ({
               }
               sx={{
                 display: 'flex',
-                minWidth: { xs: 44, sm: 'auto' },
+                minWidth: { xs: '100%', sm: 'auto' },
                 minHeight: { xs: 44, sm: 40 },
                 px: { xs: 1.25, sm: 1.5 },
                 whiteSpace: 'nowrap',
@@ -649,7 +675,17 @@ const WorkerSearchResults = ({
 
   if (error) {
     return (
-      <Alert severity="error" sx={{ mb: 3 }}>
+      <Alert
+        severity="error"
+        sx={{ mb: 3 }}
+        action={
+          onRetry ? (
+            <Button color="inherit" size="small" onClick={onRetry} sx={{ minHeight: 36 }}>
+              Retry
+            </Button>
+          ) : null
+        }
+      >
         {error}
       </Alert>
     );
@@ -725,6 +761,7 @@ WorkerSearchResults.propTypes = {
   showMap: PropTypes.bool,
   onToggleView: PropTypes.func,
   onOpenFilters: PropTypes.func,
+  onRetry: PropTypes.func,
   onSaveWorker: PropTypes.func,
   isPublicView: PropTypes.bool,
 };

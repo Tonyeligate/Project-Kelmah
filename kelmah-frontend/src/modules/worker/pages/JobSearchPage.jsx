@@ -45,6 +45,7 @@ import {
   Tooltip,
   Snackbar,
   Alert,
+  CardActionArea,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -398,10 +399,8 @@ const FindWorkJobCard = ({ job, isSaved, onSave, onUnsave }) => {
       layout
     >
       <Card
-        role="button"
-        tabIndex={0}
+        component={CardActionArea}
         onClick={handleClick}
-        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClick(); } }}
         sx={{
           cursor: 'pointer',
           borderRadius: 3,

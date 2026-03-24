@@ -1,0 +1,30 @@
+export const JOB_CATEGORIES = [
+  'Carpentry',
+  'Masonry',
+  'Plumbing',
+  'Emergency Plumbing',
+  'Electrical Work',
+  'Rewiring & Switchboard',
+  'Painting',
+  'Exterior Painting',
+  'Welding',
+  'Certified Welding',
+  'Roofing',
+  'Roof Repair',
+  'Flooring',
+  'HVAC',
+  'AC & Refrigeration',
+  'Cabinet Making',
+  'Landscaping',
+  'General Construction',
+  'Maintenance',
+  'Maintenance Callout',
+];
+
+export const JOB_TYPES = [
+  'Full-time',
+  'Part-time',
+  'Contract',
+  'Daily Work',
+  'Project-based',
+];

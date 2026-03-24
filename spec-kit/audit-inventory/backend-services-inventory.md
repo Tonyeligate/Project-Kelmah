@@ -1,6 +1,6 @@
 # Backend Services Dry Audit Inventory
 **Prepared:** October 3, 2025  
-**Owner:** Audit Task Force – Backend Sector
+**Owner:** Audit Task Force - Backend Sector
 
 This inventory establishes the baseline for the dry audit across all backend services, the API gateway, and shared backend resources. It maps each components structure, highlights primary integration seams, and captures notable audit hotspots to guide detailed file-by-file reviews per the [Dry Audit Execution Plan](../DRY_AUDIT_EXECUTION_PLAN.md).
 

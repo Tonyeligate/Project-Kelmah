@@ -121,7 +121,7 @@ const JobCard = ({
     if (typeof budget === 'object' && budget.min && budget.max) {
       return `GH₵${budget.min} - GH₵${budget.max}`;
     }
-    return budget ? `GH₵${budget}` : 'Budget TBD';
+    return budget ? `GH₵${budget}` : 'Budget pending';
   };
 
   // Format time ago

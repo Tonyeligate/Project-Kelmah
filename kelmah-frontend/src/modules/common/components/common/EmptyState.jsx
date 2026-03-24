@@ -40,41 +40,49 @@ const EmptyState = ({
             icon: InboxOutlined,
             defaultTitle: 'No Data Available',
             defaultDescription: 'There is nothing to display here yet.',
+            defaultHint: 'Try refreshing this section or changing your filters.',
         },
         jobs: {
             icon: WorkOff,
             defaultTitle: 'No Jobs Found',
             defaultDescription: 'You haven\'t posted any jobs yet. Create your first job to get started.',
+            defaultHint: 'Post one job first, then review applications from your dashboard.',
         },
         applications: {
             icon: SearchOff,
             defaultTitle: 'No Applications',
             defaultDescription: 'You don\'t have any applications yet. Start applying to jobs to see them here.',
+            defaultHint: 'Use one trade filter first, then expand search location if needed.',
         },
         workers: {
             icon: PersonOff,
             defaultTitle: 'No Workers Found',
             defaultDescription: 'No workers match your search criteria. Try adjusting your filters.',
+            defaultHint: 'Clear one filter at a time to recover results quickly.',
         },
         search: {
             icon: SearchOff,
             defaultTitle: 'No Results',
             defaultDescription: 'No results found for your search. Try different keywords or filters.',
+            defaultHint: 'Start broad, then narrow by location, rate, or availability.',
         },
         error: {
             icon: ErrorOutline,
             defaultTitle: 'Something Went Wrong',
             defaultDescription: 'An error occurred while loading data. Please try again.',
+            defaultHint: 'If this persists, refresh the page and try again in a moment.',
         },
         messages: {
             icon: InboxOutlined,
             defaultTitle: 'No Messages',
             defaultDescription: 'You don\'t have any messages yet. Start a conversation!',
+            defaultHint: 'Open a contact and send a short intro to start quickly.',
         },
         notifications: {
             icon: InboxOutlined,
             defaultTitle: 'No Notifications',
             defaultDescription: 'You\'re all caught up! No new notifications.',
+            defaultHint: 'New alerts will appear here when jobs, messages, or payments update.',
         },
     };
 
@@ -82,6 +90,7 @@ const EmptyState = ({
     const IconComponent = CustomIcon || config.icon;
     const displayTitle = title || config.defaultTitle;
     const displayDescription = description || config.defaultDescription;
+    const displayHint = config.defaultHint;
 
     // Size configurations
     const sizeConfigs = {
@@ -163,10 +172,22 @@ const EmptyState = ({
                 sx={{
                     color: 'text.secondary',
                     maxWidth: 400,
-                    mb: (actionText || secondaryActionText) ? sizeConfig.spacing : 0,
+                    mb: 0.5,
                 }}
             >
                 {displayDescription}
+            </Typography>
+
+            <Typography
+                variant="caption"
+                sx={{
+                    color: 'text.secondary',
+                    maxWidth: 420,
+                    mb: (actionText || secondaryActionText) ? sizeConfig.spacing : 0,
+                    opacity: 0.9,
+                }}
+            >
+                {displayHint}
             </Typography>
 
             {(actionText || secondaryActionText) && (

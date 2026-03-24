@@ -51,6 +51,7 @@
     "quantum:aggregate-learning": "node spec-kit/quantum-oracle/aggregate-learning-ledger.js",
     "quantum:check-learning-effectiveness": "node spec-kit/quantum-oracle/check-learning-effectiveness.js --strict",
     "quantum:scaffold-bundle": "node spec-kit/quantum-oracle/scaffold-oracle-bundle.js",
+    "cleanup:mojibake": "node scripts/cleanup-mojibake.js",
     "quantum:agent-intelligence-report": "node spec-kit/quantum-oracle/generate-agent-intelligence-report.js",
     "quantum:check-agent-intelligence": "node spec-kit/quantum-oracle/check-agent-intelligence-report.js",
     "build:all": "npm run build:frontend && npm run build:backend",

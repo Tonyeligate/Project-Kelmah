@@ -16,6 +16,7 @@ import {
 } from '@mui/material';
 import { Close as CloseIcon, Search as SearchIcon } from '@mui/icons-material';
 import PropTypes from 'prop-types';
+import { JOB_CATEGORIES, JOB_TYPES } from '../../utils/searchOptions';
 
 /**
  * MobileFilterDrawer - Bottom sheet for mobile filter controls
@@ -44,39 +45,6 @@ const MobileFilterDrawer = ({
     initialFilters.jobType,
     initialFilters.category,
   ]);
-
-  // Vocational job categories for Ghana's skilled trades
-  const jobCategories = [
-    'Carpentry',
-    'Masonry',
-    'Plumbing',
-    'Emergency Plumbing',
-    'Electrical Work',
-    'Rewiring & Switchboard',
-    'Painting',
-    'Exterior Painting',
-    'Welding',
-    'Certified Welding',
-    'Roofing',
-    'Roof Repair',
-    'Flooring',
-    'HVAC',
-    'AC & Refrigeration',
-    'Cabinet Making',
-    'Landscaping',
-    'General Construction',
-    'Maintenance',
-    'Maintenance Callout',
-  ];
-
-  // Job types relevant to skilled trades
-  const jobTypes = [
-    'Full-time',
-    'Part-time',
-    'Contract',
-    'Daily Work',
-    'Project-based',
-  ];
 
   const handleApplyFilters = () => {
     onSearch({
@@ -197,7 +165,7 @@ const MobileFilterDrawer = ({
               sx={{ minHeight: '48px' }} // Touch-friendly
             >
               <MenuItem value="">Any Type</MenuItem>
-              {jobTypes.map((type) => (
+              {JOB_TYPES.map((type) => (
                 <MenuItem key={type} value={type}>
                   {type}
                 </MenuItem>
@@ -216,7 +184,7 @@ const MobileFilterDrawer = ({
               sx={{ minHeight: '48px' }} // Touch-friendly
             >
               <MenuItem value="">All Trades</MenuItem>
-              {jobCategories.map((cat) => (
+              {JOB_CATEGORIES.map((cat) => (
                 <MenuItem key={cat} value={cat}>
                   {cat}
                 </MenuItem>

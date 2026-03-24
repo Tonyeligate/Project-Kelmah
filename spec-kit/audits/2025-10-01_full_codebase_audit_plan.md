@@ -1,4 +1,4 @@
-# Kelmah Platform – Full Codebase Dry Audit Plan
+# Kelmah Platform - Full Codebase Dry Audit Plan
 
 **Prepared:** October 1, 2025  
 **Author:** GitHub Copilot automation agent
@@ -33,10 +33,10 @@
 These fixes serve as the starting point for regression verification during Phase 1 and 2.
 
 ## 📋 Methodology Per Phase
-1. **Inventory & Baseline** – Enumerate routes/components, confirm owners, gather latest logs.
-2. **Static Review** – Inspect relevant files end-to-end (controllers, middleware, hooks, configs).
-3. **Behavioral Verification** – Run targeted smoke tests (curl, Postman, automated scripts) where applicable.
-4. **Documentation & Ticketing** – Update spec-kit logs, flag follow-up tasks, and prepare remediation diffs if required.
+1. **Inventory & Baseline** - Enumerate routes/components, confirm owners, gather latest logs.
+2. **Static Review** - Inspect relevant files end-to-end (controllers, middleware, hooks, configs).
+3. **Behavioral Verification** - Run targeted smoke tests (curl, Postman, automated scripts) where applicable.
+4. **Documentation & Ticketing** - Update spec-kit logs, flag follow-up tasks, and prepare remediation diffs if required.
 
 ## 🛠 Tooling & Resources
 - Local health scripts (`test-health-endpoints.js`, `test-localtunnel-*.js`).

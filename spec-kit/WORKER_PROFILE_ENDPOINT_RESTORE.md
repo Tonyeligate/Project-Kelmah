@@ -1,11 +1,11 @@
-# Worker Profile Endpoint Restore – November 7, 2025
+# Worker Profile Endpoint Restore - November 7, 2025
 
 ## Overview
 - **Issue:** "View Profile" buttons navigated to `/worker-profile/:id`, but the frontend fetch to `/api/users/workers/:id` returned 404 because the user-service exposed no single-worker route.
 - **Resolution:** Implemented `WorkerController.getWorkerById` to aggregate user + worker profile data with default autopopulation and registered `GET /workers/:id` within `user.routes.js`.
 - **Impact:** WorkerProfile page now receives normalized payloads (including verification, rateRange, and profile metadata) and renders without falling back to empty state.
 
-## Data Flow Analysis – Worker Profile View
+## Data Flow Analysis - Worker Profile View
 
 ### UI Component Chain
 - **Component File:** `kelmah-frontend/src/modules/worker/components/WorkerProfile.jsx`
@@ -36,7 +36,7 @@ WorkerProfile state hydrated; subsequent calls load skills, portfolio, etc.
 
 ### Verification Steps
 1. `curl -H "Authorization: Bearer <token>" https://<tunnel>/api/users/workers/<workerId>` → expect 200 with `data.worker` object.
-2. Load `/worker-profile/<workerId>` in browser – profile hero, rate info, and verification badge populate.
+2. Load `/worker-profile/<workerId>` in browser - profile hero, rate info, and verification badge populate.
 3. Confirm console logs show `✅ [USER-ROUTES] /workers/:id route hit` for traceability.
 
 ### Residual Considerations

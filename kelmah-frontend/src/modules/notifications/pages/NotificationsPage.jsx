@@ -11,6 +11,7 @@ import {
   Skeleton,
   List,
   ListItem,
+  ListItemButton,
   ListItemIcon,
   ListItemText,
   Chip,
@@ -130,10 +131,8 @@ const PageNotificationItem = ({ notification, onMarkRead }) => {
 
   return (
     <ListItem
-      role="button"
-      tabIndex={0}
+      component={ListItemButton}
       onClick={handleClick}
-      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClick(); } }}
       sx={(theme) => ({
         backgroundColor: theme.palette.background.paper,
         mb: 1.5,
@@ -232,7 +231,7 @@ const PageNotificationItem = ({ notification, onMarkRead }) => {
 
 // --- Main Notifications Page ---
 
-// Tab filter â†’ backend type mapping for grouped tabs
+// Tab filter -> backend type mapping for grouped tabs
 const TAB_TYPE_MAP = {
   all: undefined,
   messages: 'message_received',
@@ -316,7 +315,7 @@ const NotificationsPage = () => {
   return (
     <Container maxWidth="md" sx={{ py: { xs: 2, md: 4 }, pb: { xs: 'calc(72px + env(safe-area-inset-bottom, 0px))', md: 4 } }}>
       <Helmet><title>Notifications | Kelmah</title></Helmet>
-      {/* Header â€” stacks vertically on mobile */}
+      {/* Header - stacks vertically on mobile */}
       <Box
         sx={{
           display: 'flex',

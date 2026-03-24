@@ -15,12 +15,12 @@ import { useBreakpointDown } from '@/hooks/useResponsive';
  * bottom-sheet (SwipeableDrawer anchor=bottom) with filter content.
  * On desktop, renders children inline.
  *
- * @param {ReactNode}  children     – filter form controls
- * @param {string}     [title]      – sheet title (default "Filters")
- * @param {Function}   [onApply]    – called when user taps "Apply"
- * @param {Function}   [onReset]    – called when user taps "Reset"
- * @param {number}     [activeCount] – badge count of active filters
- * @param {boolean}    [renderInline] – always render inline (skip bottom sheet)
+ * @param {ReactNode}  children     - filter form controls
+ * @param {string}     [title]      - sheet title (default "Filters")
+ * @param {Function}   [onApply]    - called when user taps "Apply"
+ * @param {Function}   [onReset]    - called when user taps "Reset"
+ * @param {number}     [activeCount] - badge count of active filters
+ * @param {boolean}    [renderInline] - always render inline (skip bottom sheet)
  */
 export default function MobileFilterSheet({
   children,

@@ -68,7 +68,7 @@ class GlobalErrorBoundaryInner extends Component {
   };
 
   handleHardReload = () => {
-    window.location.reload();
+    this.resetBoundary();
   };
 
   renderFallback(theme) {
@@ -93,7 +93,7 @@ class GlobalErrorBoundaryInner extends Component {
         bg: 'rgba(244,67,54,0.12)',
       },
       checking: {
-        label: 'Checking Statusâ€¦',
+        label: 'Checking Status...',
         color: '#0288d1',
         bg: 'rgba(3,169,244,0.12)',
       },
@@ -166,7 +166,7 @@ class GlobalErrorBoundaryInner extends Component {
 
             <Chip
               icon={<SupportAgentIcon />}
-              label={`${chipConfig.label} Â· ${status.message}`}
+              label={`${chipConfig.label} - ${status.message}`}
               sx={{
                 width: 'fit-content',
                 backgroundColor: chipConfig.bg,
@@ -222,7 +222,7 @@ class GlobalErrorBoundaryInner extends Component {
               onClick={this.handleHardReload}
               sx={{ alignSelf: 'flex-start' }}
             >
-              Reload Application
+              Reset View
             </Button>
           </Stack>
         </Box>

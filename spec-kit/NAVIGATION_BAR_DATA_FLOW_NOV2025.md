@@ -1,4 +1,4 @@
-# Navigation Bar Data Flow – November 19, 2025
+# Navigation Bar Data Flow - November 19, 2025
 
 ## UI Component Chain
 - **Desktop navigation**: `kelmah-frontend/src/modules/layout/components/DesktopNav.jsx`

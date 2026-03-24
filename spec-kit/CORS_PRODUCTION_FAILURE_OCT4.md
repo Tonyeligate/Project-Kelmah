@@ -141,7 +141,7 @@ GET https://kelmah-api-gateway-si57.onrender.com/api/health net::ERR_FAILED 502 
 
 **Expected Result**: Service comes back online, CORS headers return automatically (code is already correct).
 
-### � RECOMMENDED FIX #2: Move CORS Middleware First (2 minutes) **BEST PRACTICE**
+### RECOMMENDED FIX #2: Move CORS Middleware First (2 minutes) **BEST PRACTICE**
 
 **Why**: Defensive coding to prevent future helmet() or other middleware from interfering with preflight requests.
 
@@ -195,7 +195,7 @@ app.use(compression());
 
 **Note**: This won't fix the immediate 502 issue (service restart does), but prevents future problems.
 
-### � RECOMMENDED FIX #3: Add Explicit OPTIONS Handler (2 minutes) **DEFENSIVE**
+### RECOMMENDED FIX #3: Add Explicit OPTIONS Handler (2 minutes) **DEFENSIVE**
 
 **Why**: Ensures OPTIONS requests always get CORS headers even if downstream routes don't exist.
 

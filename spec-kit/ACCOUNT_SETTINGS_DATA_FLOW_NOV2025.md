@@ -1,4 +1,4 @@
-# Account Settings Data Flow – November 2025 Investigation
+# Account Settings Data Flow - November 2025 Investigation
 
 ## Summary
 - **Issue:** Account Settings form renders blank fields after login

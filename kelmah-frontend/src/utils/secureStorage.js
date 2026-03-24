@@ -446,14 +446,14 @@ class SecureStorage {
 
   /**
    * Clear all secure data.
-   * Also clears persisted encryption secret so post-logout sessions get a fresh key.
+   * Preserves the persistent encryption secret so non-auth preferences keep working
+   * across tabs, while still removing encrypted secure payloads and session state.
    * BroadcastChannel notifies sibling tabs to clear their own in-memory auth state.
    */
   clear() {
     try {
       localStorage.removeItem(this.storageKey);
       sessionStorage.removeItem(this.sessionStorageKey);
-      localStorage.removeItem('kelmah_encryption_secret');
       sessionStorage.removeItem('session_id');
 
       // Rotate in-memory key immediately so any stale ciphertext is unreadable in this tab.

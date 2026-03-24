@@ -45,13 +45,13 @@ class ErrorBoundary extends React.Component {
           </Typography>
           <Button
             variant="contained"
-            onClick={() => window.location.reload()}
+            onClick={this.handleReset}
             sx={{ mr: 1 }}
           >
-            Refresh Page
+            Try Again
           </Button>
           <Button variant="outlined" onClick={this.handleReset}>
-            Try Again
+            Reset View
           </Button>
         </Box>
       );

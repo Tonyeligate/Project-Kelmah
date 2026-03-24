@@ -58,8 +58,11 @@ let lastWarmupStatus = {
   message: 'Services are idle',
   updatedAt: 0,
 };
-let warmUpRetryCount = 0;
-let warmUpRetryTimer = null;
+
+const createWarmUpRetryState = () => ({
+  retryCount: 0,
+  retryTimer: null,
+});
 
 const setWarmupStatus = (nextStatus) => {
   lastWarmupStatus = {
@@ -77,10 +80,10 @@ const setWarmupStatus = (nextStatus) => {
 
 export const getWarmupStatus = () => ({ ...lastWarmupStatus });
 
-const clearScheduledWarmUpRetry = () => {
-  if (warmUpRetryTimer) {
-    clearTimeout(warmUpRetryTimer);
-    warmUpRetryTimer = null;
+const clearScheduledWarmUpRetry = (retryState) => {
+  if (retryState.retryTimer) {
+    clearTimeout(retryState.retryTimer);
+    retryState.retryTimer = null;
   }
 };
 
@@ -179,20 +182,21 @@ export const warmUpService = async (serviceUrl) => {
  */
 export const warmUpServices = async (options = {}) => {
   const { force = false, maxRetries = MAX_WARMUP_RETRIES } = options;
+  const retryState = options.retryState || createWarmUpRetryState();
 
   if (typeof navigator !== 'undefined' && navigator.onLine === false) {
     setWarmupStatus({
       state: 'offline',
       message: 'You are offline. Service warm-up will run when connection returns.',
     });
-    clearScheduledWarmUpRetry();
-    warmUpRetryCount = 0;
+    clearScheduledWarmUpRetry(retryState);
+    retryState.retryCount = 0;
     return { success: false, skipped: true, reason: 'offline' };
   }
 
   if (!force) {
-    clearScheduledWarmUpRetry();
-    warmUpRetryCount = 0;
+    clearScheduledWarmUpRetry(retryState);
+    retryState.retryCount = 0;
     const elapsed = Date.now() - getLastWarmupAt();
     if (elapsed > 0 && elapsed < WARMUP_COOLDOWN_MS) {
       setWarmupStatus({
@@ -236,19 +240,19 @@ export const warmUpServices = async (options = {}) => {
 
     // If services are waking up, schedule a limited retry.
     if (wakingUp > 0) {
-      if (warmUpRetryCount < maxRetries) {
-        warmUpRetryCount += 1;
-        warmupLog(`⏳ Services waking up, retry ${warmUpRetryCount}/${maxRetries} in ${RETRY_DELAY_MS / 1000} seconds...`);
-        if (!warmUpRetryTimer) {
-          warmUpRetryTimer = setTimeout(() => {
-            warmUpRetryTimer = null;
-            warmUpServices({ force: true, maxRetries });
+      if (retryState.retryCount < maxRetries) {
+        retryState.retryCount += 1;
+        warmupLog(`⏳ Services waking up, retry ${retryState.retryCount}/${maxRetries} in ${RETRY_DELAY_MS / 1000} seconds...`);
+        if (!retryState.retryTimer) {
+          retryState.retryTimer = setTimeout(() => {
+            retryState.retryTimer = null;
+            warmUpServices({ force: true, maxRetries, retryState });
           }, RETRY_DELAY_MS);
         }
       } else {
         warmupWarn('⚠️ Max warm-up retries reached. Some services may still be waking up.');
-        clearScheduledWarmUpRetry();
-        warmUpRetryCount = 0;
+        clearScheduledWarmUpRetry(retryState);
+        retryState.retryCount = 0;
       }
     } else {
       setWarmupStatus({
@@ -258,8 +262,8 @@ export const warmUpServices = async (options = {}) => {
             ? 'Backend services are ready.'
             : 'Backend services are slow to respond. You can retry shortly.',
       });
-      clearScheduledWarmUpRetry();
-      warmUpRetryCount = 0;
+      clearScheduledWarmUpRetry(retryState);
+      retryState.retryCount = 0;
     }
 
     return {
@@ -275,8 +279,8 @@ export const warmUpServices = async (options = {}) => {
       state: 'error',
       message: 'Service warm-up failed. Retry in a few moments.',
     });
-    clearScheduledWarmUpRetry();
-    warmUpRetryCount = 0;
+    clearScheduledWarmUpRetry(retryState);
+    retryState.retryCount = 0;
     warmupError('🔥 Service warm-up failed:', error);
     return { success: false, error: error.message };
   }

@@ -51,7 +51,7 @@ export const useDashboard = () => {
       };
 
       const handleNewJob = (job) => {
-        // Dispatch plain object â€” setDashboardData merges into state.data
+        // Dispatch plain object - setDashboardData merges into state.data
         dispatch(
           setDashboardData({
             quickActions: [

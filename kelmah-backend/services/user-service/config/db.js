@@ -143,7 +143,7 @@ const connectDB = async () => {
     console.error('🚨 MONGODB CONNECTION FAILURE - DETAILED ERROR INFO');
     console.error('='.repeat(80));
     console.error(`📛 Error Message: ${error.message}`);
-    console.error(`� Error Name: ${error.name}`);
+    console.error(`📛 Error Name: ${error.name}`);
     console.error(`📛 Error Code: ${error.code || 'N/A'}`);
 
     if (error.reason) {

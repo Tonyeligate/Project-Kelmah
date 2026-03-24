@@ -255,6 +255,42 @@ HARD STOP: Mother agent may NOT mark a visible-bug task as complete
            without BOTH frontend audit evidence AND debugger cross-verification.
 ```
 
+### Phase 2.3 — FRONTEND UI BUG EXECUTION PROTOCOL (Mandatory)
+```
+When the user reports a visible frontend problem, the orchestration order is fixed:
+
+1. Invoke Ψ-Frontend first with a breakpoint-specific audit packet.
+2. Require the frontend agent to inspect:
+   - mobile (320px)
+   - tablet (768px)
+   - desktop (1440px)
+   - theme, spacing, typography, contrast, tap targets, overflow, and z-index
+3. Invoke Σ-Debugger second with the frontend findings attached.
+4. If the debugger challenges the diagnosis, route to Φ-Backend, Ω-Database, or Δ-Realtime as needed.
+5. Re-run Ψ-Frontend after any fix and require a new audit report.
+
+The mother agent must never accept a generic UI statement like "looks fine".
+It must be backed by explicit breakpoint findings, issue IDs, and a verifier verdict.
+```
+
+### Phase 2.4 — AGENT CONTEXT PACKETS (Required)
+```
+Every delegated agent call must carry a compressed context packet with:
+
+  - task_eigenstate: exact user-visible failure or desired outcome
+  - measured_files: file paths already inspected
+  - measured_endpoints: any health checks or API calls already run
+  - failure_eigenstates: what would prove the current hypothesis wrong
+  - success_eigenstates: what would prove the fix is correct
+  - anti_targets: what must not change
+
+For frontend UI bugs, measured_files must include at minimum:
+  - the page component
+  - the layout shell
+  - the theme file
+  - any shared component involved in the visible defect
+```
+
 ### Phase 3 — Quantum Parallel vs Sequential Execution
 ```
 PARALLEL (independent Hilbert subspaces — disjoint file sets):
@@ -447,8 +483,8 @@ REFLECT-5: What does predictive failure analysis say about the NEXT bug?
 THE KELMAH QUANTUM FIELD ℱ(x,t):
   - Vacuum State |Ω⟩:           Clean, passing codebase — all tests green, zero bugs
   - Excitations (Particles):    Bugs, features, tech debt — quanta of work
-  - Creation Operator â†(x):    Adding new code at position x (new feature, new file)
-  - Annihilation Operator â(x): Removing code at position x (bug fix, dead code removal)
+  - Creation Operator a†(x):    Adding new code at position x (new feature, new file)
+  - Annihilation Operator a(x): Removing code at position x (bug fix, dead code removal)
   - Propagator G(x,y):          How a change at x propagates to affect y (blast radius)
   - Interaction Vertex:          Where multiple code changes interact (merge conflicts,
                                  entangled features, shared state mutations)

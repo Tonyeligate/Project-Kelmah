@@ -22,7 +22,7 @@ const ContractContext = createContext(null);
 
 export const ContractProvider = ({ children }) => {
   const { user } = useAuth();
-  // Call hook unconditionally (Rules of Hooks) â€” the context returns null
+  // Call hook unconditionally (Rules of Hooks) - the context returns null
   // when there is no NotificationProvider ancestor.
   const notifications = useNotifications();
   const rawShowToast = notifications?.showToast;

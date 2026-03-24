@@ -1,4 +1,4 @@
-# Phase 3 Task 3.1 – React Query Migration Dry Audit (Nov 22, 2025)
+# Phase 3 Task 3.1 - React Query Migration Dry Audit (Nov 22, 2025)
 
 ## Scope & Success Criteria
 - **Scope Restatement**: Replace the jobs domain's ad-hoc data fetching (Redux thunks in `jobSlice.js`, bespoke helpers like `useJobs`, and component-level `jobsService` calls) with React Query hooks per `IMPLEMENTATION_GUIDE_PHASE_3_4_5.md` Task 3.1. Coverage includes public jobs listing, worker search/management pages, hirer job creation/update flows, and saved/applications interactions that currently dispatch `fetchJobs`, `createJob`, etc.
@@ -99,7 +99,7 @@ Additional Actions: unsave/save toggles call saveJobToServer/unsave thunks
 - [ ] Remove legacy thunks from `jobSlice.js`, ensuring remaining reducers/selectors reflect new data sources.
 - [ ] Update docs + run verification commands.
 
-## Implementation Progress – Nov 22, 2025
+## Implementation Progress - Nov 22, 2025
 - ✅ **Hook Suite Foundation**: Added `src/modules/jobs/hooks/useJobsQuery.js` with normalized filter handling, canonical `jobKeys`, and the initial hook set (`useJobsQuery`, `useJobQuery`, `useCreateJobMutation`, `useApplyToJobMutation`). Listings default to a 30s stale window and 2-minute cache to match Task 3.1 guidance while keeping `keepPreviousData` enabled for smoother filter transitions.
 - ✅ **JobsPage Migration**: `JobsPage.jsx` now memoizes filter params, consumes `useJobsQuery`, and normalizes responses before piping them into the existing UI state. Manual `jobsService.getJobs` calls plus bespoke loading/error toggles were removed in favor of the query object, so retries/caching now flow through React Query.
 - ✅ **JobCreationForm Mutation Flow**: The hirer posting dialog dispatches `useCreateJobMutation` instead of the Redux thunk. Pending state now comes from the mutation, success scenarios trigger hook-level invalidations, and the existing draft + success UX stays intact.
@@ -240,7 +240,7 @@ Re-render occurs once Redux updates savedJobs array
 3. Update shared `JobCard` to accept `savedJobIds` + `onToggleSave` props derived from hook data, or wrap it with a higher-order hook that encapsulates React Query interactions, eliminating direct Redux coupling.
 4. After components stop importing job thunks/selectors, strip the redundant async thunks/state from `jobSlice.js`, keeping UI filters only, and document the state changes in this spec + STATUS_LOG.
 
-## JobSearchPage Migration Plan – Nov 27, 2025
+## JobSearchPage Migration Plan - Nov 27, 2025
 
 ### Updated Data Flow (Target State)
 ```
@@ -291,7 +291,7 @@ UI renders hero/search panels, cards, and sample data fallback driven by query l
 - `handleSearch` simply updates Redux filters and analytics; React Query reacts to filter changes automatically, so the legacy `fetchJobs` thunk and initial-load effect were deleted.
 - ESLint on the file still flags the pre-existing unused imports and hook dependency warnings scattered throughout the 2.5k-line component, but no new issues were introduced by the hook migration.
 
-## Smart Recommendations & Dashboard Widgets – Implementation Plan (Nov 28, 2025)
+## Smart Recommendations & Dashboard Widgets - Implementation Plan (Nov 28, 2025)
 
 ### Scope Restatement
 - Finish the worker-focused React Query migration by moving `SmartJobRecommendations.jsx`, `dashboard/components/worker/AvailableJobs.jsx`, and shared `common/components/cards/JobCard.jsx` off Redux saved-job thunks. All bookmark/apply interactions must rely on the saved-job/query hook suite so `jobSlice.js` can be trimmed down to UI filters only.
@@ -323,11 +323,11 @@ jobSlice retains only filters → JobSearchPage + analytics reuse existing selec
 ```
 
 ### Next Actions
-- Perform the mandated dry audit for each component (reading files end-to-end, mapping UI → service → API) – already completed and recorded above.
+- Perform the mandated dry audit for each component (reading files end-to-end, mapping UI → service → API) - already completed and recorded above.
 - Implement the React Query integration per component, ensuring bookmark/apply UX surfaces toast/snackbar feedback consistent with other worker pages.
 - Remove saved-job state/reducers from `jobSlice.js`, verify selectors have replacements, and update documentation + STATUS_LOG once lint/build succeed.
 
-## Implementation Progress – Nov 29, 2025 (Smart Recommendations & Dashboard)
+## Implementation Progress - Nov 29, 2025 (Smart Recommendations & Dashboard)
 - ✅ **SmartJobRecommendations Migration**: `src/modules/search/components/SmartJobRecommendations.jsx` now hydrates saved metadata through `useSavedJobsQuery` + `useSavedJobIds` and routes bookmark toggles through `useSaveJobMutation` / `useUnsaveJobMutation`. Redux `saveJobToServer`, `unsaveJobFromServer`, and `fetchSavedJobs` dependencies were removed, and the component displays toast feedback sourced from the mutation callbacks. The data-flow doc now reflects UI events flowing through React Query caches instead of Redux thunks.
 - ✅ **Worker Dashboard AvailableJobs Refactor**: `src/modules/dashboard/components/worker/AvailableJobs.jsx` consumes `useJobsQuery` for the nearby/urgent listings feed, reusing the query cache that powers JobSearchPage. Saved state derives from the shared hook set, while apply/save actions call `useApplyToJobMutation`, `useSaveJobMutation`, and `useUnsaveJobMutation`. A deterministic `decorateJobForDashboard` helper augments job cards with icons/status without mutating the cached results, and snackbar feedback now originates from shared helpers. Redux references (fetchJobs, saved-job selectors, manual jobsApi calls) are removed, so the dashboard stays in sync with the React Query caches used elsewhere.
 - ✅ **JobCard Decoupling**: `src/modules/common/components/cards/JobCard.jsx` now expects `isSaved`, `isSaveLoading`, `onToggleSave`, and `onApply` props, removing the last Redux imports from the shared card. All bookmark/apply buttons surface the mutation-provided loading states, so worker dashboards and search pages render consistent CTAs without dispatching thunks.

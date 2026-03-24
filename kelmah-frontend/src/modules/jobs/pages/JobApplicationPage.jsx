@@ -26,6 +26,7 @@ import { Helmet } from 'react-helmet-async';
 import { applyForJob, fetchJobById } from '../services/jobSlice';
 import bidApi from '../services/bidService';
 import fileUploadService from '../../common/services/fileUploadService';
+import { formatGhanaCurrency } from '@/utils/formatters';
 
 const JobApplicationPage = () => {
   const { id: jobId } = useParams();
@@ -223,7 +224,7 @@ const JobApplicationPage = () => {
             </Stack>
             {currentJob.budget && (
               <Typography variant="body2" color="text.secondary">
-                Budget: GH₵{currentJob.budget?.min?.toLocaleString()} – GH₵{currentJob.budget?.max?.toLocaleString()}
+                Budget: {formatGhanaCurrency(currentJob.budget?.min)} - {formatGhanaCurrency(currentJob.budget?.max)}
               </Typography>
             )}
           </Box>
@@ -254,7 +255,7 @@ const JobApplicationPage = () => {
             <Box>
               <Alert severity="success" sx={{ mb: 2 }}>
                 {isBiddingJob
-                  ? `Your bid of GH₵${Number(bidAmount || 0).toLocaleString()} was submitted successfully.`
+                  ? `Your bid of ${formatGhanaCurrency(Number(bidAmount || 0))} was submitted successfully.`
                   : 'Your application was submitted successfully.'}
               </Alert>
               <Typography variant="body1" sx={{ mb: 1.5 }}>

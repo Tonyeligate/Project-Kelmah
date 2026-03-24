@@ -523,7 +523,7 @@ const CreateContractPage = () => {
                   type="number"
                   InputProps={{
                     startAdornment: (
-                      <InputAdornment position="start">GHâ‚µ</InputAdornment>
+                      <InputAdornment position="start">GHS</InputAdornment>
                     ),
                   }}
                   error={!!validationErrors.value}
@@ -647,7 +647,7 @@ const CreateContractPage = () => {
                         type="number"
                         InputProps={{
                           startAdornment: (
-                            <InputAdornment position="start">GHâ‚µ</InputAdornment>
+                            <InputAdornment position="start">GHS</InputAdornment>
                           ),
                         }}
                         error={validationErrors.milestones?.[index]?.amount}
@@ -693,7 +693,7 @@ const CreateContractPage = () => {
                       Value
                     </Typography>
                     <Typography variant="body1" gutterBottom>
-                      GHâ‚µ{parseFloat(contract.value).toFixed(2)}
+                      GHS {parseFloat(contract.value).toFixed(2)}
                     </Typography>
                   </Grid>
                   <Grid item xs={12} md={6}>
@@ -768,7 +768,7 @@ const CreateContractPage = () => {
                         {milestone.title}
                       </Typography>
                       <Typography variant="subtitle1">
-                        GHâ‚µ{isNaN(parseFloat(milestone.amount)) ? 'â€”' : parseFloat(milestone.amount).toFixed(2)}
+                        GHS {isNaN(parseFloat(milestone.amount)) ? '-' : parseFloat(milestone.amount).toFixed(2)}
                       </Typography>
                     </Box>
                     <Typography

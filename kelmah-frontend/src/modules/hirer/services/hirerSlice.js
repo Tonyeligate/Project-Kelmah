@@ -479,7 +479,7 @@ const hirerSlice = createSlice({
           });
           Object.assign(state.jobs, buckets);
         } else if (status) {
-          // Canonical status key â€” map 'active' alias to 'open'
+          // Canonical status key - map 'active' alias to 'open'
           const key = status === 'active' ? 'open' : status;
           state.jobs[key] = jobs;
         }
