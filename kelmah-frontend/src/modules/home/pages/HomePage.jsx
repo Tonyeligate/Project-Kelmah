@@ -29,6 +29,7 @@ import {
   resolveProfileImageUrl,
 } from '../../common/utils/mediaAssets';
 import { useBreakpointDown } from '@/hooks/useResponsive';
+import PageCanvas from '../../common/components/PageCanvas';
 
 /* =================================================================
  * DESIGN-SYSTEM PRIMITIVES
@@ -950,16 +951,18 @@ const CTASection = () => {
  *   - Per-child stagger animations (animation fatigue)
  * ================================================================= */
 const HomePage = () => (
-  <Box>
-    <Helmet><title>Kelmah — Find Skilled Workers in Ghana</title></Helmet>
-    <HeroSection />
-    <CategoriesSection />
-    <FeaturedWorkersSection />
-    <FeaturedJobsSection />
-    <HowItWorksSection />
-    <TestimonialsSection />
-    <CTASection />
-  </Box>
+  <PageCanvas disableContainer sx={{ pt: { xs: 1, md: 4 }, pb: { xs: 4, md: 6 } }}>
+    <Box>
+      <Helmet><title>Kelmah — Find Skilled Workers in Ghana</title></Helmet>
+      <HeroSection />
+      <CategoriesSection />
+      <FeaturedWorkersSection />
+      <FeaturedJobsSection />
+      <HowItWorksSection />
+      <TestimonialsSection />
+      <CTASection />
+    </Box>
+  </PageCanvas>
 );
 
 export default HomePage;

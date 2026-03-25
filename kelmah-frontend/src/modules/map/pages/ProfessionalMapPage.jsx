@@ -58,6 +58,7 @@ import { useBreakpointDown } from '@/hooks/useResponsive';
 import InteractiveMap from '../components/common/InteractiveMap';
 import mapService from '../services/mapService';
 import { Helmet } from 'react-helmet-async';
+import PageCanvas from '@/modules/common/components/PageCanvas';
 
 // ────────────────────────────────────────────────────────────
 //  Bottom Sheet - Uber/Bolt-style pull-up results panel
@@ -527,16 +528,16 @@ const ProfessionalMapPage = () => {
 
   // ── Render ──
   return (
-    <Box
-      sx={{
-        height: 'calc(100dvh - 64px)',
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-        position: 'relative',
-        bgcolor: theme.palette.background.default,
-      }}
-    >
+    <PageCanvas disableContainer>
+      <Box
+        sx={{
+          height: 'calc(100dvh - 64px)',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          position: 'relative',
+        }}
+      >
       <Helmet><title>Map | Kelmah</title></Helmet>
       {/* TOP BAR */}
       <Box
@@ -1150,7 +1151,8 @@ const ProfessionalMapPage = () => {
           {snack.message}
         </Alert>
       </Snackbar>
-    </Box>
+      </Box>
+    </PageCanvas>
   );
 };
 

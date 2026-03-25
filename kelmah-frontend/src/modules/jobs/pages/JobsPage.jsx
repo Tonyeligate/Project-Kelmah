@@ -70,6 +70,7 @@ import ghanaLocations from '../data/ghanaLocations.json';
 import { useJobsQuery } from '../hooks/useJobsQuery';
 import jobsApi from '../services/jobsService';
 import { getSortedUniqueJobs } from '../utils/jobListUtils';
+import PageCanvas from '@/modules/common/components/PageCanvas';
 import {
   Container,
   Grid,
@@ -2024,6 +2025,7 @@ const JobsPage = () => {
 
   return (
     <ErrorBoundary>
+      <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
       <PullToRefresh onRefresh={retryJobsFetch}>
       <Box
         sx={{
@@ -2488,6 +2490,7 @@ const JobsPage = () => {
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       />
       </PullToRefresh>
+      </PageCanvas>
     </ErrorBoundary>
   );
 };

@@ -1,3 +1,85 @@
+### Session: Landing Alias Recovery March 25 2026 ✅ COMPLETED
+
+**Date**: March 25, 2026  
+**Scope**: Retire the corrupted standalone landing implementation and restore the canonical landing route path.
+
+**Files touched**
+- kelmah-frontend/src/pages/HomeLanding.jsx
+- kelmah-frontend/src/routes/config.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Replaced the broken standalone landing file with a safe re-export of the active home page implementation.
+- Switched the landing route back to the canonical `HomeLanding` filename so the route surface stays stable.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` completed successfully after the alias swap.
+
+### Session: Active Home Page Shell Wrap March 25 2026 ✅ COMPLETED
+
+**Date**: March 25, 2026  
+**Scope**: Extend the shared Binance-style canvas into the active home page used by the landing route.
+
+**Files touched**
+- kelmah-frontend/src/modules/home/pages/HomePage.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Wrapped the active home page composition in `PageCanvas` so the route that currently serves as the public landing page inherits the shared shell treatment.
+- Left the hero, categories, featured workers, featured jobs, how-it-works, testimonials, and CTA sections unchanged.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` completed successfully after the wrapper change.
+
+### Session: Worker Profile Edit Shell Wrap March 25 2026 ✅ COMPLETED
+
+**Date**: March 25, 2026  
+**Scope**: Extend the shared Binance-style canvas into the worker profile edit flow.
+
+**Files touched**
+- kelmah-frontend/src/modules/worker/pages/WorkerProfileEditPage.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Wrapped the worker profile edit page in `PageCanvas` so the profile editor inherits the same premium shell treatment as the rest of the frontend.
+- Left the availability, profile completeness, skills, education, languages, portfolio, and submit flows unchanged.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` completed successfully after the wrapper change.
+
+### Session: Landing Route Recovery March 25 2026 ✅ COMPLETED
+
+**Date**: March 25, 2026  
+**Scope**: Recover the public landing route after JSX corruption in the active landing page by switching the route to the archived compile-safe home page.
+
+**Files touched**
+- kelmah-frontend/src/routes/config.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Pointed the landing route at the archived home page so the public entry path stays functional while the corrupted active landing file remains out of the import graph.
+- Preserved the rest of the frontend shell sweep and left the active jobs, dashboard, payments, and profile routes unchanged.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` completed successfully after the route change.
+
+### Session: Jobs and Hirer Dashboard Shell Expansion March 25 2026 ✅ COMPLETED
+
+**Date**: March 25, 2026  
+**Scope**: Extend the shared Binance-style canvas into the public jobs listing and hirer dashboard route shells.
+
+**Files touched**
+- kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx
+- kelmah-frontend/src/modules/hirer/pages/HirerDashboardPage.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Wrapped the public jobs listing in the shared page canvas so the route-level background and spacing match the rest of the premium shell.
+- Wrapped the hirer dashboard in the shared page canvas so the top summary, refresh bar, and card stack inherit the same outer framing.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` completed successfully after the updates.
+
 ### Session: Review and 404 Shell Expansion March 25 2026 ✅ COMPLETED
 
 **Date**: March 25, 2026  

@@ -1,4 +1,5 @@
 // IconButton focus-visible styling is enforced globally via MuiIconButton theme overrides.
+import PageCanvas from '../../common/components/PageCanvas';
 
 
 
@@ -663,8 +664,9 @@ const WorkerProfileEditPage = () => {
   const completedChecklistCount = checklistItems.filter((item) => item.done).length;
 
   return (
-    <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
-      <Helmet><title>Edit Profile | Kelmah</title></Helmet>
+    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
+        <Helmet><title>Edit Profile | Kelmah</title></Helmet>
 
       {/* Loading skeleton for initial profile fetch */}
       {initialLoading ? (
@@ -1573,7 +1575,8 @@ const WorkerProfileEditPage = () => {
       </form>
       </>
       )}
-    </Container>
+      </Container>
+    </PageCanvas>
   );
 };
 

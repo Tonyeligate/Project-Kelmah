@@ -5,6 +5,7 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import authService from '../modules/auth/services/authService';
 import { Helmet } from 'react-helmet-async';
 import { useBreakpointDown } from '@/hooks/useResponsive';
+import PageCanvas from '../modules/common/components/PageCanvas';
 
 const ResetPassword = () => {
   const theme = useTheme();
@@ -177,25 +178,28 @@ const ResetPassword = () => {
 
   if (isMobile) {
     return (
-      <Box
-        sx={{
-          minHeight: '100dvh',
-          bgcolor: 'background.default',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-          px: 3,
-          py: 4,
-        }}
-      >
-        {content}
-      </Box>
+      <PageCanvas disableContainer sx={{ pt: { xs: 3, md: 4 }, pb: { xs: 4, md: 6 } }}>
+        <Box
+          sx={{
+            minHeight: '100dvh',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            px: 3,
+            py: 4,
+          }}
+        >
+          {content}
+        </Box>
+      </PageCanvas>
     );
   }
 
   return (
-    <Box sx={{ display: 'flex', justifyContent: 'center', py: 6, px: 3 }}>{content}</Box>
+    <PageCanvas disableContainer sx={{ pt: { xs: 3, md: 4 }, pb: { xs: 4, md: 6 } }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 6, px: 3 }}>{content}</Box>
+    </PageCanvas>
   );
 };
 

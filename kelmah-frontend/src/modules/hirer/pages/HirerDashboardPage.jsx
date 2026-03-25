@@ -44,6 +44,7 @@ import { useVisibilityPolling } from '../../../hooks/useVisibilityPolling';
 import { BOTTOM_NAV_HEIGHT } from '../../../constants/layout';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 import { formatGhanaCurrency } from '@/utils/formatters';
+import PageCanvas from '@/modules/common/components/PageCanvas';
 
 /* ---------- Extracted sub-component (stable reference) ---------- */
 const LoadingOverviewSkeleton = () => (
@@ -1094,6 +1095,7 @@ const HirerDashboardPage = () => {
   }
 
   return (
+    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
     <PullToRefresh onRefresh={() => fetchDashboardData('manual-refresh')}>
     <Grow in timeout={500}>
       <Box>
@@ -1204,7 +1206,8 @@ const HirerDashboardPage = () => {
         </SpeedDial>
       </Box>
     </Grow>
-    </PullToRefresh>
+  </PullToRefresh>
+    </PageCanvas>
   );
 };
 
