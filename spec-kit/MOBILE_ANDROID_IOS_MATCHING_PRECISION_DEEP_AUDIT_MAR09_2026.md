@@ -79,7 +79,7 @@ Evidence:
 - iOS does the same in `JobsViewModel.swift`.
 
 Impact:
-- workers see an empty “recommended matches” state instead of a truthful “profile incomplete / matching degraded” state;
+- workers see an empty "recommended matches" state instead of a truthful "profile incomplete / matching degraded" state;
 - mobile cannot distinguish true zero matches from a backend degradation contract.
 
 Relevant files:
@@ -207,7 +207,7 @@ Relevant file:
 Recommended fix:
 - move all message/conversation ordering to parsed-date helpers in the repository layer and keep it consistent everywhere.
 
-9. “Recent activity” is an approximation, not a typed activity system.
+9. "Recent activity" is an approximation, not a typed activity system.
 
 Evidence:
 - Android home combines `recommendedJobs`, conversation unread totals, and notification unread totals.

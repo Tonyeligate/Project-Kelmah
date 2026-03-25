@@ -20,13 +20,13 @@ function createLimiter(key = "default") {
     },
     keyGenerator: (req) => {
       // Prefer the authenticated user propagated from the API Gateway so each
-      // account has its own bucket and shared IPs (Render/Vercel) don’t trigger 429s.
+      // account has its own bucket and shared IPs (Render/Vercel) don't trigger 429s.
       const userId = req.user?.id || req.user?._id;
       if (userId) {
         return `user:${userId}`;
       }
 
-      // Fall back to x-authenticated-user header if middleware hasn’t parsed it yet.
+      // Fall back to x-authenticated-user header if middleware hasn't parsed it yet.
       const gatewayHeader = req.headers["x-authenticated-user"];
       if (gatewayHeader) {
         try {

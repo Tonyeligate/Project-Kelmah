@@ -31,14 +31,15 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
   left: 0,
   right: 0,
   zIndex: Z_INDEX.bottomNav,
-  borderTop: theme.palette.mode === 'dark' 
-    ? '1px solid rgba(255, 215, 0, 0.2)' 
-    : '1px solid rgba(0, 0, 0, 0.1)',
-  backgroundColor: theme.palette.mode === 'dark' 
-    ? 'rgba(24, 23, 18, 0.98)' 
-    : 'rgba(255, 255, 255, 0.98)',
-  backdropFilter: 'blur(20px)',
-  boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.15)',
+  borderTop: theme.palette.mode === 'dark'
+    ? '1px solid rgba(255, 215, 0, 0.18)'
+    : '1px solid rgba(0, 0, 0, 0.08)',
+  background:
+    theme.palette.mode === 'dark'
+      ? 'linear-gradient(180deg, rgba(10, 11, 16, 0.94) 0%, rgba(5, 5, 7, 0.98) 100%)'
+      : 'linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(249, 247, 237, 0.98) 100%)',
+  backdropFilter: 'blur(22px) saturate(140%)',
+  boxShadow: '0 -20px 40px rgba(0, 0, 0, 0.32)',
   // Safe area for iOS devices
   paddingBottom: 'env(safe-area-inset-bottom, 0px)',
 }));
@@ -47,31 +48,33 @@ const StyledBottomNavigation = styled(BottomNavigation)(({ theme }) => ({
   backgroundColor: 'transparent',
   height: BOTTOM_NAV_HEIGHT,
   minHeight: BOTTOM_NAV_HEIGHT,
+  padding: '4px 8px 6px',
 }));
 
 const StyledBottomNavigationAction = styled(BottomNavigationAction)(
   ({ theme }) => ({
-    color: theme.palette.mode === 'dark' ? '#888' : '#666',
+    color: theme.palette.mode === 'dark' ? '#8A8D96' : '#60646F',
     flex: 1,
-    maxWidth: 120,
+    maxWidth: 128,
     minHeight: 56,
     minWidth: 44,
-    padding: '6px 4px 8px',
+    padding: '8px 4px 10px',
     borderTop: '3px solid transparent',
-    borderRadius: 10,
+    borderRadius: 16,
+    margin: '6px 4px 8px',
     transition: 'all 0.2s ease',
     '&:focus-visible': {
       outline: `3px solid ${theme.palette.mode === 'dark' ? BRAND_COLORS.gold : theme.palette.primary.main}`,
       outlineOffset: '2px',
-      borderRadius: 10,
+      borderRadius: 16,
     },
     '&.Mui-selected': {
       color: theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
       borderTopColor: theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
       backgroundColor:
         theme.palette.mode === 'dark'
-          ? 'rgba(255, 215, 0, 0.12)'
-          : 'rgba(17, 24, 39, 0.07)',
+          ? 'rgba(255, 215, 0, 0.14)'
+          : 'rgba(17, 24, 39, 0.06)',
       '& .MuiBottomNavigationAction-label': {
         fontSize: '0.8rem',
         fontWeight: 700,

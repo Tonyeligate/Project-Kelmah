@@ -54,7 +54,7 @@ This file collects *extra* issues discovered during the latest deep dive into th
    - Files: `src/utils/serviceHealthCheck.js`, `src/App.jsx`
    - Issue: Complex wake-up UI and logs exist; may confuse users and cause them to reload unnecessarily in poor network.
 
-4. **Missing consistent “back” / “cancel” patterns**
+4. **Missing consistent "back" / "cancel" patterns**
    - Across many forms (application, profile, contracts) there are no explicit navigation affordances; users can lose data.
 
 5. **Footer uses repeated internal routes (copy/paste)**
@@ -93,7 +93,7 @@ This file collects *extra* issues discovered during the latest deep dive into th
    - File: `src/utils/pwaHelpers.js` + `index.html`
    - Issue: Install prompt logic uses `document.getElementById` and global DOM queries instead of React state, which may break in embedded views.
 
-3. **No clear “offline mode enabled” indicator**
+3. **No clear "offline mode enabled" indicator**
    - Multiple components (OfflineBanner, service health) exist but the UX is inconsistent and sometimes hidden behind a snackbar.
 
 ---
@@ -149,7 +149,7 @@ This file collects *extra* issues discovered during the latest deep dive into th
 
 ---
 
-⚠️ This list is not exhaustive — it is a launchpad. If you want the next expansion wave (e.g., mapping every hardcoded magic string, identifying missing ARIA labels, or reviewing network error handling per screen), say the word and I’ll run the next audit pass.
+⚠️ This list is not exhaustive — it is a launchpad. If you want the next expansion wave (e.g., mapping every hardcoded magic string, identifying missing ARIA labels, or reviewing network error handling per screen), say the word and I'll run the next audit pass.
 
 ---
 
@@ -196,4 +196,4 @@ This file collects *extra* issues discovered during the latest deep dive into th
 
 ---
 
-If you want, I can start **turning these findings into a runnable backlog/tracking ticket format** (e.g., with labels, priority, and suggested fix steps per item). Just say “generate backlog tickets” and I’ll produce a structured backlog file with issue IDs and next-action tasks.
+If you want, I can start **turning these findings into a runnable backlog/tracking ticket format** (e.g., with labels, priority, and suggested fix steps per item). Just say "generate backlog tickets" and I'll produce a structured backlog file with issue IDs and next-action tasks.

@@ -605,14 +605,8 @@ const WorkerCard = ({ worker, onSave, isPublicView }) => {
           <Grid container spacing={1}>
             <Grid item xs={6}>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <Typography
-                  variant="body2"
-                  sx={{ mr: 0.5, color: 'text.secondary', fontWeight: 700, fontSize: '0.85rem' }}
-                >
-                  GH₵
-                </Typography>
-                <Typography variant="body2" color="text.primary">
-                  {worker.hourlyRate || '--'}/hr
+                <Typography variant="body2" color="text.primary" sx={{ fontWeight: 700 }}>
+                  {new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' }).format(worker.hourlyRate || 0)}/hr
                 </Typography>
               </Box>
             </Grid>

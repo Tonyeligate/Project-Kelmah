@@ -27,6 +27,8 @@ import { applyForJob, fetchJobById } from '../services/jobSlice';
 import bidApi from '../services/bidService';
 import fileUploadService from '../../common/services/fileUploadService';
 import { formatGhanaCurrency } from '@/utils/formatters';
+import { useBreakpointDown } from '@/hooks/useResponsive';
+import PageCanvas from '@/modules/common/components/PageCanvas';
 
 const JobApplicationPage = () => {
   const { id: jobId } = useParams();
@@ -36,6 +38,7 @@ const JobApplicationPage = () => {
   const { user } = useSelector((state) => state.auth);
   const isAuthenticated = !!user;
   const { currentJob, loading: jobLoading } = useSelector((state) => state.jobs);
+  const isMobile = useBreakpointDown('sm');
 
   const [coverLetter, setCoverLetter] = useState('');
   const [proposedRate, setProposedRate] = useState('');
@@ -188,34 +191,36 @@ const JobApplicationPage = () => {
 
   if (jobLoading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>
-        <CircularProgress />
-      </Box>
+      <PageCanvas disableContainer>
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>
+          <CircularProgress />
+        </Box>
+      </PageCanvas>
     );
   }
 
   return (
-    <>
+    <PageCanvas disableContainer>
       <Helmet>
         <title>{currentJob?.title ? `Apply — ${currentJob.title}` : 'Apply for Job'} | Kelmah</title>
       </Helmet>
 
-      <Container maxWidth="md" sx={{ py: { xs: 2, md: 4 } }}>
+      <Container maxWidth="md" sx={{ py: { xs: 1.25, md: 4 }, pb: { xs: success ? 2 : 10, md: 4 } }}>
         {/* Back link */}
         <Button
           startIcon={<BackIcon />}
           onClick={() => navigate(`/jobs/${jobId}`)}
-          sx={{ mb: 2, color: 'text.secondary' }}
+          sx={{ mb: { xs: 1, md: 2 }, color: 'text.secondary' }}
         >
           Back to Job
         </Button>
 
         {/* Job summary header */}
         {currentJob && (
-          <Box sx={{ mb: 3 }}>
-            <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+          <Box sx={{ mb: { xs: 1.5, md: 3 } }}>
+            <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.75, flexWrap: 'wrap' }}>
               <WorkIcon color="primary" />
-              <Typography variant="h5" fontWeight={700}>
+              <Typography variant="h5" fontWeight={700} sx={{ fontSize: { xs: '1.1rem', md: '1.5rem' } }}>
                 {currentJob.title}
               </Typography>
               {isBiddingJob && (
@@ -227,23 +232,31 @@ const JobApplicationPage = () => {
                 Budget: {formatGhanaCurrency(currentJob.budget?.min)} - {formatGhanaCurrency(currentJob.budget?.max)}
               </Typography>
             )}
+            {isMobile && (
+              <Stack direction="row" spacing={0.75} sx={{ mt: 1, overflowX: 'auto', pb: 0.25, scrollbarWidth: 'none', '&::-webkit-scrollbar': { display: 'none' } }}>
+                <Chip size="small" label={isBiddingJob ? 'Bidding flow' : 'Application flow'} />
+                <Chip size="small" variant="outlined" label={currentJob?.category || 'Trade job'} />
+                <Chip size="small" variant="outlined" label={currentJob?.location?.city || 'Ghana'} />
+              </Stack>
+            )}
           </Box>
         )}
 
         <Paper
           elevation={0}
           sx={(theme) => ({
-            p: { xs: 2, md: 4 },
+            p: { xs: 1.5, md: 4 },
             border: `1px solid ${theme.palette.divider}`,
-            borderRadius: 2,
+            borderRadius: { xs: 2.5, md: 2 },
           })}
           component="form"
+          id="job-application-form"
           onSubmit={handleSubmit}
         >
           <Typography variant="h6" fontWeight={700} gutterBottom>
             {isBiddingJob ? 'Place Your Bid' : 'Your Application'}
           </Typography>
-          <Divider sx={{ mb: 3 }} />
+          <Divider sx={{ mb: { xs: 1.5, md: 3 } }} />
 
           {error && (
             <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
@@ -292,16 +305,16 @@ const JobApplicationPage = () => {
               <TextField
                 label="Why are you the right person for this job?"
                 multiline
-                rows={5}
+                rows={isMobile ? 4 : 5}
                 fullWidth
                 required
                 value={coverLetter}
                 onChange={(e) => setCoverLetter(e.target.value)}
                 placeholder="Share your experience, why you are a good fit, and when you can start."
                 inputProps={{ maxLength: 1000 }}
-                helperText={`${coverLetter.length}/1000 characters. Keep it clear and short.`}
+                helperText={`${coverLetter.length}/1000 characters`}
                 disabled={submitting || success}
-                sx={{ mb: 3 }}
+                sx={{ mb: { xs: 2, md: 3 } }}
               />
 
               {/* Bid amount — only for bidding jobs */}
@@ -320,10 +333,10 @@ const JobApplicationPage = () => {
                   disabled={submitting || success}
                   helperText={
                     currentJob?.bidding?.minBidAmount
-                      ? `Minimum bid: GH₵${Number(currentJob.bidding.minBidAmount).toLocaleString()}.`
+                      ? `Minimum bid: ${formatGhanaCurrency(currentJob.bidding.minBidAmount)}.`
                       : undefined
                   }
-                  sx={{ mb: 3 }}
+                  sx={{ mb: { xs: 2, md: 3 } }}
                 />
               )}
 
@@ -341,12 +354,12 @@ const JobApplicationPage = () => {
                   inputProps={{ min: 0, step: 0.01 }}
                   disabled={submitting || success}
                   helperText="Leave blank to accept the posted rate."
-                  sx={{ mb: 3 }}
+                  sx={{ mb: { xs: 2, md: 3 } }}
                 />
               )}
 
               {!isBiddingJob && (
-                <Box sx={{ mb: 3 }}>
+                <Box sx={{ mb: { xs: 2, md: 3 } }}>
                   <Button component="label" variant="outlined" startIcon={<AttachFileIcon />}>
                     Attach work samples or proof
                     <input hidden multiple type="file" aria-label="Attach work samples or proof" accept="image/*,video/*,.pdf,.doc,.docx,.txt" onChange={handleAttachmentChange} />
@@ -369,7 +382,7 @@ const JobApplicationPage = () => {
                 </Box>
               )}
 
-              <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+              <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 2, justifyContent: 'flex-end' }}>
                 <Button
                   variant="outlined"
                   onClick={() => navigate(`/jobs/${jobId}`)}
@@ -396,8 +409,54 @@ const JobApplicationPage = () => {
             </>
           )}
         </Paper>
+
+        {!success && isMobile && (
+          <Box
+            sx={{
+              position: 'fixed',
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 1300,
+              p: 1,
+              pb: 'calc(8px + env(safe-area-inset-bottom, 0px))',
+              bgcolor: 'background.paper',
+              borderTop: '1px solid',
+              borderColor: 'divider',
+              display: 'grid',
+              gridTemplateColumns: '1fr 1.2fr',
+              gap: 1,
+            }}
+          >
+            <Button
+              variant="outlined"
+              onClick={() => navigate(`/jobs/${jobId}`)}
+              disabled={submitting}
+              sx={{ minHeight: 44 }}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              form="job-application-form"
+              variant="contained"
+              color="secondary"
+              startIcon={submitting ? <CircularProgress size={18} color="inherit" /> : <SendIcon />}
+              disabled={submitting || success}
+              sx={{ minHeight: 44, fontWeight: 700 }}
+            >
+              {submitting
+                ? isBiddingJob
+                  ? 'Sending Bid…'
+                  : 'Sending…'
+                : isBiddingJob
+                  ? 'Send Bid'
+                  : 'Send Application'}
+            </Button>
+          </Box>
+        )}
       </Container>
-    </>
+    </PageCanvas>
   );
 };
 

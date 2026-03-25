@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import {
-  Box, Paper, Typography, TextField, Button, Grid, CircularProgress, Alert, Divider, Card, CardContent, Chip, IconButton, InputAdornment, MenuItem, Stepper, Step, StepLabel, useTheme, Accordion, AccordionSummary, AccordionDetails, List, ListItem, ListItemText, FormHelperText } from '@mui/material';
+  Box, Paper, Typography, TextField, Button, Grid, CircularProgress, Alert, Divider, Card, CardContent, Chip, IconButton, InputAdornment, MenuItem, Stepper, Step, StepLabel, useTheme, Accordion, AccordionSummary, AccordionDetails, List, ListItem, ListItemText, FormHelperText, LinearProgress,
+} from '@mui/material';
 import { styled } from '@mui/material/styles';
 import {
   Send as SendIcon,
@@ -25,12 +26,16 @@ import {
 } from '../../hooks/useJobsQuery';
 import fileUploadService from '../../../common/services/fileUploadService';
 import { useBreakpointDown } from '@/hooks/useResponsive';
+import { formatGhanaCurrency } from '@/utils/formatters';
 
 // Styled components
 const ApplicationPaper = styled(Paper)(({ theme }) => ({
   borderRadius: theme.shape.borderRadius * 2,
   boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
   overflow: 'hidden',
+  [theme.breakpoints.down('sm')]: {
+    borderRadius: theme.shape.borderRadius * 1.25,
+  },
 }));
 
 const JobInfoCard = styled(Card)(({ theme }) => ({
@@ -267,7 +272,7 @@ function JobApplication() {
           if (
             totalMilestoneAmount !== parseFloat(applicationData.proposedBudget)
           ) {
-            errors.milestones = `Milestone amounts should total to the proposed budget (${applicationData.proposedBudget} ${applicationData.currency})`;
+            errors.milestones = `Milestone amounts should total to the proposed budget (${formatGhanaCurrency(applicationData.proposedBudget)})`;
           }
         }
         break;
@@ -434,11 +439,11 @@ function JobApplication() {
   }
 
   return (
-    <Box sx={{ py: 3 }}>
+    <Box sx={{ py: { xs: 1.5, sm: 3 }, pb: { xs: success ? 2 : 11, sm: 3 } }}>
       <Button
         startIcon={<ArrowBackIcon />}
         onClick={() => navigate(`/jobs/${jobId}`)}
-        sx={{ mb: 3 }}
+        sx={{ mb: { xs: 1.25, sm: 3 } }}
       >
         Back to Job Details
       </Button>
@@ -449,6 +454,7 @@ function JobApplication() {
         gutterBottom
         fontWeight={700}
         color="primary"
+        sx={{ fontSize: { xs: '1.3rem', sm: '2rem' } }}
       >
         Apply for Job
       </Typography>
@@ -457,23 +463,39 @@ function JobApplication() {
         {/* Stepper */}
         <Box
           sx={{
-            p: 3,
-            pb: 2,
+            p: { xs: 1.25, sm: 3 },
+            pb: { xs: 1.25, sm: 2 },
             bgcolor: theme.palette.background.default,
             borderBottom: '1px solid',
             borderColor: theme.palette.divider,
           }}
         >
-          <Stepper activeStep={activeStep} orientation={isMobile ? 'vertical' : 'horizontal'} {...(!isMobile && { alternativeLabel: true })}>
-            {steps.map((label) => (
-              <Step key={label}>
-                <StepLabel>{label}</StepLabel>
-              </Step>
-            ))}
-          </Stepper>
+          {isMobile ? (
+            <Box>
+              <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700 }}>
+                Step {activeStep + 1} of {steps.length}
+              </Typography>
+              <Typography variant="body2" sx={{ color: 'text.primary', fontWeight: 700, mb: 0.75 }}>
+                {steps[activeStep]}
+              </Typography>
+              <LinearProgress
+                variant="determinate"
+                value={((activeStep + 1) / steps.length) * 100}
+                sx={{ height: 6, borderRadius: 99 }}
+              />
+            </Box>
+          ) : (
+            <Stepper activeStep={activeStep} alternativeLabel>
+              {steps.map((label) => (
+                <Step key={label}>
+                  <StepLabel>{label}</StepLabel>
+                </Step>
+              ))}
+            </Stepper>
+          )}
         </Box>
 
-        <Box sx={{ p: 3 }}>
+        <Box sx={{ p: { xs: 1.5, sm: 3 } }}>
           {/* Step content */}
           {activeStep === 0 && (
             <Box>
@@ -518,10 +540,9 @@ function JobApplication() {
                           <strong>Budget:</strong>{' '}
                           {job?.budget
                             ? typeof job.budget === 'object'
-                              ? `${job?.currency || 'GH?'} ${job.budget?.min || 0} - ${job.budget?.max || 0}`
-                              : `${job?.currency || 'GH?'} ${job.budget}`
+                              ? `${formatGhanaCurrency(job.budget?.min || 0)} - ${formatGhanaCurrency(job.budget?.max || 0)}`
+                              : formatGhanaCurrency(job.budget)
                             : 'Not specified'}{' '}
-                          {job?.currency}
                         </Typography>
                       </Box>
 
@@ -595,7 +616,7 @@ function JobApplication() {
                     placeholder="Tell the hirer about your experience and why you are right for this job..."
                     fullWidth
                     multiline
-                    rows={6}
+                    rows={isMobile ? 4 : 6}
                     value={applicationData.coverLetter}
                     onChange={handleInputChange}
                     error={!!formErrors.coverLetter}
@@ -828,7 +849,7 @@ function JobApplication() {
                           </Typography>
                           <Box>
                             <Chip
-                              label={`${milestone.amount} ${applicationData.currency}`}
+                              label={formatGhanaCurrency(milestone.amount)}
                               color="primary"
                               size="small"
                               sx={{ mr: 1 }}
@@ -886,11 +907,10 @@ function JobApplication() {
                       fontWeight={600}
                       color="primary"
                     >
-                      {applicationData.milestoneProposal.reduce(
+                      {formatGhanaCurrency(applicationData.milestoneProposal.reduce(
                         (sum, m) => sum + parseFloat(m.amount || 0),
                         0,
-                      )}{' '}
-                      {applicationData.currency}
+                      ))}
                     </Typography>
                   </Box>
                 </Box>
@@ -933,8 +953,7 @@ function JobApplication() {
                     <Grid item xs={12} sm={6}>
                       <Typography variant="body2">
                         <strong>Proposed Budget:</strong>{' '}
-                        {applicationData.proposedBudget}{' '}
-                        {applicationData.currency}
+                        {formatGhanaCurrency(applicationData.proposedBudget)}
                       </Typography>
                     </Grid>
                     <Grid item xs={12} sm={6}>
@@ -967,7 +986,7 @@ function JobApplication() {
                             }
                           >
                             <ListItemText
-                              primary={`${index + 1}. ${milestone.title} (${milestone.amount} ${applicationData.currency})`}
+                              primary={`${index + 1}. ${milestone.title} (${formatGhanaCurrency(milestone.amount)})`}
                               secondary={milestone.description}
                             />
                           </ListItem>
@@ -1022,7 +1041,7 @@ function JobApplication() {
           )}
 
           {/* Navigation buttons */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
+          <Box sx={{ display: { xs: 'none', sm: 'flex' }, justifyContent: 'space-between', mt: 4 }}>
             <Button
               variant="outlined"
               onClick={handleBack}
@@ -1062,6 +1081,50 @@ function JobApplication() {
           </Box>
         </Box>
       </ApplicationPaper>
+
+      {isMobile && !success && (
+        <Box
+          sx={{
+            position: 'fixed',
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 1300,
+            p: 1,
+            pb: 'calc(8px + env(safe-area-inset-bottom, 0px))',
+            bgcolor: 'background.paper',
+            borderTop: '1px solid',
+            borderColor: 'divider',
+            display: 'grid',
+            gridTemplateColumns: '1fr 1.2fr',
+            gap: 1,
+          }}
+        >
+          <Button
+            variant="outlined"
+            onClick={handleBack}
+            disabled={activeStep === 0 || submitting}
+            sx={{ minHeight: 44 }}
+          >
+            Back
+          </Button>
+          {activeStep === steps.length - 1 ? (
+            <Button
+              variant="contained"
+              onClick={handleSubmit}
+              disabled={submitting}
+              endIcon={submitting ? <CircularProgress size={18} color="inherit" /> : <SendIcon />}
+              sx={{ minHeight: 44, fontWeight: 700 }}
+            >
+              {submitting ? 'Submitting...' : 'Submit'}
+            </Button>
+          ) : (
+            <Button variant="contained" onClick={handleNext} sx={{ minHeight: 44, fontWeight: 700 }}>
+              Next
+            </Button>
+          )}
+        </Box>
+      )}
     </Box>
   );
 }

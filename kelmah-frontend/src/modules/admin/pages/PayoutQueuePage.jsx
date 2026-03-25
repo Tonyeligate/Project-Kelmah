@@ -10,6 +10,7 @@ import SendIcon from '@mui/icons-material/Send';
 import { Helmet } from 'react-helmet-async';
 import { adminService } from '../services/adminService';
 import { useBreakpointDown } from '@/hooks/useResponsive';
+import PageCanvas from '@/modules/common/components/PageCanvas';
 
 const STATUS_COLOR_MAP = {
   queued: 'warning',
@@ -102,6 +103,7 @@ const EnqueueForm = ({ onSubmitted }) => {
 const PayoutQueuePage = () => {
   const theme = useTheme();
   const isMobile = useBreakpointDown('md');
+  const isCompactMobile = useBreakpointDown('sm');
   const navigate = useNavigate();
   const { user, isAuthenticated } = useSelector((state) => state.auth);
 
@@ -149,16 +151,28 @@ const PayoutQueuePage = () => {
   };
 
   return (
-    <Container maxWidth="xl" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 1, sm: 2 } }}>
+    <PageCanvas disableContainer sx={{ pt: { xs: 1, sm: 4 }, pb: { xs: 10, md: 6 } }}>
+    <Container maxWidth="xl" sx={{ py: { xs: 1, sm: 4 }, px: { xs: 0.75, sm: 2 } }}>
       <Helmet><title>Payout Queue | Kelmah</title></Helmet>
-      <Typography variant="h4" fontWeight="bold" gutterBottom>
-        Payout Queue
-      </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        Queue payouts, run a payout batch, and review payout progress in one place.
-      </Typography>
+      <Box
+        sx={{
+          position: { xs: 'sticky', md: 'static' },
+          top: { xs: 56, md: 'auto' },
+          zIndex: { xs: 10, md: 'auto' },
+          py: { xs: 0.5, md: 0 },
+          mb: { xs: 1.5, md: 0 },
+          backgroundColor: { xs: 'background.default', md: 'transparent' },
+        }}
+      >
+        <Typography variant={isCompactMobile ? 'h5' : 'h4'} fontWeight="bold" gutterBottom sx={{ lineHeight: 1.1 }}>
+          Payout Queue
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2, fontSize: { xs: '0.8rem', sm: '0.9rem' } }}>
+          Queue payouts, run a payout batch, and review payout progress in one place.
+        </Typography>
+      </Box>
 
-      <Accordion sx={{ mb: 3, borderRadius: 2, '&:before': { display: 'none' } }} disableGutters>
+      <Accordion sx={{ mb: 2, borderRadius: 2, '&:before': { display: 'none' } }} disableGutters>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
           <Typography fontWeight={600}>Queue a Payout (Admin)</Typography>
         </AccordionSummary>
@@ -167,7 +181,7 @@ const PayoutQueuePage = () => {
         </AccordionDetails>
       </Accordion>
 
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 3, alignItems: 'center' }}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: { xs: 0.75, sm: 2 }, mb: 2, alignItems: 'center' }}>
         <FormControl size="small" sx={{ minWidth: 140 }}>
           <InputLabel>Status</InputLabel>
           <Select value={status} label="Status" onChange={(event) => setStatus(event.target.value)} inputProps={{ 'aria-label': 'Filter payouts by status' }}>
@@ -178,12 +192,12 @@ const PayoutQueuePage = () => {
             <MenuItem value="failed">Failed</MenuItem>
           </Select>
         </FormControl>
-        <TextField size="small" label="Page" type="number" value={page} onChange={(event) => { const next = parseInt(event.target.value, 10); if (!Number.isNaN(next) && next >= 1) setPage(next); }} inputProps={{ min: 1, 'aria-label': 'Payout page number' }} sx={{ width: 100 }} />
-        <TextField size="small" label="Limit" type="number" value={limit} onChange={(event) => { const next = parseInt(event.target.value, 10); if (!Number.isNaN(next) && next >= 1 && next <= 100) setLimit(next); }} inputProps={{ min: 1, max: 100, 'aria-label': 'Payouts per page' }} sx={{ width: 100 }} />
-        <Button variant="contained" startIcon={processing ? <CircularProgress size={16} color="inherit" /> : <PlayArrowIcon />} onClick={onProcessBatch} disabled={processing} sx={{ minHeight: 44 }}>
+        <TextField size="small" label="Page" type="number" value={page} onChange={(event) => { const next = parseInt(event.target.value, 10); if (!Number.isNaN(next) && next >= 1) setPage(next); }} inputProps={{ min: 1, 'aria-label': 'Payout page number' }} sx={{ width: { xs: 88, sm: 100 } }} />
+        <TextField size="small" label="Limit" type="number" value={limit} onChange={(event) => { const next = parseInt(event.target.value, 10); if (!Number.isNaN(next) && next >= 1 && next <= 100) setLimit(next); }} inputProps={{ min: 1, max: 100, 'aria-label': 'Payouts per page' }} sx={{ width: { xs: 88, sm: 100 } }} />
+        <Button variant="contained" startIcon={processing ? <CircularProgress size={16} color="inherit" /> : <PlayArrowIcon />} onClick={onProcessBatch} disabled={processing} sx={{ minHeight: 42, display: { xs: 'none', sm: 'inline-flex' } }}>
           {processing ? 'Processing...' : 'Run Batch'}
         </Button>
-        <Button variant="outlined" startIcon={loading ? <CircularProgress size={16} color="inherit" /> : <RefreshIcon />} onClick={load} disabled={loading} sx={{ minHeight: 44 }}>
+        <Button variant="outlined" startIcon={loading ? <CircularProgress size={16} color="inherit" /> : <RefreshIcon />} onClick={load} disabled={loading} sx={{ minHeight: 42, display: { xs: 'none', sm: 'inline-flex' } }}>
           Refresh
         </Button>
       </Box>
@@ -263,7 +277,31 @@ const PayoutQueuePage = () => {
           </Table>
         </TableContainer>
       )}
+      <Paper
+        elevation={8}
+        sx={(theme) => ({
+          display: { xs: 'flex', sm: 'none' },
+          position: 'fixed',
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: theme.zIndex.appBar + 2,
+          px: 1,
+          py: 1,
+          gap: 1,
+          borderTop: `1px solid ${theme.palette.divider}`,
+          backgroundColor: theme.palette.background.paper,
+        })}
+      >
+        <Button fullWidth variant="outlined" color="secondary" sx={{ minHeight: 42 }} onClick={load} disabled={loading} startIcon={loading ? <CircularProgress size={14} color="inherit" /> : <RefreshIcon />}>
+          Refresh
+        </Button>
+        <Button fullWidth variant="contained" color="secondary" sx={{ minHeight: 42 }} onClick={onProcessBatch} disabled={processing} startIcon={processing ? <CircularProgress size={14} color="inherit" /> : <PlayArrowIcon />}>
+          {processing ? 'Running...' : 'Run Batch'}
+        </Button>
+      </Paper>
     </Container>
+    </PageCanvas>
   );
 };
 

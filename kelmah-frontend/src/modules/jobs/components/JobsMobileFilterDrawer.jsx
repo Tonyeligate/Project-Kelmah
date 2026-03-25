@@ -24,6 +24,7 @@ import {
   Close as CloseIcon,
   Search as SearchIcon,
 } from '@mui/icons-material';
+import { formatGhanaCurrency } from '@/utils/formatters';
 
 
 
@@ -94,10 +95,12 @@ const JobsMobileFilterDrawer = ({
       onClose={onClose}
       PaperProps={{
         sx: {
-          borderTopLeftRadius: 16,
-          borderTopRightRadius: 16,
-          maxHeight: '85vh',
-          bgcolor: 'background.paper',
+          borderTopLeftRadius: 20,
+          borderTopRightRadius: 20,
+          maxHeight: '88vh',
+          bgcolor: 'var(--k-bg-surface)',
+          border: '1px solid var(--k-accent-border)',
+          borderBottom: 'none',
         },
       }}
     >
@@ -107,16 +110,16 @@ const JobsMobileFilterDrawer = ({
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          p: 2,
+          p: 1.5,
           borderBottom: '1px solid',
-          borderColor: 'divider',
+          borderColor: 'var(--k-accent-border)',
         }}
       >
         <Box sx={{ minWidth: 0, pr: 1 }}>
-          <Typography variant="h6" fontWeight="bold" sx={{ wordBreak: 'break-word' }}>
+          <Typography variant="h6" fontWeight="bold" sx={{ wordBreak: 'break-word', fontSize: '1rem', color: 'var(--k-text-primary)' }}>
             Filter & Sort Jobs
           </Typography>
-          <Typography variant="caption" color="text.secondary">
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.25 }}>
             Choose simple filters to find suitable jobs faster.
           </Typography>
         </Box>
@@ -140,12 +143,12 @@ const JobsMobileFilterDrawer = ({
       {/* Filter Content */}
       <Box
         sx={{
-          p: 2,
+          p: 1.5,
           overflowY: 'auto',
-          maxHeight: 'calc(85vh - 140px)',
+          maxHeight: 'calc(88vh - 128px)',
         }}
       >
-        <Stack spacing={3}>
+        <Stack spacing={2.25}>
           {/* Search Input */}
           <TextField
             label="Search jobs, skills, or company"
@@ -244,10 +247,10 @@ const JobsMobileFilterDrawer = ({
               }}
             >
               <Typography variant="caption" color="text.secondary">
-                GH₵ {filters.salaryRange[0].toLocaleString()}
+                {formatGhanaCurrency(filters.salaryRange[0])}
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                GH₵ {filters.salaryRange[1].toLocaleString()}
+                {formatGhanaCurrency(filters.salaryRange[1])}
               </Typography>
             </Box>
           </Box>
@@ -257,9 +260,9 @@ const JobsMobileFilterDrawer = ({
       {/* Action Buttons */}
       <Box
         sx={{
-          p: 2,
+          p: 1.25,
           borderTop: '1px solid',
-          borderColor: 'divider',
+          borderColor: 'var(--k-accent-border)',
           display: 'flex',
           gap: 1,
         }}

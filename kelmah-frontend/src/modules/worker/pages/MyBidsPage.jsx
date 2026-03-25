@@ -58,6 +58,9 @@ import {
 import bidApi from '../../jobs/services/bidService';
 import Toast from '../../common/components/common/Toast';
 import { createFeatureLogger } from '@/modules/common/utils/devLogger';
+import { currencyFormatter } from '@/modules/common/utils/formatters';
+import { useBreakpointDown } from '@/hooks/useResponsive';
+import PageCanvas from '@/modules/common/components/PageCanvas';
 
 const isAbortError = (error) =>
   error?.name === 'AbortError' ||
@@ -77,14 +80,14 @@ const STATUS_CONFIG = {
   expired: { label: 'Expired', color: 'default', icon: <ExpiredIcon fontSize="small" /> },
 };
 
-const BidCard = ({ bid, onWithdraw, onViewJob }) => {
+const BidCard = ({ bid, onWithdraw, onViewJob, isMobile }) => {
   const theme = useTheme();
   const status = STATUS_CONFIG[bid.status] || STATUS_CONFIG.pending;
   const job = bid.job || {};
 
   const formatAmount = (amount) => {
     const num = Number(amount);
-    return Number.isFinite(num) ? `GHS ${num.toLocaleString()}` : 'N/A';
+    return Number.isFinite(num) ? currencyFormatter.format(num) : 'N/A';
   };
 
   const formatDate = (date) => {
@@ -136,6 +139,7 @@ const BidCard = ({ bid, onWithdraw, onViewJob }) => {
               variant="subtitle1"
               fontWeight={700}
               sx={{
+                fontSize: { xs: '0.95rem', md: '1rem' },
                 whiteSpace: { xs: 'normal', sm: 'nowrap' },
                 display: '-webkit-box',
                 WebkitLineClamp: { xs: 2, sm: 1 },
@@ -156,13 +160,14 @@ const BidCard = ({ bid, onWithdraw, onViewJob }) => {
             color={status.color}
             size="small"
             variant="outlined"
+            sx={{ height: { xs: 22, md: 24 }, '& .MuiChip-label': { px: 0.8, fontSize: { xs: '0.66rem', md: '0.75rem' }, fontWeight: 700 } }}
           />
         </Stack>
 
-        <Divider sx={{ my: 1.5 }} />
+        <Divider sx={{ my: { xs: 1, md: 1.5 } }} />
 
         {/* Bid details row */}
-        <Stack direction="row" spacing={3} flexWrap="wrap" useFlexGap>
+        <Stack direction="row" spacing={isMobile ? 1.25 : 3} flexWrap="wrap" useFlexGap>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             <MoneyIcon fontSize="small" color="primary" />
             <Typography variant="body2" fontWeight={600}>
@@ -200,7 +205,7 @@ const BidCard = ({ bid, onWithdraw, onViewJob }) => {
         </Stack>
 
         {/* Cover letter preview */}
-        {bid.coverLetter && (
+        {bid.coverLetter && !isMobile && (
           <Typography
             variant="body2"
             color="text.secondary"
@@ -218,13 +223,13 @@ const BidCard = ({ bid, onWithdraw, onViewJob }) => {
         )}
 
         {/* Actions */}
-        <Stack direction="row" justifyContent="flex-end" spacing={1} sx={{ mt: 1.5 }}>
+        <Stack direction="row" justifyContent="flex-end" spacing={1} sx={{ mt: { xs: 1, md: 1.5 } }}>
           <Button
             size="small"
             variant="text"
             endIcon={<ArrowIcon />}
             onClick={() => onViewJob(job._id || job.id)}
-            sx={{ textTransform: 'none' }}
+            sx={{ textTransform: 'none', minHeight: 36, px: 1.25 }}
           >
             View Job
           </Button>
@@ -235,7 +240,7 @@ const BidCard = ({ bid, onWithdraw, onViewJob }) => {
               color="warning"
               startIcon={<WithdrawIcon />}
               onClick={() => onWithdraw(bid)}
-              sx={{ textTransform: 'none' }}
+              sx={{ textTransform: 'none', minHeight: 36, px: 1.25 }}
             >
               Withdraw
             </Button>
@@ -309,6 +314,7 @@ const BidCardSkeleton = () => (
 const MyBidsPage = () => {
   const theme = useTheme();
   const navigate = useNavigate();
+  const isMobile = useBreakpointDown('md');
   const { user: rawUser } = useSelector((state) => state.auth);
   const user = normalizeUser(rawUser);
 
@@ -427,18 +433,19 @@ const MyBidsPage = () => {
   }), [bids]);
 
   return (
-    <Container maxWidth="md" sx={{ py: { xs: 2, md: 4 } }}>
+    <PageCanvas disableContainer>
+      <Container maxWidth="md" sx={{ py: { xs: 1.25, md: 4 } }}>
       <Helmet>
         <title>My Bids | Kelmah</title>
       </Helmet>
 
       {/* Page header */}
-      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
+      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: { xs: 1.25, md: 3 }, position: { xs: 'sticky', md: 'static' }, top: { xs: 66, md: 'auto' }, zIndex: 9, py: { xs: 0.5, md: 0 }, bgcolor: { xs: 'background.default', md: 'transparent' } }}>
         <Box>
-          <Typography variant="h5" fontWeight={700}>
+          <Typography variant="h5" fontWeight={700} sx={{ fontSize: { xs: '1.15rem', md: '1.5rem' } }}>
             My Bids
           </Typography>
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="body2" color="text.secondary" sx={{ display: { xs: 'none', md: 'block' } }}>
             Track and manage your submitted bids
           </Typography>
         </Box>
@@ -463,7 +470,15 @@ const MyBidsPage = () => {
       </Stack>
 
       {/* Stats summary */}
-      <BidStatsSummary stats={stats} />
+      {!isMobile && <BidStatsSummary stats={stats} />}
+
+      {isMobile && (
+        <Stack direction="row" spacing={0.75} sx={{ mb: 1.25, overflowX: 'auto', pb: 0.25, scrollbarWidth: 'none', '&::-webkit-scrollbar': { display: 'none' } }}>
+          <Chip size="small" label={`Total ${bidCounts.all}`} sx={{ fontWeight: 700 }} />
+          <Chip size="small" variant="outlined" label={`Pending ${bidCounts.pending}`} sx={{ fontWeight: 700 }} />
+          <Chip size="small" variant="outlined" label={`Accepted ${bidCounts.accepted}`} sx={{ fontWeight: 700 }} />
+        </Stack>
+      )}
 
       {/* Filter tabs */}
       <Tabs
@@ -472,7 +487,12 @@ const MyBidsPage = () => {
         variant="scrollable"
         scrollButtons="auto"
         sx={{
-          mb: 2,
+          mb: 1.25,
+          position: { xs: 'sticky', md: 'static' },
+          top: { xs: 68, md: 'auto' },
+          zIndex: 8,
+          bgcolor: { xs: 'background.default', md: 'transparent' },
+          py: { xs: 0.5, md: 0 },
           '& .MuiTab-root': { textTransform: 'none', minHeight: 40, fontWeight: 600 },
         }}
       >
@@ -546,6 +566,7 @@ const MyBidsPage = () => {
             bid={bid}
             onWithdraw={handleWithdrawOpen}
             onViewJob={handleViewJob}
+            isMobile={isMobile}
           />
         ))}
 
@@ -561,7 +582,7 @@ const MyBidsPage = () => {
         <DialogContent>
           <DialogContentText sx={{ mb: 2 }}>
             Are you sure you want to withdraw your bid of{' '}
-            <strong>GHS {withdrawDialog.bid?.bidAmount?.toLocaleString()}</strong>? This action
+            <strong>{currencyFormatter.format(withdrawDialog.bid?.bidAmount || 0)}</strong>? This action
             cannot be undone.
           </DialogContentText>
           <TextField
@@ -595,7 +616,8 @@ const MyBidsPage = () => {
         severity={toast.severity}
         onClose={() => setToast((prev) => ({ ...prev, open: false }))}
       />
-    </Container>
+      </Container>
+    </PageCanvas>
   );
 };
 

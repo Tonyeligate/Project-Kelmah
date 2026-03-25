@@ -22,6 +22,7 @@ import {
 } from '@mui/icons-material';
 import bidApi from '../services/bidService';
 import { useBreakpointDown } from '@/hooks/useResponsive';
+import { formatGhanaCurrency } from '@/utils/formatters';
 
 const BidSubmissionForm = ({ open, onClose, job }) => {
   const theme = useTheme();
@@ -60,7 +61,7 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
       return;
     }
     if (bidAmount < minBid || bidAmount > maxBid) {
-      setError(`Bid amount must be between GH₵ ${minBid} and GH₵ ${maxBid}.`);
+      setError(`Bid amount must be between ${formatGhanaCurrency(minBid)} and ${formatGhanaCurrency(maxBid)}.`);
       return;
     }
 
@@ -100,7 +101,7 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
         </DialogTitle>
         <DialogContent sx={{ bgcolor: 'background.paper', pt: 3 }}>
           <Alert severity="success" sx={{ mb: 2 }}>
-            Your bid of <strong>GH₵ {bidAmount.toLocaleString()}</strong> has been
+              Your bid of <strong>{formatGhanaCurrency(bidAmount)}</strong> has been
             submitted with your proposed timeline and availability.
           </Alert>
           <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1 }}>
@@ -162,7 +163,7 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
               disabled={loading}
               startIcon={loading ? <CircularProgress size={14} /> : <GavelIcon />}
             >
-              {loading ? 'Submitting…' : `GH₵ ${bidAmount.toLocaleString()}`}
+              {loading ? 'Submitting…' : formatGhanaCurrency(bidAmount)}
             </Button>
           </Toolbar>
         </AppBar>
@@ -216,7 +217,7 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
             <Chip
               size="small"
               icon={<AttachMoney sx={{ fontSize: 14 }} />}
-              label={`GH₵ ${minBid.toLocaleString()} - ${maxBid.toLocaleString()}`}
+              label={`${formatGhanaCurrency(minBid)} - ${formatGhanaCurrency(maxBid)}`}
               sx={{ bgcolor: alpha(theme.palette.primary.main, 0.15), color: 'primary.main' }}
             />
             <Chip
@@ -230,7 +231,7 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
 
         {/* Bid amount slider */}
         <Typography variant="subtitle2" sx={{ color: 'primary.main', mb: 1 }}>
-          Your Bid Amount (GH₵)
+          Your Bid Amount
         </Typography>
         <Box sx={{ px: 1, mb: 1 }}>
           <Slider
@@ -240,7 +241,7 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
             max={maxBid}
             step={50}
             valueLabelDisplay="on"
-            valueLabelFormat={(v) => `GH₵ ${v.toLocaleString()}`}
+            valueLabelFormat={(v) => formatGhanaCurrency(v)}
             sx={{
               color: theme.palette.primary.main,
               '& .MuiSlider-valueLabel': { bgcolor: theme.palette.primary.main, color: theme.palette.primary.contrastText },
@@ -377,7 +378,7 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
             startIcon={loading ? <CircularProgress size={16} /> : <GavelIcon />}
             color="primary"
           >
-            {loading ? 'Submitting...' : `Submit Bid — GH₵ ${bidAmount.toLocaleString()}`}
+            {loading ? 'Submitting...' : `Submit Bid — ${formatGhanaCurrency(bidAmount)}`}
           </Button>
         </DialogActions>
       )}

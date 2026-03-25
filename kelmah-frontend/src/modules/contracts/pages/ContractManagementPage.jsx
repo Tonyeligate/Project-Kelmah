@@ -23,6 +23,7 @@ import { useAuth } from '../../auth/hooks/useAuth';
 import { Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import ContractCard from '../components/common/ContractCard';
+import PageCanvas from '@/modules/common/components/PageCanvas';
 
 const ContractManagementPage = () => {
   const { contracts, loading, error } = useContracts();
@@ -56,6 +57,7 @@ const ContractManagementPage = () => {
   }, [contracts, tabValue, loading]);
 
   return (
+    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
     <Container
       maxWidth="xl"
       sx={{ py: 4, bgcolor: 'background.default', color: 'text.primary' }}
@@ -217,6 +219,7 @@ const ContractManagementPage = () => {
         </Grid>
       )}
     </Container>
+    </PageCanvas>
   );
 };
 

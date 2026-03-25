@@ -388,7 +388,7 @@ const HeroFiltersSection = ({
                         variant="body2"
                         sx={{ mb: 1, color: '#D4AF37', fontWeight: 'bold' }}
                       >
-                        Salary Range (GH₵)
+                        Salary Range
                       </Typography>
                       <Slider
                         value={budgetRange}

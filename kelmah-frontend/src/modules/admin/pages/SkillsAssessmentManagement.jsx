@@ -19,6 +19,8 @@ import {
   Tab,
   Tabs,
   Typography,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -28,6 +30,7 @@ import {
 import { Helmet } from 'react-helmet-async';
 import ResponsiveDataView from '../../../components/common/ResponsiveDataView';
 import { adminService } from '../services/adminService';
+import PageCanvas from '@/modules/common/components/PageCanvas';
 
 const TabPanel = ({ children, value, index }) => (
   <div role="tabpanel" hidden={value !== index} id={`skills-admin-tabpanel-${index}`} aria-labelledby={`skills-admin-tab-${index}`}>
@@ -36,6 +39,9 @@ const TabPanel = ({ children, value, index }) => (
 );
 
 const SkillsAssessmentManagement = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   const navigate = useNavigate();
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const [tabValue, setTabValue] = useState(0);
@@ -87,22 +93,25 @@ const SkillsAssessmentManagement = () => {
 
   if (!isAuthenticated || (user?.role !== 'admin' && user?.userType !== 'admin')) {
     return (
-      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-        <Alert severity="error">Access denied. Admin privileges required.</Alert>
-      </Container>
+      <PageCanvas disableContainer sx={{ pt: { xs: 1, sm: 4 }, pb: { xs: 4, md: 6 } }}>
+        <Container maxWidth="lg" sx={{ py: 4 }}>
+          <Alert severity="error">Access denied. Admin privileges required.</Alert>
+        </Container>
+      </PageCanvas>
     );
   }
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+    <PageCanvas disableContainer sx={{ pt: { xs: 1, sm: 4 }, pb: { xs: 10, md: 6 } }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 1, sm: 4 }, px: { xs: 0.75, sm: 2 } }}>
       <Helmet><title>Skills Assessment Management | Kelmah</title></Helmet>
-      <Typography variant="h4" gutterBottom>
+      <Typography variant={isMobile ? 'h5' : 'h4'} gutterBottom sx={{ lineHeight: 1.1 }}>
         Skills Assessment Management
       </Typography>
 
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
-      <Paper sx={{ p: 3 }}>
+      <Paper sx={{ p: { xs: 1.5, sm: 3 } }}>
         <Tabs
           value={tabValue}
           onChange={(_, nextValue) => setTabValue(nextValue)}
@@ -110,6 +119,7 @@ const SkillsAssessmentManagement = () => {
           textColor="primary"
           variant="scrollable"
           scrollButtons="auto"
+          sx={{ '& .MuiTab-root': { minHeight: { xs: 40, sm: 48 }, px: { xs: 1, sm: 2 }, py: { xs: 0.5, sm: 1.25 } } }}
         >
           <Tab label="Overview" icon={<AssessmentIcon />} />
           <Tab label="Test Management" icon={<SchoolIcon />} />
@@ -160,9 +170,9 @@ const SkillsAssessmentManagement = () => {
         </TabPanel>
 
         <TabPanel value={tabValue} index={1}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-            <Typography variant="h6">Assessment Test Operations</Typography>
-            <Button variant="contained" startIcon={<AddIcon />} onClick={() => setOpenCreateDialog(true)}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, gap: 1, flexWrap: 'wrap' }}>
+            <Typography variant={isMobile ? 'subtitle1' : 'h6'}>Assessment Test Operations</Typography>
+            <Button variant="contained" startIcon={<AddIcon />} onClick={() => setOpenCreateDialog(true)} sx={{ minHeight: 42, display: { xs: 'none', sm: 'inline-flex' } }}>
               Request New Test
             </Button>
           </Box>
@@ -243,7 +253,27 @@ const SkillsAssessmentManagement = () => {
           <Button onClick={() => setOpenCreateDialog(false)}>Close</Button>
         </DialogActions>
       </Dialog>
+      <Paper
+        elevation={8}
+        sx={(theme) => ({
+          display: { xs: 'flex', sm: 'none' },
+          position: 'fixed',
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: theme.zIndex.appBar + 2,
+          px: 1,
+          py: 1,
+          borderTop: `1px solid ${theme.palette.divider}`,
+          backgroundColor: theme.palette.background.paper,
+        })}
+      >
+        <Button fullWidth variant="contained" color="secondary" sx={{ minHeight: 42 }} startIcon={<AddIcon />} onClick={() => setOpenCreateDialog(true)}>
+          Request New Test
+        </Button>
+      </Paper>
     </Container>
+    </PageCanvas>
   );
 };
 

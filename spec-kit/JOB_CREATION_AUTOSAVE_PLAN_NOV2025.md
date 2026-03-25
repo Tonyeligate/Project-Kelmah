@@ -40,8 +40,8 @@ Response (success/error) bubbles back → JobCreationForm toggles success/error 
      - Expose `loadDraft()` to merge saved data into `reset()` on mount, `clearDraft()` after successful submission or manual discard.
 2. **Integration with `JobCreationForm`:**
    - Inject `const draft = useJobDraft({ watchAll: watch(), isDirty: formState.isDirty, userId: user?.id });` where `watch()` already exists.
-   - On mount, call `draft.load()` and `reset(savedValues)` before showing the dialog. Display a “Draft restored” snackbar when applicable.
-   - Add a “Discard Draft” text button near the footer to call `draft.clear()` + `reset(defaults)`.
+   - On mount, call `draft.load()` and `reset(savedValues)` before showing the dialog. Display a "Draft restored" snackbar when applicable.
+   - Add a "Discard Draft" text button near the footer to call `draft.clear()` + `reset(defaults)`.
 3. **Draft Metadata:**
    - Store `{ data, updatedAt, version }` so we can expire drafts (e.g., 7 days) and handle schema evolution.
 4. **Error Handling:**
@@ -52,8 +52,8 @@ Response (success/error) bubbles back → JobCreationForm toggles success/error 
    - Extract logical sections into small components (e.g., `JobDetailsSection`, `CompensationSection`, `LocationSection`, `RequirementsSection`, `BiddingSection`).
    - Use `Grid` with `xs=12` + `md=6` pairs for critical fields to reduce scroll length.
 2. **Stepper / Progress Summary:**
-   - Optional progressive disclosure using MUI Stepper (“Basics → Scope → Compensation → Review”). Each step maps to a subset of form fields while still submitting via a single payload.
-   - Display a mini checklist showing “4/6 essentials completed” (title, description, category, budget, location, skills) to guide hirers.
+   - Optional progressive disclosure using MUI Stepper ("Basics → Scope → Compensation → Review"). Each step maps to a subset of form fields while still submitting via a single payload.
+   - Display a mini checklist showing "4/6 essentials completed" (title, description, category, budget, location, skills) to guide hirers.
 3. **Persistent Footer:**
    - Keep `Submit`, `Save Draft`, and `Discard Draft` actions in a sticky footer so actions are always visible.
 4. **Backend Validation Surfacing:**

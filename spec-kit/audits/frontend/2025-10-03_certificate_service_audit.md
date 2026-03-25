@@ -16,7 +16,7 @@
   - User-service `profile.routes.js` endpoints (`/:workerId/certificates`, `/certificates/:id`, `/uploads/presign`, etc.).
   - UI consumers such as `CertificateUploader.jsx` and `WorkerProfile.jsx`.
 - **Data Contracts:**
-  - Comments advertise “normalized returns” (arrays/objects) rather than raw axios responses.
+  - Comments advertise "normalized returns" (arrays/objects) rather than raw axios responses.
   - Upload helper is expected to yield `{ url, fileName, fileSize }` once the S3 PUT succeeds.
 
 ---

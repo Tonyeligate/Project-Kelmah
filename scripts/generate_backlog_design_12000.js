@@ -4,7 +4,7 @@ const path = require('path');
 const outPath = path.join(__dirname, '../spec-kit/generated/FRONTEND_BACKLOG_12000_ITEMS_MAR19_2026.md');
 const title = 'Kelmah Frontend 12000-Item Design & Display Backlog (March 19 2026)';
 const description =
-  'This backlog focuses on visual design, layout consistency, responsive display, and polished mobile/desktop presentation that aligns with Kelmah’s mission as a trustworthy freelance marketplace.';
+  'This backlog focuses on visual design, layout consistency, responsive display, and polished mobile/desktop presentation that aligns with Kelmah's mission as a trustworthy freelance marketplace.';
 
 const categories = [
   {
@@ -17,7 +17,7 @@ const categories = [
     title: 'Design Token & Theme Consistency',
     exampleFiles: ['JobSystemTheme.js', 'ThemeProvider.jsx', 'colors.js', 'typography.js'],
     template: ({ verb, fileSample }) =>
-      `${verb} design tokens in \`${fileSample}\` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.`,
+      `${verb} design tokens in \`${fileSample}\` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.`,
   },
   {
     title: 'Iconography & Button Layout',
@@ -53,7 +53,7 @@ const categories = [
     title: 'Mobile Navigation & Gestures',
     exampleFiles: ['MobileBottomNav.jsx', 'NavDrawer.jsx', 'SwipeToAction.jsx', 'JobCard.jsx'],
     template: ({ verb, fileSample }) =>
-      `${verb} mobile navigation and gestures in \`${fileSample}\` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.`,
+      `${verb} mobile navigation and gestures in \`${fileSample}\` to ensure consistency, discoverability, and that gestures don't conflict with scroll.`,
   },
   {
     title: 'Empty & Error States',

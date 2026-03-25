@@ -85,9 +85,9 @@ Frontend reviews UI -> gateway `/api/reviews/*` -> review/rating/analytics contr
 - Added compound `Job` indexes for `{ status, bidding.bidStatus, createdAt }`, `{ status, skills, createdAt }`, and `{ status, category, createdAt }`.
 - Added atomic wallet credit/debit statics in `Wallet.js`, rewired instance helpers to use them, and moved escrow release wallet credit into the transaction session via `creditWalletInSession()`.
 - Made Vodafone webhooks fail closed when the provider bootstrap is unavailable, rounded transaction fee calculations to currency precision, rejected zero-value transactions in Joi validation, prevented milestone totals from exceeding escrow total, and moved MTN exchange rates to environment-configurable values.
-- Removed Mongo credential preview logging in the messaging service, narrowed Vercel CORS trust to project-specific patterns, enforced a 5000-character REST message cap, sanitized edited and created message content, switched REST unread increments to the atomic conversation helper, and limited the socket `onlineUsers` payload to the authenticated user’s actual conversation contacts.
+- Removed Mongo credential preview logging in the messaging service, narrowed Vercel CORS trust to project-specific patterns, enforced a 5000-character REST message cap, sanitized edited and created message content, switched REST unread increments to the atomic conversation helper, and limited the socket `onlineUsers` payload to the authenticated user's actual conversation contacts.
 - Replaced the review-service `reporters` array with structured `{ userId, reason, timestamp }` entries, stored report reasons, added anonymous-reviewer PII stripping for public review reads, and stopped returning fabricated identical per-category rating values.
-- Added moderation-time worker aggregate recomputation into `WorkerRating` documents and made review-controller ObjectId coercion compatible with both real ObjectIds and the repo’s existing contract-test string IDs.
+- Added moderation-time worker aggregate recomputation into `WorkerRating` documents and made review-controller ObjectId coercion compatible with both real ObjectIds and the repo's existing contract-test string IDs.
 - Capped worker-directory text and trade query inputs to 100 characters before regex construction.
 
 ## Validation

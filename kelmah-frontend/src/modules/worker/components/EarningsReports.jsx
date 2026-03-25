@@ -21,7 +21,7 @@ const EarningsReports = ({
                 {item.label}
               </Typography>
               <Typography variant="h6">
-                GH₵ {Number(item.value || 0).toLocaleString()}
+                {new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' }).format(Number(item.value || 0))}
               </Typography>
             </Paper>
           </Grid>

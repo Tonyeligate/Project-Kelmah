@@ -45,7 +45,7 @@
   3. `API_URL` constant (`/api/workers`) is unused and misleading after the route consolidation; keeping it invites incorrect reuse.
 
 - **Safety & Validation (Secondary):**
-  1. `createPortfolioItem` assumes `portfolioData` already contains `workerId` but doesn’t enforce it, risking POSTs to `/api/profile/portfolio` without a worker context.
+  1. `createPortfolioItem` assumes `portfolioData` already contains `workerId` but doesn't enforce it, risking POSTs to `/api/profile/portfolio` without a worker context.
   2. No guard or error messaging exists when `userServiceClient` returns non-200 responses (e.g., 403, 404), forcing UI layers to handle thrown axios errors without context.
 
 ---

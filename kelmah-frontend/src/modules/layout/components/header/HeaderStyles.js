@@ -6,17 +6,17 @@ import { Z_INDEX } from '../../../../constants/layout';
 export const StyledAppBar = styled(AppBar)(({ theme }) => ({
   background:
     theme.palette.mode === 'dark'
-      ? `linear-gradient(135deg, rgba(0, 0, 0, 0.95) 0%, rgba(26, 26, 26, 0.95) 100%)`
-      : `linear-gradient(135deg, rgba(255, 215, 0, 0.95) 0%, rgba(255, 193, 7, 0.95) 100%)`,
-  backdropFilter: 'blur(20px)',
+      ? `linear-gradient(135deg, rgba(5, 5, 7, 0.96) 0%, rgba(14, 15, 20, 0.96) 46%, rgba(21, 23, 34, 0.92) 100%)`
+      : `linear-gradient(135deg, rgba(255, 253, 244, 0.96) 0%, rgba(242, 237, 222, 0.94) 100%)`,
+  backdropFilter: 'blur(18px) saturate(140%)',
   borderBottom:
     theme.palette.mode === 'dark'
-      ? `2px solid rgba(255, 215, 0, 0.5)`
-      : `2px solid rgba(0, 0, 0, 0.3)`,
+      ? `1px solid rgba(255, 215, 0, 0.22)`
+      : `1px solid rgba(0, 0, 0, 0.08)`,
   boxShadow:
     theme.palette.mode === 'dark'
-      ? '0 8px 32px rgba(0, 0, 0, 0.9)'
-      : '0 6px 25px rgba(0, 0, 0, 0.25)',
+      ? '0 24px 50px rgba(0, 0, 0, 0.52)'
+      : '0 12px 28px rgba(15, 15, 23, 0.08)',
   position: 'sticky',
   top: 0,
   zIndex: Z_INDEX.header,
@@ -54,7 +54,7 @@ export const LogoIcon = styled(Box)(({ theme }) => ({
   color: theme.palette.mode === 'dark' ? BRAND_COLORS.black : BRAND_COLORS.gold,
   fontWeight: 800,
   fontSize: '1.5rem',
-  fontFamily: 'Montserrat, sans-serif',
+  fontFamily: 'Montserrat, Manrope, sans-serif',
   boxShadow:
     theme.palette.mode === 'dark'
       ? `0 4px 15px rgba(255, 215, 0, 0.4)`
@@ -143,18 +143,19 @@ export const TaglineText = styled(Typography)(({ theme }) => ({
 export const ActionButton = styled(IconButton)(({ theme }) => ({
   backgroundColor:
     theme.palette.mode === 'dark'
-      ? 'rgba(255, 215, 0, 0.1)'
-      : 'rgba(0, 0, 0, 0.1)',
+      ? 'rgba(255, 215, 0, 0.08)'
+      : 'rgba(0, 0, 0, 0.05)',
   color: theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
   border:
     theme.palette.mode === 'dark'
-      ? `1px solid rgba(255, 215, 0, 0.36)`
-      : `1px solid rgba(0, 0, 0, 0.36)`,
+      ? `1px solid rgba(255, 215, 0, 0.24)`
+      : `1px solid rgba(0, 0, 0, 0.12)`,
   margin: theme.spacing(0, 0.5),
   minWidth: 44,
   minHeight: 44,
   width: 44,
   height: 44,
+  borderRadius: 14,
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   '&:focus-visible': {
     outline: theme.palette.mode === 'dark' ? KELMAH_FOCUS_RING.dark : KELMAH_FOCUS_RING.light,
@@ -176,13 +177,13 @@ export const ActionButton = styled(IconButton)(({ theme }) => ({
   '&:hover': {
     backgroundColor:
       theme.palette.mode === 'dark'
-        ? 'rgba(255, 215, 0, 0.2)'
-        : 'rgba(0, 0, 0, 0.15)',
+        ? 'rgba(255, 215, 0, 0.16)'
+        : 'rgba(0, 0, 0, 0.08)',
     transform: 'translateY(-1px) scale(1.05)',
     boxShadow:
       theme.palette.mode === 'dark'
-        ? '0 4px 15px rgba(255, 215, 0, 0.3)'
-        : '0 4px 15px rgba(0, 0, 0, 0.2)',
+        ? '0 8px 20px rgba(255, 215, 0, 0.18)'
+        : '0 8px 20px rgba(0, 0, 0, 0.14)',
   },
   '&:active': {
     transform: 'translateY(0) scale(1)',
@@ -204,8 +205,8 @@ export const UserAvatar = styled(Avatar)(({ theme }) => ({
   fontSize: '1rem',
   border:
     theme.palette.mode === 'dark'
-      ? `2px solid rgba(255, 215, 0, 0.3)`
-      : `2px solid rgba(0, 0, 0, 0.3)`,
+      ? `2px solid rgba(255, 215, 0, 0.26)`
+      : `2px solid rgba(0, 0, 0, 0.14)`,
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   cursor: 'pointer',
   [theme.breakpoints.down('sm')]: {

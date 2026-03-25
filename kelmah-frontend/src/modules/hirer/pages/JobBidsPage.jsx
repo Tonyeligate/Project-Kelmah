@@ -56,6 +56,7 @@ import bidApi from '../../jobs/services/bidService';
 import Toast from '../../common/components/common/Toast';
 import { formatGhanaCurrency } from '@/utils/formatters';
 import { devError } from '@/modules/common/utils/devLogger';
+import PageCanvas from '@/modules/common/components/PageCanvas';
 
 const isAbortError = (error) =>
   error?.name === 'AbortError' ||
@@ -428,7 +429,8 @@ const JobBidsPage = () => {
   const acceptedBid = bids.find((b) => b.status === 'accepted');
 
   return (
-    <Container maxWidth="md" sx={{ py: { xs: 2, md: 4 } }}>
+    <PageCanvas disableContainer>
+      <Container maxWidth="md" sx={{ py: { xs: 2, md: 4 } }}>
       <Helmet>
         <title>Review Bids | Kelmah</title>
       </Helmet>
@@ -490,7 +492,7 @@ const JobBidsPage = () => {
       {acceptedBid && (
         <Alert severity="success" icon={<AcceptIcon />} sx={{ mb: 2 }}>
           You accepted <strong>{acceptedBid.worker?.name || 'a worker'}</strong>'s bid of{' '}
-          <strong>GHS {(acceptedBid.bidAmount ?? 0).toLocaleString()}</strong>.
+          <strong>{formatGhanaCurrency(acceptedBid.bidAmount ?? 0)}</strong>.
         </Alert>
       )}
 
@@ -563,7 +565,7 @@ const JobBidsPage = () => {
         <DialogContent>
           <DialogContentText>
             Accepting <strong>{acceptDialog.bid?.worker?.name || 'this worker'}</strong>'s bid of{' '}
-            <strong>GHS {(acceptDialog.bid?.bidAmount ?? 0).toLocaleString()}</strong> will automatically
+            <strong>{formatGhanaCurrency(acceptDialog.bid?.bidAmount ?? 0)}</strong> will automatically
             reject all other pending bids for this job. This action cannot be undone.
           </DialogContentText>
         </DialogContent>
@@ -627,7 +629,8 @@ const JobBidsPage = () => {
         severity={toast.severity}
         onClose={() => setToast((prev) => ({ ...prev, open: false }))}
       />
-    </Container>
+      </Container>
+    </PageCanvas>
   );
 };
 

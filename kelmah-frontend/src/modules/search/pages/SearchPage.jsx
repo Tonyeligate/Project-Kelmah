@@ -1,9 +1,10 @@
 import React from 'react';
 import { Box, Paper, Typography, Stack, Chip } from '@mui/material';
 import WorkerDirectoryExperience from '../components/WorkerDirectoryExperience';
+import PageCanvas from '../../common/components/PageCanvas';
 
 const SearchPage = () => (
-  <Box>
+  <PageCanvas disableContainer sx={{ pt: { xs: 1.5, md: 2.5 }, pb: { xs: 2, md: 4 } }}>
     <Paper
       elevation={0}
       sx={{
@@ -36,7 +37,7 @@ const SearchPage = () => (
       seoDescription="Search for skilled workers by trade, location, experience, and availability. Find carpenters, plumbers, electricians, and more across Ghana."
       showHero
     />
-  </Box>
+  </PageCanvas>
 );
 
 export default SearchPage;

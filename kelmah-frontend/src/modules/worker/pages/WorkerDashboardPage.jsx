@@ -35,6 +35,7 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import InboxOutlinedIcon from '@mui/icons-material/InboxOutlined';
 import { useVisibilityPolling } from '../../../hooks/useVisibilityPolling';
 import { useBreakpointDown } from '@/hooks/useResponsive';
+import PageCanvas from '@/modules/common/components/PageCanvas';
 
 /* ---------- Keyframes for spin animation ---------- */
 const spinKeyframes = {
@@ -389,10 +390,16 @@ const WorkerDashboardPage = () => {
     { name: 'Rejected', value: rejectedApplications.length || 0, color: theme.palette.error.main },
   ], [acceptedApplications, pendingApplications, rejectedApplications]);
 
+  const formatGhanaCurrencyLabel = (value) => {
+    const amount = Number(value);
+    if (!Number.isFinite(amount)) return 'GH₵0.00';
+    return new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' }).format(amount);
+  };
+
   const insightCards = useMemo(() => ([
     {
       title: 'This month',
-      value: `GH₵${(earningsSummary.thisMonth || 0).toLocaleString()}`,
+      value: formatGhanaCurrencyLabel(earningsSummary.thisMonth || 0),
       helper: 'Earned from completed jobs',
       tone: theme.palette.success.main,
     },
@@ -430,7 +437,7 @@ const WorkerDashboardPage = () => {
     },
     {
       title: 'Total Earnings',
-      value: `GH₵${(Number.isFinite(stats.earnings) ? stats.earnings : 0).toLocaleString()}`,
+      value: formatGhanaCurrencyLabel(Number.isFinite(stats.earnings) ? stats.earnings : 0),
       tone: theme.palette.info.main,
       icon: <AttachMoneyIcon sx={{ fontSize: { xs: 32, sm: 42 }, color: alpha(theme.palette.info.main, 0.25) }} />,
       tooltip: 'Your total earnings from completed jobs',
@@ -489,7 +496,8 @@ const WorkerDashboardPage = () => {
   );
 
   return (
-    <PullToRefresh onRefresh={fetchDashboardData}>
+    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
+      <PullToRefresh onRefresh={fetchDashboardData}>
     <Box
       sx={{
         background:
@@ -625,7 +633,7 @@ const WorkerDashboardPage = () => {
           <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
             <Chip label={`Applications ${stats.applications}`} size="small" sx={{ fontWeight: 700 }} />
             <Chip label={`Completed ${stats.completedJobs}`} size="small" sx={{ fontWeight: 700 }} />
-            <Chip label={`GH₵${(Number.isFinite(stats.earnings) ? stats.earnings : 0).toLocaleString()}`} size="small" sx={{ fontWeight: 700 }} />
+            <Chip label={formatGhanaCurrencyLabel(Number.isFinite(stats.earnings) ? stats.earnings : 0)} size="small" sx={{ fontWeight: 700 }} />
           </Box>
 
           <Box
@@ -1129,7 +1137,7 @@ const WorkerDashboardPage = () => {
                     ))}
                   </Pie>
                   <RechartsTooltip
-                    formatter={(value) => [`GH₵${value}`, '']}
+                    formatter={(value) => [formatGhanaCurrencyLabel(value), '']}
                     contentStyle={{
                       backgroundColor: theme.palette.background.paper,
                       border: `1px solid ${theme.palette.divider}`,
@@ -1295,7 +1303,8 @@ const WorkerDashboardPage = () => {
       )}
       </Container>
     </Box>
-    </PullToRefresh>
+      </PullToRefresh>
+    </PageCanvas>
   );
 };
 

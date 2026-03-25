@@ -75,12 +75,22 @@ import {
 } from '../components/ApplicationManagementCards';
 import { useBreakpointDown } from '../../../hooks/useResponsive';
 import { BOTTOM_NAV_HEIGHT } from '../../../constants/layout';
+import PageCanvas from '@/modules/common/components/PageCanvas';
 
 /* ─── helpers ─────────────────────────────────────────────────────── */
 
 /* ═══════════════════════════════════════════════════════════════════
    Main Page
    ═══════════════════════════════════════════════════════════════════ */
+
+const formatGhanaCurrencyLabel = (value) => {
+  const amount = Number(value ?? 0);
+  return new Intl.NumberFormat('en-GH', {
+    style: 'currency',
+    currency: 'GHS',
+    minimumFractionDigits: amount % 1 === 0 ? 0 : 2,
+  }).format(Number.isFinite(amount) ? amount : 0);
+};
 
 function ApplicationManagementPage() {
   const theme = useTheme();
@@ -521,6 +531,7 @@ function ApplicationManagementPage() {
      ═══════════════════════════════════════════════════════════════ */
 
   return (
+    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
     <Container
       maxWidth="xl"
       sx={{
@@ -612,7 +623,7 @@ function ApplicationManagementPage() {
               <Chip size="small" color="warning" variant="outlined" label={`${filteredApps.length} pending review`} />
             )}
             {triageSummary.avgRate !== null && (
-              <Chip size="small" variant="outlined" label={`Avg offer GH₵${triageSummary.avgRate.toLocaleString()}`} />
+              <Chip size="small" variant="outlined" label={`Avg offer ${formatGhanaCurrencyLabel(triageSummary.avgRate)}`} />
             )}
             <Chip size="small" variant="outlined" label={`${triageSummary.ratedProfiles} rated profiles`} />
             <Chip size="small" variant="outlined" label={`${triageSummary.recent48h} new in 48h`} />
@@ -827,6 +838,7 @@ function ApplicationManagementPage() {
         onConfirm={handleStatusUpdate}
       />
     </Container>
+    </PageCanvas>
   );
 }
 
@@ -1350,7 +1362,7 @@ function ApplicationDetailPanel({
                 Proposed Rate
               </Typography>
               <Typography variant="h6" fontWeight={600}>
-                GH₵{app.proposedRate.toLocaleString()}
+                {formatGhanaCurrencyLabel(app.proposedRate)}
               </Typography>
             </Paper>
           )}

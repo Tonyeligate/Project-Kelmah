@@ -4,7 +4,7 @@ const path = require('path');
 const outPath = path.join(__dirname, '../spec-kit/generated/FRONTEND_BACKLOG_8000_ITEMS_MAR19_2026.md');
 const title = 'Kelmah Frontend 8000-Item Visual & UX Backlog (March 19 2026)';
 const description =
-  'This backlog focuses on visual polish, mobile/desktop UX, accessibility, and overall product refinement aligned to Kelmah’s mission.';
+  'This backlog focuses on visual polish, mobile/desktop UX, accessibility, and overall product refinement aligned to Kelmah's mission.';
 
 const categories = [
   {
@@ -47,7 +47,7 @@ const categories = [
     title: 'Branding & Onboarding',
     exampleFiles: ['OnboardingFlow.jsx', 'WelcomePage.jsx', 'LandingPage.jsx', 'TutorialOverlay.jsx'],
     template: ({ verb, fileSample }) =>
-      `${verb} onboarding content in \`${fileSample}\` to ensure users understand Kelmah’s value prop and quickly reach their first success.`,
+      `${verb} onboarding content in \`${fileSample}\` to ensure users understand Kelmah's value prop and quickly reach their first success.`,
   },
   {
     title: 'Localization & Regional Formatting',

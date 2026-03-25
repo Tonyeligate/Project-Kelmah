@@ -17,6 +17,7 @@ import {
 } from '@mui/icons-material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { Helmet } from 'react-helmet-async';
+import PageCanvas from '@/modules/common/components/PageCanvas';
 
 // Import contract slice actions and selectors
 import {
@@ -359,6 +360,7 @@ const ContractDetailsPage = () => {
   // Show a loading state while contract data is being fetched
   if (loading.currentContract) {
     return (
+      <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
       <Container maxWidth="md" sx={{ py: 3 }}>
         {slowLoadingHint && (
           <Alert severity="info" sx={{ mb: 2 }}>
@@ -369,11 +371,13 @@ const ContractDetailsPage = () => {
         <Skeleton variant="rounded" height={400} sx={{ borderRadius: 2, mb: 2 }} />
         <Skeleton variant="rounded" height={120} sx={{ borderRadius: 2 }} />
       </Container>
+      </PageCanvas>
     );
   }
 
   if (!contract && error.currentContract) {
     return (
+      <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
       <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
         <Alert severity="error" sx={{ mb: 3 }} action={
           <Button color="inherit" size="small" onClick={retryContractLoad}>
@@ -384,11 +388,13 @@ const ContractDetailsPage = () => {
         </Alert>
         <Button onClick={handleBack} variant="outlined">Back to Contracts</Button>
       </Container>
+      </PageCanvas>
     );
   }
 
   if (!contract) {
     return (
+      <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
       <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
         <Alert severity="warning" action={
           <Button color="inherit" size="small" onClick={retryContractLoad}>
@@ -399,10 +405,12 @@ const ContractDetailsPage = () => {
         </Alert>
         <Button onClick={handleBack} variant="outlined" sx={{ mt: 2 }}>Back to Contracts</Button>
       </Container>
+      </PageCanvas>
     );
   }
 
   return (
+    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
     <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
       <Helmet><title>Contract Details | Kelmah</title></Helmet>
       {/* Error alert */}
@@ -975,6 +983,7 @@ const ContractDetailsPage = () => {
         fullWidth
       />
     </Container>
+    </PageCanvas>
   );
 };
 

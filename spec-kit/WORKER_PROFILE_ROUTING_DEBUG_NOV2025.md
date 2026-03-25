@@ -55,7 +55,7 @@ WorkerProfile state updates → UI re-renders with new worker info
 
 ## Next Steps
 1. **Verify Cache Keys**: Inspect service worker cache contents to ensure each `/api/users/workers/:id` request is keyed uniquely; adjust `CACHE_API_PATTERNS` if needed.
-2. **Trace Layout Transition**: Confirm `<Layout>` and its `<Fade key={location.pathname}>` don’t preserve the old component instance by wrapping `<Outlet>` incorrectly.
+2. **Trace Layout Transition**: Confirm `<Layout>` and its `<Fade key={location.pathname}>` don't preserve the old component instance by wrapping `<Outlet>` incorrectly.
 3. **Add Diagnostics**: Temporarily log `workerId` at each layer (WorkerProfilePage, WorkerProfile, fetchAllData) to observe whether navigation triggers the expected re-run.
 4. **Design Fix**: Depending on findings, force `WorkerProfile` to read `workerId` solely from props instead of `useParams`, or add `useEffect` watchers that explicitly reset state whenever `workerId` changes, even during transitional renders.
 

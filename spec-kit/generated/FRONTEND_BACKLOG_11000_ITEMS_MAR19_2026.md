@@ -1,6 +1,6 @@
 # Kelmah Frontend 11000-Item Payments / Reviews / Trust Backlog (March 19 2026)
 
-This backlog focuses on payments, reviews, trust signals, messaging fidelity, localization completeness, analytics instrumentation, and other critical product flows aligned to Kelmah’s marketplace purpose.
+This backlog focuses on payments, reviews, trust signals, messaging fidelity, localization completeness, analytics instrumentation, and other critical product flows aligned to Kelmah's marketplace purpose.
 
 ---
 

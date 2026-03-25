@@ -33,7 +33,7 @@
 | `kelmah-backend/services/job-service/controllers/job.controller.js` | Implements `createJob`, normalizes payloads, now calls `ensureMongoReady()` (connection + ping) before persisting via `Job.create()`. |
 | `kelmah-backend/services/job-service/config/db.js` | Provides `connectDB`, `ensureConnection`, and the new `pingDatabase/ensureMongoReady` helpers plus reduced `bufferTimeoutMS` to fail fast when Mongo stalls. |
 | `kelmah-backend/services/job-service/middlewares/dbReady.js` | Short-circuits every route with a `503` if `mongoose.connection.readyState !== 1`. |
-| `kelmah-backend/shared/middlewares/serviceTrust.js` | Supplies `verifyGatewayRequest` that trusts the API Gateway’s `x-authenticated-user` header. |
+| `kelmah-backend/shared/middlewares/serviceTrust.js` | Supplies `verifyGatewayRequest` that trusts the API Gateway's `x-authenticated-user` header. |
 | `kelmah-backend/services/job-service/models/index.js` | Imports shared `Job`, `Application`, `User` from `shared/models` and registers service-specific models like `SavedJob`, `Bid`, `Contract*`. |
 
 ## Dry Audit Findings (Nov 23, 2025)

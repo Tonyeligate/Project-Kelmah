@@ -20,6 +20,7 @@ import Pagination from '@mui/material/Pagination';
 import { alpha } from '@mui/material/styles';
 import { Helmet } from 'react-helmet-async';
 import { devError } from '@/modules/common/utils/devLogger';
+import PageCanvas from '@/modules/common/components/PageCanvas';
 
 const RatingDistribution = ({ distribution, totalReviews }) => (
   <Box>
@@ -86,6 +87,7 @@ const WorkerReviewsPage = () => {
 
   if (loading) {
     return (
+      <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
       <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 0.5, sm: 2 } }}>
         {/* Summary Skeleton */}
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'flex-start', sm: 'center' }} mb={4}>
@@ -116,6 +118,7 @@ const WorkerReviewsPage = () => {
           </Grid>
         </Grid>
       </Container>
+      </PageCanvas>
     );
   }
 
@@ -129,6 +132,7 @@ const WorkerReviewsPage = () => {
   }));
 
   return (
+    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
     <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 0.5, sm: 2 } }}>
       <Helmet><title>Worker Reviews | Kelmah</title></Helmet>
       {error && (
@@ -234,6 +238,7 @@ const WorkerReviewsPage = () => {
         />
       </Box>
     </Container>
+    </PageCanvas>
   );
 };
 

@@ -19,6 +19,7 @@ import {
   Tooltip,
   Chip,
   Skeleton,
+  useMediaQuery,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -33,6 +34,7 @@ import { useTheme } from '@mui/material/styles';
 import { Helmet } from 'react-helmet-async';
 import { useSnackbar } from 'notistack';
 import { toUserMessage } from '@/services/responseNormalizer';
+import PageCanvas from '@/modules/common/components/PageCanvas';
 
 // Demo payment methods for initial display
 const PaymentMethodsPage = () => {
@@ -73,6 +75,7 @@ const PaymentMethodsPage = () => {
   const [methodToDelete, setMethodToDelete] = useState(null);
 
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   // Fetch payment methods from server
   const fetchMethods = useCallback(async () => {
@@ -273,22 +276,28 @@ const PaymentMethodsPage = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 0.5, sm: 2 } }}>
+    <PageCanvas disableContainer sx={{ pt: { xs: 1, sm: 4 }, pb: { xs: 10, md: 6 } }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 1, sm: 4 }, px: { xs: 0.75, sm: 2 } }}>
       <Helmet><title>Payment Methods | Kelmah</title></Helmet>
       <Box
         sx={{
-          mb: { xs: 2, sm: 4 },
+          mb: { xs: 1.5, sm: 4 },
           display: 'flex',
           flexDirection: { xs: 'column', sm: 'row' },
           justifyContent: 'space-between',
           alignItems: { xs: 'flex-start', sm: 'center' },
           gap: 1,
+          position: { xs: 'sticky', sm: 'static' },
+          top: { xs: 56, sm: 'auto' },
+          zIndex: { xs: 10, sm: 'auto' },
+          py: { xs: 0.5, sm: 0 },
+          backgroundColor: { xs: 'background.default', sm: 'transparent' },
         }}
       >
-        <Typography variant="h4" sx={{ color: 'secondary.main' }}>
+        <Typography variant={isMobile ? 'h5' : 'h4'} sx={{ color: 'secondary.main', lineHeight: 1.1 }}>
           Payment Methods
         </Typography>
-        <Box>
+        <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
           <Tooltip title="Add credit card">
             <IconButton
               color="secondary"
@@ -352,7 +361,7 @@ const PaymentMethodsPage = () => {
       <Typography
         variant="body2"
         color="text.secondary"
-        sx={{ mb: 2, px: { xs: 0.5, sm: 0 } }}
+        sx={{ mb: 1.5, px: { xs: 0.25, sm: 0 }, fontSize: { xs: '0.8rem', sm: '0.9rem' } }}
       >
         Use an add button to save a card, mobile money number, or bank account.
         Set one method as default to make checkout faster.
@@ -360,15 +369,15 @@ const PaymentMethodsPage = () => {
 
       <Card
         sx={{
-          mb: 4,
+          mb: { xs: 2, sm: 4 },
           border: '2px solid',
           borderColor: 'secondary.main',
           boxShadow: '0 2px 8px rgba(255,215,0,0.3)',
         }}
       >
-        <CardContent>
+        <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
           <Typography
-            variant="h6"
+            variant={isMobile ? 'subtitle1' : 'h6'}
             gutterBottom
             sx={{ color: 'secondary.main' }}
           >
@@ -380,7 +389,7 @@ const PaymentMethodsPage = () => {
             mobile money services, and bank accounts.
           </Typography>
 
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mt: 2 }}>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: { xs: 1, sm: 2 }, mt: 1.5 }}>
             <Box
               sx={{
                 display: 'flex',
@@ -482,13 +491,13 @@ const PaymentMethodsPage = () => {
           </Button>
         </Paper>
       ) : (
-        <Grid container spacing={3}>
+        <Grid container spacing={{ xs: 1.25, sm: 3 }}>
           {paymentMethods.map((method) => (
             <Grid item xs={12} sm={6} md={4} key={method.id || method._id}>
               <Paper
                 elevation={1}
                 sx={{
-                  p: 3,
+                  p: { xs: 1.5, sm: 3 },
                   borderRadius: 2,
                   borderLeft: method.isDefault
                     ? `4px solid ${theme.palette.secondary.main}`
@@ -603,6 +612,7 @@ const PaymentMethodsPage = () => {
             <Tooltip title="16-digit card number">
               <TextField
                 fullWidth
+                size={isMobile ? 'small' : 'medium'}
                 label="Card number"
                 value={newCard.cardNumber}
                 onChange={(e) =>
@@ -617,6 +627,7 @@ const PaymentMethodsPage = () => {
             <Tooltip title="Name on card">
               <TextField
                 fullWidth
+                size={isMobile ? 'small' : 'medium'}
                 label="Name on card"
                 value={newCard.cardholderName}
                 onChange={(e) =>
@@ -633,6 +644,7 @@ const PaymentMethodsPage = () => {
                 <Tooltip title="MM">
                   <TextField
                     fullWidth
+                    size={isMobile ? 'small' : 'medium'}
                     label="MM"
                     value={newCard.expiryMonth}
                     onChange={(e) =>
@@ -647,6 +659,7 @@ const PaymentMethodsPage = () => {
                 <Tooltip title="YYYY">
                   <TextField
                     fullWidth
+                    size={isMobile ? 'small' : 'medium'}
                     label="YYYY"
                     value={newCard.expiryYear}
                     onChange={(e) =>
@@ -662,6 +675,7 @@ const PaymentMethodsPage = () => {
             <Tooltip title="3-digit code on back">
               <TextField
                 fullWidth
+                size={isMobile ? 'small' : 'medium'}
                 label="CVV"
                 value={newCard.cvv}
                 onChange={(e) =>
@@ -732,6 +746,7 @@ const PaymentMethodsPage = () => {
             <TextField
               select
               fullWidth
+              size={isMobile ? 'small' : 'medium'}
               label="Provider"
               value={newMobile.provider}
               onChange={(e) =>
@@ -749,6 +764,7 @@ const PaymentMethodsPage = () => {
 
             <TextField
               fullWidth
+              size={isMobile ? 'small' : 'medium'}
               label="Phone Number"
               value={newMobile.phoneNumber}
               onChange={(e) =>
@@ -761,6 +777,7 @@ const PaymentMethodsPage = () => {
 
             <TextField
               fullWidth
+              size={isMobile ? 'small' : 'medium'}
               label="Account Name"
               value={newMobile.name}
               onChange={(e) =>
@@ -812,6 +829,7 @@ const PaymentMethodsPage = () => {
             <TextField
               select
               fullWidth
+              size={isMobile ? 'small' : 'medium'}
               label="Bank"
               value={newBank.bankName}
               onChange={(e) =>
@@ -834,6 +852,7 @@ const PaymentMethodsPage = () => {
 
             <TextField
               fullWidth
+              size={isMobile ? 'small' : 'medium'}
               label="Account Number"
               value={newBank.accountNumber}
               onChange={(e) =>
@@ -846,6 +865,7 @@ const PaymentMethodsPage = () => {
 
             <TextField
               fullWidth
+              size={isMobile ? 'small' : 'medium'}
               label="Account Name"
               value={newBank.accountName}
               onChange={(e) =>
@@ -857,6 +877,7 @@ const PaymentMethodsPage = () => {
 
             <TextField
               fullWidth
+              size={isMobile ? 'small' : 'medium'}
               label="Branch Code (Optional)"
               value={newBank.branchCode}
               onChange={(e) =>
@@ -919,7 +940,34 @@ const PaymentMethodsPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
-    </Container>
+      <Paper
+        elevation={8}
+        sx={(theme) => ({
+          display: { xs: 'flex', sm: 'none' },
+          position: 'fixed',
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: theme.zIndex.appBar + 2,
+          px: 1,
+          py: 1,
+          gap: 1,
+          borderTop: `1px solid ${theme.palette.divider}`,
+          backgroundColor: theme.palette.background.paper,
+        })}
+      >
+        <Button fullWidth variant="outlined" color="secondary" sx={{ minHeight: 42 }} onClick={() => setOpenAddCard(true)}>
+          Card
+        </Button>
+        <Button fullWidth variant="outlined" color="secondary" sx={{ minHeight: 42 }} onClick={() => setOpenAddMobile(true)}>
+          Mobile
+        </Button>
+        <Button fullWidth variant="contained" color="secondary" sx={{ minHeight: 42, boxShadow: '0 2px 8px rgba(255,215,0,0.35)' }} onClick={() => setOpenAddBank(true)}>
+          Bank
+        </Button>
+      </Paper>
+      </Container>
+    </PageCanvas>
   );
 };
 

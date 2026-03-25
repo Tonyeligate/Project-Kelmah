@@ -18,6 +18,16 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 const FilterPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
   marginBottom: theme.spacing(3),
@@ -203,8 +213,7 @@ const WorkerFilter = ({ onFilterChange }) => {
             <Divider sx={{ mb: 2 }} />
 
             <Typography gutterBottom variant="subtitle2">
-              Hourly Rate Range (GH₵{filters.hourlyRateRange[0]} - GH₵
-              {filters.hourlyRateRange[1]})
+              Hourly Rate Range ({new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' }).format(filters.hourlyRateRange[0])} - {new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' }).format(filters.hourlyRateRange[1])})
             </Typography>
             <Slider
               value={filters.hourlyRateRange}

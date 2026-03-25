@@ -19,7 +19,7 @@ This file is a deliberately massive backlog of actionable fixes, improvements, a
 11. Add a `from` query parameter and ensure login redirects back to the original route after successful authentication.
 12. Refactor the auth refresh queue in `apiClient` to avoid global state (`pendingUnauthorizedRequests`) being shared across concurrent tabs.
 13. Add tests that simulate multiple simultaneous 401 responses and verify only one refresh request fires.
-14. Ensure `apiClient` refresh logic honors a global “already refreshing” lock but does not block unrelated requests.
+14. Ensure `apiClient` refresh logic honors a global "already refreshing" lock but does not block unrelated requests.
 15. Guarantee refresh failures (400/401/403) trigger a single logout sequence instead of multiple.
 16. Ensure refresh logic does not retry on network errors that are clearly client-side (DNS failure, offline).
 17. Add telemetry to the auth refresh flow to count how often refresh fails and why.
@@ -38,16 +38,16 @@ This file is a deliberately massive backlog of actionable fixes, improvements, a
 30. Add a `logout` handler that kills any in-flight `setInterval` / `setTimeout` arms that could leak user state.
 31. Audit `secureStorage.generateEncryptionKey()` to ensure it uses an appropriate source of entropy and does not rely on user-agent strings.
 32. Add docs in `/docs` explaining the threat model for `secureStorage` and recommended mitigation strategies.
-33. Remove any hardcoded “dev” secrets or API keys from the codebase (search for `process.env` and `VITE_` and verify purpose).
+33. Remove any hardcoded "dev" secrets or API keys from the codebase (search for `process.env` and `VITE_` and verify purpose).
 34. Add automated check (CI lint rule) to fail build if `console.log` appears in production-critical modules like auth, payments, messages.
 35. Ensure any token refresh response that returns a new refresh token overwrites the old refresh token atomically.
-36. Add the ability for the backend to signal “revoke all sessions” and for the frontend to respect it (e.g., `401` with special header).
-37. Add a “session invalidated” banner in the UI when auth refresh fails and user is forced to login again.
+36. Add the ability for the backend to signal "revoke all sessions" and for the frontend to respect it (e.g., `401` with special header).
+37. Add a "session invalidated" banner in the UI when auth refresh fails and user is forced to login again.
 38. Add a debounce to prevents multiple logout triggers in quick succession (e.g., network flapping).
-39. Ensure the “remember me” / persistent login option, if present, is clearly labeled and respects user intent.
+39. Ensure the "remember me" / persistent login option, if present, is clearly labeled and respects user intent.
 40. Verify that all stored user profile data in secureStorage does not contain PII beyond necessary.
 41. Add encryption integrity checks (HMAC) for data stored by secureStorage.
-42. Add a “manual clear storage” button in settings for users who want to wipe local data.
+42. Add a "manual clear storage" button in settings for users who want to wipe local data.
 43. Implement `secureStorage.isSecureContext()` usage across the app to warn if running on http.
 44. Audit every `window.localStorage` and `window.sessionStorage` usage for security risk (XSS exposure).
 45. Add a warning message in the app when run on insecure protocols (http) that user data may be exposed.
@@ -65,7 +65,7 @@ This file is a deliberately massive backlog of actionable fixes, improvements, a
 57. Add a clear warning in the UI if the user enters a password on a non-https site (detect via `location.protocol`).
 58. Ensure any 3rd party scripts loaded into the app (analytics, chat) are audited for credential leakage.
 59. Review `public/` folder for stray credentials, API keys, or tokens stored in text files.
-60. Add a “security audit” checklist in `spec-kit` that can be run before releases.
+60. Add a "security audit" checklist in `spec-kit` that can be run before releases.
 61. Replace any use of `Math.random()` for security-related IDs (e.g., `session_id`) with crypto-grade RNG.
 62. Ensure `uuidv4` generator in `apiClient` uses `crypto.randomUUID` where available and fallbacks only if not.
 63. Add a check to `apiClient` to enforce `X-Request-ID` is always unique per request.
@@ -88,10 +88,10 @@ This file is a deliberately massive backlog of actionable fixes, improvements, a
 80. Add a UI sanitizer for all server messages that might include HTML (e.g., error messages). 
 81. Add a secure default for `axios` by enabling `xsrfCookieName` and `xsrfHeaderName` if using cookies.
 82. Audit `axios` configuration to ensure `withCredentials` is only enabled when needed.
-83. Add a “logout on cookie cleared” detection (if JWT stored in cookie) and force log out.
+83. Add a "logout on cookie cleared" detection (if JWT stored in cookie) and force log out.
 84. Add a guard for unhandled promise rejections in `app` and report via telemetry.
 85. Track the number of uncaught errors in production and alert devs if they spike.
-86. Add a “safe mode” for users with old browsers where key security features are missing.
+86. Add a "safe mode" for users with old browsers where key security features are missing.
 87. Add warnings if `navigator.cookieEnabled` is false.
 88. Ensure the app does not depend on `localStorage` for essential navigation, to avoid incompleteness in private mode.
 89. Add a policy to never store sensitive data in URL query strings (e.g., tokens).
@@ -105,7 +105,7 @@ This file is a deliberately massive backlog of actionable fixes, improvements, a
 97. Add a sanitizer on message input to strip scripts before sending to backend.
 98. Ensure the messaging component uses `dangerouslySetInnerHTML` only with sanitized content.
 99. Add a test for message sanitization.
-100. Add an “escape hatch” for administrators to clear all sessions in the event of compromise.
+100. Add an "escape hatch" for administrators to clear all sessions in the event of compromise.
 101. Add a UI in settings for users to see and revoke active sessions.
 102. Ensure the app respects the `Referrer-Policy` when navigating between domains.
 103. Add a meta tag to enforce `Referrer-Policy: no-referrer-when-downgrade` or stronger.
@@ -133,23 +133,23 @@ This file is a deliberately massive backlog of actionable fixes, improvements, a
 125. Refactor all direct string storage key usage to use the shared constants.
 126. Document all storage keys in a single `STORAGE_KEYS.md` file.
 127. Add an iterative stored keys cleanup routine to remove unused old keys on startup.
-128. Add a “storage schema version” and migration path for stored data.
+128. Add a "storage schema version" and migration path for stored data.
 129. Ensure `secureStorage` includes a data version and can migrate older versions automatically.
 130. Add guard rails so a broken migration cannot brick the app (fail safe to reset to defaults).
 131. Add a monotonically increasing `storageVersion` in `secureStorage` and update docs.
 132. Add a UI warning when the app detects the storage version is too old.
-133. Add a “clear cache and reload” button to the app for users who run into strange state.
+133. Add a "clear cache and reload" button to the app for users who run into strange state.
 134. Ensure any cached API responses are invalidated when the app version changes.
-135. Add a “build version / commit hash” display (hidden) to help debug customer reports.
-136. Expose an “about” screen with version info and storage stats.
-137. Add an “export logs” feature to help debug user issues, without exposing PII.
+135. Add a "build version / commit hash" display (hidden) to help debug customer reports.
+136. Expose an "about" screen with version info and storage stats.
+137. Add an "export logs" feature to help debug user issues, without exposing PII.
 138. Implement a log upload endpoint (opt-in) for support.
 139. Add a rate limit to log uploads to prevent abuse.
 140. Ensure log upload scrubs PII and tokens.
 141. Add a policy for storing user preferences separately from auth credentials.
-142. Audit the UI for any “Remember me” convenience options and ensure they are optional and transparent.
+142. Audit the UI for any "Remember me" convenience options and ensure they are optional and transparent.
 143. Add an account security page where users can see when/where they last logged in.
-144. Implement a “force logout on all devices” button.
+144. Implement a "force logout on all devices" button.
 145. Ensure the app securely handles password resets via token in URL without exposing tokens.
 146. Ensure password reset flow uses `POST` and not `GET` for token submission.
 147. Add a check that prevents the app from auto-filling password fields with insecure methods.
@@ -164,22 +164,22 @@ This file is a deliberately massive backlog of actionable fixes, improvements, a
 156. Add a strict `X-Frame-Options` header (or `frame-ancestors` CSP) to prevent clickjacking.
 157. Add a check that service worker does not allow `frame` embedding of the app.
 158. Ensure the app's login page includes `autocomplete="off"` if required.
-159. Add a “trusted devices” feature to allow users to trust a device for a set period.
+159. Add a "trusted devices" feature to allow users to trust a device for a set period.
 160. Add a feature to force re-authentication before performing sensitive actions (payments, profile edits).
 161. Add a prompt for users to confirm before making payments or releasing funds.
 162. Add a confirmation for irreversible actions (delete profile, delete application).
-163. Ensure “browse as guest” mode does not accidentally grant access to restricted APIs.
+163. Ensure "browse as guest" mode does not accidentally grant access to restricted APIs.
 164. Add a guard so offline mode cannot be used to access protected endpoints.
 165. Add a policy for 2FA opt-in and ensure TOTP secrets are handled securely.
 166. Add a fallback to SMS-based 2FA if TOTP is unavailable.
 167. Add user education screens on how to secure their account.
 168. Ensure the privacy policy is up to date and accessible from the footer.
-169. Ensure the app respects the “Do Not Track” header.
+169. Ensure the app respects the "Do Not Track" header.
 170. Add a cookie consent modal if tracking/analytics exist.
 171. Add a system to disable analytics in the UI and persist user preference.
 172. Add a secure way for users to delete their account and all associated stored data.
 173. Ensure account deletion also clears local storage and secure storage.
-174. Add a “delete account” confirmation that explains what is deleted.
+174. Add a "delete account" confirmation that explains what is deleted.
 175. Add a rate-limiting mechanism on account deletion requests.
 176. Ensure any user data exported (CSV, PDF) is sent securely and expires.
 177. Add a warning when the user downloads data to use a trusted device.
@@ -193,184 +193,184 @@ This file is a deliberately massive backlog of actionable fixes, improvements, a
 
 181. Audit `src/modules/jobs/pages/JobsPage.jsx` for overloaded UI and break it into smaller subcomponents.
 182. Extract filter state + URL sync logic from `JobsPage` into a `useJobsFilter` hook.
-183. Add “saved filters” feature for job search.
-184. Add a “clear all filters” button to the job search UI.
+183. Add "saved filters" feature for job search.
+184. Add a "clear all filters" button to the job search UI.
 185. Ensure filters are preserved when navigating away and returning.
-186. Add a “no results” state with suggestions and alternative actions.
-187. Add a “save job search” CTA for signed-in users.
+186. Add a "no results" state with suggestions and alternative actions.
+187. Add a "save job search" CTA for signed-in users.
 188. Add keyboard shortcut support for job search (e.g., `/` focus search box).
-189. Add a “back to top” floating button on long lists.
+189. Add a "back to top" floating button on long lists.
 190. Add lazy loading / pagination improvements for job lists.
 191. Add a spinner-only placeholder for job cards while loading.
-192. Add a “loading” skeleton that matches the final card layout.
+192. Add a "loading" skeleton that matches the final card layout.
 193. Add an error state to job list with a retry button.
-194. Add a “search history” dropdown next to the search input.
+194. Add a "search history" dropdown next to the search input.
 195. Add geolocation support for location filters.
-196. Add a “near me” button for workers and hirers.
-197. Add a “recent searches” section for logged-in workers.
-198. Add a “most popular categories” quick filter.
-199. Add a “jobs near me” map overlay.
-200. Add a “share job” feature with safe sharable links.
-201. Add a “report job” feature for suspicious listings.
+196. Add a "near me" button for workers and hirers.
+197. Add a "recent searches" section for logged-in workers.
+198. Add a "most popular categories" quick filter.
+199. Add a "jobs near me" map overlay.
+200. Add a "share job" feature with safe sharable links.
+201. Add a "report job" feature for suspicious listings.
 202. Add a confirmation modal when applying to a job explaining progress steps.
-203. Add an “application draft” autosave feature.
-204. Add a “draft recovery” prompt when returning to an in-progress application.
-205. Add a “application progress” bar to show steps.
-206. Add a “save and continue later” feature.
-207. Add a “view application as hirer” preview for workers.
-208. Add consistent “cancel” buttons on all modals and flows.
+203. Add an "application draft" autosave feature.
+204. Add a "draft recovery" prompt when returning to an in-progress application.
+205. Add a "application progress" bar to show steps.
+206. Add a "save and continue later" feature.
+207. Add a "view application as hirer" preview for workers.
+208. Add consistent "cancel" buttons on all modals and flows.
 209. Add help text for complex fields (e.g., pricing, duration).
 210. Add validation feedback inline for forms.
-211. Add a “why we need this info” tooltip for sensitive questions.
-212. Add a “read-only preview” mode for complex forms.
-213. Add a “copy job link” button to job detail pages.
-214. Add a “bookmark job” feature for later.
-215. Add a “jobs saved” section with reminders.
-216. Add a “frequently asked questions” section on job create that is context-aware.
-217. Add a “recommended skills” section in the profile based on job categories.
-218. Add a “skill suggestions” algorithm (server-side) and display in UI.
-219. Add a “profile completeness” progress bar for workers.
-220. Add a “why profile matters” tooltip in profile edit.
-221. Add a “profile preview” that shows how hirers see you.
-222. Add a “cover photo” for worker profiles.
-223. Add a “featured worker” spotlight section on the home page.
-224. Add a “multi-language” option (foundation for future translations).
-225. Add a “language selector” in the header.
-226. Add a “right-to-left” layout option for languages like Arabic.
+211. Add a "why we need this info" tooltip for sensitive questions.
+212. Add a "read-only preview" mode for complex forms.
+213. Add a "copy job link" button to job detail pages.
+214. Add a "bookmark job" feature for later.
+215. Add a "jobs saved" section with reminders.
+216. Add a "frequently asked questions" section on job create that is context-aware.
+217. Add a "recommended skills" section in the profile based on job categories.
+218. Add a "skill suggestions" algorithm (server-side) and display in UI.
+219. Add a "profile completeness" progress bar for workers.
+220. Add a "why profile matters" tooltip in profile edit.
+221. Add a "profile preview" that shows how hirers see you.
+222. Add a "cover photo" for worker profiles.
+223. Add a "featured worker" spotlight section on the home page.
+224. Add a "multi-language" option (foundation for future translations).
+225. Add a "language selector" in the header.
+226. Add a "right-to-left" layout option for languages like Arabic.
 227. Add a consistent mobile nav behavior and keep it sticky.
-228. Add a “pull to refresh” gesture on lists (mobile).
-229. Add a “offline/online status” indicator in the header.
-230. Add a “network speed detection” and adjust UI for slow networks.
-231. Add a “poor network mode” that reduces images and removes animations.
-232. Add a “data saver” toggle (for mobile data savings).
-233. Add a “dark mode / high contrast mode” switch.
+228. Add a "pull to refresh" gesture on lists (mobile).
+229. Add a "offline/online status" indicator in the header.
+230. Add a "network speed detection" and adjust UI for slow networks.
+231. Add a "poor network mode" that reduces images and removes animations.
+232. Add a "data saver" toggle (for mobile data savings).
+233. Add a "dark mode / high contrast mode" switch.
 234. Ensure theme persistence across sessions.
-235. Add a “respect OS theme preference” toggle.
-236. Add a “keyboard navigation mode” for accessibility.
-237. Add a “skip to main content” link (already exists, audit for visibility).
+235. Add a "respect OS theme preference" toggle.
+236. Add a "keyboard navigation mode" for accessibility.
+237. Add a "skip to main content" link (already exists, audit for visibility).
 238. Ensure focus is managed properly on modal open/close.
 239. Ensure all interactive elements are reachable by tabbing.
 240. Add focus outlines to all clickables (MUI should handle but confirm).
-241. Add a “voice over” screen reader test pass for key flows.
-242. Add an “accessibility statement” in the footer.
-243. Add a “help center” with search and categories.
-244. Add a “contact us” form with user context (current page, role).
-245. Add a “feedback” button on every page.
-246. Add a “report bug” modal that captures browser logs.
-247. Add a “system status” page with backend health info.
-248. Add a “maintenance mode” banner for when backend is down.
-249. Add a “load testing detection” feature (slow request alerts).
-250. Add a “feature beta” toggle for experimental UI.
-251. Add a “wizard” onboarding flow for new users.
-252. Add a “role discovery quiz” to help new users pick worker/hirer path.
-253. Add a “readonly mode” for non-signed-in users when browsing.
-254. Add a “conversion funnel analytics” capture for key steps (join, post job, apply).
-255. Add a “thank you” screen after important actions (apply, post job).
-256. Add a “success messages” pattern (consistent toast style).
-257. Add a “warning message” pattern for destructive actions.
-258. Add a “help bubble” component for microcopy.
-259. Add a “secondary action” design system pattern (like “Save and continue later”).
+241. Add a "voice over" screen reader test pass for key flows.
+242. Add an "accessibility statement" in the footer.
+243. Add a "help center" with search and categories.
+244. Add a "contact us" form with user context (current page, role).
+245. Add a "feedback" button on every page.
+246. Add a "report bug" modal that captures browser logs.
+247. Add a "system status" page with backend health info.
+248. Add a "maintenance mode" banner for when backend is down.
+249. Add a "load testing detection" feature (slow request alerts).
+250. Add a "feature beta" toggle for experimental UI.
+251. Add a "wizard" onboarding flow for new users.
+252. Add a "role discovery quiz" to help new users pick worker/hirer path.
+253. Add a "readonly mode" for non-signed-in users when browsing.
+254. Add a "conversion funnel analytics" capture for key steps (join, post job, apply).
+255. Add a "thank you" screen after important actions (apply, post job).
+256. Add a "success messages" pattern (consistent toast style).
+257. Add a "warning message" pattern for destructive actions.
+258. Add a "help bubble" component for microcopy.
+259. Add a "secondary action" design system pattern (like "Save and continue later").
 260. Add consistent spacing and typography across all forms.
-261. Add a “responsive grid audit” ensuring layout doesn’t break in small viewports.
-262. Add a “skip animation” mode for users with motion sensitivity.
-263. Add a “keyboard shortcuts cheat sheet” for power users.
-264. Add a “profile picture upload” with cropping and compression.
-265. Add an “image upload size limit” warning.
-266. Add a “preview uploaded images” UI.
-267. Add a “gallery for worker portfolio” with lazy loading.
-268. Add a “sort / filter” UI for portfolio items.
-269. Add a “project template” builder for portfolio entries.
-270. Add a “work history” timeline component.
-271. Add a “certificate verification” flow for worker credentials.
-272. Add a “document upload” system for verification (e.g., ID, certifications).
-273. Add a “verification status” indicator on worker profile.
-274. Add a “verified badge” style for verified workers.
-275. Add a “review and rating” path for hirers to rate workers (or vice versa).
-276. Add a “review guidelines” modal before posting a review.
-277. Add a “report review abuse” flow.
-278. Add a “review summary” chart on user profile.
-279. Add “trust metrics” (response rate, completion rate, etc.) to profiles.
-280. Add a “reason codes” system for job cancellation.
-281. Add a “dispute resolution” flow for payment / job issues.
-282. Add an “FAQ” that is context aware based on current page.
-283. Add a “monthly digest” email preference section (in settings).
-284. Add a “notification preferences” panel (push/email/SMS).
-285. Add a “device management” page listing active sessions.
-286. Add a “language settings” page.
-287. Add a “currency settings” page (if multi-currency supported).
-288. Add a “time zone” setting.
-289. Add a “measurement units” setting (metric/imperial) where relevant.
-290. Add a “support access” link in the app header for premium users.
-291. Add a “documentation portal” link for developers using APIs.
-292. Add an “API key management” page if API access is available.
-293. Add a “webhook subscriptions” management page if supported.
-294. Add a “data export” page for GDPR compliance.
-295. Add a “data retention policy” and making it easy for users to request deletion.
-296. Add a “terms and conditions acceptance” flow for new terms updates.
-297. Add a “changelog / release notes” page in the app.
-298. Add a “feedback loop” for product improvements (survey pop-up after key actions).
-299. Add a “power user mode” that reveals advanced settings.
-300. Add a “mobile home screen shortcut” prompt for PWA installs.
-301. Add an “app update notice” that provides a link rather than forcing reload.
-302. Add a “forced app update” system only when necessary (security patch).
-303. Add a “retry button” on all failure states instead of relying on reload.
-304. Add a “best effort” offline read-only mode for key pages.
-305. Add a “bandwidth saving mode” that avoids loading images.
-306. Add a “preload / prerender” strategy for the most common routes.
-307. Add a “dashboard customisation” option (reorder panels, hide widgets).
-308. Add a “work history export” to download a CSV of past jobs.
-309. Add a “clear local storage” button in settings for power users.
-310. Add a “debug mode” toggle that enables more logs for support.
-311. Add a “swap accounts” feature for users with multiple roles.
-312. Add a “role switcher” UI on the header for users who are both worker/hirer.
-313. Add an “improve profile” tool that shows missing sections.
-314. Add a “transaction history” page for payment tracking.
-315. Add a “invoice download” feature for completed payments.
-316. Add a “payment methods” management page.
-317. Add a “saved payment methods” UI.
-318. Add a “refund request” flow.
-319. Add a “complaint submission” form.
-320. Add a “metrics dashboard” for hirers (jobs posted, response times).
-321. Add a “worker performance dashboard” for workers (ratings, earnings).
-322. Add a “goal tracking” feature for workers (earn X this month).
-323. Add a “working hours tracker” (optional) for jobs.
-324. Add a “habit tracker” / “daily check-in” for worker engagement.
-325. Add a “weekly digest” email for active users.
-326. Add a “notification preferences” for each digest type.
-327. Add a “reminders” system for open applications.
-328. Add a “calendar integration” with Google/Outlook.
-329. Add a “map-based job search” for spatial discovery.
-330. Add a “heatmap” of job density in the region.
-331. Add a “route planning” feature for workers.
-332. Add a “store” for premium features.
-333. Add a “roadmap” page showing upcoming features.
-334. Add a “help video” library for common tasks.
+261. Add a "responsive grid audit" ensuring layout doesn't break in small viewports.
+262. Add a "skip animation" mode for users with motion sensitivity.
+263. Add a "keyboard shortcuts cheat sheet" for power users.
+264. Add a "profile picture upload" with cropping and compression.
+265. Add an "image upload size limit" warning.
+266. Add a "preview uploaded images" UI.
+267. Add a "gallery for worker portfolio" with lazy loading.
+268. Add a "sort / filter" UI for portfolio items.
+269. Add a "project template" builder for portfolio entries.
+270. Add a "work history" timeline component.
+271. Add a "certificate verification" flow for worker credentials.
+272. Add a "document upload" system for verification (e.g., ID, certifications).
+273. Add a "verification status" indicator on worker profile.
+274. Add a "verified badge" style for verified workers.
+275. Add a "review and rating" path for hirers to rate workers (or vice versa).
+276. Add a "review guidelines" modal before posting a review.
+277. Add a "report review abuse" flow.
+278. Add a "review summary" chart on user profile.
+279. Add "trust metrics" (response rate, completion rate, etc.) to profiles.
+280. Add a "reason codes" system for job cancellation.
+281. Add a "dispute resolution" flow for payment / job issues.
+282. Add an "FAQ" that is context aware based on current page.
+283. Add a "monthly digest" email preference section (in settings).
+284. Add a "notification preferences" panel (push/email/SMS).
+285. Add a "device management" page listing active sessions.
+286. Add a "language settings" page.
+287. Add a "currency settings" page (if multi-currency supported).
+288. Add a "time zone" setting.
+289. Add a "measurement units" setting (metric/imperial) where relevant.
+290. Add a "support access" link in the app header for premium users.
+291. Add a "documentation portal" link for developers using APIs.
+292. Add an "API key management" page if API access is available.
+293. Add a "webhook subscriptions" management page if supported.
+294. Add a "data export" page for GDPR compliance.
+295. Add a "data retention policy" and making it easy for users to request deletion.
+296. Add a "terms and conditions acceptance" flow for new terms updates.
+297. Add a "changelog / release notes" page in the app.
+298. Add a "feedback loop" for product improvements (survey pop-up after key actions).
+299. Add a "power user mode" that reveals advanced settings.
+300. Add a "mobile home screen shortcut" prompt for PWA installs.
+301. Add an "app update notice" that provides a link rather than forcing reload.
+302. Add a "forced app update" system only when necessary (security patch).
+303. Add a "retry button" on all failure states instead of relying on reload.
+304. Add a "best effort" offline read-only mode for key pages.
+305. Add a "bandwidth saving mode" that avoids loading images.
+306. Add a "preload / prerender" strategy for the most common routes.
+307. Add a "dashboard customisation" option (reorder panels, hide widgets).
+308. Add a "work history export" to download a CSV of past jobs.
+309. Add a "clear local storage" button in settings for power users.
+310. Add a "debug mode" toggle that enables more logs for support.
+311. Add a "swap accounts" feature for users with multiple roles.
+312. Add a "role switcher" UI on the header for users who are both worker/hirer.
+313. Add an "improve profile" tool that shows missing sections.
+314. Add a "transaction history" page for payment tracking.
+315. Add a "invoice download" feature for completed payments.
+316. Add a "payment methods" management page.
+317. Add a "saved payment methods" UI.
+318. Add a "refund request" flow.
+319. Add a "complaint submission" form.
+320. Add a "metrics dashboard" for hirers (jobs posted, response times).
+321. Add a "worker performance dashboard" for workers (ratings, earnings).
+322. Add a "goal tracking" feature for workers (earn X this month).
+323. Add a "working hours tracker" (optional) for jobs.
+324. Add a "habit tracker" / "daily check-in" for worker engagement.
+325. Add a "weekly digest" email for active users.
+326. Add a "notification preferences" for each digest type.
+327. Add a "reminders" system for open applications.
+328. Add a "calendar integration" with Google/Outlook.
+329. Add a "map-based job search" for spatial discovery.
+330. Add a "heatmap" of job density in the region.
+331. Add a "route planning" feature for workers.
+332. Add a "store" for premium features.
+333. Add a "roadmap" page showing upcoming features.
+334. Add a "help video" library for common tasks.
 335. Add an onboarding carousel for first-time users.
-336. Add a “customer support chat” integration.
-337. Add a “peer support forum” link.
-338. Add a “trusted resources” section (tutorials, webinars).
-339. Add a “feedback loop” for feature requests.
-340. Add a “reward program” badges for users who complete actions.
-341. Add an “elite member” status for high-rated workers.
-342. Add a “referral program” flow.
-343. Add a “promo code” input for discounts.
+336. Add a "customer support chat" integration.
+337. Add a "peer support forum" link.
+338. Add a "trusted resources" section (tutorials, webinars).
+339. Add a "feedback loop" for feature requests.
+340. Add a "reward program" badges for users who complete actions.
+341. Add an "elite member" status for high-rated workers.
+342. Add a "referral program" flow.
+343. Add a "promo code" input for discounts.
 344. Add analytics tracking for conversion funnel drop-offs.
-345. Add a “performance budget” report for page load times.
-346. Add a “core web vitals” dashboard into the admin.
-347. Add a “service worker update” performance metric.
-348. Add an “error rate” tracker for API failures.
-349. Add an “experience score” metric for user satisfaction.
-350. Add a “help with skills” wizard for workers.
-351. Add a “profile review” feature where users can request a review of their profile completeness.
-352. Add “best practices” tips within the app (inline microcopy).
-353. Add a “success stories” section on the homepage.
-354. Add an “in-app notification center” for system messages.
-355. Add a “push notification opt-in” for web push.
-356. Add a “push notification management” page.
-357. Add a “SMS notification” opt-in for critical alerts.
-358. Add a “voice call verification” fallback for 2FA.
-359. Add a “referral tracking” ID for referrals.
-360. Add a “campaign attribution” system for marketing.
+345. Add a "performance budget" report for page load times.
+346. Add a "core web vitals" dashboard into the admin.
+347. Add a "service worker update" performance metric.
+348. Add an "error rate" tracker for API failures.
+349. Add an "experience score" metric for user satisfaction.
+350. Add a "help with skills" wizard for workers.
+351. Add a "profile review" feature where users can request a review of their profile completeness.
+352. Add "best practices" tips within the app (inline microcopy).
+353. Add a "success stories" section on the homepage.
+354. Add an "in-app notification center" for system messages.
+355. Add a "push notification opt-in" for web push.
+356. Add a "push notification management" page.
+357. Add a "SMS notification" opt-in for critical alerts.
+358. Add a "voice call verification" fallback for 2FA.
+359. Add a "referral tracking" ID for referrals.
+360. Add a "campaign attribution" system for marketing.
 
 ---
 
@@ -391,151 +391,151 @@ This file is a deliberately massive backlog of actionable fixes, improvements, a
 373. Add a caching strategy for API calls using `react-query` or equivalent.
 374. Add expiration/invalidations for any cached responses.
 375. Ensure cached API responses are cleared on logout.
-376. Add a “network indicator” for slow connections and throttle requests accordingly.
-377. Add a “debounce” helper for fast input (search boxes, typeahead).
+376. Add a "network indicator" for slow connections and throttle requests accordingly.
+377. Add a "debounce" helper for fast input (search boxes, typeahead).
 378. Add consistent cancellation of async tasks when components unmount.
 379. Ensure `useEffect` cleanup functions cancel any outstanding requests.
 380. Use `AbortController` to cancel fetch calls when needed.
-381. Add “request deduplication” beyond GET deduping in `apiClient` if needed for POST.
+381. Add "request deduplication" beyond GET deduping in `apiClient` if needed for POST.
 382. Audit all `fetch` calls vs `axios` calls for consistency.
 383. Ensure `apiClient` uses a single Axios instance across the app.
 384. Add typed API response interfaces (even in JS with JSDoc) for key endpoints.
 385. Add a `apiClient.get` wrapper that logs slow responses for monitoring.
-386. Add a “circuit breaker” on repeated failing endpoints.
+386. Add a "circuit breaker" on repeated failing endpoints.
 387. Add automatic retry backoff for transient failures on GETs.
 388. Add a `useApi` hook that centralises error handling and loading state.
 389. Ensure all pages use `useApi` (or equivalent) rather than raw axios.
 390. Add a global error boundary that reports exceptions to telemetry.
 391. Add a custom `ErrorBoundary` component that shows a friendly error screen.
-392. Ensure the `ErrorBoundary` provides a “retry” button.
-393. Add a “warning” boundary for recoverable UI errors (e.g., chart render errors).
-394. Add built-in support for “network offline” fallback pages.
-395. Add a “reload” button on offline pages.
-396. Ensure `OfflineBanner` is always visible and doesn’t disappear behind toasts.
-397. Add a “toast manager” that queues notifications and prevents overlap.
+392. Ensure the `ErrorBoundary` provides a "retry" button.
+393. Add a "warning" boundary for recoverable UI errors (e.g., chart render errors).
+394. Add built-in support for "network offline" fallback pages.
+395. Add a "reload" button on offline pages.
+396. Ensure `OfflineBanner` is always visible and doesn't disappear behind toasts.
+397. Add a "toast manager" that queues notifications and prevents overlap.
 398. Ensure notifications do not spam the user in rapid succession.
-399. Add a “critical alert” type that persists until user dismisses.
-400. Add a “log level” system for notifications (info, warning, error).
-401. Add a “performance hint” banner for slow pages with suggestions.
-402. Add a “lazy load images” helper to defer heavy resources.
+399. Add a "critical alert" type that persists until user dismisses.
+400. Add a "log level" system for notifications (info, warning, error).
+401. Add a "performance hint" banner for slow pages with suggestions.
+402. Add a "lazy load images" helper to defer heavy resources.
 403. Add `srcset` and `sizes` for responsive images.
-404. Add a “prefetch” strategy for next-page assets.
+404. Add a "prefetch" strategy for next-page assets.
 405. Add `preload` for critical fonts and styles.
-406. Add a “tree-shaking check” for the build output.
-407. Add a “dead code report” in CI (unused exports, etc.).
-408. Add an “audit for large dependencies” (e.g., moment.js, lodash) and consider lighter alternatives.
-409. Ensure we don’t bundle full `@mui/icons-material` if only a few icons are used.
+406. Add a "tree-shaking check" for the build output.
+407. Add a "dead code report" in CI (unused exports, etc.).
+408. Add an "audit for large dependencies" (e.g., moment.js, lodash) and consider lighter alternatives.
+409. Ensure we don't bundle full `@mui/icons-material` if only a few icons are used.
 410. Add a lint rule to forbid importing `@mui/icons-material` as a whole and force per-icon imports.
-411. Add a “bundle size regression” guard in CI.
-412. Add a “critical CSS” extraction for above-the-fold content.
-413. Add a “lazy load non-critical CSS” feature.
+411. Add a "bundle size regression" guard in CI.
+412. Add a "critical CSS" extraction for above-the-fold content.
+413. Add a "lazy load non-critical CSS" feature.
 414. Ensure `theme` object is stable to avoid re-renders.
 415. Add instrumentation to measure `React.memo` effectiveness.
 416. Audit `useMemo`/`useCallback` usage for missing dependencies.
 417. Add an ESLint rule to enforce `react-hooks/exhaustive-deps` without disabling it.
 418. Add a `eslint-plugin-mui` or similar to catch invalid MUI usage.
-419. Add a “prop-types” or TypeScript type audit for all major components.
-420. Add a “warning banner” for users on old browser versions.
-421. Add a “deprecation notice” for deprecated features (e.g., old API endpoints).
-422. Add a “feature flag” system to roll out changes gradually.
-423. Add a “remote configuration” system (via backend) to toggle features.
-424. Add an “A/B experiment” framework (basic) for UI tweaks.
-425. Add a “performance budget” enforcement for slow routers.
-426. Add a “route prefetch” for common navigation flows.
-427. Add a “scroll preservation” behavior when routing back.
-428. Add a “focus restoration” mechanism on navigation.
-429. Add a “accessible route announcements” for screen readers.
-430. Add a “route change toast” for mobile users.
-431. Add a “back button behavior” audit on mobile web view.
-432. Add a “mobile soft keyboard aware” UI adjustments for forms.
-433. Add a “finger width” guideline for touch targets (≥44px).
-434. Add a “tap delay elimination” for mobile (use CSS `touch-action`).
-435. Add a “long press” support for mobile actions where useful.
-436. Add a “keyboard vs touch” mode detection for UI adjustments.
-437. Add a “high-DPI image” object for retina screens.
-438. Add a “low memory mode” for very constrained devices.
-439. Add a “record performance metrics per page load” and send to analytics.
-440. Add a “memory leak detector” for long-lived pages (polling timers, websockets).
+419. Add a "prop-types" or TypeScript type audit for all major components.
+420. Add a "warning banner" for users on old browser versions.
+421. Add a "deprecation notice" for deprecated features (e.g., old API endpoints).
+422. Add a "feature flag" system to roll out changes gradually.
+423. Add a "remote configuration" system (via backend) to toggle features.
+424. Add an "A/B experiment" framework (basic) for UI tweaks.
+425. Add a "performance budget" enforcement for slow routers.
+426. Add a "route prefetch" for common navigation flows.
+427. Add a "scroll preservation" behavior when routing back.
+428. Add a "focus restoration" mechanism on navigation.
+429. Add a "accessible route announcements" for screen readers.
+430. Add a "route change toast" for mobile users.
+431. Add a "back button behavior" audit on mobile web view.
+432. Add a "mobile soft keyboard aware" UI adjustments for forms.
+433. Add a "finger width" guideline for touch targets (≥44px).
+434. Add a "tap delay elimination" for mobile (use CSS `touch-action`).
+435. Add a "long press" support for mobile actions where useful.
+436. Add a "keyboard vs touch" mode detection for UI adjustments.
+437. Add a "high-DPI image" object for retina screens.
+438. Add a "low memory mode" for very constrained devices.
+439. Add a "record performance metrics per page load" and send to analytics.
+440. Add a "memory leak detector" for long-lived pages (polling timers, websockets).
 441. Add an `onbeforeunload` warning when unsaved changes exist.
-442. Add a “submit confirmation” for critical forms.
-443. Add a “prevent double submit” mechanism. 
-444. Add a “custom locale formatting” for dates/numbers per user preference.
-445. Add a “currency formatting” helper for local currency.
-446. Add a “number formatting” helper for large numbers (K/M). 
-447. Add a “retry with exponential backoff” helper used across the app.
-448. Add a “request queue” for background sync when offline.
-449. Add a “background sync retry” for jobs (apply, message send) when offline.
-450. Add a “job apply offline queue” that syncs when back online.
-451. Add a “message send offline queue” and show pending status.
+442. Add a "submit confirmation" for critical forms.
+443. Add a "prevent double submit" mechanism. 
+444. Add a "custom locale formatting" for dates/numbers per user preference.
+445. Add a "currency formatting" helper for local currency.
+446. Add a "number formatting" helper for large numbers (K/M). 
+447. Add a "retry with exponential backoff" helper used across the app.
+448. Add a "request queue" for background sync when offline.
+449. Add a "background sync retry" for jobs (apply, message send) when offline.
+450. Add a "job apply offline queue" that syncs when back online.
+451. Add a "message send offline queue" and show pending status.
 452. Add notifications when queued actions succeed after reconnect.
-453. Add an “offline action log” in settings to show queued tasks.
-454. Add a “debug mode” to force offline queue processing.
-455. Add a “progress indicator” for queued items.
-456. Add a “retry all” button for failed queued items.
-457. Add a “clear queue” button.
-458. Add a “system health dashboard” for service statuses.
-459. Add a “circuit breaker” UI when a service is down.
-460. Add a “maintenance mode banner” based on a remote flag.
-461. Add “user-visible service status” info in support section.
-462. Add a “connection quality meter” (good/poor/offline).
-463. Add a “data usage” indicator (how many MB used this session).
-464. Add a “cache size” report (storage used) in settings.
-465. Add a “clear cache” button that only affects cached assets.
-466. Add a “bundle cache buster” for long-lived clients.
-467. Add a “build version” check to avoid stale JS (hard refresh prompt).
-468. Add a “network error category” system for UX (timeout vs CORS etc).
-469. Add a “localization fallback” system for missing strings.
-470. Add a “translation coverage report”.
-471. Add an “i18n string audit” for missing keys.
-472. Add a “pluralization check” for translations.
-473. Add a “language detection” system for automatic defaults.
-474. Add a “manual language switcher” available in settings.
-475. Add a “content security check” for user-generated text (no HTML insertion).
-476. Add a “feature usage tracking” to analyze what features are used.
-477. Add a “user satisfaction feedback” prompt after key milestones.
-478. Add a “session replay” opt-in for debugging with user consent.
-479. Add a “customer support context” panel that shows current route + state.
-480. Add a “backend log ID” display for support to reference.
-481. Add a “tech support mode” toggle to show extra debug info.
-482. Add a “tooltips on/off” global toggle.
-483. Add a “hotkeys guide” modal.
-484. Add a “page structure audit” for semantic HTML.
-485. Add a “ARIA role coverage” audit for navigation components.
-486. Add a “focus trap” component for modals and drawers.
-487. Add an “aria-live” region for critical status messages.
-488. Add a “screen reader announcement” when content changes (e.g., job applied).
-489. Add a “hover delay” adjuster for accessible menus.
-490. Add a “tab index” audit to ensure correct order.
-491. Add a “skip navigation” link for screen readers.
-492. Add a “resize observer” usage for responsive layout adjustments.
-493. Add a “drag/drop” fallback for users who can’t use drag.
-494. Add a “high contrast mode” theme.
-495. Add a “font size” adjuster in settings.
-496. Add a “text spacing” accessibility option.
-497. Add a “screen zoom” detection and UI adjustment.
-498. Add a “reduced motion” mode respect with `prefers-reduced-motion`.
-499. Add a “table row striping” for readability.
-500. Add a “color contrast checker” for all components.
-501. Add a “use semantically correct tags” audit.
-502. Add a “no empty alt attributes” audit for images.
-503. Add a “aria-label” for all icon buttons.
-504. Add a “keyboard accessible dropdown” component.
-505. Add a “sticky header” that doesn’t interfere with screen reader navigation.
-506. Add a “touch target size checker” for mobile.
-507. Add a “form label association” audit.
-508. Add a “multi-step form progress indicator” for long forms.
-509. Add a “date picker” accessible alternative.
-510. Add a “time picker” accessible alternative.
-511. Add a “file upload” component with clear instructions.
-512. Add a “drag & drop” fallback for file upload.
-513. Add a “form autosave” indicator.
-514. Add a “validation summary” for forms with multiple errors.
-515. Add a “language fallback” message when translation missing.
-516. Add a “user onboarding checklist” for new accounts.
-517. Add a “first-time user tour” that can be replayed.
-518. Add a “help center search” with autocomplete.
-519. Add a “feature discovery” system for new features.
-520. Add a “personalized dashboard recommendations” based on activity.
+453. Add an "offline action log" in settings to show queued tasks.
+454. Add a "debug mode" to force offline queue processing.
+455. Add a "progress indicator" for queued items.
+456. Add a "retry all" button for failed queued items.
+457. Add a "clear queue" button.
+458. Add a "system health dashboard" for service statuses.
+459. Add a "circuit breaker" UI when a service is down.
+460. Add a "maintenance mode banner" based on a remote flag.
+461. Add "user-visible service status" info in support section.
+462. Add a "connection quality meter" (good/poor/offline).
+463. Add a "data usage" indicator (how many MB used this session).
+464. Add a "cache size" report (storage used) in settings.
+465. Add a "clear cache" button that only affects cached assets.
+466. Add a "bundle cache buster" for long-lived clients.
+467. Add a "build version" check to avoid stale JS (hard refresh prompt).
+468. Add a "network error category" system for UX (timeout vs CORS etc).
+469. Add a "localization fallback" system for missing strings.
+470. Add a "translation coverage report".
+471. Add an "i18n string audit" for missing keys.
+472. Add a "pluralization check" for translations.
+473. Add a "language detection" system for automatic defaults.
+474. Add a "manual language switcher" available in settings.
+475. Add a "content security check" for user-generated text (no HTML insertion).
+476. Add a "feature usage tracking" to analyze what features are used.
+477. Add a "user satisfaction feedback" prompt after key milestones.
+478. Add a "session replay" opt-in for debugging with user consent.
+479. Add a "customer support context" panel that shows current route + state.
+480. Add a "backend log ID" display for support to reference.
+481. Add a "tech support mode" toggle to show extra debug info.
+482. Add a "tooltips on/off" global toggle.
+483. Add a "hotkeys guide" modal.
+484. Add a "page structure audit" for semantic HTML.
+485. Add a "ARIA role coverage" audit for navigation components.
+486. Add a "focus trap" component for modals and drawers.
+487. Add an "aria-live" region for critical status messages.
+488. Add a "screen reader announcement" when content changes (e.g., job applied).
+489. Add a "hover delay" adjuster for accessible menus.
+490. Add a "tab index" audit to ensure correct order.
+491. Add a "skip navigation" link for screen readers.
+492. Add a "resize observer" usage for responsive layout adjustments.
+493. Add a "drag/drop" fallback for users who can't use drag.
+494. Add a "high contrast mode" theme.
+495. Add a "font size" adjuster in settings.
+496. Add a "text spacing" accessibility option.
+497. Add a "screen zoom" detection and UI adjustment.
+498. Add a "reduced motion" mode respect with `prefers-reduced-motion`.
+499. Add a "table row striping" for readability.
+500. Add a "color contrast checker" for all components.
+501. Add a "use semantically correct tags" audit.
+502. Add a "no empty alt attributes" audit for images.
+503. Add a "aria-label" for all icon buttons.
+504. Add a "keyboard accessible dropdown" component.
+505. Add a "sticky header" that doesn't interfere with screen reader navigation.
+506. Add a "touch target size checker" for mobile.
+507. Add a "form label association" audit.
+508. Add a "multi-step form progress indicator" for long forms.
+509. Add a "date picker" accessible alternative.
+510. Add a "time picker" accessible alternative.
+511. Add a "file upload" component with clear instructions.
+512. Add a "drag & drop" fallback for file upload.
+513. Add a "form autosave" indicator.
+514. Add a "validation summary" for forms with multiple errors.
+515. Add a "language fallback" message when translation missing.
+516. Add a "user onboarding checklist" for new accounts.
+517. Add a "first-time user tour" that can be replayed.
+518. Add a "help center search" with autocomplete.
+519. Add a "feature discovery" system for new features.
+520. Add a "personalized dashboard recommendations" based on activity.
 
 ---
 
@@ -679,7 +679,7 @@ This file is a deliberately massive backlog of actionable fixes, improvements, a
 656. Add tests for `Forbidden` route rendering.
 657. Add tests for `Loading` screens.
 658. Add tests for `ErrorBoundary` fallback UI.
-659. Add tests that ensure `framer-motion` animations don’t break in RTL.
+659. Add tests that ensure `framer-motion` animations don't break in RTL.
 660. Add snapshot tests for key components (header, footer, nav).
 661. Add tests for `BreadcrumbNavigation` being accurate for routes.
 662. Add tests for `SmartNavigation` item selection.
@@ -799,9 +799,9 @@ This file is a deliberately massive backlog of actionable fixes, improvements, a
 771. Add a `PERFORMANCE_TEST_PLAN.md` for load testing.
 772. Add a `TRADE_OFFS.md` for architectural decisions.
 773. Add a `DECISION_LOG.md` for major design decisions.
-774. Add an entry documenting “why we built secureStorage the way we did”.
-775. Add an entry documenting “why we chose axios + retry strategy”.
-776. Add an entry documenting “why we used PWA vs native app”.
+774. Add an entry documenting "why we built secureStorage the way we did".
+775. Add an entry documenting "why we chose axios + retry strategy".
+776. Add an entry documenting "why we used PWA vs native app".
 777. Add a `BACKLOG_PRIORITIZATION.md` describing how to score items.
 778. Add a `SEMVER_POLICY.md` for frontend.
 779. Add a `GIT_COMMIT_POLICY.md` for messages.
@@ -854,7 +854,7 @@ This file is a deliberately massive backlog of actionable fixes, improvements, a
 861. Refactor repeated forms into a shared `useForm` hook or Formik.
 862. Replace uncontrolled form inputs with controlled where needed for validation.
 863. Consolidate all hardcoded strings into a single `strings.js` / i18n file.
-864. Remove dead code (search for “TODO: remove” or old components).
+864. Remove dead code (search for "TODO: remove" or old components).
 865. Remove unused dependencies from `package.json`.
 866. Upgrade `react` and `react-dom` to the latest safe minor version.
 867. Upgrade `@mui/material` and related packages to latest patch.
@@ -873,7 +873,7 @@ This file is a deliberately massive backlog of actionable fixes, improvements, a
 880. Add a `typography` scale usage and avoid custom font sizes.
 881. Add a `zIndex` scale and avoid magic zIndex values.
 882. Ensure responsive breakpoints are consistently used.
-883. Ensure the app uses `sx` prop consistently and doesn’t mix with inline styles.
+883. Ensure the app uses `sx` prop consistently and doesn't mix with inline styles.
 884. Replace any inline CSS with theme-aware `sx` or styled components.
 885. Add lint rule to prevent `!important` in styles.
 886. Audit and remove unused SCSS or CSS files.
@@ -885,120 +885,120 @@ This file is a deliberately massive backlog of actionable fixes, improvements, a
 892. Add a `useLogger` hook for consistent logging.
 893. Add `.editorconfig` to enforce formatting.
 894. Add `prettier` config and ensure it runs on commit.
-895. Add `eslint` config to enforce rules and ensure it’s run in CI.
+895. Add `eslint` config to enforce rules and ensure it's run in CI.
 896. Add type checking with TypeScript or JSDoc (optional but recommended).
 897. Add a `tsconfig.json` skeleton even if JS (for gradual migration).
 898. Add automated code formatting hook (e.g., Husky + lint-staged).
-899. Add a “git hook” to prevent committing `console.log` statements.
-900. Add a “git hook” to prevent committing TODOs without a ticket reference.
-901. Add a “code coverage” badge and ensure coverage thresholds are met.
+899. Add a "git hook" to prevent committing `console.log` statements.
+900. Add a "git hook" to prevent committing TODOs without a ticket reference.
+901. Add a "code coverage" badge and ensure coverage thresholds are met.
 902. Add `jest` snapshots for key components.
-903. Add a “storybook” for visual component testing.
-904. Add a “cypress” or `playwright` suite for end-to-end tests.
+903. Add a "storybook" for visual component testing.
+904. Add a "cypress" or `playwright` suite for end-to-end tests.
 905. Add a `performance` job in CI to run core web vitals analysis.
-906. Add a “lint” job in CI to run ESLint with strict rules.
+906. Add a "lint" job in CI to run ESLint with strict rules.
 907. Add a `typecheck` job to run TypeScript checks if TS is added.
-908. Add a “build preview” job to ensure the production build succeeds.
+908. Add a "build preview" job to ensure the production build succeeds.
 909. Add a `deploy preview` in CI for PR preview deployments.
-910. Add a “security scan” job to run `npm audit` and fail on high severity.
-911. Add a “dependency update” workflow.
-912. Add a “documentation generation” step (e.g., Storybook build).
-913. Add a “markdown lint” check in CI.
+910. Add a "security scan" job to run `npm audit` and fail on high severity.
+911. Add a "dependency update" workflow.
+912. Add a "documentation generation" step (e.g., Storybook build).
+913. Add a "markdown lint" check in CI.
 914. Ensure CI runs tests in parallel where possible.
 915. Optimize CI caching for node_modules.
-916. Add a “preflight check” for environment variables.
-917. Add a “release checklist” with only run-time environment requirements.
-918. Add a “post-release smoke test” script.
-919. Add a “rollback script” for frontend if deployment fails.
-920. Add a “metrics dashboard” for build and test durations.
-921. Add a “health check” endpoint for the frontend app (simple HTML response).
-922. Add a “status page” that reflects service health.
-923. Add a “feature toggle” dashboard for the team.
-924. Add a “localized error message” system for 500/404 pages.
-925. Add a “maintenance mode” toggle in the frontend.
-926. Add a “debug overlay” when the app is in debug mode.
-927. Add a “peak load mitigation” plan for high traffic times.
-928. Add a “caching header policy” for static assets.
-929. Add a “long-term caching” strategy for hashed assets.
-930. Add a “cache busting” strategy for service worker resources.
-931. Add a “log rotation” for any client-side persisted logs.
-932. Add a “cookie banner” if needed for compliance.
-933. Add an explicit “cookie policy” page.
-934. Add an “app version display” somewhere in settings.
-935. Add a “build timestamp” to the app for debugging.
-936. Add a “server time sync” check for clock drift.
-937. Add a “device time mismatch” warning.
-938. Add a “multi-tenant config” support if needed.
-939. Add a “branding switch” for white label options.
-940. Add a “tenant-aware theming” system.
-941. Add a “feature flag matrix” for all known features.
-942. Add a “release gating” system based on feature flags.
-943. Add a “user segmentation” capability for A/B testing.
-944. Add a “cookieless session” mode if needed for privacy.
-945. Add a “custom domain” support for white-labeled deployments.
-946. Add a “language pack loader” for lazy loaded translations.
-947. Add a “content revision history” for editable help pages.
-948. Add a “security headers” deployment check.
-949. Add a “deprecated API usage” detector.
-950. Add a “type safety audit” for existing JS usage.
-951. Add a “migration plan” for moving to TypeScript (if desired).
-952. Add a “migration plan” for moving to React 19 (when released).
-953. Add a “platform alignment doc” with backend APIs.
-954. Add a “developer onboarding doc” for new engineers.
-955. Add a “team knowledge base” location.
-956. Add a “shared glossary” for terms (worker, hirer, job, etc.).
-957. Add a “style guide” for copywriting and microcopy.
-958. Add a “content review process” for UI text.
-959. Add a “translation workflow” for new languages.
-960. Add a “monthly review” process for backlog refinement.
-961. Add a “performance review” cadence.
-962. Add a “security review” cadence.
-963. Add a “release calendar” for the frontend.
-964. Add a “stakeholder demo” process.
-965. Add a “customer feedback loop” process.
-966. Add a “regression testing plan” for major changes.
-967. Add a “cleanup sprint plan” for technical debt.
-968. Add a “maintenance window schedule” for scheduled downtime.
-969. Add a “disaster recovery” plan for frontend outages.
-970. Add an “incident response” runbook.
-971. Add a “postmortem template” for incidents.
-972. Add a “bug triage” process.
-973. Add a “hotfix process” for critical issues.
-974. Add a “QA sign-off checklist”.
-975. Add a “UAT environment” for stakeholders.
-976. Add a “feature flag audit” performed periodically.
-977. Add a “dependency audit” performed monthly.
-978. Add a “security audit” performed quarterly.
-979. Add a “performance audit” performed quarterly.
-980. Add a “usability audit” performed quarterly.
-981. Add a “shadow mode” feature for A/B experiments.
-982. Add a “customer success dashboard” for adoption metrics.
-983. Add a “churn analysis” for at-risk users.
-984. Add a “re-engagement” campaign flow within the app.
-985. Add a “coach mode” that guides users through features.
-986. Add a “walkthrough” feature for new product launches.
-987. Add a “template system” for common job posting types.
-988. Add a “job posting wizard” with validation and review.
-989. Add a “draft autosave” for job postings.
-990. Add a “job posting preview” before publishing.
-991. Add a “job posting analytics” summary.
-992. Add a “job visibility settings” (public/private).
-993. Add a “job expiration” management page.
-994. Add a “job duplication” feature.
-995. Add a “job post template” library.
-996. Add a “job status automation” (e.g., auto-close after completion).
-997. Add a “job follow-up reminders” system.
-998. Add a “job completion survey” for both workers and hirers.
-999. Add a “post-completion rating flow”.
-1000. Add a “social sharing” feature for job postings.
+916. Add a "preflight check" for environment variables.
+917. Add a "release checklist" with only run-time environment requirements.
+918. Add a "post-release smoke test" script.
+919. Add a "rollback script" for frontend if deployment fails.
+920. Add a "metrics dashboard" for build and test durations.
+921. Add a "health check" endpoint for the frontend app (simple HTML response).
+922. Add a "status page" that reflects service health.
+923. Add a "feature toggle" dashboard for the team.
+924. Add a "localized error message" system for 500/404 pages.
+925. Add a "maintenance mode" toggle in the frontend.
+926. Add a "debug overlay" when the app is in debug mode.
+927. Add a "peak load mitigation" plan for high traffic times.
+928. Add a "caching header policy" for static assets.
+929. Add a "long-term caching" strategy for hashed assets.
+930. Add a "cache busting" strategy for service worker resources.
+931. Add a "log rotation" for any client-side persisted logs.
+932. Add a "cookie banner" if needed for compliance.
+933. Add an explicit "cookie policy" page.
+934. Add an "app version display" somewhere in settings.
+935. Add a "build timestamp" to the app for debugging.
+936. Add a "server time sync" check for clock drift.
+937. Add a "device time mismatch" warning.
+938. Add a "multi-tenant config" support if needed.
+939. Add a "branding switch" for white label options.
+940. Add a "tenant-aware theming" system.
+941. Add a "feature flag matrix" for all known features.
+942. Add a "release gating" system based on feature flags.
+943. Add a "user segmentation" capability for A/B testing.
+944. Add a "cookieless session" mode if needed for privacy.
+945. Add a "custom domain" support for white-labeled deployments.
+946. Add a "language pack loader" for lazy loaded translations.
+947. Add a "content revision history" for editable help pages.
+948. Add a "security headers" deployment check.
+949. Add a "deprecated API usage" detector.
+950. Add a "type safety audit" for existing JS usage.
+951. Add a "migration plan" for moving to TypeScript (if desired).
+952. Add a "migration plan" for moving to React 19 (when released).
+953. Add a "platform alignment doc" with backend APIs.
+954. Add a "developer onboarding doc" for new engineers.
+955. Add a "team knowledge base" location.
+956. Add a "shared glossary" for terms (worker, hirer, job, etc.).
+957. Add a "style guide" for copywriting and microcopy.
+958. Add a "content review process" for UI text.
+959. Add a "translation workflow" for new languages.
+960. Add a "monthly review" process for backlog refinement.
+961. Add a "performance review" cadence.
+962. Add a "security review" cadence.
+963. Add a "release calendar" for the frontend.
+964. Add a "stakeholder demo" process.
+965. Add a "customer feedback loop" process.
+966. Add a "regression testing plan" for major changes.
+967. Add a "cleanup sprint plan" for technical debt.
+968. Add a "maintenance window schedule" for scheduled downtime.
+969. Add a "disaster recovery" plan for frontend outages.
+970. Add an "incident response" runbook.
+971. Add a "postmortem template" for incidents.
+972. Add a "bug triage" process.
+973. Add a "hotfix process" for critical issues.
+974. Add a "QA sign-off checklist".
+975. Add a "UAT environment" for stakeholders.
+976. Add a "feature flag audit" performed periodically.
+977. Add a "dependency audit" performed monthly.
+978. Add a "security audit" performed quarterly.
+979. Add a "performance audit" performed quarterly.
+980. Add a "usability audit" performed quarterly.
+981. Add a "shadow mode" feature for A/B experiments.
+982. Add a "customer success dashboard" for adoption metrics.
+983. Add a "churn analysis" for at-risk users.
+984. Add a "re-engagement" campaign flow within the app.
+985. Add a "coach mode" that guides users through features.
+986. Add a "walkthrough" feature for new product launches.
+987. Add a "template system" for common job posting types.
+988. Add a "job posting wizard" with validation and review.
+989. Add a "draft autosave" for job postings.
+990. Add a "job posting preview" before publishing.
+991. Add a "job posting analytics" summary.
+992. Add a "job visibility settings" (public/private).
+993. Add a "job expiration" management page.
+994. Add a "job duplication" feature.
+995. Add a "job post template" library.
+996. Add a "job status automation" (e.g., auto-close after completion).
+997. Add a "job follow-up reminders" system.
+998. Add a "job completion survey" for both workers and hirers.
+999. Add a "post-completion rating flow".
+1000. Add a "social sharing" feature for job postings.
 
 ---
 
-✅ This file is the “1,000-item super backlog” you asked for. It’s intentionally huge and dense, and it’s designed as a **decision/triage artifact** rather than a direct implementation plan. Each item can be turned into a ticket.
+✅ This file is the "1,000-item super backlog" you asked for. It's intentionally huge and dense, and it's designed as a **decision/triage artifact** rather than a direct implementation plan. Each item can be turned into a ticket.
 
 If you want, I can next:
 - Generate a **structured Jira/Github issue backlog** with titles + acceptance criteria.
 - Start implementing the **highest-priority 20 items** (security + auth + critical UX).
 - Run another audit pass focused on **accessibility** or **network error handling**.
 
-Just say the word and I’ll pivot into the next mode. 🎯
+Just say the word and I'll pivot into the next mode. 🎯

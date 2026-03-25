@@ -19,7 +19,7 @@ User regression tests identified that the public worker discovery flow (`/search
 - `WorkerCard.jsx` continued to point at `/workers/:id`, falling afoul of the catch-all redirect to `/` because no such route existed.
 - Desktop `JobSearchForm` still emitted `onSubmit`, but SearchPage provided `onSearch`, so the "Find Work" button and trade dropdown never triggered a request (hence no URL params).
 - URL sync always rewrote location to JSON and navigated to `/search`, producing route hops and unreadable query parameters on `/find-talents`.
-- Clear-all filters lived only inside the empty state, so QA couldn’t easily reset the view while results existed.
+- Clear-all filters lived only inside the empty state, so QA couldn't easily reset the view while results existed.
 
 ## Fix Summary
 - Added helper utilities in `SearchPage.jsx`:
@@ -32,8 +32,8 @@ User regression tests identified that the public worker discovery flow (`/search
 - JobSearchForm now normalizes `onSearch`/`initialFilters`, syncing UI state with URL params so desktop submissions invoke `handleSearch` correctly.
 - `updateSearchURL` keeps visitors on `/find-talents` and preserves human-readable query parameters (`?trade=Plumbing&location=Accra`).
 - Added a route guard so URL sync skips navigation once the user moves to `/worker-profile/:workerId`, preventing the search page from hijacking profile views.
-- Trade and type dropdowns, skill chips, and text-field blurs auto-call the search handler so filter selections immediately push URL state even before pressing “Find Work.”
-- Active filters section now exposes a persistent “Clear all filters” button for quick resets.
+- Trade and type dropdowns, skill chips, and text-field blurs auto-call the search handler so filter selections immediately push URL state even before pressing "Find Work."
+- Active filters section now exposes a persistent "Clear all filters" button for quick resets.
 - Backend worker query now maps UI trades to stored synonyms (e.g., `Plumbing` → `Plumbing Services`, `Electrical Work` → `Licensed Electrician`) and searches `specializations`, `profession`, and worker profile categories with case-insensitive regex.
 
 ## Data Flow Trace

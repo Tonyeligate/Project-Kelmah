@@ -34,6 +34,7 @@ import {
   InputLabel,
   Select,
   Pagination,
+  Chip,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -43,10 +44,13 @@ import {
 import TransactionsList from '../components/TransactionsList';
 import { Link as RouterLink } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
+import PageCanvas from '@/modules/common/components/PageCanvas';
 import { currencyFormatter } from '@/modules/common/utils/formatters';
 import { hasRole } from '../../../utils/userUtils';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 const PaymentsPage = () => {
+  const isMobile = useBreakpointDown('md');
   const [selectedTab, setSelectedTab] = useState(0);
   const [animate] = useState(true);
   const [anchorEl, setAnchorEl] = useState(null);
@@ -137,23 +141,29 @@ const PaymentsPage = () => {
   }, [selectedTab, tabs.length]);
 
   return (
-    <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 0.5, sm: 2 } }}>
-      <Helmet><title>Payments | Kelmah</title></Helmet>
-      <Box
+    <PageCanvas disableContainer sx={{ pt: { xs: 1.25, md: 4 }, pb: { xs: 4, md: 6 } }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 1.5, sm: 4 }, pb: { xs: 9, sm: 4 }, px: { xs: 0.5, sm: 2 } }}>
+        <Helmet><title>Payments | Kelmah</title></Helmet>
+        <Box
         sx={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           flexWrap: 'wrap',
           gap: 1.5,
-          mb: 3,
+          mb: { xs: 1.25, md: 3 },
+          position: { xs: 'sticky', md: 'static' },
+          top: { xs: 66, md: 'auto' },
+          zIndex: 9,
+          py: { xs: 0.5, md: 0 },
+          bgcolor: { xs: 'background.default', md: 'transparent' },
         }}
       >
         <Box>
-          <Typography variant="h4" sx={{ color: 'secondary.main' }}>
+          <Typography variant="h4" sx={{ color: 'secondary.main', fontSize: { xs: '1.15rem', md: '2rem' } }}>
             Payments
           </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, display: { xs: 'none', md: 'block' } }}>
             Track transactions, review wallet activity, and manage billing safely.
           </Typography>
         </Box>
@@ -196,7 +206,7 @@ const PaymentsPage = () => {
             View Bills
           </MenuItem>
         </Menu>
-      </Box>
+        </Box>
       {slowLoading && (
         <Alert severity="info" sx={{ mb: 2 }}>
           Payments are taking longer than usual to load. The service may be waking up.
@@ -219,8 +229,16 @@ const PaymentsPage = () => {
       )}
 
       <Grid container spacing={3}>
+        {isMobile && (
+          <Grid item xs={12}>
+            <Stack direction="row" spacing={0.75} sx={{ overflowX: 'auto', pb: 0.25, scrollbarWidth: 'none', '&::-webkit-scrollbar': { display: 'none' } }}>
+              <Chip size="small" label={`Balance ${currencyFormatter.format(walletBalance || 0)}`} sx={{ fontWeight: 700 }} />
+              <Chip size="small" variant="outlined" label={`${Array.isArray(transactions) ? transactions.length : 0} txns`} sx={{ fontWeight: 700 }} />
+            </Stack>
+          </Grid>
+        )}
         {/* Wallet Balance */}
-        <Grid item xs={12}>
+        <Grid item xs={12} sx={{ display: { xs: 'none', md: 'block' } }}>
           <Paper
             sx={(theme) => ({
               p: 3,
@@ -275,6 +293,10 @@ const PaymentsPage = () => {
               textColor="inherit"
               aria-label="Payment page sections"
               sx={{
+                position: { xs: 'sticky', md: 'static' },
+                top: { xs: 118, md: 'auto' },
+                zIndex: 8,
+                bgcolor: { xs: 'background.paper', md: 'transparent' },
                 '& .MuiTab-root': { color: 'text.secondary' },
                 '& .Mui-selected': { color: 'secondary.main' },
               }}
@@ -290,7 +312,7 @@ const PaymentsPage = () => {
                   {/* Filters */}
                   <Box
                     sx={{
-                      mb: 3,
+                      mb: 1.5,
                       display: 'flex',
                       flexWrap: 'wrap',
                       columnGap: { xs: 1, sm: 2 },
@@ -306,7 +328,7 @@ const PaymentsPage = () => {
                       onChange={(e) => setStartDate(e.target.value)}
                       InputLabelProps={{ shrink: true }}
                       inputProps={{ 'aria-label': 'Filter transactions from date' }}
-                      sx={{ backgroundColor: 'action.hover', borderRadius: 1, minWidth: { sm: 170 }, flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' } }}
+                      sx={{ backgroundColor: 'action.hover', borderRadius: 1, minWidth: { sm: 170 }, flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' }, '& .MuiInputBase-root': { minHeight: 40 } }}
                     />
                     <TextField
                       variant="filled"
@@ -316,7 +338,7 @@ const PaymentsPage = () => {
                       onChange={(e) => setEndDate(e.target.value)}
                       InputLabelProps={{ shrink: true }}
                       inputProps={{ 'aria-label': 'Filter transactions to date' }}
-                      sx={{ backgroundColor: 'action.hover', borderRadius: 1, minWidth: { sm: 170 }, flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' } }}
+                      sx={{ backgroundColor: 'action.hover', borderRadius: 1, minWidth: { sm: 170 }, flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' }, '& .MuiInputBase-root': { minHeight: 40 } }}
                     />
                     <FormControl sx={{ minWidth: { xs: 0, sm: 170 }, flex: { xs: '1 1 100%', sm: '0 1 auto' } }}>
                       <InputLabel>Type</InputLabel>
@@ -325,6 +347,7 @@ const PaymentsPage = () => {
                         label="Type"
                         onChange={(e) => setFilterType(e.target.value)}
                         inputProps={{ 'aria-label': 'Filter transactions by type' }}
+                        sx={{ minHeight: 40 }}
                       >
                         <MenuItem value="all">All</MenuItem>
                         <MenuItem value="deposit">Deposit</MenuItem>
@@ -374,7 +397,8 @@ const PaymentsPage = () => {
           </Paper>
         </Grid>
       </Grid>
-    </Container>
+      </Container>
+    </PageCanvas>
   );
 };
 

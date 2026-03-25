@@ -10,7 +10,7 @@
   - Deep read of highest-impact pages: jobs, messaging, worker dashboard, hirer dashboard.
 
 ## Executive Summary
-- Overall mobile UX health: **Moderate**, not yet “firm and sharp” like Binance mobile.
+- Overall mobile UX health: **Moderate**, not yet "firm and sharp" like Binance mobile.
 - Biggest blockers are not visual style, but **interaction consistency** and **layout robustness**:
   1. Inconsistent mobile touch target sizes and button semantics.
   2. Magic-number spacing in chat/list pages causing unstable viewport behavior.
@@ -23,7 +23,7 @@
    - Current code still uses page-level compensating spacers and per-page viewport hacks.
 
 2. **Interaction determinism**
-   - Binance avoids “sometimes clickable cards, sometimes buttons” behavior.
+   - Binance avoids "sometimes clickable cards, sometimes buttons" behavior.
    - Current dashboards rely on clickable `Paper` blocks (`role="button"`) instead of consistent actionable components.
 
 3. **Tokenized visual system discipline**
@@ -251,7 +251,7 @@ The full frontend fix phases from this audit have now been implemented.
 #### 11) Error fallback leaks technical details in production UI
 - Severity: **Medium**
 - Section: `kelmah-frontend/src/main.jsx` (`ErrorFallback` details block)
-- What’s wrong:
+- What's wrong:
   - Technical error details are rendered to end users via `<details>` with `error.message` always visible.
   - Stack trace is DEV-only, but message disclosure still occurs in production.
 - Attack scenario:
@@ -263,7 +263,7 @@ The full frontend fix phases from this audit have now been implemented.
 #### 12) Jobs stats effect has stale closure fallback
 - Severity: **Medium**
 - Section: `kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx` (platform stats effect)
-- What’s wrong:
+- What's wrong:
   - `useEffect(..., [])` computes fallback `availableJobs: jobs.length`, but `jobs` is captured once and can become stale.
 - Current behavior:
   - If API stats fail during initial mount, available jobs may remain incorrect until hard refresh.
@@ -275,7 +275,7 @@ The full frontend fix phases from this audit have now been implemented.
 #### 13) Mobile bottom CTA bar misses safe-area-aware inset contract
 - Severity: **High**
 - Section: `kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx` (mobile fixed CTA)
-- What’s wrong:
+- What's wrong:
   - Fixed bottom CTA bar uses fixed `py`/`px` without explicit bottom safe-area compensation in container style.
 - Mobile impact:
   - On notched iOS devices, controls can feel too close to home indicator and reduce tap confidence.
@@ -285,7 +285,7 @@ The full frontend fix phases from this audit have now been implemented.
 #### 14) Global CSS has overlapping viewport/scroll contracts
 - Severity: **Medium**
 - Section: `kelmah-frontend/src/index.css`
-- What’s wrong:
+- What's wrong:
   - Multiple global declarations for `html/body/#root` width, max-width, overflow, min-height are repeated and partially conflicting across base + media blocks.
 - Mobile impact:
   - Increases risk of scroll lock regressions, phantom clipping, and brittle page-specific overrides.
@@ -295,17 +295,17 @@ The full frontend fix phases from this audit have now been implemented.
 #### 15) Hardcoded dashboard gradients drift from theme-token discipline
 - Severity: **Low**
 - Section: `kelmah-frontend/src/modules/hirer/pages/HirerDashboardPage.jsx` and `kelmah-frontend/src/modules/worker/pages/WorkerDashboardPage.jsx`
-- What’s wrong:
+- What's wrong:
   - KPI cards use multiple literal gradients and color hex values rather than shared tokens.
 - Why this matters:
-  - Style drift creates visual inconsistency and makes Binance-style “firm, precise” polish hard to enforce globally.
+  - Style drift creates visual inconsistency and makes Binance-style "firm, precise" polish hard to enforce globally.
 - How to fix:
   - Move card palettes to shared theme tokens and consume via semantic variants.
 
 #### 16) Role-button card interactions still rely on non-native semantics
 - Severity: **High**
 - Section: `ApplicationManagementPage`, `WorkerDashboardPage`, `HirerDashboardPage`
-- What’s wrong:
+- What's wrong:
   - Clickable cards are implemented as `Card/Paper + role="button" + key handlers`.
 - Mobile/accessibility impact:
   - Inconsistent active/focus semantics and greater risk of keyboard behavior drift.

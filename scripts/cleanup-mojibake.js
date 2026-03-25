@@ -5,20 +5,19 @@ const INCLUDE_EXTS = new Set(['.js', '.jsx', '.ts', '.tsx', '.json', '.md', '.ht
 const EXCLUDE_DIRS = new Set(['node_modules', '.git', 'dist', 'build', 'coverage']);
 
 const replacements = [
-  { find: //g, replace: '' },
-  { find: /↓/g, replace: '↓' },
-  { find: /→/g, replace: '→' },
-  { find: /✓/g, replace: '✓' },
-  { find: /•/g, replace: '•' },
-  { find: /☝️/g, replace: '☝️' },
-  { find: /₵/g, replace: '₵' },
-  { find: /–/g, replace: '–' },
-  { find: /—/g, replace: '—' },
-  { find: /'/g, replace: "'" },
-  { find: /'/g, replace: "'" },
-  { find: /"/g, replace: '"' },
-  { find: /"/g, replace: '"' },
-  { find: //g, replace: '' }
+  { find: new RegExp('\uFFFD', 'g'), replace: '' },
+  { find: new RegExp('\u2193', 'g'), replace: '↓' },
+  { find: new RegExp('\u2192', 'g'), replace: '→' },
+  { find: new RegExp('\u2713', 'g'), replace: '✓' },
+  { find: new RegExp('\u2022', 'g'), replace: '•' },
+  { find: new RegExp('\u261D\uFE0F', 'g'), replace: '☝️' },
+  { find: new RegExp('\u20B5', 'g'), replace: '₵' },
+  { find: new RegExp('\u2013', 'g'), replace: '–' },
+  { find: new RegExp('\u2014', 'g'), replace: '—' },
+  { find: new RegExp('\u2018', 'g'), replace: "'" },
+  { find: new RegExp('\u2019', 'g'), replace: "'" },
+  { find: new RegExp('\u201C', 'g'), replace: '"' },
+  { find: new RegExp('\u201D', 'g'), replace: '"' },
 ];
 
 let filesProcessed = 0;

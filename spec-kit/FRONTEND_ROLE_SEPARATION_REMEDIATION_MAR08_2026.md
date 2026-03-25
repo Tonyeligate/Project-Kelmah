@@ -42,7 +42,7 @@ After:
 
 Impact:
 - cleaner worker/hirer separation
-- fewer false “you are logged out” experiences
+- fewer false "you are logged out" experiences
 
 ### 3. Header nav now uses normalized role logic
 Updated `navLinks.js` to use `hasRole(user, 'hirer')` instead of raw `user.role === 'hirer'`.
@@ -138,7 +138,7 @@ Impact:
 
 ### 12. Jobs CTAs now separate worker and hirer intent better
 Updated `JobsPage.jsx` and `JobDetailsPage.jsx`:
-- hirers now see “Post a Job” / “Find Talent” pathways instead of worker-only CV/apply paths
+- hirers now see "Post a Job" / "Find Talent" pathways instead of worker-only CV/apply paths
 - `JobDetailsPage` no longer encourages hirers to use the worker apply flow
 - `JobDetailsPage` now uses centralized `selectIsAuthenticated`
 

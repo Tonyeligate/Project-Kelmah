@@ -1,6 +1,6 @@
 # Kelmah Platform — Super Documentation (Finalized Decisions)
 
-**Purpose**: Single authoritative record of the key product + engineering decisions made during Kelmah’s early build and later consolidation, with references back to the original documents where each decision was proposed/confirmed.
+**Purpose**: Single authoritative record of the key product + engineering decisions made during Kelmah's early build and later consolidation, with references back to the original documents where each decision was proposed/confirmed.
 
 **Evidence & audit trail**
 - Evidence extract (high-signal sections across archives): [DataAnalysisExpert/kelmah_decisions_extracted_2026-02-11.md](../DataAnalysisExpert/kelmah_decisions_extracted_2026-02-11.md)
@@ -8,7 +8,7 @@
 - Extraction outcome (from evidence footer): 2,139 files read OK, 80 unreadable/binary, 1,368 extracted blocks
 
 **Authority order (when sources conflict)**
-1. Explicitly “consolidated/complete/verified” spec-kit decisions
+1. Explicitly "consolidated/complete/verified" spec-kit decisions
 2. Current operational instructions and protocols (spec-kit)
 3. Audits (problem statements + recommendations)
 4. Kelmaholddocs/old-docs diagrams and early plans (historical intent)
@@ -59,10 +59,10 @@ Kelmah connects vocational workers (carpenters, masons, plumbers, electricians, 
 - [spec-kit/.github/copilot-instructions.md](.github/copilot-instructions.md)
 
 ### 2.3 Service-to-service communication (Final)
-**Final**: Do not introduce a tightly-coupled synchronous “service mesh” as a default requirement. Prefer gateway-owned validation and/or asynchronous patterns when cross-service coordination is needed.
+**Final**: Do not introduce a tightly-coupled synchronous "service mesh" as a default requirement. Prefer gateway-owned validation and/or asynchronous patterns when cross-service coordination is needed.
 
 **Superseded / historical**
-- Older audit notes proposed a “service mesh” style inter-service communication as “required”.
+- Older audit notes proposed a "service mesh" style inter-service communication as "required".
 
 **Primary sources**
 - [backup/root_cleanup_20260201/audit-reports/CRITICAL_BACKEND_ISSUES_COMPREHENSIVE.md](../backup/root_cleanup_20260201/audit-reports/CRITICAL_BACKEND_ISSUES_COMPREHENSIVE.md)
@@ -102,7 +102,7 @@ Kelmah connects vocational workers (carpenters, masons, plumbers, electricians, 
 
 ## 2A) Backend Service Contract (How Backend Components Are Supposed to Work)
 
-This section defines backend “ownership boundaries” and the required behavior of gateway + services.
+This section defines backend "ownership boundaries" and the required behavior of gateway + services.
 
 ### 2A.1 Gateway is the only public entry (Final)
 - Frontend must call the API Gateway via `/api/*`.
@@ -169,7 +169,7 @@ Scheduling is cross-cutting (jobs + contracts + messaging), but the simplest sta
 ### 2A.6 Premium/subscriptions backend placement (Final)
 Subscriptions are payment-coupled, so ownership should be:
 - **payment-service** stores subscription state + billing events
-- Gateway exposes a single read endpoint for “current entitlements”
+- Gateway exposes a single read endpoint for "current entitlements"
 - Frontend gates features based on entitlements
 
 **Primary sources**
@@ -344,7 +344,7 @@ This is the *effective* public API surface exposed by the API Gateway today. Fro
 
 ### 3.5 API Alignment Matrix (Current vs Required) (Final)
 
-These are the highest-impact “contract mismatches” that cause 404s/405s or silent failures. Fixing them is mandatory before restructuring.
+These are the highest-impact "contract mismatches" that cause 404s/405s or silent failures. Fixing them is mandatory before restructuring.
 
 **Mismatch 1 — Job status update method**
 - **Gateway currently exposes**: `PUT /api/jobs/:id/status`
@@ -446,7 +446,7 @@ These are the highest-impact “contract mismatches” that cause 404s/405s or s
 ## 5A) Frontend Runtime (How the App Boots)
 
 ### 5A.1 Entry points & providers (Final)
-Kelmah’s frontend starts in `main.jsx` and wraps the app with providers in this order:
+Kelmah's frontend starts in `main.jsx` and wraps the app with providers in this order:
 - Redux store provider
 - React Query client provider
 - React Router `BrowserRouter`
@@ -459,7 +459,7 @@ Kelmah’s frontend starts in `main.jsx` and wraps the app with providers in thi
 - [kelmah-frontend/src/main.jsx](../kelmah-frontend/src/main.jsx)
 
 ### 5A.2 Theme bootstrapping (Final)
-Theme is pre-applied in `index.html` before React mounts to avoid “flash of wrong theme”. This must preserve the black/gold/white brand.
+Theme is pre-applied in `index.html` before React mounts to avoid "flash of wrong theme". This must preserve the black/gold/white brand.
 
 **Primary sources**
 - [kelmah-frontend/index.html](../kelmah-frontend/index.html)
@@ -478,7 +478,7 @@ Theme is pre-applied in `index.html` before React mounts to avoid “flash of wr
 
 ## 5B) Frontend Module Contract (How Components Are Supposed to Work)
 
-This section is the “rules of the road” for frontend components so the app stays maintainable during restructuring.
+This section is the "rules of the road" for frontend components so the app stays maintainable during restructuring.
 
 ### 5B.1 Directory contract (Final)
 Kelmah uses domain-driven modules under `kelmah-frontend/src/modules/`.
@@ -559,7 +559,7 @@ Every page that hits the network must include:
 
 ## 5C) Frontend Feature Definitions (Concrete Behavior)
 
-This section defines “what must happen in the UI” for the main platform areas.
+This section defines "what must happen in the UI" for the main platform areas.
 
 ### 5C.1 Authentication (Final behavior)
 **User story**: A user can register/login, stay logged in securely, and access role-protected pages.
@@ -626,7 +626,7 @@ This section defines “what must happen in the UI” for the main platform area
 **UI expectations**
 - Wallet balance + transaction history
 - Escrow create/fund/release/refund
-- Clear states for “pending/processing/failed/success”
+- Clear states for "pending/processing/failed/success"
 
 **Backend contract (implemented today — payment-service, via gateway)**
 - Payment methods (saved instruments):
@@ -740,7 +740,7 @@ These must be aligned (either adjust router aliases to match existing navigation
 - QuickJob statuses include: `pending`, `quoted`, `accepted`, `funded`, `worker_on_way`, `worker_arrived`, `in_progress`, `completed`, `approved`, `disputed`, `cancelled`, `expired`.
 
 **Implementation notes (verified)**
-- QuickJobs include a geospatial `location` and support “nearby” search via coordinates.
+- QuickJobs include a geospatial `location` and support "nearby" search via coordinates.
 - The create flow requires `category`, `description`, and `location` (with `coordinates`, `address`, `city`, `region`).
 - Notifications to nearby workers are explicitly marked TODO in the controller (not yet wired to notifications delivery).
 
@@ -833,7 +833,7 @@ These must be aligned (either adjust router aliases to match existing navigation
 **UI expectations**
 - Worker search supports text query, trade/skills filtering, rating/price sorting, and (where enabled) geo-radius search.
 - Worker profile page shows identity + skill tags, portfolio items, certificates, ratings, and an availability/status indicator.
-- “Contact” / “Message” entry points create or open a conversation (messaging module) and should work without cross-module duplication.
+- "Contact" / "Message" entry points create or open a conversation (messaging module) and should work without cross-module duplication.
 
 **API calls (frontend services today)**
 - Worker reads mostly call user-service through `/api/users/workers/*` (because apiClient baseURL includes `/api`):
@@ -866,7 +866,7 @@ These must be aligned (either adjust router aliases to match existing navigation
 
 **Current implementation note (important)**
 - `user-service` settings are currently stored in an **in-memory Map** and are lost on service restart.
-- Frontend `settingsService` therefore treats settings reads as “best-effort” and falls back to safe defaults.
+- Frontend `settingsService` therefore treats settings reads as "best-effort" and falls back to safe defaults.
 
 **API calls**
 - `GET /api/settings`
@@ -984,7 +984,7 @@ Premium features are offered via subscription tiers to provide extra value for p
 
 **Hirers (examples)**
 - Featured job postings
-- “Top talent” access (Kelmah Verified pool)
+- "Top talent" access (Kelmah Verified pool)
 - Advanced search filters
 
 **Primary sources**
@@ -1036,7 +1036,7 @@ LocalTunnel URL changes are propagated automatically; manual edits are explicitl
 
 ### 6.3 Frontend API Base URL Resolution (What Actually Happens Today) (Final)
 
-Frontend networking is “single base URL” + “relative paths”, via the centralized axios client.
+Frontend networking is "single base URL" + "relative paths", via the centralized axios client.
 
 **Resolution order (highest priority first)**
 1. `window.RUNTIME_CONFIG.apiUrl` (populated by `public/runtime-config.json`)
@@ -1100,7 +1100,7 @@ All fixes follow an investigation-first protocol: scope → file surface → end
 
 ## 9) Restructure Move-Map (What to Move Where)
 
-This section answers: “what should be moved, and where”, without deleting anything blindly.
+This section answers: "what should be moved, and where", without deleting anything blindly.
 
 ### 9.1 Frontend: keep `src/` import-clean (Final)
 Rule: only code that is part of the live app should remain under `kelmah-frontend/src/`. Backups, audits, and unused route configs should move OUT of `src/` so they are not accidentally bundled or referenced.
@@ -1121,7 +1121,7 @@ Rule: authoritative decisions live in `spec-kit/`. Historical and backup docs re
 
 ### 9.3 Deletion policy (Final)
 - Do not delete until:
-	1) a workspace-wide reference search confirms “no imports / no runtime references”, and
+	1) a workspace-wide reference search confirms "no imports / no runtime references", and
 	2) the app builds and runs after the move.
 
 **Primary sources**

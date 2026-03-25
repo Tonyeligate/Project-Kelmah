@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import { Box, Container, Stack, Typography } from '@mui/material';
 import { Helmet } from 'react-helmet-async';
+import PageCanvas from '../../common/components/PageCanvas';
 
 const PAGE_CONTENT = {
   about: {
@@ -84,47 +85,49 @@ const InfoPage = ({ variant }) => {
   const content = PAGE_CONTENT[activeVariant];
 
   return (
-    <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
-      <Helmet>
-        <title>{`${content.title} | Kelmah`}</title>
-      </Helmet>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h4" fontWeight={700} sx={{ mb: 1, wordBreak: 'break-word' }}>
-          {content.title}
-        </Typography>
-        <Typography color="text.secondary" sx={{ maxWidth: '72ch' }}>
-          {content.subtitle}
-        </Typography>
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          sx={{
-            mt: 1.25,
-            px: 1.5,
-            py: 1,
-            borderRadius: 1.5,
-            bgcolor: 'action.hover',
-            border: '1px solid',
-            borderColor: 'divider',
-            wordBreak: 'break-word',
-          }}
-        >
-          {PAGE_GUIDANCE[activeVariant]}
-        </Typography>
-      </Box>
-      <Stack spacing={2.5}>
-        {content.sections.map((section) => (
-          <Box key={section.heading} sx={{ p: 2.5, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
-            <Typography variant="h6" fontWeight={600} sx={{ mb: 1 }}>
-              {section.heading}
-            </Typography>
-            <Typography color="text.secondary" sx={{ wordBreak: 'break-word' }}>
-              {section.body}
-            </Typography>
-          </Box>
-        ))}
-      </Stack>
-    </Container>
+    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
+      <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
+        <Helmet>
+          <title>{`${content.title} | Kelmah`}</title>
+        </Helmet>
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="h4" fontWeight={700} sx={{ mb: 1, wordBreak: 'break-word' }}>
+            {content.title}
+          </Typography>
+          <Typography color="text.secondary" sx={{ maxWidth: '72ch' }}>
+            {content.subtitle}
+          </Typography>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{
+              mt: 1.25,
+              px: 1.5,
+              py: 1,
+              borderRadius: 1.5,
+              bgcolor: 'action.hover',
+              border: '1px solid',
+              borderColor: 'divider',
+              wordBreak: 'break-word',
+            }}
+          >
+            {PAGE_GUIDANCE[activeVariant]}
+          </Typography>
+        </Box>
+        <Stack spacing={2.5}>
+          {content.sections.map((section) => (
+            <Box key={section.heading} sx={{ p: 2.5, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
+              <Typography variant="h6" fontWeight={600} sx={{ mb: 1 }}>
+                {section.heading}
+              </Typography>
+              <Typography color="text.secondary" sx={{ wordBreak: 'break-word' }}>
+                {section.body}
+              </Typography>
+            </Box>
+          ))}
+        </Stack>
+      </Container>
+    </PageCanvas>
   );
 };
 

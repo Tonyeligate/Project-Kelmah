@@ -56,10 +56,13 @@ import {
 } from '../services/quickJobService';
 import { Helmet } from 'react-helmet-async';
 import { BOTTOM_NAV_HEIGHT } from '../../../constants/layout';
+import PageCanvas from '../../common/components/PageCanvas';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 const NearbyJobsPage = () => {
   const theme = useTheme();
   const navigate = useNavigate();
+  const isMobile = useBreakpointDown('md');
   const quoteTimerRef = useRef(null);
   const locationRef = useRef(null); // stable ref so fetchJobs doesn't need location in its deps
 
@@ -227,11 +230,12 @@ const NearbyJobsPage = () => {
   };
 
   return (
-    <Container maxWidth="md" sx={{ py: 3 }}>
+    <PageCanvas disableContainer sx={{ pt: { xs: 1.25, md: 4 }, pb: { xs: 4, md: 6 } }}>
+      <Container maxWidth="md" sx={{ py: { xs: 1.5, md: 3 }, pb: { xs: 10, md: 3 } }}>
       <Helmet><title>Nearby Jobs | Kelmah</title></Helmet>
       {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h5" fontWeight="bold">
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: { xs: 1.25, md: 3 } }}>
+        <Typography variant="h5" fontWeight="bold" sx={{ fontSize: { xs: '1.15rem', md: '1.5rem' } }}>
           Nearby Quick Jobs
         </Typography>
         <IconButton aria-label="Refresh jobs" onClick={() => fetchJobs()} disabled={loading || !location} sx={{ minWidth: 44, minHeight: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}>
@@ -255,23 +259,54 @@ const NearbyJobsPage = () => {
       )}
 
       {location && (
-        <Chip
-          icon={<MyLocationIcon />}
-          label="Searching near your current location"
-          variant="outlined"
-          size="small"
-          sx={{ mb: 2 }}
-        />
+        <Box
+          sx={{
+            position: 'sticky',
+            top: { xs: 66, md: 80 },
+            zIndex: 9,
+            display: 'flex',
+            gap: 0.75,
+            mb: 1.25,
+            py: 0.5,
+            bgcolor: 'background.default',
+            overflowX: 'auto',
+            scrollbarWidth: 'none',
+            '&::-webkit-scrollbar': { display: 'none' },
+          }}
+        >
+          <Chip
+            icon={<MyLocationIcon />}
+            label="Nearby"
+            variant="outlined"
+            size="small"
+            sx={{ fontWeight: 700 }}
+          />
+          <Chip
+            icon={<NavigationIcon />}
+            label={`Within ${maxDistance} km`}
+            variant="outlined"
+            size="small"
+            sx={{ fontWeight: 700 }}
+          />
+          {categoryFilter && (
+            <Chip
+              label={SERVICE_CATEGORIES.find((c) => c.id === categoryFilter)?.name || 'Category'}
+              size="small"
+              sx={{ fontWeight: 700 }}
+            />
+          )}
+        </Box>
       )}
 
       {/* Filters */}
-      <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
+      <Box sx={{ display: 'flex', gap: 1, mb: { xs: 1.5, md: 3 }, flexWrap: 'wrap' }}>
         <FormControl size="small" sx={{ minWidth: 150 }}>
           <InputLabel>Category</InputLabel>
           <Select
             value={categoryFilter}
             label="Category"
             onChange={(e) => setCategoryFilter(e.target.value)}
+            sx={{ minHeight: 40 }}
           >
             <MenuItem value="">All Categories</MenuItem>
             {SERVICE_CATEGORIES.map(cat => (
@@ -288,6 +323,7 @@ const NearbyJobsPage = () => {
             value={maxDistance}
             label="Distance"
             onChange={(e) => setMaxDistance(e.target.value)}
+            sx={{ minHeight: 40 }}
           >
             <MenuItem value={5}>5 km</MenuItem>
             <MenuItem value={10}>10 km</MenuItem>
@@ -343,20 +379,21 @@ const NearbyJobsPage = () => {
 
       {/* Jobs list */}
       {!loading && jobs.length > 0 && (
-        <Grid container spacing={2}>
+        <Grid container spacing={{ xs: 1.25, md: 2 }}>
           {jobs.map(job => (
             <Grid item xs={12} key={job._id}>
               <Card
                 sx={{
                   borderLeft: `4px solid ${theme.palette[getUrgencyColor(job.urgency)]?.main || theme.palette.primary.main}`,
                   transition: 'all 0.2s',
+                  borderRadius: { xs: 2.5, md: 1.5 },
                   '&:hover': {
                     transform: 'translateX(4px)',
                     boxShadow: 2
                   }
                 }}
               >
-                <CardContent>
+                <CardContent sx={{ p: { xs: 1.5, md: 2 } }}>
                   {/* Header: Category & Time */}
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -380,7 +417,7 @@ const NearbyJobsPage = () => {
                   </Box>
 
                   {/* Description */}
-                  <Typography variant="body2" sx={{ mb: 2, minHeight: 40 }}>
+                  <Typography variant="body2" sx={{ mb: 1.25, minHeight: 0, fontSize: { xs: '0.84rem', md: '0.875rem' } }}>
                     "{job.description}"
                   </Typography>
 
@@ -394,7 +431,7 @@ const NearbyJobsPage = () => {
 
                   {/* Photos preview */}
                   {job.photos?.length > 0 && (
-                    <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+                    <Box sx={{ display: 'flex', gap: 1, mb: 1.25 }}>
                       {job.photos.slice(0, 3).map((photo, i) => (
                         <Avatar
                           key={photo.url || photo || i}
@@ -430,13 +467,13 @@ const NearbyJobsPage = () => {
                   )}
                 </CardContent>
 
-                <CardActions sx={{ px: 2, pb: 2 }}>
+                <CardActions sx={{ px: { xs: 1.5, md: 2 }, pb: { xs: 1.5, md: 2 }, pt: 0.5 }}>
                   <Button
                     variant="contained"
                     startIcon={<SendIcon />}
                     onClick={() => openQuoteDialog(job)}
                     fullWidth
-                    sx={{ minHeight: 44 }}
+                    sx={{ minHeight: 42 }}
                   >
                     Send Quote
                   </Button>
@@ -448,7 +485,7 @@ const NearbyJobsPage = () => {
       )}
 
       {/* Floating refresh button */}
-      {location && (
+      {location && !isMobile && (
         <Fab
           color="primary"
           sx={{
@@ -464,11 +501,12 @@ const NearbyJobsPage = () => {
       )}
 
       {/* Quote Dialog */}
-      <Dialog
+        <Dialog
         open={quoteDialogOpen}
         onClose={() => !quoteSubmitting && setQuoteDialogOpen(false)}
         maxWidth="sm"
         fullWidth
+        fullScreen={isMobile}
         aria-labelledby="send-quote-dialog-title"
       >
         <DialogTitle id="send-quote-dialog-title">
@@ -592,7 +630,7 @@ const NearbyJobsPage = () => {
         </DialogContent>
 
         {!quoteSuccess && (
-          <DialogActions sx={{ px: 3, pb: 3 }}>
+          <DialogActions sx={{ px: { xs: 1.5, md: 3 }, pb: { xs: 1.5, md: 3 }, position: { xs: 'sticky', md: 'static' }, bottom: 0, bgcolor: { xs: 'background.paper', md: 'transparent' }, borderTop: { xs: '1px solid', md: 'none' }, borderColor: 'divider' }}>
             <Button onClick={() => setQuoteDialogOpen(false)} disabled={quoteSubmitting} sx={{ minHeight: 44 }}>
               Cancel
             </Button>
@@ -606,8 +644,9 @@ const NearbyJobsPage = () => {
             </Button>
           </DialogActions>
         )}
-      </Dialog>
-    </Container>
+        </Dialog>
+      </Container>
+    </PageCanvas>
   );
 };
 

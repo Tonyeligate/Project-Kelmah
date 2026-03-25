@@ -16,6 +16,7 @@ import {
 } from '@mui/material';
 import notificationService from '../services/notificationService';
 import { Helmet } from 'react-helmet-async';
+import PageCanvas from '../../common/components/PageCanvas';
 
 const NotificationSettingsPage = () => {
   const [prefs, setPrefs] = useState({
@@ -64,7 +65,8 @@ const NotificationSettingsPage = () => {
   };
 
   return (
-    <Container sx={{ py: { xs: 2, sm: 4 }, px: { xs: 0.5, sm: 2 } }}>
+    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
+      <Container sx={{ py: { xs: 2, sm: 4 }, px: { xs: 0.5, sm: 2 } }}>
       <Helmet><title>Notification Settings | Kelmah</title></Helmet>
       <Typography variant="h5" gutterBottom>
         Notification Preferences
@@ -177,21 +179,22 @@ const NotificationSettingsPage = () => {
         </Button>
       </Paper>
       )}
-      <Snackbar
-        open={toast.open}
-        autoHideDuration={4000}
-        onClose={() => setToast((prev) => ({ ...prev, open: false }))}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert
+        <Snackbar
+          open={toast.open}
+          autoHideDuration={4000}
           onClose={() => setToast((prev) => ({ ...prev, open: false }))}
-          severity={toast.severity}
-          sx={{ width: '100%' }}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
         >
-          {toast.message}
-        </Alert>
-      </Snackbar>
-    </Container>
+          <Alert
+            onClose={() => setToast((prev) => ({ ...prev, open: false }))}
+            severity={toast.severity}
+            sx={{ width: '100%' }}
+          >
+            {toast.message}
+          </Alert>
+        </Snackbar>
+      </Container>
+    </PageCanvas>
   );
 };
 

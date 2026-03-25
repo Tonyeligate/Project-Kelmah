@@ -56,7 +56,7 @@
 - **Action:** Align backend route signatures with gateway (prefer canonical REST: `/api/messages/conversations/:id/messages`) and remove regex rewrites where possible.
 
 ### 4. Attachment Upload Surface Area
-- Gateway exposes `/api/messages/attachments/upload` and `/api/messages/:conversationId/attachments`, yet service’s `routes/attachments.routes.js` mounts under `/api/attachments`. Need confirmation the proxy paths resolve correctly.
+- Gateway exposes `/api/messages/attachments/upload` and `/api/messages/:conversationId/attachments`, yet service's `routes/attachments.routes.js` mounts under `/api/attachments`. Need confirmation the proxy paths resolve correctly.
 - **Action:** Trace attachment routes end-to-end; add explicit tests to ensure uploads succeed through gateway.
 
 ### 5. Socket vs REST Feature Parity

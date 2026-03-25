@@ -23,6 +23,8 @@ import {
   DialogContent,
   DialogActions,
   Alert,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import { usePayments } from '../contexts/PaymentContext';
 import { Helmet } from 'react-helmet-async';
@@ -32,8 +34,12 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import { currencyFormatter } from '@/modules/common/utils/formatters';
+import PageCanvas from '../../common/components/PageCanvas';
 
 const BillPage = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   const { bills, loading, payBill, actionLoading, error } = usePayments();
   const timerRef = React.useRef(null);
   const billsArray = Array.isArray(bills)
@@ -146,11 +152,12 @@ const BillPage = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 0.5, sm: 2 } }}>
+    <PageCanvas disableContainer sx={{ pt: { xs: 1, sm: 4 }, pb: { xs: 10, md: 6 } }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 1, sm: 4 }, px: { xs: 0.75, sm: 2 } }}>
       <Helmet><title>Bills | Kelmah</title></Helmet>
       <Paper
         sx={{
-          p: { xs: 2, sm: 4 },
+          p: { xs: 1.5, sm: 4 },
           borderRadius: 2,
           background: (theme) => `linear-gradient(135deg, ${theme.palette.background.paper}, ${theme.palette.action.hover})`,
           color: 'text.primary',
@@ -159,19 +166,20 @@ const BillPage = () => {
         }}
       >
         <Typography
-          variant="h4"
+          variant={isMobile ? 'h5' : 'h4'}
           fontWeight="bold"
-          sx={{ mb: 3, color: 'secondary.main' }}
+          sx={{ mb: 1.25, color: 'secondary.main', lineHeight: 1.1 }}
         >
           Your Bills
         </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2, fontSize: { xs: '0.8rem', sm: '0.9rem' } }}>
           Review upcoming bills, filter by date or status, and pay pending bills.
         </Typography>
         {/* Filters */}
-        <Box sx={{ mb: 3, display: 'flex', flexWrap: 'wrap', gap: { xs: 1, sm: 2, md: 2, lg: 1.5 }, alignItems: 'center' }}>
+        <Box sx={{ mb: 2, display: 'flex', flexWrap: 'wrap', gap: { xs: 0.75, sm: 2, md: 2, lg: 1.5 }, alignItems: 'center' }}>
           <Tooltip title="Filter bills due on or after this date">
             <TextField
+              size={isMobile ? 'small' : 'medium'}
               label="Due From"
               type="date"
               value={startDate}
@@ -183,6 +191,7 @@ const BillPage = () => {
           </Tooltip>
           <Tooltip title="Filter bills due on or before this date">
             <TextField
+              size={isMobile ? 'small' : 'medium'}
               label="Due To"
               type="date"
               value={endDate}
@@ -193,7 +202,7 @@ const BillPage = () => {
             />
           </Tooltip>
           <Tooltip title="Filter by bill status">
-            <FormControl sx={{ minWidth: { xs: 0, sm: 140 }, flex: { xs: '1 1 100%', sm: '0 1 auto' } }}>
+            <FormControl size={isMobile ? 'small' : 'medium'} sx={{ minWidth: { xs: 0, sm: 140 }, flex: { xs: '1 1 100%', sm: '0 1 auto' } }}>
               <InputLabel>Status</InputLabel>
               <Select
                 value={statusFilter}
@@ -212,7 +221,7 @@ const BillPage = () => {
             <Button
               variant="outlined"
               color="secondary"
-              sx={{ borderWidth: 2, minHeight: 44, flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' } }}
+              sx={{ borderWidth: 2, minHeight: 42, flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' }, display: { xs: 'none', sm: 'inline-flex' } }}
               onClick={applyFilters}
             >
               Apply
@@ -222,7 +231,7 @@ const BillPage = () => {
             <Button
               variant="outlined"
               color="secondary"
-              sx={{ borderWidth: 2, minHeight: 44, flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' } }}
+              sx={{ borderWidth: 2, minHeight: 42, flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' }, display: { xs: 'none', sm: 'inline-flex' } }}
               onClick={clearFilters}
             >
               Clear Filters
@@ -359,7 +368,7 @@ const BillPage = () => {
                   for:
                 </Typography>
                 <Typography variant="subtitle1" fontWeight="medium">
-                  “{selectedBill.title}”
+                  "{selectedBill.title}"
                 </Typography>
               </Box>
             )}
@@ -391,8 +400,45 @@ const BillPage = () => {
             </Button>
           </DialogActions>
         </Dialog>
+
+        <Paper
+          elevation={8}
+          sx={(theme) => ({
+            display: { xs: 'flex', sm: 'none' },
+            position: 'fixed',
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: theme.zIndex.appBar + 2,
+            px: 1,
+            py: 1,
+            gap: 1,
+            borderTop: `1px solid ${theme.palette.divider}`,
+            backgroundColor: theme.palette.background.paper,
+          })}
+        >
+          <Button
+            fullWidth
+            variant="outlined"
+            color="secondary"
+            sx={{ minHeight: 42, borderWidth: 2 }}
+            onClick={clearFilters}
+          >
+            Clear
+          </Button>
+          <Button
+            fullWidth
+            variant="contained"
+            color="secondary"
+            sx={{ minHeight: 42, boxShadow: '0 2px 8px rgba(255,215,0,0.35)' }}
+            onClick={applyFilters}
+          >
+            Apply
+          </Button>
+        </Paper>
       </Paper>
     </Container>
+    </PageCanvas>
   );
 };
 

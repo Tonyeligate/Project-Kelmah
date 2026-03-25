@@ -17,13 +17,13 @@ const JobsCompactSearchBar = ({
   onSearchChange,
   onSearchSubmit,
   onFilterClick,
+  activeFilterCount = 0,
+  sortLabel = 'Most Relevant',
   placeholder = 'Search trade or role, for example plumber in Kumasi',
 }) => {
-  const handleSearchKeyPress = (e) => {
-    if (e.key === 'Enter' && onSearchSubmit) {
-      e.preventDefault();
-      onSearchSubmit();
-    }
+  const handleSearchSubmit = (event) => {
+    event.preventDefault();
+    onSearchSubmit && onSearchSubmit();
   };
 
   return (
@@ -31,21 +31,21 @@ const JobsCompactSearchBar = ({
       elevation={2}
       aria-label="Compact job search"
       sx={{
-        p: 1.25,
-        mb: 2,
+        p: 1,
+        mb: 1.25,
         bgcolor: 'var(--k-bg-surface)',
         backdropFilter: 'blur(10px)',
         border: '1px solid var(--k-accent-border)',
+        borderRadius: 2.5,
       }}
     >
-      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+      <Box component="form" onSubmit={handleSearchSubmit} sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
         {/* Search Input */}
         <TextField
           fullWidth
           size="small"
           value={searchValue}
           onChange={(e) => onSearchChange && onSearchChange(e.target.value)}
-          onKeyDown={handleSearchKeyPress}
           placeholder={placeholder}
           inputProps={{ 'aria-label': 'Search jobs by trade, skill, or location' }}
           InputProps={{
@@ -83,6 +83,7 @@ const JobsCompactSearchBar = ({
         <Button
           variant="contained"
           onClick={onFilterClick}
+          type="button"
           aria-label="Open job filters panel"
           title="Open job filters"
           sx={{
@@ -100,19 +101,38 @@ const JobsCompactSearchBar = ({
           <FilterListIcon />
         </Button>
       </Box>
-      <Box sx={{ mt: 1 }}>
+      <Box sx={{ mt: 0.75, display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
         <Typography
           variant="caption"
           sx={{
             color: 'var(--k-text-muted)',
-            display: 'block',
-            lineHeight: 1.4,
-            overflowWrap: 'anywhere',
+            lineHeight: 1.2,
+            px: 1,
+            py: 0.35,
+            borderRadius: 99,
+            border: '1px solid var(--k-accent-border)',
+            bgcolor: 'var(--k-bg-elevated, rgba(255,255,255,0.02))',
           }}
         >
-          Tip: Type the main trade first, then tap Filters to narrow by place,
-          pay, or timing.
+          Sort: {sortLabel}
         </Typography>
+        {activeFilterCount > 0 && (
+          <Typography
+            variant="caption"
+            sx={{
+              color: 'var(--k-gold)',
+              lineHeight: 1.2,
+              px: 1,
+              py: 0.35,
+              borderRadius: 99,
+              border: '1px solid var(--k-accent-border-strong)',
+              bgcolor: 'var(--k-accent-soft)',
+              fontWeight: 700,
+            }}
+          >
+            {activeFilterCount} active filter{activeFilterCount === 1 ? '' : 's'}
+          </Typography>
+        )}
       </Box>
     </Paper>
   );
@@ -123,6 +143,8 @@ JobsCompactSearchBar.propTypes = {
   onSearchChange: PropTypes.func,
   onSearchSubmit: PropTypes.func,
   onFilterClick: PropTypes.func,
+  activeFilterCount: PropTypes.number,
+  sortLabel: PropTypes.string,
   placeholder: PropTypes.string,
 };
 

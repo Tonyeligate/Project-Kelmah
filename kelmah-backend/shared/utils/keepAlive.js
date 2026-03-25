@@ -111,7 +111,7 @@ class KeepAliveManager {
     }
 
     // --- Sibling pings disabled: each service self-pings only ---
-    // Sibling pinging moved to each service’s own self-ping to avoid
+    // Sibling pinging moved to each service's own self-ping to avoid
     // relying on the API Gateway or any central coordinator.
 
   }

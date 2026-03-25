@@ -49,7 +49,7 @@ If request exceeds 5s or errors, hook sets friendly error message; ProfilePage s
 - **Frontend:**
   - Introduced 5-second timeout + lifecycle logging in `useProfile.loadProfile()` and propagated friendly error messaging.
   - Wrapped profile content in shared `ErrorBoundary` with retry controls on `ProfilePage`.
-  - Added “Retry Loading Profile” button + conditional alert when data is absent.
+  - Added "Retry Loading Profile" button + conditional alert when data is absent.
   - Hardened skills/education/experience mutations against `undefined` arrays.
   - Added service-level console.debug statements for better tracing.
 

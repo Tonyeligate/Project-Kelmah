@@ -56,7 +56,7 @@ For each file in the inventory:
    - Confirm it provides the expected API (functions, classes, constants).
    - Verify data shape agreements (request/response schemas, prop types, etc.).
    - Flag mismatches or duplication.
-2. Record results under the primary file’s audit entry.
+2. Record results under the primary file's audit entry.
 3. Ensure each secondary file is placed in the backlog to undergo a full primary audit later.
 
 ### 3.4 Tracking Cross-Coverage

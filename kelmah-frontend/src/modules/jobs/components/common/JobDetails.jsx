@@ -36,6 +36,23 @@ import {
 } from '../../../jobs/services/jobSlice';
 import { selectCurrentUser } from '../../../auth/services/authSlice';
 
+const formatGhanaCurrencyLabel = (value) => {
+  const amount = Number(value ?? 0);
+  if (Number.isNaN(amount)) {
+    return new Intl.NumberFormat('en-GH', {
+      style: 'currency',
+      currency: 'GHS',
+      minimumFractionDigits: 0,
+    }).format(0);
+  }
+
+  return new Intl.NumberFormat('en-GH', {
+    style: 'currency',
+    currency: 'GHS',
+    minimumFractionDigits: amount % 1 === 0 ? 0 : 2,
+  }).format(amount);
+};
+
 function JobDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -148,8 +165,8 @@ function JobDetails() {
                 <Typography color="text.secondary">
                   {job?.budget
                     ? typeof job.budget === 'object'
-                      ? `${job.budget.currency || 'GHS'} ${job.budget.min || 0} - ${job.budget.max || 0}`
-                      : `${job.currency || 'GHS'} ${job.budget.toLocaleString()}`
+                      ? `${formatGhanaCurrencyLabel(job.budget.min || 0)} - ${formatGhanaCurrencyLabel(job.budget.max || 0)}`
+                      : formatGhanaCurrencyLabel(job.budget)
                     : 'N/A'}
                 </Typography>
               </Box>

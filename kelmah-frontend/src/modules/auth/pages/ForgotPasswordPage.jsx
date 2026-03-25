@@ -14,6 +14,7 @@ import authService from '../services/authService';
 import { Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useBreakpointDown } from '@/hooks/useResponsive';
+import PageCanvas from '@/modules/common/components/PageCanvas';
 
 const ForgotPasswordPage = () => {
   const isActualMobile = useBreakpointDown('md');
@@ -46,6 +47,7 @@ const ForgotPasswordPage = () => {
   // Mobile-first forgot password view
   if (isActualMobile) {
     return (
+      <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
       <Box
         sx={{
           minHeight: '100vh',
@@ -232,6 +234,7 @@ const ForgotPasswordPage = () => {
           <Box sx={{ height: '20px', bgcolor: 'background.default' }} />
         </Box>
       </Box>
+      </PageCanvas>
     );
   }
 

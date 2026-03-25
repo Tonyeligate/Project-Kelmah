@@ -15,6 +15,14 @@
 
 
 
+
+
+
+
+
+
+
+
 const JobProgressTracker = () => {
   const theme = useTheme();
   const isMobile = useBreakpointDown('md');
@@ -40,13 +48,7 @@ const JobProgressTracker = () => {
     dispatch(fetchHirerJobs('completed'));
   }, [dispatch]);
 
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-GH', {
-      style: 'currency',
-      currency: 'GHS',
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
+  const formatCurrency = (amount) => formatGhanaCurrency(amount);
 
   const formatDate = (date) => {
     return new Date(date).toLocaleDateString('en-GH', {
@@ -519,7 +521,7 @@ const JobProgressTracker = () => {
             onChange={(e) => setPaymentAmount(e.target.value)}
             sx={{ mt: 2 }}
             InputProps={{
-              startAdornment: <Typography sx={{ mr: 1 }}>GH₵</Typography>,
+              startAdornment: <Typography sx={{ mr: 1 }}>{new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' }).format(0).replace(/0(?:\.00)?$/, '')}</Typography>,
             }}
           />
         </DialogContent>

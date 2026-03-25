@@ -58,4 +58,4 @@ This audit focuses on the **visual presentation**, **responsiveness**, and **dis
 - ✅ **Typography & spacing consistency**: Ensure all pages use theme typography tokens and spacing system.
 - ✅ **Visual hierarchy and color usage**: Check that buttons, cards, and navigation have consistent UI states and contrast.
 
-Tell me which direction you want next, or I can immediately generate the next 1,000-item backlog focused strictly on *visual/responsive UI improvements*.  (We can also continue expanding toward the “1 million” backlog goal.)
+Tell me which direction you want next, or I can immediately generate the next 1,000-item backlog focused strictly on *visual/responsive UI improvements*.  (We can also continue expanding toward the "1 million" backlog goal.)

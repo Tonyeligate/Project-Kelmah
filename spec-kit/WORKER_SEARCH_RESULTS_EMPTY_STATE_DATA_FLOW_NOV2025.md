@@ -28,13 +28,13 @@ Browse jobs button uses navigate('/jobs') to pivot users toward open job listing
 ```
 
 ## Issues Found
-❌ **Issue 1**: Empty state presented minimal text (“No workers found”), offering no recovery guidance for QA testers.
+❌ **Issue 1**: Empty state presented minimal text ("No workers found"), offering no recovery guidance for QA testers.
 - **Location**: `renderEmptyState` within `WorkerSearchResults.jsx`
 - **Resolution**: Replaced with a styled panel including tips, CTA buttons, and guest-only onboarding hint.
 
 ❌ **Issue 2**: Clearing filters required discovering the chip delete UI, which QA flagged as hidden.
 - **Location**: `renderEmptyState`
-- **Resolution**: Added prominent “Reset filters” button wired to `onRemoveFilter('all')`, mirroring the surrounding filter logic.
+- **Resolution**: Added prominent "Reset filters" button wired to `onRemoveFilter('all')`, mirroring the surrounding filter logic.
 
 ## Recommendations
 1. Capture filter presets that produce zero results and evaluate backend data coverage to ensure key trades exist for major regions.

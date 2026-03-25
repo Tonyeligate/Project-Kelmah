@@ -1,6 +1,6 @@
 # Kelmah Frontend 10000-Item Visual & Display Backlog (March 19 2026)
 
-This backlog focuses on visual polish and display improvements for both mobile and desktop, aligned to Kelmah’s mission of accessible and trustworthy marketplace experiences.
+This backlog focuses on visual polish and display improvements for both mobile and desktop, aligned to Kelmah's mission of accessible and trustworthy marketplace experiences.
 
 ---
 

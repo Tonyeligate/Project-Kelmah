@@ -41,7 +41,7 @@ const categories = [
     title: 'Request Deduplication & Cancellation',
     exampleFiles: ['apiClient.js', 'useApi.js', 'useJobsQuery.js', 'useMessagesQuery.js'],
     template: ({ verb, fileSample }) =>
-      `${verb} request deduplication and abort handling in \`${fileSample}\` so duplicate requests do not flood the backend and unmounted components don’t update state.`,
+      `${verb} request deduplication and abort handling in \`${fileSample}\` so duplicate requests do not flood the backend and unmounted components don't update state.`,
   },
   {
     title: 'Testing & Mocking',

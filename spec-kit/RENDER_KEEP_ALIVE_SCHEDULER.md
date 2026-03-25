@@ -19,7 +19,7 @@
 3. **HTTP Behaviour**
    - Each tick iterates over the current registry (`auth`, `user`, `job`, `payment`, `messaging`, `review`).
    - For each service we compute a probe list (global or per-service env overrides) and attempt each endpoint sequentially.
-   - Each probe uses a 20s timeout and accepts any response under 500 as “warm”; 404/405/timeout trigger fallbacks to the next endpoint.
+   - Each probe uses a 20s timeout and accepts any response under 500 as "warm"; 404/405/timeout trigger fallbacks to the next endpoint.
    - Up to three attempts per tick with a 15s delay help Render dynos finish spinning up before reporting failure.
    - Logs track misses at `debug`, recoveries at `info`, and final failures at `error` with endpoint/status/error metadata.
 

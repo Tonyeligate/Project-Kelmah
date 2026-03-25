@@ -14,13 +14,19 @@ import {
   Pagination,
   Alert,
   Skeleton,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import { usePayments } from '../contexts/PaymentContext';
 import { Helmet } from 'react-helmet-async';
 import TransactionsList from '../components/TransactionsList';
 import { currencyFormatter } from '@/modules/common/utils/formatters';
+import PageCanvas from '../../common/components/PageCanvas';
 
 const WalletPage = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   const { loading, error, walletBalance, walletMissing, transactions, fetchTransactions } =
     usePayments();
   // Filters
@@ -55,35 +61,40 @@ const WalletPage = () => {
 
   if (loading)
     return (
-      <Container sx={{ py: { xs: 2, sm: 4 } }}>
-        <Skeleton variant="rectangular" height={300} />
-      </Container>
+      <PageCanvas disableContainer sx={{ pt: { xs: 2, sm: 4 }, pb: { xs: 4, md: 6 } }}>
+        <Container sx={{ py: { xs: 2, sm: 4 } }}>
+          <Skeleton variant="rectangular" height={300} />
+        </Container>
+      </PageCanvas>
     );
   if (error)
     return (
-      <Container sx={{ py: { xs: 2, sm: 4 } }}>
-        <Alert
-          severity="error"
-          action={
-            <Button color="inherit" size="small" onClick={() => fetchTransactions()}>
-              Retry
-            </Button>
-          }
-        >
-          {error}
-        </Alert>
-      </Container>
+      <PageCanvas disableContainer sx={{ pt: { xs: 2, sm: 4 }, pb: { xs: 4, md: 6 } }}>
+        <Container sx={{ py: { xs: 2, sm: 4 } }}>
+          <Alert
+            severity="error"
+            action={
+              <Button color="inherit" size="small" onClick={() => fetchTransactions()}>
+                Retry
+              </Button>
+            }
+          >
+            {error}
+          </Alert>
+        </Container>
+      </PageCanvas>
     );
 
   return (
-    <Container maxWidth="md" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 0.5, sm: 2 } }}>
+    <PageCanvas disableContainer sx={{ pt: { xs: 1, sm: 4 }, pb: { xs: 10, md: 6 } }}>
+      <Container maxWidth="md" sx={{ py: { xs: 1, sm: 4 }, px: { xs: 0.75, sm: 2 } }}>
       <Helmet><title>Wallet | Kelmah</title></Helmet>
       {/* Wallet Summary */}
       <Paper
         elevation={0}
         sx={(theme) => ({
-          p: { xs: 2, sm: 3 },
-          mb: 4,
+          p: { xs: 1.5, sm: 3 },
+          mb: { xs: 2, sm: 4 },
           borderRadius: 2,
           // ✅ MOBILE-AUDIT P4: solid bg instead of gradient
           bgcolor: 'background.paper',
@@ -92,11 +103,11 @@ const WalletPage = () => {
           borderColor: 'secondary.main',
         })}
       >
-        <Typography variant="h6" sx={{ opacity: 0.8, color: 'secondary.main' }}>
+        <Typography variant={isMobile ? 'subtitle1' : 'h6'} sx={{ opacity: 0.8, color: 'secondary.main' }}>
           Wallet Balance
         </Typography>
         <Typography
-          variant="h3"
+          variant={isMobile ? 'h4' : 'h3'}
           fontWeight="bold"
           sx={{ my: 1, color: 'secondary.main' }}
         >
@@ -109,8 +120,9 @@ const WalletPage = () => {
         )}
       </Paper>
       {/* Transaction Filters */}
-      <Box sx={{ mb: 3, display: 'flex', flexWrap: 'wrap', gap: { xs: 1, sm: 2, md: 2, lg: 1.5 }, alignItems: 'center' }}>
+      <Box sx={{ mb: 2, display: 'flex', flexWrap: 'wrap', gap: { xs: 0.75, sm: 2, md: 2, lg: 1.5 }, alignItems: 'center' }}>
         <TextField
+          size={isMobile ? 'small' : 'medium'}
           label="Start Date"
           type="date"
           value={startDate}
@@ -120,6 +132,7 @@ const WalletPage = () => {
           sx={{ flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' } }}
         />
         <TextField
+          size={isMobile ? 'small' : 'medium'}
           label="End Date"
           type="date"
           value={endDate}
@@ -128,7 +141,7 @@ const WalletPage = () => {
           inputProps={{ 'aria-label': 'Filter transactions up to this date' }}
           sx={{ flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' } }}
         />
-        <FormControl sx={{ minWidth: { xs: 0, sm: 140 }, flex: { xs: '1 1 100%', sm: '0 1 auto' } }}>
+        <FormControl size={isMobile ? 'small' : 'medium'} sx={{ minWidth: { xs: 0, sm: 140 }, flex: { xs: '1 1 100%', sm: '0 1 auto' } }}>
           <InputLabel>Type</InputLabel>
           <Select
             value={filterType}
@@ -144,7 +157,7 @@ const WalletPage = () => {
         <Button
           variant="outlined"
           color="secondary"
-          sx={{ borderWidth: 2, flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' }, minHeight: 44 }}
+          sx={{ borderWidth: 2, flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' }, minHeight: 42, display: { xs: 'none', sm: 'inline-flex' } }}
           onClick={applyFilters}
         >
           Apply filters
@@ -152,7 +165,7 @@ const WalletPage = () => {
         <Button
           variant="outlined"
           color="secondary"
-          sx={{ borderWidth: 2, flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' }, minHeight: 44 }}
+          sx={{ borderWidth: 2, flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' }, minHeight: 42, display: { xs: 'none', sm: 'inline-flex' } }}
           onClick={clearFilters}
         >
           Reset filters
@@ -188,7 +201,44 @@ const WalletPage = () => {
           />
         </Box>
       )}
-    </Container>
+
+      <Paper
+        elevation={8}
+        sx={(theme) => ({
+          display: { xs: 'flex', sm: 'none' },
+          position: 'fixed',
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: theme.zIndex.appBar + 2,
+          px: 1,
+          py: 1,
+          gap: 1,
+          borderTop: `1px solid ${theme.palette.divider}`,
+          backgroundColor: theme.palette.background.paper,
+        })}
+      >
+        <Button
+          fullWidth
+          variant="outlined"
+          color="secondary"
+          sx={{ minHeight: 42, borderWidth: 2 }}
+          onClick={clearFilters}
+        >
+          Reset
+        </Button>
+        <Button
+          fullWidth
+          variant="contained"
+          color="secondary"
+          sx={{ minHeight: 42, boxShadow: '0 2px 8px rgba(255,215,0,0.35)' }}
+          onClick={applyFilters}
+        >
+          Apply
+        </Button>
+      </Paper>
+      </Container>
+    </PageCanvas>
   );
 };
 

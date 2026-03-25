@@ -20,7 +20,7 @@ const RateCalculator = () => {
         <Grid container spacing={2}>
           <Grid item xs={12} sm={4}>
             <TextField
-              label="Hourly Rate (GH₵)"
+              label="Hourly Rate"
               type="number"
               fullWidth
               value={hourlyRate}
@@ -47,7 +47,7 @@ const RateCalculator = () => {
           </Grid>
           <Grid item xs={12}>
             <Typography variant="subtitle1">
-              Estimated Weekly Earnings: GH₵ {weekly.toLocaleString()}
+              Estimated Weekly Earnings: {new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' }).format(weekly)}
             </Typography>
           </Grid>
         </Grid>

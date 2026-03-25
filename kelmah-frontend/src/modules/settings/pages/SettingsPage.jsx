@@ -18,6 +18,7 @@ import PrivacySettings from '../components/common/PrivacySettings';
 import { useSettings } from '../hooks/useSettings';
 import { Helmet } from 'react-helmet-async';
 import { useBreakpointUp } from '@/hooks/useResponsive';
+import PageCanvas from '../../common/components/PageCanvas';
 
 const SettingsPage = () => {
   const {
@@ -102,125 +103,149 @@ const SettingsPage = () => {
     if (mobileSection >= 0) {
       const panel = settingsPanels[mobileSection];
       return (
-        <Container maxWidth="lg" sx={{ py: 1, px: 1.5, color: 'text.primary' }}>
-          <Helmet><title>Settings | Kelmah</title></Helmet>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 0.5 }}>
-            <IconButton
-              onClick={() => setMobileSection(-1)}
-              sx={{
-                mr: 0.5,
-                '&:focus-visible': {
-                  outline: `3px solid ${theme.palette.primary.main}`,
-                  outlineOffset: 2,
-                },
-              }}
-              aria-label="Go back"
-            >
-              <ArrowBack />
-            </IconButton>
-            <Box>
-              <Stack direction="row" spacing={1} alignItems="center">
-                {panel.icon}
-                <Typography variant="h6" fontWeight="bold">
-                  {panel.label}
+        <PageCanvas disableContainer sx={{ pt: { xs: 1, md: 4 }, pb: { xs: 10, md: 4 } }}>
+          <Container maxWidth="lg" sx={{ py: 1, px: 1.25, color: 'text.primary' }}>
+            <Helmet><title>Settings | Kelmah</title></Helmet>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5, gap: 0.5, position: 'sticky', top: 56, zIndex: 10, py: 0.5, backgroundColor: 'background.default' }}>
+              <IconButton
+                onClick={() => setMobileSection(-1)}
+                sx={{
+                  mr: 0.5,
+                  '&:focus-visible': {
+                    outline: `3px solid ${theme.palette.primary.main}`,
+                    outlineOffset: 2,
+                  },
+                }}
+                aria-label="Go back"
+              >
+                <ArrowBack />
+              </IconButton>
+              <Box>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  {panel.icon}
+                  <Typography variant="h6" fontWeight="bold">
+                    {panel.label}
+                  </Typography>
+                </Stack>
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                  {panel.description}
                 </Typography>
-              </Stack>
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                {panel.description}
-              </Typography>
+              </Box>
             </Box>
-          </Box>
-          <Paper sx={{ p: { xs: 1.25, sm: 2 }, borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
-            {panel.component}
-          </Paper>
-        </Container>
+            <Paper sx={{ p: { xs: 1, sm: 2 }, borderRadius: 2.5, border: '1px solid', borderColor: 'divider' }}>
+              {panel.component}
+            </Paper>
+
+            <Paper
+              elevation={8}
+              sx={(theme) => ({
+                position: 'fixed',
+                left: 0,
+                right: 0,
+                bottom: 0,
+                zIndex: theme.zIndex.appBar + 2,
+                px: 1,
+                py: 1,
+                borderTop: `1px solid ${theme.palette.divider}`,
+                backgroundColor: theme.palette.background.paper,
+              })}
+            >
+              <Button fullWidth variant="contained" onClick={() => setMobileSection(-1)} sx={{ minHeight: 42 }}>
+                Back To All Settings
+              </Button>
+            </Paper>
+          </Container>
+        </PageCanvas>
       );
     }
 
     // Showing the settings list
     return (
-      <Container maxWidth="lg" sx={{ py: 2, px: 1.5, color: 'text.primary' }}>
-        <Helmet><title>Settings | Kelmah</title></Helmet>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-          <SettingsIcon sx={{ fontSize: 28, mr: 1.5, color: 'primary.main' }} />
-          <Typography variant="h5" fontWeight="bold">
-            Settings
+      <PageCanvas disableContainer sx={{ pt: 1, pb: { xs: 2, md: 4 } }}>
+        <Container maxWidth="lg" sx={{ py: 1.5, px: 1.25, color: 'text.primary' }}>
+          <Helmet><title>Settings | Kelmah</title></Helmet>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5, position: 'sticky', top: 56, zIndex: 10, py: 0.5, backgroundColor: 'background.default' }}>
+            <SettingsIcon sx={{ fontSize: 28, mr: 1.5, color: 'primary.main' }} />
+            <Typography variant="h5" fontWeight="bold">
+              Settings
+            </Typography>
+          </Box>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5, fontSize: '0.8rem' }}>
+            Open one section at a time to update your account quickly.
           </Typography>
-        </Box>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          Open one section at a time to update your account quickly.
-        </Typography>
-        <Paper
-          elevation={1}
-          sx={{
-            p: 2,
-            mb: 2,
-            borderRadius: 3,
-            border: '1px solid',
-            borderColor: 'divider',
-            background: (currentTheme) =>
-              `linear-gradient(135deg, ${alpha(currentTheme.palette.primary.main, 0.12)} 0%, ${alpha(currentTheme.palette.background.paper, 1)} 100%)`,
-          }}
-        >
-          <Stack direction="row" spacing={1.5} alignItems="center">
-            <Avatar sx={{ bgcolor: 'primary.main', color: 'primary.contrastText', fontWeight: 700 }}>
-              {userInitials}
-            </Avatar>
-            <Box sx={{ minWidth: 0 }}>
-              <Typography variant="subtitle1" fontWeight={700} noWrap>
-                {userDisplayName}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" noWrap>
-                {user?.email || 'Account settings'}
-              </Typography>
-              <Chip label="Update profile, alerts, privacy, and security" size="small" sx={{ mt: 1, fontWeight: 600 }} />
-            </Box>
-          </Stack>
-        </Paper>
-        <Paper elevation={1} sx={{ borderRadius: 2, overflow: 'hidden' }}>
-          <List disablePadding>
-            {settingsPanels.map((panel, index) => (
-              <ListItemButton
-                key={panel.label}
-                onClick={() => setMobileSection(index)}
-                sx={{
-                  py: 2,
-                  borderBottom: index < settingsPanels.length - 1 ? '1px solid' : 'none',
-                  borderColor: 'divider',
-                  '&:focus-visible': {
-                    outline: `3px solid ${theme.palette.primary.main}`,
-                    outlineOffset: -2,
-                  },
-                }}
-              >
-                <ListItemIcon sx={{ minWidth: 40, color: 'primary.main' }}>
-                  {panel.icon}
-                </ListItemIcon>
-                <ListItemText
-                  primary={panel.label}
-                  secondary={panel.description}
-                  primaryTypographyProps={{ fontWeight: 600 }}
-                  secondaryTypographyProps={{ color: 'text.secondary', sx: { mt: 0.25 } }}
-                />
-                <ChevronRight sx={{ color: 'text.secondary' }} />
-              </ListItemButton>
-            ))}
-          </List>
-        </Paper>
-      </Container>
+          <Paper
+            elevation={1}
+            sx={{
+              p: 1.5,
+              mb: 1.5,
+              borderRadius: 2.5,
+              border: '1px solid',
+              borderColor: 'divider',
+              background: (currentTheme) =>
+                `linear-gradient(135deg, ${alpha(currentTheme.palette.primary.main, 0.12)} 0%, ${alpha(currentTheme.palette.background.paper, 1)} 100%)`,
+            }}
+          >
+            <Stack direction="row" spacing={1.5} alignItems="center">
+              <Avatar sx={{ bgcolor: 'primary.main', color: 'primary.contrastText', fontWeight: 700 }}>
+                {userInitials}
+              </Avatar>
+              <Box sx={{ minWidth: 0 }}>
+                <Typography variant="subtitle1" fontWeight={700} noWrap>
+                  {userDisplayName}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" noWrap>
+                  {user?.email || 'Account settings'}
+                </Typography>
+                <Chip label="Update profile, alerts, privacy, and security" size="small" sx={{ mt: 1, fontWeight: 600 }} />
+              </Box>
+            </Stack>
+          </Paper>
+          <Paper elevation={1} sx={{ borderRadius: 2, overflow: 'hidden' }}>
+            <List disablePadding>
+              {settingsPanels.map((panel, index) => (
+                <ListItemButton
+                  key={panel.label}
+                  onClick={() => setMobileSection(index)}
+                  sx={{
+                    py: 1.25,
+                    borderBottom: index < settingsPanels.length - 1 ? '1px solid' : 'none',
+                    borderColor: 'divider',
+                    '&:focus-visible': {
+                      outline: `3px solid ${theme.palette.primary.main}`,
+                      outlineOffset: -2,
+                    },
+                  }}
+                >
+                  <ListItemIcon sx={{ minWidth: 40, color: 'primary.main' }}>
+                    {panel.icon}
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={panel.label}
+                    secondary={panel.description}
+                    primaryTypographyProps={{ fontWeight: 600 }}
+                    secondaryTypographyProps={{ color: 'text.secondary', sx: { mt: 0.25 } }}
+                  />
+                  <ChevronRight sx={{ color: 'text.secondary' }} />
+                </ListItemButton>
+              ))}
+            </List>
+          </Paper>
+        </Container>
+      </PageCanvas>
     );
   }
 
   // ── Desktop: Sidebar tabs + content (unchanged) ──
   return (
-    <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 }, px: { xs: 1.5, sm: 3 }, color: 'text.primary' }}>
-      <Helmet><title>Settings | Kelmah</title></Helmet>
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 2, md: 4 } }}>
-        <SettingsIcon sx={{ fontSize: { xs: 28, md: 36 }, mr: 1.5, color: 'primary.main' }} />
-        <Typography variant="h4" fontWeight="bold" sx={{ fontSize: { xs: '1.5rem', md: '2.125rem' } }}>
-          Settings
-        </Typography>
-      </Box>
+    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 2, md: 4 } }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 }, px: { xs: 1.5, sm: 3 }, color: 'text.primary' }}>
+        <Helmet><title>Settings | Kelmah</title></Helmet>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 2, md: 4 } }}>
+          <SettingsIcon sx={{ fontSize: { xs: 28, md: 36 }, mr: 1.5, color: 'primary.main' }} />
+          <Typography variant="h4" fontWeight="bold" sx={{ fontSize: { xs: '1.5rem', md: '2.125rem' } }}>
+            Settings
+          </Typography>
+        </Box>
 
       <Paper
         sx={{
@@ -313,7 +338,8 @@ const SettingsPage = () => {
           <Box>{settingsPanels[tabValue].component}</Box>
         </Grid>
       </Grid>
-    </Container>
+      </Container>
+    </PageCanvas>
   );
 };
 

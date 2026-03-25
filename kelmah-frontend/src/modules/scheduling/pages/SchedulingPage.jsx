@@ -56,6 +56,7 @@ import AppointmentForm from '../components/AppointmentForm';
 import { useNavigate } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
 import jobsService from '../../jobs/services/jobsService';
+import PageCanvas from '../../common/components/PageCanvas';
 // Import workersApi for user loading functionality
 import workerService from '../../worker/services/workerService';
 import { FEATURES } from '../../../config/environment';
@@ -759,10 +760,11 @@ const SchedulingPage = ({
     : [];
 
   return (
-    <Container maxWidth="md" sx={{ py: { xs: 2, md: 4 } }}>
-      <Helmet><title>Schedule | Kelmah</title></Helmet>
-      {/* Page Header */}
-      <Box
+    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 3, md: 5 } }}>
+      <Container maxWidth="md" sx={{ py: 0 }}>
+        <Helmet><title>Schedule | Kelmah</title></Helmet>
+        {/* Page Header */}
+        <Box
         sx={{
           display: 'flex',
           flexDirection: { xs: 'column', md: 'row' },
@@ -798,76 +800,76 @@ const SchedulingPage = ({
         >
           Add Appointment
         </Button>
-      </Box>
+        </Box>
 
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {error}
-        </Alert>
-      )}
+        {error && (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {error}
+          </Alert>
+        )}
 
-      {/* Filters and Search */}
-      <Paper sx={{ p: 2, mb: 3, borderRadius: 2 }}>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-          {resolvedSearchHelperText}
-        </Typography>
-        <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} sm={6} md={4}>
-            <TextField
-              fullWidth
-              size="small"
-              placeholder={resolvedSearchPlaceholder}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              inputProps={{
-                'aria-label': `Search appointments by job or ${resolvedCounterpartyLabel.toLowerCase()} name`,
-              }}
-              InputProps={{
-                startAdornment: <SearchIcon color="action" sx={{ mr: 1 }} />,
-              }}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6} md={4}>
-            <FormControl fullWidth size="small">
-              <InputLabel id="status-filter-label">Status</InputLabel>
-              <Select
-                labelId="status-filter-label"
-                value={filterStatus}
-                label="Status"
-                onChange={(e) => setFilterStatus(e.target.value)}
-                startAdornment={<FilterIcon color="action" sx={{ mr: 1 }} />}
+        {/* Filters and Search */}
+        <Paper sx={{ p: 2, mb: 3, borderRadius: 2 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+            {resolvedSearchHelperText}
+          </Typography>
+          <Grid container spacing={2} alignItems="center">
+            <Grid item xs={12} sm={6} md={4}>
+              <TextField
+                fullWidth
+                size="small"
+                placeholder={resolvedSearchPlaceholder}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                inputProps={{
+                  'aria-label': `Search appointments by job or ${resolvedCounterpartyLabel.toLowerCase()} name`,
+                }}
+                InputProps={{
+                  startAdornment: <SearchIcon color="action" sx={{ mr: 1 }} />,
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+              <FormControl fullWidth size="small">
+                <InputLabel id="status-filter-label">Status</InputLabel>
+                <Select
+                  labelId="status-filter-label"
+                  value={filterStatus}
+                  label="Status"
+                  onChange={(e) => setFilterStatus(e.target.value)}
+                  startAdornment={<FilterIcon color="action" sx={{ mr: 1 }} />}
+                >
+                  <MenuItem value="all">All Statuses</MenuItem>
+                  <MenuItem value="pending">Pending</MenuItem>
+                  <MenuItem value="confirmed">Confirmed</MenuItem>
+                  <MenuItem value="completed">Completed</MenuItem>
+                  <MenuItem value="cancelled">Cancelled</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} sm={12} md={4}>
+              <ToggleButtonGroup
+                value={viewMode}
+                exclusive
+                onChange={(e, mode) => mode && setViewMode(mode)}
+                size="small"
+                fullWidth
+                sx={{
+                  '& .MuiToggleButton-root': {
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    minHeight: 44,
+                  },
+                }}
               >
-                <MenuItem value="all">All Statuses</MenuItem>
-                <MenuItem value="pending">Pending</MenuItem>
-                <MenuItem value="confirmed">Confirmed</MenuItem>
-                <MenuItem value="completed">Completed</MenuItem>
-                <MenuItem value="cancelled">Cancelled</MenuItem>
-              </Select>
-            </FormControl>
+                <ToggleButton value="calendar">Calendar</ToggleButton>
+                <ToggleButton value="agenda">Agenda</ToggleButton>
+                <ToggleButton value="upcoming">Upcoming</ToggleButton>
+                <ToggleButton value="map">Map</ToggleButton>
+              </ToggleButtonGroup>
+            </Grid>
           </Grid>
-          <Grid item xs={12} sm={12} md={4}>
-            <ToggleButtonGroup
-              value={viewMode}
-              exclusive
-              onChange={(e, mode) => mode && setViewMode(mode)}
-              size="small"
-              fullWidth
-              sx={{
-                '& .MuiToggleButton-root': {
-                  textTransform: 'none',
-                  fontWeight: 600,
-                  minHeight: 44,
-                },
-              }}
-            >
-              <ToggleButton value="calendar">Calendar</ToggleButton>
-              <ToggleButton value="agenda">Agenda</ToggleButton>
-              <ToggleButton value="upcoming">Upcoming</ToggleButton>
-              <ToggleButton value="map">Map</ToggleButton>
-            </ToggleButtonGroup>
-          </Grid>
-        </Grid>
-      </Paper>
+        </Paper>
 
       {viewMode === 'calendar' && (
         <>
@@ -1101,7 +1103,8 @@ const SchedulingPage = ({
           </Button>
         </DialogActions>
       </Dialog>
-    </Container>
+      </Container>
+    </PageCanvas>
   );
 };
 

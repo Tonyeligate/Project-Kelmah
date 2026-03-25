@@ -1,4 +1,5 @@
 import { api } from '../../../services/apiClient';
+import { captureRecoverableApiError } from '../../../services/errorTelemetry';
 
 const DISPLAY_KEYS = ['label', 'name', 'title', 'value', 'type', 'city', 'address', 'text'];
 
@@ -56,6 +57,15 @@ const normalizeApplication = (application = {}, index = 0) => ({
   job: application.job ? normalizeJob(application.job) : null,
 });
 
+const isTransientApplicationsError = (error) => {
+  const status = error?.response?.status;
+  if (!status) {
+    return true;
+  }
+
+  return [429, 500, 502, 503, 504].includes(status);
+};
+
 /**
  * Applications Service
  * Routes through /api/jobs/* gateway endpoints (no standalone /applications mount exists)
@@ -87,6 +97,15 @@ const applicationsApi = {
       const payload = response.data?.data || response.data;
       return applicationsApi.normalizeApplicationList(payload);
     } catch (error) {
+      if (isTransientApplicationsError(error)) {
+        captureRecoverableApiError(error, {
+          operation: 'worker.getMyApplications',
+          fallbackUsed: true,
+          suppressUi: true,
+        });
+        return [];
+      }
+
       throw error;
     }
   },

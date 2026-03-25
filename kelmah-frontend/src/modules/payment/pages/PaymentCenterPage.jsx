@@ -61,6 +61,7 @@ import { useSelector } from 'react-redux';
 import { currencyFormatter } from '@/modules/common/utils/formatters';
 import { hasRole } from '../../../utils/userUtils';
 import { useBreakpointDown } from '../../../hooks/useResponsive';
+import PageCanvas from '../../common/components/PageCanvas';
 
 const WalletSummary = ({ balance, onDepositClick, onWithdrawClick }) => (
   <Paper
@@ -640,6 +641,7 @@ const PaymentCenterPage = () => {
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useBreakpointDown('md');
+  const isCompactMobile = useBreakpointDown('sm');
   const [tabIndex, setTabIndex] = useState(0);
   const [depositOpen, setDepositOpen] = useState(false);
   const [withdrawOpen, setWithdrawOpen] = useState(false);
@@ -815,46 +817,62 @@ const PaymentCenterPage = () => {
 
   if (loading)
     return (
-      <Container sx={{ py: { xs: 2, md: 4 } }}>
-        <Skeleton variant="rectangular" height={300} />
-      </Container>
+      <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 } }}>
+        <Container sx={{ py: { xs: 2, md: 4 } }}>
+          <Skeleton variant="rectangular" height={300} />
+        </Container>
+      </PageCanvas>
     );
   if (error)
     return (
-      <Container sx={{ py: { xs: 2, md: 4 } }}>
-        <Alert
-          severity="error"
-          action={
-            <Button color="inherit" size="small" onClick={refresh}>
-              Retry
-            </Button>
-          }
-        >
-          {error}
-        </Alert>
-      </Container>
+      <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 } }}>
+        <Container sx={{ py: { xs: 2, md: 4 } }}>
+          <Alert
+            severity="error"
+            action={
+              <Button color="inherit" size="small" onClick={refresh}>
+                Retry
+              </Button>
+            }
+          >
+            {error}
+          </Alert>
+        </Container>
+      </PageCanvas>
     );
 
   return (
-    <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
+    <PageCanvas disableContainer sx={{ pt: { xs: 1, md: 4 }, pb: { xs: 10, md: 6 } }}>
+      <Container maxWidth="xl" sx={{ py: { xs: 1, md: 4 }, px: { xs: 0.75, sm: 2 } }}>
       <Helmet><title>Payment Center | Kelmah</title></Helmet>
-      <Typography
-        variant="h4"
-        fontWeight="bold"
-        sx={{ mb: 1, color: 'secondary.main', fontSize: { xs: '1.5rem', md: '2.125rem' } }}
+      <Box
+        sx={{
+          position: { xs: 'sticky', md: 'static' },
+          top: { xs: 56, md: 'auto' },
+          zIndex: { xs: 11, md: 'auto' },
+          py: { xs: 0.5, md: 0 },
+          mb: { xs: 1.5, md: 0 },
+          backgroundColor: { xs: 'background.default', md: 'transparent' },
+        }}
       >
-        Payments
-      </Typography>
-      <Typography color="text.secondary" sx={{ mb: 4 }}>
-        Manage your wallet, transactions, and payment methods.
-      </Typography>
+        <Typography
+          variant={isCompactMobile ? 'h5' : 'h4'}
+          fontWeight="bold"
+          sx={{ mb: 0.5, color: 'secondary.main', fontSize: { xs: '1.3rem', md: '2.125rem' }, lineHeight: 1.1 }}
+        >
+          Payments
+        </Typography>
+        <Typography color="text.secondary" sx={{ mb: { xs: 1.25, md: 4 }, fontSize: { xs: '0.8rem', sm: '0.9rem' } }}>
+          Manage your wallet, transactions, and payment methods.
+        </Typography>
+      </Box>
       {walletMissing && !error && (
-        <Alert severity="info" sx={{ mb: 3 }}>
-          Your wallet will be provisioned automatically on your first deposit or payout. Until then, a GH₵0.00 balance means no wallet exists yet, not that funds were cleared.
+        <Alert severity="info" sx={{ mb: 2 }}>
+          Your wallet will be provisioned automatically on your first deposit or payout. Until then, a {currencyFormatter.format(0)} balance means no wallet exists yet, not that funds were cleared.
         </Alert>
       )}
 
-      <Grid container spacing={4}>
+      <Grid container spacing={{ xs: 1.5, md: 4 }}>
         <Grid item xs={12} lg={4}>
           <WalletSummary
             balance={walletBalance}
@@ -865,7 +883,7 @@ const PaymentCenterPage = () => {
 
         <Grid item xs={12} lg={8}>
           {/* Summary row for illiterate-friendly icon counts */}
-          <Grid container spacing={2} sx={{ mb: 3 }}>
+          <Grid container spacing={{ xs: 1, sm: 2 }} sx={{ mb: 2 }}>
             <Grid item xs={6} sm={3}>
               <SummaryCard
                 icon={ReceiptIcon}
@@ -907,7 +925,7 @@ const PaymentCenterPage = () => {
             </Grid>
           </Grid>
 
-          <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
+          <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2, position: { xs: 'sticky', md: 'static' }, top: { xs: 108, md: 'auto' }, zIndex: { xs: 10, md: 'auto' }, backgroundColor: { xs: 'background.default', md: 'transparent' } }}>
             <Tabs
               value={tabIndex}
               onChange={handleTabChange}
@@ -918,7 +936,7 @@ const PaymentCenterPage = () => {
               indicatorColor="secondary"
               textColor="inherit"
               sx={{
-                '& .MuiTab-root': { color: 'text.secondary', minWidth: { xs: 'auto', md: 120 } },
+                '& .MuiTab-root': { color: 'text.secondary', minWidth: { xs: 'auto', md: 120 }, minHeight: { xs: 40, md: 48 }, px: { xs: 1, md: 2 }, py: { xs: 0.5, md: 1.25 } },
                 '& .Mui-selected': { color: 'secondary.main' },
               }}
             >
@@ -949,10 +967,11 @@ const PaymentCenterPage = () => {
             <>
               {/* Filters bar */}
               <Box
-                sx={{ mb: 3, display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}
+                sx={{ mb: 2, display: 'flex', gap: { xs: 0.75, md: 2 }, alignItems: 'center', flexWrap: 'wrap' }}
               >
                 <Tooltip title="Transactions from this date">
                   <TextField
+                    size={isCompactMobile ? 'small' : 'medium'}
                     label="From"
                     type="date"
                     value={startDate}
@@ -963,6 +982,7 @@ const PaymentCenterPage = () => {
                 </Tooltip>
                 <Tooltip title="Transactions up to this date">
                   <TextField
+                    size={isCompactMobile ? 'small' : 'medium'}
                     label="To"
                     type="date"
                     value={endDate}
@@ -972,7 +992,7 @@ const PaymentCenterPage = () => {
                   />
                 </Tooltip>
                 <Tooltip title="Filter by type">
-                  <FormControl sx={{ minWidth: 140, ...focusVisibleFieldSx }}>
+                  <FormControl size={isCompactMobile ? 'small' : 'medium'} sx={{ minWidth: 140, ...focusVisibleFieldSx }}>
                     <InputLabel>Type</InputLabel>
                     <Select
                       value={filterType}
@@ -986,7 +1006,7 @@ const PaymentCenterPage = () => {
                   </FormControl>
                 </Tooltip>
                 <Tooltip title="Filter">
-                  <Button variant="outlined" onClick={applyFilters} sx={focusVisibleButtonSx}>
+                  <Button variant="outlined" onClick={applyFilters} sx={{ ...focusVisibleButtonSx, display: { xs: 'none', sm: 'inline-flex' } }}>
                     Filter
                   </Button>
                 </Tooltip>
@@ -1053,10 +1073,10 @@ const PaymentCenterPage = () => {
             <>
               {/* Escrows filters */}
               <Box
-                sx={{ mb: 3, display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}
+                sx={{ mb: 2, display: 'flex', gap: { xs: 0.75, md: 2 }, alignItems: 'center', flexWrap: 'wrap' }}
               >
                 <Tooltip title="Filter by status">
-                  <FormControl sx={{ minWidth: 140, ...focusVisibleFieldSx }}>
+                  <FormControl size={isCompactMobile ? 'small' : 'medium'} sx={{ minWidth: 140, ...focusVisibleFieldSx }}>
                     <InputLabel>Status</InputLabel>
                     <Select
                       value={escrowStatusFilter}
@@ -1072,7 +1092,7 @@ const PaymentCenterPage = () => {
                   </FormControl>
                 </Tooltip>
                 <Tooltip title="Filter">
-                  <Button variant="outlined" onClick={applyEscrowFilters} sx={focusVisibleButtonSx}>
+                  <Button variant="outlined" onClick={applyEscrowFilters} sx={{ ...focusVisibleButtonSx, display: { xs: 'none', sm: 'inline-flex' } }}>
                     Filter
                   </Button>
                 </Tooltip>
@@ -1094,10 +1114,11 @@ const PaymentCenterPage = () => {
             <>
               {/* Bills filters */}
               <Box
-                sx={{ mb: 3, display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}
+                sx={{ mb: 2, display: 'flex', gap: { xs: 0.75, md: 2 }, alignItems: 'center', flexWrap: 'wrap' }}
               >
                 <Tooltip title="Bills from this date">
                   <TextField
+                    size={isCompactMobile ? 'small' : 'medium'}
                     label="From"
                     type="date"
                     value={billStartDate}
@@ -1108,6 +1129,7 @@ const PaymentCenterPage = () => {
                 </Tooltip>
                 <Tooltip title="Bills up to this date">
                   <TextField
+                    size={isCompactMobile ? 'small' : 'medium'}
                     label="To"
                     type="date"
                     value={billEndDate}
@@ -1117,7 +1139,7 @@ const PaymentCenterPage = () => {
                   />
                 </Tooltip>
                 <Tooltip title="Filter by status">
-                  <FormControl sx={{ minWidth: 140, ...focusVisibleFieldSx }}>
+                  <FormControl size={isCompactMobile ? 'small' : 'medium'} sx={{ minWidth: 140, ...focusVisibleFieldSx }}>
                     <InputLabel>Status</InputLabel>
                     <Select
                       value={billStatusFilter}
@@ -1132,7 +1154,7 @@ const PaymentCenterPage = () => {
                   </FormControl>
                 </Tooltip>
                 <Tooltip title="Filter">
-                  <Button variant="outlined" onClick={applyBillFilters} sx={focusVisibleButtonSx}>
+                  <Button variant="outlined" onClick={applyBillFilters} sx={{ ...focusVisibleButtonSx, display: { xs: 'none', sm: 'inline-flex' } }}>
                     Filter
                   </Button>
                 </Tooltip>
@@ -1141,7 +1163,7 @@ const PaymentCenterPage = () => {
                     variant="outlined"
                     color="secondary"
                     onClick={clearBillFilters}
-                    sx={focusVisibleButtonSx}
+                    sx={{ ...focusVisibleButtonSx, display: { xs: 'none', sm: 'inline-flex' } }}
                   >
                     Clear
                   </Button>
@@ -1175,6 +1197,47 @@ const PaymentCenterPage = () => {
           )}
         </Grid>
       </Grid>
+
+      <Paper
+        elevation={8}
+        sx={(theme) => ({
+          display: { xs: 'flex', sm: 'none' },
+          position: 'fixed',
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: theme.zIndex.appBar + 2,
+          px: 1,
+          py: 1,
+          gap: 1,
+          borderTop: `1px solid ${theme.palette.divider}`,
+          backgroundColor: theme.palette.background.paper,
+        })}
+      >
+        {tabIndex === 3 ? (
+          <>
+            <Button fullWidth variant="outlined" color="secondary" sx={{ minHeight: 42 }} onClick={clearBillFilters}>
+              Clear
+            </Button>
+            <Button fullWidth variant="contained" color="secondary" sx={{ minHeight: 42, boxShadow: '0 2px 8px rgba(255,215,0,0.35)' }} onClick={applyBillFilters}>
+              Apply
+            </Button>
+          </>
+        ) : tabIndex === 2 ? (
+          <Button fullWidth variant="contained" color="secondary" sx={{ minHeight: 42, boxShadow: '0 2px 8px rgba(255,215,0,0.35)' }} onClick={applyEscrowFilters}>
+            Filter Escrows
+          </Button>
+        ) : tabIndex === 0 ? (
+          <Button fullWidth variant="contained" color="secondary" sx={{ minHeight: 42, boxShadow: '0 2px 8px rgba(255,215,0,0.35)' }} onClick={applyFilters}>
+            Filter Transactions
+          </Button>
+        ) : (
+          <Button fullWidth variant="contained" color="secondary" sx={{ minHeight: 42, boxShadow: '0 2px 8px rgba(255,215,0,0.35)' }} onClick={() => navigate(paymentMethodsPath)}>
+            Manage Methods
+          </Button>
+        )}
+      </Paper>
+
       {/* Deposit & Withdraw Dialogs */}
       <Dialog
         open={depositOpen}
@@ -1217,7 +1280,7 @@ const PaymentCenterPage = () => {
             <Tooltip title="Enter amount in Ghana Cedi">
               <TextField
                 variant="filled"
-                label="Amount (GH₵)"
+                label="Amount"
                 placeholder="e.g. 100"
                 type="number"
                 value={amount}
@@ -1341,7 +1404,7 @@ const PaymentCenterPage = () => {
             <Tooltip title="Enter amount to withdraw">
               <TextField
                 variant="filled"
-                label="Amount (GH₵)"
+                label="Amount"
                 placeholder="e.g. 50"
                 type="number"
                 value={amount}
@@ -1425,7 +1488,8 @@ const PaymentCenterPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
-    </Container>
+      </Container>
+    </PageCanvas>
   );
 };
 

@@ -34,4 +34,4 @@
 ## Why This Retry Exists
 - The earlier backlog was too broad to be useful for implementation.
 - These findings are directly tied to the code surface and can be turned into tickets immediately.
-- They also map better to Kelmah’s purpose: trust, discovery, and low-friction conversion.
+- They also map better to Kelmah's purpose: trust, discovery, and low-friction conversion.

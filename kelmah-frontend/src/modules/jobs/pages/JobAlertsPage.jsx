@@ -18,6 +18,8 @@ import { styled, useTheme } from '@mui/material/styles';
 import { notificationService } from '../../notifications/services/notificationService';
 import SavedSearches from '../../search/components/SavedSearches';
 import { Helmet } from 'react-helmet-async';
+import PageCanvas from '@/modules/common/components/PageCanvas';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 const Section = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
@@ -27,6 +29,7 @@ const Section = styled(Paper)(({ theme }) => ({
 
 const JobAlertsPage = () => {
   const theme = useTheme();
+  const isMobile = useBreakpointDown('md');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -74,16 +77,17 @@ const JobAlertsPage = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 0.5, sm: 2 } }}>
-      <Helmet><title>Job Alerts | Kelmah</title></Helmet>
-      <Typography
+    <PageCanvas disableContainer>
+      <Container maxWidth="lg" sx={{ py: { xs: 1.25, sm: 4 }, pb: { xs: 10, sm: 4 }, px: { xs: 0.5, sm: 2 } }}>
+        <Helmet><title>Job Alerts | Kelmah</title></Helmet>
+        <Typography
         variant="h4"
         fontWeight={800}
-        sx={{ mb: { xs: 2, sm: 3 }, color: 'secondary.main' }}
+        sx={{ mb: { xs: 1.25, sm: 3 }, color: 'secondary.main', fontSize: { xs: '1.15rem', sm: '2rem' } }}
       >
         Job Alerts
       </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 1.25, display: { xs: 'none', md: 'block' } }}>
         Choose how you want to hear about new jobs.
       </Typography>
       {error && (
@@ -96,12 +100,12 @@ const JobAlertsPage = () => {
           {success}
         </Alert>
       )}
-      <Stack spacing={3}>
-        <Section>
+      <Stack spacing={{ xs: 1.5, md: 3 }}>
+        <Section sx={{ p: { xs: 1.25, md: 3 }, position: { xs: 'sticky', md: 'static' }, top: { xs: 68, md: 'auto' }, zIndex: { xs: 8, md: 'auto' } }}>
           <Typography variant="h6" fontWeight={700} sx={{ mb: 1 }}>
             Notifications
           </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1.25, display: { xs: 'none', md: 'block' } }}>
             Manage job alert notifications and channels.
           </Typography>
           {loading ? (
@@ -191,6 +195,7 @@ const JobAlertsPage = () => {
               disabled={saving}
               onClick={savePreferences}
               aria-label="Save job alert settings"
+              sx={{ display: { xs: 'none', md: 'inline-flex' } }}
             >
               {saving ? (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -204,17 +209,54 @@ const JobAlertsPage = () => {
           </Box>
         </Section>
 
-        <Section>
+        <Section sx={{ p: { xs: 1.25, md: 3 } }}>
           <Typography variant="h6" fontWeight={700} sx={{ mb: 1 }}>
             Saved Searches
           </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1.25, display: { xs: 'none', md: 'block' } }}>
             Manage and reuse your saved job searches.
           </Typography>
-          <SavedSearches compact={false} onSearchSelect={() => {}} />
+          <SavedSearches compact={isMobile} onSearchSelect={() => {}} />
         </Section>
       </Stack>
-    </Container>
+
+      {isMobile && (
+        <Box
+          sx={{
+            position: 'fixed',
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 1300,
+            p: 1,
+            pb: 'calc(8px + env(safe-area-inset-bottom, 0px))',
+            bgcolor: 'background.paper',
+            borderTop: '1px solid',
+            borderColor: 'divider',
+          }}
+        >
+          <Button
+            variant="contained"
+            color="secondary"
+            fullWidth
+            disabled={saving}
+            onClick={savePreferences}
+            aria-label="Save job alert settings"
+            sx={{ minHeight: 44, fontWeight: 700 }}
+          >
+            {saving ? (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <CircularProgress size={16} sx={{ color: '#000' }} />
+                Saving...
+              </Box>
+            ) : (
+              'Save alert settings'
+            )}
+          </Button>
+        </Box>
+      )}
+      </Container>
+    </PageCanvas>
   );
 };
 

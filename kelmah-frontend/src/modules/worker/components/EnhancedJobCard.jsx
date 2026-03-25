@@ -322,10 +322,10 @@ const EnhancedJobCard = ({
                   }}
                 >
                   <Typography variant="body2" color="text.secondary">
-                    Min: GH₵{job.bidding.minBidAmount}
+                    Min: {new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' }).format(job.bidding.minBidAmount)}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Max: GH₵{job.bidding.maxBidAmount}
+                    Max: {new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' }).format(job.bidding.maxBidAmount)}
                   </Typography>
                 </Box>
 
@@ -353,7 +353,7 @@ const EnhancedJobCard = ({
                 {job?.budget
                   ? typeof job.budget === 'object'
                     ? `GH₵${job.budget.min || 0} - ${job.budget.max || 0} ${job.budget.type || 'fixed'}`
-                    : `GH₵${job.budget}`
+                      : new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' }).format(job.budget)
                   : 'Salary not specified'}
               </Typography>
             </Box>
@@ -521,7 +521,7 @@ const EnhancedJobCard = ({
 
           <TextField
             fullWidth
-            label="Bid Amount (GH₵)"
+            label="Bid Amount"
             type="number"
             value={bidData.bidAmount}
             onChange={(e) =>
@@ -535,7 +535,7 @@ const EnhancedJobCard = ({
               max: job?.bidding?.maxBidAmount || 10000,
             }}
             InputProps={{ startAdornment: <InputAdornment position="start"><AttachMoneyIcon color="action" />GH₵</InputAdornment> }}
-            helperText={`Min: GH₵${job?.bidding?.minBidAmount || 0}, Max: GH₵${job?.bidding?.maxBidAmount || 10000}`}
+            helperText={`Min: ${new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' }).format(job?.bidding?.minBidAmount || 0)}, Max: ${new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' }).format(job?.bidding?.maxBidAmount || 10000)}`}
             sx={{ mb: 2 }}
           />
 

@@ -37,16 +37,16 @@ Fallback UI renders:
 
 ## Loading / Error Handling
 - Status chip uses aggregate health to tell users whether cold starts or outages might be responsible.
-- If `checkServiceHealth` fails, the chip falls back to “Status Unknown” but still shows actionable copy.
+- If `checkServiceHealth` fails, the chip falls back to "Status Unknown" but still shows actionable copy.
 - All actions remain accessible on both desktop and mobile thanks to stacked buttons.
 
 ## Verification Steps
 1. `cd kelmah-frontend && npx eslint src/modules/common/components/GlobalErrorBoundary.jsx src/App.jsx --max-warnings=0`
 2. Introduce a temporary throw (e.g., inside `HomePage`) and visit the route to confirm:
    - Boundary renders fallback UI
-   - “Try Again” clears the error after removing the throw
+   - "Try Again" clears the error after removing the throw
    - Status chip updates once the aggregate health endpoint responds
-   - “Go Home” navigates to `/` while resetting the boundary due to `resetKey`
+   - "Go Home" navigates to `/` while resetting the boundary due to `resetKey`
 
 ## Notes
 - Addresses Consolerrorsfix requirement for actionable error messaging and retry/go-home controls.

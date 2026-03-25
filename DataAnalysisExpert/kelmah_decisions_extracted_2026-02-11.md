@@ -9847,7 +9847,7 @@ For each file in the inventory:
    - Confirm it provides the expected API (functions, classes, constants).
    - Verify data shape agreements (request/response schemas, prop types, etc.).
    - Flag mismatches or duplication.
-2. Record results under the primary file’s audit entry.
+2. Record results under the primary file's audit entry.
 3. Ensure each secondary file is placed in the backlog to undergo a full primary audit later.
 
 ### 4.1 File Audit Entry
@@ -10774,7 +10774,7 @@ module/
 
 ### Signal lines
 
-- - `express.json()` consumes the request stream. When the proxy layer (`createProxyMiddleware`) forwards the request, there is no body left to send. The outgoing `Content-Length` header still advertises the original payload size, so the job-service waits indefinitely for bytes that never arrive. After Render’s 60-second upstream timeout, Cloudflare surfaces `504 Gateway Timeout`.
+- - `express.json()` consumes the request stream. When the proxy layer (`createProxyMiddleware`) forwards the request, there is no body left to send. The outgoing `Content-Length` header still advertises the original payload size, so the job-service waits indefinitely for bytes that never arrive. After Render's 60-second upstream timeout, Cloudflare surfaces `504 Gateway Timeout`.
 
 ---
 
@@ -15841,7 +15841,7 @@ Remote Server (Production):
 3. **HTTP Behaviour**
    - Each tick iterates over the current registry (`auth`, `user`, `job`, `payment`, `messaging`, `review`).
    - For each service we compute a probe list (global or per-service env overrides) and attempt each endpoint sequentially.
-   - Each probe uses a 20s timeout and accepts any response under 500 as “warm”; 404/405/timeout trigger fallbacks to the next endpoint.
+   - Each probe uses a 20s timeout and accepts any response under 500 as "warm"; 404/405/timeout trigger fallbacks to the next endpoint.
    - Up to three attempts per tick with a 15s delay help Render dynos finish spinning up before reporting failure.
    - Logs track misses at `debug`, recoveries at `info`, and final failures at `error` with endpoint/status/error metadata.
 
@@ -16515,7 +16515,7 @@ The templates include comprehensive checklists that act as "unit tests" for the 
 - ✅ **Success Criteria**:
   1. All active page components are inventoried (single checklist) and each is reviewed for runtime bugs, broken UI states, and unsafe patterns.
   2. Cross-cutting issues (auth/token storage, API client, routing, error boundaries, websocket) are audited first because they impact many pages.
-  3. Findings are categorized by severity (Critical/High/Medium/Low) with “what’s wrong / why it matters / how to fix”.
+  3. Findings are categorized by severity (Critical/High/Medium/Low) with "what's wrong / why it matters / how to fix".
   4. Any changes made are minimal, verified (lint/tests where available), and recorded here.
 - 🗂️ **Primary Audit Doc**:
   - `spec-kit/FRONTEND_PAGE_AUDIT_20260211.md`
@@ -16530,9 +16530,9 @@ The templates include comprehensive checklists that act as "unit tests" for the 
 
 ### Dry Audit Findings (Feb 11, 2026)
 
-- ✅ Mobile menu button is rendered before the brand section in the header toolbar, which anchors it to the left on mobile. This is the direct cause of the “menu should be on the right” request.
+- ✅ Mobile menu button is rendered before the brand section in the header toolbar, which anchors it to the left on mobile. This is the direct cause of the "menu should be on the right" request.
 - ✅ Header logout handler performs both `navigate('/')` and a forced `window.location.href = '/'`, which is a double navigation path and can look like duplicate button behavior when clicked.
-- ✅ Mobile drawer logout repeats a similar “navigate then reload” pattern; same double-action risk when triggered from the drawer.
+- ✅ Mobile drawer logout repeats a similar "navigate then reload" pattern; same double-action risk when triggered from the drawer.
 - ✅ No other duplicate click handlers found in header/menu buttons; most actions are single onClick callbacks wired to routing.
 
 ### Dry Audit Findings (Feb 11, 2026)
@@ -16659,13 +16659,13 @@ The templates include comprehensive checklists that act as "unit tests" for the 
 
 - 🔄 Re-opened the job-posting investigation to explicitly follow the mandated **dry-audit-first** workflow: before running diagnostics, catalog every file in the UI → gateway → job-service flow, read them end-to-end, and capture findings inside the spec-kit data-flow note plus this status log.
 - 🗂️ File list confirmed for audit: `JobCreationForm.jsx`, `jobSlice.js`, `jobsService.js`, shared axios/environment helpers, hirer routing shells, gateway `server.js` + `proxy/job.proxy.js` + `routes/job.routes.js`, job-service `server.js`, `routes/job.routes.js`, `controllers/job.controller.js`, `middleware/dbReady.js`, `models/index.js`, and shared `Job.js`/`User.js` models.
-- 📝 Documentation requirements: each file’s role, observed issues, and TODOs must be written to `spec-kit/JOB_POSTING_PIPELINE_DATA_FLOW_NOV2025.md` before any `curl`/diagnostic commands execute; only after that written audit may we run POST `/api/jobs` reproductions.
+- 📝 Documentation requirements: each file's role, observed issues, and TODOs must be written to `spec-kit/JOB_POSTING_PIPELINE_DATA_FLOW_NOV2025.md` before any `curl`/diagnostic commands execute; only after that written audit may we run POST `/api/jobs` reproductions.
 - ⚠️ Compliance reminder recorded here so future regression hunts reference this entry before engaging the services.
 
 ### Progress Update (Nov 23, 2025 - Job Posting Dry Audit Completed)
 
 - ✅ Read and catalogued every file in the mandated UI → gateway → job-service flow (`JobCreationForm.jsx`, `HirerDashboardPage.jsx`, `jobSlice.js`, `jobsService.js`, `hirerSlice.js`, shared axios/env config, API Gateway `server.js` + `proxy/job.proxy.js`, job-service `server.js`, `routes/job.routes.js`, `controllers/job.controller.js`, `middlewares/dbReady.js`, `config/db.js`, `models/index.js`, shared `serviceTrust.js`).
-- 📝 Updated `spec-kit/JOB_POSTING_PIPELINE_DATA_FLOW_NOV2025.md` with a “Dry Audit Findings (Nov 23, 2025)” section covering frontend entry points, networking, gateway/proxy behavior, job-service readiness, and compliance notes; also refreshed the file inventory tables to reflect hirer dashboard + slice participation.
+- 📝 Updated `spec-kit/JOB_POSTING_PIPELINE_DATA_FLOW_NOV2025.md` with a "Dry Audit Findings (Nov 23, 2025)" section covering frontend entry points, networking, gateway/proxy behavior, job-service readiness, and compliance notes; also refreshed the file inventory tables to reflect hirer dashboard + slice participation.
 - 🛑 No diagnostics or curl tests have been executed yet—per workflow, testing begins only after documenting the audit (this entry) and aligning on the spec-kit updates.
 - 📌 Next action: proceed to diagnostics (`curl` via current LocalTunnel + direct job-service) to capture the latest failure evidence now that the dry-audit requirement is satisfied.
 
@@ -16673,15 +16673,15 @@ The templates include comprehensive checklists that act as "unit tests" for the 
 
 - ✅ **Jobs module chunk recovery already in place** via `src/utils/lazyWithRetry.js` + the wrapped imports in `src/routes/publicRoutes.jsx`/`src/App.jsx`. The helper now purges Cache Storage + unregisters the service worker before reloading, which directly guards the `Failed to fetch dynamically imported module` error called out for `/jobs`.
 - ✅ **Session/auth persistence fixes confirmed** in `src/modules/auth/services/authSlice.js` (refresh-token fallback, stricter initial state), `src/App.jsx` (boot-time `verifyAuth()` triggers whenever tokens exist), and `src/modules/layout/components/Header.jsx` (profile menu visibility tied to Redux auth instead of stale local UI state).
-- ✅ **Worker messaging CTA regression resolved** in `src/modules/worker/components/WorkerCard.jsx`, which now normalizes the viewer role, blocks self-messaging, and swaps “Sign in to message” vs. “Message” based on `useAuthCheck()`.
+- ✅ **Worker messaging CTA regression resolved** in `src/modules/worker/components/WorkerCard.jsx`, which now normalizes the viewer role, blocks self-messaging, and swaps "Sign in to message" vs. "Message" based on `useAuthCheck()`.
 - ✅ **Platform status badge + error copy updated** inside `src/modules/home/pages/HomePage.jsx` to reuse `checkServiceHealth('aggregate')`, poll the gateway every 60s, and sync toast messaging so Online/Offline states remain accurate.
 - ✅ **Theme toggle persistence overhaul** lives in `src/theme/ThemeProvider.jsx`, persisting `{ mode, updatedAt, version }` across storage layers, syncing tabs, and applying `<html data-theme>` before first paint to stop route-by-route resets.
 - 🔄 **Next verification steps:** re-run the deployed frontend through the latest LocalTunnel URL after a forced cache clear to ensure `/jobs` pulls the regenerated chunk, hit `/dashboard` + `/profile` directly post-refresh to watch the refresh-token bootstrap, and exercise `/find-talents` as a hirer + guest to validate the CTA permutations noted above.
 
 ### Progress Update (Nov 19, 2025 - Header Profile Menu Restoration)
 
-- 🚨 BUG #3 from Consolerrorsfix: Header continued to render the “Sign In / Get Started” pair while logged-in users attempted to navigate because the component showed auth buttons whenever Redux briefly said `isAuthenticated === false` during boot, even if a refresh token existed and verification was underway.
-- ✅ Updated `src/hooks/useAuthCheck.js` so `canShowUserFeatures`/`shouldShowAuthButtons` now respect Redux’ loading flag, guaranteeing we never render guest CTAs while a token-backed verification request is running.
+- 🚨 BUG #3 from Consolerrorsfix: Header continued to render the "Sign In / Get Started" pair while logged-in users attempted to navigate because the component showed auth buttons whenever Redux briefly said `isAuthenticated === false` during boot, even if a refresh token existed and verification was underway.
+- ✅ Updated `src/hooks/useAuthCheck.js` so `canShowUserFeatures`/`shouldShowAuthButtons` now respect Redux' loading flag, guaranteeing we never render guest CTAs while a token-backed verification request is running.
 - ✅ Adjusted `src/modules/layout/components/Header.jsx` to consume the new loading signal, suppress auth buttons until verification completes, and show a compact spinner instead. Once the session resolves, the avatar + profile dropdown appear consistently, eliminating the confusing dual-button state.
 - 🧪 Verification: `cd kelmah-frontend && npx eslint src/hooks/useAuthCheck.js src/modules/layout/components/Header.jsx` (fails only on longstanding pre-existing lint issues unrelated to these sections); manual flow—log in, refresh `/`, wait for verify call—now keeps the primary action area blank (spinner) until the avatar renders instead of flashing Sign In.
 
@@ -16713,7 +16713,7 @@ The templates include comprehensive checklists that act as "unit tests" for the 
   - Added an explicit guard that treats `/worker-profile` paths as public pages before dashboard detection runs.
   - Updated `kelmah-frontend/src/modules/layout/components/Layout.jsx` to reuse the sanitized `currentPath` value and exclude worker profiles from dashboard logic.
   - Reviewed surrounding layout conditions to confirm hirer/worker dashboard routes remain unaffected.
-- **Verification:** Manual route check confirms navigating from Find Workers → “View Profile” now renders the full profile experience without dashboard chrome. Desktop/mobile layouts both respect the public variant.
+- **Verification:** Manual route check confirms navigating from Find Workers → "View Profile" now renders the full profile experience without dashboard chrome. Desktop/mobile layouts both respect the public variant.
 
 ### 🎨 December 23, 2024 - Jobs Section Comprehensive Audit & Enhancement (Phase 4: Animated Stats)
 
@@ -17361,7 +17361,7 @@ A systematic sector-by-sector dry audit of the entire Kelmah platform has been c
 - **Root `.env` Aligned**: Repository-level `.env` now mirrors the gateway defaults—port **5000**, no manual service URL overrides, and comment placeholders to avoid unintentional overrides in scripts.
 - **Discovery Behavior**: `resolveServiceUrl` prefers cloud URLs when `detectEnvironment()` resolves to production, then falls back to localhost if health checks fail—preserving flexibility for local debugging even with production env flags.
 - **Frontend Auto Failover**: Updated `environment.js` so the React client probes runtime-config URLs, env overrides, localhost, and `/api` in priority order, caching the first responsive gateway. Subsequent sessions reuse the healthy base while avoiding mixed-content pitfalls.
-- **Dormant Flag**: `ENABLE_AUTO_SERVICE_DISCOVERY` isn’t referenced anywhere. It’s harmless but unused; leave it or wire it up during a future refactor.
+- **Dormant Flag**: `ENABLE_AUTO_SERVICE_DISCOVERY` isn't referenced anywhere. It's harmless but unused; leave it or wire it up during a future refactor.
 
 ### 🔍 Job Sector Dry Audit Kickoff (October 1, 2025)
 
@@ -18572,7 +18572,7 @@ This **dual API architecture** is the **exact cause** of your original request i
 
 ### Signal lines
 
-- ❌ **Issue 1**: Empty state presented minimal text (“No workers found”), offering no recovery guidance for QA testers.
+- ❌ **Issue 1**: Empty state presented minimal text ("No workers found"), offering no recovery guidance for QA testers.
 - ❌ **Issue 2**: Clearing filters required discovering the chip delete UI, which QA flagged as hidden.
 
 ---

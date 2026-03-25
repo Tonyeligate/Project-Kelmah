@@ -74,6 +74,7 @@ import reviewService from '../services/reviewService';
 import MobileFilterSheet from '../../../components/common/MobileFilterSheet';
 import { Helmet } from 'react-helmet-async';
 import { devError } from '@/modules/common/utils/devLogger';
+import PageCanvas from '@/modules/common/components/PageCanvas';
 
 // Enhanced Reviews Page with comprehensive review management
 const EnhancedReviewsPage = () => {
@@ -936,6 +937,7 @@ const EnhancedReviewsPage = () => {
   }
 
   return (
+    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
     <Box
       sx={{
         minHeight: '100dvh',
@@ -1486,6 +1488,7 @@ const EnhancedReviewsPage = () => {
         </Alert>
       </Snackbar>
     </Box>
+    </PageCanvas>
   );
 };
 

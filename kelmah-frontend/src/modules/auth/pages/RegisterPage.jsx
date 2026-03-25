@@ -4,6 +4,7 @@ import MobileRegister from '../components/mobile/MobileRegister';
 import { Box, Typography, Stack, Chip } from '@mui/material';
 import { Helmet } from 'react-helmet-async';
 import { useBreakpointDown } from '@/hooks/useResponsive';
+import PageCanvas from '@/modules/common/components/PageCanvas';
 
 const RegisterPage = () => {
   const isMobile = useBreakpointDown('md');
@@ -27,24 +28,24 @@ const RegisterPage = () => {
 
   if (isMobile) {
     return (
-      <>
+      <PageCanvas disableContainer sx={{ pt: { xs: 3, md: 4 }, pb: { xs: 4, md: 6 } }}>
         {pageTitle}
         <Box sx={{ px: 2, pt: 2 }}>
           {helperCopy}
         </Box>
         <MobileRegister />
-      </>
+      </PageCanvas>
     );
   }
 
   return (
-    <>
+    <PageCanvas disableContainer sx={{ pt: { xs: 3, md: 4 }, pb: { xs: 4, md: 6 } }}>
       {pageTitle}
       <Box sx={{ maxWidth: 960, mx: 'auto', px: { xs: 2, md: 0 }, pt: 2 }}>
         {helperCopy}
       </Box>
       <Register />
-    </>
+    </PageCanvas>
   );
 };
 

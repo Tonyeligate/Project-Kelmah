@@ -137,7 +137,7 @@ Current route structure already hints at a future split (`/worker/*`, `/hirer/*`
 ### 8) High — shared `/profile` is worker-centric, not shared
 - File: `kelmah-frontend/src/modules/profile/pages/ProfilePage.jsx`
 - Evidence:
-  - Worker copy: “Tell hirers about yourself and your skills...”
+  - Worker copy: "Tell hirers about yourself and your skills..."
   - Worker metrics: jobs applied, offers.
   - Worker data sections: skills, education, work history.
 - Why it matters:

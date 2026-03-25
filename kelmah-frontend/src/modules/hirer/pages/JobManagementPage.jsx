@@ -29,7 +29,18 @@
 
 
 
+import PageCanvas from '@/modules/common/components/PageCanvas';
+
 // Visibility chip — tells the hirer whether the job appears on the public Jobs page
+const formatGhanaCurrencyLabel = (value) => {
+  const amount = Number(value ?? 0);
+  return new Intl.NumberFormat('en-GH', {
+    style: 'currency',
+    currency: 'GHS',
+    minimumFractionDigits: amount % 1 === 0 ? 0 : 2,
+  }).format(Number.isFinite(amount) ? amount : 0);
+};
+
 const VisibilityChip = ({ visibility }) => {
   const v = visibility || 'public'; // treat missing as public (legacy data)
   if (v === 'private') {
@@ -350,7 +361,7 @@ const JobManagementPage = () => {
         </Box>
         
         <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-          {formatJobLocation(job.location)} {job.budget != null ? `• GH₵${typeof job.budget === 'object' ? (job.budget.max || job.budget.min || job.budget.amount || 0) : job.budget}${job.paymentType === 'hourly' ? '/hr' : ''}` : ''}
+          {formatJobLocation(job.location)} {job.budget != null ? `• ${formatGhanaCurrencyLabel(typeof job.budget === 'object' ? (job.budget.max || job.budget.min || job.budget.amount || 0) : job.budget)}${job.paymentType === 'hourly' ? '/hr' : ''}` : ''}
         </Typography>
         
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -432,7 +443,8 @@ const JobManagementPage = () => {
   );
 
   return (
-    <Box sx={{ pb: { xs: 2, md: 4 }, pt: { xs: 1, md: 2 } }}>
+    <PageCanvas disableContainer>
+      <Box sx={{ pb: { xs: 2, md: 4 }, pt: { xs: 1, md: 2 } }}>
       <Helmet>
         <title>Manage Jobs | Kelmah</title>
       </Helmet>
@@ -816,7 +828,7 @@ const JobManagementPage = () => {
                                 variant="caption"
                                 color="text.secondary"
                               >
-                                {job.budget != null ? `GH₵${typeof job.budget === 'object' ? (job.budget.max || job.budget.min || job.budget.amount || 0) : job.budget}${job.paymentType === 'hourly' ? '/hr' : ''}` : ''}
+                                {job.budget != null ? `${formatGhanaCurrencyLabel(typeof job.budget === 'object' ? (job.budget.max || job.budget.min || job.budget.amount || 0) : job.budget)}${job.paymentType === 'hourly' ? '/hr' : ''}` : ''}
                               </Typography>
                             </Box>
                           </TableCell>
@@ -1043,7 +1055,8 @@ const JobManagementPage = () => {
           </Alert>
         </Snackbar>
       )}
-    </Box>
+      </Box>
+    </PageCanvas>
   );
 };
 

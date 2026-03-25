@@ -45,7 +45,7 @@ Service creates/returns conversation, MessagingPage selects it and renders chat 
 2. **Self-View Guard**: Worker/user IDs are normalized (`id`, `_id`, `userId`) for both card data and authenticated viewer, preventing false positives when IDs share numeric vs string forms.
 3. **Context Preservation**: Login redirect stores `from` so guests return to `/find-talents` after authentication.
 4. **Messaging Coupling**: MessagingPage respects `?recipient` query param and creates a direct conversation via `messagingService.createDirectConversation`. Response data differences are handled by extracting `conversation.id` from multiple shapes.
-5. **Backend Alignment**: `messagingServiceClient` already targets the gateway path `/api/messages`, so WorkerCard’s navigation piggybacks on existing real-time stack without duplicating API calls.
+5. **Backend Alignment**: `messagingServiceClient` already targets the gateway path `/api/messages`, so WorkerCard's navigation piggybacks on existing real-time stack without duplicating API calls.
 
 ## Outstanding Risks / Follow-Ups
 - **Lint Coverage**: `eslint.config.js` ignores `src/modules/worker/**`, so WorkerCard changes bypass lint checks. Introduce a narrower ignore rule (or remove the worker glob) so CTA logic participates in CI.

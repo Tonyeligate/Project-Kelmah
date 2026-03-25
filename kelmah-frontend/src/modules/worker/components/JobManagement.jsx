@@ -17,6 +17,15 @@
 
 
 
+
+
+
+
+
+
+
+
+
 const JobManagement = () => {
   // FIXED: Use standardized user normalization for consistent user data access
   const { user: rawUser } = useSelector((state) => state.auth);
@@ -210,7 +219,7 @@ const JobManagement = () => {
               Budget
             </Typography>
             <Typography variant="body1">
-              GH₵{job?.budget?.amount ?? job?.budget ?? 0}
+              {new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' }).format(job?.budget?.amount ?? job?.budget ?? 0)}
             </Typography>
           </Grid>
           <Grid item xs={6}>

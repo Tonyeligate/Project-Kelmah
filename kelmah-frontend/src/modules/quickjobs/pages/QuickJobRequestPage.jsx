@@ -36,6 +36,7 @@ import {
 import { Helmet } from 'react-helmet-async';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 import { toUserMessage } from '@/services/responseNormalizer';
+import PageCanvas from '../../common/components/PageCanvas';
 
 // Steps for the stepper
 const steps = ['Describe Problem', 'Confirm Location', 'When do you need it?'];
@@ -737,7 +738,8 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
   // Success screen
   if (success) {
     return (
-      <Container maxWidth="sm" sx={{ py: 8, textAlign: 'center' }}>
+      <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
+        <Container maxWidth="sm" sx={{ py: 8, textAlign: 'center' }}>
         <Avatar
           sx={{ 
             width: 100, 
@@ -756,12 +758,14 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
           Workers nearby will see your request and send quotes. You'll be notified when they respond.
         </Typography>
         <CircularProgress size={24} />
-      </Container>
+        </Container>
+      </PageCanvas>
     );
   }
 
   return (
-    <Container maxWidth="sm" sx={{ py: 3 }}>
+    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
+      <Container maxWidth="sm" sx={{ py: 3 }}>
       <Helmet><title>Quick Job Request | Kelmah</title></Helmet>
       {/* Back button & title */}
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
@@ -858,7 +862,8 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
           </Button>
         )}
       </Box>
-    </Container>
+      </Container>
+    </PageCanvas>
   );
 };
 

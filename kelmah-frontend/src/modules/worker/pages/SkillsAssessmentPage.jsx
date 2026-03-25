@@ -70,6 +70,7 @@ import {
 } from '@/modules/worker/components/skillsAssessment/styled';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 import { devError } from '@/modules/common/utils/devLogger';
+import PageCanvas from '@/modules/common/components/PageCanvas';
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -1241,7 +1242,7 @@ const SkillsAssessmentPage = () => {
   }
 
   return (
-    <>
+    <PageCanvas disableContainer>
       <Helmet>
         <title>Skills Assessment - Professional Certification | Kelmah</title>
         <meta
@@ -1515,7 +1516,7 @@ const SkillsAssessmentPage = () => {
           </Alert>
         </Snackbar>
       </Container>
-    </>
+    </PageCanvas>
   );
 };
 

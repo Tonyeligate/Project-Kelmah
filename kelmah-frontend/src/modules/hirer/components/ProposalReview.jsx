@@ -31,6 +31,22 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const STATUS_FILTERS = [
   { label: 'All', value: 'all' },
   { label: 'Pending', value: 'pending' },
@@ -39,17 +55,7 @@ const STATUS_FILTERS = [
   { label: 'Rejected', value: 'rejected' },
 ];
 
-const formatCurrency = (value) => {
-  const amount = Number(value ?? 0);
-  if (Number.isNaN(amount)) {
-    return 'GH₵\u00a00';
-  }
-  return new Intl.NumberFormat('en-GH', {
-    style: 'currency',
-    currency: 'GHS',
-    minimumFractionDigits: amount % 1 === 0 ? 0 : 2,
-  }).format(amount);
-};
+const formatCurrency = (value) => formatGhanaCurrency(value);
 
 const formatDate = (value) => {
   if (!value) {

@@ -143,7 +143,7 @@ export const PaymentProvider = ({ children }) => {
           currency: 'GHS',
           paymentMethodId,
         });
-        showToast(`GHS ${amount.toFixed(2)} deposited successfully.`, 'success');
+        showToast(new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' }).format(amount) + ' deposited successfully.', 'success');
         // Refresh wallet data
         await fetchData();
         return true;

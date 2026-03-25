@@ -62,7 +62,7 @@ App shell + feature bootstraps → socket manager connects once with current acc
 1. **Recommendation failure is hidden behind urgent-job fallback on both platforms**
    - Android: `JobsViewModel.refreshHome()` falls back from `getRecommendedJobs()` to `getJobs(sort = URGENT)` when the recommendations endpoint errors.
    - iOS: `JobsViewModel.refreshHome(for:)` does the same with `.urgent` filters.
-   - Impact: workers cannot distinguish “recommendation engine failed” from “these are your best matches”, so match trust degrades silently.
+   - Impact: workers cannot distinguish "recommendation engine failed" from "these are your best matches", so match trust degrades silently.
    - Fix: preserve recommendation failure state explicitly, show degraded-feed messaging, and track fallback usage separately.
 
 2. **Job matching precision depends on fragile permissive parsing instead of a strict contract**
@@ -73,7 +73,7 @@ App shell + feature bootstraps → socket manager connects once with current acc
 3. **Worker profile snapshot mixes current-user credentials with worker-specific endpoints**
    - Android and iOS profile repositories call `users/me/credentials` while also fetching `workers/:workerId/...` resources.
    - Impact: the method name implies arbitrary worker snapshots, but it actually produces hybrid data if `workerId` is not the signed-in user.
-   - Fix: either restrict the API and naming to “current worker snapshot” or fetch all sections by the same worker identity.
+   - Fix: either restrict the API and naming to "current worker snapshot" or fetch all sections by the same worker identity.
 
 4. **Realtime connections do not re-authenticate after token changes or expiry**
    - Android and iOS socket managers connect once with the current access token and keep reconnect enabled without token rotation.
@@ -91,12 +91,12 @@ App shell + feature bootstraps → socket manager connects once with current acc
 6. **Recent activity surfaces are only as truthful as backend ordering because notifications are not locally sorted**
    - Android and iOS home screens display the first three notifications directly from repository state.
    - Android and iOS notifications repositories parse payload order as-is and do not sort by `createdAt`.
-   - Impact: “Recent alerts” can be wrong whenever the backend returns unsorted or mixed-priority data.
+   - Impact: "Recent alerts" can be wrong whenever the backend returns unsorted or mixed-priority data.
    - Fix: normalize to descending parsed timestamps before storing or rendering preview lists.
 
 7. **Filter UX and refresh semantics are inconsistent, which makes search precision look broken**
    - Android category and sort changes auto-refresh, but location waits for an explicit apply action.
-   - iOS category and sort refresh immediately, but text search and location remain pending until “Apply Filters”.
+   - iOS category and sort refresh immediately, but text search and location remain pending until "Apply Filters".
    - Impact: users change filters and see stale lists, which reads as bad search quality rather than deferred execution.
    - Fix: unify filter behavior across controls and platforms with either explicit apply for all filters or debounced auto-apply for all.
 
@@ -131,7 +131,7 @@ App shell + feature bootstraps → socket manager connects once with current acc
 2. Replace permissive job payload parsing with strict decoding for ranking-critical fields.
 3. Fix profile snapshot identity consistency so worker-profile signals always belong to one worker.
 4. Add token-aware socket re-auth and refresh coalescing on both platforms.
-5. Normalize recent activity ordering and filter semantics so “recent” and “best match” actually mean something.
+5. Normalize recent activity ordering and filter semantics so "recent" and "best match" actually mean something.
 6. Expand native automated coverage around matching, realtime, and session recovery before additional feature work.
 
 ## Validation performed

@@ -67,7 +67,7 @@ function JobsCardsGrid({
   getCategoryIcon,
 }) {
   return (
-    <Grid container spacing={{ xs: 2, sm: 3 }}>
+    <Grid container spacing={{ xs: 1.25, sm: 3 }}>
       {uniqueJobs.map((job, index) => {
         const jobHeroImage = getJobHeroImage(job);
         const jobVisuals = getJobVisuals(job);
@@ -93,12 +93,12 @@ function JobsCardsGrid({
                   flexDirection: 'column',
                   bgcolor: 'var(--k-bg-surface)',
                   border: '1px solid var(--k-accent-border)',
-                  borderRadius: { xs: 2, sm: 2 },
+                  borderRadius: { xs: 2.5, sm: 2 },
                   minHeight: { xs: 'auto', sm: '320px' },
                   cursor: 'pointer',
                   position: 'relative',
                   overflow: 'hidden',
-                  mx: { xs: 1, sm: 0 },
+                  mx: 0,
                   '&::before': {
                     content: '""',
                     position: 'absolute',
@@ -134,7 +134,7 @@ function JobsCardsGrid({
                 <Box
                   sx={{
                     position: 'relative',
-                    height: 148,
+                    height: { xs: 122, sm: 148 },
                     background: jobHeroImage
                       ? `linear-gradient(180deg, rgba(15,23,42,0.18) 0%, rgba(15,23,42,0.72) 100%), url(${jobHeroImage})`
                       : 'linear-gradient(135deg, rgba(212,175,55,0.18) 0%, rgba(15,118,110,0.35) 100%)',
@@ -142,15 +142,15 @@ function JobsCardsGrid({
                     backgroundPosition: 'center',
                     display: 'flex',
                     alignItems: 'flex-end',
-                    p: 2,
+                    p: { xs: 1.2, sm: 2 },
                   }}
                 >
                   <Box
                     sx={{
                       position: 'absolute',
-                      top: 12,
-                      left: 12,
-                      right: 12,
+                      top: { xs: 8, sm: 12 },
+                      left: { xs: 8, sm: 12 },
+                      right: { xs: 8, sm: 12 },
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
@@ -166,7 +166,10 @@ function JobsCardsGrid({
                         fontWeight: 700,
                         border: '1px solid rgba(15,23,42,0.08)',
                         boxShadow: '0 6px 16px rgba(15,23,42,0.16)',
+                        height: { xs: 22, sm: 24 },
                         '& .MuiChip-label': {
+                          px: 0.9,
+                          fontSize: { xs: '0.64rem', sm: '0.72rem' },
                           color: '#111827',
                           fontWeight: 800,
                         },
@@ -192,8 +195,8 @@ function JobsCardsGrid({
                       gap: 1,
                       bgcolor: 'rgba(15,23,42,0.64)',
                       color: 'white',
-                      px: 1.25,
-                      py: 0.75,
+                      px: { xs: 0.9, sm: 1.25 },
+                      py: { xs: 0.45, sm: 0.75 },
                       borderRadius: 2,
                       maxWidth: '100%',
                     }}
@@ -203,7 +206,7 @@ function JobsCardsGrid({
                     })}
                     <Typography
                       variant="caption"
-                      sx={{ fontWeight: 700, letterSpacing: 0.2 }}
+                      sx={{ fontWeight: 700, letterSpacing: 0.15, fontSize: { xs: '0.64rem', sm: '0.74rem' } }}
                     >
                       {jobHeroImage
                         ? 'Image-backed job brief ready for quick review'
@@ -211,14 +214,14 @@ function JobsCardsGrid({
                     </Typography>
                   </Box>
                 </Box>
-                <CardContent sx={{ flexGrow: 1, p: { xs: 2.5, sm: 3 } }}>
+                <CardContent sx={{ flexGrow: 1, p: { xs: 1.5, sm: 3 } }}>
                   <Box
                     sx={{
                       display: 'flex',
                       justifyContent: 'space-between',
-                      mb: 2,
+                      mb: { xs: 1.2, sm: 2 },
                       flexDirection: { xs: 'column', sm: 'row' },
-                      gap: { xs: 1, sm: 0 },
+                      gap: { xs: 0.75, sm: 0 },
                     }}
                   >
                     <Box

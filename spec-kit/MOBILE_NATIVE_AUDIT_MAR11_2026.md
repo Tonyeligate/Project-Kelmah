@@ -70,7 +70,7 @@
   - `kelmah-mobile-ios/Kelmah/App/RootTabView.swift` only opens existing conversations via `pendingConversationId`.
   - `kelmah-mobile-ios/Kelmah/Features/Home/Presentation/HomeView.swift` makes the same messages-created promise.
 - Risk:
-  - Kelmah’s worker-hirer communication loop is broken at the native product level.
+  - Kelmah's worker-hirer communication loop is broken at the native product level.
   - Existing message screens mainly serve follow-up, not conversation initiation.
 - Fix plan:
   - Add a start-chat CTA from job detail, worker summary, and hirer-facing candidate cards.

@@ -49,13 +49,13 @@ const ProposalBuilder = ({ onSubmit }) => {
             helperText="Mention steps, materials, and when you can start."
           />
           <TextField
-            label="Proposed Rate (GH₵)"
+            label="Proposed Rate"
             type="number"
             fullWidth
             value={rate}
             onChange={(e) => setRate(e.target.value)}
             inputProps={{ 'aria-label': 'Proposed rate in Ghana cedis' }}
-            helperText="Enter your full quote so hirers can compare fairly."
+            helperText={`Enter your full quote so hirers can compare fairly. Preview: ${new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' }).format(Number(rate) || 0)}`}
           />
           <Button variant="contained" onClick={handleSubmit} sx={{ minHeight: 44, width: { xs: '100%', sm: 'auto' } }}>
             Submit Proposal

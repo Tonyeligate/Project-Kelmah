@@ -20,6 +20,7 @@ import EmptyState from '../../../components/common/EmptyState';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 import { toUserMessage } from '@/services/responseNormalizer';
 import { devError } from '@/modules/common/utils/devLogger';
+import PageCanvas from '@/modules/common/components/PageCanvas';
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All contracts' },
@@ -177,6 +178,7 @@ const ContractsPage = () => {
   );
 
   return (
+    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
     <Box sx={{ p: { xs: 2, md: 4 } }}>
       <Helmet><title>Contracts | Kelmah</title></Helmet>
       <Stack
@@ -428,6 +430,7 @@ const ContractsPage = () => {
         )}
       </Grid>}
     </Box>
+    </PageCanvas>
   );
 };
 

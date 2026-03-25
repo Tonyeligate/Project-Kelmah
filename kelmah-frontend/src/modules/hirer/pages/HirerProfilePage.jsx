@@ -199,25 +199,28 @@ const HirerProfilePage = () => {
 
   if (loading && !profile) {
     return (
-      <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
-        <Skeleton variant="rounded" height={220} sx={{ mb: 3, borderRadius: 3 }} />
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={8}>
-            <Skeleton variant="rounded" height={280} sx={{ borderRadius: 3 }} />
+      <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 2, md: 4 } }}>
+        <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
+          <Skeleton variant="rounded" height={220} sx={{ mb: 3, borderRadius: 3 }} />
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={8}>
+              <Skeleton variant="rounded" height={280} sx={{ borderRadius: 3 }} />
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Skeleton variant="rounded" height={280} sx={{ borderRadius: 3 }} />
+            </Grid>
           </Grid>
-          <Grid item xs={12} md={4}>
-            <Skeleton variant="rounded" height={280} sx={{ borderRadius: 3 }} />
-          </Grid>
-        </Grid>
-      </Container>
+        </Container>
+      </PageCanvas>
     );
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
-      <Helmet>
-        <title>Hirer Profile | Kelmah</title>
-      </Helmet>
+    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 2, md: 4 } }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
+        <Helmet>
+          <title>Hirer Profile | Kelmah</title>
+        </Helmet>
 
       {error && (
         <Alert severity="warning" sx={{ mb: 3 }}>
@@ -488,7 +491,8 @@ const HirerProfilePage = () => {
           </Stack>
         </Grid>
       </Grid>
-    </Container>
+      </Container>
+    </PageCanvas>
   );
 };
 

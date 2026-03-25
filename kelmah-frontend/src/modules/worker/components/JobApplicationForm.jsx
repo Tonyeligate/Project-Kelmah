@@ -547,7 +547,7 @@ const JobApplicationForm = () => {
                   <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
-                      label="Your Price (GHS) *"
+                      label="Your Price *"
                       type="number"
                       placeholder="e.g., 2000"
                       value={applicationData.proposedRate}
@@ -559,7 +559,7 @@ const JobApplicationForm = () => {
                         startAdornment: (
                           <InputAdornment position="start">
                             <MoneyIcon color="action" sx={{ mr: 0.5 }} />
-                            GHS
+                            GH₵
                           </InputAdornment>
                         ),
                       }}

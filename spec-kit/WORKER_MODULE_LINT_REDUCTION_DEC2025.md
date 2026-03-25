@@ -45,7 +45,7 @@ API Gateway `/api/jobs` proxy → Job service routes (`services/job/routes/job.r
   ↓
 React Query invalidates `jobKeys.saved()`; JobCard receives updated `isSaved` prop → icon toggles immediately
 
-User clicks card or “View Details” CTA
+User clicks card or "View Details" CTA
   ↓
 JobCard.handleCardClick chooses either `onViewDetails(id)` (parent-supplied) or `navigate('/jobs/:id')`
   ↓
@@ -78,7 +78,7 @@ savedJobIds (Set derived from useSavedJobsQuery) decides mutation path
   ↓
 React Query cache updated optimistically; snackbar fired via notistack
 
-User taps “Apply Now” / “View Details”
+User taps "Apply Now" / "View Details"
   ↓
 searchService.trackJobInteraction(jobId, action)
   ↓
@@ -111,7 +111,7 @@ useApplyToJobMutation.mutateAsync({ jobId, applicationData })
   ↓
 jobsApi.applyToJob(jobId, payload) → POST /api/jobs/:jobId/apply
   ↓
-Query invalidates worker “my jobs” cache; local `jobStatuses` map flips to `applied`
+Query invalidates worker "my jobs" cache; local `jobStatuses` map flips to `applied`
 ```
 
 ### 4.4 Worker JobSearchPage.jsx

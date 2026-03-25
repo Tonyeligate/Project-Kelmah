@@ -81,44 +81,44 @@ const baseTheme = {
     },
   },
   shape: {
-    borderRadius: 14,
+    borderRadius: 18,
   },
   typography: {
-    fontFamily: '"Inter", "Roboto", "Helvetica Neue", "Arial", sans-serif',
+    fontFamily: '"Inter", "Manrope", sans-serif',
     h1: {
-      fontFamily: '"Inter", "Roboto", sans-serif',
+      fontFamily: '"Montserrat", "Manrope", sans-serif',
       fontSize: 'clamp(1.75rem, 4vw, 3.5rem)',
       fontWeight: 700,
       lineHeight: 1.2,
       letterSpacing: '-0.02em',
     },
     h2: {
-      fontFamily: '"Inter", "Roboto", sans-serif',
+      fontFamily: '"Montserrat", "Manrope", sans-serif',
       fontSize: 'clamp(1.5rem, 3.5vw, 2.75rem)',
       fontWeight: 600,
       lineHeight: 1.3,
       letterSpacing: '-0.01em',
     },
     h3: {
-      fontFamily: '"Inter", "Roboto", sans-serif',
+      fontFamily: '"Montserrat", "Manrope", sans-serif',
       fontSize: 'clamp(1.25rem, 3vw, 2.25rem)',
       fontWeight: 600,
       lineHeight: 1.3,
     },
     h4: {
-      fontFamily: '"Inter", "Roboto", sans-serif',
+      fontFamily: '"Montserrat", "Manrope", sans-serif',
       fontSize: 'clamp(1.125rem, 2.5vw, 1.75rem)',
       fontWeight: 600,
       lineHeight: 1.4,
     },
     h5: {
-      fontFamily: '"Inter", "Roboto", sans-serif',
+      fontFamily: '"Montserrat", "Manrope", sans-serif',
       fontSize: 'clamp(1rem, 2vw, 1.5rem)',
       fontWeight: 600,
       lineHeight: 1.4,
     },
     h6: {
-      fontFamily: '"Inter", "Roboto", sans-serif',
+      fontFamily: '"Montserrat", "Manrope", sans-serif',
       fontSize: 'clamp(0.9375rem, 1.5vw, 1.25rem)',
       fontWeight: 600,
       lineHeight: 1.4,
@@ -272,7 +272,7 @@ const darkTheme = createTheme({
           padding: 0,
           // Ensure consistent font rendering
           fontFamily:
-            '"Inter", "Roboto", "Helvetica Neue", "Arial", sans-serif',
+            '"Inter", "Manrope", sans-serif',
           WebkitFontSmoothing: 'antialiased',
           MozOsxFontSmoothing: 'grayscale',
           '& *:focus-visible': {
@@ -325,9 +325,9 @@ const darkTheme = createTheme({
           backgroundColor: SURFACE_TOKENS.dark.surface,
           backgroundImage: 'none',
           border: '1px solid rgba(255, 255, 255, 0.08)',
-          borderRadius: 16,
+          borderRadius: 20,
           transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
-          boxShadow: '0 12px 30px rgba(3, 3, 5, 0.35)',
+          boxShadow: '0 18px 45px rgba(3, 3, 5, 0.40)',
           '&:hover': {
             borderColor: 'rgba(255, 215, 0, 0.35)',
             boxShadow: '0 18px 45px rgba(0, 0, 0, 0.45)',
@@ -335,7 +335,7 @@ const darkTheme = createTheme({
           // Mobile: minimal shadows — flat + border (Binance pattern)
           '@media (max-width: 599.95px)': {
             boxShadow: '0 2px 8px rgba(0, 0, 0, 0.25)',
-            borderRadius: 14,
+            borderRadius: 16,
             '&:hover': {
               boxShadow: '0 2px 8px rgba(0, 0, 0, 0.25)',
               transform: 'none',
@@ -365,7 +365,7 @@ const darkTheme = createTheme({
         root: {
           backgroundColor: SURFACE_TOKENS.dark.raised,
           border: '1px solid rgba(255, 255, 255, 0.07)',
-          borderRadius: 16,
+          borderRadius: 20,
           transition: 'transform 0.3s ease, border-color 0.3s ease',
           '@media (hover: hover)': {
             '&:hover': {
@@ -376,7 +376,7 @@ const darkTheme = createTheme({
           },
           // Mobile: flat cards, no hover lift
           '@media (max-width: 599.95px)': {
-            borderRadius: 14,
+            borderRadius: 16,
             boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
             '&:hover': {
               transform: 'none',
@@ -389,7 +389,7 @@ const darkTheme = createTheme({
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: 10,
+          borderRadius: 999,
           textTransform: 'none',
           fontWeight: 600,
           padding: 'clamp(8px, 1vw, 10px) clamp(16px, 2vw, 26px)',
@@ -831,7 +831,7 @@ const lightTheme = createTheme({
           margin: 0,
           padding: 0,
           fontFamily:
-            '"Inter", "Roboto", "Helvetica Neue", "Arial", sans-serif',
+            '"Inter", "Manrope", sans-serif',
           WebkitFontSmoothing: 'antialiased',
           MozOsxFontSmoothing: 'grayscale',
           '& *:focus-visible': {

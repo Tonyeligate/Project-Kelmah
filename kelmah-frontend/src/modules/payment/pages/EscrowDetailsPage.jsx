@@ -20,14 +20,20 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { Helmet } from 'react-helmet-async';
 import { currencyFormatter } from '@/modules/common/utils/formatters';
 import { getRoleHomePath, hasRole } from '../../../utils/userUtils';
 import { devError } from '@/modules/common/utils/devLogger';
+import PageCanvas from '../../common/components/PageCanvas';
 
 const EscrowDetailsPage = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   const { escrowId } = useParams();
   const user = useSelector((state) => state.auth.user);
   const { escrows, paymentMethods, loading, refresh } = usePayments();
@@ -51,30 +57,35 @@ const EscrowDetailsPage = () => {
 
   if (loading) {
     return (
-      <Container sx={{ py: 4, display: 'flex', justifyContent: 'center' }}>
-        <Typography variant="body1" color="text.secondary">Loading escrow details...</Typography>
-      </Container>
+      <PageCanvas disableContainer sx={{ pt: { xs: 1, sm: 4 }, pb: { xs: 4, md: 6 } }}>
+        <Container sx={{ py: 4, display: 'flex', justifyContent: 'center' }}>
+          <Typography variant="body1" color="text.secondary">Loading escrow details...</Typography>
+        </Container>
+      </PageCanvas>
     );
   }
 
   if (!escrow) {
     return (
-      <Container sx={{ py: 4 }}>
-        <Typography variant="h6">Escrow not found.</Typography>
-      </Container>
+      <PageCanvas disableContainer sx={{ pt: { xs: 1, sm: 4 }, pb: { xs: 4, md: 6 } }}>
+        <Container sx={{ py: 4 }}>
+          <Typography variant="h6">Escrow not found.</Typography>
+        </Container>
+      </PageCanvas>
     );
   }
 
   return (
-    <Container maxWidth="md" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 0.5, sm: 2 } }}>
+    <PageCanvas disableContainer sx={{ pt: { xs: 1, sm: 4 }, pb: { xs: 10, md: 6 } }}>
+    <Container maxWidth="md" sx={{ py: { xs: 1, sm: 4 }, px: { xs: 0.75, sm: 2 } }}>
       <Helmet><title>Escrow Details | Kelmah</title></Helmet>
       {/* Page Heading */}
-      <Box sx={{ mb: { xs: 2, sm: 4 }, display: 'flex', justifyContent: 'flex-start' }}>
+      <Box sx={{ mb: { xs: 1.5, sm: 4 }, display: 'flex', justifyContent: 'flex-start' }}>
         <Box>
-          <Typography variant="h4" sx={{ color: 'secondary.main' }}>
+          <Typography variant={isMobile ? 'h5' : 'h4'} sx={{ color: 'secondary.main', lineHeight: 1.1 }}>
             Escrow Details
           </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, fontSize: { xs: '0.8rem', sm: '0.9rem' } }}>
             Check escrow status and release funds when work is complete.
           </Typography>
         </Box>
@@ -82,7 +93,7 @@ const EscrowDetailsPage = () => {
       <Paper
         elevation={3}
         sx={{
-          p: { xs: 2, sm: 4 },
+          p: { xs: 1.5, sm: 4 },
           borderRadius: 2,
           background: (theme) => `linear-gradient(135deg, ${theme.palette.background.paper}, ${theme.palette.action.hover})`,
           color: 'text.primary',
@@ -92,9 +103,9 @@ const EscrowDetailsPage = () => {
         }}
       >
         <Typography
-          variant="h4"
+          variant={isMobile ? 'h5' : 'h4'}
           fontWeight="bold"
-          sx={{ mb: 2, color: 'secondary.main' }}
+          sx={{ mb: 1.5, color: 'secondary.main', lineHeight: 1.15 }}
         >
           {escrow.title}
         </Typography>
@@ -119,7 +130,7 @@ const EscrowDetailsPage = () => {
           </Typography>
           <Typography variant="body1">{escrow.status}</Typography>
         </Box>
-        <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+        <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 2, mb: 2 }}>
           <Button
             variant="contained"
             color="secondary"
@@ -143,6 +154,43 @@ const EscrowDetailsPage = () => {
             Back to Payment Center
           </Button>
         </Box>
+
+        <Paper
+          elevation={8}
+          sx={(theme) => ({
+            display: { xs: 'flex', sm: 'none' },
+            position: 'fixed',
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: theme.zIndex.appBar + 2,
+            px: 1,
+            py: 1,
+            gap: 1,
+            borderTop: `1px solid ${theme.palette.divider}`,
+            backgroundColor: theme.palette.background.paper,
+          })}
+        >
+          <Button
+            fullWidth
+            variant="outlined"
+            color="secondary"
+            sx={{ minHeight: 42, borderWidth: 2 }}
+            component={RouterLink}
+            to={backPath}
+          >
+            Back
+          </Button>
+          <Button
+            fullWidth
+            variant="contained"
+            color="secondary"
+            sx={{ minHeight: 42, boxShadow: '0 2px 8px rgba(255,215,0,0.35)' }}
+            onClick={() => setOpenRelease(true)}
+          >
+            Release
+          </Button>
+        </Paper>
       </Paper>
 
       {/* Release Funds Dialog */}
@@ -260,6 +308,7 @@ const EscrowDetailsPage = () => {
         </DialogActions>
       </Dialog>
     </Container>
+    </PageCanvas>
   );
 };
 

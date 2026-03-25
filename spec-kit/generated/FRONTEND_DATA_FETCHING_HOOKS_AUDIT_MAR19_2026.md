@@ -8,7 +8,7 @@ This audit focuses on the **data-fetching layer** in the Kelmah frontend, with e
 - **Error handling & UX feedback** (toasts, offline, retries)
 - **Performance and cancellation** (stale closures, unmounted state, aborting requests)
 
-The goal is to make data fetching **robust, predictable, and aligned to Kelmah’s mission**, ensuring mobile and desktop users always see accurate job listings, worker profiles, and messaging data even on flaky networks.
+The goal is to make data fetching **robust, predictable, and aligned to Kelmah's mission**, ensuring mobile and desktop users always see accurate job listings, worker profiles, and messaging data even on flaky networks.
 
 ---
 
@@ -25,7 +25,7 @@ The goal is to make data fetching **robust, predictable, and aligned to Kelmah�
 
 ### 2) React Query usage (`useJobsQuery`) has wrong option usage and key stability issues
 - `useQuery` is configured using `placeholderData: keepPreviousData` — this is incorrect. `keepPreviousData` is a separate option, not intended as `placeholderData`.
-- `useMemo` uses `filtersKey` derived from `JSON.stringify(filters)` to avoid deep equality, but this is brittle: order of object keys can change and lead to cache misses, and complex objects (e.g., `Date`) won’t serialize properly.
+- `useMemo` uses `filtersKey` derived from `JSON.stringify(filters)` to avoid deep equality, but this is brittle: order of object keys can change and lead to cache misses, and complex objects (e.g., `Date`) won't serialize properly.
 - Comments disable exhaustive-deps for `useMemo`; this hides an underlying hook dependency issue, potentially leading to stale `normalizedFilters` values.
 
 ✅ **Impact**: React Query cache churn, misbehaving query keys, hidden bugs in filter updates, wasted network requests.
@@ -64,7 +64,7 @@ The goal is to make data fetching **robust, predictable, and aligned to Kelmah�
 2. Replace `setTimeout` retries with an abortable retry loop and clear timer on unmount.
 3. Replace `retryCount` state + closure with a `useRef` counter or `useReducer` to avoid stale closures.
 4. Extract shared error parsing and map to structured error objects (`{ code, message, isTransient }`).
-5. Convert `showErrorToast` behavior to a centralized “UI toast mapper” so errors are consistent across screens.
+5. Convert `showErrorToast` behavior to a centralized "UI toast mapper" so errors are consistent across screens.
 
 ### B) Fix React Query patterns in `useJobsQuery` and similar hooks
 1. Correct option usage: `keepPreviousData: true` (not `placeholderData: keepPreviousData`).
@@ -77,7 +77,7 @@ The goal is to make data fetching **robust, predictable, and aligned to Kelmah�
 1. Replace manual retry logic with axios-retry (or rework to GC), and treat 429 with exponential backoff.
 2. Add request-scoped `AbortSignal` support (axios supports `signal`).
 3. Ensure `deduplicatedGet` uses stable keying (e.g., `stableStringify(params)` with sorted keys). Consider deduplicating at hook-level instead of low-level.
-4. Consolidate “sleeping backend” logic in a shared helper so all consumers can show the same UX message.
+4. Consolidate "sleeping backend" logic in a shared helper so all consumers can show the same UX message.
 
 ---
 
@@ -91,7 +91,7 @@ The goal is to make data fetching **robust, predictable, and aligned to Kelmah�
 5. Add `refetchOnMount: 'always'` for job detail pages to avoid stale data after navigation.
 6. Move retry logic into a shared `retryRequest` helper used by all API callers (not just apiClient), and ensure 429 is retried.
 7. Add a centralized error mapper to convert backend errors into localized, user-friendly messages.
-8. Add a “retry” UI state for network errors that appear in job list and job detail screens.
+8. Add a "retry" UI state for network errors that appear in job list and job detail screens.
 9. Ensure `apiClient` uses stable request deduplication keys (sorted parameter keys) and supports abort signals.
 10. Add unit tests covering token refresh race conditions and cancellation.
 
@@ -99,7 +99,7 @@ The goal is to make data fetching **robust, predictable, and aligned to Kelmah�
 
 ## 🧪 Next Audit Target Recommendation (Choose one)
 - **A) List rendering + key stability** — scan all lists (jobs, workers, messages) for `key={index}` and fix with stable IDs.
-- **B) Full “hooks + data” audit** (continue this path) including `useJobsQuery`, `useApi`, plus other hooks like `useProfile`, `useMessages`, and `useNotifications`.
+- **B) Full "hooks + data" audit** (continue this path) including `useJobsQuery`, `useApi`, plus other hooks like `useProfile`, `useMessages`, and `useNotifications`.
 - **C) Mobile + desktop UI consistency** (if you want to shift back to visual polish after a deep data focus).
 
 ---
@@ -111,8 +111,8 @@ We can keep generating 1,000-item increments with progressively finer focus (e.g
 
 ### ✅ What I Need Next From You
 Pick one of the following to continue strongly:
-- ✅ **Continue this audit** and generate the **next 1,000 backlog items** for the data-fetching / hook domain (the “Hooks + Data Fetching” backlog).  
-- ✅ **Switch to list/rendering audit** (key stability + list performance), and I’ll build a new audit + 1,000-item backlog for that.  
+- ✅ **Continue this audit** and generate the **next 1,000 backlog items** for the data-fetching / hook domain (the "Hooks + Data Fetching" backlog).  
+- ✅ **Switch to list/rendering audit** (key stability + list performance), and I'll build a new audit + 1,000-item backlog for that.  
 - ✅ **Keep churning toward 1M backlog items** by repeatedly generating more 1,000-item backlog segments (I can start on 6,000+ with domain guidance).
 
-Once you choose, I’ll produce the next audit output + the next backlog file. ✅
+Once you choose, I'll produce the next audit output + the next backlog file. ✅

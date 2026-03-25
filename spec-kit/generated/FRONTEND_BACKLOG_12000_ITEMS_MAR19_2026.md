@@ -1,6 +1,6 @@
 # Kelmah Frontend 12000-Item Design & Display Backlog (March 19 2026)
 
-This backlog focuses on visual design, layout consistency, responsive display, and polished mobile/desktop presentation that aligns with Kelmah’s mission as a trustworthy freelance marketplace.
+This backlog focuses on visual design, layout consistency, responsive display, and polished mobile/desktop presentation that aligns with Kelmah's mission as a trustworthy freelance marketplace.
 
 ---
 
@@ -109,106 +109,106 @@ This backlog focuses on visual design, layout consistency, responsive display, a
 
 ## 🎯 Design Token & Theme Consistency (Items 12101-12200)
 
-12101. Audit design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12102. Refactor design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12103. Verify design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12104. Ensure design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12105. Add design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12106. Remove design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12107. Improve design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12108. Standardize design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12109. Consolidate design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12110. Document design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12111. Audit design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12112. Refactor design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12113. Verify design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12114. Ensure design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12115. Add design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12116. Remove design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12117. Improve design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12118. Standardize design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12119. Consolidate design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12120. Document design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12121. Audit design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12122. Refactor design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12123. Verify design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12124. Ensure design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12125. Add design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12126. Remove design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12127. Improve design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12128. Standardize design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12129. Consolidate design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12130. Document design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12131. Audit design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12132. Refactor design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12133. Verify design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12134. Ensure design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12135. Add design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12136. Remove design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12137. Improve design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12138. Standardize design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12139. Consolidate design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12140. Document design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12141. Audit design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12142. Refactor design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12143. Verify design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12144. Ensure design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12145. Add design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12146. Remove design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12147. Improve design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12148. Standardize design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12149. Consolidate design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12150. Document design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12151. Audit design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12152. Refactor design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12153. Verify design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12154. Ensure design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12155. Add design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12156. Remove design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12157. Improve design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12158. Standardize design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12159. Consolidate design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12160. Document design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12161. Audit design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12162. Refactor design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12163. Verify design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12164. Ensure design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12165. Add design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12166. Remove design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12167. Improve design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12168. Standardize design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12169. Consolidate design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12170. Document design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12171. Audit design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12172. Refactor design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12173. Verify design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12174. Ensure design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12175. Add design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12176. Remove design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12177. Improve design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12178. Standardize design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12179. Consolidate design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12180. Document design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12181. Audit design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12182. Refactor design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12183. Verify design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12184. Ensure design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12185. Add design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12186. Remove design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12187. Improve design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12188. Standardize design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12189. Consolidate design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12190. Document design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12191. Audit design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12192. Refactor design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12193. Verify design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12194. Ensure design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12195. Add design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12196. Remove design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12197. Improve design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12198. Standardize design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12199. Consolidate design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
-12200. Document design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah’s theme and avoids one-off values.
+12101. Audit design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12102. Refactor design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12103. Verify design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12104. Ensure design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12105. Add design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12106. Remove design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12107. Improve design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12108. Standardize design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12109. Consolidate design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12110. Document design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12111. Audit design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12112. Refactor design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12113. Verify design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12114. Ensure design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12115. Add design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12116. Remove design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12117. Improve design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12118. Standardize design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12119. Consolidate design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12120. Document design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12121. Audit design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12122. Refactor design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12123. Verify design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12124. Ensure design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12125. Add design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12126. Remove design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12127. Improve design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12128. Standardize design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12129. Consolidate design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12130. Document design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12131. Audit design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12132. Refactor design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12133. Verify design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12134. Ensure design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12135. Add design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12136. Remove design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12137. Improve design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12138. Standardize design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12139. Consolidate design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12140. Document design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12141. Audit design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12142. Refactor design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12143. Verify design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12144. Ensure design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12145. Add design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12146. Remove design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12147. Improve design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12148. Standardize design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12149. Consolidate design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12150. Document design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12151. Audit design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12152. Refactor design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12153. Verify design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12154. Ensure design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12155. Add design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12156. Remove design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12157. Improve design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12158. Standardize design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12159. Consolidate design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12160. Document design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12161. Audit design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12162. Refactor design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12163. Verify design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12164. Ensure design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12165. Add design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12166. Remove design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12167. Improve design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12168. Standardize design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12169. Consolidate design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12170. Document design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12171. Audit design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12172. Refactor design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12173. Verify design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12174. Ensure design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12175. Add design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12176. Remove design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12177. Improve design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12178. Standardize design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12179. Consolidate design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12180. Document design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12181. Audit design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12182. Refactor design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12183. Verify design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12184. Ensure design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12185. Add design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12186. Remove design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12187. Improve design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12188. Standardize design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12189. Consolidate design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12190. Document design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12191. Audit design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12192. Refactor design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12193. Verify design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12194. Ensure design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12195. Add design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12196. Remove design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12197. Improve design tokens in `JobSystemTheme.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12198. Standardize design tokens in `ThemeProvider.jsx` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12199. Consolidate design tokens in `colors.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
+12200. Document design tokens in `typography.js` to ensure color/spacing/typography follows Kelmah's theme and avoids one-off values.
 
 ## 🎯 Iconography & Button Layout (Items 12201-12300)
 
@@ -727,106 +727,106 @@ This backlog focuses on visual design, layout consistency, responsive display, a
 
 ## 🎯 Mobile Navigation & Gestures (Items 12701-12800)
 
-12701. Audit mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12702. Refactor mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12703. Verify mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12704. Ensure mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12705. Add mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12706. Remove mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12707. Improve mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12708. Standardize mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12709. Consolidate mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12710. Document mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12711. Audit mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12712. Refactor mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12713. Verify mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12714. Ensure mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12715. Add mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12716. Remove mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12717. Improve mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12718. Standardize mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12719. Consolidate mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12720. Document mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12721. Audit mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12722. Refactor mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12723. Verify mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12724. Ensure mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12725. Add mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12726. Remove mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12727. Improve mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12728. Standardize mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12729. Consolidate mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12730. Document mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12731. Audit mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12732. Refactor mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12733. Verify mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12734. Ensure mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12735. Add mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12736. Remove mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12737. Improve mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12738. Standardize mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12739. Consolidate mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12740. Document mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12741. Audit mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12742. Refactor mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12743. Verify mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12744. Ensure mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12745. Add mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12746. Remove mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12747. Improve mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12748. Standardize mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12749. Consolidate mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12750. Document mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12751. Audit mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12752. Refactor mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12753. Verify mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12754. Ensure mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12755. Add mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12756. Remove mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12757. Improve mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12758. Standardize mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12759. Consolidate mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12760. Document mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12761. Audit mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12762. Refactor mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12763. Verify mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12764. Ensure mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12765. Add mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12766. Remove mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12767. Improve mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12768. Standardize mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12769. Consolidate mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12770. Document mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12771. Audit mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12772. Refactor mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12773. Verify mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12774. Ensure mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12775. Add mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12776. Remove mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12777. Improve mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12778. Standardize mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12779. Consolidate mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12780. Document mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12781. Audit mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12782. Refactor mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12783. Verify mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12784. Ensure mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12785. Add mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12786. Remove mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12787. Improve mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12788. Standardize mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12789. Consolidate mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12790. Document mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12791. Audit mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12792. Refactor mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12793. Verify mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12794. Ensure mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12795. Add mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12796. Remove mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12797. Improve mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12798. Standardize mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12799. Consolidate mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
-12800. Document mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don’t conflict with scroll.
+12701. Audit mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12702. Refactor mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12703. Verify mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12704. Ensure mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12705. Add mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12706. Remove mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12707. Improve mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12708. Standardize mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12709. Consolidate mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12710. Document mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12711. Audit mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12712. Refactor mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12713. Verify mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12714. Ensure mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12715. Add mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12716. Remove mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12717. Improve mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12718. Standardize mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12719. Consolidate mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12720. Document mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12721. Audit mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12722. Refactor mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12723. Verify mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12724. Ensure mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12725. Add mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12726. Remove mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12727. Improve mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12728. Standardize mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12729. Consolidate mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12730. Document mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12731. Audit mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12732. Refactor mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12733. Verify mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12734. Ensure mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12735. Add mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12736. Remove mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12737. Improve mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12738. Standardize mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12739. Consolidate mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12740. Document mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12741. Audit mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12742. Refactor mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12743. Verify mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12744. Ensure mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12745. Add mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12746. Remove mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12747. Improve mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12748. Standardize mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12749. Consolidate mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12750. Document mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12751. Audit mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12752. Refactor mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12753. Verify mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12754. Ensure mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12755. Add mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12756. Remove mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12757. Improve mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12758. Standardize mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12759. Consolidate mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12760. Document mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12761. Audit mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12762. Refactor mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12763. Verify mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12764. Ensure mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12765. Add mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12766. Remove mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12767. Improve mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12768. Standardize mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12769. Consolidate mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12770. Document mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12771. Audit mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12772. Refactor mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12773. Verify mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12774. Ensure mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12775. Add mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12776. Remove mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12777. Improve mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12778. Standardize mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12779. Consolidate mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12780. Document mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12781. Audit mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12782. Refactor mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12783. Verify mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12784. Ensure mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12785. Add mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12786. Remove mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12787. Improve mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12788. Standardize mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12789. Consolidate mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12790. Document mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12791. Audit mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12792. Refactor mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12793. Verify mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12794. Ensure mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12795. Add mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12796. Remove mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12797. Improve mobile navigation and gestures in `MobileBottomNav.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12798. Standardize mobile navigation and gestures in `NavDrawer.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12799. Consolidate mobile navigation and gestures in `SwipeToAction.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
+12800. Document mobile navigation and gestures in `JobCard.jsx` to ensure consistency, discoverability, and that gestures don't conflict with scroll.
 
 ## 🎯 Empty & Error States (Items 12801-12900)
 

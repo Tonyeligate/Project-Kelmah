@@ -33,7 +33,7 @@
   2. Since consumers shifted to `workerService.getWorkerEarnings`, this module silently diverged and is effectively dead code. Any future developer who reuses it will hit broken routes.
 
 - **Fallback Strategy Regression (Secondary):**
-  1. Earlier versions included mock generators to keep the dashboard alive while backend work was pending. These were removed (“All methods now use real API or throw on failure”), so calling the service now produces unhandled rejections.
+  1. Earlier versions included mock generators to keep the dashboard alive while backend work was pending. These were removed ("All methods now use real API or throw on failure"), so calling the service now produces unhandled rejections.
 
 - **Response Handling & Observability (Secondary):**
   1. Methods simply `return response.data` or re-throw the axios error. No consistent shape (e.g., `{ totals, breakdown }`) is provided even if endpoints later materialize.

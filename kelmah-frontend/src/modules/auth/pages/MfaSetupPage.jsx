@@ -4,6 +4,7 @@ import { Box, Typography, Button, TextField, Alert, CircularProgress } from '@mu
 import { useAuth } from '../hooks/useAuth';
 import { Helmet } from 'react-helmet-async';
 import { useBreakpointDown } from '@/hooks/useResponsive';
+import PageCanvas from '@/modules/common/components/PageCanvas';
 
 const MfaSetupPage = () => {
   const isMobile = useBreakpointDown('md');
@@ -111,9 +112,11 @@ const MfaSetupPage = () => {
 
   if (isMobile) {
     return (
-      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', px: 3, py: 4 }}>
-        {mfaContent}
-      </Box>
+      <PageCanvas disableContainer sx={{ pt: { xs: 3, md: 4 }, pb: { xs: 4, md: 6 } }}>
+        <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', px: 3, py: 4 }}>
+          {mfaContent}
+        </Box>
+      </PageCanvas>
     );
   }
 

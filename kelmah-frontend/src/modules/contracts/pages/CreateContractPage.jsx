@@ -18,6 +18,7 @@ import { Helmet } from 'react-helmet-async';
 import { Z_INDEX, STICKY_CTA_HEIGHT, BOTTOM_NAV_HEIGHT } from '../../../constants/layout';
 import Toast from '../../common/components/common/Toast';
 import workerService from '../../worker/services/workerService';
+import PageCanvas from '@/modules/common/components/PageCanvas';
 
 // Import contract slice actions and selectors
 import {
@@ -793,6 +794,7 @@ const CreateContractPage = () => {
   };
 
   return (
+    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
     <Container maxWidth="lg" sx={{ mt: { xs: 2, sm: 4 }, mb: { xs: 4, sm: 8 }, px: { xs: 0.5, sm: 2 }, pb: isMobile ? `${STICKY_CTA_HEIGHT + 16}px` : undefined }}>
       <Helmet><title>Create Contract | Kelmah</title></Helmet>
       {/* Error alert */}
@@ -1019,6 +1021,7 @@ const CreateContractPage = () => {
         fullWidth
       />
     </Container>
+    </PageCanvas>
   );
 };
 

@@ -357,7 +357,7 @@
 - Backend can cold-start (Render sleep); frontend includes warm-up and retry logic.
 - Security: tokens are client-side (encrypted localStorage wrapper) and must avoid leaks.
 
-I’m about to: perform an end-to-end audit and keep this document as the checklist + findings log.
+I'm about to: perform an end-to-end audit and keep this document as the checklist + findings log.
 
 ---
 
@@ -386,7 +386,7 @@ UI page → module service/hook → `api` (axios wrapper) → API Gateway `/api/
 - Third-party APIs: maps (OSM/Nominatim/etc), Paystack, potentially OAuth.
 
 ### 6) Red flags (early)
-- Multiple token key conventions exist (`kelmah_auth_token` vs secureStorage’s internal `auth_token`).
+- Multiple token key conventions exist (`kelmah_auth_token` vs secureStorage's internal `auth_token`).
 - WebSocket code that appends `?token=...` in the URL (token leak risk via logs/referrers).
 - CSP config includes `'unsafe-inline'` for scripts/styles (weakens XSS protections).
 - Duplicate/overlapping error boundary implementations (global + custom class boundary + per-route) with inconsistent DEV gating.
@@ -482,7 +482,7 @@ UI page → module service/hook → `api` (axios wrapper) → API Gateway `/api/
 ### 1) Auth bootstrap reads wrong token key
 - Severity: **High**
 - Where: `kelmah-frontend/src/App.jsx`
-- What’s wrong: `App` checks `secureStorage.getItem(AUTH_CONFIG.tokenKey)` where `AUTH_CONFIG.tokenKey` defaults to `kelmah_auth_token`, but the app actually stores auth tokens under secureStorage’s internal key `auth_token` (`secureStorage.setAuthToken()` / `getAuthToken()`).
+- What's wrong: `App` checks `secureStorage.getItem(AUTH_CONFIG.tokenKey)` where `AUTH_CONFIG.tokenKey` defaults to `kelmah_auth_token`, but the app actually stores auth tokens under secureStorage's internal key `auth_token` (`secureStorage.setAuthToken()` / `getAuthToken()`).
 - Why it matters: can skip `verifyAuth()` on reload and leave stale/invalid sessions undetected; hard-to-reproduce auth/routing bugs.
 - Fix: use `secureStorage.getAuthToken()` consistently (single source of truth).
 - Status: **Fixed** (Feb 11, 2026)
@@ -490,15 +490,15 @@ UI page → module service/hook → `api` (axios wrapper) → API Gateway `/api/
 ### 2) Logout fallback clears wrong storage keys
 - Severity: **Medium**
 - Where: `kelmah-frontend/src/modules/auth/services/authSlice.js` (`logoutUser` catch)
-- What’s wrong: catch block removes `localStorage.removeItem(AUTH_CONFIG.tokenKey)` + `localStorage.removeItem('user')` but does not guarantee `secureStorage.clear()`.
-- Why it matters: “partial logout” risk if the API call fails; could preserve encrypted token/user.
+- What's wrong: catch block removes `localStorage.removeItem(AUTH_CONFIG.tokenKey)` + `localStorage.removeItem('user')` but does not guarantee `secureStorage.clear()`.
+- Why it matters: "partial logout" risk if the API call fails; could preserve encrypted token/user.
 - Fix: always call `secureStorage.clear()` in the catch/finally path.
 - Status: **Fixed ✅** (Feb 12, 2026)
 
 ### 3) WebSocket token in query string
 - Severity: **High**
 - Where: `kelmah-frontend/src/modules/messaging/components/common/Messages.jsx`
-- What’s wrong: `new WebSocket(`${wsBaseUrl}/ws?token=${token}`)` leaks token via URL (logs/proxies/referrers); also `wsBaseUrl` defaults to `/socket.io` which is not a WS URL.
+- What's wrong: `new WebSocket(`${wsBaseUrl}/ws?token=${token}`)` leaks token via URL (logs/proxies/referrers); also `wsBaseUrl` defaults to `/socket.io` which is not a WS URL.
 - Why it matters: token exposure = account compromise.
 - Fix: use Socket.IO auth headers/handshake auth payload, or send token in first message after WS open over WSS; avoid querystring tokens.
 - Status: **Partially fixed ✅** (Feb 12, 2026) — removed `?token=` URL usage in legacy component; main app uses Socket.IO via `MessageContext`.
@@ -513,14 +513,14 @@ UI page → module service/hook → `api` (axios wrapper) → API Gateway `/api/
 ### 4) CSP includes unsafe inline
 - Severity: **Medium**
 - Where: `kelmah-frontend/src/config/securityConfig.js`
-- What’s wrong: CSP allows `'unsafe-inline'` for scripts/styles.
+- What's wrong: CSP allows `'unsafe-inline'` for scripts/styles.
 - Why it matters: makes XSS much easier to exploit.
 - Fix: remove unsafe-inline where feasible; use hashes/nonces (requires build support) or restrict by moving inline styles/scripts into bundles.
 
 ### 5) Error boundaries are duplicated/inconsistent
 - Severity: **Low**
 - Where: `kelmah-frontend/src/main.jsx`, `kelmah-frontend/src/components/common/ErrorBoundary.jsx`, `kelmah-frontend/src/modules/common/components/RouteErrorBoundary.jsx`
-- What’s wrong: multiple overlapping implementations; inconsistent DEV gating (one uses `process.env.NODE_ENV`, others use `import.meta.env`).
+- What's wrong: multiple overlapping implementations; inconsistent DEV gating (one uses `process.env.NODE_ENV`, others use `import.meta.env`).
 - Why it matters: makes debugging + user experience inconsistent.
 - Fix: standardize on one strategy (global + per-route) and align env checks.
 
@@ -533,7 +533,7 @@ UI page → module service/hook → `api` (axios wrapper) → API Gateway `/api/
 - Where:
   - Router: `kelmah-frontend/src/routes/config.jsx`
   - UI links: `kelmah-frontend/src/modules/auth/components/AuthForm.jsx`, `.../Login.jsx`, `.../MobileLogin.jsx`
-- What’s wrong: the UI links to `/forgot-password` (and header/nav special-cases `/forgot-password`, `/reset-password`, `/verify-email`), but these paths were not registered in the router, causing 404s and broken flows.
+- What's wrong: the UI links to `/forgot-password` (and header/nav special-cases `/forgot-password`, `/reset-password`, `/verify-email`), but these paths were not registered in the router, causing 404s and broken flows.
 - Why it matters: password reset + email verification are core account recovery flows.
 - Fix implemented: added routes for `/forgot-password`, `/reset-password` (and `/:token`), `/verify-email/:token`, `/role-selection`, `/mfa/setup`.
 
@@ -542,14 +542,14 @@ UI page → module service/hook → `api` (axios wrapper) → API Gateway `/api/
 - Where:
   - Router: `kelmah-frontend/src/routes/config.jsx`
   - Page: `kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx`
-- What’s wrong: `/jobs/:id` was public in router, but the page requires an auth token and otherwise renders an auth-required path that contains a crash bug (`location` undefined).
+- What's wrong: `/jobs/:id` was public in router, but the page requires an auth token and otherwise renders an auth-required path that contains a crash bug (`location` undefined).
 - Why it matters: inconsistent UX + user-facing crash path.
 - Fix implemented: wrapped `/jobs/:id` in `ProtectedRoute` (router-level), which also avoids hitting the crash path.
 
 ### 8) ResetPassword page file is broken but was previously unreachable
 - Severity: **High**
 - Where: `kelmah-frontend/src/modules/auth/pages/ResetPasswordPage.jsx`
-- What’s wrong: file is syntactically invalid, but wasn’t imported by router so builds could still succeed.
+- What's wrong: file is syntactically invalid, but wasn't imported by router so builds could still succeed.
 - Why it matters: once routes are correctly wired, importing this module would break builds.
 - Fix implemented: routed reset-password to a new non-module page `kelmah-frontend/src/pages/ResetPassword.jsx` to keep router fixed without importing the broken module.
 
@@ -579,7 +579,7 @@ UI page → module service/hook → `api` (axios wrapper) → API Gateway `/api/
 - Where:
   - UI: `kelmah-frontend/src/modules/payment/pages/PaymentsPage.jsx` (menu links to `/payment/bill`)
   - Router: `kelmah-frontend/src/routes/config.jsx`
-- What was wrong: clicking “View Bills” navigated to `/payment/bill` but the route was not registered.
+- What was wrong: clicking "View Bills" navigated to `/payment/bill` but the route was not registered.
 - Fix implemented: added the `/payment/bill` route and ensured bills data is normalized to an array.
 - Status: **Fixed ✅** (Feb 12, 2026)
 
@@ -588,7 +588,7 @@ UI page → module service/hook → `api` (axios wrapper) → API Gateway `/api/
 - Where:
   - UI: `kelmah-frontend/src/modules/payment/pages/PaymentMethodsPage.jsx`
   - Backend: `kelmah-backend/services/payment-service/utils/validation.js` + `models/PaymentMethod.js`
-- What’s wrong: UI attempts to create a method with `type: mobile_money`, but backend validation/schema only supports `credit_card`, `bank_account`, and `paypal`.
+- What's wrong: UI attempts to create a method with `type: mobile_money`, but backend validation/schema only supports `credit_card`, `bank_account`, and `paypal`.
 - Why it matters: user-visible failure when adding a Mobile Money method.
 - Fix implemented: added backend support for saved `mobile_money` payment methods and re-enabled the UI flow.
 - Status: **Fixed ✅** (Feb 12, 2026)
@@ -610,7 +610,7 @@ UI page → module service/hook → `api` (axios wrapper) → API Gateway `/api/
 
 ### kelmah-frontend/src/modules/hirer/pages/JobManagementPage.jsx
 - Severity: **High**
-- What was wrong: “Edit Job” navigated to `/jobs/edit/:id` which was not registered (404), and there was no update flow.
+- What was wrong: "Edit Job" navigated to `/jobs/edit/:id` which was not registered (404), and there was no update flow.
 - Fix implemented: added `/hirer/jobs/edit/:jobId` route + `updateHirerJob` thunk; `JobPostingPage` now supports edit mode.
 - Status: **Fixed ✅** (Feb 12, 2026)
 
@@ -656,7 +656,7 @@ UI page → module service/hook → `api` (axios wrapper) → API Gateway `/api/
 ### kelmah-frontend/src/modules/map/pages/ProfessionalMapPage.jsx
 - Severity: **High**
 - What was wrong:
-  - “Message” action navigated to `/messages?conversation=<userId>` but `conversation` expects a conversation id; deep-link contract for user ids is `recipient`.
+  - "Message" action navigated to `/messages?conversation=<userId>` but `conversation` expects a conversation id; deep-link contract for user ids is `recipient`.
 - Fix implemented:
   - Switched to `/messages?recipient=<userId>` and added a warning snackbar if recipient cannot be derived.
 - Status: **Fixed ✅** (Feb 12, 2026)
@@ -689,21 +689,21 @@ UI page → module service/hook → `api` (axios wrapper) → API Gateway `/api/
 
 ### kelmah-frontend/src/modules/auth/pages/ResetPasswordPage.jsx
 - Severity: **Medium**
-- What’s wrong: file is syntactically broken (JSX tags not closed; conditional rendering logic is embedded inside a `<Typography>` block).
-- Why it matters: it’s currently **dead code** (router uses the non-module page at `kelmah-frontend/src/pages/ResetPassword.jsx`), but it will become a build/lint blocker if re-imported.
+- What's wrong: file is syntactically broken (JSX tags not closed; conditional rendering logic is embedded inside a `<Typography>` block).
+- Why it matters: it's currently **dead code** (router uses the non-module page at `kelmah-frontend/src/pages/ResetPassword.jsx`), but it will become a build/lint blocker if re-imported.
 - Fix: either repair it or delete it after confirming zero imports.
 - Status: **Fixed ✅** (Feb 12, 2026) — now a re-export to `kelmah-frontend/src/pages/ResetPassword.jsx`.
 
 ### kelmah-frontend/src/pages/ResetPassword.jsx
 - Severity: **Low**
-- What’s right: active reset-password route uses this file (avoids importing the broken module page). It includes basic password validation, safe error message fallback, and accessibility labels.
+- What's right: active reset-password route uses this file (avoids importing the broken module page). It includes basic password validation, safe error message fallback, and accessibility labels.
 - Improvements:
   - Replace hardcoded colors (e.g. `#FFD700`, `#0a0a0a`) with theme tokens for consistency.
 
 ### kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx
 - Severity: **Low**
-- What’s wrong: `handleSignIn()` uses `location.pathname` but `location` is never defined (only `{ search } = useLocation()` is used). This would throw if the “Sign In” button renders.
-- Why it matters: the route is currently wrapped in `ProtectedRoute` in `routes/config.jsx`, so unauthenticated users shouldn’t reach this page; however, the dead-path bug is still technical debt.
+- What's wrong: `handleSignIn()` uses `location.pathname` but `location` is never defined (only `{ search } = useLocation()` is used). This would throw if the "Sign In" button renders.
+- Why it matters: the route is currently wrapped in `ProtectedRoute` in `routes/config.jsx`, so unauthenticated users shouldn't reach this page; however, the dead-path bug is still technical debt.
 - Fix: define `const location = useLocation();` and use it consistently, or remove the unused `authRequired` view.
 - Status: **Fixed ✅** (Feb 12, 2026)
 
@@ -715,19 +715,19 @@ UI page → module service/hook → `api` (axios wrapper) → API Gateway `/api/
 
 ### kelmah-frontend/src/pages/HomeLanding.jsx
 - Severity: **Medium**
-- What’s wrong: extensive hardcoded colors (`#FFD700`, `#111`, etc.) and font families (e.g., `Montserrat`) instead of design tokens.
-- Why it matters: theme/dark-mode consistency and maintainability; violates “no new hard-coded colors/fonts” discipline.
+- What's wrong: extensive hardcoded colors (`#FFD700`, `#111`, etc.) and font families (e.g., `Montserrat`) instead of design tokens.
+- Why it matters: theme/dark-mode consistency and maintainability; violates "no new hard-coded colors/fonts" discipline.
 - Fix: replace hardcoded values with `theme.palette.*` and existing typography tokens.
 
 ### kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx
 - Severity: **Medium**
-- What’s wrong: very large page module (~2400+ lines) with heavy MUI imports and many icon imports; likely bundle and render performance impact.
+- What's wrong: very large page module (~2400+ lines) with heavy MUI imports and many icon imports; likely bundle and render performance impact.
 - Why it matters: slower first load, more memory, harder to maintain.
 - Fix: split into smaller components/hooks; ensure only used MUI components/icons are imported; prefer module-level lazy loading for below-the-fold sections.
 
 ### kelmah-frontend/src/modules/auth/pages/ForgotPasswordPage.jsx
 - Severity: **Low**
-- What’s wrong: UI accepts “Email or Phone” but calls `authService.forgotPassword(email)` (email-only API unless backend supports phone).
+- What's wrong: UI accepts "Email or Phone" but calls `authService.forgotPassword(email)` (email-only API unless backend supports phone).
 - Why it matters: user confusion + higher support burden.
 - Fix: either (a) update label/placeholder to email-only, or (b) extend backend + service to support phone-based reset.
 
@@ -743,7 +743,7 @@ UI page → module service/hook → `api` (axios wrapper) → API Gateway `/api/
 - Severity: **High**
 - Status: **Fixed ✅**
 - What was wrong:
-  1) Location objects were double-encoded into the URL and wouldn’t parse on reload.
+  1) Location objects were double-encoded into the URL and wouldn't parse on reload.
   2) Suggestions called `/search/suggestions`, but backend exposes suggestions at `/jobs/suggestions` (accepts `q`, `query`, or `keyword`).
 - Fix applied:
   - Avoid manual `encodeURIComponent` when writing location JSON.
@@ -752,7 +752,7 @@ UI page → module service/hook → `api` (axios wrapper) → API Gateway `/api/
 
 ### kelmah-frontend/src/modules/search/pages/SearchPage.jsx (logging)
 - Severity: **Low**
-- What’s wrong: mount/unmount `console.log` calls run in production builds.
+- What's wrong: mount/unmount `console.log` calls run in production builds.
 - Why it matters: noise + potential privacy concerns (URLs can include user-entered text).
 - Fix: guard logs behind `import.meta.env.DEV`.
 
@@ -768,17 +768,17 @@ UI page → module service/hook → `api` (axios wrapper) → API Gateway `/api/
 
 ### kelmah-frontend/src/modules/payment/pages/PaymentCenterPage.jsx
 - Severity: **Medium**
-- What’s wrong: payment method Edit/Delete icon buttons render but have no `onClick` handlers (non-functional UI).
-- Why it matters: users can’t manage payment methods; appears broken.
+- What's wrong: payment method Edit/Delete icon buttons render but have no `onClick` handlers (non-functional UI).
+- Why it matters: users can't manage payment methods; appears broken.
 - Fix: wire to existing dialogs/actions in `PaymentContext` (or remove buttons until implemented).
 
 ### kelmah-frontend/src/modules/messaging/components/common/Messages.jsx
 - Severity: **High**
-- What’s wrong: contains token-in-URL WebSocket pattern and uses a likely wrong base WS URL (`/socket.io`).
+- What's wrong: contains token-in-URL WebSocket pattern and uses a likely wrong base WS URL (`/socket.io`).
 - Status: **Unreferenced/Dead code (so far)** — no imports/usages found in active pages.
 - Recommendation: keep quarantined; do not reintroduce. If needed, replace with Socket.IO auth handshake pattern already used elsewhere.
 - Severity: **Low**
-- What’s wrong: error paths use `err.message` and may miss server-provided detail (`err.response?.data?.message`).
+- What's wrong: error paths use `err.message` and may miss server-provided detail (`err.response?.data?.message`).
 - Why it matters: worse UX for recoverable failures.
 - Fix: prefer server message where available; keep a safe fallback.
 

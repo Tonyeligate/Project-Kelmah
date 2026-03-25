@@ -16,6 +16,11 @@
   },
   "breakpointsTested": [320, 390, 768, 1024, 1280, 1440],
   "accessibilityEdgeCasesTested": 52,
+  "binanceBenchmark": {
+    "densityEfficiencyScore": 90,
+    "scanabilityParityScore": 91,
+    "primaryActionParityScore": 89
+  },
   "selectedLayout": {
     "id": "L-OPT-13",
     "reason": "best weighted objective score under accessibility hard constraints"

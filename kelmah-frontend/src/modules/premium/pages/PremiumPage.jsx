@@ -38,6 +38,7 @@ import {
 import { Helmet } from 'react-helmet-async';
 import { selectIsAuthenticated } from '../../auth/services/authSlice';
 import { api } from '../../../services/apiClient';
+import PageCanvas from '../../common/components/PageCanvas';
 
 // --- Reusable Components ---
 
@@ -309,9 +310,10 @@ const PremiumPage = () => {
   ];
 
   return (
-    <Box sx={{ bgcolor: 'background.default', color: 'text.primary', py: 6 }}>
-      <Helmet><title>Premium | Kelmah</title></Helmet>
-      <Container maxWidth="lg">
+    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
+      <Box sx={{ color: 'text.primary' }}>
+        <Helmet><title>Premium | Kelmah</title></Helmet>
+        <Container maxWidth="lg">
         {/* Header Section */}
         <Box sx={{ textAlign: 'center', mb: 6 }}>
           <Chip
@@ -417,10 +419,10 @@ const PremiumPage = () => {
             </Typography>
           </Stack>
         </Paper>
-      </Container>
+        </Container>
 
-      {/* Confirmation Dialog */}
-      <Dialog
+        {/* Confirmation Dialog */}
+        <Dialog
         open={openDialog}
         onClose={() => setOpenDialog(false)}
         TransitionComponent={Transition}
@@ -499,9 +501,9 @@ const PremiumPage = () => {
             {isUpgrading ? <CircularProgress size={24} /> : 'Confirm & Pay'}
           </Button>
         </DialogActions>
-      </Dialog>
+        </Dialog>
 
-      <Snackbar
+        <Snackbar
         open={upgradeSuccess}
         autoHideDuration={6000}
         onClose={() => setUpgradeSuccess(false)}
@@ -510,8 +512,8 @@ const PremiumPage = () => {
         <Alert severity="success" variant="filled" onClose={() => setUpgradeSuccess(false)}>
           {selectedPlan} plan upgrade request submitted. You will receive a confirmation shortly.
         </Alert>
-      </Snackbar>
-      <Snackbar
+        </Snackbar>
+        <Snackbar
         open={!!upgradeError}
         autoHideDuration={6000}
         onClose={() => setUpgradeError('')}
@@ -520,8 +522,9 @@ const PremiumPage = () => {
         <Alert severity="error" variant="filled" onClose={() => setUpgradeError('')}>
           {upgradeError || 'Upgrade failed. Please try again.'}
         </Alert>
-      </Snackbar>
-    </Box>
+        </Snackbar>
+      </Box>
+    </PageCanvas>
   );
 };
 

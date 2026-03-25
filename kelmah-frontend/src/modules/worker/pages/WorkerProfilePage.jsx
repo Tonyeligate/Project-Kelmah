@@ -4,6 +4,7 @@ import { Container, Box, Typography, Button } from '@mui/material';
 import { PersonSearch as PersonSearchIcon } from '@mui/icons-material';
 import { Helmet } from 'react-helmet-async';
 import WorkerProfile from '../components/WorkerProfile';
+import PageCanvas from '../../common/components/PageCanvas';
 
 /**
  * WorkerProfilePage - Public page for viewing worker profiles
@@ -26,20 +27,22 @@ const WorkerProfilePage = () => {
   // Show helpful message if no workerId
   if (!workerId) {
     return (
-      <Box sx={{ p: 4, textAlign: 'center', minHeight: '50vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-        <PersonSearchIcon sx={{ fontSize: 64, color: 'secondary.dark', mb: 2 }} />
-        <Typography variant="h6" gutterBottom>Worker profile not found</Typography>
-        <Typography variant="body2" sx={{ mb: 3, color: 'text.secondary' }}>
-          The worker you&apos;re looking for may have moved, or the link may be incomplete.
-        </Typography>
-        <Button
-          variant="contained"
-          onClick={() => navigate('/search')}
-          sx={{ bgcolor: 'secondary.dark', color: 'secondary.contrastText', '&:hover': { bgcolor: 'secondary.dark' } }}
-        >
-          Browse Workers
-        </Button>
-      </Box>
+      <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 2, md: 4 } }}>
+        <Box sx={{ p: 4, textAlign: 'center', minHeight: '50vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+          <PersonSearchIcon sx={{ fontSize: 64, color: 'secondary.dark', mb: 2 }} />
+          <Typography variant="h6" gutterBottom>Worker profile not found</Typography>
+          <Typography variant="body2" sx={{ mb: 3, color: 'text.secondary' }}>
+            The worker you&apos;re looking for may have moved, or the link may be incomplete.
+          </Typography>
+          <Button
+            variant="contained"
+            onClick={() => navigate('/search')}
+            sx={{ bgcolor: 'secondary.dark', color: 'secondary.contrastText', '&:hover': { bgcolor: 'secondary.dark' } }}
+          >
+            Browse Workers
+          </Button>
+        </Box>
+      </PageCanvas>
     );
   }
 
@@ -53,12 +56,14 @@ const WorkerProfilePage = () => {
         />
       </Helmet>
 
-      <Container maxWidth="xl" sx={{ py: { xs: 1, md: 4 }, px: { xs: 1, md: 3 } }}>
-        <Box>
-          {/* Pass workerId as prop so the profile remounts cleanly between public worker routes */}
-          <WorkerProfile workerId={workerId} />
-        </Box>
-      </Container>
+      <PageCanvas disableContainer sx={{ pt: { xs: 1, md: 4 }, pb: { xs: 2, md: 4 } }}>
+        <Container maxWidth="xl" sx={{ py: { xs: 1, md: 4 }, px: { xs: 1, md: 3 } }}>
+          <Box>
+            {/* Pass workerId as prop so the profile remounts cleanly between public worker routes */}
+            <WorkerProfile workerId={workerId} />
+          </Box>
+        </Container>
+      </PageCanvas>
     </>
   );
 };

@@ -47,7 +47,9 @@ import {
 } from '@mui/icons-material';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 import { createFeatureLogger } from '@/modules/common/utils/devLogger';
+import { currencyFormatter } from '@/modules/common/utils/formatters';
 import applicationsService from '@/modules/worker/services/applicationsService';
+import PageCanvas from '@/modules/common/components/PageCanvas';
 
 
 
@@ -272,10 +274,10 @@ const MyApplicationsPage = () => {
   // Mobile applications view — uses MUI theme for consistency with desktop
   if (isActualMobile) {
     return (
+      <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
       <Box
         sx={{
           minHeight: '100dvh',
-          bgcolor: 'background.default',
           color: 'text.primary',
           pb: 'env(safe-area-inset-bottom, 0px)',
         }}
@@ -315,16 +317,19 @@ const MyApplicationsPage = () => {
         </Box>
 
         {/* Status Tabs */}
-        <Box sx={{ px: 2, pt: 2 }}>
+        <Box sx={{ px: 1.25, pt: 1.25 }}>
           <Paper
             elevation={0}
             sx={{
-              p: 1.5,
-              mb: 2,
+              p: 1.1,
+              mb: 1.25,
               borderRadius: 3,
               bgcolor: 'background.paper',
               border: 1,
               borderColor: 'divider',
+              position: 'sticky',
+              top: 72,
+              zIndex: 9,
             }}
           >
             <Typography sx={{ fontSize: '0.875rem', fontWeight: 700, mb: 1 }}>
@@ -341,7 +346,7 @@ const MyApplicationsPage = () => {
               ))}
             </Stack>
           </Paper>
-          <Box sx={{ display: 'flex', gap: 1, overflowX: 'auto', pb: 2 }}>
+          <Box sx={{ display: 'flex', gap: 0.75, overflowX: 'auto', pb: 1.25, scrollbarWidth: 'none', '&::-webkit-scrollbar': { display: 'none' } }}>
             {['All', 'Pending', 'Under Review', 'Accepted', 'Rejected', 'Withdrawn'].map(
               (status, index) => (
                 <Chip
@@ -355,6 +360,7 @@ const MyApplicationsPage = () => {
                     fontSize: '0.75rem',
                     minWidth: 'fit-content',
                     whiteSpace: 'nowrap',
+                    height: 30,
                   }}
                 />
               ),
@@ -363,9 +369,9 @@ const MyApplicationsPage = () => {
         </Box>
 
         {/* Applications List */}
-        <Box sx={{ px: 2 }}>
+        <Box sx={{ px: 1.25 }}>
           <Typography
-            sx={{ fontSize: '1rem', fontWeight: 'bold', mb: 2 }}
+            sx={{ fontSize: '0.92rem', fontWeight: 'bold', mb: 1.25, color: 'text.secondary' }}
           >
             {filteredApplications.length} Applications
           </Typography>
@@ -416,8 +422,8 @@ const MyApplicationsPage = () => {
                   elevation={1}
                   sx={{
                     borderRadius: 3,
-                    p: 2,
-                    mb: 2,
+                    p: 1.25,
+                    mb: 1.25,
                     border: 1,
                     borderColor: 'divider',
                   }}
@@ -433,19 +439,19 @@ const MyApplicationsPage = () => {
                     >
                       <Box sx={{ flex: 1 }}>
                         <Typography
-                          sx={{ fontSize: '1rem', fontWeight: 'bold', mb: 0.5 }}
+                          sx={{ fontSize: '0.93rem', fontWeight: 'bold', mb: 0.35, lineHeight: 1.3 }}
                         >
                           {application.job?.title || application.jobTitle || 'Untitled Job'}
                         </Typography>
                         <Typography
                           color="text.secondary"
-                          sx={{ fontSize: '0.875rem', mb: 0.5 }}
+                          sx={{ fontSize: '0.78rem', mb: 0.35 }}
                         >
                           {application.job?.hirer?.firstName ? `${application.job.hirer.firstName} ${application.job.hirer.lastName || ''}`.trim() : application.company || 'Unknown'}
                         </Typography>
                         <Typography
                           color="text.disabled"
-                          sx={{ fontSize: '0.75rem', mb: 1 }}
+                          sx={{ fontSize: '0.7rem', mb: 0.75 }}
                         >
                           📍 {typeof application.job?.location === 'string' ? application.job.location : application.job?.location?.address || application.job?.location?.city || 'Unknown'} • Applied{' '}
                           {new Date(
@@ -462,14 +468,15 @@ const MyApplicationsPage = () => {
                       />
                     </Box>
 
-                    <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ mb: 1.5 }}>
+                    <Stack direction="row" spacing={0.75} useFlexGap flexWrap="wrap" sx={{ mb: 1 }}>
                       {application.proposedRate ? (
-                        <Chip label={`Rate: GH₵${application.proposedRate}`} size="small" variant="outlined" />
+                        <Chip label={`Rate: ${currencyFormatter.format(application.proposedRate)}`} size="small" variant="outlined" sx={{ height: 24 }} />
                       ) : null}
                       <Chip
                         label={application.job?.category || application.job?.trade || 'General work'}
                         size="small"
                         variant="outlined"
+                        sx={{ height: 24 }}
                       />
                     </Stack>
 
@@ -482,7 +489,7 @@ const MyApplicationsPage = () => {
                           flex: 1,
                           fontSize: '0.75rem',
                           textTransform: 'none',
-                          minHeight: 44,
+                          minHeight: 40,
                         }}
                         onClick={(event) => handleOpenDetails(application, event)}
                       >
@@ -496,7 +503,7 @@ const MyApplicationsPage = () => {
                           flex: 1,
                           fontSize: '0.75rem',
                           textTransform: 'none',
-                          minHeight: 44,
+                          minHeight: 40,
                         }}
                         onClick={(event) => handleOpenMessage(application, event)}
                       >
@@ -511,20 +518,22 @@ const MyApplicationsPage = () => {
         </Box>
 
         {/* Bottom spacing for nav + safe area */}
-        <Box sx={{ height: `calc(100px + env(safe-area-inset-bottom, 0px))` }} />
+        <Box sx={{ height: `calc(84px + env(safe-area-inset-bottom, 0px))` }} />
       </Box>
+      </PageCanvas>
     );
   }
 
   return (
-    <Container sx={{ py: { xs: 2, md: 4 } }}>
-      <Helmet><title>My Applications | Kelmah</title></Helmet>
-      <Typography variant="h4" gutterBottom>
-        My Applications
-      </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        Track each application status and open messages with hirers from one place.
-      </Typography>
+    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
+      <Container sx={{ py: { xs: 2, md: 4 } }}>
+        <Helmet><title>My Applications | Kelmah</title></Helmet>
+        <Typography variant="h4" gutterBottom>
+          My Applications
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          Track each application status and open messages with hirers from one place.
+        </Typography>
 
       <Paper sx={{ width: '100%', mb: 4 }}>
         <Tabs
@@ -1006,7 +1015,7 @@ const MyApplicationsPage = () => {
                 Regarding: {selectedApplication.job?.title || selectedApplication.jobTitle || 'Job Application'}
               </Typography>
               <Typography variant="body2" color="text.secondary" paragraph>
-                Write your message below. You’ll be taken to the Messages page to select the conversation and confirm before it’s sent.
+                Write your message below. You'll be taken to the Messages page to select the conversation and confirm before it's sent.
               </Typography>
               <TextField
                 autoFocus
@@ -1035,7 +1044,8 @@ const MyApplicationsPage = () => {
           </>
         )}
       </Dialog>
-    </Container>
+      </Container>
+    </PageCanvas>
   );
 };
 

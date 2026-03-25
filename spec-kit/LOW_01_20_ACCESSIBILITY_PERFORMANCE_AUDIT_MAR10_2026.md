@@ -96,7 +96,7 @@ Search forms → `searchService.getCategories()` / `getSkills()` → job metadat
 - Added TTL caching and in-flight reuse for `hirerService.getDashboardData()`.
 - Reused the shared `formatRelativeTime()` helper in `RecentActivityFeed.jsx`.
 - Memoized recommendation-card output in `SmartJobRecommendations.jsx`.
-- Limited the initial worker-card render batch in `WorkerSearchResults.jsx` and exposed an explicit “show remaining” affordance for larger result pages.
+- Limited the initial worker-card render batch in `WorkerSearchResults.jsx` and exposed an explicit "show remaining" affordance for larger result pages.
 - Added basic max-length guards to the main search input surfaces to prevent pathological oversized search text payloads.
 
 4. Backend guardrails and hotspot reduction
@@ -122,7 +122,7 @@ Search forms → `searchService.getCategories()` / `getSkills()` → job metadat
 
 - `searchService.getSuggestions()` was already debounced, cancellable, and request-deduplicated before this pass.
 - The shared relative-time formatter already supported weeks and months; only `RecentActivityFeed.jsx` still needed to stop shadowing it locally.
-- The earlier worker-directory “full scan” wording was stale against the current aggregation flow; this pass focused on frontend render cost instead.
+- The earlier worker-directory "full scan" wording was stale against the current aggregation flow; this pass focused on frontend render cost instead.
 
 ## Residual Notes
 

@@ -11,7 +11,7 @@ const categories = [
     title: 'Advanced Hook Cancellation & Resilience',
     exampleFiles: ['useApi.js', 'useJobsQuery.js', 'useNotifications.js', 'useProfile.js'],
     template: ({ verb, fileSample }) =>
-      `${verb} cancellation and resilience in \`${fileSample}\` so in-flight requests don’t update unmounted components and failures are recoverable.`,
+      `${verb} cancellation and resilience in \`${fileSample}\` so in-flight requests don't update unmounted components and failures are recoverable.`,
   },
   {
     title: 'Optimistic Updates & Mutation UX',

@@ -11,12 +11,14 @@ import {
 import { Link as RouterLink, useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import ContractForm from '../components/common/ContractForm';
+import PageCanvas from '@/modules/common/components/PageCanvas';
 
 const EditContractPage = () => {
   const { id } = useParams();
 
   if (!id) {
     return (
+      <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
       <Container>
         <Box sx={{ py: 5, textAlign: 'center' }}>
           <Alert severity="error" sx={{ mb: 2 }}>
@@ -30,10 +32,12 @@ const EditContractPage = () => {
           </Button>
         </Box>
       </Container>
+      </PageCanvas>
     );
   }
 
   return (
+    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
     <Container maxWidth="xl" sx={{ px: { xs: 0.5, sm: 2 } }}>
       <Helmet><title>Edit Contract | Kelmah</title></Helmet>
       <Box sx={{ py: { xs: 2, sm: 3 } }}>
@@ -59,6 +63,7 @@ const EditContractPage = () => {
         <ContractForm contractId={id} />
       </Box>
     </Container>
+    </PageCanvas>
   );
 };
 

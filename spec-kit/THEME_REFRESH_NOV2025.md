@@ -27,7 +27,7 @@
    - `src/utils/themeValidator.js` now recognizes every neutral/gold tone introduced in the refresh to prevent false positives in future audits.
 5. **Persistent Theme Sync (Nov 19 Update)**
    - `src/theme/ThemeProvider.jsx` now reads the saved user preference (localStorage/sessionStorage), falls back to the OS `prefers-color-scheme`, and applies `<html data-theme>`/`<meta name="theme-color">` before paint to eliminate flicker.
-   - Theme changes mirror to both storage layers, broadcast via the `storage` event for multi-tab sync, and continue following the OS scheme until a user explicitly toggles, closing the “toggle resets on navigation” bug.
+   - Theme changes mirror to both storage layers, broadcast via the `storage` event for multi-tab sync, and continue following the OS scheme until a user explicitly toggles, closing the "toggle resets on navigation" bug.
 
 ## Verification & Testing
 - `npm --prefix kelmah-frontend run lint` (pending after workspace changes) - ensures the updated theme compiles and respects lint rules.

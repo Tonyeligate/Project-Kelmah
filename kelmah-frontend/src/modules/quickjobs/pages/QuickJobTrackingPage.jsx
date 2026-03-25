@@ -30,6 +30,7 @@ import {
   Divider,
   Paper,
   Skeleton,
+  LinearProgress,
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -56,6 +57,8 @@ import {
 } from '../services/quickJobService';
 import { Helmet } from 'react-helmet-async';
 import { useVisibilityPolling } from '../../../hooks/useVisibilityPolling';
+import PageCanvas from '../../common/components/PageCanvas';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 // Job status steps for worker
 const workerSteps = [
@@ -68,6 +71,7 @@ const workerSteps = [
 
 const QuickJobTrackingPage = () => {
   const theme = useTheme();
+  const isMobile = useBreakpointDown('md');
   const { jobId } = useParams();
   const navigate = useNavigate();
 
@@ -292,12 +296,51 @@ const QuickJobTrackingPage = () => {
   const category = getCategory();
   const currentStep = getCurrentStepIndex();
   const canCancel = ['funded', 'worker_on_way'].includes(job?.status);
+  const currentStepMeta = workerSteps[currentStep] || workerSteps[0];
+
+  const mobilePrimaryAction = (() => {
+    if (!job) return null;
+    if (job.status === 'funded') {
+      return {
+        label: actionLoading ? 'Updating...' : "I'm On My Way",
+        icon: <NavigationIcon />,
+        onClick: handleMarkOnWay,
+        color: 'primary',
+      };
+    }
+    if (job.status === 'worker_on_way') {
+      return {
+        label: actionLoading ? 'Verifying...' : "I've Arrived",
+        icon: <LocationIcon />,
+        onClick: handleMarkArrived,
+        color: 'primary',
+      };
+    }
+    if (job.status === 'worker_arrived') {
+      return {
+        label: actionLoading ? 'Starting...' : 'Start Work',
+        icon: <CheckIcon />,
+        onClick: handleStartWork,
+        color: 'success',
+      };
+    }
+    if (job.status === 'in_progress') {
+      return {
+        label: 'Mark Complete',
+        icon: <CheckIcon />,
+        onClick: () => setCompletionDialogOpen(true),
+        color: 'success',
+      };
+    }
+    return null;
+  })();
 
   return (
-    <Container maxWidth="sm" sx={{ py: 3 }}>
+    <PageCanvas disableContainer sx={{ pt: { xs: 1.25, md: 4 }, pb: { xs: 4, md: 6 } }}>
+      <Container maxWidth="sm" sx={{ py: { xs: 1.5, md: 3 }, pb: { xs: 10, md: 3 } }}>
       <Helmet><title>Track Quick Job | Kelmah</title></Helmet>
       {/* Header */}
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 1.25, md: 3 } }}>
         <IconButton
           aria-label="Go back"
           onClick={() => navigate(-1)}
@@ -314,7 +357,7 @@ const QuickJobTrackingPage = () => {
         >
           <ArrowBackIcon />
         </IconButton>
-        <Typography variant="h5" fontWeight="bold">
+        <Typography variant="h5" fontWeight="bold" sx={{ fontSize: { xs: '1.15rem', md: '1.5rem' } }}>
           Job Tracking
         </Typography>
       </Box>
@@ -329,7 +372,7 @@ const QuickJobTrackingPage = () => {
       {/* Job Card */}
       {job && (
         <>
-          <Card sx={{ mb: 3 }}>
+          <Card sx={{ mb: 1.5, borderRadius: { xs: 2.5, md: 1.5 } }}>
             <CardContent>
               {/* Category & Status */}
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
@@ -354,7 +397,7 @@ const QuickJobTrackingPage = () => {
               </Box>
 
               {/* Description */}
-              <Typography variant="body2" sx={{ mb: 2, bgcolor: 'grey.50', p: 2, borderRadius: 1 }}>
+              <Typography variant="body2" sx={{ mb: 1.25, bgcolor: 'grey.50', p: { xs: 1.25, md: 2 }, borderRadius: 1 }}>
                 "{job.description}"
               </Typography>
 
@@ -421,71 +464,91 @@ const QuickJobTrackingPage = () => {
           </Card>
 
           {/* Progress Stepper */}
-          <Paper sx={{ p: 2, mb: 3 }}>
+          <Paper sx={{ p: { xs: 1.25, md: 2 }, mb: 1.5, borderRadius: { xs: 2.5, md: 1.5 } }}>
             <Typography variant="subtitle2" gutterBottom color="text.secondary">
               Progress
             </Typography>
-            <Stepper activeStep={currentStep} orientation="vertical">
-              {workerSteps.map((step, index) => (
-                <Step key={step.status} completed={currentStep > index}>
-                  <StepLabel
-                    optional={
-                      index === currentStep && (
-                        <Typography variant="caption" color="text.secondary">
-                          {step.description}
-                        </Typography>
-                      )
-                    }
-                  >
-                    {step.label}
-                  </StepLabel>
-                  <StepContent>
-                    {/* Action buttons based on current step */}
-                    {step.status === 'funded' && (
-                      <Button
-                        variant="contained"
-                        onClick={handleMarkOnWay}
-                        disabled={actionLoading}
-                        startIcon={actionLoading ? <CircularProgress size={20} color="inherit" /> : <NavigationIcon />}>
-                        {actionLoading ? 'Updating...' : 'I\'m On My Way'}
-                      </Button>
-                    )}
-                    
-                    {step.status === 'worker_on_way' && (
-                      <Button
-                        variant="contained"
-                        onClick={handleMarkArrived}
-                        disabled={actionLoading}
-                        startIcon={actionLoading ? <CircularProgress size={20} color="inherit" /> : <LocationIcon />}>
-                        {actionLoading ? 'Verifying...' : 'I\'ve Arrived'}
-                      </Button>
-                    )}
-                    
-                    {step.status === 'worker_arrived' && (
-                      <Button
-                        variant="contained"
-                        onClick={handleStartWork}
-                        disabled={actionLoading}
-                        color="success">
-                        {actionLoading ? 'Starting...' : 'Start Work'}
-                      </Button>
-                    )}
-                    
-                    {step.status === 'in_progress' && (
-                      <Button
-                        variant="contained"
-                        onClick={() => setCompletionDialogOpen(true)}
-                        disabled={actionLoading}
-                        color="success"
-                        startIcon={<CheckIcon />}
-                      >
-                        Mark Complete
-                      </Button>
-                    )}
-                  </StepContent>
-                </Step>
-              ))}
-            </Stepper>
+            {isMobile ? (
+              <Box>
+                <Stack direction="row" justifyContent="space-between" sx={{ mb: 0.75 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>
+                    {currentStepMeta.label}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>
+                    Step {currentStep + 1} of {workerSteps.length}
+                  </Typography>
+                </Stack>
+                <LinearProgress
+                  variant="determinate"
+                  value={((currentStep + 1) / workerSteps.length) * 100}
+                  sx={{ height: 6, borderRadius: 99, mb: 1 }}
+                />
+                <Typography variant="body2" color="text.secondary">
+                  {currentStepMeta.description}
+                </Typography>
+              </Box>
+            ) : (
+              <Stepper activeStep={currentStep} orientation="vertical">
+                {workerSteps.map((step, index) => (
+                  <Step key={step.status} completed={currentStep > index}>
+                    <StepLabel
+                      optional={
+                        index === currentStep && (
+                          <Typography variant="caption" color="text.secondary">
+                            {step.description}
+                          </Typography>
+                        )
+                      }
+                    >
+                      {step.label}
+                    </StepLabel>
+                    <StepContent>
+                      {step.status === 'funded' && (
+                        <Button
+                          variant="contained"
+                          onClick={handleMarkOnWay}
+                          disabled={actionLoading}
+                          startIcon={actionLoading ? <CircularProgress size={20} color="inherit" /> : <NavigationIcon />}>
+                          {actionLoading ? 'Updating...' : 'I\'m On My Way'}
+                        </Button>
+                      )}
+
+                      {step.status === 'worker_on_way' && (
+                        <Button
+                          variant="contained"
+                          onClick={handleMarkArrived}
+                          disabled={actionLoading}
+                          startIcon={actionLoading ? <CircularProgress size={20} color="inherit" /> : <LocationIcon />}>
+                          {actionLoading ? 'Verifying...' : 'I\'ve Arrived'}
+                        </Button>
+                      )}
+
+                      {step.status === 'worker_arrived' && (
+                        <Button
+                          variant="contained"
+                          onClick={handleStartWork}
+                          disabled={actionLoading}
+                          color="success">
+                          {actionLoading ? 'Starting...' : 'Start Work'}
+                        </Button>
+                      )}
+
+                      {step.status === 'in_progress' && (
+                        <Button
+                          variant="contained"
+                          onClick={() => setCompletionDialogOpen(true)}
+                          disabled={actionLoading}
+                          color="success"
+                          startIcon={<CheckIcon />}
+                        >
+                          Mark Complete
+                        </Button>
+                      )}
+                    </StepContent>
+                  </Step>
+                ))}
+              </Stepper>
+            )}
           </Paper>
 
           {/* Payment info */}
@@ -509,7 +572,7 @@ const QuickJobTrackingPage = () => {
           )}
 
           {/* Cancel button */}
-          {canCancel && (
+          {canCancel && !isMobile && (
             <Button
               variant="text"
               color="error"
@@ -523,8 +586,50 @@ const QuickJobTrackingPage = () => {
         </>
       )}
 
+      {isMobile && mobilePrimaryAction && (
+        <Box
+          sx={{
+            position: 'fixed',
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 1300,
+            p: 1,
+            pb: 'calc(8px + env(safe-area-inset-bottom, 0px))',
+            bgcolor: 'background.paper',
+            borderTop: '1px solid',
+            borderColor: 'divider',
+            display: 'grid',
+            gridTemplateColumns: canCancel ? '1fr 1.25fr' : '1fr',
+            gap: 1,
+          }}
+        >
+          {canCancel && (
+            <Button
+              variant="outlined"
+              color="error"
+              onClick={() => setCancelDialogOpen(true)}
+              disabled={actionLoading}
+              sx={{ minHeight: 44 }}
+            >
+              Cancel
+            </Button>
+          )}
+          <Button
+            variant="contained"
+            color={mobilePrimaryAction.color}
+            onClick={mobilePrimaryAction.onClick}
+            disabled={actionLoading || locationLoading}
+            startIcon={actionLoading ? <CircularProgress size={18} color="inherit" /> : mobilePrimaryAction.icon}
+            sx={{ minHeight: 44, fontWeight: 700 }}
+          >
+            {mobilePrimaryAction.label}
+          </Button>
+        </Box>
+      )}
+
       {/* Completion Dialog */}
-      <Dialog open={completionDialogOpen} onClose={() => setCompletionDialogOpen(false)} maxWidth="sm" fullWidth aria-labelledby="mark-complete-dialog-title">
+      <Dialog open={completionDialogOpen} onClose={() => setCompletionDialogOpen(false)} maxWidth="sm" fullWidth fullScreen={isMobile} aria-labelledby="mark-complete-dialog-title">
         <DialogTitle id="mark-complete-dialog-title">
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             Mark Work Complete
@@ -624,7 +729,7 @@ const QuickJobTrackingPage = () => {
             onChange={(e) => setCompletionNote(e.target.value)}
           />
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 3 }}>
+        <DialogActions sx={{ px: { xs: 1.5, md: 3 }, pb: { xs: 1.5, md: 3 }, position: { xs: 'sticky', md: 'static' }, bottom: 0, bgcolor: { xs: 'background.paper', md: 'transparent' }, borderTop: { xs: '1px solid', md: 'none' }, borderColor: 'divider' }}>
           <Button onClick={() => setCompletionDialogOpen(false)}>Cancel</Button>
           <Button
             variant="contained"
@@ -638,7 +743,7 @@ const QuickJobTrackingPage = () => {
       </Dialog>
 
       {/* Cancel Dialog */}
-      <Dialog open={cancelDialogOpen} onClose={() => setCancelDialogOpen(false)} aria-labelledby="cancel-job-dialog-title">
+      <Dialog open={cancelDialogOpen} onClose={() => setCancelDialogOpen(false)} fullScreen={isMobile} aria-labelledby="cancel-job-dialog-title">
         <DialogTitle id="cancel-job-dialog-title">
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <WarningIcon color="warning" />
@@ -669,7 +774,8 @@ const QuickJobTrackingPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
-    </Container>
+      </Container>
+    </PageCanvas>
   );
 };
 

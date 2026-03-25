@@ -18,7 +18,7 @@
 
 ## Root Cause
 - `kelmah-backend/api-gateway/server.js` registers `express.json()` globally before mounting the `/api/jobs` proxy.
-- `express.json()` consumes the request stream. When the proxy layer (`createProxyMiddleware`) forwards the request, there is no body left to send. The outgoing `Content-Length` header still advertises the original payload size, so the job-service waits indefinitely for bytes that never arrive. After Render’s 60-second upstream timeout, Cloudflare surfaces `504 Gateway Timeout`.
+- `express.json()` consumes the request stream. When the proxy layer (`createProxyMiddleware`) forwards the request, there is no body left to send. The outgoing `Content-Length` header still advertises the original payload size, so the job-service waits indefinitely for bytes that never arrive. After Render's 60-second upstream timeout, Cloudflare surfaces `504 Gateway Timeout`.
 - Diagnostic proof: calling the job service directly (`https://kelmah-job-service-xo0q.onrender.com/api/jobs`) with synthetic gateway headers immediately produced a validation error, confirming the service was healthy while the gateway-to-service hop hung.
 
 ## Fix

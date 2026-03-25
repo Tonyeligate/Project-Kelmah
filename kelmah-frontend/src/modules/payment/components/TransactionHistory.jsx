@@ -1,7 +1,7 @@
 import React from 'react';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Chip, Box, IconButton, Card, CardContent, Stack } from '@mui/material';
 import { Download as DownloadIcon } from '@mui/icons-material';
-import { safeFormatDate } from '@/modules/common/utils/formatters';
+import { currencyFormatter, safeFormatDate } from '@/modules/common/utils/formatters';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 
 const getStatusChip = (status) => {
@@ -68,7 +68,7 @@ const TransactionHistory = ({ transactions }) => {
                     fontWeight={700}
                     color={row.type === 'received' ? 'success.main' : 'error.main'}
                   >
-                    {row.type === 'received' ? '+' : '-'}GH₵{row.amount.toFixed(2)}
+                      {row.type === 'received' ? '+' : '-'}{currencyFormatter.format(row.amount)}
                   </Typography>
                   <Stack direction="row" alignItems="center" spacing={1}>
                     <Typography variant="caption" color="text.secondary">
@@ -142,7 +142,7 @@ const TransactionHistory = ({ transactions }) => {
                     row.type === 'received' ? 'success.main' : 'error.main'
                   }
                 >
-                  {row.type === 'received' ? '+' : '-'}GH₵{row.amount.toFixed(2)}
+                  {row.type === 'received' ? '+' : '-'}{currencyFormatter.format(row.amount)}
                 </Typography>
               </TableCell>
               <TableCell>{getTypeLabel(row.type)}</TableCell>

@@ -16,7 +16,7 @@ This audit focuses on **accessibility (a11y)** across the Kelmah frontend, with 
 ## 🧭 Key Accessibility Findings (with code pointers)
 
 ### 1) **Missing or inconsistent ARIA labeling on interactive icons / buttons**
-- **Problem**: Some icon buttons (e.g., social icons in `Footer.jsx`, “save” icons in lists, and list action icons) are missing explicit `aria-label`/`aria-labelledby`.
+- **Problem**: Some icon buttons (e.g., social icons in `Footer.jsx`, "save" icons in lists, and list action icons) are missing explicit `aria-label`/`aria-labelledby`.
 - **Files to review**:
   - `src/modules/layout/components/Footer.jsx` (social icons use `IconButton` with only `aria-label` absent)
   - `src/modules/messaging/components/common/MessageList.jsx` (action icons in message rows)
@@ -75,7 +75,7 @@ This audit focuses on **accessibility (a11y)** across the Kelmah frontend, with 
 3. **Run a contrast audit** across the theme palette and fix any text < 4.5:1 contrast ratio.
 4. **Ensure all images have `alt` text** (decorative images should have `alt=""`).
 5. **Validate keyboard navigation** for all list/grid card UI; convert clickable containers to `<button>`/`<a>` where needed.
-6. **Add explicit ARIA landmarks (`<main>`, `<nav>`, `<header>`, `<footer>`)** and keep the “skip to main” link functional.
+6. **Add explicit ARIA landmarks (`<main>`, `<nav>`, `<header>`, `<footer>`)** and keep the "skip to main" link functional.
 7. **Add screen reader announcements** for key dynamic updates (filter changes, new messages, job status changes).
 8. **Add a11y tests using axe-core** to prevent regressions.
 

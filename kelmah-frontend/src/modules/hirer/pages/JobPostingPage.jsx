@@ -92,6 +92,8 @@ import fileUploadService from '../../common/services/fileUploadService';
 import { alpha, useTheme } from '@mui/material/styles';
 import { Z_INDEX, STICKY_CTA_HEIGHT, BOTTOM_NAV_HEIGHT } from '../../../constants/layout';
 import { useBreakpointDown } from '@/hooks/useResponsive';
+import { formatGhanaCurrency } from '@/utils/formatters';
+import PageCanvas from '@/modules/common/components/PageCanvas';
 const steps = [
   { label: 'Job Details', icon: <Work /> },
   { label: 'Description & Skills', icon: <Description /> },
@@ -114,12 +116,7 @@ const normalizeDescription = (value = '') =>
 
 const formatCurrency = (value) => {
   const numeric = Number(value);
-  if (!Number.isFinite(numeric)) return 'GH₵0';
-  return new Intl.NumberFormat('en-GH', {
-    style: 'currency',
-    currency: 'GHS',
-    maximumFractionDigits: 0,
-  }).format(numeric);
+  return formatGhanaCurrency(Number.isFinite(numeric) ? numeric : 0);
 };
 
 const getBudgetPreview = (formData) => {
@@ -135,12 +132,12 @@ const getBudgetPreview = (formData) => {
     if (Number.isFinite(max) && max) {
       return `Up to ${formatCurrency(max)} / hr`;
     }
-    return 'GH₵0 / hr';
+    return `${formatCurrency(0)} / hr`;
   }
   const fixed = Number(formData.budget.fixed);
   return Number.isFinite(fixed) && fixed
     ? `${formatCurrency(fixed)} total`
-    : 'GH₵0 total';
+    : `${formatCurrency(0)} total`;
 };
 
 const JobPreview = ({ snapshot }) => {
@@ -1295,7 +1292,8 @@ const JobPostingPage = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 }, pb: isMobile ? `${STICKY_CTA_HEIGHT + 16}px` : undefined }}>
+    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 }, pb: isMobile ? `${STICKY_CTA_HEIGHT + 16}px` : undefined }}>
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
           {error}
@@ -1486,7 +1484,8 @@ const JobPostingPage = () => {
           )}
         </Box>
       )}
-    </Container>
+      </Container>
+    </PageCanvas>
   );
 };
 

@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Box, Typography, Paper, Grid, TextField } from '@mui/material';
+import { formatGhanaCurrency } from '@/utils/formatters';
 
 const BudgetEstimator = () => {
   const [rate, setRate] = useState(150);
@@ -24,7 +25,7 @@ const BudgetEstimator = () => {
         <Grid container spacing={2}>
           <Grid item xs={12} sm={3}>
             <TextField
-              label="Hourly Rate (GH₵)"
+              label="Hourly Rate"
               type="number"
               fullWidth
               value={rate}
@@ -44,7 +45,7 @@ const BudgetEstimator = () => {
           </Grid>
           <Grid item xs={12} sm={3}>
             <TextField
-              label="Materials (GH₵)"
+              label="Materials"
               type="number"
               fullWidth
               value={materials}
@@ -64,7 +65,7 @@ const BudgetEstimator = () => {
           </Grid>
           <Grid item xs={12}>
             <Typography variant="subtitle1" aria-live="polite">
-              Estimated Budget: GH₵ {estimate.toLocaleString()}
+              Estimated Budget: {formatGhanaCurrency(estimate)}
             </Typography>
           </Grid>
         </Grid>

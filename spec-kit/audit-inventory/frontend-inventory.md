@@ -10,7 +10,7 @@ This inventory scopes the dry audit effort across the React/Vite frontend. It en
 
 | Sector | Root Path | Key Subdirectories / Files | Primary Responsibilities | Audit Notes |
 | --- | --- | --- | --- | --- |
-| Domain Modules | `src/modules/` | `auth/`, `dashboard/`, `worker/`, `hirer/`, `jobs/`, `messaging/`, etc. | Route-level pages, feature-specific components, hooks, and services | Largest surface area; confirm each module’s services map to consolidated API endpoints. |
+| Domain Modules | `src/modules/` | `auth/`, `dashboard/`, `worker/`, `hirer/`, `jobs/`, `messaging/`, etc. | Route-level pages, feature-specific components, hooks, and services | Largest surface area; confirm each module's services map to consolidated API endpoints. |
 | Shared Components | `src/components/` | `ai/`, `common/`, `contracts/`, `mobile/`, `reputation/`, `reviews/`, `PaymentMethodCard.jsx` | Cross-module UI primitives and composites | Track usage across modules to avoid duplicate implementations embedded inside feature folders. |
 | Core API Layer | `src/api/`, `src/services/` | `dynamic-importer.js`, `workersApiProxy.js`, `aiMatchingService.js`, etc. | HTTP clients, proxy helpers, background sync services | Several legacy backups exist (`services_backup*`, `index.js.backup`). Identify authoritative entrypoints and retire duplicates. |
 | Configuration & Environment | `src/config/`, `public/runtime-config.json`, `environment.js`, `securityConfig.js` | Runtime environment detection, API base URL resolution, navigation config | Validate LocalTunnel URL updates, CSP rules, and service registry alignment with backend gateway. |
@@ -96,7 +96,7 @@ This inventory scopes the dry audit effort across the React/Vite frontend. It en
 - `public/runtime-config.json` (auto-updated LocalTunnel host), `sw.js`, `offline.html`, `mockAuth.js`, plus static assets under `assets/`, `icons/`, `images/`.
 - **Audit Focus:**
   - Validate service worker caching strategy and offline asset list.
-  - Confirm `mockAuth.js` isn’t accidentally shipped to production bundles.
+  - Confirm `mockAuth.js` isn't accidentally shipped to production bundles.
   - Ensure runtime config mirrors backend tunnel automation logs.
 
 ---

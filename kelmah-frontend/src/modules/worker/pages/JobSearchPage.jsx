@@ -88,6 +88,7 @@ import {
 } from '../../jobs/hooks/useJobsQuery';
 import tradeCategories from '../../jobs/data/tradeCategories.json';
 import ghanaLocations from '../../jobs/data/ghanaLocations.json';
+import PageCanvas from '@/modules/common/components/PageCanvas';
 
 // ─── Constants ──────────────────────────────────────────────
 const ITEMS_PER_PAGE = 12;
@@ -128,17 +129,19 @@ const timeAgo = (date) => {
 const formatBudget = (budget, currency = 'GHS') => {
   if (!budget && budget !== 0) return 'Negotiable';
   const num = typeof budget === 'object' ? budget.max || budget.min || 0 : budget;
-  return `${currency === 'GHS' ? 'GH₵' : '$'}${Number(num).toLocaleString()}`;
+  return currency === 'GHS'
+    ? new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' }).format(Number(num))
+    : `$${Number(num).toLocaleString()}`;
 };
 
 // ─── Subcomponent: Search Header ────────────────────────────
-const SearchHeader = ({ search, setSearch, onSearch, resultCount, isLoading }) => {
+const SearchHeader = ({ search, setSearch, onSearch, resultCount, isLoading, hasFilters }) => {
   const theme = useTheme();
   return (
     <Paper
       elevation={0}
       sx={{
-        p: { xs: 2, md: 3 },
+        p: { xs: 1.25, md: 3 },
         borderRadius: 3,
         background: alpha(theme.palette.background.paper, 0.6),
         backdropFilter: 'blur(12px)',
@@ -213,10 +216,18 @@ const SearchHeader = ({ search, setSearch, onSearch, resultCount, isLoading }) =
           </Button>
         </Stack>
         {!isLoading && (
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="body2" color="text.secondary" sx={{ display: { xs: 'none', md: 'block' } }}>
             {resultCount} {resultCount === 1 ? 'job' : 'jobs'} available
           </Typography>
         )}
+        <Stack direction="row" spacing={0.75} sx={{ display: { xs: 'flex', md: 'none' }, overflowX: 'auto', pb: 0.25, scrollbarWidth: 'none', '&::-webkit-scrollbar': { display: 'none' } }}>
+          {!isLoading && (
+            <Chip size="small" label={`${resultCount} results`} sx={{ fontWeight: 700 }} />
+          )}
+          {hasFilters && (
+            <Chip size="small" variant="outlined" label="Filters active" sx={{ fontWeight: 700 }} />
+          )}
+        </Stack>
       </Stack>
     </Paper>
   );
@@ -316,7 +327,7 @@ const FilterPanel = ({
       {/* Budget Range */}
       <Box>
         <Typography variant="body2" color="text.secondary" gutterBottom>
-          Budget Range (GH₵)
+          Budget Range
         </Typography>
         <Slider
           value={budgetRange}
@@ -325,7 +336,7 @@ const FilterPanel = ({
           min={0}
           max={50000}
           step={500}
-          valueLabelFormat={(v) => `GH₵${v.toLocaleString()}`}
+          valueLabelFormat={(v) => new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' }).format(v)}
           sx={{
             color: theme.palette.primary.main,
             '& .MuiSlider-thumb': { width: 24, height: 24 },
@@ -333,10 +344,10 @@ const FilterPanel = ({
         />
         <Stack direction="row" justifyContent="space-between">
           <Typography variant="caption" color="text.secondary">
-            GH₵{budgetRange[0].toLocaleString()}
+            {new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' }).format(budgetRange[0])}
           </Typography>
           <Typography variant="caption" color="text.secondary">
-            GH₵{budgetRange[1].toLocaleString()}
+            {new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' }).format(budgetRange[1])}
           </Typography>
         </Stack>
       </Box>
@@ -422,14 +433,14 @@ const FindWorkJobCard = ({ job, isSaved, onSave, onUnsave }) => {
           <CardMedia
             component="img"
             loading="lazy"
-            height={140}
+            height={isMobile ? 112 : 140}
             image={job.coverImage}
             alt={job.title || 'Job image'}
             sx={{ objectFit: 'cover' }}
           />
         )}
         <CardContent
-          sx={{ p: { xs: 2, md: 2.5 }, '&:last-child': { pb: { xs: 2, md: 2.5 } } }}
+          sx={{ p: { xs: 1.5, md: 2.5 }, '&:last-child': { pb: { xs: 1.5, md: 2.5 } } }}
         >
           {/* Top row: title + save */}
           <Stack
@@ -606,8 +617,8 @@ const StatsBar = ({ data }) => {
       direction="row"
       spacing={2}
       sx={{
-        py: 1.5,
-        px: 2,
+        py: { xs: 1, sm: 1.5 },
+        px: { xs: 1.25, sm: 2 },
         borderRadius: 2,
         bgcolor: alpha(theme.palette.primary.main, 0.04),
         border: `1px solid ${alpha(theme.palette.primary.main, 0.08)}`,
@@ -891,7 +902,7 @@ const JobSearchPage = () => {
 
   // ─── Render ───────────────────────────────────────────────
   return (
-    <>
+    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
       <Helmet>
         <title>Find Work | Kelmah</title>
         <meta
@@ -903,7 +914,6 @@ const JobSearchPage = () => {
       <Box
         sx={{
           minHeight: '100dvh',
-          bgcolor: 'background.default',
           pb: 'calc(env(safe-area-inset-bottom, 0px) + 24px)',
         }}
       >
@@ -915,6 +925,7 @@ const JobSearchPage = () => {
             onSearch={handleSearch}
             resultCount={jobsData?.totalJobs || jobs.length}
             isLoading={isLoading}
+            hasFilters={hasFilters}
           />
 
           {/* ─── Category Chips ────────────────────────── */}
@@ -923,7 +934,7 @@ const JobSearchPage = () => {
           </Box>
 
           {/* ─── Stats Bar ─────────────────────────────── */}
-          {!isLoading && jobs.length > 0 && (
+          {!isLoading && jobs.length > 0 && !isMobile && (
             <Box sx={{ mt: 2 }}>
               <StatsBar data={jobsData} />
             </Box>
@@ -934,7 +945,14 @@ const JobSearchPage = () => {
             direction="row"
             justifyContent="space-between"
             alignItems="center"
-            sx={{ mt: 2 }}
+            sx={{
+              mt: 1.5,
+              position: { xs: 'sticky', md: 'static' },
+              top: { xs: 68, md: 'auto' },
+              zIndex: 9,
+              py: 0.75,
+              bgcolor: { xs: 'background.default', md: 'transparent' },
+            }}
           >
             <Stack direction="row" spacing={1} alignItems="center">
               {isMobile && (
@@ -943,7 +961,7 @@ const JobSearchPage = () => {
                   size="small"
                   startIcon={<FilterListIcon />}
                   onClick={() => setFilterDrawerOpen(true)}
-                  sx={{ textTransform: 'none', borderRadius: 2 }}
+                  sx={{ textTransform: 'none', borderRadius: 2, minHeight: 40 }}
                 >
                   Filters
                   {hasFilters && <Badge color="primary" variant="dot" sx={{ ml: 1 }} />}
@@ -989,7 +1007,7 @@ const JobSearchPage = () => {
           </Stack>
 
           {/* ─── Main Content: Sidebar + Jobs Grid ─────── */}
-          <Grid container spacing={3} sx={{ mt: 0.5 }}>
+          <Grid container spacing={{ xs: 1.5, md: 3 }} sx={{ mt: 0.25 }}>
             {/* Desktop Sidebar Filters */}
             {!isMobile && (
               <Grid item xs={12} md={3}>
@@ -1065,7 +1083,8 @@ const JobSearchPage = () => {
                         if (!jobId) return null;
                         return (
                         <Grid
-                        aria-label="View job details"
+                          item
+                          aria-label="View job details"
                           xs={12}
                           sm={viewMode === 'grid' ? 6 : 12}
                           lg={viewMode === 'grid' ? 6 : 12}
@@ -1117,11 +1136,14 @@ const JobSearchPage = () => {
         onClose={() => setFilterDrawerOpen(false)}
         PaperProps={{
           sx: {
-            borderTopLeftRadius: 16,
-            borderTopRightRadius: 16,
-            maxHeight: '75vh',
-            p: 3,
+            borderTopLeftRadius: 20,
+            borderTopRightRadius: 20,
+            maxHeight: '82vh',
+            p: 1.5,
             pb: 'calc(env(safe-area-inset-bottom, 0px) + 12px)',
+            border: '1px solid',
+            borderColor: 'divider',
+            borderBottom: 'none',
           },
         }}
       >
@@ -1177,7 +1199,7 @@ const JobSearchPage = () => {
           {snackbar.message}
         </Alert>
       </Snackbar>
-    </>
+    </PageCanvas>
   );
 };
 

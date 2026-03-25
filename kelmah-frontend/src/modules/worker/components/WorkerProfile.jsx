@@ -109,6 +109,12 @@ import {
 } from '../../common/utils/mediaAssets';
 import { devError } from '@/modules/common/utils/devLogger';
 
+const formatGhanaCurrencyLabel = (value) => {
+  const amount = Number(value);
+  if (!Number.isFinite(amount)) return 'GH₵0.00';
+  return new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' }).format(amount);
+};
+
 const Input = styled('input')({
   display: 'none',
 });
@@ -1043,7 +1049,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                       color: theme.palette.primary.main,
                     }}
                   >
-                    GH₵ {last30}
+                          {formatGhanaCurrencyLabel(last30)}
                   </Typography>
                   <Typography
                     sx={{
@@ -1052,7 +1058,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                       fontWeight: 500,
                     }}
                   >
-                    7d: GH₵ {last7}
+                    7d: {formatGhanaCurrencyLabel(last7)}
                   </Typography>
                 </Paper>
               </Grid>
@@ -1174,7 +1180,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                             color: theme.palette.primary.main,
                           }}
                         >
-                          GH₵ {totalAllTime}
+                          {formatGhanaCurrencyLabel(totalAllTime)}
                         </Typography>
                       </Box>
                     </Grid>
@@ -1290,7 +1296,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
             <MetricCard>
               <PriceIcon color="primary" sx={{ fontSize: 40, mb: 1 }} />
               <Typography variant="h4" fontWeight={700} color="primary">
-                GH₵ {profile.hourly_rate || 0}
+                {formatGhanaCurrencyLabel(profile.hourly_rate || 0)}
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 Per Hour
@@ -1345,7 +1351,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                           backgroundColor: theme.palette.primary.main,
                           borderRadius: 1,
                         }}
-                        title={`M${m.month}: GH₵ ${m.amount}`}
+                        title={`M${m.month}: ${formatGhanaCurrencyLabel(m.amount)}`}
                       />
                     );
                   })}

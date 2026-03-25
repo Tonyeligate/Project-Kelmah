@@ -15,6 +15,7 @@ import {
   AccordionSummary,
   AccordionDetails,
   useTheme,
+  useMediaQuery,
   alpha,
 } from '@mui/material';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
@@ -31,6 +32,7 @@ import {
   checkServiceHealth,
   getServiceStatusMessage,
 } from '../../../utils/serviceHealthCheck';
+import PageCanvas from '../../common/components/PageCanvas';
 import { BRAND_COLORS } from '../../../theme';
 import { Helmet } from 'react-helmet-async';
 
@@ -102,12 +104,13 @@ const faqs = [
   {
     question: 'How do I reach Kelmah urgently for a contract dispute?',
     answer:
-      'Use the Trust & Safety lane with subject “URGENT CONTRACT”. This bypasses normal queues and notifies the on-call operations specialist.',
+      'Use the Trust & Safety lane with subject "URGENT CONTRACT". This bypasses normal queues and notifies the on-call operations specialist.',
   },
 ];
 
 const HelpCenterPage = () => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const navigate = useNavigate();
   const location = useLocation();
   const [healthStatus, setHealthStatus] = useState({
@@ -213,19 +216,15 @@ const HelpCenterPage = () => {
   }, [healthStatus.status, theme.palette.mode, theme.palette.text.primary]);
 
   return (
-    <Box
+    <PageCanvas disableContainer sx={{ pt: { xs: 1, md: 4 }, pb: { xs: 10, md: 6 } }}>
+      <Box
       sx={{
         minHeight: '100vh',
-        backgroundColor:
-          theme.palette.mode === 'dark'
-            ? BRAND_COLORS.blackDark
-            : theme.palette.grey[50],
-        pt: { xs: 10, md: 14 },
-        pb: { xs: 8, md: 12 },
+        pt: { xs: 6, md: 12 },
       }}
     >
       <Helmet><title>Help Center | Kelmah</title></Helmet>
-      <Container maxWidth="lg">
+      <Container maxWidth="lg" sx={{ px: { xs: 0.75, sm: 3 } }}>
         <Box
           sx={{
             background:
@@ -233,7 +232,7 @@ const HelpCenterPage = () => {
                 ? `linear-gradient(135deg, ${BRAND_COLORS.black} 0%, ${BRAND_COLORS.blackMedium} 100%)`
                 : `linear-gradient(135deg, ${BRAND_COLORS.goldLight} 0%, ${BRAND_COLORS.gold} 100%)`,
             borderRadius: 4,
-            p: { xs: 4, md: 6 },
+            p: { xs: 2, md: 6 },
             color:
               theme.palette.mode === 'dark'
                 ? theme.palette.common.white
@@ -242,10 +241,10 @@ const HelpCenterPage = () => {
               theme.palette.mode === 'dark'
                 ? '0 20px 45px rgba(0,0,0,0.65)'
                 : '0 25px 55px rgba(0,0,0,0.15)',
-            mb: 6,
+            mb: { xs: 2, md: 6 },
           }}
         >
-          <Stack spacing={3}>
+          <Stack spacing={{ xs: 1.5, md: 3 }}>
             <Stack
               direction={{ xs: 'column', md: 'row' }}
               spacing={2}
@@ -280,10 +279,10 @@ const HelpCenterPage = () => {
               />
             </Stack>
             <Box>
-              <Typography variant="h3" fontWeight={800} gutterBottom>
+              <Typography variant={isMobile ? 'h5' : 'h3'} fontWeight={800} gutterBottom>
                 {pageCopy.title}
               </Typography>
-              <Typography variant="h6" maxWidth="720px">
+              <Typography variant={isMobile ? 'body1' : 'h6'} maxWidth="720px">
                 {pageCopy.subtitle}
               </Typography>
               <Typography
@@ -294,7 +293,7 @@ const HelpCenterPage = () => {
                 details, then watch for the reply time shown in-app.
               </Typography>
             </Box>
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.25} sx={{ display: { xs: 'none', sm: 'flex' } }}>
               <Button
                 variant="contained"
                 size="large"
@@ -324,19 +323,19 @@ const HelpCenterPage = () => {
           </Stack>
         </Box>
 
-        <Grid container spacing={3} mb={4}>
+        <Grid container spacing={{ xs: 1.25, md: 3 }} mb={{ xs: 2, md: 4 }}>
           {quickActions(navigate, supportMode).map((action) => (
             <Grid item xs={12} md={4} key={action.title}>
               <Card
                 sx={{
                   height: '100%',
-                  borderRadius: 3,
+                  borderRadius: 2.5,
                   border: `1px solid ${theme.palette.divider}`,
                   boxShadow: '0 10px 35px rgba(0,0,0,0.07)',
                 }}
               >
-                <CardContent>
-                  <Stack spacing={2}>
+                <CardContent sx={{ p: { xs: 1.5, md: 2 } }}>
+                  <Stack spacing={{ xs: 1.25, md: 2 }}>
                     <action.icon
                       sx={{
                         fontSize: 34,
@@ -441,8 +440,33 @@ const HelpCenterPage = () => {
             </Stack>
           </Grid>
         </Grid>
+
+        <Paper
+          elevation={8}
+          sx={(theme) => ({
+            display: { xs: 'flex', sm: 'none' },
+            position: 'fixed',
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: theme.zIndex.appBar + 2,
+            px: 1,
+            py: 1,
+            gap: 1,
+            borderTop: `1px solid ${theme.palette.divider}`,
+            backgroundColor: theme.palette.background.paper,
+          })}
+        >
+          <Button fullWidth variant="outlined" color="secondary" sx={{ minHeight: 42 }} onClick={pageCopy.secondaryAction}>
+            {pageCopy.secondaryLabel}
+          </Button>
+          <Button fullWidth variant="contained" color="secondary" sx={{ minHeight: 42, boxShadow: '0 2px 8px rgba(255,215,0,0.35)' }} onClick={pageCopy.primaryAction} endIcon={<ArrowForwardIcon />}>
+            {pageCopy.primaryLabel}
+          </Button>
+        </Paper>
       </Container>
-    </Box>
+      </Box>
+    </PageCanvas>
   );
 };
 

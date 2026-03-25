@@ -17,6 +17,17 @@
 
 
 
+
+
+
+
+
+
+
+
+
+import PageCanvas from '@/modules/common/components/PageCanvas';
+
 const requesterSteps = [
   { status: 'pending', label: 'Waiting for quotes' },
   { status: 'quoted', label: 'Quotes received' },
@@ -417,7 +428,8 @@ const HirerQuickJobTrackingPage = () => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
+    <PageCanvas disableContainer>
+      <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
       <Helmet>
         <title>Quick-Hire Request | Kelmah</title>
       </Helmet>
@@ -823,7 +835,8 @@ const HirerQuickJobTrackingPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
-    </Container>
+      </Container>
+    </PageCanvas>
   );
 };
 

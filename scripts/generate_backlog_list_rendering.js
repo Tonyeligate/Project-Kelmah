@@ -47,7 +47,7 @@ const categories = [
     title: 'Voice & Screen Reader Behavior',
     exampleFiles: ['MessageList.jsx', 'JobList.jsx', 'WorkerList.jsx', 'NotificationList.jsx'],
     template: ({ verb, fileSample }) =>
-      `${verb} screen reader behavior in \`${fileSample}\` so new entries, updates, and actions are announced appropriately and users aren’t surprised by content shifts.`,
+      `${verb} screen reader behavior in \`${fileSample}\` so new entries, updates, and actions are announced appropriately and users aren't surprised by content shifts.`,
   },
   {
     title: 'Performance & Re-rendering',

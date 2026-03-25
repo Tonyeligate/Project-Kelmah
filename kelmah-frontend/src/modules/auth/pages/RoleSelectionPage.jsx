@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import AuthWrapper from '../components/common/AuthWrapper';
 import { Helmet } from 'react-helmet-async';
 import { useBreakpointDown } from '@/hooks/useResponsive';
+import PageCanvas from '@/modules/common/components/PageCanvas';
 
 const RoleSelectionPage = () => {
   const isActualMobile = useBreakpointDown('md');
@@ -16,6 +17,7 @@ const RoleSelectionPage = () => {
   // Mobile-first role selection view
   if (isActualMobile) {
     return (
+      <PageCanvas disableContainer sx={{ pt: { xs: 3, md: 4 }, pb: { xs: 4, md: 6 } }}>
       <Box
         sx={{
           minHeight: '100vh',
@@ -165,40 +167,43 @@ const RoleSelectionPage = () => {
         {/* Spacer to replace removed decorative bottom nav */}
         <Box sx={{ height: '20px', bgcolor: 'background.default' }} />
       </Box>
+      </PageCanvas>
     );
   }
 
   // Desktop fallback - redirect to register
   return (
-    <AuthWrapper>
-      <Helmet><title>Choose Your Role | Kelmah</title></Helmet>
-      <Box sx={{ textAlign: 'center', py: 4 }}>
-        <Typography variant="h4" gutterBottom>
-          Choose Your Role
-        </Typography>
-        <Typography variant="body1" sx={{ mb: 4 }}>
-          Pick one to continue. You can change this in account settings later.
-        </Typography>
-        <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
-          <Button
-            variant="contained"
-            size="large"
-            onClick={() => handleRoleSelection('worker')}
-            sx={{ minWidth: 120, minHeight: 44 }}
-          >
-            I want to find work
-          </Button>
-          <Button
-            variant="outlined"
-            size="large"
-            onClick={() => handleRoleSelection('hirer')}
-            sx={{ minWidth: 120, minHeight: 44 }}
-          >
-            I want to hire workers
-          </Button>
+    <PageCanvas disableContainer sx={{ pt: { xs: 3, md: 4 }, pb: { xs: 4, md: 6 } }}>
+      <AuthWrapper>
+        <Helmet><title>Choose Your Role | Kelmah</title></Helmet>
+        <Box sx={{ textAlign: 'center', py: 4 }}>
+          <Typography variant="h4" gutterBottom>
+            Choose Your Role
+          </Typography>
+          <Typography variant="body1" sx={{ mb: 4 }}>
+            Pick one to continue. You can change this in account settings later.
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Button
+              variant="contained"
+              size="large"
+              onClick={() => handleRoleSelection('worker')}
+              sx={{ minWidth: 120, minHeight: 44 }}
+            >
+              I want to find work
+            </Button>
+            <Button
+              variant="outlined"
+              size="large"
+              onClick={() => handleRoleSelection('hirer')}
+              sx={{ minWidth: 120, minHeight: 44 }}
+            >
+              I want to hire workers
+            </Button>
+          </Box>
         </Box>
-      </Box>
-    </AuthWrapper>
+      </AuthWrapper>
+    </PageCanvas>
   );
 };
 

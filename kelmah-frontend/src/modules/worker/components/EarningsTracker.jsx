@@ -23,6 +23,18 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 // Styled components
 const GlassCard = styled(Card)(({ theme }) => ({
   background: alpha(theme.palette.background.paper, 0.9),
@@ -245,14 +257,13 @@ const EarningsTracker = () => {
     const metrics = [
       {
         title: 'Total Earnings',
-        value: `GH₵${summary.totalEarnings.toLocaleString()}`,
+        value: new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' }).format(summary.totalEarnings),
         icon: <MoneyIcon />,
         growth: summary.growth,
         color: 'primary',
       },
       {
-        title: 'This Month',
-        value: `GH₵${summary.monthlyEarnings.toLocaleString()}`,
+        value: new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' }).format(summary.monthlyEarnings),
         icon: <TrendingUpIcon />,
         growth: 8.3,
         color: 'success',

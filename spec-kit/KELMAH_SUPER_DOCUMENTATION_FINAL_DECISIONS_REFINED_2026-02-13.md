@@ -34,12 +34,12 @@ When documents conflict, the final decision is determined by this order:
 ### D1) Kelmah architecture is API Gateway + microservices
 
 - **Made (early stage)**:
-  - `backup/root_cleanup_20260201/misc/FrontendConfig.txt` (line 117): “All traffic goes through your API Gateway”
+  - `backup/root_cleanup_20260201/misc/FrontendConfig.txt` (line 117): "All traffic goes through your API Gateway"
   - `backup/root_cleanup_20260201/misc/FrontendConfig.txt` (line 169): microservices on separate ports
 - **Agreed (consolidation standard)**:
   - `spec-kit/.github/copilot-instructions.md` (line 12): API Gateway pattern + service-specific microservices
 - **Confirmed (post-fix completion)**:
-  - `spec-kit/SEPTEMBER_2025_CRITICAL_FIXES_COMPLETE.md` (line 211): “ARCHITECTURAL CONSOLIDATION: FULLY COMPLETE AND VERIFIED”
+  - `spec-kit/SEPTEMBER_2025_CRITICAL_FIXES_COMPLETE.md` (line 211): "ARCHITECTURAL CONSOLIDATION: FULLY COMPLETE AND VERIFIED"
 
 ### D2) Database standard is MongoDB/Mongoose only (no Sequelize in active path)
 
@@ -277,7 +277,7 @@ Rollback baseline:
 
 ---
 
-## “Each Page” Audit Summary (Current Readout)
+## "Each Page" Audit Summary (Current Readout)
 
 Based on current diagnostics and reports:
 
@@ -298,7 +298,7 @@ Based on current diagnostics and reports:
 
 ## Final Position
 
-Kelmah’s final technical direction is now unambiguous:
+Kelmah's final technical direction is now unambiguous:
 
 - gateway-first microservices,
 - MongoDB/Mongoose-only data architecture,

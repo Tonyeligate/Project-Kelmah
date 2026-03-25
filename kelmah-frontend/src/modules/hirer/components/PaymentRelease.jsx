@@ -15,6 +15,14 @@
 
 
 
+
+
+
+
+
+
+
+
 // No mock data - using real API data only
 
 const PAYMENT_SUMMARY_TIMEOUT_MS = 8000;
@@ -138,13 +146,7 @@ const PaymentRelease = () => {
     ensurePaymentSummary(true);
   };
 
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-GH', {
-      style: 'currency',
-      currency: 'GHS',
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
+  const formatCurrency = (amount) => formatGhanaCurrency(amount);
 
   const formatDate = (date) => {
     return new Date(date).toLocaleDateString('en-GH', {

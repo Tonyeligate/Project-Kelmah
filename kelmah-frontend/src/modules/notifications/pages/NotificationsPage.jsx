@@ -44,6 +44,7 @@ import { format, formatDistanceToNow } from 'date-fns';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useBreakpointDown } from '@/hooks/useResponsive';
+import PageCanvas from '../../common/components/PageCanvas';
 import {
   isSafeInternalPath,
   isSafeExternalUrl,
@@ -313,17 +314,23 @@ const NotificationsPage = () => {
     });
 
   return (
-    <Container maxWidth="md" sx={{ py: { xs: 2, md: 4 }, pb: { xs: 'calc(72px + env(safe-area-inset-bottom, 0px))', md: 4 } }}>
-      <Helmet><title>Notifications | Kelmah</title></Helmet>
-      {/* Header - stacks vertically on mobile */}
-      <Box
+    <PageCanvas disableContainer sx={{ pt: { xs: 1, md: 4 }, pb: { xs: 10, md: 5 } }}>
+      <Container maxWidth="md" sx={{ py: { xs: 0, md: 0 }, px: { xs: 0.75, sm: 2 }, pb: { xs: 'calc(72px + env(safe-area-inset-bottom, 0px))', md: 0 } }}>
+        <Helmet><title>Notifications | Kelmah</title></Helmet>
+        {/* Header - stacks vertically on mobile */}
+        <Box
         sx={{
           display: 'flex',
           flexDirection: { xs: 'column', sm: 'row' },
           justifyContent: 'space-between',
           alignItems: { xs: 'flex-start', sm: 'center' },
           gap: { xs: 1.5, sm: 0 },
-          mb: { xs: 2, md: 4 },
+          mb: { xs: 1.5, md: 4 },
+          position: { xs: 'sticky', sm: 'static' },
+          top: { xs: 56, sm: 'auto' },
+          zIndex: { xs: 10, sm: 'auto' },
+          py: { xs: 0.5, sm: 0 },
+          backgroundColor: { xs: 'background.default', sm: 'transparent' },
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -411,12 +418,12 @@ const NotificationsPage = () => {
             </Button>
           </Box>
         )}
-      </Box>
+        </Box>
 
-      {/* Summary line for notification counts */}
-      <Box
+        {/* Summary line for notification counts */}
+        <Box
         sx={{
-          mb: 3,
+          mb: 2,
           display: 'flex',
           flexDirection: { xs: 'column', sm: 'row' },
           alignItems: { xs: 'flex-start', sm: 'center' },
@@ -442,17 +449,17 @@ const NotificationsPage = () => {
             }}
           />
         </Tooltip>
-      </Box>
+        </Box>
 
-      <Paper
+        <Paper
         elevation={0}
         sx={(theme) => ({
-          p: { xs: 1.5, md: 2 },
+          p: { xs: 1.25, md: 2 },
           backgroundColor: alpha(theme.palette.primary.main, 0.06),
           borderRadius: theme.spacing(2),
           border: `1px solid ${theme.palette.divider}`,
         })}
-      >
+        >
         <Tabs
           value={filter}
           onChange={handleFilterChange}
@@ -461,7 +468,7 @@ const NotificationsPage = () => {
           variant="scrollable"
           scrollButtons="auto"
           allowScrollButtonsMobile
-          sx={{ mb: 2 }}
+          sx={{ mb: 1.5, '& .MuiTab-root': { minHeight: { xs: 38, sm: 48 }, px: { xs: 1, sm: 2 }, py: { xs: 0.5, sm: 1.25 } } }}
         >
           <Tab label="All" value="all" />
           <Tab label="Messages" value="messages" />
@@ -517,8 +524,47 @@ const NotificationsPage = () => {
             </Typography>
           </Box>
         )}
-      </Paper>
-    </Container>
+        </Paper>
+
+        <Paper
+          elevation={8}
+          sx={(theme) => ({
+            display: { xs: 'flex', sm: 'none' },
+            position: 'fixed',
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: theme.zIndex.appBar + 2,
+            px: 1,
+            py: 1,
+            gap: 1,
+            borderTop: `1px solid ${theme.palette.divider}`,
+            backgroundColor: theme.palette.background.paper,
+          })}
+        >
+          <Button
+            fullWidth
+            variant="outlined"
+            color="secondary"
+            sx={{ minHeight: 42 }}
+            onClick={markAllAsRead}
+            disabled={unreadCount === 0}
+          >
+            Mark Read
+          </Button>
+          <Button
+            fullWidth
+            variant="contained"
+            color="secondary"
+            sx={{ minHeight: 42, boxShadow: '0 2px 8px rgba(255,215,0,0.35)' }}
+            onClick={clearAllNotifications}
+            disabled={notifications.length === 0}
+          >
+            Clear All
+          </Button>
+        </Paper>
+      </Container>
+    </PageCanvas>
   );
 };
 

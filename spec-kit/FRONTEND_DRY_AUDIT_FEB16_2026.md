@@ -29,10 +29,10 @@
 - **Location**:
   - `kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx` (navigates to `/jobs/${job.id}/apply`)
   - `kelmah-frontend/src/routes/config.jsx` (no `/jobs/:id/apply` route)
-- **What’s wrong**:
+- **What's wrong**:
   - Jobs listing CTA navigates to a route that is not declared in active router config.
 - **Failure scenario**:
-  - Worker clicks “Apply” from Jobs page and hits app 404.
+  - Worker clicks "Apply" from Jobs page and hits app 404.
 - **Fix**:
   - Add explicit route `/jobs/:id/apply` wired to the intended application component (or route to `JobDetailsPage` anchored application panel).
 
@@ -41,7 +41,7 @@
 - **Location**:
   - `kelmah-frontend/src/modules/jobs/hooks/useBidNotifications.js`
   - `kelmah-frontend/src/services/websocketService.js`
-- **What’s wrong**:
+- **What's wrong**:
   - Hook only registers listeners; it never calls `websocketService.connect(...)`.
   - Result: listeners are attached to an unconnected singleton.
 - **Failure scenario**:
@@ -55,7 +55,7 @@
   - `kelmah-frontend/src/config/environment.js` (`API_ENDPOINTS` defined)
   - `kelmah-frontend/src/config/services.js` (`API_ENDPOINTS` also defined)
   - Consumers split across both files
-- **What’s wrong**:
+- **What's wrong**:
   - Multiple endpoint authorities increase path drift and silent breakage.
 - **Failure scenario**:
   - Some modules work while others call stale or malformed paths after backend/gateway updates.
@@ -65,7 +65,7 @@
 ### 4) Defective service-path composition in secondary config
 - **Severity**: Medium
 - **Location**: `kelmah-frontend/src/config/services.js`
-- **What’s wrong**:
+- **What's wrong**:
   - `getServicePath('JOB_SERVICE', '/jobs')` can produce `/jobs/jobs`.
 - **Failure scenario**:
   - Any consumer using this map for job routes gets incorrect endpoints.
@@ -75,7 +75,7 @@
 ### 5) Runtime config loader is effectively unused for API base URL
 - **Severity**: Medium
 - **Location**: `kelmah-frontend/src/config/environment.js`
-- **What’s wrong**:
+- **What's wrong**:
   - `loadRuntimeConfig()` exists, but API base export is resolved synchronously and async loader has no active consumers.
 - **Failure scenario**:
   - LocalTunnel/runtime URL changes are not applied at runtime as intended.
@@ -85,7 +85,7 @@
 ### 6) Security model for token storage is vulnerable to XSS exfiltration
 - **Severity**: High
 - **Location**: `kelmah-frontend/src/utils/secureStorage.js`
-- **What’s wrong**:
+- **What's wrong**:
   - Encryption key material and encrypted payload live in browser storage. Any XSS can read both and decrypt tokens.
 - **Attack scenario**:
   - Injected script steals refresh/access tokens from localStorage/sessionStorage path.
@@ -102,7 +102,7 @@
   - `src/utils/pwaHelpers.js`
   - `src/utils/serviceHealthCheck.js`
   - `src/modules/jobs/pages/JobsPage.jsx`
-- **What’s wrong**:
+- **What's wrong**:
   - Extensive `console.log` of payloads, connection details, and internal state.
 - **Attack scenario**:
   - Browser console and shared device logs can expose behavior details and metadata.
@@ -118,7 +118,7 @@
   - `NotificationService` creates socket
   - `DashboardService` creates socket
   - `websocketService` singleton exists separately
-- **What’s wrong**:
+- **What's wrong**:
   - No single socket broker; each feature may open its own channel.
 - **Failure scenario**:
   - Extra server load, duplicate events, increased reconnect storms on network instability.
@@ -128,7 +128,7 @@
 ### 9) Module-level intervals/listeners without lifecycle owner
 - **Severity**: Medium
 - **Location**: `kelmah-frontend/src/utils/serviceHealthCheck.js`
-- **What’s wrong**:
+- **What's wrong**:
   - `initializeServiceHealth()` is auto-invoked on module load and sets interval/event listener without teardown handle.
 - **Failure scenario**:
   - Duplicate checks in HMR/re-mount patterns; noisy network and memory overhead.
@@ -140,7 +140,7 @@
 - **Location**:
   - `src/modules/home/pages/HomePage.jsx` (not routed in active config)
   - `src/services_backup_audit_20251013_015855/**` contains legacy route definitions (including `/jobs/:id/apply`)
-- **What’s wrong**:
+- **What's wrong**:
   - Active app and backup snapshots diverge, causing contributors to patch wrong files.
 - **Failure scenario**:
   - Fix applied to backup path only; production remains broken.

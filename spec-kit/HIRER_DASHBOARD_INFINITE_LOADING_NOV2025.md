@@ -70,7 +70,7 @@ Tab change (Jobs/Proposals) → dispatch(fetchHirerJobs(...)) for fresh data whi
    - Page reload completes within 3–4 seconds (after hydration refactor) in local environment.
    - Scrolling past hero no longer re-triggers the global loading overlay.
    - Tab switches (Jobs, Proposals, Payments) keep content visible and fetch incremental data without full-screen skeletons.
-   - Manual refresh button executes in-place and updates “Last updated” timestamp without blanking the dashboard.
+   - Manual refresh button executes in-place and updates "Last updated" timestamp without blanking the dashboard.
 
 ## Next Steps
 - [x] Run data flow tracing on current dashboard implementation.

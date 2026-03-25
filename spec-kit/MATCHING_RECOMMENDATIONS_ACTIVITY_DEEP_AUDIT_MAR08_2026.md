@@ -176,7 +176,7 @@ Dashboard and hirer activity components -> worker/hirer services -> analytics/ac
 - Worker search suggestions are not cancellation-safe and can display stale suggestions under fast typing.
 - Dashboard services and worker dashboard polling create avoidable background load through repeated multi-request refresh loops.
 - `SearchContext.jsx` appears stale or orphaned relative to the current jobs response shape and is a regression trap.
-- `SmartJobRecommendations.jsx` contains unsupported or dead affordances, including a non-existent “View All Recommendations” route.
+- `SmartJobRecommendations.jsx` contains unsupported or dead affordances, including a non-existent "View All Recommendations" route.
 
 ## Live Verification
 

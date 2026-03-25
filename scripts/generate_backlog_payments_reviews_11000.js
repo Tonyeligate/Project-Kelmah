@@ -4,7 +4,7 @@ const path = require('path');
 const outPath = path.join(__dirname, '../spec-kit/generated/FRONTEND_BACKLOG_11000_ITEMS_MAR19_2026.md');
 const title = 'Kelmah Frontend 11000-Item Payments / Reviews / Trust Backlog (March 19 2026)';
 const description =
-  'This backlog focuses on payments, reviews, trust signals, messaging fidelity, localization completeness, analytics instrumentation, and other critical product flows aligned to Kelmah’s marketplace purpose.';
+  'This backlog focuses on payments, reviews, trust signals, messaging fidelity, localization completeness, analytics instrumentation, and other critical product flows aligned to Kelmah's marketplace purpose.';
 
 const categories = [
   {

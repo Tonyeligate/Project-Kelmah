@@ -24,7 +24,7 @@
 
 ## Data Flow
 1. **Attachments upload** populates `attachments[].virusScan` with `status: 'pending'`.
-2. `utils/virusScanState` helper normalizes each attachment’s metadata (filename, mime, size, storage hints) and keeps a rolling status history so documents reflect the latest verdict.
+2. `utils/virusScanState` helper normalizes each attachment's metadata (filename, mime, size, storage hints) and keeps a rolling status history so documents reflect the latest verdict.
 3. `virusScan.scanBuffer(buffer, filename)` collects metadata: sha256, mime hints, bucket/key context.
 4. Strategy branch:
    - **CLAMD**: stream chunks over `INSTREAM`, interpret `OK` vs `FOUND`, return `clean`/`infected`.

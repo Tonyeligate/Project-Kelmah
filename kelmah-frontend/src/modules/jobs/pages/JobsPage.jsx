@@ -106,6 +106,7 @@ import {
   Switch,
   FormControlLabel,
   Tooltip,
+  ButtonBase,
   LinearProgress,
   Autocomplete,
   InputAdornment,
@@ -189,6 +190,7 @@ import {
   createFeatureLogger,
   devError,
 } from '@/modules/common/utils/devLogger';
+import { formatGhanaCurrency } from '@/utils/formatters';
 import BreadcrumbNavigation from '../../../components/common/BreadcrumbNavigation';
 import PullToRefresh from '../../../components/common/PullToRefresh';
 import usePrefersReducedMotion from '../../../hooks/usePrefersReducedMotion';
@@ -558,7 +560,7 @@ function JobsResultsHeader({
         <Typography variant="h5" sx={{ color: 'var(--k-gold)', fontWeight: 'bold', mb: 1 }}>
           {selectedCategory ? `${selectedCategory} Jobs` : 'Featured Opportunities'}
         </Typography>
-        <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1.25 }}>
+        <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1.25, display: { xs: 'none', md: 'block' } }}>
           Sorted by {SORT_LABELS[sortBy] || SORT_LABELS.relevance}. Compare jobs quickly using budget, payment type, and applicant count on each card.
         </Typography>
         {hasActiveFilters && (
@@ -566,7 +568,7 @@ function JobsResultsHeader({
             <Typography variant="body2" sx={{ color: 'text.secondary' }}>
               Active filters:
             </Typography>
-            <Typography variant="caption" sx={{ color: 'text.secondary', width: '100%', lineHeight: 1.4 }}>
+            <Typography variant="caption" sx={{ color: 'text.secondary', width: '100%', lineHeight: 1.4, display: { xs: 'none', md: 'block' } }}>
               Remove a chip to widen results, or clear everything if the list feels too narrow.
             </Typography>
             {effectiveSearch && (
@@ -607,7 +609,7 @@ function JobsResultsHeader({
             )}
             {budgetFilterActive && (
               <Chip
-                label={`Budget: GH₵ ${budgetRange[0].toLocaleString()} – ${budgetRange[1].toLocaleString()}`}
+                label={`Budget: ${formatGhanaCurrency(budgetRange[0])} – ${formatGhanaCurrency(budgetRange[1])}`}
                 size="small"
                 onDelete={onClearBudget}
                 sx={{
@@ -932,12 +934,23 @@ function JobsFiltersPanel({
 }) {
   if (isMobile) {
     return (
-      <>
+      <Box
+        sx={{
+          position: 'sticky',
+          top: { xs: 68, sm: 72 },
+          zIndex: 11,
+          pb: 0.25,
+          pt: 0.25,
+          bgcolor: 'background.default',
+        }}
+      >
         <JobsCompactSearchBar
           searchValue={searchQuery}
           onSearchChange={onSearchInputChange}
           onSearchSubmit={onSearchSubmit}
           onFilterClick={onOpenMobileFilters}
+          activeFilterCount={activeFilterCount}
+          sortLabel={SORT_LABELS[sortBy] || SORT_LABELS.relevance}
           placeholder={isSmallMobile ? 'Search jobs...' : 'Search jobs, skills...'}
         />
         <JobsMobileFilterDrawer
@@ -953,7 +966,7 @@ function JobsFiltersPanel({
           tradeCategories={tradeCategoriesData}
           locations={ghanaLocations}
         />
-      </>
+      </Box>
     );
   }
 
@@ -978,17 +991,21 @@ function JobsFiltersPanel({
           margin: 0,
         }}
       >
-        <Grid item xs={12} sm={5}>
+        <Grid
+          item
+          xs={12}
+          sm={5}
+          component="form"
+          onSubmit={(e) => {
+            e.preventDefault();
+            onSearchSubmit();
+          }}
+        >
           <TextField
             fullWidth
             size="small"
             value={searchQuery}
             onChange={(e) => onSearchInputChange(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                onSearchSubmit();
-              }
-            }}
             placeholder={
               isSmallMobile
                 ? 'Search jobs...'
@@ -1258,7 +1275,7 @@ function JobsFiltersPanel({
             <Grid item xs={12} md={6}>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
                 <Typography variant="body2" sx={{ color: 'var(--k-gold)', fontWeight: 'bold' }}>
-                  Budget Range (GH₵)
+                  Budget Range
                 </Typography>
                 <FormControlLabel
                   control={
@@ -1280,7 +1297,7 @@ function JobsFiltersPanel({
                 value={budgetRange}
                 onChange={(e, newValue) => onBudgetRangeChange(newValue)}
                 valueLabelDisplay="auto"
-                valueLabelFormat={(v) => `GH₵ ${v.toLocaleString()}`}
+                valueLabelFormat={(v) => formatGhanaCurrency(v)}
                 min={0}
                 max={100000}
                 step={500}
@@ -1310,10 +1327,10 @@ function JobsFiltersPanel({
               />
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.5 }}>
                 <Typography variant="caption" sx={{ color: 'var(--k-text-secondary)' }}>
-                  GH₵ {budgetRange[0].toLocaleString()}
+                  {formatGhanaCurrency(budgetRange[0])}
                 </Typography>
                 <Typography variant="caption" sx={{ color: 'var(--k-text-secondary)' }}>
-                  GH₵ {budgetRange[1].toLocaleString()}+
+                  {formatGhanaCurrency(budgetRange[1])}+
                 </Typography>
               </Box>
             </Grid>
@@ -1401,7 +1418,53 @@ function JobsCategoryBrowseGrid({
   categoryData,
   selectedCategory,
   onSelectCategory,
+  isMobile,
 }) {
+  if (isMobile) {
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          gap: 0.75,
+          overflowX: 'auto',
+          py: 0.25,
+          px: 0.25,
+          scrollbarWidth: 'none',
+          '&::-webkit-scrollbar': { display: 'none' },
+        }}
+      >
+        {categoryData.map((cat) => {
+          const isActive = selectedCategory === cat.name;
+          return (
+            <Chip
+              key={cat.name}
+              clickable
+              onClick={() => onSelectCategory(isActive ? '' : cat.name)}
+              icon={cat.icon}
+              label={cat.name}
+              sx={{
+                borderRadius: 999,
+                border: isActive ? '1px solid var(--k-gold)' : '1px solid var(--k-accent-border)',
+                bgcolor: isActive ? 'var(--k-accent-soft)' : 'var(--k-bg-surface)',
+                color: isActive ? 'var(--k-gold)' : 'var(--k-text-secondary)',
+                height: 34,
+                whiteSpace: 'nowrap',
+                '& .MuiChip-icon': {
+                  color: isActive ? 'var(--k-gold)' : cat.color,
+                },
+                '& .MuiChip-label': {
+                  px: 0.9,
+                  fontSize: '0.75rem',
+                  fontWeight: 700,
+                },
+              }}
+            />
+          );
+        })}
+      </Box>
+    );
+  }
+
   return (
     <Grid container spacing={{ xs: 1, sm: 1.5 }}>
       {categoryData.map((cat) => {
@@ -1409,17 +1472,10 @@ function JobsCategoryBrowseGrid({
         return (
           <Grid item xs={3} sm={3} md={1.5} key={cat.name}>
             <Paper
+                component={ButtonBase}
               onClick={() => onSelectCategory(isActive ? '' : cat.name)}
-              role="button"
-              tabIndex={0}
               aria-label={`Browse ${cat.name} jobs`}
               aria-pressed={isActive}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  onSelectCategory(isActive ? '' : cat.name);
-                }
-              }}
               sx={{
                 p: { xs: 1.5, sm: 2 },
                 textAlign: 'center',
@@ -1969,7 +2025,17 @@ const JobsPage = () => {
   return (
     <ErrorBoundary>
       <PullToRefresh onRefresh={retryJobsFetch}>
-      <Box sx={{ bgcolor: 'background.default', minHeight: '100vh', color: 'text.primary' }}>
+      <Box
+        sx={{
+          minHeight: '100vh',
+          color: 'text.primary',
+          backgroundColor: 'background.default',
+          backgroundImage:
+            theme.palette.mode === 'dark'
+              ? 'radial-gradient(circle at 10% 0%, rgba(255,215,0,0.12) 0%, transparent 28%), radial-gradient(circle at 88% 8%, rgba(255,215,0,0.06) 0%, transparent 22%)'
+              : 'linear-gradient(180deg, rgba(249,247,237,0.98) 0%, rgba(255,255,255,0.96) 100%)',
+        }}
+      >
         {/* Breadcrumb Navigation */}
         <BreadcrumbNavigation />
 
@@ -1999,9 +2065,9 @@ const JobsPage = () => {
               }}
             >
               {/* Mobile-optimized hero section */}
-              <Grid container spacing={{ xs: 2, md: 3 }} alignItems="center">
+              <Grid container spacing={{ xs: 1.25, md: 3 }} alignItems="center">
                 {/* Left Side - Hero Text */}
-                <Grid item xs={12} md={4}>
+                <Grid item xs={12} md={4} sx={{ display: { xs: 'none', md: 'block' } }}>
                   <Box
                     sx={{
                       textAlign: { xs: 'center', md: 'left' },
@@ -2029,9 +2095,7 @@ const JobsPage = () => {
                         wordWrap: 'break-word', // ✓ Prevent text overflow
                       }}
                     >
-                      {isSmallMobile
-                        ? 'Find Trade Jobs'
-                        : 'Find Your Next Trade Opportunity'}
+                      Find Your Next Trade Opportunity
                     </Typography>
                     <Typography
                       variant="h6"
@@ -2043,9 +2107,7 @@ const JobsPage = () => {
                         wordWrap: 'break-word', // ✓ Prevent overflow
                       }}
                     >
-                      {isSmallMobile
-                        ? 'Connect with top employers in Ghana'
-                        : "Connect with Ghana's top employers and advance your skilled trades career"}
+                      {"Connect with Ghana's top employers and advance your skilled trades career"}
                     </Typography>
                   </Box>
                 </Grid>
@@ -2110,6 +2172,7 @@ const JobsPage = () => {
                 categoryData={categoryData}
                 selectedCategory={selectedCategory}
                 onSelectCategory={handleBrowseCategorySelect}
+                isMobile={isMobile}
               />
             </Box>
           </motion.div>
@@ -2215,6 +2278,7 @@ const JobsPage = () => {
                 mt: { xs: 6, md: 8 }, // ✓ Reduced top margin on mobile
                 mb: { xs: 4, md: 6 }, // ✓ Reduced bottom margin on mobile
                 px: { xs: 1, sm: 0 }, // ✓ Add horizontal padding on mobile
+                display: { xs: 'none', md: 'block' },
               }}
             >
               <Typography
@@ -2298,6 +2362,7 @@ const JobsPage = () => {
                 mt: { xs: 3, md: 4 }, // ✓ Reduced mobile margin
                 p: { xs: 2.5, sm: 3, md: 4 }, // ✓ Responsive padding
                 mx: { xs: 1, sm: 0 }, // ✓ Mobile horizontal spacing
+                display: { xs: 'none', md: 'block' },
                 textAlign: 'center',
                 bgcolor: 'var(--k-accent-soft)',
                 border: '1px solid var(--k-accent-border-strong)',
