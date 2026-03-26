@@ -175,18 +175,12 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   overflow-y: auto; /* Enable vertical scrolling */
-  font-family: 'Inter', 'Manrope', sans-serif;
+  font-family: 'Inter', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif;
   line-height: 1.6;
-  color: var(--k-text-primary);
   /* Theme colors will be applied via Material-UI */
   /* Ensure full width utilization across all zoom levels */
   width: 100%;
   max-width: 100vw;
-  background:
-    radial-gradient(circle at 12% 0%, rgba(255, 215, 0, 0.12), transparent 26%),
-    radial-gradient(circle at 88% 10%, rgba(255, 215, 0, 0.06), transparent 24%),
-    linear-gradient(180deg, #050507 0%, #090a0f 42%, #050507 100%);
-  background-attachment: fixed;
   
   /* ✅ MOBILE SCROLL PERFORMANCE OPTIMIZATIONS */
   -webkit-overflow-scrolling: touch; /* iOS momentum scrolling */
@@ -240,7 +234,7 @@ h6 {
   margin: 0;
   font-weight: 600;
   line-height: var(--k-line-heading);
-  font-family: 'Montserrat', 'Manrope', sans-serif;
+  font-family: 'Montserrat', sans-serif;
 }
 
 p {

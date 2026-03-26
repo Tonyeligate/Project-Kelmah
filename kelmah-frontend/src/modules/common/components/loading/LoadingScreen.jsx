@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Paper, Skeleton, Stack, Typography, useTheme } from '@mui/material';
-import { alpha } from '@mui/material/styles';
+import { Box, Skeleton, useTheme } from '@mui/material';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 
 /**
@@ -41,77 +40,45 @@ const LoadingScreen = ({ isLoading = true, message }) => {
       aria-busy="true"
       aria-label={message || 'Loading content'}
       sx={{
-        p: { xs: 1.5, sm: 3 },
-        maxWidth: 1440,
+        p: { xs: 2, sm: 3 },
+        maxWidth: 1200,
         mx: 'auto',
         minHeight: '100vh',
         bgcolor: 'background.default',
         contain: 'layout paint',
-        backgroundImage:
-          theme.palette.mode === 'dark'
-            ? `radial-gradient(circle at 12% 0%, ${alpha(theme.palette.secondary.main, 0.14)} 0%, transparent 28%), radial-gradient(circle at 90% 10%, ${alpha(theme.palette.info.main, 0.08)} 0%, transparent 24%)`
-            : `radial-gradient(circle at 12% 0%, ${alpha(theme.palette.secondary.main, 0.1)} 0%, transparent 28%), linear-gradient(180deg, ${alpha(theme.palette.background.default, 0.98)} 0%, ${theme.palette.background.default} 100%)`,
       }}
     >
       {/* Screen-reader text */}
       <Box sx={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)' }}>
         {message || 'Loading content, please wait...'}
       </Box>
-      <Paper
-        elevation={0}
-        sx={{
-          p: { xs: 2, sm: 3 },
-          borderRadius: 5,
-          border: '1px solid',
-          borderColor: alpha(theme.palette.secondary.main, 0.18),
-          background:
-            theme.palette.mode === 'dark'
-              ? 'linear-gradient(160deg, rgba(14,15,20,0.98) 0%, rgba(21,23,34,0.96) 100%)'
-              : 'linear-gradient(160deg, rgba(255,255,255,0.98) 0%, rgba(244,239,227,0.96) 100%)',
-          boxShadow: theme.palette.mode === 'dark'
-            ? '0 28px 70px rgba(0,0,0,0.42)'
-            : '0 20px 52px rgba(15,15,23,0.10)',
-        }}
-      >
-        <Stack spacing={2.5}>
-          <Box>
-            <Typography variant="h6" sx={{ fontWeight: 800, mb: 0.5 }}>
-              Loading your workspace
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {message || 'Preparing your dashboard, cards, and actions...'}
-            </Typography>
+      {/* Header skeleton */}
+      <Skeleton animation={skeletonAnimation} variant="rectangular" height={isMobile ? 56 : 64} sx={{ borderRadius: 1, mb: 3 }} />
+
+      {/* Content area */}
+      <Box sx={{ display: 'flex', gap: 3, flexDirection: { xs: 'column', md: 'row' } }}>
+        {/* Sidebar skeleton (desktop) */}
+        {!isMobile && (
+          <Box sx={{ width: 260, flexShrink: 0 }}>
+            <Skeleton animation={skeletonAnimation} variant="rectangular" height={200} sx={{ borderRadius: 2, mb: 2 }} />
+            <Skeleton animation={skeletonAnimation} variant="rectangular" height={120} sx={{ borderRadius: 2 }} />
           </Box>
+        )}
 
-          {/* Header skeleton */}
-          <Skeleton animation={skeletonAnimation} variant="rectangular" height={isMobile ? 56 : 64} sx={{ borderRadius: 2 }} />
-
-          {/* Content area */}
-          <Box sx={{ display: 'flex', gap: 3, flexDirection: { xs: 'column', md: 'row' } }}>
-            {/* Sidebar skeleton (desktop) */}
-            {!isMobile && (
-              <Box sx={{ width: 260, flexShrink: 0 }}>
-                <Skeleton animation={skeletonAnimation} variant="rectangular" height={200} sx={{ borderRadius: 3, mb: 2 }} />
-                <Skeleton animation={skeletonAnimation} variant="rectangular" height={120} sx={{ borderRadius: 3 }} />
-              </Box>
-            )}
-
-            {/* Main content skeletons */}
-            <Box sx={{ flex: 1 }}>
-              <Skeleton animation={skeletonAnimation} variant="rectangular" height={isMobile ? 44 : 52} sx={{ borderRadius: 2, mb: 2 }} />
-              {[1, 2, 3].map((i) => (
-                <Skeleton
-                  key={`loading-content-skeleton-${i}`}
-                  animation={skeletonAnimation}
-                  variant="rectangular"
-                  height={isMobile ? 100 : 140}
-                  sx={{ borderRadius: 3, mb: 2 }}
-                />
-              ))}
-            </Box>
-          </Box>
-        </Stack>
-      </Paper>
+        {/* Main content skeletons */}
+        <Box sx={{ flex: 1 }}>
+          <Skeleton animation={skeletonAnimation} variant="rectangular" height={isMobile ? 44 : 52} sx={{ borderRadius: 1, mb: 2 }} />
+          {[1, 2, 3].map((i) => (
+            <Skeleton
+              key={`loading-content-skeleton-${i}`}
+              animation={skeletonAnimation}
+              variant="rectangular"
+              height={isMobile ? 100 : 140}
+              sx={{ borderRadius: 2, mb: 2 }}
+            />
+          ))}
+        </Box>
+      </Box>
     </Box>
   );
 };

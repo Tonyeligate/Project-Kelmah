@@ -160,12 +160,8 @@ const Footer = () => {
       <Box
         sx={{
           py: { xs: 2.5, md: 6 },
-          bgcolor:
-            theme.palette.mode === 'dark'
-              ? 'rgba(5, 5, 7, 0.98)'
-              : 'rgba(255, 255, 255, 0.94)',
-          borderTop: `1px solid ${alpha(theme.palette.secondary.main, theme.palette.mode === 'dark' ? 0.22 : 0.12)}`,
-          backdropFilter: 'blur(16px)',
+          bgcolor: theme.palette.mode === 'dark' ? '#0A0B10' : '#1a1a2e',
+          borderTop: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
         }}
       >
         <Container maxWidth="lg">
@@ -183,7 +179,7 @@ const Footer = () => {
                   variant="h6"
                   sx={{
                     fontWeight: 800,
-                    color: theme.palette.secondary.main,
+                    color: theme.palette.primary.main,
                     fontFamily: '"Montserrat", sans-serif',
                   }}
                 >
@@ -200,10 +196,7 @@ const Footer = () => {
                       sx={{
                         width: 44,
                         height: 44,
-                        bgcolor:
-                          theme.palette.mode === 'dark'
-                            ? 'rgba(255,255,255,0.05)'
-                            : 'rgba(17, 17, 17, 0.04)',
+                        bgcolor: 'rgba(255,255,255,0.06)',
                         color: footerTextStrong,
                         p: 1,
                         '&:focus-visible': {
@@ -238,7 +231,7 @@ const Footer = () => {
                     component={RouterLink}
                     to={link.href}
                     sx={{
-                        color: footerTextMedium,
+                      color: footerTextMedium,
                       textDecoration: 'none',
                       fontSize: '0.8rem',
                       '&:hover': { color: theme.palette.primary.main },
@@ -263,7 +256,7 @@ const Footer = () => {
                     variant="h5"
                     sx={{
                       fontWeight: 800,
-                      color: theme.palette.secondary.main,
+                      color: theme.palette.primary.main,
                       fontFamily: '"Montserrat", sans-serif',
                     }}
                   >

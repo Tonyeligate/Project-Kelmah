@@ -27,11 +27,6 @@
     1440
   ],
   "accessibilityEdgeCasesTested": 48,
-  "binanceBenchmark": {
-    "densityEfficiencyScore": 88,
-    "scanabilityParityScore": 90,
-    "primaryActionParityScore": 88
-  },
   "selectedLayout": {
     "id": "L-OPT-07",
     "reason": "best utility across readability, accessibility, and task-success metrics"

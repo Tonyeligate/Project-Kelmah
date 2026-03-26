@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Box, Fade, Typography, useTheme, useMediaQuery, alpha } from '@mui/material';
+import { Box, Fade, Typography, useTheme, useMediaQuery } from '@mui/material';
 import { useLocation, Outlet } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
@@ -203,39 +203,6 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
     </Box>
   );
 
-  const shellBackdropStyles = {
-    position: 'relative',
-    isolation: 'isolate',
-    width: '100%',
-    maxWidth: '1680px',
-    mx: 'auto',
-    backgroundColor: theme.palette.background.default,
-    backgroundImage:
-      theme.palette.mode === 'dark'
-        ? `radial-gradient(circle at 10% 0%, ${alpha(theme.palette.secondary.main, 0.16)} 0%, transparent 28%), radial-gradient(circle at 88% 8%, ${alpha(theme.palette.info.main, 0.09)} 0%, transparent 24%), radial-gradient(circle at 50% 100%, ${alpha(theme.palette.success.main, 0.07)} 0%, transparent 32%)`
-        : `radial-gradient(circle at 10% 0%, ${alpha(theme.palette.secondary.main, 0.12)} 0%, transparent 30%), radial-gradient(circle at 88% 8%, ${alpha(theme.palette.info.main, 0.05)} 0%, transparent 24%), linear-gradient(180deg, ${alpha(theme.palette.background.default, 0.98)} 0%, ${theme.palette.background.default} 100%)`,
-    backgroundSize: '100% 100%, 100% 100%, 100% 100%',
-    backgroundAttachment: 'fixed',
-    '&::before': {
-      content: '""',
-      position: 'absolute',
-      inset: 0,
-      pointerEvents: 'none',
-      backgroundImage:
-        theme.palette.mode === 'dark'
-          ? 'linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)'
-          : 'linear-gradient(rgba(15,15,23,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(15,15,23,0.04) 1px, transparent 1px)',
-      backgroundSize: '96px 96px',
-      opacity: theme.palette.mode === 'dark' ? 0.16 : 0.08,
-      maskImage:
-        'linear-gradient(180deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 65%, transparent 100%)',
-    },
-    '& > *': {
-      position: 'relative',
-      zIndex: 1,
-    },
-  };
-
   // Dashboard layout
   if (isDashboardPage) {
     // ✅ MOBILE-AUDIT FIX: Two-state layout — mobile (<md) and desktop (>=md)
@@ -249,7 +216,7 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
             position: 'relative',
             display: 'flex',
             flexDirection: 'column',
-            ...shellBackdropStyles,
+            bgcolor: theme.palette.background.default,
             overflowX: 'hidden',
           }}
         >
@@ -292,7 +259,7 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
 
     // Desktop (>=md): permanent sidebar + auto-show header
     return (
-      <Box sx={{ display: 'flex', minHeight: '100vh', width: '100%', ...shellBackdropStyles }}>
+      <Box sx={{ display: 'flex', minHeight: '100vh', width: '100%' }}>
           {skipToContentLink}
         <Box component="header">
           <Header
@@ -336,10 +303,8 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
     <Box
       sx={{
         width: '100%',
-        minHeight: '100vh',
         overflowX: 'hidden', // Prevents horizontal scroll only
         overflowY: 'visible', // Let body handle vertical scrolling
-        ...shellBackdropStyles,
       }}
     >
       {skipToContentLink}

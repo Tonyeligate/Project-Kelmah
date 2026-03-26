@@ -322,19 +322,6 @@ function validateLayoutOptimizationReport(obj, errors) {
     errors.push('layout_optimization_report.json: accessibilityEdgeCasesTested must be a non-negative number');
   }
 
-  if (!obj.binanceBenchmark || typeof obj.binanceBenchmark !== 'object') {
-    errors.push('layout_optimization_report.json: binanceBenchmark object is required');
-  } else {
-    ['densityEfficiencyScore', 'scanabilityParityScore', 'primaryActionParityScore'].forEach((field) => {
-      const value = obj.binanceBenchmark[field];
-      if (typeof value !== 'number' || value < 0 || value > 100) {
-        errors.push(`layout_optimization_report.json: binanceBenchmark.${field} must be a number between 0 and 100`);
-      } else if (value < 85) {
-        errors.push(`layout_optimization_report.json: binanceBenchmark.${field} must be >= 85 (received ${value})`);
-      }
-    });
-  }
-
   if (obj.closureVerdict !== 'PASS') {
     errors.push(`layout_optimization_report.json: closureVerdict must be PASS (received '${obj.closureVerdict}')`);
   }
