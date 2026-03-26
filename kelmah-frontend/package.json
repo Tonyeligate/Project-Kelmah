@@ -9,6 +9,9 @@
     "vercel-build": "npm run build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "ui:audit:capture": "node scripts/ui_audit_runner.mjs capture",
+    "ui:audit:baseline": "node scripts/ui_audit_runner.mjs baseline",
+    "ui:audit:compare": "node scripts/ui_audit_runner.mjs compare",
     "lhci:collect": "lhci collect --config lighthouserc.json",
     "lhci:assert": "lhci assert --config lighthouserc.json",
     "lhci": "npm run lhci:collect && npm run lhci:assert"

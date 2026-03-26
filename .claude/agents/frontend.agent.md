@@ -135,6 +135,36 @@ then run it and attach artifacts before declaring completion.
 - Prefer horizontal quick-filter rails and sticky utility controls for small screens.
 - Any frontend output is incomplete unless spacing, structure, and interaction feel close to Binance-level efficiency.
 
+## Product Design Discipline (Mandatory)
+
+- Treat Binance as a structural benchmark, not a color palette or brand style to imitate.
+- Start every UI task by naming the layout thesis: what the user must do first, what must stay visible, and what can collapse.
+- Every screen must declare its zones before implementation: header, utility rail, primary content, secondary content, and sticky actions.
+- Use hierarchy through placement, size, weight, contrast, and density. Do not rely on whitespace alone to imply importance.
+- Prefer dense but readable layouts: every pixel should support scan speed, task completion, or information grouping.
+- Default to compact cards, metric strips, quick filters, and action clusters on marketplace and dashboard surfaces.
+- On mobile, preserve the primary action above the fold and collapse secondary controls into rails, drawers, or accordions with purpose.
+- On desktop, align content to a clean max-width frame with stable gutters and consistent vertical rhythm.
+- Never ship a layout that looks like generic MUI scaffolding, evenly spaced boxes, or a centered admin template.
+- If a page feels too airy, too flat, or too repetitive, it is not finished; tighten hierarchy before adding more content.
+
+### Visual Review Checklist
+
+- Can a user understand the main action within 3 seconds?
+- Is there a clear primary element and at least one secondary support layer?
+- Are section gaps intentional and consistent with the density tier?
+- Are sticky controls used when filters, search, or sorting drive the workflow?
+- Does the mobile version compress information without losing the task path?
+- Does the desktop version add structure instead of just more empty space?
+
+### Anti-Targets
+
+- Avoid default-looking MUI layouts with equal-weight containers and no dominant focal point.
+- Avoid oversized hero sections that push utility controls below the fold.
+- Avoid random padding changes that break rhythm across breakpoints.
+- Avoid buttons, chips, and cards that float without a shared alignment system.
+- Avoid visually dense pages that still fail to create scanable groups or clear action order.
+
 ---
 
 ## 🧬 QUANTUM COGNITIVE LAYER (Frontend-Specialized)

@@ -1,3 +1,69 @@
+### Session: Frontend Agent Prompt Hardening March 26 2026 ✅ IN PROGRESS
+
+**Date**: March 26, 2026  
+**Scope**: Tighten the frontend agent prompt so UI/UX work follows a stronger product-design model instead of generic implementation patterns.
+
+**Files currently in scope**
+- .claude/agents/frontend.agent.md
+- spec-kit/STATUS_LOG.md
+
+**Current status**
+- Identified the need for more explicit layout-thesis, density, hierarchy, and anti-pattern guidance in the frontend agent prompt.
+- Updating the prompt now so future UI tasks are judged against concrete composition rules, not just breakpoint checks.
+
+### Session: Frontend Audit and Build Repair March 26 2026 ✅ COMPLETED
+
+**Date**: March 26, 2026  
+**Scope**: Audit the frontend for mobile/desktop UX issues, reproduce the reported build failure, and apply focused fixes.
+
+**Files currently in scope**
+- kelmah-frontend/src/pages/HomeLanding.jsx
+- kelmah-frontend/src/modules/layout/components/Layout.jsx
+- kelmah-frontend/src/modules/layout/components/Header.jsx
+- kelmah-frontend/src/modules/layout/components/sidebar/Sidebar.jsx
+- kelmah-frontend/src/modules/layout/components/MobileBottomNav.jsx
+- kelmah-frontend/src/modules/search/pages/SearchPage.jsx
+- kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx
+- kelmah-frontend/src/theme/JobSystemTheme.js
+
+**Current status**
+- Rebuilt the broken messaging page into a clean mobile-first chat experience.
+- Restored the shared `PageCanvas` wrapper used by many route pages.
+- Verified the frontend production build now completes successfully.
+
+**Files updated during this session**
+- kelmah-frontend/src/pages/HomeLanding.jsx
+- kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx
+- kelmah-frontend/src/modules/common/components/PageCanvas.jsx
+- spec-kit/STATUS_LOG.md
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend`
+
+### Session: Playwright UI Audit Runner and Visual Diff Gate March 26 2026 ✅ COMPLETED
+
+**Date**: March 26, 2026  
+**Scope**: Add executable UI evidence tooling that captures required breakpoint screenshots and enforces baseline visual diff failure gates per task id.
+
+**Files touched**
+- kelmah-frontend/scripts/ui_audit_runner.mjs
+- kelmah-frontend/package.json
+- package.json
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Added a reusable Playwright UI audit runner with three modes: `capture`, `baseline`, and `compare`.
+- Added automatic breakpoint capture for 320/768/1024/1440 and artifact output under `.artifacts/ui/<task-id>/`.
+- Added machine-readable outputs per run: `capture-report.json`, `scorecard.json`, and `issues.json`.
+- Added baseline management under `.artifacts/ui/baselines/<baseline-id>/manifest.json`.
+- Added deterministic visual regression checking that writes diff images and exits non-zero when mismatch exceeds threshold.
+- Added npm command wrappers in both frontend and root package scripts.
+
+**Verification**
+- PASS: `npm run ui:audit:baseline -- --task-id ui-audit-example-baseline --baseline-id example-home --base-url https://example.com --route /`
+- PASS: `npm run ui:audit:compare -- --task-id ui-audit-example-compare --baseline-id example-home --base-url https://example.com --route /`
+- PASS (expected block): `npm run ui:audit:compare -- --task-id ui-audit-example-regression --baseline-id example-home --base-url https://www.wikipedia.org --route /` returned non-zero with 100% mismatch at all breakpoints.
+
 ### Session: Source-Only Mojibake Sweep and Cleanup Tool Hardening March 25 2026 ✅ COMPLETED
 
 **Date**: March 25, 2026  

@@ -863,7 +863,6 @@ const HomeLanding = () => {
               </Box>
             </Grid>
           </Grid>
-          </Grid>
         </Container>
       </Box>
 
