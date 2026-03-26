@@ -98,6 +98,7 @@ const HirerDashboardPage = () => {
   const storeError = useSelector(selectHirerError('profile'));
   const jobsError = useSelector(selectHirerError('jobs'));
   const isMobile = useBreakpointDown('md');
+  const isCompactMobile = useBreakpointDown('sm');
 
   // Fetch hirer data on component mount
   const clearLoadingTimeout = useCallback(() => {
@@ -1095,7 +1096,7 @@ const HirerDashboardPage = () => {
   }
 
   return (
-    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
+    <PageCanvas disableContainer sx={{ pt: { xs: 1, md: 4 }, pb: { xs: 10, md: 6 }, overflowX: 'clip' }}>
     <PullToRefresh onRefresh={() => fetchDashboardData('manual-refresh')}>
     <Grow in timeout={500}>
       <Box>
@@ -1153,9 +1154,11 @@ const HirerDashboardPage = () => {
         <Container
           maxWidth="xl"
           sx={{
-            py: 4,
-            px: { xs: 2, sm: 3, md: 4 },
+            py: { xs: 2, md: 4 },
+            px: { xs: 0.75, sm: 3, md: 4 },
             color: 'text.primary',
+            width: '100%',
+            minWidth: 0,
           }}
         >
           {error && (
@@ -1173,6 +1176,7 @@ const HirerDashboardPage = () => {
         <SpeedDial
           ariaLabel="Quick Actions"
           sx={{
+            display: { xs: 'none', sm: 'flex' },
             position: 'fixed',
             bottom: {
               xs: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px) + 12px)`,
@@ -1204,6 +1208,45 @@ const HirerDashboardPage = () => {
             onClick={() => navigate('/hirer/payments')}
           />
         </SpeedDial>
+
+        <Paper
+          elevation={8}
+          sx={(theme) => ({
+            display: { xs: 'flex', sm: 'none' },
+            position: 'fixed',
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: theme.zIndex.appBar + 2,
+            px: 1,
+            py: 1,
+            gap: 1,
+            borderTop: `1px solid ${theme.palette.divider}`,
+            backgroundColor: theme.palette.background.paper,
+          })}
+        >
+          <Button
+            fullWidth
+            variant="outlined"
+            color="secondary"
+            sx={{ minHeight: 42 }}
+            startIcon={<RefreshIcon />}
+            onClick={handleRefresh}
+            disabled={refreshing}
+          >
+            Refresh
+          </Button>
+          <Button
+            fullWidth
+            variant="contained"
+            color="secondary"
+            sx={{ minHeight: 42, boxShadow: '0 2px 8px rgba(255,215,0,0.35)' }}
+            startIcon={<PostAddIcon />}
+            onClick={() => navigate('/hirer/jobs/post')}
+          >
+            Post Job
+          </Button>
+        </Paper>
       </Box>
     </Grow>
   </PullToRefresh>

@@ -760,20 +760,22 @@ const SchedulingPage = ({
     : [];
 
   return (
-    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 3, md: 5 } }}>
-      <Container maxWidth="md" sx={{ py: 0 }}>
+    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 3, md: 5 }, overflowX: 'clip' }}>
+      <Container maxWidth="md" sx={{ py: 0, width: '100%', minWidth: 0 }}>
         <Helmet><title>Schedule | Kelmah</title></Helmet>
         {/* Page Header */}
         <Box
-        sx={{
+          sx={{
           display: 'flex',
           flexDirection: { xs: 'column', md: 'row' },
           alignItems: { xs: 'stretch', md: 'center' },
           justifyContent: 'space-between',
           gap: 2,
           mb: 3,
+          width: '100%',
+          minWidth: 0,
         }}
-      >
+        >
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <CalendarTodayIcon
             sx={{ fontSize: 36, mr: 1.5, color: 'primary.main' }}

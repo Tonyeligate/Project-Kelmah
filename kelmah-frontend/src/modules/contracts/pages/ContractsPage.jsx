@@ -178,18 +178,18 @@ const ContractsPage = () => {
   );
 
   return (
-    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
-    <Box sx={{ p: { xs: 2, md: 4 } }}>
+    <PageCanvas disableContainer sx={{ pt: { xs: 1, md: 4 }, pb: { xs: 10, md: 6 }, overflowX: 'clip' }}>
+      <Box sx={{ p: { xs: 1, md: 4 }, width: '100%', minWidth: 0, maxWidth: 1440, mx: 'auto' }}>
       <Helmet><title>Contracts | Kelmah</title></Helmet>
       <Stack
         direction={{ xs: 'column', md: 'row' }}
         spacing={2}
         alignItems={{ md: 'center' }}
         justifyContent="space-between"
-        sx={{ mb: 3 }}
+        sx={{ mb: 2, position: { xs: 'sticky', md: 'static' }, top: { xs: 56, md: 'auto' }, zIndex: { xs: 10, md: 'auto' }, py: { xs: 0.5, md: 0 }, backgroundColor: { xs: 'background.default', md: 'transparent' } }}
       >
         <Box>
-          <Typography variant="h4" sx={{ fontWeight: 700 }}>
+          <Typography variant={isMobile ? 'h5' : 'h4'} sx={{ fontWeight: 700, lineHeight: 1.1 }}>
             {canCreateContract ? 'Contracts Overview' : 'My Contracts'}
           </Typography>
           <Typography variant="body2" color="text.secondary">
@@ -199,7 +199,7 @@ const ContractsPage = () => {
             {user?.profile?.name ? `, ${user.profile.name}` : ''}.
           </Typography>
         </Box>
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ width: { xs: '100%', sm: 'auto' } }}>
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ width: { xs: '100%', sm: 'auto' }, display: { xs: 'none', sm: 'flex' } }}>
           <Button
             variant="contained"
             color="primary"
@@ -225,7 +225,7 @@ const ContractsPage = () => {
         </Stack>
       </Stack>
 
-      <Paper sx={{ p: 2, mb: 3 }}>
+      <Paper sx={{ p: { xs: 1.5, sm: 2 }, mb: 2 }}>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 1.25 }}>
           Use search, status, and sort to quickly find the right contract.
         </Typography>
@@ -429,7 +429,58 @@ const ContractsPage = () => {
           </Grid>
         )}
       </Grid>}
-    </Box>
+
+      <Paper
+        elevation={8}
+        sx={(theme) => ({
+          display: { xs: 'flex', sm: 'none' },
+          position: 'fixed',
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: theme.zIndex.appBar + 2,
+          px: 1,
+          py: 1,
+          gap: 1,
+          borderTop: `1px solid ${theme.palette.divider}`,
+          backgroundColor: theme.palette.background.paper,
+        })}
+      >
+        <Button
+          fullWidth
+          variant="outlined"
+          color="secondary"
+          sx={{ minHeight: 42 }}
+          startIcon={<RefreshIcon />}
+          onClick={refreshContracts}
+          disabled={isRefreshing}
+        >
+          Refresh
+        </Button>
+        {canCreateContract ? (
+          <Button
+            fullWidth
+            variant="contained"
+            color="secondary"
+            sx={{ minHeight: 42, boxShadow: '0 2px 8px rgba(255,215,0,0.35)' }}
+            component={RouterLink}
+            to="/contracts/create"
+          >
+            New Contract
+          </Button>
+        ) : (
+          <Button
+            fullWidth
+            variant="contained"
+            color="secondary"
+            sx={{ minHeight: 42, boxShadow: '0 2px 8px rgba(255,215,0,0.35)' }}
+            onClick={() => navigate('/jobs')}
+          >
+            Browse Jobs
+          </Button>
+        )}
+      </Paper>
+      </Box>
     </PageCanvas>
   );
 };

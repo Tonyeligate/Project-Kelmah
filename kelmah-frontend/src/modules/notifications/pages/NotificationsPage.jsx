@@ -314,12 +314,12 @@ const NotificationsPage = () => {
     });
 
   return (
-    <PageCanvas disableContainer sx={{ pt: { xs: 1, md: 4 }, pb: { xs: 10, md: 5 } }}>
-      <Container maxWidth="md" sx={{ py: { xs: 0, md: 0 }, px: { xs: 0.75, sm: 2 }, pb: { xs: 'calc(72px + env(safe-area-inset-bottom, 0px))', md: 0 } }}>
+    <PageCanvas disableContainer sx={{ pt: { xs: 1, md: 4 }, pb: { xs: 10, md: 5 }, overflowX: 'clip' }}>
+      <Container maxWidth="md" sx={{ py: { xs: 0, md: 0 }, px: { xs: 0.75, sm: 2 }, pb: { xs: 'calc(72px + env(safe-area-inset-bottom, 0px))', md: 0 }, width: '100%', minWidth: 0 }}>
         <Helmet><title>Notifications | Kelmah</title></Helmet>
         {/* Header - stacks vertically on mobile */}
         <Box
-        sx={{
+          sx={{
           display: 'flex',
           flexDirection: { xs: 'column', sm: 'row' },
           justifyContent: 'space-between',
@@ -331,9 +331,10 @@ const NotificationsPage = () => {
           zIndex: { xs: 10, sm: 'auto' },
           py: { xs: 0.5, sm: 0 },
           backgroundColor: { xs: 'background.default', sm: 'transparent' },
+          minWidth: 0,
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', minWidth: 0 }}>
           <NotificationsIcon
             sx={{ fontSize: { xs: 28, md: 36 }, mr: 1, color: 'secondary.main' }}
           />

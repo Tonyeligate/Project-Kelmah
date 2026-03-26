@@ -842,8 +842,8 @@ const PaymentCenterPage = () => {
     );
 
   return (
-    <PageCanvas disableContainer sx={{ pt: { xs: 1, md: 4 }, pb: { xs: 10, md: 6 } }}>
-      <Container maxWidth="xl" sx={{ py: { xs: 1, md: 4 }, px: { xs: 0.75, sm: 2 } }}>
+    <PageCanvas disableContainer sx={{ pt: { xs: 1, md: 4 }, pb: { xs: 10, md: 6 }, overflowX: 'clip' }}>
+      <Container maxWidth="xl" sx={{ py: { xs: 1, md: 4 }, px: { xs: 0.75, sm: 2 }, width: '100%', minWidth: 0 }}>
       <Helmet><title>Payment Center | Kelmah</title></Helmet>
       <Box
         sx={{

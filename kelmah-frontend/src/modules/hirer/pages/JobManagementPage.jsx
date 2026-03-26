@@ -123,6 +123,7 @@ const JobManagementPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const isMobile = useBreakpointDown('md');
+  const isCompactMobile = useBreakpointDown('sm');
 
   const emptyStatusCounts = useMemo(() => ({
     open: 0,
@@ -444,7 +445,7 @@ const JobManagementPage = () => {
 
   return (
     <PageCanvas disableContainer>
-      <Box sx={{ pb: { xs: 2, md: 4 }, pt: { xs: 1, md: 2 } }}>
+      <Box sx={{ pb: { xs: 10, md: 4 }, pt: { xs: 1, md: 2 } }}>
       <Helmet>
         <title>Manage Jobs | Kelmah</title>
       </Helmet>
@@ -486,12 +487,17 @@ const JobManagementPage = () => {
             alignItems: 'center',
             flexWrap: 'wrap',
             gap: 1,
+            position: { xs: 'sticky', md: 'static' },
+            top: { xs: 56, md: 'auto' },
+            zIndex: { xs: 11, md: 'auto' },
+            py: { xs: 0.5, md: 0 },
+            backgroundColor: { xs: 'background.default', md: 'transparent' },
           }}
         >
           <Typography 
-            variant={isMobile ? 'h5' : 'h4'} 
+            variant={isCompactMobile ? 'h5' : isMobile ? 'h5' : 'h4'} 
             fontWeight="bold"
-            sx={{ mb: 0 }}
+            sx={{ mb: 0, lineHeight: 1.1 }}
           >
             {isMobile ? 'My Jobs' : 'Job Management'}
           </Typography>
@@ -503,6 +509,7 @@ const JobManagementPage = () => {
             onClick={handleCreateJob}
             size={isMobile ? 'small' : 'medium'}
             sx={{ 
+              display: { xs: 'none', sm: 'inline-flex' },
               minWidth: isMobile ? 'auto' : undefined,
               px: isMobile ? 2 : 3,
             }}>
@@ -1055,6 +1062,45 @@ const JobManagementPage = () => {
           </Alert>
         </Snackbar>
       )}
+
+      <Paper
+        elevation={8}
+        sx={(theme) => ({
+          display: { xs: 'flex', sm: 'none' },
+          position: 'fixed',
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: theme.zIndex.appBar + 2,
+          px: 1,
+          py: 1,
+          gap: 1,
+          borderTop: `1px solid ${theme.palette.divider}`,
+          backgroundColor: theme.palette.background.paper,
+        })}
+      >
+        <Button
+          fullWidth
+          variant="outlined"
+          color="secondary"
+          sx={{ minHeight: 42 }}
+          startIcon={<RefreshIcon />}
+          onClick={handleRefresh}
+          disabled={loading}
+        >
+          Refresh
+        </Button>
+        <Button
+          fullWidth
+          variant="contained"
+          color="secondary"
+          sx={{ minHeight: 42, boxShadow: '0 2px 8px rgba(255,215,0,0.35)' }}
+          startIcon={<AddIcon />}
+          onClick={handleCreateJob}
+        >
+          New Job
+        </Button>
+      </Paper>
       </Box>
     </PageCanvas>
   );

@@ -4,8 +4,8 @@ import { Helmet } from 'react-helmet-async';
 import PageCanvas from '../../common/components/PageCanvas';
 
 const ProfilePage = () => (
-  <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 2, md: 4 } }}>
-    <Container maxWidth="md" sx={{ py: 6 }}>
+  <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 2, md: 4 }, overflowX: 'clip' }}>
+    <Container maxWidth="md" sx={{ py: 6, width: '100%', minWidth: 0 }}>
       <Helmet><title>Profile | Kelmah</title></Helmet>
       <Box sx={{ mb: 2 }}>
         <Typography variant="h4" fontWeight={700}>

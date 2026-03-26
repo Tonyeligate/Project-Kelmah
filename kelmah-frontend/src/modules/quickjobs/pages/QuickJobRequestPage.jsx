@@ -738,8 +738,8 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
   // Success screen
   if (success) {
     return (
-      <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
-        <Container maxWidth="sm" sx={{ py: 8, textAlign: 'center' }}>
+      <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 }, overflowX: 'clip' }}>
+        <Container maxWidth="sm" sx={{ py: 8, textAlign: 'center', width: '100%', minWidth: 0 }}>
         <Avatar
           sx={{ 
             width: 100, 
@@ -764,8 +764,8 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
   }
 
   return (
-    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
-      <Container maxWidth="sm" sx={{ py: 3 }}>
+    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 }, overflowX: 'clip' }}>
+      <Container maxWidth="sm" sx={{ py: 3, width: '100%', minWidth: 0 }}>
       <Helmet><title>Quick Job Request | Kelmah</title></Helmet>
       {/* Back button & title */}
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>

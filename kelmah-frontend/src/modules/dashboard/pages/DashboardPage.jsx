@@ -138,7 +138,9 @@ const DashboardPage = () => {
   return (
     <>
       <Helmet><title>Dashboard | Kelmah</title></Helmet>
-      {dashboard}
+      <Box sx={{ width: '100%', minWidth: 0, overflowX: 'clip' }}>
+        {dashboard}
+      </Box>
     </>
   );
 };

@@ -103,10 +103,10 @@ const SettingsPage = () => {
     if (mobileSection >= 0) {
       const panel = settingsPanels[mobileSection];
       return (
-        <PageCanvas disableContainer sx={{ pt: { xs: 1, md: 4 }, pb: { xs: 10, md: 4 } }}>
-          <Container maxWidth="lg" sx={{ py: 1, px: 1.25, color: 'text.primary' }}>
+        <PageCanvas disableContainer sx={{ pt: { xs: 1, md: 4 }, pb: { xs: 10, md: 4 }, overflowX: 'clip' }}>
+          <Container maxWidth="lg" sx={{ py: 1, px: 1.25, color: 'text.primary', width: '100%', minWidth: 0 }}>
             <Helmet><title>Settings | Kelmah</title></Helmet>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5, gap: 0.5, position: 'sticky', top: 56, zIndex: 10, py: 0.5, backgroundColor: 'background.default' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5, gap: 0.5, position: 'sticky', top: 56, zIndex: 10, py: 0.5, backgroundColor: 'background.default', minWidth: 0 }}>
               <IconButton
                 onClick={() => setMobileSection(-1)}
                 sx={{
@@ -120,7 +120,7 @@ const SettingsPage = () => {
               >
                 <ArrowBack />
               </IconButton>
-              <Box>
+              <Box sx={{ minWidth: 0 }}>
                 <Stack direction="row" spacing={1} alignItems="center">
                   {panel.icon}
                   <Typography variant="h6" fontWeight="bold">
@@ -238,9 +238,9 @@ const SettingsPage = () => {
   // ── Desktop: Sidebar tabs + content (unchanged) ──
   return (
     <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 2, md: 4 } }}>
-      <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 }, px: { xs: 1.5, sm: 3 }, color: 'text.primary' }}>
+        <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 }, px: { xs: 1.5, sm: 3 }, color: 'text.primary', width: '100%', minWidth: 0 }}>
         <Helmet><title>Settings | Kelmah</title></Helmet>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 2, md: 4 } }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 2, md: 4 }, minWidth: 0 }}>
           <SettingsIcon sx={{ fontSize: { xs: 28, md: 36 }, mr: 1.5, color: 'primary.main' }} />
           <Typography variant="h4" fontWeight="bold" sx={{ fontSize: { xs: '1.5rem', md: '2.125rem' } }}>
             Settings
@@ -273,7 +273,7 @@ const SettingsPage = () => {
         </Stack>
       </Paper>
 
-      <Grid container spacing={{ xs: 2.5, md: 4 }} sx={{ minWidth: 0 }}>
+      <Grid container spacing={{ xs: 2.5, md: 4 }} sx={{ minWidth: 0, width: '100%' }}>
         <Grid item xs={12} md={3}>
           <Paper
             elevation={2}
@@ -334,8 +334,8 @@ const SettingsPage = () => {
             </Tabs>
           </Paper>
         </Grid>
-        <Grid item xs={12} md={9}>
-          <Box>{settingsPanels[tabValue].component}</Box>
+        <Grid item xs={12} md={9} sx={{ minWidth: 0 }}>
+          <Box sx={{ minWidth: 0, width: '100%' }}>{settingsPanels[tabValue].component}</Box>
         </Grid>
       </Grid>
       </Container>

@@ -7,7 +7,7 @@ const NotFoundPage = () => {
     const navigate = useNavigate();
 
     return (
-        <PageCanvas disableContainer sx={{ pt: { xs: 4, md: 6 }, pb: { xs: 4, md: 6 } }}>
+        <PageCanvas disableContainer sx={{ pt: { xs: 4, md: 6 }, pb: { xs: 4, md: 6 }, overflowX: 'clip' }}>
             <Box
                 sx={{
                     minHeight: '70dvh',
@@ -18,6 +18,7 @@ const NotFoundPage = () => {
                     gap: 2,
                     textAlign: 'center',
                     px: 2,
+                    minWidth: 0,
                 }}
             >
                 <Helmet><title>Page Not Found | Kelmah</title></Helmet>

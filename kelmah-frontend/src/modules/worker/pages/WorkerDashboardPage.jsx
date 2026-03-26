@@ -79,6 +79,7 @@ const WorkerDashboardPage = () => {
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useBreakpointDown('md');
+  const isCompactMobile = useBreakpointDown('sm');
   const dashboardFontFamily = '"Plus Jakarta Sans", "Manrope", "Segoe UI", sans-serif';
 
   const { user: rawUser } = useSelector((state) => state.auth);
@@ -496,7 +497,7 @@ const WorkerDashboardPage = () => {
   );
 
   return (
-    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
+    <PageCanvas disableContainer sx={{ pt: { xs: 1, md: 4 }, pb: { xs: 10, md: 6 } }}>
       <PullToRefresh onRefresh={fetchDashboardData}>
     <Box
       sx={{
@@ -506,7 +507,7 @@ const WorkerDashboardPage = () => {
             : 'linear-gradient(180deg, #f7f9fd 0%, #eef3fa 55%, #edf2fb 100%)',
         minHeight: '100dvh',
         fontFamily: dashboardFontFamily,
-        p: { xs: 1.5, sm: 2, md: 3 },
+        p: { xs: 1, sm: 2, md: 3 },
         pb: 'calc(env(safe-area-inset-bottom, 0px) + 12px)',
       }}
     >
@@ -572,8 +573,8 @@ const WorkerDashboardPage = () => {
       <Paper
         elevation={0}
         sx={{
-          mb: 3,
-          p: { xs: 2, sm: 2.75, md: 3.25 },
+          mb: { xs: 2, md: 3 },
+          p: { xs: 1.5, sm: 2.75, md: 3.25 },
           borderRadius: { xs: 3, md: 4 },
           border: '1px solid',
           borderColor: theme.palette.mode === 'dark'
@@ -586,7 +587,9 @@ const WorkerDashboardPage = () => {
           boxShadow: theme.palette.mode === 'dark'
             ? '0 18px 34px rgba(0,0,0,0.42)'
             : '0 14px 28px rgba(15,23,42,0.10)',
-          position: 'relative',
+          position: { xs: 'sticky', md: 'relative' },
+          top: { xs: 56, md: 'auto' },
+          zIndex: { xs: 10, md: 1 },
           overflow: 'hidden',
           '&::after': {
             content: '""',
@@ -606,7 +609,7 @@ const WorkerDashboardPage = () => {
         <Stack spacing={{ xs: 1.5, md: 2.25 }} sx={{ position: 'relative', zIndex: 1 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: 1.5, flexWrap: 'wrap' }}>
             <Box>
-              <Typography variant={false ? 'h5' : 'h4'} sx={{ color: 'text.primary', fontWeight: 800, letterSpacing: -0.4 }}>
+              <Typography variant={isCompactMobile ? 'h5' : 'h4'} sx={{ color: 'text.primary', fontWeight: 800, letterSpacing: -0.4, lineHeight: 1.1 }}>
                 {getGreeting()}, {user?.firstName || 'Worker'}
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mt: 0.75, maxWidth: 620, fontSize: { xs: '0.94rem', md: '1rem' } }}>
@@ -665,7 +668,7 @@ const WorkerDashboardPage = () => {
 
           <Box
             sx={{
-              display: 'grid',
+              display: { xs: 'none', sm: 'grid' },
               gridTemplateColumns: { xs: 'repeat(2, minmax(0, 1fr))', sm: 'repeat(4, minmax(0, 1fr))' },
               gap: 1,
             }}
@@ -1301,6 +1304,45 @@ const WorkerDashboardPage = () => {
         </Grid>
       </Grid>
       )}
+
+      <Paper
+        elevation={8}
+        sx={(theme) => ({
+          display: { xs: 'flex', sm: 'none' },
+          position: 'fixed',
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: theme.zIndex.appBar + 2,
+          px: 1,
+          py: 1,
+          gap: 1,
+          borderTop: `1px solid ${theme.palette.divider}`,
+          backgroundColor: theme.palette.background.paper,
+        })}
+      >
+        <Button
+          fullWidth
+          variant="outlined"
+          color="secondary"
+          sx={{ minHeight: 42 }}
+          startIcon={<RefreshIcon />}
+          onClick={handleRefresh}
+          disabled={isLoading}
+        >
+          Refresh
+        </Button>
+        <Button
+          fullWidth
+          variant="contained"
+          color="secondary"
+          sx={{ minHeight: 42, boxShadow: '0 2px 8px rgba(255,215,0,0.35)' }}
+          startIcon={<SearchIcon />}
+          onClick={() => navigate('/worker/find-work')}
+        >
+          Find Work
+        </Button>
+      </Paper>
       </Container>
     </Box>
       </PullToRefresh>

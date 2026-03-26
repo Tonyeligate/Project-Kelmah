@@ -1292,8 +1292,8 @@ const JobPostingPage = () => {
   };
 
   return (
-    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
-      <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 }, pb: isMobile ? `${STICKY_CTA_HEIGHT + 16}px` : undefined }}>
+    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 }, overflowX: 'clip' }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 }, pb: isMobile ? `${STICKY_CTA_HEIGHT + 16}px` : undefined, width: '100%', minWidth: 0 }}>
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
           {error}

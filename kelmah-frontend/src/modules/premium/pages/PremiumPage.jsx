@@ -310,10 +310,10 @@ const PremiumPage = () => {
   ];
 
   return (
-    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
-      <Box sx={{ color: 'text.primary' }}>
+    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 }, overflowX: 'clip' }}>
+      <Box sx={{ color: 'text.primary', width: '100%', minWidth: 0, overflowX: 'clip' }}>
         <Helmet><title>Premium | Kelmah</title></Helmet>
-        <Container maxWidth="lg">
+        <Container maxWidth="lg" sx={{ width: '100%', minWidth: 0 }}>
         {/* Header Section */}
         <Box sx={{ textAlign: 'center', mb: 6 }}>
           <Chip

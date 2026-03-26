@@ -95,6 +95,7 @@ const formatGhanaCurrencyLabel = (value) => {
 function ApplicationManagementPage() {
   const theme = useTheme();
   const isMobile = useBreakpointDown('md');
+  const isCompactMobile = useBreakpointDown('sm');
   const isTablet = useBreakpointDown('lg');
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
@@ -531,13 +532,16 @@ function ApplicationManagementPage() {
      ═══════════════════════════════════════════════════════════════ */
 
   return (
-    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
+    <PageCanvas disableContainer sx={{ pt: { xs: 1, md: 4 }, pb: { xs: 10, md: 6 }, overflowX: 'clip' }}>
     <Container
       maxWidth="xl"
       sx={{
-        mt: { xs: 2, md: 3 },
+        mt: { xs: 1, md: 3 },
         mb: { xs: 2, md: 4 },
+        px: { xs: 0.75, sm: 2 },
         pb: { xs: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px) + 12px)`, md: 0 },
+        width: '100%',
+        minWidth: 0,
       }}
     >
       <Helmet>
@@ -550,13 +554,18 @@ function ApplicationManagementPage() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          mb: 2,
+          mb: 1.5,
           flexWrap: 'wrap',
           gap: 1,
+          position: { xs: 'sticky', md: 'static' },
+          top: { xs: 56, md: 'auto' },
+          zIndex: { xs: 11, md: 'auto' },
+          py: { xs: 0.5, md: 0 },
+          backgroundColor: { xs: 'background.default', md: 'transparent' },
         }}
       >
         <Box>
-          <Typography variant={isMobile ? 'h5' : 'h4'} fontWeight={700}>
+          <Typography variant={isCompactMobile ? 'h5' : isMobile ? 'h5' : 'h4'} fontWeight={700} sx={{ lineHeight: 1.1 }}>
             Job Applications
           </Typography>
           {biddingJobsCount > 0 && (
@@ -825,6 +834,44 @@ function ApplicationManagementPage() {
           </Box>
         </Paper>
       )}
+
+      <Paper
+        elevation={8}
+        sx={(theme) => ({
+          display: { xs: 'flex', md: 'none' },
+          position: 'fixed',
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: theme.zIndex.appBar + 2,
+          px: 1,
+          py: 1,
+          gap: 1,
+          borderTop: `1px solid ${theme.palette.divider}`,
+          backgroundColor: theme.palette.background.paper,
+        })}
+      >
+        <Button
+          fullWidth
+          variant="outlined"
+          color="secondary"
+          sx={{ minHeight: 42 }}
+          startIcon={<Work />}
+          onClick={() => setShowJobList((prev) => !prev)}
+        >
+          {showJobList ? 'Hide Jobs' : 'Choose Job'}
+        </Button>
+        <Button
+          fullWidth
+          variant="contained"
+          color="secondary"
+          sx={{ minHeight: 42, boxShadow: '0 2px 8px rgba(255,215,0,0.35)' }}
+          startIcon={<ArrowForward />}
+          onClick={() => navigate('/hirer/jobs/post')}
+        >
+          Post Job
+        </Button>
+      </Paper>
 
       <ApplicationReviewDialog
         open={showReviewDialog}

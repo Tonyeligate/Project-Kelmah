@@ -216,15 +216,18 @@ const HelpCenterPage = () => {
   }, [healthStatus.status, theme.palette.mode, theme.palette.text.primary]);
 
   return (
-    <PageCanvas disableContainer sx={{ pt: { xs: 1, md: 4 }, pb: { xs: 10, md: 6 } }}>
+    <PageCanvas disableContainer sx={{ pt: { xs: 1, md: 4 }, pb: { xs: 10, md: 6 }, overflowX: 'clip' }}>
       <Box
-      sx={{
-        minHeight: '100vh',
-        pt: { xs: 6, md: 12 },
-      }}
-    >
+        sx={{
+          minHeight: '100vh',
+          pt: { xs: 6, md: 12 },
+          width: '100%',
+          minWidth: 0,
+          overflowX: 'clip',
+        }}
+      >
       <Helmet><title>Help Center | Kelmah</title></Helmet>
-      <Container maxWidth="lg" sx={{ px: { xs: 0.75, sm: 3 } }}>
+      <Container maxWidth="lg" sx={{ px: { xs: 0.75, sm: 3 }, width: '100%', minWidth: 0 }}>
         <Box
           sx={{
             background:

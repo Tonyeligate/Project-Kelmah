@@ -4,11 +4,13 @@ import WorkerDirectoryExperience from '../components/WorkerDirectoryExperience';
 import PageCanvas from '../../common/components/PageCanvas';
 
 const SearchPage = () => (
-  <PageCanvas disableContainer sx={{ pt: { xs: 1.5, md: 2.5 }, pb: { xs: 2, md: 4 } }}>
+  <PageCanvas disableContainer sx={{ pt: { xs: 1.5, md: 2.5 }, pb: { xs: 2, md: 4 }, overflowX: 'clip' }}>
     <Paper
       elevation={0}
       sx={{
         display: { xs: 'none', md: 'block' },
+        width: '100%',
+        maxWidth: 1240,
         mx: { xs: 1.5, sm: 2, md: 3 },
         mt: { xs: 1.5, md: 2.5 },
         p: { xs: 1.5, sm: 2 },
