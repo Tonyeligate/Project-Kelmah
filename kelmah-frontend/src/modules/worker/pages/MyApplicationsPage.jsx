@@ -98,6 +98,40 @@ const MyApplicationsPage = () => {
   const [message, setMessage] = useState('');
   const theme = useTheme();
 
+  const getApplicationLocationLabel = useCallback((application) => {
+    const location = application?.job?.location;
+    if (typeof location === 'string' && location.trim()) {
+      return location;
+    }
+    if (location?.address) {
+      return location.address;
+    }
+    if (location?.city) {
+      return location.city;
+    }
+    return 'Location not specified';
+  }, []);
+
+  const getApplicationDateLabel = useCallback((application) => {
+    const rawDate = application?.createdAt || application?.appliedDate;
+    if (!rawDate) {
+      return 'Date not available';
+    }
+    return new Date(rawDate).toLocaleDateString();
+  }, []);
+
+  const getApplicationRateLabel = useCallback((application) => {
+    if (application?.proposedRate) {
+      return currencyFormatter.format(application.proposedRate);
+    }
+
+    if (application?.job?.budget) {
+      return currencyFormatter.format(application.job.budget);
+    }
+
+    return '\u2014';
+  }, []);
+
   const getErrorMessage = useCallback((requestError) => {
     const apiMessage = requestError?.response?.data?.error?.message
       || requestError?.response?.data?.message;
@@ -219,6 +253,9 @@ const MyApplicationsPage = () => {
       return false;
     })
     : [];
+
+    const tabLabels = ['All', 'Pending', 'Under Review', 'Accepted', 'Rejected', 'Withdrawn'];
+    const activeTabLabel = tabLabels[tabValue] || 'All';
 
   const applicationCounts = [
     { label: 'Pending', value: applications.filter((app) => app.status === 'pending').length },
@@ -373,7 +410,7 @@ const MyApplicationsPage = () => {
           <Typography
             sx={{ fontSize: '0.92rem', fontWeight: 'bold', mb: 1.25, color: 'text.secondary' }}
           >
-            {filteredApplications.length} Applications
+            {activeTabLabel}: {filteredApplications.length}
           </Typography>
 
           {loading ? (
@@ -453,10 +490,7 @@ const MyApplicationsPage = () => {
                           color="text.disabled"
                           sx={{ fontSize: '0.7rem', mb: 0.75 }}
                         >
-                          📍 {typeof application.job?.location === 'string' ? application.job.location : application.job?.location?.address || application.job?.location?.city || 'Unknown'} • Applied{' '}
-                          {new Date(
-                            application.createdAt || application.appliedDate,
-                          ).toLocaleDateString()}
+                          Location: {getApplicationLocationLabel(application)} | Applied {getApplicationDateLabel(application)}
                         </Typography>
                       </Box>
                       <Chip
@@ -493,7 +527,7 @@ const MyApplicationsPage = () => {
                         }}
                         onClick={(event) => handleOpenDetails(application, event)}
                       >
-                        View details
+                        Review
                       </Button>
                       <Button
                         variant="outlined"
@@ -507,7 +541,7 @@ const MyApplicationsPage = () => {
                         }}
                         onClick={(event) => handleOpenMessage(application, event)}
                       >
-                        Message
+                        Message hirer
                       </Button>
                     </Box>
                   </Box>
@@ -751,11 +785,7 @@ const MyApplicationsPage = () => {
                         sx={{ mr: 0.5, color: 'text.secondary' }}
                       />
                       <Typography variant="body2">
-                        {selectedApplication.proposedRate
-                        ? `GH\u20B5${selectedApplication.proposedRate}`
-                        : selectedApplication.job?.budget
-                          ? `GH\u20B5${selectedApplication.job.budget}`
-                          : '\u2014'}
+                        {getApplicationRateLabel(selectedApplication)}
                       </Typography>
                     </Box>
                   </Stack>

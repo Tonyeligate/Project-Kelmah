@@ -372,10 +372,12 @@ function JobsCardsGrid({
                       gridTemplateColumns: '1fr',
                       gap: 0.75,
                       mb: 1.5,
+                      pl: 0.25,
+                      borderLeft: '2px solid var(--k-gold)',
                     }}
                   >
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                      <MonetizationOn fontSize="small" sx={{ color: 'var(--k-gold)' }} />
+                      <MonetizationOn fontSize="small" sx={{ color: 'var(--k-gold)', width: 18, height: 18 }} />
                       <Typography
                         variant="body2"
                         sx={{ color: 'var(--k-gold)', fontWeight: 800, fontSize: '0.92rem' }}
@@ -386,11 +388,11 @@ function JobsCardsGrid({
                               ? `GHc ${(job.budget.amount || job.budget.min)?.toLocaleString()}`
                               : `GHc ${job.budget.min?.toLocaleString()} - ${job.budget.max?.toLocaleString()}`
                             : `GHc ${job?.budget?.toLocaleString()}`
-                          : 'Negotiable'}
+                          : 'Negotiable pay'}
                       </Typography>
                     </Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                      <LocationOn fontSize="small" sx={{ color: 'var(--k-gold)' }} />
+                      <LocationOn fontSize="small" sx={{ color: 'text.secondary', width: 18, height: 18 }} />
                       <Typography variant="body2" sx={{ color: 'text.primary', fontSize: '0.84rem' }}>
                         {job.location?.city
                           ? `${job.location.city}${job.location.country ? ', ' + job.location.country : ''}`
@@ -400,14 +402,14 @@ function JobsCardsGrid({
                       </Typography>
                     </Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                      <FireIcon fontSize="small" sx={{ color: isUrgentJob ? '#ff6b6b' : 'text.secondary' }} />
-                      <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.82rem', fontWeight: 600 }}>
-                        {isUrgentJob ? 'Urgency: high demand now' : 'Urgency: standard'}
+                      <FireIcon fontSize="small" sx={{ color: isUrgentJob ? '#ff6b6b' : 'text.disabled', width: 18, height: 18 }} />
+                      <Typography variant="body2" sx={{ color: isUrgentJob ? '#ff6b6b' : 'text.secondary', fontSize: '0.82rem', fontWeight: isUrgentJob ? 700 : 500 }}>
+                        {isUrgentJob ? 'Urgency: High demand now' : 'Urgency: Standard timeline'}
                       </Typography>
                     </Box>
                   </Box>
 
-                  <Box sx={{ mb: 2 }}>
+                  <Box sx={{ mb: 2, display: { xs: 'none', sm: 'block' } }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                       <LocationOn
                         fontSize="small"

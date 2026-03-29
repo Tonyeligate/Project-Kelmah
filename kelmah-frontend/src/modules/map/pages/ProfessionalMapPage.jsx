@@ -528,7 +528,7 @@ const ProfessionalMapPage = () => {
 
   // ── Render ──
   return (
-    <PageCanvas disableContainer>
+    <PageCanvas disableContainer sx={{ pb: { xs: 10, md: 6 } }}>
       <Box
         sx={{
           height: 'calc(100dvh - 64px)',

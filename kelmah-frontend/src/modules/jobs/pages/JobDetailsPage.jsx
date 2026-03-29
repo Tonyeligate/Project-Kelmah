@@ -60,7 +60,7 @@ import {
 import { selectIsAuthenticated } from '../../auth/services/authSlice';
 import { EXTERNAL_SERVICES } from '../../../config/services';
 import jobsApi from '../services/jobsService';
-import { Z_INDEX } from '../../../constants/layout';
+import { HEADER_HEIGHT_MOBILE, Z_INDEX } from '../../../constants/layout';
 import { Helmet } from 'react-helmet-async';
 import { hasRole } from '../../../utils/userUtils';
 import {
@@ -849,13 +849,12 @@ const JobDetailsPage = () => {
   };
 
   return (
-    <PageCanvas disableContainer>
+    <PageCanvas disableContainer sx={{ pb: { xs: 10, md: 6 } }}>
       <Box
         sx={{
           minHeight: '100vh',
           py: { xs: 1.25, sm: 4, md: 5 },
-          px: { xs: 0, sm: 1 },
-          pb: isMobile ? 0 : undefined,
+          px: { xs: 0, sm: 1 }
         }}
       >
       <Helmet>
@@ -888,7 +887,7 @@ const JobDetailsPage = () => {
           <Box
             sx={{
               position: 'sticky',
-              top: { xs: 62, sm: 70 },
+              top: { xs: HEADER_HEIGHT_MOBILE + 6, sm: HEADER_HEIGHT_MOBILE + 14 },
               zIndex: Z_INDEX.stickyCta - 1,
               mb: 1,
               p: 0.75,
@@ -915,11 +914,11 @@ const JobDetailsPage = () => {
                 onClick={handleToggleSave}
                 disabled={savingBookmark}
                 aria-label={saved ? 'Remove from saved jobs' : 'Save job'}
-                sx={{ minWidth: 40, minHeight: 40 }}
+                sx={{ minWidth: 44, minHeight: 44 }}
               >
                 {saved ? <Bookmark /> : <BookmarkBorder />}
               </IconButton>
-              <IconButton onClick={handleShareJob} aria-label="Share job" sx={{ minWidth: 40, minHeight: 40 }}>
+              <IconButton onClick={handleShareJob} aria-label="Share job" sx={{ minWidth: 44, minHeight: 44 }}>
                 <Share />
               </IconButton>
             </Stack>
@@ -964,17 +963,17 @@ const JobDetailsPage = () => {
                       letterSpacing: 0.5,
                       bgcolor:
                         String(job?.status || '').toLowerCase() === 'open'
-                          ? 'rgba(76,175,80,0.15)'
-                          : 'rgba(255,152,0,0.15)',
+                          ? alpha(theme.palette.success.main, 0.15)
+                          : alpha(theme.palette.warning.main, 0.15),
                       color:
                         String(job?.status || '').toLowerCase() === 'open'
-                          ? '#4caf50'
-                          : '#ff9800',
+                          ? 'success.main'
+                          : 'warning.main',
                       border: '1px solid',
                       borderColor:
                         String(job?.status || '').toLowerCase() === 'open'
-                          ? 'rgba(76,175,80,0.4)'
-                          : 'rgba(255,152,0,0.4)',
+                          ? alpha(theme.palette.success.main, 0.4)
+                          : alpha(theme.palette.warning.main, 0.4),
                     }}
                   />
                   {job?.category && (
@@ -1454,8 +1453,8 @@ const JobDetailsPage = () => {
                     startIcon={<NoteAlt />}
                     sx={{
                       mb: 1.5,
-                      background: 'linear-gradient(45deg, #FFD700, #FFA500)',
-                      color: '#000',
+                      background: `linear-gradient(45deg, ${theme.palette.secondary.main}, ${theme.palette.secondary.dark})`,
+                      color: 'common.black',
                       fontWeight: 700,
                       py: 1.4,
                       fontSize: '1rem',
@@ -1716,7 +1715,7 @@ const JobDetailsPage = () => {
                         </Typography>
                         {hirerVerified && (
                           <CheckCircle
-                            sx={{ fontSize: 16, color: '#4caf50' }}
+                            sx={{ fontSize: 16, color: 'success.main' }}
                             titleAccess="Verified Client"
                           />
                         )}
@@ -1736,7 +1735,7 @@ const JobDetailsPage = () => {
                             mt: 0.45,
                           }}
                         >
-                          <Star sx={{ fontSize: 15, color: '#FFD700' }} />
+                          <Star sx={{ fontSize: 15, color: 'secondary.main' }} />
                           <Typography
                             variant="body2"
                             sx={{ fontWeight: 700, color: 'text.primary' }}
@@ -2242,8 +2241,8 @@ const JobDetailsPage = () => {
               variant="contained"
               onClick={handlePrimaryAction}
               sx={{
-                bgcolor: '#D4AF37',
-                color: '#000',
+                bgcolor: 'secondary.main',
+                color: 'common.black',
                 fontWeight: 'bold',
                 py: 0.95,
                 px: { xs: 1.75, sm: 3 },
@@ -2252,7 +2251,7 @@ const JobDetailsPage = () => {
                 borderRadius: 2,
                 minWidth: { xs: 96, sm: 156 },
                 whiteSpace: 'nowrap',
-                '&:hover': { bgcolor: '#B8941F' },
+                '&:hover': { bgcolor: 'secondary.dark' },
               }}
             >
               {mobilePrimaryActionLabel}

@@ -20,6 +20,7 @@ import SavedSearches from '../../search/components/SavedSearches';
 import { Helmet } from 'react-helmet-async';
 import PageCanvas from '@/modules/common/components/PageCanvas';
 import { useBreakpointDown } from '@/hooks/useResponsive';
+import { HEADER_HEIGHT_MOBILE, Z_INDEX } from '../../../constants/layout';
 
 const Section = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
@@ -77,8 +78,8 @@ const JobAlertsPage = () => {
   };
 
   return (
-    <PageCanvas disableContainer>
-      <Container maxWidth="lg" sx={{ py: { xs: 1.25, sm: 4 }, pb: { xs: 10, sm: 4 }, px: { xs: 0.5, sm: 2 } }}>
+    <PageCanvas disableContainer sx={{ pb: { xs: 10, md: 6 } }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 1.25, sm: 4 }, px: { xs: 0.5, sm: 2 } }}>
         <Helmet><title>Job Alerts | Kelmah</title></Helmet>
         <Typography
         variant="h4"
@@ -101,7 +102,7 @@ const JobAlertsPage = () => {
         </Alert>
       )}
       <Stack spacing={{ xs: 1.5, md: 3 }}>
-        <Section sx={{ p: { xs: 1.25, md: 3 }, position: { xs: 'sticky', md: 'static' }, top: { xs: 68, md: 'auto' }, zIndex: { xs: 8, md: 'auto' } }}>
+        <Section sx={{ p: { xs: 1.25, md: 3 }, position: { xs: 'sticky', md: 'static' }, top: { xs: HEADER_HEIGHT_MOBILE + 12, md: 'auto' }, zIndex: { xs: Z_INDEX.sticky, md: 'auto' } }}>
           <Typography variant="h6" fontWeight={700} sx={{ mb: 1 }}>
             Notifications
           </Typography>

@@ -359,7 +359,16 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
   };
 
   const formatMessageTime = (timestamp) => {
-    return safeFormatRelative(timestamp, { addSuffix: true }, '');
+    if (!timestamp) {
+      return 'No activity';
+    }
+
+    const relativeLabel = safeFormatRelative(timestamp, { addSuffix: true }, '');
+    if (relativeLabel) {
+      return relativeLabel;
+    }
+
+    return formatDistanceToNow(new Date(timestamp), { addSuffix: true });
   };
 
   const renderLoadingSkeletons = () =>
@@ -602,6 +611,13 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
         <StyledTab value="group" label="Groups" />
       </Tabs>
 
+      <Typography
+        variant="caption"
+        sx={{ px: 2, py: 0.75, color: 'text.secondary', display: 'block' }}
+      >
+        Showing {filteredConversations.length} of {localConversations.length} conversation{localConversations.length === 1 ? '' : 's'}
+      </Typography>
+
       <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
         {localLoading ? (
           renderLoadingSkeletons()
@@ -781,8 +797,7 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
               variant="body1"
               sx={{ color: 'text.primary', opacity: 0.5, mb: 2 }}
             >
-              No conversations found. Start a chat to confirm scope, budget,
-              and timeline.
+              No conversations match your current search or filters.
             </Typography>
             <ActionButton
               variant="outlined"
@@ -791,7 +806,7 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
               onClick={handleNewConversationClick}
               sx={{ minHeight: 44 }}
             >
-              Start new chat
+              Start a new chat
             </ActionButton>
           </Box>
         )}

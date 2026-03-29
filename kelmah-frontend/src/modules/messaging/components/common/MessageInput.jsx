@@ -208,11 +208,15 @@ const MessageInput = ({
 
     if (errors.length > 0) {
       setFileError(errors.join('\n'));
+      setShowAttachmentDialog(true);
       return;
     }
 
     setAttachments((prev) => [...prev, ...validFiles]);
     setFileError('');
+    if (validFiles.length > 0) {
+      setShowAttachmentDialog(true);
+    }
   };
 
   // Remove attachment
@@ -268,7 +272,9 @@ const MessageInput = ({
           </List>
         </DialogContent>
         <DialogActions>
-            <Button onClick={() => setShowAttachmentDialog(false)}>Close</Button>
+            <Button onClick={() => setShowAttachmentDialog(false)} sx={{ minHeight: 44 }}>
+              Close
+            </Button>
         </DialogActions>
       </Dialog>
 
@@ -289,7 +295,6 @@ const MessageInput = ({
           color="primary"
           onClick={() => {
             fileInputRef.current?.click();
-            setShowAttachmentDialog(true);
           }}
           disabled={disabled || loading}
           aria-label="Add attachment"
@@ -377,6 +382,19 @@ const MessageInput = ({
           <Typography variant="caption" color="text.secondary">
             {attachments.length} attachment{attachments.length !== 1 ? 's' : ''} selected
           </Typography>
+          <Button
+            onClick={() => setShowAttachmentDialog(true)}
+            size="small"
+            sx={{
+              display: 'block',
+              mt: 0.5,
+              minHeight: 36,
+              textTransform: 'none',
+              px: 0,
+            }}
+          >
+            Review attachments
+          </Button>
         </Box>
       )}
     </Box>

@@ -183,8 +183,8 @@ const RecentActivityFeed = ({ jobs = [], applications = {}, activities = null })
                     sx={{
                       bgcolor: alpha(theme.palette[evt.iconColor]?.main || theme.palette.primary.main, 0.12),
                       color: theme.palette[evt.iconColor]?.main || theme.palette.primary.main,
-                      width: 36,
-                      height: 36,
+                      width: 40,
+                      height: 40,
                     }}
                   >
                     {evt.icon}
@@ -193,7 +193,16 @@ const RecentActivityFeed = ({ jobs = [], applications = {}, activities = null })
                 <ListItemText
                   primary={evt.primary}
                   secondary={evt.secondary}
-                  primaryTypographyProps={{ variant: 'body2', fontWeight: 500, noWrap: true }}
+                  primaryTypographyProps={{
+                    variant: 'body2',
+                    fontWeight: 500,
+                    sx: {
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                    },
+                  }}
                   secondaryTypographyProps={{ variant: 'caption', color: 'text.secondary' }}
                 />
               </ListItem>
@@ -205,11 +214,15 @@ const RecentActivityFeed = ({ jobs = [], applications = {}, activities = null })
 
       <Box sx={{ px: { xs: 2, sm: 3 }, py: 1.5, borderTop: '1px solid', borderColor: 'divider' }}>
         <Button
-          size="small"
+          size="medium"
           onClick={() => navigate('/notifications')}
-          sx={{ textTransform: 'none', fontWeight: 600 }}
+          sx={{
+            textTransform: 'none',
+            fontWeight: 600,
+            minHeight: 44,
+          }}
         >
-          View All Activity
+          Open Notifications
         </Button>
       </Box>
     </Paper>

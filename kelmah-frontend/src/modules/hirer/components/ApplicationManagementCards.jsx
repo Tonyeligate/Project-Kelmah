@@ -17,6 +17,28 @@ import {
 import { alpha } from '@mui/material/styles';
 import { AttachMoney, Schedule, Work } from '@mui/icons-material';
 
+const formatGhanaCurrencyLabel = (value) => {
+  const amount = Number(value);
+  if (!Number.isFinite(amount)) {
+    return 'GHS 0';
+  }
+
+  return new Intl.NumberFormat('en-GH', {
+    style: 'currency',
+    currency: 'GHS',
+    maximumFractionDigits: amount % 1 === 0 ? 0 : 2,
+  }).format(amount);
+};
+
+const toTitleCase = (value) => {
+  const source = String(value || '').trim();
+  if (!source) {
+    return 'Pending';
+  }
+
+  return source.charAt(0).toUpperCase() + source.slice(1);
+};
+
 export const ApplicationCard = ({
   application,
   isSelected,
@@ -72,10 +94,16 @@ export const ApplicationCard = ({
             </Box>
             <Chip
               size="small"
-              label={application.status?.charAt(0).toUpperCase() + application.status?.slice(1)}
+              label={toTitleCase(application.status)}
               color={statusColors[application.status] || 'default'}
               variant="outlined"
-              sx={{ fontSize: '0.7rem', height: 22 }}
+              sx={{
+                fontSize: '0.75rem',
+                minHeight: 26,
+                '& .MuiChip-label': {
+                  px: 1,
+                },
+              }}
             />
           </Box>
           {showJobTitle && (
@@ -88,20 +116,38 @@ export const ApplicationCard = ({
               {application.jobTitle}
             </Typography>
           )}
-          <Typography variant="body2" color="text.secondary" noWrap sx={{ mt: 0.5 }}>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{
+              mt: 0.5,
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+            }}
+          >
             {application.coverLetter}
           </Typography>
           {application.proposedRate != null && (
             <Typography
               variant="caption"
               color="text.secondary"
-              sx={{ mt: 0.5, display: 'flex', alignItems: 'center', gap: 0.3 }}
+              sx={{
+                mt: 0.75,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.5,
+                flexWrap: 'wrap',
+              }}
             >
-              <AttachMoney sx={{ fontSize: 14 }} /> GHc{application.proposedRate}
+              <AttachMoney sx={{ fontSize: 14 }} />
+              {formatGhanaCurrencyLabel(application.proposedRate)}
               {application.estimatedDuration && (
                 <>
-                  {' '}&middot;{' '}
-                  <Schedule sx={{ fontSize: 14, ml: 0.5 }} /> {application.estimatedDuration}
+                  {' '}
+                  <Schedule sx={{ fontSize: 14, ml: 0.75 }} />
+                  {application.estimatedDuration}
                 </>
               )}
             </Typography>
@@ -122,6 +168,7 @@ export const JobListItem = ({ job, isSelected, onClick, appCount }) => {
       sx={{
         borderRadius: 1.5,
         mb: 0.5,
+        minHeight: 56,
         py: 1,
         px: 1.5,
         borderLeft: isSelected
@@ -149,7 +196,11 @@ export const JobListItem = ({ job, isSelected, onClick, appCount }) => {
         }}
         secondary={
           job.status
-            ? `${job.status.charAt(0).toUpperCase() + job.status.slice(1)} • GHc${job.budget || job.budgetRange?.min || '—'}`
+            ? `${toTitleCase(job.status)} • ${
+              Number.isFinite(Number(job.budget || job.budgetRange?.min))
+                ? formatGhanaCurrencyLabel(job.budget || job.budgetRange?.min)
+                : 'Budget pending'
+            }`
             : undefined
         }
         secondaryTypographyProps={{ variant: 'caption', noWrap: true }}

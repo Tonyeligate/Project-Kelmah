@@ -30,6 +30,7 @@
 
 
 import PageCanvas from '@/modules/common/components/PageCanvas';
+import { HEADER_HEIGHT_MOBILE, Z_INDEX } from '../../../constants/layout';
 
 // Visibility chip — tells the hirer whether the job appears on the public Jobs page
 const formatGhanaCurrencyLabel = (value) => {
@@ -444,8 +445,8 @@ const JobManagementPage = () => {
   );
 
   return (
-    <PageCanvas disableContainer>
-      <Box sx={{ pb: { xs: 10, md: 4 }, pt: { xs: 1, md: 2 } }}>
+    <PageCanvas disableContainer sx={{ pb: { xs: 10, md: 6 } }}>
+      <Box sx={{ pt: { xs: 1, md: 2 } }}>
       <Helmet>
         <title>Manage Jobs | Kelmah</title>
       </Helmet>
@@ -488,8 +489,8 @@ const JobManagementPage = () => {
             flexWrap: 'wrap',
             gap: 1,
             position: { xs: 'sticky', md: 'static' },
-            top: { xs: 56, md: 'auto' },
-            zIndex: { xs: 11, md: 'auto' },
+            top: { xs: HEADER_HEIGHT_MOBILE, md: 'auto' },
+            zIndex: { xs: Z_INDEX.sticky, md: 'auto' },
             py: { xs: 0.5, md: 0 },
             backgroundColor: { xs: 'background.default', md: 'transparent' },
           }}

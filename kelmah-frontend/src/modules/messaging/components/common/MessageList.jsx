@@ -37,6 +37,35 @@
 
 
 
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  Box,
+  CircularProgress,
+  ListItemIcon,
+  ListItemText,
+  Menu,
+  MenuItem,
+  Paper,
+  Typography,
+} from '@mui/material';
+import Skeleton from '@mui/material/Skeleton';
+import {
+  ContentCopy as CopyIcon,
+  Delete as DeleteIcon,
+  Image as ImageIcon,
+  InsertDriveFile as FileIcon,
+} from '@mui/icons-material';
+import { styled } from '@mui/material/styles';
+import { format } from 'date-fns';
+import { useInView } from 'react-intersection-observer';
+import EmptyState from '@/components/common/EmptyState';
+import { MESSAGE_TYPES } from '@/config/constants';
+import useAuth from '@/modules/auth/hooks/useAuth';
+import { useMessages } from '../../contexts/MessageContext';
+import Message from './Message';
+import MessageDateDivider from './MessageDateDivider';
+import TypingIndicator from './TypingIndicator';
+
 // Styled components
 const MessageListContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -553,7 +582,8 @@ const MessageList = ({
                 align="center"
                 sx={{ mb: 2 }}
               >
-                No messages yet. Start a conversation!
+                No messages yet. Send the first message to confirm scope,
+                budget, and timeline.
               </Typography>
               {conversation?.type === 'group' && (
                 <Typography
@@ -629,8 +659,8 @@ const MessageList = ({
             backgroundColor: 'background.paper',
           }}
         >
-          <Typography variant="body1" color="textSecondary">
-            Select a conversation to start messaging
+          <Typography variant="body1" color="text.secondary">
+            Select a conversation to read or send messages.
           </Typography>
         </Box>
       )}

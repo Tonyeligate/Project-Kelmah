@@ -191,7 +191,7 @@ const JobApplicationPage = () => {
 
   if (jobLoading) {
     return (
-      <PageCanvas disableContainer>
+      <PageCanvas disableContainer sx={{ pb: { xs: 4, md: 6 } }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>
           <CircularProgress />
         </Box>
@@ -200,12 +200,12 @@ const JobApplicationPage = () => {
   }
 
   return (
-    <PageCanvas disableContainer>
+    <PageCanvas disableContainer sx={{ pb: { xs: success ? 2 : 10, md: 6 } }}>
       <Helmet>
         <title>{currentJob?.title ? `Apply — ${currentJob.title}` : 'Apply for Job'} | Kelmah</title>
       </Helmet>
 
-      <Container maxWidth="md" sx={{ py: { xs: 1.25, md: 4 }, pb: { xs: success ? 2 : 10, md: 4 } }}>
+      <Container maxWidth="md" sx={{ py: { xs: 1.25, md: 4 } }}>
         {/* Back link */}
         <Button
           startIcon={<BackIcon />}

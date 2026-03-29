@@ -1,3 +1,381 @@
+### Session: Messaging Lint Hardening, High-Traffic Token Cleanup, and Route Shell Spacing Final Pass March 29 2026 ✅ COMPLETED
+
+**Date**: March 29, 2026  
+**Scope**: Complete three requested frontend quality passes without behavioral changes: (1) `MessagingPage` lint hardening, (2) hardcoded color-token cleanup on high-traffic pages, (3) final route-shell spacing outlier normalization.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx
+- kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx
+- kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx
+- kelmah-frontend/src/modules/payment/pages/PaymentCenterPage.jsx
+- kelmah-frontend/src/modules/notifications/pages/NotificationsPage.jsx
+- kelmah-frontend/src/modules/settings/pages/SettingsPage.jsx
+- kelmah-frontend/src/modules/hirer/pages/JobManagementPage.jsx
+- kelmah-frontend/src/modules/jobs/pages/JobAlertsPage.jsx
+- kelmah-frontend/src/modules/jobs/pages/JobApplicationPage.jsx
+- kelmah-frontend/src/modules/hirer/pages/JobBidsPage.jsx
+- kelmah-frontend/src/modules/worker/pages/MyBidsPage.jsx
+- kelmah-frontend/src/modules/worker/pages/PortfolioPage.jsx
+- kelmah-frontend/src/modules/worker/pages/SkillsAssessmentPage.jsx
+- kelmah-frontend/src/modules/hirer/pages/HirerQuickJobTrackingPage.jsx
+- kelmah-frontend/src/modules/map/pages/ProfessionalMapPage.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Messaging lint hardening:
+  - auto-formatted `MessagingPage.jsx` with ESLint/Prettier fixes and added explicit `MessageBubble` `propTypes` to resolve `react/prop-types` violations.
+  - kept message rendering/status behavior intact while clearing file-level lint failures.
+- High-traffic token cleanup:
+  - replaced hardcoded status/action colors in `JobDetailsPage.jsx` with theme tokens (`success`, `warning`, `secondary`, `common.black`) and tokenized alpha borders/backgrounds.
+  - replaced hardcoded live/clear-filter colors in `JobsPage.jsx` with semantic tokens (`success.light`, `error.main`) and tokenized hover alpha.
+  - replaced hardcoded focus-outline and focus-ring color literals in `PaymentCenterPage.jsx` with palette-driven values.
+- Final shell-spacing pass:
+  - normalized explicit bottom spacing outliers (`md: 5`/`md: 4`) to the active route baseline where appropriate.
+  - added explicit `PageCanvas` bottom spacing (`{ xs: 10, md: 6 }` or `{ xs: 0, md: 0 }` for full-viewport/internal-layout-controlled pages) to remove implicit no-`pb` wrappers.
+
+**Verification**
+- PASS: `npx eslint src/modules/messaging/pages/MessagingPage.jsx` in `kelmah-frontend` (clean).
+- PASS: targeted spacing-pattern scan across `*Page.jsx` for prior outlier patterns (`pb` `md:5`, `md:4`, `xs:3/md:5`) returned no matches.
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,961 modules transformed).
+
+### Session: Tracker Review Closure, Unresolved P0-P2 Extraction, and Re-Audit Doc Normalization March 29 2026 ✅ COMPLETED
+
+**Date**: March 29, 2026  
+**Scope**: Close remaining review rows in frontend execution tracker with targeted mobile+desktop verification, produce strict unresolved-only list (P0-P2), normalize re-audit documentation for unambiguous open/closed status.
+
+**Files touched**
+- kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx
+- kelmah-frontend/src/modules/layout/components/Layout.jsx
+- kelmah-frontend/src/modules/worker/pages/WorkerDashboardPage.jsx
+- kelmah-frontend/src/modules/worker/pages/JobSearchPage.jsx
+- kelmah-frontend/src/modules/worker/pages/MyApplicationsPage.jsx
+- spec-kit/generated/FRONTEND_UI_EXECUTION_TRACKER_MAR24_2026.md
+- spec-kit/generated/FRONTEND_REAUDIT_OPEN_AREAS_MAR23_2026.md
+- spec-kit/generated/FRONTEND_REAUDIT_FIXED_AREAS_MAR23_2026.md
+- spec-kit/generated/FRONTEND_UNRESOLVED_P0_P2_MAR29_2026.md
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Tracker review closure:
+  - moved `W2-08`, `W2-09`, and `W2-10` from `Review` to `Done`.
+  - added explicit checklist evidence for mobile + desktop validation in tracker verification notes.
+- Targeted UX/accessibility fixes completed in code:
+  - raised undersized mobile sticky action IconButtons in `JobDetailsPage.jsx` from `40` to `44`.
+  - improved skip-link visual prominence in `Layout.jsx` by switching to accent foreground/background pairing.
+  - raised undersized worker action controls from `40` to `44` in:
+    - `WorkerDashboardPage.jsx`
+    - `JobSearchPage.jsx`
+    - `MyApplicationsPage.jsx`
+- Re-audit doc normalization:
+  - replaced contradictory mixed-history content in open-areas doc with a normalized status file.
+  - updated fixed-areas doc to point open tracking to normalized open + strict unresolved artifacts only.
+- Unresolved strict list generation:
+  - created `FRONTEND_UNRESOLVED_P0_P2_MAR29_2026.md` with non-duplicated active findings, ranked `P0` to `P2`.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend`.
+- PASS: `npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx src/tests/smoke/critical-path-happy-flow.smoke.test.jsx src/tests/smoke/critical-path-gateway-contract.smoke.test.js --runInBand` in `kelmah-frontend`.
+
+### Session: HomeLanding Ghana Localization and Legal Image Pass March 29 2026 ✅ COMPLETED
+
+**Date**: March 29, 2026  
+**Scope**: Localize the homepage so it feels clearly Ghana-first and swap in legally usable internet-hosted imagery.
+
+**Files currently in scope**
+- kelmah-frontend/src/pages/HomeLanding.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Replaced the homepage hero with a free Accra construction image to anchor the page in a real Ghanaian context.
+- Replaced the secondary homepage visual with a free Accra street-market image so the supporting panel also feels local.
+- Updated the headline, intro copy, service descriptions, trust panel, and testimonials to reference Ghana, Accra, Kumasi, Tamale, and Takoradi more directly.
+- Tightened the homepage value proposition so it reads as a Ghana-first hiring marketplace rather than a generic global marketplace.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,961 modules transformed).
+
+### Session: Route Import Integrity Sweep and Messaging Shell Stabilization March 29 2026 ✅ COMPLETED
+
+**Date**: March 29, 2026  
+**Scope**: Resolve route import instability first, then apply a focused messaging-page stability/visual shell sweep before continuing broader frontend improvements.
+
+**Files currently in scope**
+- kelmah-frontend/src/routes/config.jsx
+- kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx
+- kelmah-frontend/src/modules/scheduling/pages/SchedulingPage.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Route import integrity:
+  - repaired landing route lazy import in `config.jsx` to an explicit extension path (`../pages/HomeLanding.jsx`) to eliminate unresolved-import build failures.
+  - re-ran lazy-import resolution audit on `config.jsx`; all dynamic imports now resolve.
+- Messaging page stabilization:
+  - added `PageCanvas` shell framing to `MessagingPage.jsx` for consistent route-level layout behavior.
+  - connected chat header typing presence to the existing memoized typing label, removing dead/unused typing indicator state and aligning header presence behavior.
+- Scheduling page consistency:
+  - normalized `PageCanvas` bottom spacing to `{ xs: 4, md: 6 }` in `SchedulingPage.jsx` to align with the current cross-route shell baseline.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,961 modules transformed).
+- PASS: dynamic import integrity audit in `kelmah-frontend` (`resolved: 67`, `missingCount: 0`, `missing: []`).
+
+### Session: Triage Ordering and Messaging File Hygiene Increment March 29 2026 ✅ COMPLETED
+
+**Date**: March 29, 2026  
+**Scope**: Continue the same UX cycle with one additional triage-ordering optimization and messaging component hygiene cleanup.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/hirer/pages/ApplicationManagementPage.jsx
+- kelmah-frontend/src/modules/messaging/components/common/MessageList.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Application triage ordering (`ApplicationManagementPage.jsx`):
+  - In all-jobs grouped view, job groups now sort by highest number of active-tab applications first, then title, to prioritize high-volume review queues.
+- Messaging component cleanup (`MessageList.jsx`):
+  - Removed accidental leading blank-line block at file start to stabilize diffs and improve maintainability.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,961 modules transformed).
+- PASS: `npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx src/tests/smoke/critical-path-happy-flow.smoke.test.jsx src/tests/smoke/critical-path-gateway-contract.smoke.test.js --runInBand` in `kelmah-frontend` (3 suites, 29 tests).
+
+### Session: Messaging Thread Status Semantics and Filter Visibility Follow-up March 29 2026 ✅ COMPLETED
+
+**Date**: March 29, 2026  
+**Scope**: Continue messaging consistency improvements by fixing sent/delivered/read icon semantics and making filtered conversation state more explicit.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Delivery status semantics (`MessagingPage.jsx`):
+  - Normalized message status handling to prevent overlapping indicators.
+  - Kept state mapping explicit: sending, failed, sent, delivered, read.
+  - Updated icon rendering so read and delivered states are visually distinct from sent.
+- Conversation filtering clarity (`MessagingPage.jsx`):
+  - Added dynamic count context (`Showing X of Y conversations`) under filter controls.
+  - Added clear-filter affordance in empty filtered state to avoid dead-end navigation.
+  - Refined empty-state subtitle when a query/filter is active.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,961 modules transformed).
+- PASS: `npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx src/tests/smoke/critical-path-happy-flow.smoke.test.jsx src/tests/smoke/critical-path-gateway-contract.smoke.test.js --runInBand` in `kelmah-frontend` (3 suites, 29 tests).
+
+### Session: Hirer Triage Density and Quick Actions Pass March 29 2026 ✅ COMPLETED
+
+**Date**: March 29, 2026  
+**Scope**: Continue the application-management UX stream by enabling quick list-level triage actions and improving normalization/readability for proposal details.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/hirer/utils/applicationManagementUtils.js
+- kelmah-frontend/src/modules/hirer/components/ApplicationManagementCards.jsx
+- kelmah-frontend/src/modules/hirer/pages/ApplicationManagementPage.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Data normalization and label consistency (`applicationManagementUtils.js`):
+  - Added shared `formatStatusLabel()` for consistent status display text.
+  - Added `formatEstimatedDuration()` to prevent object-like duration values from rendering poorly.
+  - Updated `normalizeApplication()` to sanitize `workerRating`, `proposedRate`, and normalized `estimatedDuration`.
+- Faster list triage (`ApplicationManagementCards.jsx`):
+  - Added inline quick actions to each application card (`Message`, `Accept`, `Reject`) with safe disabled states for already-finalized decisions.
+  - Updated card/job status labels to use shared status formatting.
+- Quicker decision orchestration (`ApplicationManagementPage.jsx`):
+  - Added quick-action handlers to open decision dialogs directly from list cards without extra navigation.
+  - Added shared conversation-start helper so list cards can open chat with the applicant immediately.
+  - Wired quick-action callbacks through `ApplicationsListContent` in both single-job and grouped all-jobs views.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,961 modules transformed).
+- PASS: `npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx src/tests/smoke/critical-path-happy-flow.smoke.test.jsx src/tests/smoke/critical-path-gateway-contract.smoke.test.js --runInBand` in `kelmah-frontend` (3 suites, 29 tests).
+
+### Session: Worker Application Payload Preservation and Messaging Filter Clarity March 29 2026 ✅ COMPLETED
+
+**Date**: March 29, 2026  
+**Scope**: Continue the active UX stream by preserving optional worker application details in submission payloads and improving messaging list clarity.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/worker/components/JobApplicationForm.jsx
+- kelmah-frontend/src/modules/messaging/components/common/ConversationList.jsx
+- kelmah-frontend/src/modules/messaging/components/common/Message.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Worker application clarity and data preservation (`JobApplicationForm.jsx`):
+  - Added `buildCoverLetterPayload()` so optional details (`experience`, `portfolio`, `additionalInfo`) are no longer dropped and are appended to the submitted cover letter.
+  - Updated helper text on optional fields to clearly indicate these details are sent with the application.
+- Messaging list consistency (`ConversationList.jsx`):
+  - Added explicit `resetFilters()` behavior and adaptive count text (`Showing all...` vs filtered count).
+  - Added a clear-filter action in the empty-filter-result state to reduce dead-end navigation.
+- Message status semantics (`Message.jsx`):
+  - Made delivery states visually distinct by showing single-check for sent and double-check for delivered/read states.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,961 modules transformed).
+- PASS: `npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx src/tests/smoke/critical-path-happy-flow.smoke.test.jsx src/tests/smoke/critical-path-gateway-contract.smoke.test.js --runInBand` in `kelmah-frontend` (3 suites, 29 tests).
+
+### Session: HomeLanding Build Stabilization Repair March 29 2026 ✅ COMPLETED
+
+**Date**: March 29, 2026  
+**Scope**: Restore frontend build stability by repairing `HomeLanding.jsx` after syntax/duplication corruption interrupted the continuation cycle.
+
+**Files currently in scope**
+- kelmah-frontend/src/pages/HomeLanding.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Reproduced the failure in the frontend production build and isolated corruption in `HomeLanding.jsx`.
+- Confirmed the file contained duplicated concatenated content after the first valid component export.
+- Repaired the page by trimming the file to the first valid `HomeLanding` component block and a single final `export default HomeLanding;` statement.
+- Re-ran full validation to confirm platform stability before further UX iteration.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,960 modules transformed).
+- PASS: `npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx src/tests/smoke/critical-path-happy-flow.smoke.test.jsx src/tests/smoke/critical-path-gateway-contract.smoke.test.js --runInBand` in `kelmah-frontend` (3 suites, 29 tests).
+
+### Session: Messaging Action Semantics and Desktop Density Micro-Pass March 29 2026 ✅ COMPLETED
+
+**Date**: March 29, 2026  
+**Scope**: Continue messaging polish by refining message action timing/read-state semantics and tightening desktop conversation row density.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/messaging/components/common/Message.jsx
+- kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Message thread action and status semantics (`Message.jsx`):
+  - removed always-on mobile action affordance behavior so message option controls no longer add constant visual noise.
+  - refined action reveal timing for smoother menu appearance.
+  - normalized delivery state logic so message status icons map clearly to `sending`, `failed/error`, `sent`, `delivered`, and `read` states.
+  - preserved resend action path for failed messages and kept destructive menu action visually distinct.
+- Desktop conversation density (`MessagingPage.jsx`):
+  - reduced desktop list row vertical padding and avatar footprint for denser scan rhythm.
+  - adjusted preview clamping strategy (desktop single-line summary, mobile two-line preview) to prioritize fast list scanning.
+  - slightly widened trailing status column to stabilize timestamp/unread/status alignment.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,964 modules transformed).
+- PASS: `npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx src/tests/smoke/critical-path-happy-flow.smoke.test.jsx src/tests/smoke/critical-path-gateway-contract.smoke.test.js --runInBand` in `kelmah-frontend` (3 suites, 29 tests).
+
+### Session: Frontend Messaging Thread Density and Action Hierarchy Batch March 26 2026 ✅ COMPLETED
+
+**Date**: March 26, 2026  
+**Scope**: Continue messaging UX hardening by improving thread-level action hierarchy in `Message.jsx` and tightening conversation list row anatomy in `MessagingPage.jsx`.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/messaging/components/common/Message.jsx
+- kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Message thread density and action hierarchy (`Message.jsx`):
+  - tightened bubble padding/width and vertical rhythm so consecutive messages scan faster.
+  - repositioned the message action trigger to a less intrusive side-center anchor and adapted target sizing by viewport.
+  - clarified action labels (`Copy message`, `Delete message`) and visually emphasized destructive action styling.
+  - added a mobile action hint to reduce long-press discoverability friction.
+- Conversation list row anatomy (`MessagingPage.jsx`):
+  - restructured row hierarchy so title, preview, and optional job context read as one grouped content block.
+  - moved time/unread/pin/online indicators into a dedicated trailing status column.
+  - tuned vertical spacing and preview clamping for denser but readable scanning on mobile and desktop.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,964 modules transformed).
+- PASS: `npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx src/tests/smoke/critical-path-happy-flow.smoke.test.jsx src/tests/smoke/critical-path-gateway-contract.smoke.test.js --runInBand` in `kelmah-frontend` (3 suites, 29 tests).
+
+### Session: Frontend Worker Applications + Hirer Application Density + Messaging List Consistency March 26 2026 ✅ COMPLETED
+
+**Date**: March 26, 2026  
+**Scope**: Continue frontend quality improvements for worker application clarity, hirer application navigation density, and messaging list consistency.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/worker/components/JobApplicationForm.jsx
+- kelmah-frontend/src/modules/worker/pages/MyApplicationsPage.jsx
+- kelmah-frontend/src/modules/hirer/pages/ApplicationManagementPage.jsx
+- kelmah-frontend/src/modules/messaging/components/common/ConversationList.jsx
+- kelmah-frontend/src/modules/messaging/components/common/MessageList.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Worker application flow clarity:
+  - improved `JobApplicationForm` copy for clearer first-time completion, added a short pre-submit checklist card, and improved price/input wording.
+  - redirected post-submit success flow to `/worker/applications` so workers land directly in status tracking.
+- Worker application related cards (`MyApplicationsPage`):
+  - normalized mobile application-card metadata to explicit `Location:` and `Applied:` labels.
+  - tightened action labels (`Review`, `Message hirer`) for faster scanning.
+  - normalized application detail pay display to shared currency formatting.
+- Hirer application navigation and density:
+  - improved job-switch labels in mobile controls for faster context switching.
+  - added sidebar guidance copy and converted grouped job headers to accessible `ListItemButton` navigation rows.
+- Messaging list consistency:
+  - improved `ConversationList` timing fallback and added filtered/total count feedback.
+  - improved empty-state messaging for filtered conversation results.
+  - restored missing import header in `MessageList` and aligned empty-state guidance copy.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,964 modules transformed).
+- PASS: `npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx src/tests/smoke/critical-path-happy-flow.smoke.test.jsx src/tests/smoke/critical-path-gateway-contract.smoke.test.js --runInBand` in `kelmah-frontend` (3 suites, 29 tests).
+
+### Session: Frontend Messaging and Worker Search Clarity Batch March 26 2026 ✅ COMPLETED
+
+**Date**: March 26, 2026  
+**Scope**: Continue frontend quality improvements for low-literacy clarity by improving messaging scanability and worker search interaction semantics.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx
+- kelmah-frontend/src/modules/worker/pages/JobSearchPage.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Messaging page improvements:
+  - added a safe per-message attachment cap and explicit overflow messaging.
+  - improved conversation search usability with clear-search affordance and contextual filter guidance.
+  - improved conversation preview readability by allowing 2-line snippet wrapping.
+  - improved composer guidance copy for clearer first-time usage on mobile and desktop.
+- Worker job search improvements:
+  - converted the search cluster to a native form submit flow for reliable Enter-to-search behavior.
+  - improved search placeholder clarity and added concise search-tip guidance.
+  - set explicit non-submit behavior on clear-search action in the form.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,964 modules transformed).
+- PASS: `npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx src/tests/smoke/critical-path-happy-flow.smoke.test.jsx src/tests/smoke/critical-path-gateway-contract.smoke.test.js --runInBand` in `kelmah-frontend` (3 suites, 29 tests).
+
+### Session: Frontend Clarity and Messaging UX Batch March 26 2026 ✅ COMPLETED
+
+**Date**: March 26, 2026  
+**Scope**: Continue frontend mobile/desktop quality improvements focused on low-literacy clarity, readable application cards, and smoother messaging composer behavior.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/hirer/components/ApplicationManagementCards.jsx
+- kelmah-frontend/src/modules/hirer/components/RecentActivityFeed.jsx
+- kelmah-frontend/src/modules/messaging/components/common/MessageInput.jsx
+- kelmah-frontend/src/modules/hirer/components/ApplicationDecisionDialog.jsx
+- kelmah-frontend/src/modules/worker/pages/WorkerProfilePage.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Application cards and job list rows:
+  - normalized currency labels to standard Ghana formatter output.
+  - increased status-chip readability and prevented cover-letter text from collapsing to single-line truncation.
+- Recent activity feed:
+  - improved event-row readability by allowing wrapped primary text and slightly larger icon anchors.
+  - upgraded the footer action to a clearer, touch-safe notifications CTA.
+- Messaging input:
+  - removed premature attachment-dialog opening before file selection.
+  - attachment review now opens after files are selected and remains manually accessible via a review action.
+  - improved dialog close-action touch sizing.
+- Application decision dialog:
+  - simplified accept/reject wording for clearer action intent.
+  - improved optional feedback prompt clarity.
+- Worker profile fallback page:
+  - improved unavailable-profile copy and upgraded the fallback CTA to a clearer worker-directory action with touch-safe sizing.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,964 modules transformed).
+- PASS: `npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx src/tests/smoke/critical-path-happy-flow.smoke.test.jsx src/tests/smoke/critical-path-gateway-contract.smoke.test.js --runInBand` in `kelmah-frontend` (3 suites, 29 tests).
+
 ### Session: Frontend Agent Prompt Hardening March 26 2026 ✅ IN PROGRESS
 
 **Date**: March 26, 2026  
@@ -25973,3 +26351,27 @@ Full visual and structural redesign of `kelmah-frontend/src/modules/jobs/pages/J
   - preserved user-facing behavior and fallback messaging while reducing scattered inline debug-noise patterns.
 - Validation: PASS
   - npm run build (Vite production build succeeded; 13,972 modules transformed).
+
+### [MAR 29, 2026] FRONTEND UI SPRINT: MESSAGING PAGE OPTIMIZATION (COMPLETED)
+- Scope: Execute Messaging Page UX fixes (W1-09, W1-10, W3-09)
+- Files updated:
+  - kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx
+- Implementation summary:
+  - Simplified mobile top-bar controls by conditionally hiding the 'All caught up' chip on narrow viewports.
+  - Improved attachment syntax limit formatting below the chat input box (bulleted format rather than long paragraph).
+  - Upgraded empty-thread and no-conversation-selected state prompts to be more action-oriented.
+  - Restructured real-time disconnection/send error warnings to use clear 'weak connection' recovery-focused phrasing instead of 'realtime updates unavailable'.
+- Validation: PASS
+  - frontend builds cleanly via 'npm run build'.
+
+### [MAR 29, 2026] FRONTEND UI SPRINT: LANDING PAGE & JOB CARDS OPTIMIZATION (COMPLETED)
+- Scope: Execute structural card and mobile landing fixes (W1-01, W1-02, W1-08)
+- Files updated:
+  - kelmah-frontend/src/pages/HomeLanding.jsx
+  - kelmah-frontend/src/modules/jobs/components/JobsCardsGrid.jsx
+- Implementation summary:
+  - HomeLanding: Shifted Hero content down on mobile (pt: {xs: 4...}) instead of forcing 100vh vertically centering, reducing whitespace.
+  - HomeLanding: Compressed the space between hero headers and primary Call to Action (CTA) buttons, and moved the 'BENEFITS' chips into desktop-only views so that mobile primary CTAs pull completely above the viewport fold without scrolling.
+  - JobsCardsGrid: Added explicit mobile-first location/pay/urgency data blocks with iconography below headers and moved the multi-column data views to display: {xs:'none', sm:'grid'}. This directly establishes job-card hierarchy explicitly inside the mobile grid rather than burying data below descriptions.
+- Validation: PASS
+  - frontend builds cleanly via 'npm run build'.

@@ -100,6 +100,8 @@ const JobApplicationForm = () => {
     additionalInfo: '',
   });
 
+  const coverLetterLength = applicationData.coverLetter.trim().length;
+
   useEffect(() => {
     const fetchJobDetails = async () => {
       if (!jobId) return;
@@ -184,7 +186,7 @@ const JobApplicationForm = () => {
       if (response.data) {
         setSuccess(true);
         setTimeout(() => {
-          navigate('/dashboard', {
+          navigate('/worker/applications', {
             state: { message: 'Your application was sent!' },
           });
         }, 3000);
@@ -195,7 +197,7 @@ const JobApplicationForm = () => {
         err.response?.data?.message || err.response?.data?.error?.message;
       if (serverMsg?.includes('already applied')) {
         setError(
-          'You have already applied for this job. Check your dashboard for updates.',
+          'You already applied for this job. Open My Applications to track the status.',
         );
       } else {
         setError(
@@ -280,7 +282,7 @@ const JobApplicationForm = () => {
           </Typography>
           <Typography variant="body1" sx={{ mb: 3 }}>
             The employer will review your application and contact you. Check
-            your dashboard for updates.
+            My Applications for updates.
           </Typography>
           <Box
             sx={{
@@ -292,14 +294,14 @@ const JobApplicationForm = () => {
           >
             <Button
               variant="contained"
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate('/worker/applications')}
               sx={{
                 bgcolor: '#D4AF37',
                 color: '#000',
                 '&:hover': { bgcolor: '#B8941F' },
               }}
             >
-              Go to Dashboard
+              Go to My Applications
             </Button>
             <Button
               variant="outlined"
@@ -311,7 +313,7 @@ const JobApplicationForm = () => {
           </Box>
           <CircularProgress size={30} sx={{ mt: 3, color: '#D4AF37' }} />
           <Typography variant="body2" sx={{ mt: 1, color: 'text.secondary' }}>
-            Going to your dashboard...
+            Taking you to My Applications...
           </Typography>
         </motion.div>
       </Container>
@@ -454,7 +456,7 @@ const JobApplicationForm = () => {
                       variant="subtitle2"
                       sx={{ mb: 1, fontWeight: 600 }}
                     >
-                      Skills Needed:
+                      Skills needed:
                     </Typography>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                       {skills.map((skill, i) => (
@@ -473,6 +475,22 @@ const JobApplicationForm = () => {
                     </Box>
                   </>
                 )}
+
+                <Divider sx={{ my: 2 }} />
+                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+                  Before you send
+                </Typography>
+                <Stack spacing={0.75}>
+                  <Typography variant="caption" color="text.secondary">
+                    - Keep your message short and mention similar jobs you completed.
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    - Confirm your price includes your labor and expected timeline.
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    - If needed, add a portfolio link with photos of your work.
+                  </Typography>
+                </Stack>
               </CardContent>
             </Card>
           </motion.div>
@@ -493,20 +511,20 @@ const JobApplicationForm = () => {
               }}
             >
               <Typography variant="h4" fontWeight={700} sx={{ mb: 1 }}>
-                Apply for this Job
+                Send your application
               </Typography>
               <Typography
                 variant="body1"
                 color="text.secondary"
                 sx={{ mb: 3 }}
               >
-                Fill in the details below. The employer will see your profile
-                and this application.
+                Fill the details below so the employer can quickly compare your
+                experience, price, and availability.
               </Typography>
 
               <Alert severity="info" sx={{ mb: 3 }}>
-                Keep your message short and clear: mention your relevant experience,
-                your expected price, and when you can start.
+                Keep it simple: what work like this you have done, your total
+                price, and when you can begin.
               </Alert>
 
               {error && (
@@ -523,13 +541,16 @@ const JobApplicationForm = () => {
                       fullWidth
                       multiline
                       rows={isMobile ? 4 : 6}
-                      label="Why should you be hired? *"
-                      placeholder="Tell the employer about your experience and why you are right for this job. Example: I have 5 years experience in masonry work and have completed over 20 building projects in Accra."
+                      label="Short work summary *"
+                      placeholder="Example: I have 5 years of masonry experience and completed 20+ house projects in Accra and Kasoa."
                       value={applicationData.coverLetter}
                       onChange={handleInputChange('coverLetter')}
                       required
-                      inputProps={{ 'aria-label': 'Application cover letter' }}
-                      helperText="Use simple, specific details from similar jobs you have completed."
+                      inputProps={{
+                        'aria-label': 'Application cover letter',
+                        maxLength: 500,
+                      }}
+                      helperText={`${coverLetterLength}/500 characters. Mention similar jobs, tools you use, and your timeline.`}
                       InputProps={{
                         startAdornment: (
                           <InputAdornment
@@ -559,7 +580,7 @@ const JobApplicationForm = () => {
                         startAdornment: (
                           <InputAdornment position="start">
                             <MoneyIcon color="action" sx={{ mr: 0.5 }} />
-                            GH₵
+                            GHS
                           </InputAdornment>
                         ),
                       }}
@@ -669,7 +690,7 @@ const JobApplicationForm = () => {
                           '&:hover': { bgcolor: '#B8941F' },
                         }}
                       >
-                        {submitting ? 'Sending...' : 'Send Application'}
+                        {submitting ? 'Sending application...' : 'Send Application'}
                       </Button>
                     </Box>
                   </Grid>

@@ -133,7 +133,7 @@ const PaymentSettingsPage = () => {
   }
 
   return (
-    <PageCanvas disableContainer sx={{ pt: { xs: 1, md: 4 }, pb: { xs: 10, sm: 6, md: 6 } }}>
+    <PageCanvas disableContainer sx={{ pt: { xs: 1, md: 4 }, pb: { xs: 10, md: 6 } }}>
       <Container maxWidth="md" sx={{ py: { xs: 1, sm: 4 }, px: { xs: 0.75, sm: 2 } }}>
         <Helmet><title>Payment Settings | Kelmah</title></Helmet>
         <Paper

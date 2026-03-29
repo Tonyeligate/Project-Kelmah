@@ -602,7 +602,7 @@ function ApplicationManagementPage() {
             variant="outlined"
             startIcon={<Work />}
             onClick={() => setShowJobList(!showJobList)}>
-            {showJobList ? 'Hide Jobs' : selectedJobId ? 'Change Job' : 'Select Job'}
+            {showJobList ? 'Hide Jobs' : selectedJobId ? 'Switch Job' : 'Select Job'}
           </Button>
         )}
       </Box>
@@ -859,7 +859,7 @@ function ApplicationManagementPage() {
           startIcon={<Work />}
           onClick={() => setShowJobList((prev) => !prev)}
         >
-          {showJobList ? 'Hide Jobs' : 'Choose Job'}
+          {showJobList ? 'Hide Jobs' : selectedJobId ? 'Switch Job' : 'Select Job'}
         </Button>
         <Button
           fullWidth
@@ -1024,6 +1024,9 @@ function JobSidebar({
         <Typography variant="overline" color="text.secondary" fontWeight={700}>
           Your Jobs ({allJobs.length})
         </Typography>
+        <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mt: 0.25 }}>
+          Pick a job to narrow this list.
+        </Typography>
       </Box>
       <Box sx={{ flex: 1, p: 1 }}>
         {/* "All Jobs" option */}
@@ -1163,38 +1166,47 @@ function ApplicationsListContent({
 
           return Object.entries(grouped).map(([jobId, group]) => (
             <Box key={jobId} sx={{ mb: 2 }}>
-              <Box
+              <ListItemButton
                 sx={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 1,
+                  borderRadius: 1.25,
                   mb: 1,
-                  px: 0.5,
-                  cursor: 'pointer',
-                  borderRadius: 1,
                   py: 0.5,
+                  px: 0.75,
                   '&:hover': {
                     bgcolor: alpha(theme.palette.primary.main, 0.06),
                   },
                 }}
+                aria-label={`Show only ${group.title} applications`}
                 onClick={() => onSelectJob(jobId)}
               >
-                <Work sx={{ fontSize: 16, color: 'primary.main' }} />
-                <Typography
-                  variant="caption"
-                  fontWeight={700}
-                  color="primary.main"
-                  noWrap
-                  sx={{ flex: 1 }}
+                <ListItemIcon sx={{ minWidth: 28 }}>
+                  <Work sx={{ fontSize: 16, color: 'primary.main' }} />
+                </ListItemIcon>
+                <ListItemText
+                  primary={group.title}
+                  secondary="Show only this job"
+                  primaryTypographyProps={{
+                    variant: 'caption',
+                    fontWeight: 700,
+                    color: 'primary.main',
+                    noWrap: true,
+                  }}
+                  secondaryTypographyProps={{
+                    variant: 'caption',
+                    color: 'text.disabled',
+                    noWrap: true,
+                  }}
+                  sx={{ my: 0 }}
                 >
-                  {group.title}
-                </Typography>
+                </ListItemText>
                 <Chip
                   size="small"
                   label={activeTabCountsByJob[jobId] || group.apps.length}
                   sx={{ height: 18, fontSize: '0.65rem' }}
                 />
-              </Box>
+              </ListItemButton>
               {group.apps.map((app) => (
                 <ApplicationCard
                   key={app.id}

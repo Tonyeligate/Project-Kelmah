@@ -137,6 +137,12 @@ const formatBudget = (budget, currency = 'GHS') => {
 // ─── Subcomponent: Search Header ────────────────────────────
 const SearchHeader = ({ search, setSearch, onSearch, resultCount, isLoading, hasFilters }) => {
   const theme = useTheme();
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    onSearch();
+  };
+
   return (
     <Paper
       elevation={0}
@@ -157,64 +163,69 @@ const SearchHeader = ({ search, setSearch, onSearch, resultCount, isLoading, has
         >
           Find Work
         </Typography>
-        <Stack direction="row" spacing={1} sx={{ alignItems: 'stretch', minWidth: 0 }}>
-          <TextField
-            fullWidth
-            placeholder="Search by job title, skill, or keyword…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && onSearch()}
-            size="small"
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon sx={{ color: 'text.secondary' }} />
-                </InputAdornment>
-              ),
-              endAdornment: search ? (
-                <InputAdornment position="end">
-                  <IconButton
-                    size="small"
-                    aria-label="Clear search text"
-                    onClick={() => {
-                      setSearch('');
-                      onSearch('');
-                    }}
-                    sx={{
-                      '&:focus-visible': {
-                        outline: '3px solid',
-                        outlineColor: 'primary.main',
-                        outlineOffset: '2px',
-                      },
-                    }}
-                  >
-                    <ClearIcon fontSize="small" />
-                  </IconButton>
-                </InputAdornment>
-              ) : null,
-              sx: {
-                borderRadius: 2,
-                bgcolor: alpha(theme.palette.background.default, 0.5),
+        <Box component="form" onSubmit={handleSubmit} noValidate>
+          <Stack direction="row" spacing={1} sx={{ alignItems: 'stretch', minWidth: 0 }}>
+            <TextField
+              fullWidth
+              placeholder="Search job title, trade, or location"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              size="small"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon sx={{ color: 'text.secondary' }} />
+                  </InputAdornment>
+                ),
+                endAdornment: search ? (
+                  <InputAdornment position="end">
+                    <IconButton
+                      type="button"
+                      size="small"
+                      aria-label="Clear search text"
+                      onClick={() => {
+                        setSearch('');
+                        onSearch('');
+                      }}
+                      sx={{
+                        '&:focus-visible': {
+                          outline: '3px solid',
+                          outlineColor: 'primary.main',
+                          outlineOffset: '2px',
+                        },
+                      }}
+                    >
+                      <ClearIcon fontSize="small" />
+                    </IconButton>
+                  </InputAdornment>
+                ) : null,
+                sx: {
+                  borderRadius: 2,
+                  bgcolor: alpha(theme.palette.background.default, 0.5),
+                  minHeight: 44,
+                },
+              }}
+            />
+            <Button
+              type="submit"
+              variant="contained"
+              aria-label="Search jobs"
+              sx={{
+                minWidth: { xs: 44, md: 100 },
                 minHeight: 44,
-              },
-            }}
-          />
-          <Button
-            variant="contained"
-            onClick={() => onSearch()}
-            aria-label="Search jobs"
-            sx={{
-              minWidth: { xs: 44, md: 100 },
-              minHeight: 44,
-              borderRadius: 2,
-              textTransform: 'none',
-              fontWeight: 600,
-            }}
-          >
-            <SearchIcon sx={{ display: { md: 'none' } }} />
-            <Box sx={{ display: { xs: 'none', md: 'block' } }}>Search</Box>
-          </Button>
-        </Stack>
+                borderRadius: 2,
+                textTransform: 'none',
+                fontWeight: 600,
+              }}
+            >
+              <SearchIcon sx={{ display: { md: 'none' } }} />
+              <Box sx={{ display: { xs: 'none', md: 'block' } }}>Search</Box>
+            </Button>
+          </Stack>
+        </Box>
+        <Typography variant="caption" color="text.secondary" sx={{ display: { xs: 'none', md: 'block' } }}>
+          Tip: type a trade and location to get better matches faster.
+        </Typography>
         {!isLoading && (
           <Typography variant="body2" color="text.secondary" sx={{ display: { xs: 'none', md: 'block' } }}>
             {resultCount} {resultCount === 1 ? 'job' : 'jobs'} available

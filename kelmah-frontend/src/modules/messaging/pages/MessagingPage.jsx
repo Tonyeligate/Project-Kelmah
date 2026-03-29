@@ -51,6 +51,7 @@ const CHAT_ACCENT = '#128C7E';
 const CHAT_BG_DARK = '#0B141A';
 const CHAT_BG_LIGHT = '#F3F7F7';
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
+const MAX_ATTACHMENTS = 5;
 
 const getCurrentUserId = (user) => user?.id || user?._id || user?.userId || user?.sub || null;
 
@@ -506,17 +507,23 @@ const MessagingPage = () => {
   const handleFileChange = useCallback((event) => {
     const files = Array.from(event.target.files || []);
     const validFiles = files.filter((file) => file.size <= MAX_FILE_SIZE_BYTES);
+    const availableSlots = Math.max(MAX_ATTACHMENTS - selectedFiles.length, 0);
+    const filesToAdd = validFiles.slice(0, availableSlots);
 
     if (files.length !== validFiles.length) {
       setSendError('Some files were skipped because they are larger than 10 MB.');
     }
 
-    if (validFiles.length > 0) {
-      setSelectedFiles((prev) => [...prev, ...validFiles]);
+    if (validFiles.length > availableSlots) {
+      setSendError(`You can attach up to ${MAX_ATTACHMENTS} files per message.`);
+    }
+
+    if (filesToAdd.length > 0) {
+      setSelectedFiles((prev) => [...prev, ...filesToAdd]);
     }
 
     event.target.value = '';
-  }, []);
+  }, [selectedFiles.length]);
 
   const handleRemoveFile = useCallback((removeIndex) => {
     setSelectedFiles((prev) => prev.filter((_, index) => index !== removeIndex));
@@ -617,7 +624,7 @@ const MessagingPage = () => {
         <TextField
           fullWidth
           size="small"
-          placeholder="Search chats"
+          placeholder="Search by name or keyword"
           value={searchQuery}
           onChange={(event) => setSearchQuery(event.target.value)}
           inputProps={{ 'aria-label': 'Search conversations' }}
@@ -636,6 +643,18 @@ const MessagingPage = () => {
                 <SearchIcon sx={{ color: 'text.secondary', fontSize: 20 }} />
               </InputAdornment>
             ),
+            endAdornment: searchQuery ? (
+              <InputAdornment position="end">
+                <IconButton
+                  size="small"
+                  aria-label="Clear chat search"
+                  onClick={() => setSearchQuery('')}
+                  sx={{ minWidth: 36, minHeight: 36 }}
+                >
+                  <CloseIcon sx={{ fontSize: 18 }} />
+                </IconButton>
+              </InputAdornment>
+            ) : null,
           }}
         />
 
@@ -661,6 +680,10 @@ const MessagingPage = () => {
           ))}
           {deepLinkLoading && <Chip label="Loading" size="small" sx={{ fontWeight: 700 }} />}
         </Stack>
+
+        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+          Tip: use Unread to quickly reply to pending worker or hirer messages.
+        </Typography>
       </Box>
 
       {(realtimeIssue || !isConnected) && (
@@ -740,9 +763,10 @@ const MessagingPage = () => {
                             sx={{
                               minWidth: 0,
                               overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              whiteSpace: 'nowrap',
                               pr: 1,
+                              display: '-webkit-box',
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: 'vertical',
                             }}
                           >
                             {preview}
@@ -1111,7 +1135,7 @@ const MessagingPage = () => {
               fullWidth
               multiline
               maxRows={4}
-              placeholder="Type a message"
+              placeholder="Type your message (price, timing, and next step)"
               value={messageText}
               onChange={(event) => {
                 setMessageText(event.target.value);
@@ -1142,7 +1166,7 @@ const MessagingPage = () => {
             <Tooltip title="Send message">
               <IconButton
                 type="submit"
-                disabled={isSending || (!messageText.trim() && selectedFiles.length === 0)}
+                disabled={sendDisabled}
                 aria-label="Send message"
                 sx={{
                   minWidth: 44,
@@ -1160,6 +1184,10 @@ const MessagingPage = () => {
               </IconButton>
             </Tooltip>
           </Stack>
+
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.75, pl: 0.5 }}>
+            Press Enter to send. Press Shift+Enter for a new line. Up to {MAX_ATTACHMENTS} attachments.
+          </Typography>
         </Box>
       </Paper>
     );

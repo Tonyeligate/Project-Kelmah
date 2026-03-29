@@ -33,22 +33,22 @@ function ApplicationDecisionDialog({
       aria-labelledby="confirm-action-dialog-title"
     >
       <DialogTitle id="confirm-action-dialog-title">
-        Confirm {isAccepted ? 'Accept' : 'Reject'}
+        {isAccepted ? 'Accept This Worker?' : 'Reject This Application?'}
       </DialogTitle>
-      <DialogContent>
-        <Typography>
+      <DialogContent dividers>
+        <Typography sx={{ mb: isAccepted ? 0 : 1.5 }}>
           You are about to <strong>{isAccepted ? 'accept' : 'reject'}</strong>{' '}
-          the application from <strong>{workerName}</strong>.
+          <strong>{workerName}</strong> for this job.
         </Typography>
         {!isAccepted && (
           <TextField
-            label="Feedback (Optional)"
+            label="Reason (optional)"
             multiline
             rows={4}
             fullWidth
             value={feedback}
             onChange={(e) => onFeedbackChange(e.target.value)}
-            sx={{ mt: 2 }}
+            helperText="Short feedback helps the worker improve future applications."
           />
         )}
       </DialogContent>
@@ -66,7 +66,7 @@ function ApplicationDecisionDialog({
           {updating ? (
             <CircularProgress size={24} />
           ) : (
-            `Confirm ${isAccepted ? 'Accept' : 'Reject'}`
+            isAccepted ? 'Accept Worker' : 'Reject Application'
           )}
         </Button>
       </DialogActions>

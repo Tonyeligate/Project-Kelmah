@@ -30,16 +30,24 @@ const WorkerProfilePage = () => {
       <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 2, md: 4 }, overflowX: 'clip' }}>
         <Box sx={{ p: 4, textAlign: 'center', minHeight: '50vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minWidth: 0 }}>
           <PersonSearchIcon sx={{ fontSize: 64, color: 'secondary.dark', mb: 2 }} />
-          <Typography variant="h6" gutterBottom>Worker profile not found</Typography>
+          <Typography variant="h6" gutterBottom>
+            Worker profile not found
+          </Typography>
           <Typography variant="body2" sx={{ mb: 3, color: 'text.secondary' }}>
-            The worker you&apos;re looking for may have moved, or the link may be incomplete.
+            This worker page is unavailable right now. You can return to the worker directory and choose another profile.
           </Typography>
           <Button
             variant="contained"
             onClick={() => navigate('/search')}
-            sx={{ bgcolor: 'secondary.dark', color: 'secondary.contrastText', '&:hover': { bgcolor: 'secondary.dark' } }}
+            sx={{
+              minHeight: 44,
+              px: 2.5,
+              bgcolor: 'secondary.dark',
+              color: 'secondary.contrastText',
+              '&:hover': { bgcolor: 'secondary.dark' },
+            }}
           >
-            Browse Workers
+            Go To Worker Directory
           </Button>
         </Box>
       </PageCanvas>
