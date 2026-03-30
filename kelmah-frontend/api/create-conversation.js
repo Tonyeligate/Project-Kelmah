@@ -25,7 +25,8 @@ const HMAC_SECRET =
 
 const DEFAULT_GATEWAY_ORIGIN = 'https://kelmah-api-gateway-tvqj.onrender.com';
 
-const DEFAULT_MESSAGING_ORIGIN = 'https://kelmah-messaging-service-kpj5.onrender.com';
+const DEFAULT_MESSAGING_ORIGIN =
+  'https://kelmah-messaging-service-kpj5.onrender.com';
 
 function normalizeServiceOrigin(raw) {
   if (!raw || typeof raw !== 'string') return null;
@@ -43,7 +44,8 @@ function shouldRetryWithNextOrigin(result) {
   if (result.status >= 500) return true;
 
   if (result.status === 404) {
-    const rawBody = typeof result?.data?.raw === 'string' ? result.data.raw.trim() : '';
+    const rawBody =
+      typeof result?.data?.raw === 'string' ? result.data.raw.trim() : '';
     return rawBody === 'Not Found';
   }
 
@@ -67,7 +69,12 @@ async function forwardWithCandidates(candidates, method, body) {
     }
   }
 
-  return lastResult || { status: 502, data: { success: false, message: 'Bridge upstream unavailable' } };
+  return (
+    lastResult || {
+      status: 502,
+      data: { success: false, message: 'Bridge upstream unavailable' },
+    }
+  );
 }
 
 /**
@@ -134,19 +141,25 @@ export default async function handler(req, res) {
 
   if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'POST') {
-    return res.status(405).json({ success: false, message: 'Method not allowed' });
+    return res
+      .status(405)
+      .json({ success: false, message: 'Method not allowed' });
   }
 
   try {
     // Extract JWT
     const authHeader = req.headers['authorization'] || '';
     if (!authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ success: false, message: 'Missing authorization token' });
+      return res
+        .status(401)
+        .json({ success: false, message: 'Missing authorization token' });
     }
 
     const decoded = decodeJwtPayload(authHeader);
     if (!decoded || !(decoded.sub || decoded.id || decoded.userId)) {
-      return res.status(401).json({ success: false, message: 'Invalid token payload' });
+      return res
+        .status(401)
+        .json({ success: false, message: 'Invalid token payload' });
     }
 
     // Build authenticated-user header matching gateway format
@@ -211,7 +224,11 @@ export default async function handler(req, res) {
     const result = await forwardWithCandidates(candidates, 'POST', bodyStr);
     return res.status(result.status).json(result.data);
   } catch (err) {
-    console.error('[create-conversation] Handler error:', err.message, err.stack);
+    console.error(
+      '[create-conversation] Handler error:',
+      err.message,
+      err.stack,
+    );
     return res.status(502).json({
       success: false,
       message: 'Bridge error: ' + (err.message || 'Unknown error'),

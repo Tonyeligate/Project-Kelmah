@@ -36,7 +36,11 @@ import { useSettings } from '../hooks/useSettings';
 import { Helmet } from 'react-helmet-async';
 import { useBreakpointUp } from '@/hooks/useResponsive';
 import { HEADER_HEIGHT_MOBILE, Z_INDEX } from '@/constants/layout';
-import { withSafeAreaTop } from '@/utils/safeArea';
+import {
+  withBottomNavSafeArea,
+  withSafeAreaBottom,
+  withSafeAreaTop,
+} from '@/utils/safeArea';
 import PageCanvas from '../../common/components/PageCanvas';
 
 const SettingsPage = () => {
@@ -214,10 +218,11 @@ const SettingsPage = () => {
                 position: 'fixed',
                 left: 0,
                 right: 0,
-                bottom: 0,
-                zIndex: theme.zIndex.appBar + 2,
+                bottom: withBottomNavSafeArea(0),
+                zIndex: Z_INDEX.stickyCta,
                 px: 1,
                 py: 1,
+                pb: withSafeAreaBottom(8),
                 borderTop: `1px solid ${theme.palette.divider}`,
                 backgroundColor: theme.palette.background.paper,
               })}

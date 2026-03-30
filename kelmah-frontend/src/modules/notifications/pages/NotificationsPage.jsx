@@ -45,7 +45,11 @@ import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 import { HEADER_HEIGHT_MOBILE, Z_INDEX } from '@/constants/layout';
-import { withSafeAreaTop } from '@/utils/safeArea';
+import {
+  withBottomNavSafeArea,
+  withSafeAreaBottom,
+  withSafeAreaTop,
+} from '@/utils/safeArea';
 import PageCanvas from '../../common/components/PageCanvas';
 import {
   isSafeInternalPath,
@@ -340,7 +344,7 @@ const NotificationsPage = () => {
         sx={{
           py: { xs: 0, md: 0 },
           px: { xs: 0.75, sm: 2 },
-          pb: { xs: 'calc(72px + env(safe-area-inset-bottom, 0px))', md: 0 },
+          pb: { xs: withBottomNavSafeArea(16), md: 0 },
           width: '100%',
           minWidth: 0,
         }}
@@ -583,25 +587,27 @@ const NotificationsPage = () => {
 
         <Paper
           elevation={8}
-          sx={(theme) => ({
+          sx={{
             display: { xs: 'flex', sm: 'none' },
             position: 'fixed',
             left: 0,
             right: 0,
-            bottom: 0,
-            zIndex: theme.zIndex.appBar + 2,
+            bottom: withBottomNavSafeArea(0),
+            zIndex: Z_INDEX.stickyCta,
             px: 1,
             py: 1,
+            pb: withSafeAreaBottom(8),
             gap: 1,
-            borderTop: `1px solid ${theme.palette.divider}`,
-            backgroundColor: theme.palette.background.paper,
-          })}
+            borderTop: '1px solid',
+            borderColor: 'divider',
+            backgroundColor: 'background.paper',
+          }}
         >
           <Button
             fullWidth
             variant="outlined"
             color="secondary"
-            sx={{ minHeight: 42 }}
+            sx={{ minHeight: 44 }}
             onClick={markAllAsRead}
             disabled={unreadCount === 0}
           >
@@ -611,7 +617,7 @@ const NotificationsPage = () => {
             fullWidth
             variant="contained"
             color="secondary"
-            sx={{ minHeight: 42, boxShadow: '0 2px 8px rgba(255,215,0,0.35)' }}
+            sx={{ minHeight: 44, boxShadow: '0 2px 8px rgba(255,215,0,0.35)' }}
             onClick={clearAllNotifications}
             disabled={notifications.length === 0}
           >

@@ -56,12 +56,12 @@ import {
 } from '../services/quickJobService';
 import { Helmet } from 'react-helmet-async';
 import {
-  BOTTOM_NAV_HEIGHT,
+  HEADER_HEIGHT,
   HEADER_HEIGHT_MOBILE,
   Z_INDEX,
 } from '../../../constants/layout';
 import PageCanvas from '../../common/components/PageCanvas';
-import { withSafeAreaTop } from '../../../utils/safeArea';
+import { withSafeAreaBottom, withSafeAreaTop } from '../../../utils/safeArea';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 
 const NearbyJobsPage = () => {
@@ -306,7 +306,10 @@ const NearbyJobsPage = () => {
           <Box
             sx={{
               position: 'sticky',
-              top: { xs: mobileStickyTop, md: 80 },
+              top: {
+                xs: mobileStickyTop,
+                md: `calc(${HEADER_HEIGHT}px + 16px)`,
+              },
               zIndex: Z_INDEX.sticky,
               display: 'flex',
               gap: 0.75,
@@ -601,7 +604,7 @@ const NearbyJobsPage = () => {
             color="primary"
             sx={{
               position: 'fixed',
-              bottom: `calc(${BOTTOM_NAV_HEIGHT + 16}px + env(safe-area-inset-bottom, 0px))`,
+              bottom: 16,
               right: 16,
             }}
             onClick={() => fetchJobs()}
@@ -766,7 +769,7 @@ const NearbyJobsPage = () => {
             <DialogActions
               sx={{
                 px: { xs: 1.5, md: 3 },
-                pb: { xs: 1.5, md: 3 },
+                pb: { xs: withSafeAreaBottom(12), md: 3 },
                 position: { xs: 'sticky', md: 'static' },
                 bottom: 0,
                 bgcolor: { xs: 'background.paper', md: 'transparent' },

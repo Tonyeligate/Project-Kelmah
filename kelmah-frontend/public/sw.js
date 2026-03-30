@@ -69,7 +69,12 @@ const OFFLINE_HTML_FALLBACK = `<!doctype html>
   </body>
 </html>`;
 
-const buildApiFallbackResponse = ({ message, code, status = 503, fallbackSource = 'service-worker' }) =>
+const buildApiFallbackResponse = ({
+  message,
+  code,
+  status = 503,
+  fallbackSource = 'service-worker',
+}) =>
   new Response(
     JSON.stringify({
       success: false,
@@ -170,11 +175,7 @@ async function fetchAndCacheGatewayStatus() {
   }
 }
 // Critical resources to cache immediately (avoid CRA-specific paths)
-const PRECACHE_URLS = [
-  '/index.html',
-  '/offline.html',
-  '/manifest.json',
-];
+const PRECACHE_URLS = ['/index.html', '/offline.html', '/manifest.json'];
 
 // API endpoints to cache for offline
 const CACHE_API_PATTERNS = [
@@ -204,11 +205,13 @@ self.addEventListener('install', (event) => {
         swLog('📦 Caching core resources for offline access');
         // Cache each resource individually — SPA routes may fail and that's OK
         const results = await Promise.allSettled(
-          PRECACHE_URLS.map((url) => cache.add(url).catch(() => null))
+          PRECACHE_URLS.map((url) => cache.add(url).catch(() => null)),
         );
         const failed = results.filter((r) => r.status === 'rejected');
         if (failed.length > 0) {
-          swWarn(`⚠️ ${failed.length}/${PRECACHE_URLS.length} precache URLs skipped (SPA routes)`);
+          swWarn(
+            `⚠️ ${failed.length}/${PRECACHE_URLS.length} precache URLs skipped (SPA routes)`,
+          );
         }
       })
       .then(() => fetchAndCacheGatewayStatus())
@@ -402,7 +405,10 @@ async function handleStaticAssetRequest(request) {
       const response = await fetch(request, { cache: 'no-store' });
 
       if (response.status === 404) {
-        swWarn('[SW] Missing hashed chunk detected. Clearing runtime caches.', request.url);
+        swWarn(
+          '[SW] Missing hashed chunk detected. Clearing runtime caches.',
+          request.url,
+        );
         await clearRuntimeCaches();
 
         if (request.destination === 'script') {
@@ -461,7 +467,10 @@ async function handleStaticAssetRequest(request) {
     const response = await fetch(request);
 
     if (response.status === 404 && isChunkAsset(request.url)) {
-      swWarn('[SW] Missing hashed chunk detected. Clearing runtime caches.', request.url);
+      swWarn(
+        '[SW] Missing hashed chunk detected. Clearing runtime caches.',
+        request.url,
+      );
       await clearRuntimeCaches();
 
       if (request.destination === 'script') {
@@ -493,7 +502,9 @@ async function handleStaticAssetRequest(request) {
 
 function isChunkAsset(url) {
   const parsed = new URL(url, self.location.origin);
-  return /\/assets\//.test(parsed.pathname) && /\.(js|css)$/.test(parsed.pathname);
+  return (
+    /\/assets\//.test(parsed.pathname) && /\.(js|css)$/.test(parsed.pathname)
+  );
 }
 
 function buildChunkRecoveryScriptResponse() {
@@ -848,7 +859,9 @@ self.addEventListener('push', (event) => {
     }
   }
 
-  event.waitUntil(self.registration.showNotification(notificationTitle, options));
+  event.waitUntil(
+    self.registration.showNotification(notificationTitle, options),
+  );
 });
 
 // Notification click handling
@@ -897,7 +910,8 @@ async function readOfflineQueue(storeName) {
     return new Promise((resolve, reject) => {
       const tx = db.transaction(storeName, 'readonly');
       const request = tx.objectStore(storeName).getAll();
-      request.onsuccess = () => resolve(Array.isArray(request.result) ? request.result : []);
+      request.onsuccess = () =>
+        resolve(Array.isArray(request.result) ? request.result : []);
       request.onerror = () => reject(request.error);
     });
   } catch (error) {
@@ -943,4 +957,6 @@ async function removeOfflinePayment(id) {
   return removeOfflineQueueItem(OFFLINE_PAYMENTS_STORE, id);
 }
 
-swLog('🇬🇭 Kelmah Service Worker loaded - Optimized for Ghana market (v1.0.7 chunk recovery)');
+swLog(
+  '🇬🇭 Kelmah Service Worker loaded - Optimized for Ghana market (v1.0.7 chunk recovery)',
+);

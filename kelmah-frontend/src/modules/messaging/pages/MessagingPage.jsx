@@ -60,7 +60,6 @@ import { useMessages } from '../contexts/MessageContext';
 import { messagingService } from '../services/messagingService';
 import useKeyboardVisible from '../../../hooks/useKeyboardVisible';
 import {
-  BOTTOM_NAV_HEIGHT,
   HEADER_HEIGHT_MOBILE,
   TOUCH_TARGET_MIN,
   Z_INDEX,
@@ -966,6 +965,34 @@ const MessagingPage = () => {
     }
 
     list.sort((left, right) => {
+      const leftDraftKey = getConversationKey(left, currentUserId);
+      const rightDraftKey = getConversationKey(right, currentUserId);
+      const leftDraftEntry = leftDraftKey
+        ? getDraftEntry(draftsByConversation[leftDraftKey])
+        : null;
+      const rightDraftEntry = rightDraftKey
+        ? getDraftEntry(draftsByConversation[rightDraftKey])
+        : null;
+      const leftHasDraft = Boolean(leftDraftEntry?.text?.trim());
+      const rightHasDraft = Boolean(rightDraftEntry?.text?.trim());
+
+      if (leftHasDraft !== rightHasDraft) {
+        return rightHasDraft ? 1 : -1;
+      }
+
+      if (leftHasDraft && rightHasDraft) {
+        const leftDraftStamp = new Date(
+          leftDraftEntry?.updatedAt || 0,
+        ).getTime();
+        const rightDraftStamp = new Date(
+          rightDraftEntry?.updatedAt || 0,
+        ).getTime();
+
+        if (leftDraftStamp !== rightDraftStamp) {
+          return rightDraftStamp - leftDraftStamp;
+        }
+      }
+
       const leftStamp = new Date(
         left?.lastMessage?.timestamp ||
           left?.lastMessage?.createdAt ||
@@ -982,7 +1009,13 @@ const MessagingPage = () => {
     });
 
     return list;
-  }, [activeFilter, conversations, currentUserId, searchQuery]);
+  }, [
+    activeFilter,
+    conversations,
+    currentUserId,
+    draftsByConversation,
+    searchQuery,
+  ]);
 
   const totalConversationCount = Array.isArray(conversations)
     ? conversations.length

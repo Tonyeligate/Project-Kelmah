@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   Box,
   TextField,
@@ -11,6 +10,8 @@ import {
 } from '@mui/material';
 import { Search as SearchIcon, Tune as FilterIcon } from '@mui/icons-material';
 import PropTypes from 'prop-types';
+import { HEADER_HEIGHT_MOBILE, Z_INDEX } from '@/constants/layout';
+import { withSafeAreaTop } from '@/utils/safeArea';
 
 /**
  * CompactSearchBar - Minimal search bar for mobile
@@ -27,7 +28,16 @@ const CompactSearchBar = ({
   const theme = useTheme();
 
   return (
-    <Paper elevation={2} sx={{ p: { xs: 0.75, sm: 1 }, mb: 2 }}>
+    <Paper
+      elevation={2}
+      sx={{
+        p: { xs: 0.75, sm: 1 },
+        mb: 2,
+        position: 'sticky',
+        top: `calc(${withSafeAreaTop(HEADER_HEIGHT_MOBILE + 8)} + var(--kelmah-network-banner-offset, 0px))`,
+        zIndex: Z_INDEX.sticky,
+      }}
+    >
       <Box
         component="form"
         onSubmit={(event) => {
@@ -97,11 +107,12 @@ const CompactSearchBar = ({
           variant="contained"
           onClick={onFilterClick}
           aria-label="Open advanced worker filters"
+          startIcon={<FilterIcon />}
           sx={{
-            minWidth: { xs: '100%', sm: '48px' },
-            width: { xs: '100%', sm: '48px' },
+            minWidth: { xs: '100%', sm: '120px' },
+            width: { xs: '100%', sm: 'auto' },
             height: '48px',
-            p: 0,
+            px: { xs: 1.5, sm: 2 },
             bgcolor: theme.palette.mode === 'dark' ? '#FFD700' : '#000000',
             color: theme.palette.mode === 'dark' ? '#000000' : '#FFD700',
             '&:hover': {
@@ -109,7 +120,7 @@ const CompactSearchBar = ({
             },
           }}
         >
-          <FilterIcon />
+          Filters
         </Button>
       </Box>
       <Typography

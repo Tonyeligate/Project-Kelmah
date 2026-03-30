@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   BottomNavigation,
   BottomNavigationAction,
@@ -28,7 +28,6 @@ import {
 } from '../../../constants/layout';
 import { withSafeAreaBottom } from '../../../utils/safeArea';
 import useKeyboardVisible from '../../../hooks/useKeyboardVisible';
-import { useBreakpointDown } from '../../../hooks/useResponsive';
 
 // Styled Components - Clean mobile-first design
 const StyledPaper = styled(Paper)(({ theme }) => ({
@@ -51,7 +50,7 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
   paddingBottom: withSafeAreaBottom(0),
 }));
 
-const StyledBottomNavigation = styled(BottomNavigation)(({ theme }) => ({
+const StyledBottomNavigation = styled(BottomNavigation)(() => ({
   backgroundColor: 'transparent',
   height: BOTTOM_NAV_HEIGHT,
   minHeight: BOTTOM_NAV_HEIGHT,
@@ -132,18 +131,12 @@ const MobileBottomNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const path = location.pathname;
-  const isMobile = useBreakpointDown('sm');
   const { unreadCount = 0 } = useNotifications();
   const { isKeyboardVisible } = useKeyboardVisible();
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   // Get user role from Redux auth state (not path-based)
   const { user, isAuthenticated } = useSelector((state) => state.auth);
-
-  // Return null if user is not authenticated (as requested, nav is for authenticated users only)
-  if (!isAuthenticated) {
-    return null;
-  }
 
   const userRole = user?.role || user?.userType || user?.userRole || null;
   const isHirer = userRole === 'hirer' || path.startsWith('/hirer');
@@ -276,7 +269,7 @@ const MobileBottomNav = () => {
         path: '/worker/profile',
       },
     ];
-  }, [isHirer, isMobile, unreadCount]);
+  }, [isHirer, unreadCount]);
 
   const handleNavigation = (event, newValue) => {
     const item = navigationItems.find((i) => i.value === newValue);
@@ -300,8 +293,10 @@ const MobileBottomNav = () => {
     };
   }, [isTransitioning]);
 
-  // Hide bottom nav when virtual keyboard is open
-  if (isKeyboardVisible) return null;
+  // Hide bottom nav when auth is unavailable or the virtual keyboard is open.
+  if (!isAuthenticated || isKeyboardVisible) {
+    return null;
+  }
 
   return (
     <StyledPaper elevation={0} component="nav" aria-label="Main navigation">

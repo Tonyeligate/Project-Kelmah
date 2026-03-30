@@ -3,9 +3,7 @@
  * Unified theme system with consistent branding
  * Last updated: January 2025
  */
-import { useEffect, Suspense, useRef, useState } from 'react';
-import PropTypes from 'prop-types';
-import { useLocation } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import {
   Box,
@@ -17,7 +15,7 @@ import {
   Skeleton,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import { KelmahThemeProvider, useThemeMode } from './theme/ThemeProvider';
+import { KelmahThemeProvider } from './theme/ThemeProvider';
 import { AppRoutes } from './routes/config';
 import { verifyAuth } from './modules/auth/services/authSlice';
 import { secureStorage } from './utils/secureStorage';
@@ -77,7 +75,6 @@ const formatRetryDelay = (retryAfterMs) => {
 const App = () => {
   const dispatch = useDispatch();
   const { isHealthy } = useApiHealth();
-  const location = useLocation();
   const initialized = useRef(false);
   const [servicesWakingUp, setServicesWakingUp] = useState(false);
   const [authBootstrapLoading, setAuthBootstrapLoading] = useState(true);

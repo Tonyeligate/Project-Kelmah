@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
 import {
   Dialog,
   DialogTitle,
@@ -15,7 +16,6 @@ import {
   Box,
   SwipeableDrawer,
   Typography,
-  useTheme,
   InputAdornment,
   Collapse,
 } from '@mui/material';
@@ -39,14 +39,28 @@ const JOB_CATEGORIES = [
 
 const JOB_TYPES = ['full_time', 'part_time', 'contract', 'one_time'];
 
-function JobFilters({ open, onClose, filters, onApply }) {
-  const theme = useTheme();
+const DEFAULT_FILTERS = {
+  search: '',
+  category: '',
+  job_type: '',
+  min_budget: '',
+  max_budget: '',
+  status: 'open',
+};
+
+function JobFilters({ open, onClose, filters = DEFAULT_FILTERS, onApply }) {
   const isMobile = useBreakpointDown('sm');
-  const [localFilters, setLocalFilters] = useState(filters);
+  const [localFilters, setLocalFilters] = useState({
+    ...DEFAULT_FILTERS,
+    ...(filters || {}),
+  });
   const [showMoreMobileFilters, setShowMoreMobileFilters] = useState(false);
 
   useEffect(() => {
-    setLocalFilters(filters);
+    setLocalFilters({
+      ...DEFAULT_FILTERS,
+      ...(filters || {}),
+    });
     if (open) {
       setShowMoreMobileFilters(false);
     }
@@ -65,14 +79,7 @@ function JobFilters({ open, onClose, filters, onApply }) {
   };
 
   const handleReset = () => {
-    const resetFilters = {
-      search: '',
-      category: '',
-      job_type: '',
-      min_budget: '',
-      max_budget: '',
-      status: 'open',
-    };
+    const resetFilters = { ...DEFAULT_FILTERS };
     setLocalFilters(resetFilters);
     onApply(resetFilters);
     onClose();
@@ -336,5 +343,19 @@ function JobFilters({ open, onClose, filters, onApply }) {
     </Dialog>
   );
 }
+
+JobFilters.propTypes = {
+  open: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onApply: PropTypes.func.isRequired,
+  filters: PropTypes.shape({
+    search: PropTypes.string,
+    category: PropTypes.string,
+    job_type: PropTypes.string,
+    min_budget: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    max_budget: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    status: PropTypes.string,
+  }),
+};
 
 export default JobFilters;

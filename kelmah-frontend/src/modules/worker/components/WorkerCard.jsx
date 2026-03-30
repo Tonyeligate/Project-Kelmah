@@ -342,7 +342,13 @@ const WorkerCard = ({ worker, onSave, isPublicView }) => {
       location.search,
       navigate,
       worker._id,
+      worker.avatar,
+      worker.displayName,
+      worker.fullName,
       worker.id,
+      worker.name,
+      worker.photo,
+      worker.profilePicture,
       worker.userId,
     ],
   );
@@ -350,8 +356,9 @@ const WorkerCard = ({ worker, onSave, isPublicView }) => {
   const messageCta = useMemo(() => {
     if (isViewingSelf) {
       return {
-        label: 'This is you',
+        label: 'Your profile',
         tooltip: 'You cannot message your own profile',
+        hint: 'Switch to another worker to start a conversation.',
         disabled: true,
         handler: (e) => e.stopPropagation(),
       };
@@ -359,8 +366,9 @@ const WorkerCard = ({ worker, onSave, isPublicView }) => {
 
     if (!isAuthenticated) {
       return {
-        label: 'Log In',
+        label: isPublicView ? 'Sign in' : 'Log In',
         tooltip: 'Log in to contact workers',
+        hint: 'Sign in as a hirer to message workers directly.',
         disabled: false,
         handler: handleMessage,
       };
@@ -368,8 +376,9 @@ const WorkerCard = ({ worker, onSave, isPublicView }) => {
 
     if (!isHirer) {
       return {
-        label: 'For hirers only',
+        label: 'Hirer only',
         tooltip: 'Switch to a hirer account to message workers',
+        hint: 'Messaging workers is currently limited to hirer accounts.',
         disabled: true,
         handler: (e) => e.stopPropagation(),
       };
@@ -378,10 +387,11 @@ const WorkerCard = ({ worker, onSave, isPublicView }) => {
     return {
       label: 'Message',
       tooltip: 'Start a conversation with this worker',
+      hint: null,
       disabled: false,
       handler: handleMessage,
     };
-  }, [handleMessage, isAuthenticated, isHirer, isViewingSelf]);
+  }, [handleMessage, isAuthenticated, isHirer, isPublicView, isViewingSelf]);
 
   const profileUrl = resolvedWorkerId ? `/workers/${resolvedWorkerId}` : null;
 
@@ -726,6 +736,15 @@ const WorkerCard = ({ worker, onSave, isPublicView }) => {
           </span>
         </Tooltip>
       </CardActions>
+      {messageCta.hint && (
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ px: 2, pb: 2, lineHeight: 1.4 }}
+        >
+          {messageCta.hint}
+        </Typography>
+      )}
     </Card>
   );
 };
@@ -737,7 +756,12 @@ WorkerCard.propTypes = {
     userId: PropTypes.string,
     name: PropTypes.string.isRequired,
     profileImage: PropTypes.string,
+    profilePicture: PropTypes.string,
+    avatar: PropTypes.string,
+    photo: PropTypes.string,
     title: PropTypes.string,
+    fullName: PropTypes.string,
+    displayName: PropTypes.string,
     bio: PropTypes.string,
     rating: PropTypes.number,
     reviewCount: PropTypes.number,

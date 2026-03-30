@@ -24,20 +24,20 @@ This document outlines the restructuring of the Kelmah backend from a monolithic
 ## Next Steps
 
 ### 1. Complete Model Migration
-- [ ] Create Application model in job-service
-- [ ] Create Message model in messaging-service
-- [ ] Create Payment model in payment-service
-- [ ] Create Contract model in job-service
+- [x] Create Application model in job-service
+- [x] Create Message model in messaging-service
+- [x] Create Payment model in payment-service
+- [x] Create Contract model in job-service
 - [ ] Update model associations in each service
 
 ### 2. Complete API Gateway Implementation
-- [ ] Implement auth.middleware.js for JWT verification
-- [ ] Implement rate-limiter.js for request rate limiting
-- [ ] Implement proxy routing in each proxy file
-- [ ] Complete server.js for the gateway
+- [x] Implement auth.middleware.js for JWT verification
+- [x] Implement rate-limiter.js for request rate limiting
+- [x] Implement proxy routing in each proxy file
+- [x] Complete server.js for the gateway
 
 ### 3. Update Service Implementations
-- [ ] Complete auth-service routes and controllers
+- [x] Complete auth-service routes and controllers
 - [ ] Complete user-service routes and controllers
 - [ ] Complete job-service routes and controllers
 - [ ] Complete payment-service routes and controllers

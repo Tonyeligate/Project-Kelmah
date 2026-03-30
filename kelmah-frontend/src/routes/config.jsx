@@ -394,6 +394,11 @@ const routes = [
         path: 'find-talents',
         element: <FindWorkersPage />,
       },
+      // Additional human-friendly alias used in legacy CTAs
+      {
+        path: 'find-workers',
+        element: <Navigate to="/find-talents" replace />,
+      },
       // Backward-compatible alias
       {
         path: 'find-talent',
@@ -421,6 +426,14 @@ const routes = [
             <RouteErrorBoundary label="Messages">
               <MessagesPage />
             </RouteErrorBoundary>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'messages/new',
+        element: (
+          <ProtectedRoute>
+            <Navigate to="/messages" replace />
           </ProtectedRoute>
         ),
       },
@@ -967,6 +980,14 @@ const routes = [
         element: (
           <ProtectedRoute>
             <NotificationSettingsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'notifications/preferences',
+        element: (
+          <ProtectedRoute>
+            <Navigate to="/notifications/settings" replace />
           </ProtectedRoute>
         ),
       },

@@ -679,7 +679,18 @@ function ApplicationManagementPage() {
         });
       }
 
-      const opened = await startConversationForApplication(targetApplication);
+      const openedOnFirstAttempt = await startConversationForApplication(
+        targetApplication,
+      );
+      let opened = openedOnFirstAttempt;
+
+      if (!opened) {
+        await new Promise((resolve) => {
+          setTimeout(resolve, 220);
+        });
+        opened = await startConversationForApplication(targetApplication);
+      }
+
       if (!opened) {
         if (nextForTriage?.id) {
           setSelectedApplication(nextForTriage);
@@ -693,6 +704,10 @@ function ApplicationManagementPage() {
             variant: 'warning',
           },
         );
+      } else if (!openedOnFirstAttempt) {
+        enqueueSnackbar('Chat opened on retry.', {
+          variant: 'success',
+        });
       } else if (targetApplication.status !== 'accepted') {
         enqueueSnackbar('Application accepted and chat opened.', {
           variant: 'success',

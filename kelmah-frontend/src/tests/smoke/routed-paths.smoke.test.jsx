@@ -88,6 +88,11 @@ jest.mock('../../modules/settings/pages/SettingsPage', () => ({
   default: () => <div>SETTINGS_PAGE</div>,
 }));
 
+jest.mock('../../modules/notifications/pages/NotificationSettingsPage', () => ({
+  __esModule: true,
+  default: () => <div>NOTIFICATION_SETTINGS_PAGE</div>,
+}));
+
 jest.mock('../../modules/notifications/contexts/NotificationContext', () => ({
   useNotifications: () => ({ unreadCount: 0 }),
 }));
@@ -164,6 +169,11 @@ describe('routed path smoke suite', () => {
     expect(await screen.findByText('PUBLIC_FIND_TALENTS_PAGE')).toBeInTheDocument();
   });
 
+  test('public alias resolves: /find-workers -> /find-talents', async () => {
+    renderAtPath('/find-workers');
+    expect(await screen.findByText('PUBLIC_FIND_TALENTS_PAGE')).toBeInTheDocument();
+  });
+
   test('worker route resolves: /worker/applications', async () => {
     renderAtPath('/worker/applications', 'worker');
     expect(await screen.findByText('WORKER_APPLICATIONS_PAGE')).toBeInTheDocument();
@@ -186,6 +196,11 @@ describe('routed path smoke suite', () => {
 
   test('legacy message thread alias resolves to messages page: /messages/:conversationId', async () => {
     renderAtPath('/messages/convo-123', 'worker');
+    expect(await screen.findByText('MESSAGES_PAGE')).toBeInTheDocument();
+  });
+
+  test('messages create alias resolves to messages page: /messages/new', async () => {
+    renderAtPath('/messages/new', 'worker');
     expect(await screen.findByText('MESSAGES_PAGE')).toBeInTheDocument();
   });
 
@@ -217,6 +232,11 @@ describe('routed path smoke suite', () => {
   test('profile alias resolves to settings for admin role', async () => {
     renderAtPath('/profile', 'admin');
     expect(await screen.findByText('SETTINGS_PAGE')).toBeInTheDocument();
+  });
+
+  test('notification preferences alias resolves to notification settings page', async () => {
+    renderAtPath('/notifications/preferences', 'worker');
+    expect(await screen.findByText('NOTIFICATION_SETTINGS_PAGE')).toBeInTheDocument();
   });
 
   test('mobile bottom-nav does not incorrectly select Home on /wallet', () => {
