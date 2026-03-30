@@ -62,6 +62,7 @@ import { currencyFormatter } from '@/modules/common/utils/formatters';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 import PageCanvas from '@/modules/common/components/PageCanvas';
 import { HEADER_HEIGHT_MOBILE, Z_INDEX } from '../../../constants/layout';
+import { withBottomNavSafeArea, withSafeAreaTop } from '@/utils/safeArea';
 
 const isAbortError = (error) =>
   error?.name === 'AbortError' ||
@@ -416,6 +417,8 @@ const MyBidsPage = () => {
     'withdrawn',
     'expired',
   ];
+  const mobileHeaderTop = `calc(${withSafeAreaTop(HEADER_HEIGHT_MOBILE + 10)} + var(--kelmah-network-banner-offset, 0px))`;
+  const mobileTabsTop = `calc(${withSafeAreaTop(HEADER_HEIGHT_MOBILE + 12)} + var(--kelmah-network-banner-offset, 0px))`;
 
   const fetchBids = useCallback(
     async (signal) => {
@@ -534,7 +537,10 @@ const MyBidsPage = () => {
   );
 
   return (
-    <PageCanvas disableContainer sx={{ pb: { xs: 10, md: 6 } }}>
+    <PageCanvas
+      disableContainer
+      sx={{ pb: { xs: withBottomNavSafeArea(24), md: 6 } }}
+    >
       <Container maxWidth="md" sx={{ py: { xs: 1.25, md: 4 } }}>
         <Helmet>
           <title>My Bids | Kelmah</title>
@@ -548,7 +554,7 @@ const MyBidsPage = () => {
           sx={{
             mb: { xs: 1.25, md: 3 },
             position: { xs: 'sticky', md: 'static' },
-            top: { xs: HEADER_HEIGHT_MOBILE + 10, md: 'auto' },
+            top: { xs: mobileHeaderTop, md: 'auto' },
             zIndex: Z_INDEX.sticky,
             py: { xs: 0.5, md: 0 },
             bgcolor: { xs: 'background.default', md: 'transparent' },
@@ -634,7 +640,7 @@ const MyBidsPage = () => {
           sx={{
             mb: 1.25,
             position: { xs: 'sticky', md: 'static' },
-            top: { xs: HEADER_HEIGHT_MOBILE + 12, md: 'auto' },
+            top: { xs: mobileTabsTop, md: 'auto' },
             zIndex: Z_INDEX.sticky,
             bgcolor: { xs: 'background.default', md: 'transparent' },
             py: { xs: 0.5, md: 0 },

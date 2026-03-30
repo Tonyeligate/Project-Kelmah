@@ -65,6 +65,7 @@ import InteractiveMap from '../components/common/InteractiveMap';
 import mapService from '../services/mapService';
 import { Helmet } from 'react-helmet-async';
 import PageCanvas from '@/modules/common/components/PageCanvas';
+import { withBottomNavSafeArea } from '@/utils/safeArea';
 
 // ────────────────────────────────────────────────────────────
 //  Bottom Sheet - Uber/Bolt-style pull-up results panel
@@ -576,7 +577,10 @@ const ProfessionalMapPage = () => {
 
   // ── Render ──
   return (
-    <PageCanvas disableContainer sx={{ pb: { xs: 10, md: 6 } }}>
+    <PageCanvas
+      disableContainer
+      sx={{ pb: { xs: withBottomNavSafeArea(24), md: 6 } }}
+    >
       <Box
         sx={{
           height: 'calc(100dvh - 64px)',

@@ -104,6 +104,7 @@ import {
 import { useBreakpointDown } from '@/hooks/useResponsive';
 import { devError } from '@/modules/common/utils/devLogger';
 import PageCanvas from '@/modules/common/components/PageCanvas';
+import { withBottomNavSafeArea } from '@/utils/safeArea';
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -1322,7 +1323,10 @@ const SkillsAssessmentPage = () => {
   }
 
   return (
-    <PageCanvas disableContainer sx={{ pb: { xs: 10, md: 6 } }}>
+    <PageCanvas
+      disableContainer
+      sx={{ pb: { xs: withBottomNavSafeArea(24), md: 6 } }}
+    >
       <Helmet>
         <title>Skills Assessment - Professional Certification | Kelmah</title>
         <meta

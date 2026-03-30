@@ -17,6 +17,7 @@ import { Helmet } from 'react-helmet-async';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 import { devError } from '@/modules/common/utils/devLogger';
 import PageCanvas from '@/modules/common/components/PageCanvas';
+import { withBottomNavSafeArea } from '@/utils/safeArea';
 
 const PortfolioPage = () => {
   const navigate = useNavigate();
@@ -97,7 +98,10 @@ const PortfolioPage = () => {
   }
 
   return (
-    <PageCanvas disableContainer sx={{ pb: { xs: 10, md: 6 } }}>
+    <PageCanvas
+      disableContainer
+      sx={{ pb: { xs: withBottomNavSafeArea(24), md: 6 } }}
+    >
       <Container maxWidth="lg" sx={{ py: { xs: 2, md: 3 } }}>
         <Helmet>
           <title>My Portfolio | Kelmah</title>

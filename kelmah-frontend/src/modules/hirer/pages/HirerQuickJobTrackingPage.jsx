@@ -1,6 +1,7 @@
 // IconButton focus-visible styling is enforced globally via MuiIconButton theme overrides.
 
 import PageCanvas from '@/modules/common/components/PageCanvas';
+import { withBottomNavSafeArea } from '@/utils/safeArea';
 
 const requesterSteps = [
   { status: 'pending', label: 'Waiting for quotes' },
@@ -488,7 +489,10 @@ const HirerQuickJobTrackingPage = () => {
   }
 
   return (
-    <PageCanvas disableContainer sx={{ pb: { xs: 10, md: 6 } }}>
+    <PageCanvas
+      disableContainer
+      sx={{ pb: { xs: withBottomNavSafeArea(24), md: 6 } }}
+    >
       <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
         <Helmet>
           <title>Quick-Hire Request | Kelmah</title>

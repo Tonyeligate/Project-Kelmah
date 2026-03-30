@@ -57,6 +57,7 @@ import Toast from '../../common/components/common/Toast';
 import { formatGhanaCurrency } from '@/utils/formatters';
 import { devError } from '@/modules/common/utils/devLogger';
 import PageCanvas from '@/modules/common/components/PageCanvas';
+import { withBottomNavSafeArea } from '@/utils/safeArea';
 
 const isAbortError = (error) =>
   error?.name === 'AbortError' ||
@@ -514,7 +515,10 @@ const JobBidsPage = () => {
   const acceptedBid = bids.find((b) => b.status === 'accepted');
 
   return (
-    <PageCanvas disableContainer sx={{ pb: { xs: 10, md: 6 } }}>
+    <PageCanvas
+      disableContainer
+      sx={{ pb: { xs: withBottomNavSafeArea(24), md: 6 } }}
+    >
       <Container maxWidth="md" sx={{ py: { xs: 2, md: 4 } }}>
         <Helmet>
           <title>Review Bids | Kelmah</title>
