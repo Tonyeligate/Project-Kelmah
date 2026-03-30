@@ -1200,6 +1200,10 @@ const HirerDashboardPage = () => {
                             textTransform: 'uppercase',
                             letterSpacing: 0.5,
                             fontSize: { xs: '0.66rem', sm: '0.75rem' },
+                            maxWidth: { xs: '66%', sm: '100%' },
+                            whiteSpace: { xs: 'nowrap', sm: 'normal' },
+                            textOverflow: 'ellipsis',
+                            overflow: 'hidden',
                           }}
                         >
                           {card.title}

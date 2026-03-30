@@ -1,5 +1,70 @@
 // IconButton focus-visible styling is enforced globally via MuiIconButton theme overrides.
 
+import PropTypes from 'prop-types';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { Helmet } from 'react-helmet-async';
+import {
+  Alert,
+  Badge,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  CardMedia,
+  Chip,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Divider,
+  IconButton,
+  InputAdornment,
+  Menu,
+  MenuItem,
+  Paper,
+  Snackbar,
+  Tab,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TablePagination,
+  TableRow,
+  Tabs,
+  TextField,
+  Tooltip,
+  Typography,
+} from '@mui/material';
+import {
+  Add as AddIcon,
+  Assignment as ApplicationIcon,
+  CheckCircle as ActiveIcon,
+  Close as ClosedIcon,
+  Delete as DeleteIcon,
+  Edit as EditIcon,
+  ErrorOutline as WarningIcon,
+  Gavel as BidIcon,
+  GroupAdd as InviteIcon,
+  HourglassEmpty as DraftIcon,
+  Lock as PrivateIcon,
+  MoreVert as MoreIcon,
+  Person as PersonIcon,
+  Public as PublicIcon,
+  Refresh as RefreshIcon,
+  Search as SearchIcon,
+  Visibility as ViewIcon,
+  AccessTime as ExpiredIcon,
+} from '@mui/icons-material';
+import { api } from '../../../services/apiClient';
+import { useBreakpointDown } from '../../../hooks/useResponsive';
+import { formatJobLocation } from '../../../utils/formatters';
+import { deleteHirerJob, updateJobStatus } from '../services/hirerSlice';
+
 import PageCanvas from '@/modules/common/components/PageCanvas';
 import {
   HEADER_HEIGHT_MOBILE,
@@ -17,6 +82,44 @@ const formatGhanaCurrencyLabel = (value) => {
     minimumFractionDigits: amount % 1 === 0 ? 0 : 2,
   }).format(Number.isFinite(amount) ? amount : 0);
 };
+
+const budgetPropType = PropTypes.oneOfType([
+  PropTypes.number,
+  PropTypes.shape({
+    min: PropTypes.number,
+    max: PropTypes.number,
+    amount: PropTypes.number,
+  }),
+]);
+
+const jobPropType = PropTypes.shape({
+  id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  _id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  title: PropTypes.string,
+  status: PropTypes.string,
+  visibility: PropTypes.string,
+  coverImage: PropTypes.string,
+  location: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
+  budget: budgetPropType,
+  paymentType: PropTypes.string,
+  proposalCount: PropTypes.number,
+  applicantCount: PropTypes.number,
+  applicationsCount: PropTypes.number,
+  applications: PropTypes.array,
+  bidding: PropTypes.shape({
+    bidStatus: PropTypes.any,
+  }),
+  createdAt: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.number,
+    PropTypes.instanceOf(Date),
+  ]),
+  endDate: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.number,
+    PropTypes.instanceOf(Date),
+  ]),
+});
 
 const VisibilityChip = ({ visibility }) => {
   const v = visibility || 'public'; // treat missing as public (legacy data)
@@ -67,20 +170,9 @@ const VisibilityChip = ({ visibility }) => {
   );
 };
 
-function TabPanel(props) {
-  const { children, value, index, ...other } = props;
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`job-tabpanel-${index}`}
-      aria-labelledby={`job-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ py: 3 }}>{children}</Box>}
-    </div>
-  );
-}
+VisibilityChip.propTypes = {
+  visibility: PropTypes.string,
+};
 
 // Status chip component (canonical statuses)
 const StatusChip = ({ status }) => {
@@ -118,8 +210,11 @@ const StatusChip = ({ status }) => {
   );
 };
 
+StatusChip.propTypes = {
+  status: PropTypes.string,
+};
+
 const JobManagementPage = () => {
-  const theme = useTheme();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const isMobile = useBreakpointDown('md');
@@ -520,6 +615,10 @@ const JobManagementPage = () => {
       </CardContent>
     </Card>
   );
+
+  MobileJobCard.propTypes = {
+    job: jobPropType.isRequired,
+  };
 
   return (
     <PageCanvas
@@ -1211,8 +1310,8 @@ const JobManagementPage = () => {
           <DialogTitle id="delete-job-dialog-title">Delete Job</DialogTitle>
           <DialogContent>
             <DialogContentText>
-              Are you sure you want to delete "{selectedJob?.title}"? This
-              action cannot be undone.
+              Are you sure you want to delete &quot;{selectedJob?.title}
+              &quot;? This action cannot be undone.
             </DialogContentText>
           </DialogContent>
           <DialogActions>

@@ -70,7 +70,9 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import InboxOutlinedIcon from '@mui/icons-material/InboxOutlined';
 import { useVisibilityPolling } from '../../../hooks/useVisibilityPolling';
 import { useBreakpointDown } from '@/hooks/useResponsive';
+import { TOUCH_TARGET_MIN, Z_INDEX } from '@/constants/layout';
 import PageCanvas from '@/modules/common/components/PageCanvas';
+import { withBottomNavSafeArea } from '@/utils/safeArea';
 
 /* ---------- Keyframes for spin animation ---------- */
 const spinKeyframes = {
@@ -663,19 +665,22 @@ const WorkerDashboardPage = () => {
   return (
     <PageCanvas
       disableContainer
-      sx={{ pt: { xs: 0.25, md: 4 }, pb: { xs: 10, md: 6 } }}
+      sx={{
+        pt: { xs: 0, md: 4 },
+        pb: { xs: withBottomNavSafeArea(24), md: 6 },
+      }}
     >
       <PullToRefresh onRefresh={fetchDashboardData}>
         <Box
           sx={{
             background:
               theme.palette.mode === 'dark'
-                ? 'radial-gradient(circle at 10% 4%, rgba(255,215,0,0.16), transparent 44%), radial-gradient(circle at 88% 8%, rgba(34,197,94,0.13), transparent 36%), radial-gradient(circle at 52% 88%, rgba(59,130,246,0.14), transparent 38%), #04060C'
+                ? 'linear-gradient(180deg, #05070d 0%, #071424 52%, #08172b 100%)'
                 : 'linear-gradient(180deg, #f7f9fd 0%, #eef3fa 55%, #edf2fb 100%)',
             minHeight: '100dvh',
             fontFamily: dashboardFontFamily,
-            p: { xs: 0.6, sm: 2, md: 3 },
-            pb: 'calc(env(safe-area-inset-bottom, 0px) + 8px)',
+            p: { xs: 0, sm: 1.5, md: 3 },
+            pb: withBottomNavSafeArea(56),
           }}
         >
           <Helmet>
@@ -746,21 +751,21 @@ const WorkerDashboardPage = () => {
             <Paper
               elevation={0}
               sx={{
-                mb: { xs: 1, md: 3 },
-                p: { xs: 1, sm: 2.75, md: 3.25 },
-                borderRadius: { xs: 2.5, md: 4 },
+                mb: { xs: 0.8, md: 3 },
+                p: { xs: 0.9, sm: 2.75, md: 3.25 },
+                borderRadius: { xs: 0, md: 4 },
                 border: '1px solid',
                 borderColor:
                   theme.palette.mode === 'dark'
-                    ? 'rgba(255,215,0,0.28)'
+                    ? 'rgba(56,189,248,0.26)'
                     : 'rgba(20,24,35,0.12)',
                 background:
                   theme.palette.mode === 'dark'
-                    ? 'linear-gradient(150deg, rgba(6,10,18,0.97) 0%, rgba(9,19,36,0.96) 55%, rgba(7,17,28,0.96) 100%)'
+                    ? 'linear-gradient(165deg, rgba(6,10,18,0.99) 0%, rgba(8,18,35,0.98) 58%, rgba(7,15,28,0.98) 100%)'
                     : 'linear-gradient(145deg, #ffffff 0%, #f2f7ff 54%, #edf4ff 100%)',
                 boxShadow:
                   theme.palette.mode === 'dark'
-                    ? '0 18px 34px rgba(0,0,0,0.42)'
+                    ? '0 10px 22px rgba(0,0,0,0.35)'
                     : '0 14px 28px rgba(15,23,42,0.10)',
                 position: 'relative',
                 top: 'auto',
@@ -776,7 +781,7 @@ const WorkerDashboardPage = () => {
                   right: -55,
                   background:
                     theme.palette.mode === 'dark'
-                      ? 'radial-gradient(circle, rgba(250,204,21,0.24) 0%, rgba(250,204,21,0) 70%)'
+                      ? 'radial-gradient(circle, rgba(56,189,248,0.2) 0%, rgba(56,189,248,0) 70%)'
                       : 'radial-gradient(circle, rgba(14,165,233,0.16) 0%, rgba(14,165,233,0) 70%)',
                   pointerEvents: 'none',
                 },
@@ -829,9 +834,9 @@ const WorkerDashboardPage = () => {
                       sx={{
                         color: 'text.secondary',
                         border: '1px solid',
-                        borderColor: alpha(theme.palette.warning.main, 0.4),
+                        borderColor: alpha(theme.palette.info.main, 0.4),
                         backgroundColor: alpha(
-                          theme.palette.warning.main,
+                          theme.palette.info.main,
                           0.08,
                         ),
                         '&:focus-visible': {
@@ -858,19 +863,34 @@ const WorkerDashboardPage = () => {
                   <Chip
                     label={`Applications ${stats.applications}`}
                     size="small"
-                    sx={{ fontWeight: 700 }}
+                    sx={{
+                      fontWeight: 700,
+                      border: '1px solid',
+                      borderColor: alpha(theme.palette.info.main, 0.24),
+                      backgroundColor: alpha(theme.palette.info.main, 0.12),
+                    }}
                   />
                   <Chip
                     label={`Completed ${stats.completedJobs}`}
                     size="small"
-                    sx={{ fontWeight: 700 }}
+                    sx={{
+                      fontWeight: 700,
+                      border: '1px solid',
+                      borderColor: alpha(theme.palette.info.main, 0.24),
+                      backgroundColor: alpha(theme.palette.info.main, 0.12),
+                    }}
                   />
                   <Chip
                     label={formatGhanaCurrencyLabel(
                       Number.isFinite(stats.earnings) ? stats.earnings : 0,
                     )}
                     size="small"
-                    sx={{ fontWeight: 700 }}
+                    sx={{
+                      fontWeight: 700,
+                      border: '1px solid',
+                      borderColor: alpha(theme.palette.info.main, 0.24),
+                      backgroundColor: alpha(theme.palette.info.main, 0.12),
+                    }}
                   />
                 </Box>
 
@@ -879,10 +899,10 @@ const WorkerDashboardPage = () => {
                     p: { xs: 0.9, md: 1.25 },
                     borderRadius: 2,
                     border: '1px solid',
-                    borderColor: alpha(theme.palette.primary.main, 0.3),
+                    borderColor: alpha(theme.palette.info.main, 0.28),
                     backgroundColor: alpha(
-                      theme.palette.primary.main,
-                      theme.palette.mode === 'dark' ? 0.12 : 0.08,
+                      theme.palette.info.main,
+                      theme.palette.mode === 'dark' ? 0.16 : 0.08,
                     ),
                     display: 'flex',
                     flexDirection: { xs: 'column', sm: 'row' },
@@ -913,6 +933,12 @@ const WorkerDashboardPage = () => {
                       fontWeight: 700,
                       minHeight: 40,
                       width: { xs: '100%', sm: 'auto' },
+                      backgroundColor: '#0ea5e9',
+                      color: '#031526',
+                      '&:hover': {
+                        backgroundColor: '#0284c7',
+                        color: '#ffffff',
+                      },
                     }}
                   >
                     Open Pipeline
@@ -1061,7 +1087,7 @@ const WorkerDashboardPage = () => {
                 sx={{
                   p: { xs: 2, sm: 3 },
                   mb: { xs: 2, sm: 4 },
-                  borderRadius: 2,
+                  borderRadius: { xs: 0, sm: 2 },
                   backgroundColor: 'background.paper',
                   border: '1px solid',
                   borderColor: alpha(theme.palette.primary.main, 0.35),
@@ -1121,7 +1147,7 @@ const WorkerDashboardPage = () => {
                     sx={{
                       mb: { xs: 2, sm: 2.5 },
                       p: { xs: 1.05, sm: 2 },
-                      borderRadius: 2.5,
+                      borderRadius: { xs: 0, sm: 2.5 },
                       border: '1px solid',
                       borderColor: 'divider',
                       backgroundColor: alpha(
@@ -1176,7 +1202,7 @@ const WorkerDashboardPage = () => {
                               elevation={0}
                               sx={{
                                 p: { xs: 1.15, sm: 2.25 },
-                                borderRadius: 2.5,
+                                borderRadius: { xs: 1.5, sm: 2.5 },
                                 background: `linear-gradient(155deg, ${alpha(card.tone, theme.palette.mode === 'dark' ? 0.2 : 0.14)} 0%, ${alpha(theme.palette.background.paper, 0.98)} 62%, ${alpha(theme.palette.background.paper, 0.95)} 100%)`,
                                 border: '1px solid',
                                 borderColor: alpha(card.tone, 0.44),
@@ -1261,7 +1287,7 @@ const WorkerDashboardPage = () => {
                 sx={{
                   mb: { xs: 2, sm: 3 },
                   p: { xs: 1.05, sm: 2 },
-                  borderRadius: 2.5,
+                  borderRadius: { xs: 0, sm: 2.5 },
                   border: '1px solid',
                   borderColor: 'divider',
                   backgroundColor: alpha(theme.palette.background.paper, 0.88),
@@ -1427,126 +1453,7 @@ const WorkerDashboardPage = () => {
               </Box>
             )}
 
-            {false ? (
-              <Grid container spacing={1.5}>
-                <Grid item xs={12}>
-                  <Paper
-                    elevation={0}
-                    sx={{
-                      p: 2,
-                      borderRadius: 2,
-                      backgroundColor: 'background.paper',
-                      border: '1px solid',
-                      borderColor: 'divider',
-                    }}
-                  >
-                    <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>
-                      Today&apos;s overview
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ mb: 2 }}
-                    >
-                      Focus on the next action that keeps your Kelmah profile
-                      active and visible.
-                    </Typography>
-                    <Grid container spacing={1.5}>
-                      {insightCards.map((item) => (
-                        <Grid item xs={12} key={item.title}>
-                          <Box
-                            sx={{
-                              p: 1.5,
-                              borderRadius: 2,
-                              backgroundColor: alpha(item.tone, 0.08),
-                              border: '1px solid',
-                              borderColor: alpha(item.tone, 0.24),
-                            }}
-                          >
-                            <Typography
-                              variant="caption"
-                              sx={{
-                                color: 'text.secondary',
-                                textTransform: 'uppercase',
-                                letterSpacing: 0.4,
-                              }}
-                            >
-                              {item.title}
-                            </Typography>
-                            <Typography
-                              variant="h6"
-                              sx={{ fontWeight: 700, mt: 0.25 }}
-                            >
-                              {item.value}
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                              {item.helper}
-                            </Typography>
-                          </Box>
-                        </Grid>
-                      ))}
-                    </Grid>
-                  </Paper>
-                </Grid>
-                <Grid item xs={12}>
-                  <Paper
-                    elevation={0}
-                    sx={{
-                      p: 2,
-                      borderRadius: 2,
-                      backgroundColor: 'background.paper',
-                      border: '1px solid',
-                      borderColor: 'divider',
-                    }}
-                  >
-                    <Typography variant="h6" sx={{ fontWeight: 700, mb: 1.5 }}>
-                      Application pipeline
-                    </Typography>
-                    <Stack spacing={1.25}>
-                      {applicationsData.map((item) => (
-                        <Box key={item.name}>
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              alignItems: 'center',
-                              mb: 0.5,
-                            }}
-                          >
-                            <Typography variant="body2" fontWeight={600}>
-                              {item.name}
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                              {item.value}
-                            </Typography>
-                          </Box>
-                          <LinearProgress
-                            variant="determinate"
-                            value={
-                              stats.applications > 0
-                                ? (item.value /
-                                    Math.max(stats.applications, 1)) *
-                                  100
-                                : 0
-                            }
-                            sx={{
-                              height: 8,
-                              borderRadius: 999,
-                              backgroundColor: alpha(item.color, 0.12),
-                              '& .MuiLinearProgress-bar': {
-                                backgroundColor: item.color,
-                                borderRadius: 999,
-                              },
-                            }}
-                          />
-                        </Box>
-                      ))}
-                    </Stack>
-                  </Paper>
-                </Grid>
-              </Grid>
-            ) : (
-              /* Charts Section - denser desktop analytics row */
+            {/* Charts Section - denser desktop analytics row */}
               <Grid container spacing={{ xs: 0.9, sm: 2, md: 2 }}>
                 {/* Earnings Overview Chart */}
                 <Grid item xs={12} md={4}>
@@ -1555,7 +1462,7 @@ const WorkerDashboardPage = () => {
                       elevation={0}
                       sx={{
                         p: { xs: 1.05, sm: 2, md: 3 },
-                        borderRadius: 2.5,
+                        borderRadius: { xs: 0, sm: 2.5 },
                         backgroundColor: alpha(
                           theme.palette.background.paper,
                           0.92,
@@ -1657,7 +1564,7 @@ const WorkerDashboardPage = () => {
                       elevation={0}
                       sx={{
                         p: { xs: 1.05, sm: 2, md: 3 },
-                        borderRadius: 2.5,
+                        borderRadius: { xs: 0, sm: 2.5 },
                         backgroundColor: alpha(
                           theme.palette.background.paper,
                           0.92,
@@ -1757,7 +1664,7 @@ const WorkerDashboardPage = () => {
                       elevation={0}
                       sx={{
                         p: { xs: 1.05, sm: 2, md: 3 },
-                        borderRadius: 2.5,
+                        borderRadius: { xs: 0, sm: 2.5 },
                         backgroundColor: alpha(
                           theme.palette.background.paper,
                           0.92,
@@ -1864,7 +1771,6 @@ const WorkerDashboardPage = () => {
                   </Grow>
                 </Grid>
               </Grid>
-            )}
 
             <Paper
               elevation={8}
@@ -1873,20 +1779,21 @@ const WorkerDashboardPage = () => {
                 position: 'fixed',
                 left: 0,
                 right: 0,
-                bottom: 0,
-                zIndex: theme.zIndex.appBar + 2,
+                bottom: withBottomNavSafeArea(0),
+                zIndex: Z_INDEX.stickyCta,
                 px: 1,
                 py: 1,
                 gap: 1,
                 borderTop: `1px solid ${theme.palette.divider}`,
-                backgroundColor: theme.palette.background.paper,
+                backgroundColor: alpha(theme.palette.background.paper, 0.96),
+                backdropFilter: 'blur(6px)',
               })}
             >
               <Button
                 fullWidth
                 variant="outlined"
-                color="secondary"
-                sx={{ minHeight: 42 }}
+                color="info"
+                sx={{ minHeight: TOUCH_TARGET_MIN }}
                 startIcon={<RefreshIcon />}
                 onClick={handleRefresh}
                 disabled={isLoading}
@@ -1896,10 +1803,10 @@ const WorkerDashboardPage = () => {
               <Button
                 fullWidth
                 variant="contained"
-                color="secondary"
+                color="info"
                 sx={{
-                  minHeight: 42,
-                  boxShadow: '0 2px 8px rgba(255,215,0,0.35)',
+                  minHeight: TOUCH_TARGET_MIN,
+                  boxShadow: '0 2px 8px rgba(14,165,233,0.35)',
                 }}
                 startIcon={<SearchIcon />}
                 onClick={() => navigate('/worker/find-work')}

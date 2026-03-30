@@ -305,13 +305,23 @@ const getCertificateItems = (worker) =>
     ? worker.certifications.items
     : [];
 
+const resolveCurrentUserId = (user) =>
+  user?.id ||
+  user?._id ||
+  user?.userId ||
+  user?._raw?.id ||
+  user?._raw?._id ||
+  user?._raw?.userId ||
+  null;
+
 function WorkerProfile({ workerId: workerIdProp }) {
   const routeParams = useParams();
   const { user: authUser, isAuthenticated } = useSelector(
     (state) => state.auth,
   );
+  const authUserId = resolveCurrentUserId(authUser);
   const resolvedWorkerId =
-    workerIdProp ?? routeParams?.workerId ?? authUser?.userId ?? null;
+    workerIdProp ?? routeParams?.workerId ?? authUserId ?? null;
 
   const navigate = useNavigate();
   const theme = useTheme();
@@ -370,8 +380,8 @@ function WorkerProfile({ workerId: workerIdProp }) {
   }, []);
 
   const isOwner =
-    authUser?.userId && resolvedWorkerId
-      ? authUser.userId === resolvedWorkerId
+    authUserId && resolvedWorkerId
+      ? String(authUserId) === String(resolvedWorkerId)
       : false;
   const canHireWorker = hasRole(authUser, ['hirer', 'admin']);
 
@@ -465,7 +475,9 @@ function WorkerProfile({ workerId: workerIdProp }) {
       setRatingSummary(fallbackRatingSummary);
 
       const viewingOwnProfile =
-        authUser?.userId && authUser.userId === resolvedWorkerId;
+        authUserId && resolvedWorkerId
+          ? String(authUserId) === String(resolvedWorkerId)
+          : false;
 
       let profileDetailsThrottled = false;
       const runOptionalProfileRequest = async (requestFactory) => {
@@ -547,7 +559,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
     } finally {
       setLoading(false);
     }
-  }, [authUser?.userId, resolvedWorkerId]);
+  }, [authUserId, resolvedWorkerId]);
 
   useEffect(() => {
     if (!resolvedWorkerId) {
@@ -572,7 +584,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
 
     fetchAllData();
 
-    if (!authUser) {
+    if (!authUserId) {
       setIsBookmarked(false);
       return;
     }
@@ -581,14 +593,16 @@ function WorkerProfile({ workerId: workerIdProp }) {
       .getBookmarks()
       .then((res) => {
         const ids = res?.data?.data?.workerIds || [];
-        setIsBookmarked(ids.includes(resolvedWorkerId));
+        setIsBookmarked(
+          ids.map((id) => String(id)).includes(String(resolvedWorkerId)),
+        );
       })
       .catch((bookmarkError) => {
         if (bookmarkError?.response?.status !== 401) {
           devError('Failed to load bookmarks', bookmarkError);
         }
       });
-  }, [authUser?.userId, fetchAllData, resolvedWorkerId]);
+  }, [authUserId, fetchAllData, resolvedWorkerId]);
 
   useEffect(() => {
     if (!isActualMobile) {

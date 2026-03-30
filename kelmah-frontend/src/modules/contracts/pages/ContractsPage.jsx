@@ -37,7 +37,12 @@ import { useBreakpointDown } from '@/hooks/useResponsive';
 import { toUserMessage } from '@/services/responseNormalizer';
 import { devError } from '@/modules/common/utils/devLogger';
 import PageCanvas from '@/modules/common/components/PageCanvas';
-import { HEADER_HEIGHT_MOBILE, Z_INDEX } from '../../../constants/layout';
+import {
+  HEADER_HEIGHT_MOBILE,
+  TOUCH_TARGET_MIN,
+  Z_INDEX,
+} from '../../../constants/layout';
+import { withBottomNavSafeArea, withSafeAreaTop } from '@/utils/safeArea';
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All contracts' },
@@ -203,7 +208,11 @@ const ContractsPage = () => {
   return (
     <PageCanvas
       disableContainer
-      sx={{ pt: { xs: 1, md: 4 }, pb: { xs: 10, md: 6 }, overflowX: 'clip' }}
+      sx={{
+        pt: { xs: 1, md: 4 },
+        pb: { xs: withBottomNavSafeArea(24), md: 6 },
+        overflowX: 'clip',
+      }}
     >
       <Box
         sx={{
@@ -225,7 +234,7 @@ const ContractsPage = () => {
           sx={{
             mb: 2,
             position: { xs: 'sticky', md: 'static' },
-            top: { xs: HEADER_HEIGHT_MOBILE, md: 'auto' },
+            top: { xs: withSafeAreaTop(HEADER_HEIGHT_MOBILE), md: 'auto' },
             zIndex: { xs: Z_INDEX.sticky, md: 'auto' },
             py: { xs: 0.5, md: 0 },
             backgroundColor: { xs: 'background.default', md: 'transparent' },
@@ -541,8 +550,8 @@ const ContractsPage = () => {
             position: 'fixed',
             left: 0,
             right: 0,
-            bottom: 0,
-            zIndex: theme.zIndex.appBar + 2,
+            bottom: withBottomNavSafeArea(0),
+            zIndex: Z_INDEX.stickyCta,
             px: 1,
             py: 1,
             gap: 1,
@@ -554,7 +563,7 @@ const ContractsPage = () => {
             fullWidth
             variant="outlined"
             color="secondary"
-            sx={{ minHeight: 42 }}
+            sx={{ minHeight: TOUCH_TARGET_MIN }}
             startIcon={<RefreshIcon />}
             onClick={refreshContracts}
             disabled={isRefreshing}
@@ -567,7 +576,7 @@ const ContractsPage = () => {
               variant="contained"
               color="secondary"
               sx={{
-                minHeight: 42,
+                minHeight: TOUCH_TARGET_MIN,
                 boxShadow: '0 2px 8px rgba(255,215,0,0.35)',
               }}
               component={RouterLink}
@@ -581,7 +590,7 @@ const ContractsPage = () => {
               variant="contained"
               color="secondary"
               sx={{
-                minHeight: 42,
+                minHeight: TOUCH_TARGET_MIN,
                 boxShadow: '0 2px 8px rgba(255,215,0,0.35)',
               }}
               onClick={() => navigate('/jobs')}

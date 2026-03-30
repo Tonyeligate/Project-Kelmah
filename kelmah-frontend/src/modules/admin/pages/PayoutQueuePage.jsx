@@ -36,8 +36,8 @@ import SendIcon from '@mui/icons-material/Send';
 import { Helmet } from 'react-helmet-async';
 import { adminService } from '../services/adminService';
 import { useBreakpointDown } from '@/hooks/useResponsive';
-import { HEADER_HEIGHT_MOBILE, Z_INDEX } from '@/constants/layout';
-import { withSafeAreaTop } from '@/utils/safeArea';
+import { HEADER_HEIGHT_MOBILE, TOUCH_TARGET_MIN, Z_INDEX } from '@/constants/layout';
+import { withBottomNavSafeArea, withSafeAreaTop } from '@/utils/safeArea';
 import PageCanvas from '@/modules/common/components/PageCanvas';
 
 const STATUS_COLOR_MAP = {
@@ -238,7 +238,7 @@ const PayoutQueuePage = () => {
   return (
     <PageCanvas
       disableContainer
-      sx={{ pt: { xs: 1, sm: 4 }, pb: { xs: 10, md: 6 } }}
+      sx={{ pt: { xs: 1, sm: 4 }, pb: { xs: withBottomNavSafeArea(24), md: 6 } }}
     >
       <Container
         maxWidth="xl"
@@ -347,7 +347,10 @@ const PayoutQueuePage = () => {
             }
             onClick={onProcessBatch}
             disabled={processing}
-            sx={{ minHeight: 42, display: { xs: 'none', sm: 'inline-flex' } }}
+            sx={{
+              minHeight: TOUCH_TARGET_MIN,
+              display: { xs: 'none', sm: 'inline-flex' },
+            }}
           >
             {processing ? 'Processing...' : 'Run Batch'}
           </Button>
@@ -362,7 +365,10 @@ const PayoutQueuePage = () => {
             }
             onClick={load}
             disabled={loading}
-            sx={{ minHeight: 42, display: { xs: 'none', sm: 'inline-flex' } }}
+            sx={{
+              minHeight: TOUCH_TARGET_MIN,
+              display: { xs: 'none', sm: 'inline-flex' },
+            }}
           >
             Refresh
           </Button>
@@ -491,8 +497,8 @@ const PayoutQueuePage = () => {
             position: 'fixed',
             left: 0,
             right: 0,
-            bottom: 0,
-            zIndex: theme.zIndex.appBar + 2,
+            bottom: withBottomNavSafeArea(0),
+            zIndex: Z_INDEX.stickyCta,
             px: 1,
             py: 1,
             gap: 1,
@@ -504,7 +510,7 @@ const PayoutQueuePage = () => {
             fullWidth
             variant="outlined"
             color="secondary"
-            sx={{ minHeight: 42 }}
+            sx={{ minHeight: TOUCH_TARGET_MIN }}
             onClick={load}
             disabled={loading}
             startIcon={
@@ -521,7 +527,7 @@ const PayoutQueuePage = () => {
             fullWidth
             variant="contained"
             color="secondary"
-            sx={{ minHeight: 42 }}
+            sx={{ minHeight: TOUCH_TARGET_MIN }}
             onClick={onProcessBatch}
             disabled={processing}
             startIcon={

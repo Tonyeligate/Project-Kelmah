@@ -39,6 +39,9 @@ const healthMonitorState = {
   consumers: 0,
 };
 
+const getUniqueServiceTargets = () =>
+  Array.from(new Set(Object.values(SERVICES).filter(Boolean)));
+
 const buildHealthUrl = (baseUrl, endpoint = DEFAULT_HEALTH_ENDPOINT) => {
   const normalizedEndpoint = endpoint.startsWith('/')
     ? endpoint
@@ -80,35 +83,20 @@ export const checkServiceHealth = async (serviceUrl, timeout = 10000) => {
     HEALTH_ENDPOINTS[serviceUrl] || DEFAULT_HEALTH_ENDPOINT;
 
   let base;
-
-  // Special handling for aggregate health check - should go to API Gateway
   const isAggregateCheck = serviceUrl === 'aggregate';
-  if (isAggregateCheck) {
-    try {
-      base = await getApiBaseUrl(); // This should point to API Gateway
-    } catch (error) {
-      healthWarn(
-        'Failed to get API base URL for aggregate check, using fallback:',
-        error,
-      );
-      base = '/api';
-    }
+  const isAbsoluteServiceUrl =
+    typeof serviceUrl === 'string' && /^https?:\/\//i.test(serviceUrl);
+
+  if (isAbsoluteServiceUrl) {
+    base = serviceUrl;
   } else {
-    // For other services, prefer gateway-relative health checks to avoid mixed-content on HTTPS
-    if (
-      typeof window !== 'undefined' &&
-      window.location.protocol === 'https:'
-    ) {
+    try {
+      // Always resolve through centralized config so Vercel env/runtime config
+      // can provide an absolute gateway URL when available.
+      base = await getApiBaseUrl();
+    } catch (error) {
+      healthWarn('Failed to get API base URL, using fallback:', error);
       base = '/api';
-    } else if (serviceUrl) {
-      base = serviceUrl;
-    } else {
-      try {
-        base = await getApiBaseUrl();
-      } catch (error) {
-        healthWarn('Failed to get API base URL, using fallback:', error);
-        base = '/api';
-      }
     }
   }
 
@@ -223,31 +211,35 @@ export const warmUpAllServices = async () => {
 
   healthLog('🔥 Starting service warmup...');
 
-  const services = Object.values(SERVICES);
-  const warmupPromises = services.map((service) => {
+  const services = getUniqueServiceTargets();
+  const shouldUseAggregateOnly = services.length <= 1;
+  const warmupTargets = shouldUseAggregateOnly
+    ? ['aggregate']
+    : [...services, 'aggregate'];
+
+  const warmupPromises = warmupTargets.map((target) => {
+    if (target === 'aggregate') {
+      return checkServiceHealth('aggregate', 15000).catch((error) => {
+        healthWarn('Aggregate health check failed:', error);
+        return false;
+      });
+    }
+
     // Don't wait for each service, warm them up in parallel
-    return warmUpService(service).catch((error) => {
-      healthWarn(`Warmup failed for ${service}:`, error);
+    return warmUpService(target).catch((error) => {
+      healthWarn(`Warmup failed for ${target}:`, error);
       return false;
     });
   });
 
   try {
-    // Also warm up aggregate health once via gateway
-    warmupPromises.push(
-      checkServiceHealth('aggregate', 15000).catch((error) => {
-        healthWarn('Aggregate health check failed:', error);
-        return false;
-      }),
-    );
-
     const results = await Promise.allSettled(warmupPromises);
     const successCount = results.filter(
       (r) => r.status === 'fulfilled' && r.value,
     ).length;
 
     healthLog(
-      `🔥 Service warmup complete: ${successCount}/${services.length + 1} services responding`,
+      `🔥 Service warmup complete: ${successCount}/${warmupTargets.length} checks responding`,
     );
     return results;
   } catch (error) {
@@ -327,10 +319,14 @@ export const initializeServiceHealth = () => {
     // Warm up services immediately
     warmUpAllServices();
 
+    const serviceTargets = getUniqueServiceTargets();
+    const periodicTargets =
+      serviceTargets.length <= 1 ? ['aggregate'] : serviceTargets;
+
     // Set up periodic health checks
     healthMonitorState.intervalId = setInterval(() => {
       healthLog('🏥 Running periodic service health checks...');
-      Object.values(SERVICES).forEach((service) => {
+      periodicTargets.forEach((service) => {
         checkServiceHealth(service);
       });
     }, HEALTH_CHECK_INTERVAL);

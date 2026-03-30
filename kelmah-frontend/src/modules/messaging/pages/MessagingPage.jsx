@@ -1,4 +1,4 @@
-﻿import React, {
+import React, {
   useCallback,
   useEffect,
   useMemo,
@@ -67,9 +67,17 @@ import {
 } from '@/constants/layout';
 import { withBottomNavSafeArea, withSafeAreaBottom } from '@/utils/safeArea';
 
-const CHAT_ACCENT = '#128C7E';
-const CHAT_BG_DARK = '#0B141A';
-const CHAT_BG_LIGHT = '#F3F7F7';
+const CHAT_ACCENT = '#25D366';
+const CHAT_ACCENT_DARK = '#128C7E';
+const CHAT_HEADER = '#075E54';
+const CHAT_BG_LIGHT = '#D9DBD5';
+const CHAT_PANEL_BG = '#FFFFFF';
+const CHAT_PANEL_HEADER = '#F0F2F5';
+const CHAT_MESSAGE_BG = '#EFEAE2';
+const CHAT_OUTGOING_BUBBLE = '#DCF8C6';
+const CHAT_INCOMING_BUBBLE = '#FFFFFF';
+const CHAT_TEXT_PRIMARY = '#111B21';
+const CHAT_TEXT_SECONDARY = '#667781';
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
 const MAX_ATTACHMENTS = 5;
 const DRAFT_STORAGE_KEY = 'kelmah.messaging.drafts.v1';
@@ -88,8 +96,11 @@ const isConversationObject = (conversation) =>
   Boolean(conversation && typeof conversation === 'object');
 
 const getConversationParticipant = (conversation = {}, currentUserId) => {
-  const participants = Array.isArray(conversation.participants)
-    ? conversation.participants
+  const conversationRecord = isConversationObject(conversation)
+    ? conversation
+    : {};
+  const participants = Array.isArray(conversationRecord.participants)
+    ? conversationRecord.participants
     : [];
   const otherParticipant = participants.find((participant) => {
     const participantId = resolveParticipantId(participant);
@@ -100,8 +111,11 @@ const getConversationParticipant = (conversation = {}, currentUserId) => {
 };
 
 const getConversationTitle = (conversation = {}, currentUserId) => {
+  const conversationRecord = isConversationObject(conversation)
+    ? conversation
+    : {};
   const participant = getConversationParticipant(conversation, currentUserId);
-  if (!participant) return conversation.title || 'New conversation';
+  if (!participant) return conversationRecord.title || 'New conversation';
 
   return (
     participant.name ||
@@ -125,8 +139,11 @@ const getConversationAvatar = (conversation = {}, currentUserId) => {
 };
 
 const getConversationPreview = (conversation = {}, currentUserId) => {
+  const conversationRecord = isConversationObject(conversation)
+    ? conversation
+    : {};
   const lastMessage =
-    conversation.lastMessage || conversation.latestMessage || null;
+    conversationRecord.lastMessage || conversationRecord.latestMessage || null;
   if (!lastMessage) return 'Start the conversation';
 
   const senderId = lastMessage.senderId || lastMessage.sender || null;
@@ -309,19 +326,19 @@ const ConversationSkeleton = () => (
           py: 1.25,
           px: 1,
           mb: 1,
-          borderRadius: 2,
+          borderRadius: 1.5,
           border: '1px solid',
-          borderColor: 'divider',
-          bgcolor: 'background.paper',
+          borderColor: '#E9EDEF',
+          bgcolor: CHAT_PANEL_BG,
         }}
       >
-        <CircularProgress size={18} thickness={5} />
+        <CircularProgress size={18} thickness={5} sx={{ color: CHAT_HEADER }} />
         <Box sx={{ flex: 1 }}>
           <Box
             sx={{
               width: '48%',
               height: 14,
-              bgcolor: 'action.selected',
+              bgcolor: '#E9EDEF',
               borderRadius: 999,
               mb: 1,
             }}
@@ -330,7 +347,7 @@ const ConversationSkeleton = () => (
             sx={{
               width: '84%',
               height: 10,
-              bgcolor: 'action.selected',
+              bgcolor: '#E9EDEF',
               borderRadius: 999,
             }}
           />
@@ -373,14 +390,12 @@ const MessageBubble = ({ message, currentUserId }) => {
           maxWidth: { xs: '86%', sm: '72%' },
           px: 1.5,
           py: 1,
-          borderRadius: isOwn ? '18px 18px 6px 18px' : '18px 18px 18px 6px',
-          bgcolor: isOwn ? CHAT_ACCENT : 'background.paper',
-          color: isOwn ? '#fff' : 'text.primary',
-          boxShadow: isOwn
-            ? '0 8px 20px rgba(18, 140, 126, 0.18)'
-            : '0 6px 16px rgba(0, 0, 0, 0.08)',
-          border: isOwn ? 'none' : '1px solid',
-          borderColor: 'divider',
+          borderRadius: isOwn ? '12px 12px 4px 12px' : '12px 12px 12px 4px',
+          bgcolor: isOwn ? CHAT_OUTGOING_BUBBLE : CHAT_INCOMING_BUBBLE,
+          color: CHAT_TEXT_PRIMARY,
+          boxShadow: '0 1px 1px rgba(11, 20, 26, 0.12)',
+          border: '1px solid',
+          borderColor: isOwn ? '#D2F1C7' : '#E9EDEF',
         }}
       >
         {text && (
@@ -439,8 +454,8 @@ const MessageBubble = ({ message, currentUserId }) => {
                     py: 0.75,
                     borderRadius: 2,
                     bgcolor: isOwn
-                      ? 'rgba(255,255,255,0.12)'
-                      : alpha(CHAT_ACCENT, 0.08),
+                      ? alpha(CHAT_HEADER, 0.08)
+                      : alpha(CHAT_HEADER, 0.06),
                   }}
                 >
                   <ImageIcon sx={{ fontSize: 18 }} />
@@ -471,8 +486,8 @@ const MessageBubble = ({ message, currentUserId }) => {
           <Typography
             variant="caption"
             sx={{
-              opacity: 0.75,
-              color: isOwn ? 'rgba(255,255,255,0.8)' : 'text.secondary',
+              opacity: 0.95,
+              color: alpha(CHAT_TEXT_PRIMARY, 0.62),
               fontSize: '0.7rem',
             }}
           >
@@ -482,16 +497,16 @@ const MessageBubble = ({ message, currentUserId }) => {
             <ScheduleIcon sx={{ fontSize: 14, opacity: 0.8 }} />
           )}
           {isOwn && isFailed && (
-            <CloseIcon sx={{ fontSize: 14, color: '#FFB4B4' }} />
+            <CloseIcon sx={{ fontSize: 14, color: '#D32F2F' }} />
           )}
           {isOwn && isRead && (
-            <DoneAllIcon sx={{ fontSize: 14, color: '#CDEFEA' }} />
+            <DoneAllIcon sx={{ fontSize: 14, color: '#34B7F1' }} />
           )}
           {isOwn && isDelivered && (
-            <DoneAllIcon sx={{ fontSize: 14, opacity: 0.85 }} />
+            <DoneAllIcon sx={{ fontSize: 14, color: CHAT_ACCENT_DARK }} />
           )}
           {isOwn && isSent && (
-            <CheckIcon sx={{ fontSize: 14, opacity: 0.85 }} />
+            <CheckIcon sx={{ fontSize: 14, color: CHAT_ACCENT_DARK }} />
           )}
         </Stack>
       </Box>
@@ -1271,10 +1286,11 @@ const MessagingPage = () => {
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
-        borderRadius: mobile ? 0 : 4,
-        border: mobile ? 'none' : '1px solid',
-        borderColor: 'divider',
-        bgcolor: theme.palette.mode === 'dark' ? CHAT_BG_DARK : CHAT_BG_LIGHT,
+        borderRadius: 0,
+        border: 'none',
+        borderRight: mobile ? 'none' : '1px solid',
+        borderColor: '#D1D7DB',
+        bgcolor: CHAT_PANEL_BG,
       }}
     >
       <Box
@@ -1285,9 +1301,9 @@ const MessagingPage = () => {
           position: 'sticky',
           top: 0,
           zIndex: 3,
-          bgcolor: theme.palette.mode === 'dark' ? CHAT_BG_DARK : CHAT_BG_LIGHT,
+          bgcolor: CHAT_PANEL_HEADER,
           borderBottom: '1px solid',
-          borderColor: 'divider',
+          borderColor: '#D1D7DB',
           backdropFilter: 'blur(16px)',
         }}
       >
@@ -1300,10 +1316,10 @@ const MessagingPage = () => {
         >
           <Box>
             <Typography variant="h6" fontWeight={800} sx={{ lineHeight: 1.1 }}>
-              Messages
+              Chats
             </Typography>
-            <Typography variant="caption" color="text.secondary">
-              Secure conversations
+            <Typography variant="caption" sx={{ color: CHAT_TEXT_SECONDARY }}>
+              WhatsApp-style inbox
             </Typography>
           </Box>
           <Stack direction="row" spacing={1} alignItems="center">
@@ -1314,8 +1330,8 @@ const MessagingPage = () => {
               }
               sx={{
                 fontWeight: 700,
-                bgcolor: alpha(CHAT_ACCENT, 0.14),
-                color: CHAT_ACCENT,
+                bgcolor: alpha(CHAT_HEADER, 0.12),
+                color: CHAT_HEADER,
                 display: {
                   xs: unreadCount > 0 ? 'inline-flex' : 'none',
                   sm: 'inline-flex',
@@ -1344,9 +1360,9 @@ const MessagingPage = () => {
                 sx={{
                   minWidth: TOUCH_TARGET_MIN,
                   minHeight: TOUCH_TARGET_MIN,
-                  bgcolor: alpha(CHAT_ACCENT, 0.12),
-                  color: CHAT_ACCENT,
-                  '&:hover': { bgcolor: alpha(CHAT_ACCENT, 0.18) },
+                  bgcolor: CHAT_HEADER,
+                  color: '#fff',
+                  '&:hover': { bgcolor: CHAT_ACCENT_DARK },
                 }}
               >
                 <AddIcon />
@@ -1364,20 +1380,17 @@ const MessagingPage = () => {
           inputProps={{ 'aria-label': 'Search conversations' }}
           sx={{
             '& .MuiOutlinedInput-root': {
-              borderRadius: 999,
-              bgcolor:
-                theme.palette.mode === 'dark'
-                  ? 'rgba(255,255,255,0.04)'
-                  : '#fff',
-              '& fieldset': { borderColor: alpha(CHAT_ACCENT, 0.18) },
-              '&:hover fieldset': { borderColor: alpha(CHAT_ACCENT, 0.4) },
-              '&.Mui-focused fieldset': { borderColor: CHAT_ACCENT },
+              borderRadius: 2,
+              bgcolor: '#fff',
+              '& fieldset': { borderColor: '#D1D7DB' },
+              '&:hover fieldset': { borderColor: CHAT_HEADER },
+              '&.Mui-focused fieldset': { borderColor: CHAT_HEADER },
             },
           }}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <SearchIcon sx={{ color: 'text.secondary', fontSize: 20 }} />
+                <SearchIcon sx={{ color: CHAT_TEXT_SECONDARY, fontSize: 20 }} />
               </InputAdornment>
             ),
             endAdornment: searchQuery ? (
@@ -1401,7 +1414,12 @@ const MessagingPage = () => {
         <Stack
           direction="row"
           spacing={1}
-          sx={{ mt: 1.5, overflowX: 'auto', pb: 0.25 }}
+          sx={{
+            mt: 1.5,
+            pb: 0.25,
+            overflowX: { xs: 'auto', md: 'visible' },
+            flexWrap: { xs: 'nowrap', md: 'wrap' },
+          }}
         >
           {[
             { key: 'all', label: 'All' },
@@ -1416,10 +1434,9 @@ const MessagingPage = () => {
               variant={activeFilter === chip.key ? 'filled' : 'outlined'}
               sx={{
                 fontWeight: 700,
-                borderColor: alpha(CHAT_ACCENT, 0.22),
-                bgcolor:
-                  activeFilter === chip.key ? CHAT_ACCENT : 'transparent',
-                color: activeFilter === chip.key ? '#fff' : 'text.primary',
+                borderColor: alpha(CHAT_HEADER, 0.28),
+                bgcolor: activeFilter === chip.key ? CHAT_HEADER : '#fff',
+                color: activeFilter === chip.key ? '#fff' : CHAT_TEXT_PRIMARY,
               }}
             />
           ))}
@@ -1437,10 +1454,8 @@ const MessagingPage = () => {
               fontWeight: 700,
               borderColor: alpha(theme.palette.warning.main, 0.3),
               bgcolor:
-                activeFilter === 'drafts'
-                  ? theme.palette.warning.main
-                  : 'transparent',
-              color: activeFilter === 'drafts' ? '#111' : 'text.primary',
+                activeFilter === 'drafts' ? theme.palette.warning.main : '#fff',
+              color: activeFilter === 'drafts' ? '#111' : CHAT_TEXT_PRIMARY,
               '& .MuiChip-icon': {
                 color:
                   activeFilter === 'drafts'
@@ -1465,8 +1480,9 @@ const MessagingPage = () => {
               bgcolor:
                 activeFilter === 'unread-drafts'
                   ? theme.palette.error.main
-                  : 'transparent',
-              color: activeFilter === 'unread-drafts' ? '#fff' : 'text.primary',
+                  : '#fff',
+              color:
+                activeFilter === 'unread-drafts' ? '#fff' : CHAT_TEXT_PRIMARY,
               '& .MuiChip-icon': {
                 color:
                   activeFilter === 'unread-drafts'
@@ -1482,16 +1498,14 @@ const MessagingPage = () => {
 
         <Typography
           variant="caption"
-          color="text.secondary"
-          sx={{ display: 'block', mt: 1 }}
+          sx={{ display: 'block', mt: 1, color: CHAT_TEXT_SECONDARY }}
         >
           Tip: use Unread for pending replies, Drafts for unsent notes, or
           Unread + Drafts for urgent follow-up.
         </Typography>
         <Typography
           variant="caption"
-          color="text.secondary"
-          sx={{ display: 'block', mt: 0.25 }}
+          sx={{ display: 'block', mt: 0.25, color: CHAT_TEXT_SECONDARY }}
         >
           {hasConversationFilters
             ? `Showing ${filteredConversations.length} of ${totalConversationCount} conversations`
@@ -1567,15 +1581,13 @@ const MessagingPage = () => {
                     onClick={() => handleSelectConversation(conversation)}
                     selected={isSelected}
                     sx={{
-                      py: mobile ? 1.1 : 1,
+                      py: mobile ? 1.2 : 1.05,
                       px: mobile ? 1.5 : 2,
                       borderLeft: isSelected
-                        ? `4px solid ${CHAT_ACCENT}`
+                        ? `3px solid ${CHAT_HEADER}`
                         : '4px solid transparent',
-                      bgcolor: isSelected
-                        ? alpha(CHAT_ACCENT, 0.1)
-                        : 'transparent',
-                      '&:hover': { bgcolor: alpha(CHAT_ACCENT, 0.08) },
+                      bgcolor: isSelected ? '#E9EDEF' : 'transparent',
+                      '&:hover': { bgcolor: '#F5F6F6' },
                     }}
                   >
                     <ListItemAvatar sx={{ minWidth: { xs: 52, md: 48 } }}>
@@ -1599,8 +1611,8 @@ const MessagingPage = () => {
                           sx={{
                             width: { xs: 48, md: 44 },
                             height: { xs: 48, md: 44 },
-                            bgcolor: alpha(CHAT_ACCENT, 0.14),
-                            color: CHAT_ACCENT,
+                            bgcolor: alpha(CHAT_HEADER, 0.12),
+                            color: CHAT_HEADER,
                             fontWeight: 800,
                           }}
                         >
@@ -1651,7 +1663,6 @@ const MessagingPage = () => {
                             </Stack>
                             <Typography
                               variant="body2"
-                              color="text.secondary"
                               sx={{
                                 mt: 0.2,
                                 minWidth: 0,
@@ -1663,7 +1674,7 @@ const MessagingPage = () => {
                                 lineHeight: 1.35,
                                 color: hasDraftPreview
                                   ? theme.palette.warning.dark
-                                  : undefined,
+                                  : CHAT_TEXT_SECONDARY,
                                 fontWeight: hasDraftPreview ? 700 : 400,
                               }}
                             >
@@ -1672,9 +1683,12 @@ const MessagingPage = () => {
                             {jobContextLabel && (
                               <Typography
                                 variant="caption"
-                                color="text.secondary"
                                 noWrap
-                                sx={{ display: 'block', mt: 0.35 }}
+                                sx={{
+                                  display: 'block',
+                                  mt: 0.35,
+                                  color: CHAT_TEXT_SECONDARY,
+                                }}
                               >
                                 Job: {jobContextLabel}
                               </Typography>
@@ -1688,7 +1702,7 @@ const MessagingPage = () => {
                           >
                             <Typography
                               variant="caption"
-                              color="text.secondary"
+                              sx={{ color: CHAT_TEXT_SECONDARY }}
                             >
                               {hasDraftPreview
                                 ? draftSavedLabel
@@ -1726,7 +1740,7 @@ const MessagingPage = () => {
                             ) : (
                               <Typography
                                 variant="caption"
-                                color="text.secondary"
+                                sx={{ color: CHAT_TEXT_SECONDARY }}
                               >
                                 {isOnline ? 'Online now' : 'Offline'}
                               </Typography>
@@ -1817,10 +1831,9 @@ const MessagingPage = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            borderRadius: mobile ? 0 : 4,
-            border: mobile ? 'none' : '1px solid',
-            borderColor: 'divider',
-            bgcolor: theme.palette.mode === 'dark' ? CHAT_BG_DARK : '#fff',
+            borderRadius: 0,
+            border: 'none',
+            bgcolor: CHAT_MESSAGE_BG,
           }}
         >
           {deepLinkLoading ? (
@@ -1871,20 +1884,18 @@ const MessagingPage = () => {
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
-          borderRadius: mobile ? 0 : 4,
-          border: mobile ? 'none' : '1px solid',
-          borderColor: 'divider',
-          bgcolor: theme.palette.mode === 'dark' ? CHAT_BG_DARK : '#fff',
+          borderRadius: 0,
+          border: 'none',
+          bgcolor: CHAT_MESSAGE_BG,
         }}
       >
         <AppBar
           position="sticky"
           elevation={0}
           sx={{
-            bgcolor: theme.palette.mode === 'dark' ? CHAT_BG_DARK : '#fff',
-            color: 'text.primary',
-            borderBottom: '1px solid',
-            borderColor: 'divider',
+            bgcolor: CHAT_HEADER,
+            color: '#fff',
+            borderBottom: '1px solid rgba(255,255,255,0.14)',
           }}
         >
           <Toolbar sx={{ minHeight: { xs: 64, md: 72 }, px: { xs: 1, md: 2 } }}>
@@ -1896,8 +1907,8 @@ const MessagingPage = () => {
                   mr: 0.5,
                   minWidth: TOUCH_TARGET_MIN,
                   minHeight: TOUCH_TARGET_MIN,
-                  color: CHAT_ACCENT,
-                  bgcolor: alpha(CHAT_ACCENT, 0.08),
+                  color: '#fff',
+                  bgcolor: alpha('#fff', 0.18),
                 }}
               >
                 <ArrowBackIcon />
@@ -1920,8 +1931,8 @@ const MessagingPage = () => {
                 sx={{
                   width: 42,
                   height: 42,
-                  bgcolor: alpha(CHAT_ACCENT, 0.16),
-                  color: CHAT_ACCENT,
+                  bgcolor: alpha('#fff', 0.24),
+                  color: '#fff',
                   fontWeight: 800,
                   mr: 1.5,
                 }}
@@ -1941,9 +1952,8 @@ const MessagingPage = () => {
               </Typography>
               <Typography
                 variant="caption"
-                color="text.secondary"
                 noWrap
-                sx={{ display: 'block' }}
+                sx={{ display: 'block', color: 'rgba(255,255,255,0.82)' }}
               >
                 {typingText ||
                   (participantPresenceId && isUserOnline(participantPresenceId)
@@ -1974,7 +1984,7 @@ const MessagingPage = () => {
                       minHeight: 20,
                       px: 0.75,
                       lineHeight: 1,
-                      color: 'text.secondary',
+                      color: 'rgba(255,255,255,0.84)',
                     }}
                   >
                     Discard
@@ -1988,8 +1998,8 @@ const MessagingPage = () => {
                   sx={{
                     mt: 0.5,
                     fontWeight: 700,
-                    bgcolor: alpha(CHAT_ACCENT, 0.1),
-                    color: CHAT_ACCENT,
+                    bgcolor: alpha('#fff', 0.2),
+                    color: '#fff',
                   }}
                 />
               )}
@@ -2002,7 +2012,7 @@ const MessagingPage = () => {
                   ml: 1,
                   minWidth: TOUCH_TARGET_MIN,
                   minHeight: TOUCH_TARGET_MIN,
-                  color: 'text.secondary',
+                  color: '#fff',
                 }}
               >
                 <MoreVertIcon />
@@ -2019,10 +2029,11 @@ const MessagingPage = () => {
             px: { xs: 1.25, md: 2 },
             py: { xs: 1.5, md: 2 },
             pb: { xs: mobile && !isKeyboardVisible ? 2.5 : 1.25, md: 2 },
+            backgroundColor: CHAT_MESSAGE_BG,
             backgroundImage:
-              theme.palette.mode === 'dark'
-                ? 'radial-gradient(circle at top, rgba(18,140,126,0.12), transparent 42%), linear-gradient(180deg, rgba(255,255,255,0.015) 0%, transparent 100%)'
-                : 'radial-gradient(circle at top, rgba(18,140,126,0.08), transparent 42%)',
+              'radial-gradient(rgba(17, 27, 33, 0.06) 0.7px, transparent 0.7px), radial-gradient(rgba(17, 27, 33, 0.04) 0.7px, transparent 0.7px)',
+            backgroundPosition: '0 0, 8px 8px',
+            backgroundSize: '16px 16px',
           }}
         >
           {(realtimeIssue || !isConnected) && (
@@ -2048,14 +2059,14 @@ const MessagingPage = () => {
                       width: { xs: '72%', sm: '58%' },
                       p: 1.5,
                       borderRadius: 2,
-                      bgcolor: 'action.selected',
+                      bgcolor: '#F6F7F8',
                     }}
                   >
                     <Box
                       sx={{
                         width: '80%',
                         height: 10,
-                        bgcolor: 'background.paper',
+                        bgcolor: '#E9EDEF',
                         borderRadius: 999,
                         mb: 1,
                       }}
@@ -2064,7 +2075,7 @@ const MessagingPage = () => {
                       sx={{
                         width: '45%',
                         height: 10,
-                        bgcolor: 'background.paper',
+                        bgcolor: '#E9EDEF',
                         borderRadius: 999,
                       }}
                     />
@@ -2140,7 +2151,7 @@ const MessagingPage = () => {
           >
             <Button
               variant="contained"
-              color="secondary"
+              color="inherit"
               onClick={handleScrollToLatest}
               sx={{
                 minHeight: TOUCH_TARGET_MIN,
@@ -2148,6 +2159,9 @@ const MessagingPage = () => {
                 textTransform: 'none',
                 fontWeight: 700,
                 px: 2,
+                color: '#fff',
+                bgcolor: CHAT_HEADER,
+                '&:hover': { bgcolor: CHAT_ACCENT_DARK },
                 boxShadow: '0 8px 20px rgba(0,0,0,0.2)',
               }}
             >
@@ -2171,13 +2185,10 @@ const MessagingPage = () => {
                 : withBottomNavSafeArea(12),
               md: 1.25,
             },
-            bgcolor:
-              theme.palette.mode === 'dark'
-                ? 'rgba(11,20,26,0.98)'
-                : 'rgba(255,255,255,0.98)',
+            bgcolor: alpha(CHAT_PANEL_HEADER, 0.98),
             backdropFilter: 'blur(14px)',
             borderTop: '1px solid',
-            borderColor: 'divider',
+            borderColor: '#D1D7DB',
             transition: 'padding-bottom 0.22s ease',
           }}
         >
@@ -2351,8 +2362,8 @@ const MessagingPage = () => {
                   variant="outlined"
                   sx={{
                     fontWeight: 700,
-                    bgcolor: alpha(CHAT_ACCENT, 0.05),
-                    borderColor: alpha(CHAT_ACCENT, 0.22),
+                    bgcolor: alpha(CHAT_HEADER, 0.05),
+                    borderColor: alpha(CHAT_HEADER, 0.22),
                     '& .MuiChip-label': { px: 1.25 },
                   }}
                 />
@@ -2379,9 +2390,9 @@ const MessagingPage = () => {
                   sx={{
                     minWidth: TOUCH_TARGET_MIN,
                     minHeight: TOUCH_TARGET_MIN,
-                    color: CHAT_ACCENT,
-                    bgcolor: alpha(CHAT_ACCENT, 0.08),
-                    '&:hover': { bgcolor: alpha(CHAT_ACCENT, 0.14) },
+                    color: CHAT_HEADER,
+                    bgcolor: '#fff',
+                    '&:hover': { bgcolor: '#F5F6F6' },
                   }}
                 >
                   <AttachFileIcon />
@@ -2443,14 +2454,11 @@ const MessagingPage = () => {
               inputProps={{ 'aria-label': 'Type message', maxLength: 1000 }}
               sx={{
                 '& .MuiOutlinedInput-root': {
-                  borderRadius: 999,
-                  bgcolor:
-                    theme.palette.mode === 'dark'
-                      ? 'rgba(255,255,255,0.04)'
-                      : '#fff',
-                  '& fieldset': { borderColor: alpha(CHAT_ACCENT, 0.2) },
-                  '&:hover fieldset': { borderColor: alpha(CHAT_ACCENT, 0.45) },
-                  '&.Mui-focused fieldset': { borderColor: CHAT_ACCENT },
+                  borderRadius: 3,
+                  bgcolor: '#fff',
+                  '& fieldset': { borderColor: '#D1D7DB' },
+                  '&:hover fieldset': { borderColor: CHAT_ACCENT_DARK },
+                  '&.Mui-focused fieldset': { borderColor: CHAT_ACCENT_DARK },
                 },
                 '& .MuiInputBase-input': {
                   fontSize: '1rem',
@@ -2467,9 +2475,9 @@ const MessagingPage = () => {
                 sx={{
                   minWidth: TOUCH_TARGET_MIN,
                   minHeight: TOUCH_TARGET_MIN,
-                  bgcolor: CHAT_ACCENT,
+                  bgcolor: CHAT_HEADER,
                   color: '#fff',
-                  '&:hover': { bgcolor: '#0F7366' },
+                  '&:hover': { bgcolor: CHAT_ACCENT_DARK },
                   '&:disabled': {
                     bgcolor: alpha(theme.palette.text.primary, 0.08),
                     color: 'text.disabled',
@@ -2491,10 +2499,10 @@ const MessagingPage = () => {
             sx={{ display: 'block', mt: 0.75, pl: 0.5 }}
           >
             {selectedFiles.length > 0
-              ? `${selectedFiles.length} attached • ${remainingAttachmentSlots} slot${remainingAttachmentSlots === 1 ? '' : 's'} left • ${messageCharacterCount}/1000 chars • Press Enter to send`
+              ? `${selectedFiles.length} attached � ${remainingAttachmentSlots} slot${remainingAttachmentSlots === 1 ? '' : 's'} left � ${messageCharacterCount}/1000 chars � Press Enter to send`
               : hasSelectedDraft
-                ? `Press Enter for quick send • Shift+Enter for new line • ${messageCharacterCount}/1000 chars • Draft ${selectedDraftSavedLabel}`
-                : `Press Enter for quick send • Shift+Enter for new line • ${messageCharacterCount}/1000 chars • Max ${MAX_ATTACHMENTS} files (10MB limit)`}
+                ? `Press Enter for quick send � Shift+Enter for new line � ${messageCharacterCount}/1000 chars � Draft ${selectedDraftSavedLabel}`
+                : `Press Enter for quick send � Shift+Enter for new line � ${messageCharacterCount}/1000 chars � Max ${MAX_ATTACHMENTS} files (10MB limit)`}
           </Typography>
           {isKeyboardVisible && (
             <Typography
@@ -2517,18 +2525,18 @@ const MessagingPage = () => {
     >
       <Box
         sx={{
-          minHeight: {
+          height: {
             xs: `calc(100dvh - ${HEADER_HEIGHT_MOBILE}px - var(--kelmah-network-banner-offset, 0px))`,
             md: 'calc(100dvh - 64px)',
           },
           display: 'flex',
           flexDirection: 'column',
-          bgcolor: theme.palette.mode === 'dark' ? CHAT_BG_DARK : CHAT_BG_LIGHT,
+          bgcolor: CHAT_BG_LIGHT,
           color: 'text.primary',
-          backgroundImage:
-            theme.palette.mode === 'dark'
-              ? 'radial-gradient(circle at top, rgba(18,140,126,0.12) 0%, transparent 34%), linear-gradient(180deg, rgba(255,255,255,0.02) 0%, transparent 24%)'
-              : 'radial-gradient(circle at top, rgba(18,140,126,0.08) 0%, transparent 34%)',
+          backgroundImage: {
+            xs: 'none',
+            md: 'linear-gradient(180deg, #D4AF37 0px, #D4AF37 132px, #f2f2f2 132px)',
+          },
         }}
       >
         <SEO
@@ -2551,6 +2559,7 @@ const MessagingPage = () => {
             },
             flex: 1,
             display: 'flex',
+            justifyContent: { xs: 'stretch', md: 'center' },
           }}
         >
           {isMobile ? (
@@ -2565,10 +2574,17 @@ const MessagingPage = () => {
             <Box
               sx={{
                 flex: 1,
+                width: '100%',
+                maxWidth: 1460,
                 minHeight: 0,
                 display: 'grid',
                 gridTemplateColumns: { md: '360px 1fr', lg: '380px 1fr' },
-                gap: 2,
+                gap: 0,
+                borderRadius: 2,
+                overflow: 'hidden',
+                border: '1px solid #D1D7DB',
+                boxShadow: '0 16px 40px rgba(11, 20, 26, 0.2)',
+                bgcolor: CHAT_PANEL_BG,
               }}
             >
               <Box sx={{ minHeight: 0 }}>{renderConversationList(false)}</Box>

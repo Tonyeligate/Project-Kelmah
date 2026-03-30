@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { API_BASE_URL } from '../config/environment';
+import { getApiBaseUrl } from '../config/environment';
 import {
   createFeatureLogger,
   devWarn as apiHealthWarn,
@@ -31,11 +31,12 @@ export const useApiHealth = () => {
       }
 
       try {
+        const apiBaseUrl = getApiBaseUrl() || '/api';
+
         // Try multiple health endpoints for resilience
-        // Note: API_BASE_URL includes /api suffix, and /api/health/aggregate is
-        // a registered gateway route. /health (without /api) is NOT accessible
-        // through the gateway proxy.
-        const healthEndpoints = [`${API_BASE_URL}/health/aggregate`];
+        // Note: apiBaseUrl includes /api suffix, and /api/health/aggregate is
+        // a registered gateway route.
+        const healthEndpoints = [`${apiBaseUrl}/health/aggregate`];
 
         for (const healthUrl of healthEndpoints) {
           try {
@@ -50,7 +51,7 @@ export const useApiHealth = () => {
               retryCountRef.current = 0;
               // Cache healthy URL
               if (typeof window !== 'undefined') {
-                localStorage.setItem('kelmah:lastHealthyApiBase', API_BASE_URL);
+                localStorage.setItem('kelmah:lastHealthyApiBase', apiBaseUrl);
               }
               return; // Success - exit
             }
@@ -100,7 +101,8 @@ export const useApiHealth = () => {
       clearTimeout(retryTimeoutRef.current);
       clearInterval(interval);
     };
-    // LOW-22 FIX: API_BASE_URL is a module-level constant, not a React value.
+    // LOW-22 FIX: getApiBaseUrl() is invoked inside checkHealth to avoid stale
+    // module-level API base values when runtime config changes.
     // The empty dependency array is intentional — this effect runs once on mount.
   }, []);
 

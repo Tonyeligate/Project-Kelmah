@@ -107,6 +107,10 @@ const QuickActionsRow = () => {
               lineHeight: 1.2,
               overflowWrap: 'anywhere',
               fontSize: { xs: '0.74rem', sm: '0.875rem' },
+              width: '100%',
+              whiteSpace: 'nowrap',
+              textOverflow: 'ellipsis',
+              overflow: 'hidden',
             }}
           >
             {label}
