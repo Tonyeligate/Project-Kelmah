@@ -22,6 +22,8 @@ import { Helmet } from 'react-helmet-async';
 import TransactionsList from '../components/TransactionsList';
 import { currencyFormatter } from '@/modules/common/utils/formatters';
 import PageCanvas from '../../common/components/PageCanvas';
+import { TOUCH_TARGET_MIN, Z_INDEX } from '@/constants/layout';
+import { withBottomNavSafeArea } from '@/utils/safeArea';
 
 const WalletPage = () => {
   const theme = useTheme();
@@ -69,7 +71,7 @@ const WalletPage = () => {
     return (
       <PageCanvas
         disableContainer
-        sx={{ pt: { xs: 2, sm: 4 }, pb: { xs: 4, md: 6 } }}
+        sx={{ pt: { xs: 2, sm: 4 }, pb: { xs: withBottomNavSafeArea(12), md: 6 } }}
       >
         <Container sx={{ py: { xs: 2, sm: 4 } }}>
           <Skeleton variant="rectangular" height={300} />
@@ -80,7 +82,7 @@ const WalletPage = () => {
     return (
       <PageCanvas
         disableContainer
-        sx={{ pt: { xs: 2, sm: 4 }, pb: { xs: 4, md: 6 } }}
+        sx={{ pt: { xs: 2, sm: 4 }, pb: { xs: withBottomNavSafeArea(12), md: 6 } }}
       >
         <Container sx={{ py: { xs: 2, sm: 4 } }}>
           <Alert
@@ -104,7 +106,7 @@ const WalletPage = () => {
   return (
     <PageCanvas
       disableContainer
-      sx={{ pt: { xs: 1, sm: 4 }, pb: { xs: 10, md: 6 } }}
+      sx={{ pt: { xs: 1, sm: 4 }, pb: { xs: withBottomNavSafeArea(72), md: 6 } }}
     >
       <Container
         maxWidth="md"
@@ -204,7 +206,7 @@ const WalletPage = () => {
             sx={{
               borderWidth: 2,
               flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' },
-              minHeight: 42,
+              minHeight: TOUCH_TARGET_MIN,
               display: { xs: 'none', sm: 'inline-flex' },
             }}
             onClick={applyFilters}
@@ -217,7 +219,7 @@ const WalletPage = () => {
             sx={{
               borderWidth: 2,
               flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' },
-              minHeight: 42,
+              minHeight: TOUCH_TARGET_MIN,
               display: { xs: 'none', sm: 'inline-flex' },
             }}
             onClick={clearFilters}
@@ -266,8 +268,8 @@ const WalletPage = () => {
             position: 'fixed',
             left: 0,
             right: 0,
-            bottom: 0,
-            zIndex: theme.zIndex.appBar + 2,
+            bottom: withBottomNavSafeArea(0),
+            zIndex: Z_INDEX.stickyCta,
             px: 1,
             py: 1,
             gap: 1,
@@ -279,7 +281,7 @@ const WalletPage = () => {
             fullWidth
             variant="outlined"
             color="secondary"
-            sx={{ minHeight: 42, borderWidth: 2 }}
+            sx={{ minHeight: TOUCH_TARGET_MIN, borderWidth: 2 }}
             onClick={clearFilters}
           >
             Reset
@@ -288,7 +290,7 @@ const WalletPage = () => {
             fullWidth
             variant="contained"
             color="secondary"
-            sx={{ minHeight: 42, boxShadow: '0 2px 8px rgba(255,215,0,0.35)' }}
+            sx={{ minHeight: TOUCH_TARGET_MIN, boxShadow: '0 2px 8px rgba(255,215,0,0.35)' }}
             onClick={applyFilters}
           >
             Apply

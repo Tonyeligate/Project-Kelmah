@@ -65,8 +65,14 @@ import PageCanvas from '../../common/components/PageCanvas';
 import {
   BOTTOM_NAV_HEIGHT,
   HEADER_HEIGHT_MOBILE,
+  TOUCH_TARGET_MIN,
   Z_INDEX,
 } from '../../../constants/layout';
+import {
+  withBottomNavSafeArea,
+  withSafeAreaBottom,
+  withSafeAreaTop,
+} from '@/utils/safeArea';
 
 const WalletSummary = ({ balance, onDepositClick, onWithdrawClick }) => (
   <Paper
@@ -925,7 +931,10 @@ const PaymentCenterPage = () => {
     return (
       <PageCanvas
         disableContainer
-        sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}
+        sx={{
+          pt: { xs: 2, md: 4 },
+          pb: { xs: withBottomNavSafeArea(12), md: 6 },
+        }}
       >
         <Container sx={{ py: { xs: 2, md: 4 } }}>
           <Skeleton variant="rectangular" height={300} />
@@ -936,7 +945,10 @@ const PaymentCenterPage = () => {
     return (
       <PageCanvas
         disableContainer
-        sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}
+        sx={{
+          pt: { xs: 2, md: 4 },
+          pb: { xs: withBottomNavSafeArea(12), md: 6 },
+        }}
       >
         <Container sx={{ py: { xs: 2, md: 4 } }}>
           <Alert
@@ -956,7 +968,11 @@ const PaymentCenterPage = () => {
   return (
     <PageCanvas
       disableContainer
-      sx={{ pt: { xs: 1, md: 4 }, pb: { xs: 10, md: 6 }, overflowX: 'clip' }}
+      sx={{
+        pt: { xs: 1, md: 4 },
+        pb: { xs: withBottomNavSafeArea(72), md: 6 },
+        overflowX: 'clip',
+      }}
     >
       <Container
         maxWidth="xl"
@@ -973,7 +989,7 @@ const PaymentCenterPage = () => {
         <Box
           sx={{
             position: { xs: 'sticky', md: 'static' },
-            top: { xs: HEADER_HEIGHT_MOBILE, md: 'auto' },
+            top: { xs: withSafeAreaTop(HEADER_HEIGHT_MOBILE), md: 'auto' },
             zIndex: { xs: Z_INDEX.sticky, md: 'auto' },
             py: { xs: 0.5, md: 0 },
             mb: { xs: 1.5, md: 0 },
@@ -1070,7 +1086,9 @@ const PaymentCenterPage = () => {
                 mb: 2,
                 position: { xs: 'sticky', md: 'static' },
                 top: {
-                  xs: HEADER_HEIGHT_MOBILE + BOTTOM_NAV_HEIGHT - 4,
+                  xs: withSafeAreaTop(
+                    HEADER_HEIGHT_MOBILE + BOTTOM_NAV_HEIGHT - 4,
+                  ),
                   md: 'auto',
                 },
                 zIndex: { xs: Z_INDEX.sticky, md: 'auto' },
@@ -1424,13 +1442,18 @@ const PaymentCenterPage = () => {
             position: 'fixed',
             left: 0,
             right: 0,
-            bottom: 0,
-            zIndex: theme.zIndex.appBar + 2,
-            px: 1,
-            py: 1,
+            bottom: withBottomNavSafeArea(0),
+            zIndex: Z_INDEX.stickyCta,
+            px: 1.25,
+            pt: 0.75,
+            pb: withSafeAreaBottom(8),
             gap: 1,
             borderTop: `1px solid ${theme.palette.divider}`,
             backgroundColor: theme.palette.background.paper,
+            boxShadow:
+              theme.palette.mode === 'dark'
+                ? '0 -8px 24px rgba(0, 0, 0, 0.4)'
+                : '0 -6px 18px rgba(16, 17, 19, 0.12)',
           })}
         >
           {tabIndex === 3 ? (
@@ -1439,7 +1462,7 @@ const PaymentCenterPage = () => {
                 fullWidth
                 variant="outlined"
                 color="secondary"
-                sx={{ minHeight: 42 }}
+                sx={{ minHeight: TOUCH_TARGET_MIN }}
                 onClick={clearBillFilters}
               >
                 Clear
@@ -1449,7 +1472,7 @@ const PaymentCenterPage = () => {
                 variant="contained"
                 color="secondary"
                 sx={{
-                  minHeight: 42,
+                  minHeight: TOUCH_TARGET_MIN,
                   boxShadow: '0 2px 8px rgba(255,215,0,0.35)',
                 }}
                 onClick={applyBillFilters}
@@ -1463,7 +1486,7 @@ const PaymentCenterPage = () => {
               variant="contained"
               color="secondary"
               sx={{
-                minHeight: 42,
+                minHeight: TOUCH_TARGET_MIN,
                 boxShadow: '0 2px 8px rgba(255,215,0,0.35)',
               }}
               onClick={applyEscrowFilters}
@@ -1476,7 +1499,7 @@ const PaymentCenterPage = () => {
               variant="contained"
               color="secondary"
               sx={{
-                minHeight: 42,
+                minHeight: TOUCH_TARGET_MIN,
                 boxShadow: '0 2px 8px rgba(255,215,0,0.35)',
               }}
               onClick={applyFilters}
@@ -1489,7 +1512,7 @@ const PaymentCenterPage = () => {
               variant="contained"
               color="secondary"
               sx={{
-                minHeight: 42,
+                minHeight: TOUCH_TARGET_MIN,
                 boxShadow: '0 2px 8px rgba(255,215,0,0.35)',
               }}
               onClick={() => navigate(paymentMethodsPath)}

@@ -1,7 +1,12 @@
 // IconButton focus-visible styling is enforced globally via MuiIconButton theme overrides.
 
 import PageCanvas from '@/modules/common/components/PageCanvas';
-import { HEADER_HEIGHT_MOBILE, Z_INDEX } from '../../../constants/layout';
+import {
+  HEADER_HEIGHT_MOBILE,
+  TOUCH_TARGET_MIN,
+  Z_INDEX,
+} from '../../../constants/layout';
+import { withBottomNavSafeArea, withSafeAreaTop } from '@/utils/safeArea';
 
 // Visibility chip — tells the hirer whether the job appears on the public Jobs page
 const formatGhanaCurrencyLabel = (value) => {
@@ -517,7 +522,10 @@ const JobManagementPage = () => {
   );
 
   return (
-    <PageCanvas disableContainer sx={{ pb: { xs: 10, md: 6 } }}>
+    <PageCanvas
+      disableContainer
+      sx={{ pb: { xs: withBottomNavSafeArea(24), md: 6 } }}
+    >
       <Box sx={{ pt: { xs: 1, md: 2 } }}>
         <Helmet>
           <title>Manage Jobs | Kelmah</title>
@@ -569,7 +577,7 @@ const JobManagementPage = () => {
               flexWrap: 'wrap',
               gap: 1,
               position: { xs: 'sticky', md: 'static' },
-              top: { xs: HEADER_HEIGHT_MOBILE, md: 'auto' },
+              top: { xs: withSafeAreaTop(HEADER_HEIGHT_MOBILE), md: 'auto' },
               zIndex: { xs: Z_INDEX.sticky, md: 'auto' },
               py: { xs: 0.5, md: 0 },
               backgroundColor: { xs: 'background.default', md: 'transparent' },
@@ -1249,8 +1257,8 @@ const JobManagementPage = () => {
             position: 'fixed',
             left: 0,
             right: 0,
-            bottom: 0,
-            zIndex: theme.zIndex.appBar + 2,
+            bottom: withBottomNavSafeArea(0),
+            zIndex: Z_INDEX.stickyCta,
             px: 1,
             py: 1,
             gap: 1,
@@ -1262,7 +1270,7 @@ const JobManagementPage = () => {
             fullWidth
             variant="outlined"
             color="secondary"
-            sx={{ minHeight: 42 }}
+            sx={{ minHeight: TOUCH_TARGET_MIN }}
             startIcon={<RefreshIcon />}
             onClick={handleRefresh}
             disabled={loading}
@@ -1273,7 +1281,10 @@ const JobManagementPage = () => {
             fullWidth
             variant="contained"
             color="secondary"
-            sx={{ minHeight: 42, boxShadow: '0 2px 8px rgba(255,215,0,0.35)' }}
+            sx={{
+              minHeight: TOUCH_TARGET_MIN,
+              boxShadow: '0 2px 8px rgba(255,215,0,0.35)',
+            }}
             startIcon={<AddIcon />}
             onClick={handleCreateJob}
           >

@@ -59,6 +59,11 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { messagingService } from '../../messaging/services/messagingService';
 import { useSnackbar } from 'notistack';
 import {
+  devError as logDevError,
+  devInfo as logDevInfo,
+  devWarn as logDevWarn,
+} from '@/modules/common/utils/devLogger';
+import {
   APPLICATIONS_PAGE_SIZE,
   APPLICATIONS_PAGE_SIZE_OPTIONS,
   APPLICATION_SORT_OPTIONS,
@@ -79,11 +84,16 @@ import {
 } from '../components/ApplicationManagementCards';
 import { useBreakpointDown } from '../../../hooks/useResponsive';
 import {
-  BOTTOM_NAV_HEIGHT,
   HEADER_HEIGHT_MOBILE,
+  TOUCH_TARGET_MIN,
   Z_INDEX,
 } from '../../../constants/layout';
 import PageCanvas from '@/modules/common/components/PageCanvas';
+import {
+  withBottomNavSafeArea,
+  withSafeAreaBottom,
+  withSafeAreaTop,
+} from '@/utils/safeArea';
 
 /* ─── helpers ─────────────────────────────────────────────────────── */
 
@@ -184,6 +194,53 @@ function ApplicationManagementPage() {
   const [actionType, setActionType] = useState('');
   const [showJobList, setShowJobList] = useState(!isMobile);
   const [macroAction, setMacroAction] = useState('');
+  const [lastMacroTelemetry, setLastMacroTelemetry] = useState(null);
+
+  const publishMacroTelemetry = useCallback((snapshot) => {
+    if (!snapshot || typeof snapshot !== 'object') {
+      return;
+    }
+
+    setLastMacroTelemetry({
+      ...snapshot,
+      updatedAt: Date.now(),
+    });
+  }, []);
+
+  const macroTelemetryBadgeMeta = useMemo(() => {
+    if (!lastMacroTelemetry) {
+      return null;
+    }
+
+    const attempts = Number(lastMacroTelemetry.attempts || 0);
+    const retries = Number(lastMacroTelemetry.retries || 0);
+    const fallbackMoves = Number(lastMacroTelemetry.fallbackMoves || 0);
+    const phase = String(lastMacroTelemetry.phase || 'snapshot');
+    const macroLabel =
+      lastMacroTelemetry.macro === 'reject+template' ? 'R+T' : 'A+M';
+    const statusColor =
+      lastMacroTelemetry.status === 'error'
+        ? 'error'
+        : lastMacroTelemetry.status === 'warning'
+          ? 'warning'
+          : lastMacroTelemetry.status === 'success'
+            ? 'success'
+            : 'default';
+    const timestamp = new Date(lastMacroTelemetry.updatedAt || Date.now());
+    const savedLabel = Number.isNaN(timestamp.getTime())
+      ? 'just now'
+      : formatDistanceToNow(timestamp, { addSuffix: true });
+
+    return {
+      color: statusColor,
+      label: `${macroLabel} ${phase} a${attempts} r${retries} f${fallbackMoves}`,
+      tooltip: `Last macro ${macroLabel}: phase ${phase}, attempts ${attempts}, retries ${retries}, fallback moves ${fallbackMoves}, updated ${savedLabel}.`,
+    };
+  }, [lastMacroTelemetry]);
+
+  const handleResetMacroTelemetry = useCallback(() => {
+    setLastMacroTelemetry(null);
+  }, []);
 
   // Sync URL-derived pane state and redirect bid-based jobs to the bid review screen.
   useEffect(() => {
@@ -664,12 +721,26 @@ function ApplicationManagementPage() {
     if (!selectedApplication) return;
 
     setMacroAction('accept-message');
+    const targetApplication = selectedApplication;
+    const telemetry = {
+      macro: 'accept+message',
+      applicationId: targetApplication?.id,
+      jobId: targetApplication?.jobId,
+      attempts: 0,
+      retries: 0,
+      fallbackMoves: 0,
+    };
+
     try {
-      const targetApplication = selectedApplication;
       const nextForTriage =
         filteredApps[selectedApplicationIndex + 1] ||
         filteredApps[selectedApplicationIndex - 1] ||
         null;
+      publishMacroTelemetry({
+        ...telemetry,
+        phase: 'starting',
+        status: 'running',
+      });
 
       if (targetApplication.status !== 'accepted') {
         await updateApplicationStatusAndRefresh({
@@ -679,46 +750,134 @@ function ApplicationManagementPage() {
         });
       }
 
-      const openedOnFirstAttempt = await startConversationForApplication(
-        targetApplication,
-      );
+      telemetry.attempts += 1;
+      logDevInfo('[ApplicationManagementPage] accept+message open attempt', {
+        ...telemetry,
+        maxAttempts: 2,
+      });
+
+      const openedOnFirstAttempt =
+        await startConversationForApplication(targetApplication);
       let opened = openedOnFirstAttempt;
 
       if (!opened) {
+        telemetry.retries += 1;
         await new Promise((resolve) => {
           setTimeout(resolve, 220);
         });
+
+        telemetry.attempts += 1;
+        logDevInfo('[ApplicationManagementPage] accept+message retry attempt', {
+          ...telemetry,
+          maxAttempts: 2,
+        });
+
         opened = await startConversationForApplication(targetApplication);
       }
 
       if (!opened) {
         if (nextForTriage?.id) {
           setSelectedApplication(nextForTriage);
+          telemetry.fallbackMoves = 1;
         }
+
+        publishMacroTelemetry({
+          ...telemetry,
+          phase: 'fallback',
+          status: 'warning',
+        });
+
+        logDevWarn(
+          '[ApplicationManagementPage] accept+message fallback after failed attempts',
+          {
+            ...telemetry,
+            fallbackTargetApplicationId: nextForTriage?.id || null,
+          },
+        );
 
         enqueueSnackbar(
           nextForTriage?.id
-            ? 'Chat could not open. Accepted and moved to next applicant.'
-            : 'Application accepted, but chat could not open.',
+            ? `Chat failed after ${telemetry.attempts}/2 attempts (retry ${telemetry.retries}/1). Fallback ${telemetry.fallbackMoves}/1: moved to next applicant.`
+            : `Chat failed after ${telemetry.attempts}/2 attempts (retry ${telemetry.retries}/1). Fallback ${telemetry.fallbackMoves}/1: staying on current applicant.`,
           {
             variant: 'warning',
           },
         );
       } else if (!openedOnFirstAttempt) {
-        enqueueSnackbar('Chat opened on retry.', {
-          variant: 'success',
+        logDevInfo(
+          '[ApplicationManagementPage] accept+message opened on retry',
+          {
+            ...telemetry,
+          },
+        );
+
+        publishMacroTelemetry({
+          ...telemetry,
+          phase: 'retry-opened',
+          status: 'success',
         });
+
+        enqueueSnackbar(
+          `Chat opened on retry (${telemetry.attempts}/2 attempts, fallback ${telemetry.fallbackMoves}/1).`,
+          {
+            variant: 'success',
+          },
+        );
       } else if (targetApplication.status !== 'accepted') {
-        enqueueSnackbar('Application accepted and chat opened.', {
-          variant: 'success',
+        logDevInfo(
+          '[ApplicationManagementPage] accept+message accepted and opened',
+          {
+            ...telemetry,
+          },
+        );
+
+        publishMacroTelemetry({
+          ...telemetry,
+          phase: 'accepted-opened',
+          status: 'success',
         });
+
+        enqueueSnackbar(
+          `Application accepted and chat opened (${telemetry.attempts}/2 attempts, retry ${telemetry.retries}/1).`,
+          {
+            variant: 'success',
+          },
+        );
       } else {
-        enqueueSnackbar('Chat opened for accepted application.', {
-          variant: 'success',
+        logDevInfo(
+          '[ApplicationManagementPage] accept+message opened for accepted application',
+          {
+            ...telemetry,
+          },
+        );
+
+        publishMacroTelemetry({
+          ...telemetry,
+          phase: 'opened',
+          status: 'success',
         });
+
+        enqueueSnackbar(
+          `Chat opened (${telemetry.attempts}/2 attempts, retry ${telemetry.retries}/1).`,
+          {
+            variant: 'success',
+          },
+        );
       }
       setError(null);
     } catch (err) {
+      logDevError('[ApplicationManagementPage] accept+message macro failed', {
+        applicationId: selectedApplication?.id,
+        jobId: selectedApplication?.jobId,
+        error: err?.message || 'Unknown macro error',
+      });
+
+      publishMacroTelemetry({
+        ...telemetry,
+        phase: 'failed',
+        status: 'error',
+      });
+
       setError('Accept + message quick action failed.');
       enqueueSnackbar('Accept + message quick action failed', {
         variant: 'error',
@@ -729,8 +888,9 @@ function ApplicationManagementPage() {
   }, [
     enqueueSnackbar,
     filteredApps,
-    selectedApplicationIndex,
+    publishMacroTelemetry,
     selectedApplication,
+    selectedApplicationIndex,
     startConversationForApplication,
     updateApplicationStatusAndRefresh,
   ]);
@@ -741,15 +901,30 @@ function ApplicationManagementPage() {
     }
 
     setMacroAction('reject-template');
+    const targetApplication = selectedApplication;
+    const telemetry = {
+      macro: 'reject+template',
+      applicationId: targetApplication?.id,
+      jobId: targetApplication?.jobId,
+      attempts: 1,
+      retries: 0,
+      fallbackMoves: 0,
+    };
+
     try {
-      const targetApplication = selectedApplication;
       const nextForTriage =
         filteredApps[selectedApplicationIndex + 1] ||
         filteredApps[selectedApplicationIndex - 1] ||
         null;
+      publishMacroTelemetry({
+        ...telemetry,
+        phase: 'starting',
+        status: 'running',
+      });
 
       if (nextForTriage?.id) {
         setSelectedApplication(nextForTriage);
+        telemetry.fallbackMoves = 1;
       }
 
       await updateApplicationStatusAndRefresh({
@@ -758,10 +933,36 @@ function ApplicationManagementPage() {
         feedbackText: buildQuickRejectFeedbackTemplate(targetApplication),
       });
       setError(null);
-      enqueueSnackbar('Application rejected with template feedback.', {
-        variant: 'success',
+      logDevInfo(
+        '[ApplicationManagementPage] reject+template macro completed',
+        {
+          ...telemetry,
+        },
+      );
+      publishMacroTelemetry({
+        ...telemetry,
+        phase: 'completed',
+        status: 'success',
       });
+      enqueueSnackbar(
+        `Application rejected with template feedback (fallback ${telemetry.fallbackMoves}/1).`,
+        {
+          variant: 'success',
+        },
+      );
     } catch (err) {
+      logDevError('[ApplicationManagementPage] reject+template macro failed', {
+        applicationId: selectedApplication?.id,
+        jobId: selectedApplication?.jobId,
+        error: err?.message || 'Unknown macro error',
+      });
+
+      publishMacroTelemetry({
+        ...telemetry,
+        phase: 'failed',
+        status: 'error',
+      });
+
       setError('Reject + template quick action failed.');
       enqueueSnackbar('Reject + template quick action failed', {
         variant: 'error',
@@ -772,6 +973,7 @@ function ApplicationManagementPage() {
   }, [
     enqueueSnackbar,
     filteredApps,
+    publishMacroTelemetry,
     selectedApplication,
     selectedApplicationIndex,
     updateApplicationStatusAndRefresh,
@@ -856,18 +1058,19 @@ function ApplicationManagementPage() {
   return (
     <PageCanvas
       disableContainer
-      sx={{ pt: { xs: 1, md: 4 }, pb: { xs: 10, md: 6 }, overflowX: 'clip' }}
+      sx={{
+        pt: { xs: 1, md: 4 },
+        pb: { xs: withBottomNavSafeArea(84), md: 6 },
+        overflowX: 'clip',
+      }}
     >
       <Container
         maxWidth="xl"
         sx={{
           mt: { xs: 1, md: 3 },
           mb: { xs: 2, md: 4 },
-          px: { xs: 0.75, sm: 2 },
-          pb: {
-            xs: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px) + 12px)`,
-            md: 0,
-          },
+          px: { xs: 1, sm: 2 },
+          pb: { xs: withSafeAreaBottom(12), md: 0 },
           width: '100%',
           minWidth: 0,
         }}
@@ -886,7 +1089,7 @@ function ApplicationManagementPage() {
             flexWrap: 'wrap',
             gap: 1,
             position: { xs: 'sticky', md: 'static' },
-            top: { xs: HEADER_HEIGHT_MOBILE, md: 'auto' },
+            top: { xs: withSafeAreaTop(HEADER_HEIGHT_MOBILE), md: 'auto' },
             zIndex: { xs: Z_INDEX.sticky, md: 'auto' },
             py: { xs: 0.5, md: 0 },
             backgroundColor: { xs: 'background.default', md: 'transparent' },
@@ -1012,6 +1215,17 @@ function ApplicationManagementPage() {
                 variant="outlined"
                 label={`${triageSummary.recent48h} new in 48h`}
               />
+              {macroTelemetryBadgeMeta && (
+                <Tooltip title={macroTelemetryBadgeMeta.tooltip}>
+                  <Chip
+                    size="small"
+                    variant="outlined"
+                    color={macroTelemetryBadgeMeta.color}
+                    label={macroTelemetryBadgeMeta.label}
+                    onDelete={handleResetMacroTelemetry}
+                  />
+                </Tooltip>
+              )}
             </Box>
           </Paper>
         )}
@@ -1233,13 +1447,18 @@ function ApplicationManagementPage() {
             position: 'fixed',
             left: 0,
             right: 0,
-            bottom: 0,
-            zIndex: theme.zIndex.appBar + 2,
-            px: 1,
-            py: 1,
+            bottom: withBottomNavSafeArea(0),
+            zIndex: Z_INDEX.stickyCta,
+            px: 1.25,
+            pt: 0.75,
+            pb: withSafeAreaBottom(8),
             gap: 0.75,
             borderTop: `1px solid ${theme.palette.divider}`,
             backgroundColor: theme.palette.background.paper,
+            boxShadow:
+              theme.palette.mode === 'dark'
+                ? '0 -8px 24px rgba(0, 0, 0, 0.4)'
+                : '0 -6px 18px rgba(16, 17, 19, 0.12)',
           })}
         >
           {selectedApplication ? (
@@ -1284,11 +1503,51 @@ function ApplicationManagementPage() {
                 Quick decision for{' '}
                 {selectedApplication.workerName || 'selected applicant'}
               </Typography>
+              {macroTelemetryBadgeMeta && (
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 0.5,
+                    px: 0.5,
+                  }}
+                >
+                  <Tooltip title={macroTelemetryBadgeMeta.tooltip}>
+                    <Chip
+                      size="small"
+                      variant="outlined"
+                      color={macroTelemetryBadgeMeta.color}
+                      label={macroTelemetryBadgeMeta.label}
+                      sx={{
+                        maxWidth: '100%',
+                        '& .MuiChip-label': {
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        },
+                      }}
+                    />
+                  </Tooltip>
+                  <Tooltip title="Reset macro telemetry snapshot">
+                    <IconButton
+                      size="small"
+                      onClick={handleResetMacroTelemetry}
+                      aria-label="Reset macro telemetry snapshot"
+                      sx={{
+                        width: 28,
+                        height: 28,
+                        color: 'text.secondary',
+                      }}
+                    >
+                      <Cancel fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+              )}
               <Box sx={{ display: 'flex', gap: 1 }}>
                 <Button
                   fullWidth
                   variant="outlined"
-                  sx={{ minHeight: 42 }}
+                  sx={{ minHeight: TOUCH_TARGET_MIN }}
                   startIcon={<Message />}
                   onClick={handleMessage}
                   disabled={macroInProgress}
@@ -1299,7 +1558,7 @@ function ApplicationManagementPage() {
                   fullWidth
                   color="success"
                   variant="contained"
-                  sx={{ minHeight: 42 }}
+                  sx={{ minHeight: TOUCH_TARGET_MIN }}
                   startIcon={<CheckCircle />}
                   onClick={handleAcceptAndMessageMacro}
                   disabled={macroInProgress}
@@ -1315,7 +1574,7 @@ function ApplicationManagementPage() {
                 fullWidth
                 color="error"
                 variant="outlined"
-                sx={{ minHeight: 42 }}
+                sx={{ minHeight: TOUCH_TARGET_MIN }}
                 startIcon={<Cancel />}
                 onClick={handleRejectWithTemplateMacro}
                 disabled={

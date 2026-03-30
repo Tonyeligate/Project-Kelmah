@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import { Box, Container, Stack, Typography } from '@mui/material';
 import { Helmet } from 'react-helmet-async';
 import PageCanvas from '../../common/components/PageCanvas';
+import { withBottomNavSafeArea } from '@/utils/safeArea';
 
 const PAGE_CONTENT = {
   about: {
@@ -83,13 +84,16 @@ const InfoPage = ({ variant }) => {
   return (
     <PageCanvas
       disableContainer
-      sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}
+      sx={{
+        pt: { xs: 1.5, md: 3.5 },
+        pb: { xs: withBottomNavSafeArea(20), md: 6 },
+      }}
     >
-      <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
+      <Container maxWidth="md" sx={{ py: { xs: 2, md: 4 } }}>
         <Helmet>
           <title>{`${content.title} | Kelmah`}</title>
         </Helmet>
-        <Box sx={{ mb: 3 }}>
+        <Box sx={{ mb: 2.25 }}>
           <Typography
             variant="h4"
             fontWeight={700}
@@ -104,9 +108,9 @@ const InfoPage = ({ variant }) => {
             variant="body2"
             color="text.secondary"
             sx={{
-              mt: 1.25,
-              px: 1.5,
-              py: 1,
+              mt: 1,
+              px: 1.25,
+              py: 0.875,
               borderRadius: 1.5,
               bgcolor: 'action.hover',
               border: '1px solid',
@@ -117,12 +121,12 @@ const InfoPage = ({ variant }) => {
             {PAGE_GUIDANCE[activeVariant]}
           </Typography>
         </Box>
-        <Stack spacing={2.5}>
+        <Stack spacing={2}>
           {content.sections.map((section) => (
             <Box
               key={section.heading}
               sx={{
-                p: 2.5,
+                p: 2,
                 borderRadius: 2,
                 border: '1px solid',
                 borderColor: 'divider',

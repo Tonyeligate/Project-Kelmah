@@ -53,6 +53,10 @@ import {
   STICKY_CTA_HEIGHT,
   Z_INDEX,
 } from '../../../constants/layout';
+import {
+  withBottomNavSafeArea,
+  withSafeAreaTop,
+} from '@/utils/safeArea';
 
 const PaymentsPage = () => {
   const isMobile = useBreakpointDown('md');
@@ -155,13 +159,13 @@ const PaymentsPage = () => {
   return (
     <PageCanvas
       disableContainer
-      sx={{ pt: { xs: 1.25, md: 4 }, pb: { xs: 4, md: 6 } }}
+      sx={{ pt: { xs: 1.25, md: 4 }, pb: { xs: withBottomNavSafeArea(12), md: 6 } }}
     >
       <Container
         maxWidth="lg"
         sx={{
           py: { xs: 1.5, sm: 4 },
-          pb: { xs: 9, sm: 4 },
+          pb: { xs: 2, sm: 4 },
           px: { xs: 0.5, sm: 2 },
         }}
       >
@@ -177,7 +181,7 @@ const PaymentsPage = () => {
             gap: 1.5,
             mb: { xs: 1.25, md: 3 },
             position: { xs: 'sticky', md: 'static' },
-            top: { xs: HEADER_HEIGHT_MOBILE + 10, md: 'auto' },
+            top: { xs: withSafeAreaTop(HEADER_HEIGHT_MOBILE + 10), md: 'auto' },
             zIndex: Z_INDEX.sticky,
             py: { xs: 0.5, md: 0 },
             bgcolor: { xs: 'background.default', md: 'transparent' },
@@ -358,7 +362,9 @@ const PaymentsPage = () => {
                 sx={{
                   position: { xs: 'sticky', md: 'static' },
                   top: {
-                    xs: HEADER_HEIGHT_MOBILE + STICKY_CTA_HEIGHT - 2,
+                    xs: withSafeAreaTop(
+                      HEADER_HEIGHT_MOBILE + STICKY_CTA_HEIGHT - 2,
+                    ),
                     md: 'auto',
                   },
                   zIndex: Z_INDEX.sticky,

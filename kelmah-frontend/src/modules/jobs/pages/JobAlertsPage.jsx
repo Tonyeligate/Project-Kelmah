@@ -20,7 +20,12 @@ import SavedSearches from '../../search/components/SavedSearches';
 import { Helmet } from 'react-helmet-async';
 import PageCanvas from '@/modules/common/components/PageCanvas';
 import { useBreakpointDown } from '@/hooks/useResponsive';
-import { HEADER_HEIGHT_MOBILE, Z_INDEX } from '../../../constants/layout';
+import {
+  HEADER_HEIGHT_MOBILE,
+  TOUCH_TARGET_MIN,
+  Z_INDEX,
+} from '../../../constants/layout';
+import { withBottomNavSafeArea, withSafeAreaTop } from '@/utils/safeArea';
 
 const Section = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
@@ -82,7 +87,10 @@ const JobAlertsPage = () => {
   };
 
   return (
-    <PageCanvas disableContainer sx={{ pb: { xs: 10, md: 6 } }}>
+    <PageCanvas
+      disableContainer
+      sx={{ pb: { xs: withBottomNavSafeArea(72), md: 6 } }}
+    >
       <Container
         maxWidth="lg"
         sx={{ py: { xs: 1.25, sm: 4 }, px: { xs: 0.5, sm: 2 } }}
@@ -123,7 +131,7 @@ const JobAlertsPage = () => {
             sx={{
               p: { xs: 1.25, md: 3 },
               position: { xs: 'sticky', md: 'static' },
-              top: { xs: HEADER_HEIGHT_MOBILE + 12, md: 'auto' },
+              top: { xs: withSafeAreaTop(HEADER_HEIGHT_MOBILE + 12), md: 'auto' },
               zIndex: { xs: Z_INDEX.sticky, md: 'auto' },
             }}
           >
@@ -266,10 +274,9 @@ const JobAlertsPage = () => {
               position: 'fixed',
               left: 0,
               right: 0,
-              bottom: 0,
-              zIndex: 1300,
+              bottom: withBottomNavSafeArea(0),
+              zIndex: Z_INDEX.stickyCta,
               p: 1,
-              pb: 'calc(8px + env(safe-area-inset-bottom, 0px))',
               bgcolor: 'background.paper',
               borderTop: '1px solid',
               borderColor: 'divider',
@@ -282,7 +289,7 @@ const JobAlertsPage = () => {
               disabled={saving}
               onClick={savePreferences}
               aria-label="Save job alert settings"
-              sx={{ minHeight: 44, fontWeight: 700 }}
+              sx={{ minHeight: TOUCH_TARGET_MIN, fontWeight: 700 }}
             >
               {saving ? (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

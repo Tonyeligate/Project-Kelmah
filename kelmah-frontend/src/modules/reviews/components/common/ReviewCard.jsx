@@ -1,4 +1,3 @@
-import React from 'react';
 import PropTypes from 'prop-types';
 import {
   Box,
@@ -16,21 +15,39 @@ import { styled, alpha } from '@mui/material/styles';
 
 // Styled Review container with gold accents
 const StyledReviewPaper = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(3),
+  padding: theme.spacing(2),
+  [theme.breakpoints.up('md')]: {
+    padding: theme.spacing(2.5),
+  },
   borderRadius: theme.spacing(2),
-  backgroundColor: alpha(theme.palette.primary.main, 0.7),
+  backgroundColor: alpha(theme.palette.background.paper, 0.96),
   backdropFilter: 'blur(10px)',
-  border: `2px solid ${theme.palette.secondary.main}`,
-  boxShadow: `inset 0 0 8px rgba(255, 215, 0, 0.5)`,
+  border: `1px solid ${alpha(theme.palette.secondary.main, 0.35)}`,
+  boxShadow:
+    theme.palette.mode === 'dark'
+      ? `0 10px 24px ${alpha('#000', 0.35)}`
+      : `0 8px 20px ${alpha('#0f172a', 0.08)}`,
   transition: 'box-shadow 0.3s ease-in-out, border-color 0.3s ease-in-out',
-  '&:hover': {
-    boxShadow: `0 0 12px rgba(255, 215, 0, 0.3), inset 0 0 8px rgba(255, 215, 0, 0.5)`,
-    borderColor: theme.palette.secondary.light,
+  '@media (hover: hover)': {
+    '&:hover': {
+      boxShadow:
+        theme.palette.mode === 'dark'
+          ? `0 14px 28px ${alpha(theme.palette.secondary.main, 0.2)}`
+          : `0 10px 24px ${alpha(theme.palette.secondary.main, 0.16)}`,
+      borderColor: alpha(theme.palette.secondary.main, 0.6),
+    },
   },
 }));
 
 const ReviewCard = ({ review }) => {
   const { author, rating, content, date, jobTitle } = review;
+  const authorName = author?.name?.trim() || 'Anonymous reviewer';
+  const ratingValue = Number.isFinite(Number(rating)) ? Number(rating) : 0;
+  const reviewTitle = jobTitle?.trim() || 'Client project';
+  const reviewContent =
+    typeof content === 'string' && content.trim().length > 0
+      ? content.trim()
+      : 'No written feedback provided for this review.';
   const authorAvatar = resolveMediaAssetUrl(author?.avatar);
   const jobImage = resolveMediaAssetUrl(
     review?.jobImage || review?.job?.image || review?.projectImage,
@@ -48,15 +65,20 @@ const ReviewCard = ({ review }) => {
           <Stack direction="row" spacing={2} alignItems="center">
             <Avatar
               src={authorAvatar}
-              alt={author.name}
+              alt={authorName}
               sx={{ width: 48, height: 48 }}
-            />
+            >
+              {authorName.charAt(0).toUpperCase()}
+            </Avatar>
             <Box>
               <Typography variant="subtitle1" fontWeight="bold">
-                {author.name}
+                {authorName}
               </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Review for &quot;{jobTitle}&quot;
+              <Typography
+                variant="body2"
+                sx={{ color: 'text.secondary', lineHeight: 1.45 }}
+              >
+                Review for &quot;{reviewTitle}&quot;
               </Typography>
             </Box>
           </Stack>
@@ -79,7 +101,7 @@ const ReviewCard = ({ review }) => {
               <Box
                 component="img"
                 src={jobImage}
-                alt={jobTitle}
+                alt={reviewTitle}
                 sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
               />
             ) : (
@@ -91,17 +113,27 @@ const ReviewCard = ({ review }) => {
         <Divider />
 
         <Stack direction="row" alignItems="center" spacing={1}>
-          <Rating value={rating} precision={0.5} readOnly />
+          <Rating
+            value={ratingValue}
+            precision={0.5}
+            readOnly
+            aria-label={`Rating ${ratingValue.toFixed(1)} out of 5`}
+          />
           <Typography variant="body2" fontWeight="bold">
-            ({rating.toFixed(1)})
+            ({ratingValue.toFixed(1)})
           </Typography>
         </Stack>
 
         <Typography
           variant="body1"
-          sx={{ flexGrow: 1, fontStyle: 'italic', color: 'text.secondary' }}
+          sx={{
+            flexGrow: 1,
+            fontStyle: 'italic',
+            color: 'text.primary',
+            lineHeight: 1.65,
+          }}
         >
-          &quot;{content}&quot;
+          &quot;{reviewContent}&quot;
         </Typography>
 
         <Typography
@@ -109,7 +141,7 @@ const ReviewCard = ({ review }) => {
           color="text.secondary"
           alignSelf="flex-end"
         >
-          {safeFormatRelative(date, { addSuffix: true })}
+          {date ? safeFormatRelative(date, { addSuffix: true }) : 'Recently'}
         </Typography>
       </Stack>
     </StyledReviewPaper>
@@ -128,6 +160,10 @@ ReviewCard.propTypes = {
     date: PropTypes.string.isRequired,
     jobTitle: PropTypes.string.isRequired,
     jobImage: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
+    projectImage: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
+    job: PropTypes.shape({
+      image: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
+    }),
   }).isRequired,
 };
 

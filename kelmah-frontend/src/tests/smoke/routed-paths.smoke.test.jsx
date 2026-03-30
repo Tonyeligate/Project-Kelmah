@@ -5,6 +5,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import { Provider } from 'react-redux';
 import { MemoryRouter, useLocation } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { HelmetProvider } from 'react-helmet-async';
 
 jest.mock('../../modules/layout/components/Layout', () => {
   const React = require('react');
@@ -83,6 +84,36 @@ jest.mock('../../modules/worker/components/WorkerProfile', () => ({
   default: () => <div>WORKER_PROFILE_PAGE</div>,
 }));
 
+jest.mock('../../modules/worker/pages/WorkerProfileEditPage', () => ({
+  __esModule: true,
+  default: () => <div>WORKER_PROFILE_EDIT_PAGE</div>,
+}));
+
+jest.mock('../../modules/contracts/pages/CreateContractPage', () => ({
+  __esModule: true,
+  default: () => <div>CONTRACT_CREATE_PAGE</div>,
+}));
+
+jest.mock('../../modules/contracts/pages/ContractDetailsPage', () => ({
+  __esModule: true,
+  default: () => <div>CONTRACT_DETAILS_PAGE</div>,
+}));
+
+jest.mock('../../modules/contracts/pages/EditContractPage', () => ({
+  __esModule: true,
+  default: () => <div>CONTRACT_EDIT_PAGE</div>,
+}));
+
+jest.mock('../../modules/payment/pages/PaymentSettingsPage', () => ({
+  __esModule: true,
+  default: () => <div>PAYMENT_SETTINGS_PAGE</div>,
+}));
+
+jest.mock('../../modules/payment/pages/PaymentMethodsPage', () => ({
+  __esModule: true,
+  default: () => <div>PAYMENT_METHODS_PAGE</div>,
+}));
+
 jest.mock('../../modules/settings/pages/SettingsPage', () => ({
   __esModule: true,
   default: () => <div>SETTINGS_PAGE</div>,
@@ -132,31 +163,35 @@ const buildStore = (role = null) =>
 
 const renderAtPath = (path, role = null) =>
   render(
-    <Provider store={buildStore(role)}>
-      <ThemeProvider theme={createTheme()}>
-        <MemoryRouter
-          initialEntries={[path]}
-          future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        >
-          <AppRoutes />
-        </MemoryRouter>
-      </ThemeProvider>
-    </Provider>,
+    <HelmetProvider>
+      <Provider store={buildStore(role)}>
+        <ThemeProvider theme={createTheme()}>
+          <MemoryRouter
+            initialEntries={[path]}
+            future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+          >
+            <AppRoutes />
+          </MemoryRouter>
+        </ThemeProvider>
+      </Provider>
+    </HelmetProvider>,
   );
 
 const renderBottomNavAtPath = (path, role = 'worker') =>
   render(
-    <Provider store={buildStore(role)}>
-      <ThemeProvider theme={createTheme()}>
-        <MemoryRouter
-          initialEntries={[path]}
-          future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        >
-          <MobileBottomNav />
-          <LocationProbe />
-        </MemoryRouter>
-      </ThemeProvider>
-    </Provider>,
+    <HelmetProvider>
+      <Provider store={buildStore(role)}>
+        <ThemeProvider theme={createTheme()}>
+          <MemoryRouter
+            initialEntries={[path]}
+            future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+          >
+            <MobileBottomNav />
+            <LocationProbe />
+          </MemoryRouter>
+        </ThemeProvider>
+      </Provider>
+    </HelmetProvider>,
   );
 
 describe('routed path smoke suite', () => {
@@ -209,6 +244,36 @@ describe('routed path smoke suite', () => {
     expect(await screen.findByText('MESSAGES_PAGE')).toBeInTheDocument();
   });
 
+  test('legacy contracts create alias resolves: /contracts/new', async () => {
+    renderAtPath('/contracts/new', 'hirer');
+    expect(await screen.findByText('CONTRACT_CREATE_PAGE')).toBeInTheDocument();
+  });
+
+  test('legacy contract singular alias resolves: /contract/:id', async () => {
+    renderAtPath('/contract/ct-123', 'worker');
+    expect(await screen.findByText('CONTRACT_DETAILS_PAGE')).toBeInTheDocument();
+  });
+
+  test('legacy contract edit alias resolves: /contract/:id/edit', async () => {
+    renderAtPath('/contract/ct-123/edit', 'hirer');
+    expect(await screen.findByText('CONTRACT_EDIT_PAGE')).toBeInTheDocument();
+  });
+
+  test('legacy contract details alias resolves: /contracts/:id/details', async () => {
+    renderAtPath('/contracts/ct-123/details', 'worker');
+    expect(await screen.findByText('CONTRACT_DETAILS_PAGE')).toBeInTheDocument();
+  });
+
+  test('legacy payments settings alias resolves: /payments/settings', async () => {
+    renderAtPath('/payments/settings', 'admin');
+    expect(await screen.findByText('PAYMENT_SETTINGS_PAGE')).toBeInTheDocument();
+  });
+
+  test('legacy payments methods alias resolves: /payments/methods', async () => {
+    renderAtPath('/payments/methods', 'worker');
+    expect(await screen.findByText('PAYMENT_METHODS_PAGE')).toBeInTheDocument();
+  });
+
   test('role root redirects: /hirer resolves to hirer dashboard', async () => {
     renderAtPath('/hirer', 'hirer');
     expect(await screen.findByText('HIRER_DASHBOARD_PAGE')).toBeInTheDocument();
@@ -231,6 +296,16 @@ describe('routed path smoke suite', () => {
 
   test('profile alias resolves to settings for admin role', async () => {
     renderAtPath('/profile', 'admin');
+    expect(await screen.findByText('SETTINGS_PAGE')).toBeInTheDocument();
+  });
+
+  test('profile edit alias resolves to worker profile edit for worker role', async () => {
+    renderAtPath('/profile/edit', 'worker');
+    expect(await screen.findByText('WORKER_PROFILE_EDIT_PAGE')).toBeInTheDocument();
+  });
+
+  test('profile settings alias resolves to settings page', async () => {
+    renderAtPath('/profile/settings', 'worker');
     expect(await screen.findByText('SETTINGS_PAGE')).toBeInTheDocument();
   });
 

@@ -60,7 +60,12 @@ import {
 import { selectIsAuthenticated } from '../../auth/services/authSlice';
 import { EXTERNAL_SERVICES } from '../../../config/services';
 import jobsApi from '../services/jobsService';
-import { HEADER_HEIGHT_MOBILE, Z_INDEX } from '../../../constants/layout';
+import {
+  HEADER_HEIGHT_MOBILE,
+  TOUCH_TARGET_MIN,
+  Z_INDEX,
+} from '../../../constants/layout';
+import { withBottomNavSafeArea } from '@/utils/safeArea';
 import { Helmet } from 'react-helmet-async';
 import { hasRole } from '../../../utils/userUtils';
 import {
@@ -869,7 +874,10 @@ const JobDetailsPage = () => {
   };
 
   return (
-    <PageCanvas disableContainer sx={{ pb: { xs: 10, md: 6 } }}>
+    <PageCanvas
+      disableContainer
+      sx={{ pb: { xs: withBottomNavSafeArea(24), md: 6 } }}
+    >
       <Box
         sx={{
           minHeight: '100vh',
@@ -908,8 +916,8 @@ const JobDetailsPage = () => {
               sx={{
                 position: 'sticky',
                 top: {
-                  xs: HEADER_HEIGHT_MOBILE + 6,
-                  sm: HEADER_HEIGHT_MOBILE + 14,
+                  xs: `calc(${HEADER_HEIGHT_MOBILE}px + var(--kelmah-network-banner-offset, 0px) + 6px)`,
+                  sm: `calc(${HEADER_HEIGHT_MOBILE}px + var(--kelmah-network-banner-offset, 0px) + 14px)`,
                 },
                 zIndex: Z_INDEX.stickyCta - 1,
                 mb: 1,
@@ -1387,7 +1395,14 @@ const JobDetailsPage = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.15 }}
               >
-                <Box sx={{ position: { lg: 'sticky' }, top: { lg: 96 } }}>
+                <Box
+                  sx={{
+                    position: { lg: 'sticky' },
+                    top: {
+                      lg: 'calc(96px + var(--kelmah-network-banner-offset, 0px))',
+                    },
+                  }}
+                >
                   {/* CTA Card */}
                   <DetailsPaper elevation={3} sx={{ mb: 3 }}>
                     <Typography
@@ -1742,16 +1757,29 @@ const JobDetailsPage = () => {
 
                     {/* Profile row - clickable */}
                     <Box
+                      component="button"
+                      type="button"
                       onClick={handleOpenClientProfile}
+                      disabled={!hasClientDetails}
+                      aria-label={
+                        hasClientDetails
+                          ? `Open client details for ${hirerName}`
+                          : 'Client details are unavailable'
+                      }
                       sx={{
                         display: 'flex',
                         alignItems: 'center',
                         gap: 2,
+                        width: '100%',
+                        textAlign: 'left',
+                        background: 'none',
+                        appearance: 'none',
+                        borderWidth: '1px',
+                        borderStyle: 'solid',
+                        borderColor: 'divider',
                         p: 1.5,
                         borderRadius: 2,
                         cursor: hasClientDetails ? 'pointer' : 'default',
-                        border: '1px solid',
-                        borderColor: 'divider',
                         mb: 2,
                         transition: 'all 0.2s',
                         '&:hover': hasClientDetails
@@ -1760,6 +1788,14 @@ const JobDetailsPage = () => {
                               borderColor: accentColor,
                             }
                           : {},
+                        '&:disabled': {
+                          cursor: 'not-allowed',
+                          opacity: 0.78,
+                        },
+                        '&:focus-visible': {
+                          outline: `3px solid ${accentColor}`,
+                          outlineOffset: '2px',
+                        },
                       }}
                     >
                       <Avatar
@@ -1883,7 +1919,7 @@ const JobDetailsPage = () => {
                             gap: 1.5,
                           }}
                         >
-                          <Business
+                          <WorkOutline
                             sx={{ fontSize: 17, color: 'text.secondary' }}
                           />
                           <Typography
@@ -2298,7 +2334,7 @@ const JobDetailsPage = () => {
           <Box
             sx={{
               position: 'fixed',
-              bottom: 0,
+              bottom: withBottomNavSafeArea(0),
               left: 0,
               right: 0,
               zIndex: Z_INDEX.stickyCta,
@@ -2309,7 +2345,7 @@ const JobDetailsPage = () => {
               borderTop: `1px solid ${theme.palette.mode === 'dark' ? alpha(theme.palette.primary.main, 0.22) : alpha(theme.palette.divider, 0.85)}`,
               px: 1.5,
               py: 1,
-              pb: 'calc(8px + env(safe-area-inset-bottom, 0px))',
+              pb: 1,
               display: 'grid',
               gridTemplateColumns: 'minmax(0, 1fr) auto',
               alignItems: 'center',
@@ -2364,7 +2400,7 @@ const JobDetailsPage = () => {
                   py: 0.95,
                   px: { xs: 1.75, sm: 3 },
                   fontSize: { xs: '0.88rem', sm: '0.95rem' },
-                  minHeight: 42,
+                  minHeight: TOUCH_TARGET_MIN,
                   borderRadius: 2,
                   minWidth: { xs: 96, sm: 156 },
                   whiteSpace: 'nowrap',

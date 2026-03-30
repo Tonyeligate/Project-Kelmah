@@ -5,6 +5,7 @@ import { Box, Typography, Stack, Chip } from '@mui/material';
 import { Helmet } from 'react-helmet-async';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 import PageCanvas from '@/modules/common/components/PageCanvas';
+import { withSafeAreaBottom } from '@/utils/safeArea';
 
 const RegisterPage = () => {
   const isMobile = useBreakpointDown('md');
@@ -35,10 +36,13 @@ const RegisterPage = () => {
     return (
       <PageCanvas
         disableContainer
-        sx={{ pt: { xs: 3, md: 4 }, pb: { xs: 4, md: 6 } }}
+        sx={{
+          pt: { xs: 2, md: 4 },
+          pb: { xs: withSafeAreaBottom(20), md: 6 },
+        }}
       >
         {pageTitle}
-        <Box sx={{ px: 2, pt: 2 }}>{helperCopy}</Box>
+        <Box sx={{ px: 2, pt: 1.5 }}>{helperCopy}</Box>
         <MobileRegister />
       </PageCanvas>
     );
@@ -47,10 +51,12 @@ const RegisterPage = () => {
   return (
     <PageCanvas
       disableContainer
-      sx={{ pt: { xs: 3, md: 4 }, pb: { xs: 4, md: 6 } }}
+      sx={{ pt: { xs: 2.5, md: 4 }, pb: { xs: 4, md: 6 } }}
     >
       {pageTitle}
-      <Box sx={{ maxWidth: 960, mx: 'auto', px: { xs: 2, md: 0 }, pt: 2 }}>
+      <Box
+        sx={{ maxWidth: 960, mx: 'auto', px: { xs: 2, md: 0 }, pt: 1.5 }}
+      >
         {helperCopy}
       </Box>
       <Register />

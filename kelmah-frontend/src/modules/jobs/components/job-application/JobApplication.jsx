@@ -50,6 +50,8 @@ import { useApplyToJobMutation, useJobQuery } from '../../hooks/useJobsQuery';
 import fileUploadService from '../../../common/services/fileUploadService';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 import { formatGhanaCurrency } from '@/utils/formatters';
+import { TOUCH_TARGET_MIN, Z_INDEX } from '@/constants/layout';
+import { withBottomNavSafeArea } from '@/utils/safeArea';
 
 // Styled components
 const ApplicationPaper = styled(Paper)(({ theme }) => ({
@@ -464,7 +466,15 @@ function JobApplication() {
   }
 
   return (
-    <Box sx={{ py: { xs: 1.5, sm: 3 }, pb: { xs: success ? 2 : 11, sm: 3 } }}>
+    <Box
+      sx={{
+        py: { xs: 1.5, sm: 3 },
+        pb: {
+          xs: success ? withBottomNavSafeArea(12) : withBottomNavSafeArea(72),
+          sm: 3,
+        },
+      }}
+    >
       <Button
         startIcon={<ArrowBackIcon />}
         onClick={() => navigate(`/jobs/${jobId}`)}
@@ -1138,10 +1148,9 @@ function JobApplication() {
             position: 'fixed',
             left: 0,
             right: 0,
-            bottom: 0,
-            zIndex: 1300,
+            bottom: withBottomNavSafeArea(0),
+            zIndex: Z_INDEX.stickyCta,
             p: 1,
-            pb: 'calc(8px + env(safe-area-inset-bottom, 0px))',
             bgcolor: 'background.paper',
             borderTop: '1px solid',
             borderColor: 'divider',
@@ -1154,7 +1163,7 @@ function JobApplication() {
             variant="outlined"
             onClick={handleBack}
             disabled={activeStep === 0 || submitting}
-            sx={{ minHeight: 44 }}
+            sx={{ minHeight: TOUCH_TARGET_MIN }}
           >
             Back
           </Button>
@@ -1170,7 +1179,7 @@ function JobApplication() {
                   <SendIcon />
                 )
               }
-              sx={{ minHeight: 44, fontWeight: 700 }}
+              sx={{ minHeight: TOUCH_TARGET_MIN, fontWeight: 700 }}
             >
               {submitting ? 'Submitting...' : 'Submit'}
             </Button>
@@ -1178,7 +1187,7 @@ function JobApplication() {
             <Button
               variant="contained"
               onClick={handleNext}
-              sx={{ minHeight: 44, fontWeight: 700 }}
+              sx={{ minHeight: TOUCH_TARGET_MIN, fontWeight: 700 }}
             >
               Next
             </Button>

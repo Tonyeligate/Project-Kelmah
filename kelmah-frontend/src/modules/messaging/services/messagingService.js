@@ -131,7 +131,7 @@ const normalizeAttachment = (attachment = {}) => {
 };
 
 const normalizeMessage = (message = {}) => {
-  if (!message || typeof message !== 'object') return message;
+  if (!message || typeof message !== 'object') return null;
 
   const senderId =
     message.senderId ||
@@ -171,7 +171,7 @@ const normalizeMessage = (message = {}) => {
 };
 
 const normalizeConversation = (conversation = {}) => {
-  if (!conversation || typeof conversation !== 'object') return conversation;
+  if (!conversation || typeof conversation !== 'object') return null;
 
   return {
     ...conversation,
@@ -200,11 +200,15 @@ const normalizeConversation = (conversation = {}) => {
 
 const normalizeConversationList = (list = []) =>
   Array.isArray(list)
-    ? list.map((conversation) => normalizeConversation(conversation))
+    ? list
+        .map((conversation) => normalizeConversation(conversation))
+        .filter(Boolean)
     : [];
 
 const normalizeMessageList = (list = []) =>
-  Array.isArray(list) ? list.map((message) => normalizeMessage(message)) : [];
+  Array.isArray(list)
+    ? list.map((message) => normalizeMessage(message)).filter(Boolean)
+    : [];
 
 // FIXED: Clear export to resolve import errors
 export const messagingService = {

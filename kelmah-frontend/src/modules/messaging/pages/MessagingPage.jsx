@@ -46,6 +46,7 @@ import {
   Image as ImageIcon,
   InsertDriveFile as InsertDriveFileIcon,
   MoreVert as MoreVertIcon,
+  PushPin as PushPinIcon,
   Schedule as ScheduleIcon,
   Search as SearchIcon,
   Send as SendIcon,
@@ -82,6 +83,9 @@ const resolveParticipantId = (participant) => {
   if (typeof participant === 'string') return participant;
   return participant.id || participant._id || participant.userId || null;
 };
+
+const isConversationObject = (conversation) =>
+  Boolean(conversation && typeof conversation === 'object');
 
 const getConversationParticipant = (conversation = {}, currentUserId) => {
   const participants = Array.isArray(conversation.participants)
@@ -184,6 +188,10 @@ const getSearchDestination = (role) => {
 };
 
 const getConversationKey = (conversation = {}, currentUserId) => {
+  if (!isConversationObject(conversation)) {
+    return null;
+  }
+
   const conversationId = conversation.id || conversation._id || null;
   if (conversationId) {
     return `conversation:${conversationId}`;
@@ -567,6 +575,16 @@ const MessagingPage = () => {
     isUserOnline,
   } = useMessages();
 
+  const safeConversations = useMemo(
+    () =>
+      Array.isArray(conversations)
+        ? conversations.filter((conversation) =>
+            isConversationObject(conversation),
+          )
+        : [],
+    [conversations],
+  );
+
   const [searchQuery, setSearchQuery] = useState('');
   const [messageText, setMessageText] = useState('');
   const [selectedFiles, setSelectedFiles] = useState([]);
@@ -668,6 +686,38 @@ const MessagingPage = () => {
       ).length,
     [draftsByConversation],
   );
+  const draftConversationCount = useMemo(() => {
+    if (safeConversations.length === 0) {
+      return 0;
+    }
+
+    return safeConversations.reduce((count, conversation) => {
+      const conversationKey = getConversationKey(conversation, currentUserId);
+      const hasDraft = conversationKey
+        ? Boolean(getDraftText(draftsByConversation[conversationKey]).trim())
+        : false;
+      return hasDraft ? count + 1 : count;
+    }, 0);
+  }, [currentUserId, draftsByConversation, safeConversations]);
+  const unreadDraftConversationCount = useMemo(() => {
+    if (safeConversations.length === 0) {
+      return 0;
+    }
+
+    return safeConversations.reduce((count, conversation) => {
+      const unread = conversation.unreadCount || conversation.unread || 0;
+      if (unread <= 0) {
+        return count;
+      }
+
+      const conversationKey = getConversationKey(conversation, currentUserId);
+      const hasDraft = conversationKey
+        ? Boolean(getDraftText(draftsByConversation[conversationKey]).trim())
+        : false;
+
+      return hasDraft ? count + 1 : count;
+    }, 0);
+  }, [currentUserId, draftsByConversation, safeConversations]);
 
   const handleDiscardSelectedDraft = useCallback(() => {
     if (!selectedConversationKey) {
@@ -847,14 +897,17 @@ const MessagingPage = () => {
     let cancelled = false;
 
     const existingConversation = conversationId
-      ? conversations.find(
+      ? safeConversations.find(
           (conversation) =>
             String(conversation.id || conversation._id) ===
             String(conversationId),
         )
       : recipientId
-        ? conversations.find((conversation) =>
-            (conversation.participants || []).some(
+        ? safeConversations.find((conversation) =>
+            (Array.isArray(conversation.participants)
+              ? conversation.participants
+              : []
+            ).some(
               (participant) =>
                 String(resolveParticipantId(participant)) ===
                 String(recipientId),
@@ -920,7 +973,7 @@ const MessagingPage = () => {
       cancelled = true;
     };
   }, [
-    conversations,
+    safeConversations,
     loadingConversations,
     location.search,
     location.state,
@@ -930,7 +983,7 @@ const MessagingPage = () => {
 
   const filteredConversations = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
-    let list = Array.isArray(conversations) ? [...conversations] : [];
+    let list = [...safeConversations];
 
     if (query) {
       list = list.filter((conversation) => {
@@ -962,6 +1015,29 @@ const MessagingPage = () => {
 
     if (activeFilter === 'pinned') {
       list = list.filter((conversation) => conversation.isPinned);
+    }
+
+    if (activeFilter === 'drafts') {
+      list = list.filter((conversation) => {
+        const conversationKey = getConversationKey(conversation, currentUserId);
+        return conversationKey
+          ? Boolean(getDraftText(draftsByConversation[conversationKey]).trim())
+          : false;
+      });
+    }
+
+    if (activeFilter === 'unread-drafts') {
+      list = list.filter((conversation) => {
+        const unread = conversation.unreadCount || conversation.unread || 0;
+        if (unread <= 0) {
+          return false;
+        }
+
+        const conversationKey = getConversationKey(conversation, currentUserId);
+        return conversationKey
+          ? Boolean(getDraftText(draftsByConversation[conversationKey]).trim())
+          : false;
+      });
     }
 
     list.sort((left, right) => {
@@ -1011,15 +1087,13 @@ const MessagingPage = () => {
     return list;
   }, [
     activeFilter,
-    conversations,
     currentUserId,
     draftsByConversation,
+    safeConversations,
     searchQuery,
   ]);
 
-  const totalConversationCount = Array.isArray(conversations)
-    ? conversations.length
-    : 0;
+  const totalConversationCount = safeConversations.length;
   const hasConversationFilters =
     activeFilter !== 'all' || searchQuery.trim() !== '';
 
@@ -1252,10 +1326,14 @@ const MessagingPage = () => {
               <Chip
                 size="small"
                 label={`${unsentDraftCount} draft${unsentDraftCount === 1 ? '' : 's'}`}
+                icon={<PushPinIcon sx={{ fontSize: 12 }} />}
                 sx={{
                   fontWeight: 700,
                   bgcolor: alpha(theme.palette.warning.main, 0.16),
                   color: theme.palette.warning.dark,
+                  '& .MuiChip-icon': {
+                    color: theme.palette.warning.dark,
+                  },
                 }}
               />
             )}
@@ -1345,6 +1423,58 @@ const MessagingPage = () => {
               }}
             />
           ))}
+          <Chip
+            label={
+              draftConversationCount > 0
+                ? `Drafts (${draftConversationCount})`
+                : 'Drafts'
+            }
+            onClick={() => setActiveFilter('drafts')}
+            clickable
+            icon={<PushPinIcon sx={{ fontSize: 14 }} />}
+            variant={activeFilter === 'drafts' ? 'filled' : 'outlined'}
+            sx={{
+              fontWeight: 700,
+              borderColor: alpha(theme.palette.warning.main, 0.3),
+              bgcolor:
+                activeFilter === 'drafts'
+                  ? theme.palette.warning.main
+                  : 'transparent',
+              color: activeFilter === 'drafts' ? '#111' : 'text.primary',
+              '& .MuiChip-icon': {
+                color:
+                  activeFilter === 'drafts'
+                    ? '#111'
+                    : theme.palette.warning.main,
+              },
+            }}
+          />
+          <Chip
+            label={
+              unreadDraftConversationCount > 0
+                ? `Unread + Drafts (${unreadDraftConversationCount})`
+                : 'Unread + Drafts'
+            }
+            onClick={() => setActiveFilter('unread-drafts')}
+            clickable
+            icon={<PushPinIcon sx={{ fontSize: 14 }} />}
+            variant={activeFilter === 'unread-drafts' ? 'filled' : 'outlined'}
+            sx={{
+              fontWeight: 700,
+              borderColor: alpha(theme.palette.error.main, 0.35),
+              bgcolor:
+                activeFilter === 'unread-drafts'
+                  ? theme.palette.error.main
+                  : 'transparent',
+              color: activeFilter === 'unread-drafts' ? '#fff' : 'text.primary',
+              '& .MuiChip-icon': {
+                color:
+                  activeFilter === 'unread-drafts'
+                    ? '#fff'
+                    : theme.palette.error.main,
+              },
+            }}
+          />
           {deepLinkLoading && (
             <Chip label="Loading" size="small" sx={{ fontWeight: 700 }} />
           )}
@@ -1355,7 +1485,8 @@ const MessagingPage = () => {
           color="text.secondary"
           sx={{ display: 'block', mt: 1 }}
         >
-          Tip: use Unread to quickly reply to pending worker or hirer messages.
+          Tip: use Unread for pending replies, Drafts for unsent notes, or
+          Unread + Drafts for urgent follow-up.
         </Typography>
         <Typography
           variant="caption"
@@ -1489,14 +1620,35 @@ const MessagingPage = () => {
                           }}
                         >
                           <Box sx={{ minWidth: 0, flex: 1 }}>
-                            <Typography
-                              variant="subtitle2"
-                              fontWeight={800}
-                              noWrap
-                              sx={{ minWidth: 0, lineHeight: 1.2 }}
+                            <Stack
+                              direction="row"
+                              spacing={0.5}
+                              alignItems="center"
+                              sx={{ minWidth: 0 }}
                             >
-                              {title}
-                            </Typography>
+                              <Typography
+                                variant="subtitle2"
+                                fontWeight={800}
+                                noWrap
+                                sx={{ minWidth: 0, lineHeight: 1.2, flex: 1 }}
+                              >
+                                {title}
+                              </Typography>
+                              {hasDraftPreview && (
+                                <Tooltip
+                                  title={`Draft pinned (${draftSavedLabel})`}
+                                >
+                                  <PushPinIcon
+                                    sx={{
+                                      fontSize: 14,
+                                      color: theme.palette.warning.main,
+                                      opacity: 0.8,
+                                      transform: 'rotate(18deg)',
+                                    }}
+                                  />
+                                </Tooltip>
+                              )}
+                            </Stack>
                             <Typography
                               variant="body2"
                               color="text.secondary"
@@ -1553,6 +1705,7 @@ const MessagingPage = () => {
                               <Chip
                                 size="small"
                                 label="Unsent"
+                                icon={<PushPinIcon sx={{ fontSize: 12 }} />}
                                 sx={{
                                   fontWeight: 800,
                                   height: 20,
@@ -1561,6 +1714,9 @@ const MessagingPage = () => {
                                     0.16,
                                   ),
                                   color: theme.palette.warning.dark,
+                                  '& .MuiChip-icon': {
+                                    color: theme.palette.warning.dark,
+                                  },
                                 }}
                               />
                             ) : conversation.isPinned ? (
@@ -1633,7 +1789,11 @@ const MessagingPage = () => {
                   }
                   subtitle={
                     searchQuery || activeFilter !== 'all'
-                      ? 'Try a different keyword or clear filters to see more chats.'
+                      ? activeFilter === 'drafts'
+                        ? 'No conversations currently have unsent drafts. Clear filters to view all chats.'
+                        : activeFilter === 'unread-drafts'
+                          ? 'No conversations currently match both unread and draft conditions. Try Unread or Drafts separately.'
+                          : 'Try a different keyword or clear filters to see more chats.'
                       : emptyConversationSubtitle
                   }
                   actionLabel={emptyStateActionLabel}

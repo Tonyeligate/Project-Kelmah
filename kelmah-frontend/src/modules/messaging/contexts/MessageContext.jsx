@@ -153,7 +153,7 @@ const uploadPendingAttachments = async (attachments = [], conversationId) => {
 };
 
 const normalizeMessageAttachments = (message = {}) => {
-  if (!message || typeof message !== 'object') return message;
+  if (!message || typeof message !== 'object') return null;
 
   const senderId =
     message.senderId ||
@@ -195,7 +195,7 @@ const normalizeMessageAttachments = (message = {}) => {
 };
 
 const normalizeConversation = (conversation = {}) => {
-  if (!conversation || typeof conversation !== 'object') return conversation;
+  if (!conversation || typeof conversation !== 'object') return null;
 
   return {
     ...conversation,
@@ -223,12 +223,14 @@ const normalizeConversation = (conversation = {}) => {
 };
 
 const normalizeConversationList = (list = []) =>
-  (Array.isArray(list) ? list : []).map((conversation) =>
-    normalizeConversation(conversation),
-  );
+  (Array.isArray(list) ? list : [])
+    .map((conversation) => normalizeConversation(conversation))
+    .filter(Boolean);
 
 const normalizeMessageList = (list = []) =>
-  list.map((message) => normalizeMessageAttachments(message || {}));
+  (Array.isArray(list) ? list : [])
+    .map((message) => normalizeMessageAttachments(message))
+    .filter(Boolean);
 
 const createTemporaryConversation = (participant = {}) => {
   const participantId = resolveParticipantId(participant);

@@ -18,6 +18,7 @@ import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 import PageCanvas from '@/modules/common/components/PageCanvas';
+import { withSafeAreaBottom } from '@/utils/safeArea';
 
 const VerifyEmailPage = () => {
   const { token } = useParams();
@@ -267,7 +268,10 @@ const VerifyEmailPage = () => {
     return (
       <PageCanvas
         disableContainer
-        sx={{ pt: { xs: 3, md: 4 }, pb: { xs: 4, md: 6 } }}
+        sx={{
+          pt: { xs: 2, md: 4 },
+          pb: { xs: withSafeAreaBottom(20), md: 6 },
+        }}
       >
         <Box
           sx={{
@@ -276,8 +280,8 @@ const VerifyEmailPage = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            px: 3,
-            py: 4,
+            px: 2,
+            py: 3,
           }}
         >
           {content}

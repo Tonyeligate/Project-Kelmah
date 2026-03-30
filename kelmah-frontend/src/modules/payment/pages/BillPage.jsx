@@ -35,6 +35,8 @@ import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import { currencyFormatter } from '@/modules/common/utils/formatters';
 import PageCanvas from '../../common/components/PageCanvas';
+import { TOUCH_TARGET_MIN, Z_INDEX } from '@/constants/layout';
+import { withBottomNavSafeArea } from '@/utils/safeArea';
 
 const BillPage = () => {
   const theme = useTheme();
@@ -154,7 +156,7 @@ const BillPage = () => {
   return (
     <PageCanvas
       disableContainer
-      sx={{ pt: { xs: 1, sm: 4 }, pb: { xs: 10, md: 6 } }}
+      sx={{ pt: { xs: 1, sm: 4 }, pb: { xs: withBottomNavSafeArea(72), md: 6 } }}
     >
       <Container
         maxWidth="lg"
@@ -251,7 +253,7 @@ const BillPage = () => {
                 color="secondary"
                 sx={{
                   borderWidth: 2,
-                  minHeight: 42,
+                  minHeight: TOUCH_TARGET_MIN,
                   flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' },
                   display: { xs: 'none', sm: 'inline-flex' },
                 }}
@@ -266,7 +268,7 @@ const BillPage = () => {
                 color="secondary"
                 sx={{
                   borderWidth: 2,
-                  minHeight: 42,
+                  minHeight: TOUCH_TARGET_MIN,
                   flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' },
                   display: { xs: 'none', sm: 'inline-flex' },
                 }}
@@ -496,8 +498,8 @@ const BillPage = () => {
               position: 'fixed',
               left: 0,
               right: 0,
-              bottom: 0,
-              zIndex: theme.zIndex.appBar + 2,
+              bottom: withBottomNavSafeArea(0),
+              zIndex: Z_INDEX.stickyCta,
               px: 1,
               py: 1,
               gap: 1,
@@ -509,7 +511,7 @@ const BillPage = () => {
               fullWidth
               variant="outlined"
               color="secondary"
-              sx={{ minHeight: 42, borderWidth: 2 }}
+              sx={{ minHeight: TOUCH_TARGET_MIN, borderWidth: 2 }}
               onClick={clearFilters}
             >
               Clear
@@ -519,7 +521,7 @@ const BillPage = () => {
               variant="contained"
               color="secondary"
               sx={{
-                minHeight: 42,
+                minHeight: TOUCH_TARGET_MIN,
                 boxShadow: '0 2px 8px rgba(255,215,0,0.35)',
               }}
               onClick={applyFilters}

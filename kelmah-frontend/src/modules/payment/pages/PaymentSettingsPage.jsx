@@ -18,6 +18,8 @@ import paymentService from '../services/paymentService';
 import { currencyFormatter } from '@/modules/common/utils/formatters';
 import { toUserMessage } from '@/services/responseNormalizer';
 import PageCanvas from '@/modules/common/components/PageCanvas';
+import { TOUCH_TARGET_MIN, Z_INDEX } from '@/constants/layout';
+import { withBottomNavSafeArea } from '@/utils/safeArea';
 
 const PaymentSettingsPage = () => {
   const theme = useTheme();
@@ -100,7 +102,7 @@ const PaymentSettingsPage = () => {
     return (
       <PageCanvas
         disableContainer
-        sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}
+        sx={{ pt: { xs: 2, md: 4 }, pb: { xs: withBottomNavSafeArea(12), md: 6 } }}
       >
         <Container maxWidth="md" sx={{ py: 3 }}>
           {showLoadingHint && (
@@ -126,7 +128,7 @@ const PaymentSettingsPage = () => {
     return (
       <PageCanvas
         disableContainer
-        sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}
+        sx={{ pt: { xs: 2, md: 4 }, pb: { xs: withBottomNavSafeArea(12), md: 6 } }}
       >
         <Container sx={{ py: { xs: 2, sm: 4 } }}>
           <Alert
@@ -147,7 +149,7 @@ const PaymentSettingsPage = () => {
   return (
     <PageCanvas
       disableContainer
-      sx={{ pt: { xs: 1, md: 4 }, pb: { xs: 10, md: 6 } }}
+      sx={{ pt: { xs: 1, md: 4 }, pb: { xs: withBottomNavSafeArea(72), md: 6 } }}
     >
       <Container
         maxWidth="md"
@@ -257,8 +259,8 @@ const PaymentSettingsPage = () => {
             position: 'fixed',
             left: 0,
             right: 0,
-            bottom: 0,
-            zIndex: theme.zIndex.appBar + 2,
+            bottom: withBottomNavSafeArea(0),
+            zIndex: Z_INDEX.stickyCta,
             px: 1,
             py: 1,
             borderTop: `1px solid ${theme.palette.divider}`,
@@ -271,7 +273,7 @@ const PaymentSettingsPage = () => {
             color="secondary"
             sx={{
               borderRadius: 1.5,
-              minHeight: 42,
+              minHeight: TOUCH_TARGET_MIN,
               boxShadow: '0 2px 8px rgba(255,215,0,0.35)',
             }}
             onClick={handleSave}

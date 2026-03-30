@@ -1,3 +1,219 @@
+### Session: Messaging Null-Guard Mobile Profile Stabilization March 30 2026 ✅ COMPLETED
+
+**Date**: March 30, 2026  
+**Scope**: Fix mobile profile flow/runtime stability by eliminating null-conversation crashes in messaging deep-link and list rendering paths.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx
+- kelmah-frontend/src/modules/messaging/contexts/MessageContext.jsx
+- kelmah-frontend/src/modules/messaging/services/messagingService.js
+- spec-kit/STATUS_LOG.md
+
+**Investigation notes**
+- Runtime `TypeError` (`Cannot read properties of null (reading 'id')`) traced to conversation helpers expecting object entries while some payloads include null items.
+- Crash path affects mobile profile to messaging transitions and message list/deep-link scans.
+
+**Implementation summary**
+- Messaging page defensive guards (`MessagingPage.jsx`):
+  - Added `isConversationObject` guard and hardened `getConversationKey` for null/invalid entries.
+  - Added `safeConversations` projection and switched deep-link lookup, derived draft counters, filtered list logic, and total count derivation to sanitized data.
+  - Hardened recipient deep-link participant scan to handle missing/non-array participant collections.
+- Context normalization hardening (`MessageContext.jsx`):
+  - Updated conversation/message normalizers to return `null` for invalid payload items.
+  - Updated list normalizers to filter null/malformed entries before state consumption.
+- Service normalization hardening (`messagingService.js`):
+  - Updated conversation/message normalizers to return `null` for invalid payload items.
+  - Updated list normalizers to filter invalid entries before returning results to context/page consumers.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,963 modules transformed).
+- PASS: `npx jest src/tests/smoke/routed-paths.smoke.test.jsx src/tests/smoke/critical-path-happy-flow.smoke.test.jsx src/tests/smoke/critical-path-gateway-contract.smoke.test.js --runInBand` in `kelmah-frontend` (3 suites, 42 tests).
+- PASS: `npx jest src/tests/Chatbox.test.jsx src/tests/MessageInput.test.jsx --runInBand` in `kelmah-frontend` (2 suites, 5 tests).
+- PASS (diagnostics): no IDE errors in patched files (`MessagingPage.jsx`, `MessageContext.jsx`, `messagingService.js`).
+- NOTE: `messagingService.js` includes pre-existing lint debt outside this patch (`no-unused-vars` on legacy symbols); patched null-guard changes are build/test verified.
+
+### Session: One-Tap Telemetry Reset + Unread-Drafts Dual Mode March 30 2026 ✅ COMPLETED
+
+**Date**: March 30, 2026  
+**Scope**: Continue the triage-speed stream by adding a one-tap telemetry reset in hirer macros and adding a combined `Unread + Drafts` mode in messaging.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/hirer/pages/ApplicationManagementPage.jsx
+- kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Hirer telemetry reset (`ApplicationManagementPage.jsx`):
+  - Added `handleResetMacroTelemetry` and wired it into telemetry UI.
+  - Added one-tap reset affordance in mobile macro action rail next to the telemetry chip.
+  - Added telemetry chip visibility + reset affordance in desktop Applications Snapshot for parity.
+- Messaging dual triage mode (`MessagingPage.jsx`):
+  - Added `unreadDraftConversationCount` metric.
+  - Added combined filter mode `unread-drafts` requiring both unread count and unsent draft.
+  - Added a dedicated `Unread + Drafts` chip with count-aware labeling.
+  - Updated helper tip and empty-state copy for the new dual mode.
+
+**Verification**
+- PASS: `npx eslint src/modules/messaging/pages/MessagingPage.jsx` in `kelmah-frontend`.
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,963 modules transformed).
+- PASS: `npx jest src/tests/smoke/routed-paths.smoke.test.jsx src/tests/smoke/critical-path-happy-flow.smoke.test.jsx src/tests/smoke/critical-path-gateway-contract.smoke.test.js --runInBand` in `kelmah-frontend` (3 suites, 42 tests).
+
+### Session: Live Macro Debug Badge + Draft-Only Triage Toggle March 30 2026 ✅ COMPLETED
+
+**Date**: March 30, 2026  
+**Scope**: Continue both active productivity tracks by surfacing live macro telemetry in hirer quick actions and adding an explicit draft-only triage toggle in messaging conversations.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/hirer/pages/ApplicationManagementPage.jsx
+- kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Hirer live macro telemetry snapshot (`ApplicationManagementPage.jsx`):
+  - Added `lastMacroTelemetry` state with snapshot publisher and computed badge metadata.
+  - Wired telemetry lifecycle updates into `Accept + Message` and `Reject + Template` macro flows for running/success/warning/error states.
+  - Added compact debug chip in the mobile macro action rail with phase + counters (`attempts`, `retries`, `fallbackMoves`) and tooltip details.
+- Messaging draft triage toggle (`MessagingPage.jsx`):
+  - Added a draft-only filter control (`Drafts`) in conversation filters.
+  - Added `draftConversationCount` so the toggle label is count-aware.
+  - Added draft-aware filter behavior in `filteredConversations` while preserving current sort precedence.
+  - Polished draft visibility further by adding a pin icon to the header draft count chip and refining empty-state copy for draft-filter mode.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,963 modules transformed).
+- PASS: `npx eslint src/modules/messaging/pages/MessagingPage.jsx` in `kelmah-frontend`.
+- PASS: `npx jest src/tests/smoke/routed-paths.smoke.test.jsx src/tests/smoke/critical-path-happy-flow.smoke.test.jsx src/tests/smoke/critical-path-gateway-contract.smoke.test.js --runInBand` in `kelmah-frontend` (3 suites, 42 tests).
+- NOTE: `ApplicationManagementPage.jsx` still carries large pre-existing lint debt outside this scoped patch set, but diagnostics report no syntax/runtime errors for this change.
+
+### Session: Macro Telemetry Counters + Draft Pin Visual Scan March 30 2026 ✅ COMPLETED
+
+**Date**: March 30, 2026  
+**Scope**: Continue both active tracks by adding explicit retry/fallback telemetry counters for hirer macros and adding faster draft triage visuals in messaging conversation rows.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/hirer/pages/ApplicationManagementPage.jsx
+- kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Hirer macro telemetry (`ApplicationManagementPage.jsx`):
+  - Added feature-flagged internal logging (`devInfo`, `devWarn`, `devError`) for accept+message and reject+template macro flows.
+  - Added explicit telemetry counters for attempts/retries/fallback transitions in the accept+message macro.
+  - Updated success/warning snackbars to include counter context (attempts/retries/fallback move count) so macro outcomes are immediately observable.
+  - Updated reject+template success messaging to include fallback counter context and added failure/completion debug logs.
+- Messaging triage scanability (`MessagingPage.jsx`):
+  - Added optional draft pin icon to conversation rows when a draft exists.
+  - Added pin icon to the "Unsent" chip so draft-bearing threads are visually distinct at a glance.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,963 modules transformed).
+- PASS: `npx jest src/tests/smoke/routed-paths.smoke.test.jsx src/tests/smoke/critical-path-happy-flow.smoke.test.jsx src/tests/smoke/critical-path-gateway-contract.smoke.test.js --runInBand` in `kelmah-frontend` (3 suites, 42 tests).
+- PASS: `npx eslint src/modules/messaging/pages/MessagingPage.jsx` in `kelmah-frontend`.
+- NOTE: `ApplicationManagementPage.jsx` still has substantial pre-existing lint debt (prop-types/unused vars/prettier outside this micro-change scope), but no syntax/runtime errors were introduced by this patch set.
+
+### Session: Fourth-Pass Mobile Dashboard Density and Positioning Polish March 30 2026 ✅ COMPLETED
+
+**Date**: March 30, 2026  
+**Scope**: Continue the active UI hardening stream by addressing mobile dashboard composition quality issues (spacing waste, card rhythm, and positioning polish) with low-risk changes across Worker and Hirer dashboard surfaces.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/worker/pages/WorkerDashboardPage.jsx
+- kelmah-frontend/src/modules/worker/components/QuickActionsRow.jsx
+- kelmah-frontend/src/modules/hirer/pages/HirerDashboardPage.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Worker dashboard mobile spacing/positioning (`WorkerDashboardPage.jsx`):
+  - Removed sticky command-center behavior on mobile to eliminate the large top dead-zone under header/navigation layers.
+  - Reduced outer page padding and command center padding on `xs` for tighter content packing.
+  - Compacted hero messaging line-height/font sizing and made hero KPI cards denser (`2-up + 1` pattern on mobile).
+  - Converted metric cards to `xs=6` two-column mobile layout with reduced min-heights and tuned typography/icon spacing.
+  - Densified recommendations/cards on mobile (`xs=6`, reduced card padding, shorter skill chip footprint, smaller budget text).
+  - Tightened chart-section spacing and reduced chart height on mobile for better scroll economy.
+- Worker quick actions density (`QuickActionsRow.jsx`):
+  - Reduced mobile quick-action card min-height and internal spacing.
+  - Scaled icon/label sizing for compact rhythm.
+  - Hid secondary caption text on mobile to reduce clutter while preserving full labels and accessibility metadata.
+- Hirer dashboard mobile density (`HirerDashboardPage.jsx`):
+  - Reduced mobile page/container/header padding and tightened hero stack spacing for stronger above-the-fold composition.
+  - Densified hero KPI cards and mobile metric-carousel cards (narrower card width, lower card heights, tighter value typography).
+  - Reduced chart section spacing, chart-card padding, and mobile chart heights to improve scroll economy.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,963 modules transformed).
+- PASS: `npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx src/tests/smoke/critical-path-happy-flow.smoke.test.jsx src/tests/smoke/critical-path-gateway-contract.smoke.test.js --runInBand` in `kelmah-frontend` (3 suites, 42 tests).
+
+### Session: Routed-Paths Helmet Context Fix + Third Desktop Outlier Sweep March 30 2026 ✅ COMPLETED
+
+**Date**: March 30, 2026  
+**Scope**: Continue both active tracks by (1) fixing routed-path smoke failures caused by missing Helmet context and (2) applying another low-risk desktop density/accessibility pass for dashboard/profile/detail outliers.
+
+**Files currently in scope**
+- kelmah-frontend/src/tests/smoke/routed-paths.smoke.test.jsx
+- kelmah-frontend/src/modules/worker/components/WorkerProfile.jsx
+- kelmah-frontend/src/modules/worker/pages/WorkerDashboardPage.jsx
+- kelmah-frontend/src/modules/hirer/pages/HirerDashboardPage.jsx
+- kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Smoke-suite stability (`routed-paths.smoke.test.jsx`):
+  - Wrapped both route render helpers (`renderAtPath`, `renderBottomNavAtPath`) with `HelmetProvider` to match runtime app context and eliminate `HelmetDispatcher ... reading 'add'` failures.
+- Third-pass desktop density and accessibility deltas:
+  - `WorkerProfile.jsx`: tightened metric-card density (padding/min-height), improved value scaling/overflow behavior, and reduced metric grid spacing for better desktop scanning.
+  - `WorkerDashboardPage.jsx`: reduced metric-card and chart grid spacing for denser desktop composition and tuned metric card value sizing/padding to avoid icon overlap.
+  - `HirerDashboardPage.jsx`: tightened metric-card spacing/dimensions/value typography and reduced chart section spacing for cleaner desktop hierarchy.
+  - `JobDetailsPage.jsx`: made desktop sticky sidebar offset network-banner-aware to prevent top-collision when the banner is present.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,963 modules transformed).
+- PASS: `npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx src/tests/smoke/critical-path-happy-flow.smoke.test.jsx src/tests/smoke/critical-path-gateway-contract.smoke.test.js --runInBand` in `kelmah-frontend` (3 suites, 42 tests).
+- PASS (targeted): `npx eslint src/modules/jobs/pages/JobDetailsPage.jsx` in `kelmah-frontend`.
+- NOTE: `routed-paths.smoke.test.jsx` is ignored by the current ESLint pattern in this workspace, so lint validation for that file is covered via test execution.
+
+### Session: Second-Pass Desktop Density and Trust UX Sweep March 30 2026 ✅ COMPLETED
+
+**Date**: March 30, 2026  
+**Scope**: Continue the 200-find frontend execution stream with a consolidated second pass focused on desktop density and accessibility outliers in worker/job detail pages, dashboard metric surfaces, and trust/review readability.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx
+- kelmah-frontend/src/modules/worker/components/WorkerProfile.jsx
+- kelmah-frontend/src/modules/worker/pages/WorkerDashboardPage.jsx
+- kelmah-frontend/src/modules/hirer/pages/HirerDashboardPage.jsx
+- kelmah-frontend/src/modules/reviews/components/common/ReviewCard.jsx
+- kelmah-frontend/src/modules/reviews/pages/WorkerReviewsPage.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Job details accessibility/trust actions (`JobDetailsPage.jsx`):
+  - Updated the sticky mobile top rail offset to include the network banner CSS offset, reducing overlap risk on constrained screens.
+  - Converted the "About the Client" profile row into a keyboard-accessible button surface with explicit `aria-label`, disabled semantics, and visible focus ring.
+  - Improved client facts icon semantics by using `WorkOutline` for posted-job metadata.
+- Worker profile desktop density/trust guidance (`WorkerProfile.jsx`):
+  - Expanded desktop container width from `lg` to `xl` for better data density on wide screens.
+  - Switched desktop tabs from stretched full-width to compact standard layout with section `aria-label` and mobile scroll-button support.
+  - Added an explicit trust-check guidance caption below the section tabs.
+- Dashboard outlier sweep (`WorkerDashboardPage.jsx`, `HirerDashboardPage.jsx`):
+  - Worker dashboard sticky command header now includes network banner offset in mobile sticky positioning.
+  - Worker metric cards now render 4-up at `lg` (`lg=3`) to reduce desktop whitespace and improve scan speed.
+  - Replaced touch-only helper copy with neutral "Open details" on worker/hirer metric cards.
+  - Added a polite live-region status announcement for hirer dashboard auto-refresh state.
+- Trust review readability (`ReviewCard.jsx`, `WorkerReviewsPage.jsx`):
+  - Refined review card surfaces to use stronger contrast, lighter visual noise, and robust author/rating/content fallbacks.
+  - Added missing prop validation for nested review image sources.
+  - Hardened rating summary calculations to handle non-integer/variable rating values and grouped histogram counts by nearest star.
+  - Added pagination accessibility labels and trust-context helper text.
+
+**Verification**
+- NOTE: Full repo lint still has extensive pre-existing debt outside this targeted pass.
+- PASS: `npx eslint src/modules/reviews/components/common/ReviewCard.jsx src/modules/reviews/pages/WorkerReviewsPage.jsx` in `kelmah-frontend`.
+- PASS: `npx eslint src/modules/jobs/pages/JobDetailsPage.jsx` in `kelmah-frontend`.
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,963 modules transformed).
+- PARTIAL: `npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx src/tests/smoke/critical-path-happy-flow.smoke.test.jsx src/tests/smoke/critical-path-gateway-contract.smoke.test.js --runInBand` in `kelmah-frontend`.
+  - `critical-path-happy-flow` and `critical-path-gateway-contract` passed.
+  - `routed-paths.smoke.test.jsx` reported an existing Helmet test-context failure (`HelmetDispatcher ... reading 'add'`) and two route assertions failed in that suite.
+
 ### Session: 200-Find Frontend Hardening Foundation Pass March 30 2026 ✅ COMPLETED
 
 **Date**: March 30, 2026  
@@ -76,6 +292,46 @@
 - PASS: `npx eslint src/modules/messaging/pages/MessagingPage.jsx` in `kelmah-frontend`.
 - PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,963 modules transformed).
 - PASS: `npx jest --runInBand tests/smoke/routed-paths.smoke.test.js tests/smoke/critical-path-happy-flow.smoke.test.js tests/smoke/critical-path-gateway-contract.smoke.test.js` in `kelmah-frontend` (3 suites, 34 tests).
+
+### Session: Auth/Support Density + Legacy Routing Hardening Pass 2 March 30 2026 ✅ COMPLETED
+
+**Date**: March 30, 2026  
+**Scope**: Continue immediately with auth/support density-spacing consistency and a second routing hardening pass for legacy contracts/payments/profile deep links, including expanded smoke assertions.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/auth/components/mobile/MobileLogin.jsx
+- kelmah-frontend/src/modules/auth/components/mobile/MobileRegister.jsx
+- kelmah-frontend/src/modules/auth/pages/LoginPage.jsx
+- kelmah-frontend/src/modules/auth/pages/RegisterPage.jsx
+- kelmah-frontend/src/modules/auth/pages/ForgotPasswordPage.jsx
+- kelmah-frontend/src/modules/auth/pages/RoleSelectionPage.jsx
+- kelmah-frontend/src/modules/auth/pages/VerifyEmailPage.jsx
+- kelmah-frontend/src/modules/auth/pages/MfaSetupPage.jsx
+- kelmah-frontend/src/pages/ResetPassword.jsx
+- kelmah-frontend/src/modules/support/pages/HelpCenterPage.jsx
+- kelmah-frontend/src/modules/support/pages/InfoPage.jsx
+- kelmah-frontend/src/routes/config.jsx
+- kelmah-frontend/src/tests/smoke/routed-paths.smoke.test.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Auth/support density consistency:
+  - Tightened mobile vertical rhythm and removed excess spacer blocks across auth flows.
+  - Standardized mobile page shells to use safe-area helpers (`withSafeAreaTop`, `withSafeAreaBottom`) and `100dvh` where appropriate.
+  - Reduced over-padding in support hero/cards/faq sections; made fixed mobile support CTA rail bottom-nav-safe and touch-target aligned.
+- Routing hardening pass 2 (legacy aliases):
+  - Added contract aliases: `/contracts/new`, `/contracts/:id/details`, `/contract/:id`, `/contract/:id/edit`.
+  - Added payment aliases: `/payments/settings`, `/payments/methods`, `/payments/bill`, `/payments/escrow/:escrowId`.
+  - Added profile deep-link aliases: `/profile/edit`, `/profile/settings`, `/profiles/:workerId`.
+  - Introduced focused redirect helpers for legacy contract and payment escrow aliases.
+- Smoke expansion:
+  - Added route assertions for the new contracts/payments/profile aliases.
+  - Resolved one interim failure by moving profile alias routes from an incorrect admin scope into shared top-level scope.
+
+**Verification**
+- PASS: `npx jest --runInBand tests/smoke/routed-paths.smoke.test.js` in `kelmah-frontend` (30 tests, all passed).
+- PASS: `npx jest --runInBand tests/smoke/routed-paths.smoke.test.js tests/smoke/critical-path-happy-flow.smoke.test.js tests/smoke/critical-path-gateway-contract.smoke.test.js` in `kelmah-frontend` (3 suites, 42 tests).
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,963 modules transformed).
 
 ### Session: Accept+Message Failure Chain and Draft Continuity Follow-up March 30 2026 ✅ COMPLETED
 
@@ -19330,6 +19586,54 @@ WorkerProfile "Message Worker" click
 - ✅ Build: `✔ built in 1m 4s` — zero errors
 - ✅ Committed and pushed: `4f21a00` → Vercel auto-deploying
 
+
+### Session: Payment Fixed-Rail Safe-Area Standardization March 30 2026 (COMPLETED)
+
+**Date**: March 30, 2026  
+**Scope**: Continue payment-adjacent density and mobile fixed-rail hardening by removing remaining raw bottom/z-index offsets and non-tokenized touch-target values.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/payment/pages/WalletPage.jsx
+- kelmah-frontend/src/modules/payment/pages/PaymentSettingsPage.jsx
+- kelmah-frontend/src/modules/payment/pages/PaymentMethodsPage.jsx
+- kelmah-frontend/src/modules/payment/pages/EscrowDetailsPage.jsx
+- kelmah-frontend/src/modules/payment/pages/BillPage.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Replaced raw mobile fixed rail offsets (`bottom: 0`, ad-hoc safe-area padding) with `withBottomNavSafeArea(...)` in all five pages.
+- Standardized mobile rail z-index to `Z_INDEX.stickyCta` for consistent layering.
+- Converted residual `minHeight: 42/44` action controls to `TOUCH_TARGET_MIN`.
+- Updated page-level bottom spacing to helper-based bottom-nav-safe values to prevent CTA overlap in mobile flows.
+
+**Verification**
+- PASS: diagnostics reported no errors for all five edited payment files.
+- PASS: `npx jest --runInBand tests/smoke/routed-paths.smoke.test.js tests/smoke/critical-path-happy-flow.smoke.test.js tests/smoke/critical-path-gateway-contract.smoke.test.js` in `kelmah-frontend` (3 suites, 42 tests).
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,963 modules transformed).
+
+### Session: Jobs and QuickJobs Mobile Action-Rail Hardening March 30 2026 (COMPLETED)
+
+**Date**: March 30, 2026  
+**Scope**: Continue with additional high-traffic outliers by applying the same bottom-nav-safe and touch-target token standard to jobs/quickjobs mobile action rails.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/jobs/pages/JobApplicationPage.jsx
+- kelmah-frontend/src/modules/jobs/pages/JobAlertsPage.jsx
+- kelmah-frontend/src/modules/quickjobs/pages/QuickJobTrackingPage.jsx
+- kelmah-frontend/src/modules/jobs/components/job-application/JobApplication.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Converted mobile fixed action bars from raw `bottom: 0` + manual inset padding to `withBottomNavSafeArea(...)`.
+- Standardized mobile action rail z-index to `Z_INDEX.stickyCta`.
+- Replaced hardcoded action min-heights with `TOUCH_TARGET_MIN` in affected mobile rail buttons.
+- Updated page/container bottom spacing in these flows so fixed bars do not cover content on narrow viewports.
+- Updated `JobAlertsPage` sticky control section top offset to use `withSafeAreaTop(HEADER_HEIGHT_MOBILE + 12)`.
+
+**Verification**
+- PASS: diagnostics reported no errors for all four edited files.
+- PASS: `npx jest --runInBand tests/smoke/routed-paths.smoke.test.js tests/smoke/critical-path-happy-flow.smoke.test.js tests/smoke/critical-path-gateway-contract.smoke.test.js` in `kelmah-frontend` (3 suites, 42 tests).
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,963 modules transformed).
 ---
 
 ### Session: Applications & Find Talent - Data Seeding & Layout Fixes ✅
@@ -26750,6 +27054,38 @@ Full visual and structural redesign of `kelmah-frontend/src/modules/jobs/pages/J
   - JobsCardsGrid: Added explicit mobile-first location/pay/urgency data blocks with iconography below headers and moved the multi-column data views to display: {xs:'none', sm:'grid'}. This directly establishes job-card hierarchy explicitly inside the mobile grid rather than burying data below descriptions.
 - Validation: PASS
   - frontend builds cleanly via 'npm run build'.
+
+### Session: Hirer/Worker/Profile/Payments Density and Safe-Area Continuation March 30 2026 ✅ COMPLETED
+
+**Date**: March 30, 2026  
+**Scope**: Continue both active tracks by hardening mobile fixed/sticky spacing and touch-target density in hirer application triage, worker card/profile surfaces, and payment pages.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/hirer/pages/ApplicationManagementPage.jsx
+- kelmah-frontend/src/modules/worker/components/WorkerCard.jsx
+- kelmah-frontend/src/modules/worker/pages/WorkerProfilePage.jsx
+- kelmah-frontend/src/modules/worker/components/WorkerProfile.jsx
+- kelmah-frontend/src/modules/payment/pages/PaymentsPage.jsx
+- kelmah-frontend/src/modules/payment/pages/PaymentCenterPage.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- `ApplicationManagementPage.jsx`:
+  - Replaced ad-hoc mobile fixed/sticky offsets with safe-area helper formulas.
+  - Made mobile bottom action rail bottom-nav-safe and standardized action touch target sizing with layout tokens.
+- `WorkerCard.jsx`:
+  - Tightened content/action spacing for denser scanability.
+  - Replaced hardcoded button heights with tokenized touch-target minimums.
+- `WorkerProfilePage.jsx` + `WorkerProfile.jsx`:
+  - Added bottom-nav/safe-area-aware bottom spacing for page shell and mobile fixed CTA rail paths.
+- `PaymentsPage.jsx` + `PaymentCenterPage.jsx`:
+  - Converted sticky top/bottom spacing to safe-area-aware formulas.
+  - Hardened mobile fixed action/filter rails above bottom nav and standardized touch targets.
+
+**Verification**
+- PASS: diagnostics reported no errors for all six edited page/component files.
+- PASS: `npx jest --runInBand tests/smoke/routed-paths.smoke.test.js tests/smoke/critical-path-happy-flow.smoke.test.js tests/smoke/critical-path-gateway-contract.smoke.test.js` in `kelmah-frontend` (3 suites, 42 tests).
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,963 modules transformed).
 [ M A R   3 1 ,   2 0 2 6 ]   F R O N T E N D   U I   S P R I N T :   P 1   &   P 2   U N R E S O L V E D   B U G S   C L O S E D   ( C O M P L E T E D ) 
  
  -   S c o p e :   E x e c u t e   l a y o u t   s p a c i n g   ( P 1 - 1 ) ,   s t i c k y / z - i n d e x   t o k e n s   ( P 1 - 2 )   a n d   c u s t o m   r e s p o n s i v e   t o k e n   c r e a t i o n   ( P 2 - 3 ) 

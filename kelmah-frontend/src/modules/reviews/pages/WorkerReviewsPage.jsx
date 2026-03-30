@@ -1,11 +1,11 @@
-﻿import React, { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import {
   Container,
   Typography,
   Box,
   Paper,
   Grid,
-  Rating,
   LinearProgress,
   Divider,
   Stack,
@@ -49,6 +49,16 @@ const RatingDistribution = ({ distribution, totalReviews }) => (
     ))}
   </Box>
 );
+
+RatingDistribution.propTypes = {
+  distribution: PropTypes.arrayOf(
+    PropTypes.shape({
+      stars: PropTypes.number.isRequired,
+      count: PropTypes.number.isRequired,
+    }),
+  ).isRequired,
+  totalReviews: PropTypes.number.isRequired,
+};
 
 const WorkerReviewsPage = () => {
   const { user } = useAuth();
@@ -134,12 +144,19 @@ const WorkerReviewsPage = () => {
   }
 
   const totalReviews = reviews.length;
-  const averageRating = totalReviews
-    ? reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews
+  const numericRatings = reviews
+    .map((review) => Number(review?.rating))
+    .filter((value) => Number.isFinite(value));
+  const averageRating = numericRatings.length
+    ? numericRatings.reduce((sum, value) => sum + value, 0) /
+      numericRatings.length
     : 0;
   const ratingDistribution = [5, 4, 3, 2, 1].map((stars) => ({
     stars,
-    count: reviews.filter((r) => r.rating === stars).length,
+    count: reviews.filter((review) => {
+      const roundedRating = Math.round(Number(review?.rating) || 0);
+      return roundedRating === stars;
+    }).length,
   }));
 
   return (
@@ -185,17 +202,25 @@ const WorkerReviewsPage = () => {
           <Grid item xs={12} md={4}>
             <Paper
               sx={(theme) => ({
-                p: 3,
-                borderRadius: theme.spacing(2),
-                backgroundColor: alpha(theme.palette.primary.main, 0.7),
+                p: { xs: 2, md: 2.5 },
+                borderRadius: theme.spacing(2.5),
+                backgroundColor: alpha(theme.palette.background.paper, 0.96),
                 backdropFilter: 'blur(10px)',
-                border: `2px solid ${theme.palette.secondary.main}`,
-                boxShadow: `inset 0 0 8px rgba(255, 215, 0, 0.5)`,
+                border: `1px solid ${alpha(theme.palette.secondary.main, 0.35)}`,
+                boxShadow:
+                  theme.palette.mode === 'dark'
+                    ? `0 10px 24px ${alpha('#000', 0.35)}`
+                    : `0 8px 20px ${alpha('#0f172a', 0.08)}`,
                 transition:
                   'box-shadow 0.3s ease-in-out, border-color 0.3s ease-in-out',
-                '&:hover': {
-                  boxShadow: `0 0 12px rgba(255, 215, 0, 0.3), inset 0 0 8px rgba(255, 215, 0, 0.5)`,
-                  borderColor: theme.palette.secondary.light,
+                '@media (hover: hover)': {
+                  '&:hover': {
+                    boxShadow:
+                      theme.palette.mode === 'dark'
+                        ? `0 14px 28px ${alpha(theme.palette.secondary.main, 0.2)}`
+                        : `0 10px 24px ${alpha(theme.palette.secondary.main, 0.16)}`,
+                    borderColor: alpha(theme.palette.secondary.main, 0.6),
+                  },
                 },
               })}
             >
@@ -216,6 +241,14 @@ const WorkerReviewsPage = () => {
                 distribution={ratingDistribution}
                 totalReviews={totalReviews}
               />
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ mt: 1, display: 'block' }}
+              >
+                Ratings are grouped to the nearest full star for faster trust
+                scanning.
+              </Typography>
             </Paper>
           </Grid>
 
@@ -268,6 +301,24 @@ const WorkerReviewsPage = () => {
             page={page}
             onChange={handlePageChange}
             color="secondary"
+            getItemAriaLabel={(type, selectedPage) => {
+              if (type === 'page') {
+                return `Go to review page ${selectedPage}`;
+              }
+              if (type === 'next') {
+                return 'Go to next review page';
+              }
+              if (type === 'previous') {
+                return 'Go to previous review page';
+              }
+              if (type === 'first') {
+                return 'Go to first review page';
+              }
+              if (type === 'last') {
+                return 'Go to last review page';
+              }
+              return 'Go to review page';
+            }}
           />
         </Box>
       </Container>

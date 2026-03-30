@@ -5,6 +5,7 @@ import AuthWrapper from '../components/common/AuthWrapper';
 import { Helmet } from 'react-helmet-async';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 import PageCanvas from '@/modules/common/components/PageCanvas';
+import { withSafeAreaBottom, withSafeAreaTop } from '@/utils/safeArea';
 
 const RoleSelectionPage = () => {
   const isActualMobile = useBreakpointDown('md');
@@ -19,11 +20,11 @@ const RoleSelectionPage = () => {
     return (
       <PageCanvas
         disableContainer
-        sx={{ pt: { xs: 3, md: 4 }, pb: { xs: 4, md: 6 } }}
+        sx={{ pt: 0, pb: 0 }}
       >
         <Box
           sx={{
-            minHeight: '100vh',
+            minHeight: '100dvh',
             bgcolor: 'background.default',
             color: 'text.primary',
             fontFamily: 'Manrope, "Noto Sans", sans-serif',
@@ -33,7 +34,7 @@ const RoleSelectionPage = () => {
           }}
         >
           {/* Header */}
-          <Box sx={{ p: 2, pb: 1 }}>
+          <Box sx={{ px: 2, pt: withSafeAreaTop(8), pb: 1 }}>
             <Box
               sx={{
                 display: 'flex',
@@ -98,7 +99,7 @@ const RoleSelectionPage = () => {
                 fontWeight: 'bold',
                 fontSize: '28px',
                 textAlign: 'center',
-                mb: 3,
+                mb: 2.25,
               }}
             >
               How do you want to use Kelmah?
@@ -109,7 +110,7 @@ const RoleSelectionPage = () => {
                 color: 'text.secondary',
                 fontSize: '16px',
                 textAlign: 'center',
-                mb: 3,
+                mb: 2,
               }}
             >
               Choose one option. You can update this later in your profile.
@@ -119,7 +120,7 @@ const RoleSelectionPage = () => {
               sx={{
                 display: 'flex',
                 flexDirection: 'column',
-                gap: 3,
+                gap: 2,
                 maxWidth: '480px',
                 mx: 'auto',
                 width: '100%',
@@ -167,8 +168,7 @@ const RoleSelectionPage = () => {
             </Box>
           </Box>
 
-          {/* Spacer to replace removed decorative bottom nav */}
-          <Box sx={{ height: '20px', bgcolor: 'background.default' }} />
+          <Box sx={{ pb: withSafeAreaBottom(12) }} />
         </Box>
       </PageCanvas>
     );
@@ -178,7 +178,7 @@ const RoleSelectionPage = () => {
   return (
     <PageCanvas
       disableContainer
-      sx={{ pt: { xs: 3, md: 4 }, pb: { xs: 4, md: 6 } }}
+      sx={{ pt: { xs: 2.5, md: 4 }, pb: { xs: 4, md: 6 } }}
     >
       <AuthWrapper>
         <Helmet>

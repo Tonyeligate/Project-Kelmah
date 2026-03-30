@@ -29,6 +29,8 @@ import { currencyFormatter } from '@/modules/common/utils/formatters';
 import { getRoleHomePath, hasRole } from '../../../utils/userUtils';
 import { devError } from '@/modules/common/utils/devLogger';
 import PageCanvas from '../../common/components/PageCanvas';
+import { TOUCH_TARGET_MIN, Z_INDEX } from '@/constants/layout';
+import { withBottomNavSafeArea } from '@/utils/safeArea';
 
 const EscrowDetailsPage = () => {
   const theme = useTheme();
@@ -59,7 +61,7 @@ const EscrowDetailsPage = () => {
     return (
       <PageCanvas
         disableContainer
-        sx={{ pt: { xs: 1, sm: 4 }, pb: { xs: 4, md: 6 } }}
+        sx={{ pt: { xs: 1, sm: 4 }, pb: { xs: withBottomNavSafeArea(12), md: 6 } }}
       >
         <Container sx={{ py: 4, display: 'flex', justifyContent: 'center' }}>
           <Typography variant="body1" color="text.secondary">
@@ -74,7 +76,7 @@ const EscrowDetailsPage = () => {
     return (
       <PageCanvas
         disableContainer
-        sx={{ pt: { xs: 1, sm: 4 }, pb: { xs: 4, md: 6 } }}
+        sx={{ pt: { xs: 1, sm: 4 }, pb: { xs: withBottomNavSafeArea(12), md: 6 } }}
       >
         <Container sx={{ py: 4 }}>
           <Typography variant="h6">Escrow not found.</Typography>
@@ -86,7 +88,7 @@ const EscrowDetailsPage = () => {
   return (
     <PageCanvas
       disableContainer
-      sx={{ pt: { xs: 1, sm: 4 }, pb: { xs: 10, md: 6 } }}
+      sx={{ pt: { xs: 1, sm: 4 }, pb: { xs: withBottomNavSafeArea(72), md: 6 } }}
     >
       <Container
         maxWidth="md"
@@ -192,8 +194,8 @@ const EscrowDetailsPage = () => {
               position: 'fixed',
               left: 0,
               right: 0,
-              bottom: 0,
-              zIndex: theme.zIndex.appBar + 2,
+              bottom: withBottomNavSafeArea(0),
+              zIndex: Z_INDEX.stickyCta,
               px: 1,
               py: 1,
               gap: 1,
@@ -205,7 +207,7 @@ const EscrowDetailsPage = () => {
               fullWidth
               variant="outlined"
               color="secondary"
-              sx={{ minHeight: 42, borderWidth: 2 }}
+              sx={{ minHeight: TOUCH_TARGET_MIN, borderWidth: 2 }}
               component={RouterLink}
               to={backPath}
             >
@@ -216,7 +218,7 @@ const EscrowDetailsPage = () => {
               variant="contained"
               color="secondary"
               sx={{
-                minHeight: 42,
+                minHeight: TOUCH_TARGET_MIN,
                 boxShadow: '0 2px 8px rgba(255,215,0,0.35)',
               }}
               onClick={() => setOpenRelease(true)}

@@ -33,6 +33,7 @@ import {
 } from '@mui/icons-material';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuthCheck } from '../../../hooks/useAuthCheck';
+import { TOUCH_TARGET_MIN } from '../../../constants/layout';
 
 const WorkerCard = ({ worker, onSave, isPublicView }) => {
   const navigate = useNavigate();
@@ -441,9 +442,10 @@ const WorkerCard = ({ worker, onSave, isPublicView }) => {
             color: 'inherit',
             display: 'block',
             width: '100%',
+            p: { xs: 1.5, sm: 2 },
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
             <Avatar
               src={
                 worker.profilePicture ||
@@ -585,7 +587,7 @@ const WorkerCard = ({ worker, onSave, isPublicView }) => {
               display: '-webkit-box',
               WebkitLineClamp: 2,
               WebkitBoxOrient: 'vertical',
-              mb: 2,
+              mb: 1.5,
             }}
           >
             {worker.bio || 'No bio provided'}
@@ -594,7 +596,7 @@ const WorkerCard = ({ worker, onSave, isPublicView }) => {
           <Stack
             direction="row"
             spacing={1}
-            sx={{ mb: 2, flexWrap: 'wrap', gap: 0.5 }}
+            sx={{ mb: 1.5, flexWrap: 'wrap', gap: 0.5 }}
           >
             {worker.skills
               ?.filter((skill) => skill && (skill.name || skill))
@@ -617,7 +619,7 @@ const WorkerCard = ({ worker, onSave, isPublicView }) => {
             )}
           </Stack>
 
-          <Divider sx={{ my: 1 }} />
+          <Divider sx={{ my: 0.75 }} />
 
           <Grid container spacing={1}>
             <Grid item xs={6}>
@@ -678,7 +680,12 @@ const WorkerCard = ({ worker, onSave, isPublicView }) => {
 
       {/* Contact Action Buttons */}
       <CardActions
-        sx={{ justifyContent: 'space-between', px: 2, pb: 2, pt: 0 }}
+        sx={{
+          justifyContent: 'space-between',
+          px: { xs: 1.5, sm: 2 },
+          pb: { xs: 1.5, sm: 2 },
+          pt: 0,
+        }}
       >
         <Button
           onClick={(e) => {
@@ -689,7 +696,7 @@ const WorkerCard = ({ worker, onSave, isPublicView }) => {
           startIcon={<VisibilityIcon />}
           size="small"
           sx={{
-            minHeight: '44px',
+            minHeight: TOUCH_TARGET_MIN,
             flex: 1,
             mr: 1,
             borderColor: 'rgba(255, 215, 0, 0.5)',
@@ -716,7 +723,7 @@ const WorkerCard = ({ worker, onSave, isPublicView }) => {
               size="small"
               fullWidth
               sx={{
-                minHeight: '44px',
+                minHeight: TOUCH_TARGET_MIN,
                 bgcolor: messageCta.disabled
                   ? 'action.disabledBackground'
                   : '#FFD700',
@@ -740,7 +747,11 @@ const WorkerCard = ({ worker, onSave, isPublicView }) => {
         <Typography
           variant="caption"
           color="text.secondary"
-          sx={{ px: 2, pb: 2, lineHeight: 1.4 }}
+          sx={{
+            px: { xs: 1.5, sm: 2 },
+            pb: { xs: 1.5, sm: 2 },
+            lineHeight: 1.4,
+          }}
         >
           {messageCta.hint}
         </Typography>

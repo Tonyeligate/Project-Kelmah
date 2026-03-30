@@ -14,6 +14,7 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  Paper,
   useTheme,
   useMediaQuery,
   alpha,
@@ -35,6 +36,8 @@ import {
 import PageCanvas from '../../common/components/PageCanvas';
 import { BRAND_COLORS } from '../../../theme';
 import { Helmet } from 'react-helmet-async';
+import { TOUCH_TARGET_MIN, Z_INDEX } from '@/constants/layout';
+import { withBottomNavSafeArea, withSafeAreaBottom } from '@/utils/safeArea';
 
 const contactChannels = [
   {
@@ -217,12 +220,16 @@ const HelpCenterPage = () => {
   return (
     <PageCanvas
       disableContainer
-      sx={{ pt: { xs: 1, md: 4 }, pb: { xs: 10, md: 6 }, overflowX: 'clip' }}
+      sx={{
+        pt: { xs: 1, md: 4 },
+        pb: { xs: withBottomNavSafeArea(84), md: 6 },
+        overflowX: 'clip',
+      }}
     >
       <Box
         sx={{
-          minHeight: '100vh',
-          pt: { xs: 6, md: 12 },
+          minHeight: '100dvh',
+          pt: { xs: 4, md: 10 },
           width: '100%',
           minWidth: 0,
           overflowX: 'clip',
@@ -233,7 +240,7 @@ const HelpCenterPage = () => {
         </Helmet>
         <Container
           maxWidth="lg"
-          sx={{ px: { xs: 0.75, sm: 3 }, width: '100%', minWidth: 0 }}
+          sx={{ px: { xs: 1.25, sm: 3 }, width: '100%', minWidth: 0 }}
         >
           <Box
             sx={{
@@ -242,7 +249,7 @@ const HelpCenterPage = () => {
                   ? `linear-gradient(135deg, ${BRAND_COLORS.black} 0%, ${BRAND_COLORS.blackMedium} 100%)`
                   : `linear-gradient(135deg, ${BRAND_COLORS.goldLight} 0%, ${BRAND_COLORS.gold} 100%)`,
               borderRadius: 4,
-              p: { xs: 2, md: 6 },
+              p: { xs: 1.75, md: 5.5 },
               color:
                 theme.palette.mode === 'dark'
                   ? theme.palette.common.white
@@ -251,10 +258,10 @@ const HelpCenterPage = () => {
                 theme.palette.mode === 'dark'
                   ? '0 20px 45px rgba(0,0,0,0.65)'
                   : '0 25px 55px rgba(0,0,0,0.15)',
-              mb: { xs: 2, md: 6 },
+              mb: { xs: 1.75, md: 5 },
             }}
           >
-            <Stack spacing={{ xs: 1.5, md: 3 }}>
+            <Stack spacing={{ xs: 1.25, md: 2.5 }}>
               <Stack
                 direction={{ xs: 'column', md: 'row' }}
                 spacing={2}
@@ -396,7 +403,7 @@ const HelpCenterPage = () => {
             ))}
           </Grid>
 
-          <Grid container spacing={3} alignItems="stretch">
+          <Grid container spacing={{ xs: 1.5, md: 3 }} alignItems="stretch">
             <Grid item xs={12} md={7}>
               <Card sx={{ borderRadius: 3, height: '100%' }}>
                 <CardContent>
@@ -427,7 +434,7 @@ const HelpCenterPage = () => {
               </Card>
             </Grid>
             <Grid item xs={12} md={5}>
-              <Stack spacing={3} height="100%">
+              <Stack spacing={{ xs: 1.5, md: 2.5 }} height="100%">
                 {contactChannels.map((channel) => (
                   <Card key={channel.title} sx={{ borderRadius: 3 }}>
                     <CardContent>
@@ -469,25 +476,30 @@ const HelpCenterPage = () => {
 
           <Paper
             elevation={8}
-            sx={(theme) => ({
+            sx={(muiTheme) => ({
               display: { xs: 'flex', sm: 'none' },
               position: 'fixed',
               left: 0,
               right: 0,
-              bottom: 0,
-              zIndex: theme.zIndex.appBar + 2,
-              px: 1,
-              py: 1,
+              bottom: withBottomNavSafeArea(0),
+              zIndex: Z_INDEX.stickyCta,
+              px: 1.25,
+              pt: 0.75,
+              pb: withSafeAreaBottom(8),
               gap: 1,
-              borderTop: `1px solid ${theme.palette.divider}`,
-              backgroundColor: theme.palette.background.paper,
+              borderTop: `1px solid ${muiTheme.palette.divider}`,
+              backgroundColor: muiTheme.palette.background.paper,
+              boxShadow:
+                muiTheme.palette.mode === 'dark'
+                  ? '0 -8px 24px rgba(0, 0, 0, 0.4)'
+                  : '0 -6px 18px rgba(16, 17, 19, 0.12)',
             })}
           >
             <Button
               fullWidth
               variant="outlined"
               color="secondary"
-              sx={{ minHeight: 42 }}
+              sx={{ minHeight: TOUCH_TARGET_MIN }}
               onClick={pageCopy.secondaryAction}
             >
               {pageCopy.secondaryLabel}
@@ -497,7 +509,7 @@ const HelpCenterPage = () => {
               variant="contained"
               color="secondary"
               sx={{
-                minHeight: 42,
+                minHeight: TOUCH_TARGET_MIN,
                 boxShadow: '0 2px 8px rgba(255,215,0,0.35)',
               }}
               onClick={pageCopy.primaryAction}

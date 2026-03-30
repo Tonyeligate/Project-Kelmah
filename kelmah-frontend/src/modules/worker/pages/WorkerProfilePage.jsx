@@ -5,6 +5,7 @@ import { PersonSearch as PersonSearchIcon } from '@mui/icons-material';
 import { Helmet } from 'react-helmet-async';
 import WorkerProfile from '../components/WorkerProfile';
 import PageCanvas from '../../common/components/PageCanvas';
+import { withBottomNavSafeArea } from '@/utils/safeArea';
 
 /**
  * WorkerProfilePage - Public page for viewing worker profiles
@@ -29,7 +30,11 @@ const WorkerProfilePage = () => {
     return (
       <PageCanvas
         disableContainer
-        sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 }, overflowX: 'clip' }}
+        sx={{
+          pt: { xs: 1.5, md: 4 },
+          pb: { xs: withBottomNavSafeArea(20), md: 6 },
+          overflowX: 'clip',
+        }}
       >
         <Box
           sx={{
@@ -83,12 +88,16 @@ const WorkerProfilePage = () => {
 
       <PageCanvas
         disableContainer
-        sx={{ pt: { xs: 1, md: 4 }, pb: { xs: 4, md: 6 }, overflowX: 'clip' }}
+        sx={{
+          pt: { xs: 1, md: 4 },
+          pb: { xs: withBottomNavSafeArea(20), md: 6 },
+          overflowX: 'clip',
+        }}
       >
         <Container
           maxWidth="xl"
           sx={{
-            py: { xs: 1, md: 4 },
+            py: { xs: 1.25, md: 4 },
             px: { xs: 1, md: 3 },
             width: '100%',
             minWidth: 0,

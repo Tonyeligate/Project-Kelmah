@@ -106,6 +106,7 @@ import {
   resolveProfileImageUrl,
 } from '../../common/utils/mediaAssets';
 import { devError } from '@/modules/common/utils/devLogger';
+import { withBottomNavSafeArea, withSafeAreaBottom } from '@/utils/safeArea';
 
 const formatGhanaCurrencyLabel = (value) => {
   const amount = Number(value);
@@ -183,7 +184,12 @@ const MetricCard = styled(Card)(({ theme }) => ({
   border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
   borderRadius: 16,
   textAlign: 'center',
-  padding: theme.spacing(2),
+  padding: theme.spacing(1.5),
+  minHeight: 138,
+  [theme.breakpoints.up('md')]: {
+    padding: theme.spacing(1.75),
+    minHeight: 152,
+  },
   transition: 'all 0.3s ease-in-out',
   '&:hover': {
     transform: 'translateY(-2px)',
@@ -1342,11 +1348,19 @@ function WorkerProfile({ workerId: workerIdProp }) {
         )}
 
         {/* Regular Professional Metrics */}
-        <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid container spacing={{ xs: 2, md: 2.25 }} sx={{ mb: 4 }}>
           <Grid item xs={6} md={3}>
             <MetricCard>
-              <WorkIcon color="primary" sx={{ fontSize: 40, mb: 1 }} />
-              <Typography variant="h4" fontWeight={700} color="primary">
+              <WorkIcon
+                color="primary"
+                sx={{ fontSize: { xs: 30, md: 36 }, mb: 1 }}
+              />
+              <Typography
+                variant="h4"
+                fontWeight={700}
+                color="primary"
+                sx={{ fontSize: { xs: '1.25rem', md: '1.65rem' }, lineHeight: 1.2 }}
+              >
                 {profile.experience_years || 0}
               </Typography>
               <Typography variant="body2" color="text.secondary">
@@ -1357,8 +1371,16 @@ function WorkerProfile({ workerId: workerIdProp }) {
 
           <Grid item xs={6} md={3}>
             <MetricCard>
-              <AssessmentIcon color="primary" sx={{ fontSize: 40, mb: 1 }} />
-              <Typography variant="h4" fontWeight={700} color="primary">
+              <AssessmentIcon
+                color="primary"
+                sx={{ fontSize: { xs: 30, md: 36 }, mb: 1 }}
+              />
+              <Typography
+                variant="h4"
+                fontWeight={700}
+                color="primary"
+                sx={{ fontSize: { xs: '1.25rem', md: '1.65rem' }, lineHeight: 1.2 }}
+              >
                 {jobsCompleted}
               </Typography>
               <Typography variant="body2" color="text.secondary">
@@ -1369,8 +1391,20 @@ function WorkerProfile({ workerId: workerIdProp }) {
 
           <Grid item xs={6} md={3}>
             <MetricCard>
-              <PriceIcon color="primary" sx={{ fontSize: 40, mb: 1 }} />
-              <Typography variant="h4" fontWeight={700} color="primary">
+              <PriceIcon
+                color="primary"
+                sx={{ fontSize: { xs: 30, md: 36 }, mb: 1 }}
+              />
+              <Typography
+                variant="h4"
+                fontWeight={700}
+                color="primary"
+                sx={{
+                  fontSize: { xs: '1.05rem', md: '1.35rem' },
+                  lineHeight: 1.2,
+                  wordBreak: 'break-word',
+                }}
+              >
                 {formatGhanaCurrencyLabel(profile.hourly_rate || 0)}
               </Typography>
               <Typography variant="body2" color="text.secondary">
@@ -1381,8 +1415,16 @@ function WorkerProfile({ workerId: workerIdProp }) {
 
           <Grid item xs={6} md={3}>
             <MetricCard>
-              <TrendingIcon color="primary" sx={{ fontSize: 40, mb: 1 }} />
-              <Typography variant="h4" fontWeight={700} color="primary">
+              <TrendingIcon
+                color="primary"
+                sx={{ fontSize: { xs: 30, md: 36 }, mb: 1 }}
+              />
+              <Typography
+                variant="h4"
+                fontWeight={700}
+                color="primary"
+                sx={{ fontSize: { xs: '1.25rem', md: '1.65rem' }, lineHeight: 1.2 }}
+              >
                 {completionRate}%
               </Typography>
               <Typography variant="body2" color="text.secondary">
@@ -2076,7 +2118,12 @@ function WorkerProfile({ workerId: workerIdProp }) {
     return (
       <Box
         sx={{
-          pb: { xs: effectiveBottomNavHeight + 116, md: 4 },
+          pb: {
+            xs: isAuthenticated
+              ? withBottomNavSafeArea(60)
+              : withSafeAreaBottom(60),
+            md: 4,
+          },
           fontFamily: dashboardFontFamily,
         }}
       >
@@ -2708,7 +2755,9 @@ function WorkerProfile({ workerId: workerIdProp }) {
             position: 'fixed',
             left: 12,
             right: 12,
-            bottom: effectiveBottomNavHeight + 12,
+            bottom: isAuthenticated
+              ? withBottomNavSafeArea(12)
+              : withSafeAreaBottom(12),
             zIndex: theme.zIndex.modal - 2,
             p: 1,
             borderRadius: 3,
@@ -2793,7 +2842,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
       </Helmet>
 
       <Container
-        maxWidth={isActualMobile ? 'sm' : 'lg'}
+        maxWidth={isActualMobile ? 'sm' : 'xl'}
         sx={{
           py: isActualMobile ? 1.5 : 4,
           px: isActualMobile ? 1 : undefined,
@@ -2823,8 +2872,15 @@ function WorkerProfile({ workerId: workerIdProp }) {
               <Tabs
                 value={tabValue}
                 onChange={handleTabChange}
-                variant={isMobile ? 'scrollable' : 'fullWidth'}
+                aria-label="Worker profile sections"
+                variant={isMobile ? 'scrollable' : 'standard'}
                 scrollButtons="auto"
+                allowScrollButtonsMobile
+                sx={{
+                  '& .MuiTabs-flexContainer': {
+                    gap: { md: 0.5, lg: 1 },
+                  },
+                }}
               >
                 <Tab
                   icon={<PersonIcon />}
@@ -2848,6 +2904,13 @@ function WorkerProfile({ workerId: workerIdProp }) {
                   label="Certificates"
                 />
               </Tabs>
+              <Typography
+                variant="caption"
+                sx={{ display: 'block', mt: 1, color: 'text.secondary' }}
+              >
+                Trust check: review verified badges, recent portfolio proofs,
+                and latest client feedback before starting a contract.
+              </Typography>
             </Box>
 
             <AnimatePresence mode="wait">

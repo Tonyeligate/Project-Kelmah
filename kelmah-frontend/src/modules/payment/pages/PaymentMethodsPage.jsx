@@ -35,7 +35,12 @@ import { Helmet } from 'react-helmet-async';
 import { useSnackbar } from 'notistack';
 import { toUserMessage } from '@/services/responseNormalizer';
 import PageCanvas from '@/modules/common/components/PageCanvas';
-import { HEADER_HEIGHT_MOBILE, Z_INDEX } from '../../../constants/layout';
+import {
+  HEADER_HEIGHT_MOBILE,
+  TOUCH_TARGET_MIN,
+  Z_INDEX,
+} from '../../../constants/layout';
+import { withBottomNavSafeArea, withSafeAreaTop } from '@/utils/safeArea';
 
 // Demo payment methods for initial display
 const PaymentMethodsPage = () => {
@@ -293,7 +298,7 @@ const PaymentMethodsPage = () => {
   return (
     <PageCanvas
       disableContainer
-      sx={{ pt: { xs: 1, sm: 4 }, pb: { xs: 10, md: 6 } }}
+      sx={{ pt: { xs: 1, sm: 4 }, pb: { xs: withBottomNavSafeArea(72), md: 6 } }}
     >
       <Container
         maxWidth="lg"
@@ -311,7 +316,7 @@ const PaymentMethodsPage = () => {
             alignItems: { xs: 'flex-start', sm: 'center' },
             gap: 1,
             position: { xs: 'sticky', sm: 'static' },
-            top: { xs: HEADER_HEIGHT_MOBILE, sm: 'auto' },
+            top: { xs: withSafeAreaTop(HEADER_HEIGHT_MOBILE), sm: 'auto' },
             zIndex: { xs: Z_INDEX.sticky, sm: 'auto' },
             py: { xs: 0.5, sm: 0 },
             backgroundColor: { xs: 'background.default', sm: 'transparent' },
@@ -330,8 +335,8 @@ const PaymentMethodsPage = () => {
                 aria-label="Add credit card"
                 sx={{
                   boxShadow: '0 2px 8px rgba(255,215,0,0.4)',
-                  minWidth: 44,
-                  minHeight: 44,
+                  minWidth: TOUCH_TARGET_MIN,
+                  minHeight: TOUCH_TARGET_MIN,
                   '&:focus-visible': {
                     outline: '3px solid',
                     outlineColor: 'secondary.main',
@@ -349,8 +354,8 @@ const PaymentMethodsPage = () => {
                 aria-label="Add mobile money"
                 sx={{
                   boxShadow: '0 2px 8px rgba(255,215,0,0.4)',
-                  minWidth: 44,
-                  minHeight: 44,
+                  minWidth: TOUCH_TARGET_MIN,
+                  minHeight: TOUCH_TARGET_MIN,
                   '&:focus-visible': {
                     outline: '3px solid',
                     outlineColor: 'secondary.main',
@@ -368,8 +373,8 @@ const PaymentMethodsPage = () => {
                 aria-label="Add bank account"
                 sx={{
                   boxShadow: '0 2px 8px rgba(255,215,0,0.4)',
-                  minWidth: 44,
-                  minHeight: 44,
+                  minWidth: TOUCH_TARGET_MIN,
+                  minHeight: TOUCH_TARGET_MIN,
                   '&:focus-visible': {
                     outline: '3px solid',
                     outlineColor: 'secondary.main',
@@ -598,8 +603,8 @@ const PaymentMethodsPage = () => {
                               handleSetDefault(method.id || method._id)
                             }
                             sx={{
-                              minWidth: 44,
-                              minHeight: 44,
+                              minWidth: TOUCH_TARGET_MIN,
+                              minHeight: TOUCH_TARGET_MIN,
                               '&:focus-visible': {
                                 outline: '3px solid',
                                 outlineColor: 'primary.main',
@@ -620,8 +625,8 @@ const PaymentMethodsPage = () => {
                             handleDeleteRequest(method.id || method._id)
                           }
                           sx={{
-                            minWidth: 44,
-                            minHeight: 44,
+                            minWidth: TOUCH_TARGET_MIN,
+                            minHeight: TOUCH_TARGET_MIN,
                             '&:focus-visible': {
                               outline: '3px solid',
                               outlineColor: 'error.main',
@@ -1027,8 +1032,8 @@ const PaymentMethodsPage = () => {
             position: 'fixed',
             left: 0,
             right: 0,
-            bottom: 0,
-            zIndex: theme.zIndex.appBar + 2,
+            bottom: withBottomNavSafeArea(0),
+            zIndex: Z_INDEX.stickyCta,
             px: 1,
             py: 1,
             gap: 1,
@@ -1040,7 +1045,7 @@ const PaymentMethodsPage = () => {
             fullWidth
             variant="outlined"
             color="secondary"
-            sx={{ minHeight: 42 }}
+            sx={{ minHeight: TOUCH_TARGET_MIN }}
             onClick={() => setOpenAddCard(true)}
           >
             Card
@@ -1049,7 +1054,7 @@ const PaymentMethodsPage = () => {
             fullWidth
             variant="outlined"
             color="secondary"
-            sx={{ minHeight: 42 }}
+            sx={{ minHeight: TOUCH_TARGET_MIN }}
             onClick={() => setOpenAddMobile(true)}
           >
             Mobile
@@ -1058,7 +1063,7 @@ const PaymentMethodsPage = () => {
             fullWidth
             variant="contained"
             color="secondary"
-            sx={{ minHeight: 42, boxShadow: '0 2px 8px rgba(255,215,0,0.35)' }}
+            sx={{ minHeight: TOUCH_TARGET_MIN, boxShadow: '0 2px 8px rgba(255,215,0,0.35)' }}
             onClick={() => setOpenAddBank(true)}
           >
             Bank

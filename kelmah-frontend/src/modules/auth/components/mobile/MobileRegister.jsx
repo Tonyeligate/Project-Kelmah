@@ -50,6 +50,7 @@ import {
   normalizeGhanaPhone,
 } from '../../utils/registrationSchema';
 import logoIcon from '../../../../assets/images/logo.png';
+import { withSafeAreaBottom, withSafeAreaTop } from '@/utils/safeArea';
 
 // Theme hook must be used inside the component
 
@@ -757,16 +758,17 @@ const MobileRegister = () => {
   return (
     <Box
       sx={{
-        minHeight: '100vh',
+        minHeight: '100dvh',
         bgcolor: 'background.default',
         display: 'flex',
         flexDirection: 'column',
-        px: 3,
-        py: 3,
+        px: 2,
+        pt: withSafeAreaTop(12),
+        pb: withSafeAreaBottom(16),
       }}
     >
       {/* Header */}
-      <Box sx={{ textAlign: 'center', mb: 3 }}>
+      <Box sx={{ textAlign: 'center', mb: 2.25 }}>
         <Box
           component="img"
           src={logoIcon}
@@ -781,7 +783,7 @@ const MobileRegister = () => {
       </Box>
 
       {/* Progress */}
-      <Box sx={{ mb: 3 }}>
+      <Box sx={{ mb: 2 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
           <Typography sx={{ color: 'text.secondary', fontSize: '13px' }}>
             Step {step} of {totalSteps}
@@ -828,7 +830,7 @@ const MobileRegister = () => {
           flex: 1,
           backgroundColor: alpha(theme.palette.background.paper, 0.9),
           borderRadius: 3,
-          p: 2.5,
+          p: 2,
           border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
           display: 'flex',
           flexDirection: 'column',
@@ -893,7 +895,7 @@ const MobileRegister = () => {
         </Box>
 
         {/* Navigation Buttons */}
-        <Box sx={{ display: 'flex', gap: 1.5, mt: 3 }}>
+        <Box sx={{ display: 'flex', gap: 1.5, mt: 2 }}>
           <Button
             onClick={handleBack}
             variant="outlined"
@@ -947,7 +949,7 @@ const MobileRegister = () => {
         <Box
           sx={{
             textAlign: 'center',
-            mt: 2,
+            mt: 1.5,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',

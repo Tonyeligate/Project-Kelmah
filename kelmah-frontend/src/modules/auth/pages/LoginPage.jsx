@@ -8,6 +8,7 @@ import { Helmet } from 'react-helmet-async';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 import { Typography } from '@mui/material';
 import PageCanvas from '@/modules/common/components/PageCanvas';
+import { withSafeAreaBottom } from '@/utils/safeArea';
 
 const LoginPage = () => {
   const location = useLocation();
@@ -29,7 +30,10 @@ const LoginPage = () => {
     return (
       <PageCanvas
         disableContainer
-        sx={{ pt: { xs: 3, md: 4 }, pb: { xs: 4, md: 6 } }}
+        sx={{
+          pt: { xs: 2, md: 4 },
+          pb: { xs: withSafeAreaBottom(20), md: 6 },
+        }}
       >
         <MobileLogin registrationSuccess={registered} />
       </PageCanvas>
@@ -40,7 +44,7 @@ const LoginPage = () => {
   return (
     <PageCanvas
       disableContainer
-      sx={{ pt: { xs: 3, md: 4 }, pb: { xs: 4, md: 6 } }}
+      sx={{ pt: { xs: 2.5, md: 4 }, pb: { xs: 4, md: 6 } }}
     >
       <AuthWrapper>
         <Helmet>

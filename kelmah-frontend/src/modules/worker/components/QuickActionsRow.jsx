@@ -53,10 +53,10 @@ const QuickActionsRow = () => {
       sx={{
         display: 'grid',
         gridTemplateColumns: {
-          xs: 'repeat(2, minmax(0, 1fr))',
+          xs: 'repeat(3, minmax(0, 1fr))',
           sm: 'repeat(5, minmax(0, 1fr))',
         },
-        gap: 1.5,
+        gap: { xs: 0.85, sm: 1.5 },
       }}
     >
       {actions.map(({ label, caption, icon: Icon, path }) => (
@@ -70,11 +70,11 @@ const QuickActionsRow = () => {
             flexDirection: 'column',
             alignItems: 'flex-start',
             justifyContent: 'center',
-            minHeight: { xs: 112, sm: 116 },
+            minHeight: { xs: 78, sm: 116 },
             width: '100%',
-            py: 1.9,
-            px: 1.6,
-            borderRadius: 2.5,
+            py: { xs: 0.9, sm: 1.9 },
+            px: { xs: 0.85, sm: 1.6 },
+            borderRadius: { xs: 2, sm: 2.5 },
             bgcolor: 'background.paper',
             border: '1px solid',
             borderColor: alpha(theme.palette.primary.main, 0.24),
@@ -91,10 +91,10 @@ const QuickActionsRow = () => {
         >
           <Icon
             sx={{
-              fontSize: 28,
-              mb: 1,
+              fontSize: { xs: 20, sm: 28 },
+              mb: { xs: 0.45, sm: 1 },
               color: theme.palette.primary.main,
-              p: 0.75,
+              p: { xs: 0.5, sm: 0.75 },
               borderRadius: 1.5,
               bgcolor: alpha(theme.palette.primary.main, 0.12),
             }}
@@ -106,6 +106,7 @@ const QuickActionsRow = () => {
               color: 'text.primary',
               lineHeight: 1.2,
               overflowWrap: 'anywhere',
+              fontSize: { xs: '0.74rem', sm: '0.875rem' },
             }}
           >
             {label}
@@ -118,6 +119,7 @@ const QuickActionsRow = () => {
               lineHeight: 1.35,
               textAlign: 'left',
               overflowWrap: 'anywhere',
+              display: { xs: 'none', sm: 'block' },
             }}
           >
             {caption}

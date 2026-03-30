@@ -15,6 +15,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 import PageCanvas from '@/modules/common/components/PageCanvas';
+import { withSafeAreaBottom, withSafeAreaTop } from '@/utils/safeArea';
 
 const ForgotPasswordPage = () => {
   const isActualMobile = useBreakpointDown('md');
@@ -30,7 +31,7 @@ const ForgotPasswordPage = () => {
     setError('');
     setLoading(true);
     try {
-      const res = await authService.forgotPassword(email);
+      await authService.forgotPassword(email);
       setStatus(
         'If we find this email, we will send a reset link in a few minutes.',
       );
@@ -51,11 +52,11 @@ const ForgotPasswordPage = () => {
     return (
       <PageCanvas
         disableContainer
-        sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}
+        sx={{ pt: 0, pb: 0 }}
       >
         <Box
           sx={{
-            minHeight: '100vh',
+            minHeight: '100dvh',
             bgcolor: 'background.default',
             color: 'text.primary',
             fontFamily: 'Manrope, "Noto Sans", sans-serif',
@@ -65,7 +66,7 @@ const ForgotPasswordPage = () => {
           }}
         >
           {/* Header */}
-          <Box sx={{ p: 2, pb: 1 }}>
+          <Box sx={{ px: 2, pt: withSafeAreaTop(8), pb: 1 }}>
             <Box
               sx={{
                 display: 'flex',
@@ -115,7 +116,7 @@ const ForgotPasswordPage = () => {
                 fontWeight: 'bold',
                 fontSize: '24px',
                 mb: 2,
-                mt: 5,
+                mt: 3,
               }}
             >
               Forgot your password?
@@ -125,7 +126,7 @@ const ForgotPasswordPage = () => {
               sx={{
                 color: 'text.secondary',
                 fontSize: '16px',
-                mb: 3,
+                mb: 2,
                 lineHeight: 1.5,
               }}
             >
@@ -169,7 +170,7 @@ const ForgotPasswordPage = () => {
 
             <Box component="form" onSubmit={handleSubmit}>
               {/* Email Field */}
-              <Box sx={{ mb: 3 }}>
+              <Box sx={{ mb: 2 }}>
                 <TextField
                   fullWidth
                   type="email"
@@ -217,7 +218,7 @@ const ForgotPasswordPage = () => {
                   fontSize: '16px',
                   fontWeight: 'bold',
                   textTransform: 'none',
-                  mb: 3,
+                  mb: 2,
                   '&:hover': {
                     bgcolor: 'primary.dark',
                   },
@@ -233,7 +234,7 @@ const ForgotPasswordPage = () => {
           </Box>
 
           {/* Bottom Section */}
-          <Box sx={{ p: 2 }}>
+          <Box sx={{ px: 2, pt: 1.5, pb: withSafeAreaBottom(12) }}>
             <Typography
               component={Link}
               to="/login"
@@ -250,7 +251,6 @@ const ForgotPasswordPage = () => {
             >
               Back to Login
             </Typography>
-            <Box sx={{ height: '20px', bgcolor: 'background.default' }} />
           </Box>
         </Box>
       </PageCanvas>

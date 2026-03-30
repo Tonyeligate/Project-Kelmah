@@ -29,6 +29,8 @@ import fileUploadService from '../../common/services/fileUploadService';
 import { formatGhanaCurrency } from '@/utils/formatters';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 import PageCanvas from '@/modules/common/components/PageCanvas';
+import { TOUCH_TARGET_MIN, Z_INDEX } from '@/constants/layout';
+import { withBottomNavSafeArea } from '@/utils/safeArea';
 
 const JobApplicationPage = () => {
   const { id: jobId } = useParams();
@@ -202,7 +204,10 @@ const JobApplicationPage = () => {
 
   if (jobLoading) {
     return (
-      <PageCanvas disableContainer sx={{ pb: { xs: 4, md: 6 } }}>
+      <PageCanvas
+        disableContainer
+        sx={{ pb: { xs: withBottomNavSafeArea(12), md: 6 } }}
+      >
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>
           <CircularProgress />
         </Box>
@@ -211,7 +216,15 @@ const JobApplicationPage = () => {
   }
 
   return (
-    <PageCanvas disableContainer sx={{ pb: { xs: success ? 2 : 10, md: 6 } }}>
+    <PageCanvas
+      disableContainer
+      sx={{
+        pb: {
+          xs: success ? withBottomNavSafeArea(12) : withBottomNavSafeArea(72),
+          md: 6,
+        },
+      }}
+    >
       <Helmet>
         <title>
           {currentJob?.title ? `Apply — ${currentJob.title}` : 'Apply for Job'}{' '}
@@ -518,10 +531,9 @@ const JobApplicationPage = () => {
               position: 'fixed',
               left: 0,
               right: 0,
-              bottom: 0,
-              zIndex: 1300,
+              bottom: withBottomNavSafeArea(0),
+              zIndex: Z_INDEX.stickyCta,
               p: 1,
-              pb: 'calc(8px + env(safe-area-inset-bottom, 0px))',
               bgcolor: 'background.paper',
               borderTop: '1px solid',
               borderColor: 'divider',
@@ -534,7 +546,7 @@ const JobApplicationPage = () => {
               variant="outlined"
               onClick={() => navigate(`/jobs/${jobId}`)}
               disabled={submitting}
-              sx={{ minHeight: 44 }}
+              sx={{ minHeight: TOUCH_TARGET_MIN }}
             >
               Cancel
             </Button>
@@ -551,7 +563,7 @@ const JobApplicationPage = () => {
                 )
               }
               disabled={submitting || success}
-              sx={{ minHeight: 44, fontWeight: 700 }}
+              sx={{ minHeight: TOUCH_TARGET_MIN, fontWeight: 700 }}
             >
               {submitting
                 ? isBiddingJob

@@ -72,10 +72,11 @@ import {
 import RecentActivityFeed from '../components/RecentActivityFeed';
 import dashboardService from '../../dashboard/services/dashboardService';
 import { useVisibilityPolling } from '../../../hooks/useVisibilityPolling';
-import { BOTTOM_NAV_HEIGHT } from '../../../constants/layout';
+import { TOUCH_TARGET_MIN, Z_INDEX } from '../../../constants/layout';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 import { formatGhanaCurrency } from '@/utils/formatters';
 import PageCanvas from '@/modules/common/components/PageCanvas';
+import { withBottomNavSafeArea } from '@/utils/safeArea';
 
 /* ---------- Extracted sub-component (stable reference) ---------- */
 const LoadingOverviewSkeleton = () => (
@@ -450,16 +451,16 @@ const HirerDashboardPage = () => {
                 : 'linear-gradient(180deg, #f7f9fd 0%, #eef3fa 100%)',
             minHeight: 'auto',
             fontFamily: dashboardFontFamily,
-            p: 1.5,
-            pb: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px) + 18px)`,
+            p: 1.2,
+            pb: withBottomNavSafeArea(14),
             overflowX: 'hidden',
           }}
         >
           <Paper
             elevation={0}
             sx={{
-              p: 2,
-              mb: 2,
+              p: 1.6,
+              mb: 1.5,
               borderRadius: 3,
               border: '1px solid',
               borderColor:
@@ -474,12 +475,21 @@ const HirerDashboardPage = () => {
           >
             <Typography
               variant="h5"
-              sx={{ fontWeight: 800, letterSpacing: -0.3, mb: 0.75 }}
+              sx={{
+                fontWeight: 800,
+                letterSpacing: -0.3,
+                mb: 0.6,
+                fontSize: { xs: '1.36rem', sm: '1.5rem' },
+              }}
             >
               {getGreeting()},{' '}
               {hirerProfile?.firstName || user?.firstName || 'there'}
             </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ mb: 1.1, fontSize: '0.83rem', lineHeight: 1.38 }}
+            >
               Hiring cockpit: launch opportunities, shortlist top talent, and
               keep every live role moving.
             </Typography>
@@ -488,7 +498,7 @@ const HirerDashboardPage = () => {
               spacing={1}
               useFlexGap
               flexWrap="wrap"
-              sx={{ mb: 1.5 }}
+              sx={{ mb: 1.05 }}
             >
               <Chip
                 label={`Active ${summaryData.activeJobs}`}
@@ -540,11 +550,15 @@ const HirerDashboardPage = () => {
                 helper: 'Contracts delivered successfully',
                 tone: theme.palette.success.main,
               },
-            ].map((item) => (
-              <Grid item xs={12} key={`mobile-summary-${item.title}`}>
+            ].map((item, index) => (
+              <Grid
+                item
+                xs={index < 2 ? 6 : 12}
+                key={`mobile-summary-${item.title}`}
+              >
                 <Box
                   sx={{
-                    p: 1.5,
+                    p: 1.05,
                     borderRadius: 2,
                     border: '1px solid',
                     borderColor: alpha(item.tone, 0.32),
@@ -564,7 +578,14 @@ const HirerDashboardPage = () => {
                   >
                     {item.title}
                   </Typography>
-                  <Typography variant="h5" sx={{ fontWeight: 800, mt: 0.25 }}>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontWeight: 800,
+                      mt: 0.2,
+                      fontSize: { xs: '0.96rem', sm: '1.25rem' },
+                    }}
+                  >
                     {item.value}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
@@ -575,14 +596,14 @@ const HirerDashboardPage = () => {
             ))}
           </Grid>
 
-          <Grid container spacing={1.5} sx={{ mb: 2 }}>
+          <Grid container spacing={1} sx={{ mb: 1.5 }}>
             <Grid item xs={6}>
               <Button
                 fullWidth
                 variant="contained"
                 startIcon={<PostAddIcon />}
                 onClick={() => navigate('/hirer/jobs/post')}
-                sx={{ minHeight: 44, textTransform: 'none', fontWeight: 700 }}
+                sx={{ minHeight: 40, textTransform: 'none', fontWeight: 700 }}
               >
                 Post Job
               </Button>
@@ -593,7 +614,7 @@ const HirerDashboardPage = () => {
                 variant="outlined"
                 startIcon={<PeopleIcon />}
                 onClick={() => navigate('/hirer/find-talents')}
-                sx={{ minHeight: 44, textTransform: 'none', fontWeight: 700 }}
+                sx={{ minHeight: 40, textTransform: 'none', fontWeight: 700 }}
               >
                 Find Talent
               </Button>
@@ -604,7 +625,7 @@ const HirerDashboardPage = () => {
                 variant="outlined"
                 startIcon={<ProposalIcon />}
                 onClick={() => navigate('/hirer/applications')}
-                sx={{ minHeight: 44, textTransform: 'none', fontWeight: 700 }}
+                sx={{ minHeight: 40, textTransform: 'none', fontWeight: 700 }}
               >
                 Applications
               </Button>
@@ -615,7 +636,7 @@ const HirerDashboardPage = () => {
                 variant="outlined"
                 startIcon={<MessageIcon />}
                 onClick={() => navigate('/messages')}
-                sx={{ minHeight: 44, textTransform: 'none', fontWeight: 700 }}
+                sx={{ minHeight: 40, textTransform: 'none', fontWeight: 700 }}
               >
                 Messages
               </Button>
@@ -626,8 +647,8 @@ const HirerDashboardPage = () => {
             <Paper
               elevation={0}
               sx={{
-                p: 2,
-                mb: 2,
+                p: 1.75,
+                mb: 1.5,
                 borderRadius: 2,
                 backgroundColor: 'background.paper',
                 border: '1px solid',
@@ -674,9 +695,9 @@ const HirerDashboardPage = () => {
                 : 'linear-gradient(180deg, #f7f9fd 0%, #eef3fa 58%, #edf3fb 100%)',
             minHeight: { xs: '100dvh', md: 'auto' },
             fontFamily: dashboardFontFamily,
-            p: { xs: 1.5, sm: 2, md: 3 },
+            p: { xs: 1.1, sm: 2, md: 3 },
             pb: {
-              xs: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px) + 18px)`,
+              xs: withBottomNavSafeArea(12),
               md: 3,
             },
             overflowX: 'hidden',
@@ -707,9 +728,9 @@ const HirerDashboardPage = () => {
           <Paper
             elevation={0}
             sx={{
-              mb: 4,
-              p: { xs: 2, sm: 2.75, md: 3.25 },
-              borderRadius: { xs: 3, md: 4 },
+              mb: { xs: 2, md: 4 },
+              p: { xs: 1.35, sm: 2.75, md: 3.25 },
+              borderRadius: { xs: 2.5, md: 4 },
               border: '1px solid',
               borderColor:
                 theme.palette.mode === 'dark'
@@ -742,7 +763,7 @@ const HirerDashboardPage = () => {
             }}
           >
             <Stack
-              spacing={{ xs: 1.5, md: 2.25 }}
+              spacing={{ xs: 1.15, md: 2.25 }}
               sx={{ position: 'relative', zIndex: 1 }}
             >
               <Box
@@ -771,21 +792,24 @@ const HirerDashboardPage = () => {
                     variant="body2"
                     color="text.secondary"
                     sx={{
-                      mt: 0.75,
+                      mt: 0.5,
                       maxWidth: 620,
-                      fontSize: { xs: '0.94rem', md: '1rem' },
+                      fontSize: { xs: '0.9rem', md: '1rem' },
+                      lineHeight: { xs: 1.45, md: 1.5 },
                     }}
                   >
-                    Hiring cockpit: launch opportunities, shortlist top talent,
-                    and keep every live role moving.
+                    {isCompactMobile
+                      ? 'Launch jobs, shortlist talent, and keep live roles moving.'
+                      : 'Hiring cockpit: launch opportunities, shortlist top talent, and keep every live role moving.'}
                   </Typography>
                 </Box>
                 <Box
                   sx={{
                     display: 'flex',
-                    gap: 1,
+                    gap: 0.75,
                     flexWrap: 'wrap',
                     alignItems: 'center',
+                    position: 'relative',
                   }}
                 >
                   <Chip
@@ -815,6 +839,26 @@ const HirerDashboardPage = () => {
                     onClick={() => setAutoRefreshEnabled((prev) => !prev)}
                     sx={{ fontWeight: 700, cursor: 'pointer' }}
                   />
+                  <Box
+                    component="span"
+                    role="status"
+                    aria-live="polite"
+                    sx={{
+                      position: 'absolute',
+                      width: 1,
+                      height: 1,
+                      p: 0,
+                      m: -1,
+                      overflow: 'hidden',
+                      clip: 'rect(0, 0, 0, 0)',
+                      whiteSpace: 'nowrap',
+                      border: 0,
+                    }}
+                  >
+                    {autoRefreshEnabled
+                      ? `Live updates enabled. Last refresh ${timeSinceRefresh}.`
+                      : 'Live updates are paused.'}
+                  </Box>
                 </Box>
               </Box>
 
@@ -882,7 +926,7 @@ const HirerDashboardPage = () => {
                 </Button>
               </Box>
 
-              <Grid container spacing={1.25}>
+              <Grid container spacing={1}>
                 {[
                   {
                     title: 'Pipeline',
@@ -909,10 +953,15 @@ const HirerDashboardPage = () => {
                     style={{ transitionDelay: `${120 + index * 90}ms` }}
                     key={`overview-fade-${item.title}`}
                   >
-                    <Grid item xs={12} sm={4} key={`overview-${item.title}`}>
+                    <Grid
+                      item
+                      xs={index < 2 ? 6 : 12}
+                      sm={4}
+                      key={`overview-${item.title}`}
+                    >
                       <Box
                         sx={{
-                          p: 1.5,
+                          p: { xs: 1.1, sm: 1.5 },
                           borderRadius: 2,
                           border: '1px solid',
                           borderColor: alpha(item.tone, 0.36),
@@ -934,7 +983,12 @@ const HirerDashboardPage = () => {
                         </Typography>
                         <Typography
                           variant="h6"
-                          sx={{ fontWeight: 800, mt: 0.25 }}
+                          sx={{
+                            fontWeight: 800,
+                            mt: 0.2,
+                            fontSize: { xs: '1rem', sm: '1.2rem' },
+                            lineHeight: 1.2,
+                          }}
                         >
                           {item.value}
                         </Typography>
@@ -983,22 +1037,15 @@ const HirerDashboardPage = () => {
           {/* Metric Cards - Futuristic & Mobile-Optimized */}
           <Box
             sx={{
-              display: { xs: 'flex', sm: 'grid' },
+              display: 'grid',
               gridTemplateColumns: {
+                xs: 'repeat(2, minmax(0, 1fr))',
                 sm: 'repeat(2, 1fr)',
                 md: 'repeat(4, 1fr)',
               },
-              gap: { xs: 1.5, sm: 3, md: 2.5, lg: 2 },
-              overflowX: { xs: 'auto', sm: 'visible' },
-              scrollSnapType: { xs: 'x mandatory', sm: 'none' },
-              WebkitOverflowScrolling: 'touch',
-              '&::-webkit-scrollbar': { display: 'none' },
-              msOverflowStyle: 'none',
-              scrollbarWidth: 'none',
-              mb: 4,
+              gap: { xs: 1, sm: 2.25, md: 2, lg: 2 },
+              mb: { xs: 2.25, md: 4 },
               pb: { xs: 1, sm: 0 },
-              mx: { xs: -1.5, sm: 0 },
-              px: { xs: 1.5, sm: 0 },
             }}
           >
             {[
@@ -1071,8 +1118,7 @@ const HirerDashboardPage = () => {
               >
                 <Box
                   sx={{
-                    minWidth: { xs: '75vw', sm: 'auto' },
-                    scrollSnapAlign: 'start',
+                    minWidth: 'auto',
                   }}
                 >
                   <Tooltip title={card.tooltip} arrow placement="top">
@@ -1094,8 +1140,8 @@ const HirerDashboardPage = () => {
                       <Paper
                         elevation={0}
                         sx={{
-                          p: { xs: 2.5, sm: 2.5 },
-                          borderRadius: { xs: 4, sm: 2.5 },
+                          p: { xs: 1.2, sm: 2.25 },
+                          borderRadius: { xs: 2.5, sm: 2.5 },
                           background:
                             theme.palette.mode === 'dark'
                               ? `linear-gradient(155deg, ${alpha(card.tone, 0.2)} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`
@@ -1112,7 +1158,7 @@ const HirerDashboardPage = () => {
                           color: 'text.primary',
                           position: 'relative',
                           overflow: 'hidden',
-                          minHeight: { xs: 130, sm: 132 },
+                          minHeight: { xs: 94, sm: 126, md: 132 },
                           display: 'flex',
                           flexDirection: 'column',
                           justifyContent: 'space-between',
@@ -1150,10 +1196,10 @@ const HirerDashboardPage = () => {
                               theme.palette.mode === 'dark'
                                 ? alpha('#fff', 0.8)
                                 : 'text.secondary',
-                            mb: 1,
+                            mb: 0.55,
                             textTransform: 'uppercase',
                             letterSpacing: 0.5,
-                            fontSize: '0.75rem',
+                            fontSize: { xs: '0.66rem', sm: '0.75rem' },
                           }}
                         >
                           {card.title}
@@ -1164,10 +1210,12 @@ const HirerDashboardPage = () => {
                             fontWeight: 800,
                             letterSpacing: -0.5,
                             fontSize: {
-                              xs: '1.75rem',
-                              sm: '1.5rem',
-                              md: '2rem',
+                              xs: '1.02rem',
+                              sm: '1.45rem',
+                              md: '1.75rem',
                             },
+                            lineHeight: 1.2,
+                            pr: { xs: 5, sm: 6 },
                           }}
                         >
                           {card.value}
@@ -1180,9 +1228,10 @@ const HirerDashboardPage = () => {
                                 ? alpha('#fff', 0.5)
                                 : 'text.secondary',
                             mt: 0.5,
+                            display: { xs: 'none', sm: 'inline' },
                           }}
                         >
-                          Tap to open details
+                          Open details
                         </Typography>
                       </Paper>
                     </ButtonBase>
@@ -1192,18 +1241,18 @@ const HirerDashboardPage = () => {
             ))}
           </Box>
           {/* TWO CHART SECTIONS - LC Portal Style */}
-          <Grid container spacing={{ xs: 1.5, sm: 3, md: 2.5, lg: 2 }}>
+          <Grid container spacing={{ xs: 0.9, sm: 2.5, md: 2, lg: 2 }}>
             {/* Bills Chart / Spending Chart */}
             <Grid item xs={12} md={6}>
               <Paper
                 elevation={0}
                 sx={{
-                  p: { xs: 1.5, sm: 2, md: 3 },
+                  p: { xs: 1.05, sm: 2, md: 3 },
                   borderRadius: 2.5,
                   bgcolor: alpha(theme.palette.background.paper, 0.9),
                   border: '1px solid',
                   borderColor: alpha(theme.palette.success.main, 0.24),
-                  height: { xs: 280, sm: 350 },
+                  height: { xs: 218, sm: 350 },
                 }}
               >
                 <Typography
@@ -1212,13 +1261,13 @@ const HirerDashboardPage = () => {
                   sx={{
                     mb: { xs: 1.5, sm: 3 },
                     color: 'text.primary',
-                    fontSize: { xs: '1rem', sm: '1.25rem' },
+                    fontSize: { xs: '0.95rem', sm: '1.25rem' },
                   }}
                 >
                   Jobs Overview
                 </Typography>
                 {/* Recharts BarChart replacing manual Box bars */}
-                <Box sx={{ height: 250, width: '100%' }}>
+                <Box sx={{ height: { xs: 170, sm: 205 }, width: '100%' }}>
                   {summaryData.totalSpent > 0 ||
                   summaryData.completedJobs > 0 ||
                   summaryData.activeJobs > 0 ? (
@@ -1308,12 +1357,12 @@ const HirerDashboardPage = () => {
               <Paper
                 elevation={0}
                 sx={{
-                  p: { xs: 1.5, sm: 2, md: 3 },
+                  p: { xs: 1.05, sm: 2, md: 3 },
                   borderRadius: 2.5,
                   bgcolor: alpha(theme.palette.background.paper, 0.9),
                   border: '1px solid',
                   borderColor: alpha(theme.palette.info.main, 0.24),
-                  height: { xs: 280, sm: 350 },
+                  height: { xs: 218, sm: 350 },
                 }}
               >
                 <Typography
@@ -1322,7 +1371,7 @@ const HirerDashboardPage = () => {
                   sx={{
                     mb: { xs: 1.5, sm: 3 },
                     color: 'text.primary',
-                    fontSize: { xs: '1rem', sm: '1.25rem' },
+                    fontSize: { xs: '0.95rem', sm: '1.25rem' },
                   }}
                 >
                   Applications Overview
@@ -1364,10 +1413,10 @@ const HirerDashboardPage = () => {
                         sx={{
                           display: 'flex',
                           flexDirection: 'column',
-                          gap: 2,
+                          gap: 1,
                           justifyContent: 'center',
                           pr: { xs: 0, sm: 4 },
-                          pb: { xs: 2, sm: 0 },
+                          pb: { xs: 1, sm: 0 },
                         }}
                       >
                         <Box
@@ -1424,11 +1473,14 @@ const HirerDashboardPage = () => {
                           alignItems: 'center',
                           justifyContent: 'center',
                           position: 'relative',
-                          minHeight: { xs: 160, sm: 220 },
+                          minHeight: { xs: 138, sm: 220 },
                         }}
                       >
                         {appDonutData.length > 0 ? (
-                          <ResponsiveContainer width="100%" height={220}>
+                          <ResponsiveContainer
+                            width="100%"
+                            height={isCompactMobile ? 170 : 220}
+                          >
                             <PieChart>
                               <Pie
                                 data={appDonutData}
@@ -1461,8 +1513,8 @@ const HirerDashboardPage = () => {
                         ) : (
                           <Box
                             sx={{
-                              width: 170,
-                              height: 170,
+                              width: 138,
+                              height: 138,
                               borderRadius: '50%',
                               bgcolor: 'action.disabledBackground',
                               display: 'flex',
@@ -1507,7 +1559,7 @@ const HirerDashboardPage = () => {
           </Grid>
 
           {/* Recent Activity Feed (Phase 3) */}
-          <Box sx={{ mt: { xs: 2, sm: 3 } }}>
+          <Box sx={{ mt: { xs: 1.4, sm: 3 } }}>
             <RecentActivityFeed
               jobs={activeJobs || []}
               applications={applicationRecords || {}}
@@ -1570,7 +1622,11 @@ const HirerDashboardPage = () => {
   return (
     <PageCanvas
       disableContainer
-      sx={{ pt: { xs: 1, md: 4 }, pb: { xs: 10, md: 6 }, overflowX: 'clip' }}
+      sx={{
+        pt: { xs: 0.5, md: 4 },
+        pb: { xs: withBottomNavSafeArea(24), md: 6 },
+        overflowX: 'clip',
+      }}
     >
       <PullToRefresh onRefresh={() => fetchDashboardData('manual-refresh')}>
         <Grow in timeout={500}>
@@ -1657,8 +1713,8 @@ const HirerDashboardPage = () => {
             <Container
               maxWidth="xl"
               sx={{
-                py: { xs: 2, md: 4 },
-                px: { xs: 0.75, sm: 3, md: 4 },
+                py: { xs: 1.5, md: 4 },
+                px: { xs: 0.5, sm: 3, md: 4 },
                 color: 'text.primary',
                 width: '100%',
                 minWidth: 0,
@@ -1680,7 +1736,7 @@ const HirerDashboardPage = () => {
                 display: { xs: 'none', sm: 'flex' },
                 position: 'fixed',
                 bottom: {
-                  xs: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px) + 12px)`,
+                  xs: withBottomNavSafeArea(12),
                   md: 32,
                 },
                 right: { xs: 16, md: 32 },
@@ -1717,8 +1773,8 @@ const HirerDashboardPage = () => {
                 position: 'fixed',
                 left: 0,
                 right: 0,
-                bottom: 0,
-                zIndex: theme.zIndex.appBar + 2,
+                bottom: withBottomNavSafeArea(0),
+                zIndex: Z_INDEX.stickyCta,
                 px: 1,
                 py: 1,
                 gap: 1,
@@ -1730,7 +1786,7 @@ const HirerDashboardPage = () => {
                 fullWidth
                 variant="outlined"
                 color="secondary"
-                sx={{ minHeight: 42 }}
+                sx={{ minHeight: TOUCH_TARGET_MIN }}
                 startIcon={<RefreshIcon />}
                 onClick={handleRefresh}
                 disabled={refreshing}
@@ -1742,7 +1798,7 @@ const HirerDashboardPage = () => {
                 variant="contained"
                 color="secondary"
                 sx={{
-                  minHeight: 42,
+                  minHeight: TOUCH_TARGET_MIN,
                   boxShadow: '0 2px 8px rgba(255,215,0,0.35)',
                 }}
                 startIcon={<PostAddIcon />}

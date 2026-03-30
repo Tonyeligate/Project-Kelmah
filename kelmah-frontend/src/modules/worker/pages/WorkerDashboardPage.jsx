@@ -71,7 +71,6 @@ import InboxOutlinedIcon from '@mui/icons-material/InboxOutlined';
 import { useVisibilityPolling } from '../../../hooks/useVisibilityPolling';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 import PageCanvas from '@/modules/common/components/PageCanvas';
-import { HEADER_HEIGHT_MOBILE, Z_INDEX } from '../../../constants/layout';
 
 /* ---------- Keyframes for spin animation ---------- */
 const spinKeyframes = {
@@ -664,7 +663,7 @@ const WorkerDashboardPage = () => {
   return (
     <PageCanvas
       disableContainer
-      sx={{ pt: { xs: 1, md: 4 }, pb: { xs: 10, md: 6 } }}
+      sx={{ pt: { xs: 0.25, md: 4 }, pb: { xs: 10, md: 6 } }}
     >
       <PullToRefresh onRefresh={fetchDashboardData}>
         <Box
@@ -675,8 +674,8 @@ const WorkerDashboardPage = () => {
                 : 'linear-gradient(180deg, #f7f9fd 0%, #eef3fa 55%, #edf2fb 100%)',
             minHeight: '100dvh',
             fontFamily: dashboardFontFamily,
-            p: { xs: 1, sm: 2, md: 3 },
-            pb: 'calc(env(safe-area-inset-bottom, 0px) + 12px)',
+            p: { xs: 0.6, sm: 2, md: 3 },
+            pb: 'calc(env(safe-area-inset-bottom, 0px) + 8px)',
           }}
         >
           <Helmet>
@@ -747,9 +746,9 @@ const WorkerDashboardPage = () => {
             <Paper
               elevation={0}
               sx={{
-                mb: { xs: 2, md: 3 },
-                p: { xs: 1.5, sm: 2.75, md: 3.25 },
-                borderRadius: { xs: 3, md: 4 },
+                mb: { xs: 1, md: 3 },
+                p: { xs: 1, sm: 2.75, md: 3.25 },
+                borderRadius: { xs: 2.5, md: 4 },
                 border: '1px solid',
                 borderColor:
                   theme.palette.mode === 'dark'
@@ -763,9 +762,9 @@ const WorkerDashboardPage = () => {
                   theme.palette.mode === 'dark'
                     ? '0 18px 34px rgba(0,0,0,0.42)'
                     : '0 14px 28px rgba(15,23,42,0.10)',
-                position: { xs: 'sticky', md: 'relative' },
-                top: { xs: HEADER_HEIGHT_MOBILE, md: 'auto' },
-                zIndex: { xs: Z_INDEX.sticky, md: 1 },
+                position: 'relative',
+                top: 'auto',
+                zIndex: 1,
                 overflow: 'hidden',
                 '&::after': {
                   content: '""',
@@ -784,7 +783,7 @@ const WorkerDashboardPage = () => {
               }}
             >
               <Stack
-                spacing={{ xs: 1.5, md: 2.25 }}
+                spacing={{ xs: 1, md: 2.25 }}
                 sx={{ position: 'relative', zIndex: 1 }}
               >
                 <Box
@@ -812,13 +811,15 @@ const WorkerDashboardPage = () => {
                       variant="body2"
                       color="text.secondary"
                       sx={{
-                        mt: 0.75,
+                        mt: 0.35,
                         maxWidth: 620,
-                        fontSize: { xs: '0.94rem', md: '1rem' },
+                        fontSize: { xs: '0.84rem', md: '1rem' },
+                        lineHeight: { xs: 1.4, md: 1.5 },
                       }}
                     >
-                      Your talent cockpit: watch your pipeline, earnings
-                      momentum, and the next best jobs to apply for.
+                      {isCompactMobile
+                        ? 'Pipeline, earnings, and the next best jobs at a glance.'
+                        : 'Your talent cockpit: watch your pipeline, earnings momentum, and the next best jobs to apply for.'}
                     </Typography>
                   </Box>
                   <Tooltip title="Refresh dashboard data" arrow>
@@ -853,7 +854,7 @@ const WorkerDashboardPage = () => {
                   </Tooltip>
                 </Box>
 
-                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                <Box sx={{ display: 'flex', gap: 0.65, flexWrap: 'wrap' }}>
                   <Chip
                     label={`Applications ${stats.applications}`}
                     size="small"
@@ -875,7 +876,7 @@ const WorkerDashboardPage = () => {
 
                 <Box
                   sx={{
-                    p: 1.25,
+                    p: { xs: 0.9, md: 1.25 },
                     borderRadius: 2,
                     border: '1px solid',
                     borderColor: alpha(theme.palette.primary.main, 0.3),
@@ -884,15 +885,21 @@ const WorkerDashboardPage = () => {
                       theme.palette.mode === 'dark' ? 0.12 : 0.08,
                     ),
                     display: 'flex',
-                    alignItems: 'center',
+                    flexDirection: { xs: 'column', sm: 'row' },
+                    alignItems: { xs: 'stretch', sm: 'center' },
                     justifyContent: 'space-between',
-                    gap: 1,
-                    flexWrap: 'wrap',
+                    gap: 0.85,
+                    flexWrap: 'nowrap',
                   }}
                 >
                   <Typography
                     variant="body2"
-                    sx={{ color: 'text.primary', fontWeight: 700 }}
+                    sx={{
+                      color: 'text.primary',
+                      fontWeight: 700,
+                      lineHeight: 1.4,
+                      fontSize: { xs: '0.81rem', sm: '0.875rem' },
+                    }}
                   >
                     Next best action: review pending applications before opening
                     new searches.
@@ -904,7 +911,8 @@ const WorkerDashboardPage = () => {
                     sx={{
                       textTransform: 'none',
                       fontWeight: 700,
-                      minHeight: 44,
+                      minHeight: 40,
+                      width: { xs: '100%', sm: 'auto' },
                     }}
                   >
                     Open Pipeline
@@ -985,7 +993,7 @@ const WorkerDashboardPage = () => {
                   </Button>
                 </Box>
 
-                <Grid container spacing={1.25}>
+                <Grid container spacing={1}>
                   {insightCards.map((item, index) => (
                     <Fade
                       in
@@ -993,10 +1001,15 @@ const WorkerDashboardPage = () => {
                       style={{ transitionDelay: `${120 + index * 90}ms` }}
                       key={`hero-fade-${item.title}`}
                     >
-                      <Grid item xs={12} sm={4} key={`hero-${item.title}`}>
+                      <Grid
+                        item
+                        xs={index < 2 ? 6 : 12}
+                        sm={4}
+                        key={`hero-${item.title}`}
+                      >
                         <Box
                           sx={{
-                            p: 1.5,
+                            p: { xs: 0.95, sm: 1.5 },
                             borderRadius: 2,
                             border: '1px solid',
                             borderColor: alpha(item.tone, 0.36),
@@ -1018,7 +1031,12 @@ const WorkerDashboardPage = () => {
                           </Typography>
                           <Typography
                             variant="h6"
-                            sx={{ fontWeight: 800, mt: 0.25 }}
+                            sx={{
+                              fontWeight: 800,
+                              mt: 0.2,
+                              fontSize: { xs: '0.95rem', sm: '1.2rem' },
+                              lineHeight: 1.2,
+                            }}
                           >
                             {item.value}
                           </Typography>
@@ -1041,8 +1059,8 @@ const WorkerDashboardPage = () => {
               <Paper
                 elevation={0}
                 sx={{
-                  p: 3,
-                  mb: 4,
+                  p: { xs: 2, sm: 3 },
+                  mb: { xs: 2, sm: 4 },
                   borderRadius: 2,
                   backgroundColor: 'background.paper',
                   border: '1px solid',
@@ -1101,8 +1119,8 @@ const WorkerDashboardPage = () => {
                 {!isLoading && (
                   <Box
                     sx={{
-                      mb: 3,
-                      p: { xs: 1.5, sm: 2 },
+                      mb: { xs: 2, sm: 2.5 },
+                      p: { xs: 1.05, sm: 2 },
                       borderRadius: 2.5,
                       border: '1px solid',
                       borderColor: 'divider',
@@ -1116,7 +1134,7 @@ const WorkerDashboardPage = () => {
                     <Typography
                       variant="body2"
                       fontWeight={600}
-                      sx={{ mb: 1.5, color: 'text.primary' }}
+                      sx={{ mb: { xs: 1, sm: 1.5 }, color: 'text.primary' }}
                     >
                       Quick Actions
                     </Typography>
@@ -1127,8 +1145,8 @@ const WorkerDashboardPage = () => {
                 {/* Metric Cards - 4 colored cards LC Portal style */}
                 <Grid
                   container
-                  spacing={{ xs: 1.5, sm: 2.5, md: 3, lg: 3 }}
-                  sx={{ mb: 4 }}
+                  spacing={{ xs: 1.25, sm: 2.25, md: 2, lg: 2 }}
+                  sx={{ mb: { xs: 2.5, sm: 4 } }}
                 >
                   {metricCards.map((card, index) => (
                     <Fade
@@ -1137,7 +1155,7 @@ const WorkerDashboardPage = () => {
                       style={{ transitionDelay: `${200 + index * 80}ms` }}
                       key={`metric-fade-${card.title}`}
                     >
-                      <Grid item xs={12} sm={6} md={6} lg={4} key={card.title}>
+                      <Grid item xs={6} sm={6} md={6} lg={3} key={card.title}>
                         <Tooltip title={card.tooltip} arrow placement="top">
                           <ButtonBase
                             onClick={card.onClick}
@@ -1157,7 +1175,7 @@ const WorkerDashboardPage = () => {
                             <Paper
                               elevation={0}
                               sx={{
-                                p: { xs: 1.5, sm: 2.5 },
+                                p: { xs: 1.15, sm: 2.25 },
                                 borderRadius: 2.5,
                                 background: `linear-gradient(155deg, ${alpha(card.tone, theme.palette.mode === 'dark' ? 0.2 : 0.14)} 0%, ${alpha(theme.palette.background.paper, 0.98)} 62%, ${alpha(theme.palette.background.paper, 0.95)} 100%)`,
                                 border: '1px solid',
@@ -1165,7 +1183,7 @@ const WorkerDashboardPage = () => {
                                 color: 'text.primary',
                                 position: 'relative',
                                 overflow: 'hidden',
-                                minHeight: { xs: 96, sm: 132, md: 144 },
+                                minHeight: { xs: 88, sm: 124, md: 132 },
                                 display: 'flex',
                                 flexDirection: 'column',
                                 justifyContent: 'space-between',
@@ -1183,7 +1201,7 @@ const WorkerDashboardPage = () => {
                               <Box
                                 sx={{
                                   position: 'absolute',
-                                  right: 16,
+                                  right: { xs: 10, sm: 16 },
                                   top: '50%',
                                   transform: 'translateY(-50%)',
                                 }}
@@ -1197,7 +1215,8 @@ const WorkerDashboardPage = () => {
                                 sx={{
                                   fontWeight: 600,
                                   color: 'text.secondary',
-                                  mb: 1,
+                                  mb: 0.75,
+                                  fontSize: { xs: '0.75rem', sm: '0.875rem' },
                                 }}
                               >
                                 {card.title}
@@ -1207,19 +1226,24 @@ const WorkerDashboardPage = () => {
                                 sx={{
                                   fontWeight: 700,
                                   fontSize: {
-                                    xs: '1.25rem',
+                                    xs: '1.05rem',
                                     sm: '1.5rem',
-                                    md: '2rem',
+                                    md: '1.8rem',
                                   },
+                                  lineHeight: 1.2,
+                                  pr: { xs: 4, sm: 7 },
                                 }}
                               >
                                 {card.value}
                               </Typography>
                               <Typography
                                 variant="caption"
-                                sx={{ color: 'text.secondary' }}
+                                sx={{
+                                  color: 'text.secondary',
+                                  display: { xs: 'none', sm: 'inline' },
+                                }}
                               >
-                                Tap to open details
+                                Open details
                               </Typography>
                             </Paper>
                           </ButtonBase>
@@ -1235,8 +1259,8 @@ const WorkerDashboardPage = () => {
             {!isLoading && (
               <Box
                 sx={{
-                  mb: 3,
-                  p: { xs: 1.5, sm: 2 },
+                  mb: { xs: 2, sm: 3 },
+                  p: { xs: 1.05, sm: 2 },
                   borderRadius: 2.5,
                   border: '1px solid',
                   borderColor: 'divider',
@@ -1249,7 +1273,7 @@ const WorkerDashboardPage = () => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    mb: 1.5,
+                    mb: { xs: 1, sm: 1.5 },
                   }}
                 >
                   <Typography
@@ -1269,11 +1293,11 @@ const WorkerDashboardPage = () => {
                   </Button>
                 </Box>
                 {recsLoading ? (
-                  <Grid container spacing={1.5}>
+                  <Grid container spacing={1}>
                     {[1, 2, 3].map((i) => (
                       <Grid
                         item
-                        xs={12}
+                        xs={6}
                         sm={6}
                         md={4}
                         key={`recommendation-skeleton-${i}`}
@@ -1283,14 +1307,16 @@ const WorkerDashboardPage = () => {
                     ))}
                   </Grid>
                 ) : recommendations.length > 0 ? (
-                  <Grid container spacing={1.5}>
-                    {recommendations.slice(0, 8).map((job, index) => (
-                      <Grid item xs={12} sm={6} md={3} key={job.id}>
+                  <Grid container spacing={1}>
+                    {recommendations
+                      .slice(0, isCompactMobile ? 4 : 8)
+                      .map((job, index) => (
+                      <Grid item xs={6} sm={6} md={3} key={job.id}>
                         <Paper
                           elevation={0}
                           component={ButtonBase}
                           sx={{
-                            p: 2,
+                            p: { xs: 1, sm: 2 },
                             borderRadius: 2,
                             border: '1px solid',
                             borderColor: 'divider',
@@ -1316,7 +1342,14 @@ const WorkerDashboardPage = () => {
                           <Typography
                             variant="subtitle2"
                             fontWeight={600}
-                            noWrap
+                            sx={{
+                              lineHeight: 1.2,
+                              fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                              display: '-webkit-box',
+                              WebkitLineClamp: isCompactMobile ? 2 : 1,
+                              WebkitBoxOrient: 'vertical',
+                              overflow: 'hidden',
+                            }}
                           >
                             {job.title}
                           </Typography>
@@ -1324,19 +1357,22 @@ const WorkerDashboardPage = () => {
                             variant="caption"
                             color="text.secondary"
                             noWrap
+                            sx={{ fontSize: { xs: '0.68rem', sm: '0.75rem' } }}
                           >
                             {job.employer?.name || 'Employer'} |{' '}
                             {job.location || 'Remote'}
                           </Typography>
                           <Box
                             sx={{
-                              mt: 1,
+                              mt: 0.75,
                               display: 'flex',
                               gap: 0.5,
                               flexWrap: 'wrap',
                             }}
                           >
-                            {(job.skills || []).slice(0, 3).map((skill) => (
+                            {(job.skills || [])
+                              .slice(0, isCompactMobile ? 1 : 3)
+                              .map((skill) => (
                               <Box
                                 key={skill}
                                 sx={{
@@ -1344,7 +1380,7 @@ const WorkerDashboardPage = () => {
                                   py: 0.25,
                                   borderRadius: 1,
                                   bgcolor: 'action.hover',
-                                  fontSize: '0.7rem',
+                                  fontSize: { xs: '0.64rem', sm: '0.7rem' },
                                 }}
                               >
                                 {skill}
@@ -1356,7 +1392,7 @@ const WorkerDashboardPage = () => {
                               variant="body2"
                               fontWeight={600}
                               color="primary"
-                              sx={{ mt: 1 }}
+                              sx={{ mt: 0.75, fontSize: { xs: '0.78rem', sm: '0.875rem' } }}
                             >
                               {job.currency || 'GHS'}{' '}
                               {typeof job.budget === 'object'
@@ -1372,7 +1408,7 @@ const WorkerDashboardPage = () => {
                   <Paper
                     elevation={0}
                     sx={{
-                      p: 3,
+                      p: { xs: 2, sm: 3 },
                       textAlign: 'center',
                       borderRadius: 2,
                       border: '1px solid',
@@ -1511,14 +1547,14 @@ const WorkerDashboardPage = () => {
               </Grid>
             ) : (
               /* Charts Section - denser desktop analytics row */
-              <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
+              <Grid container spacing={{ xs: 0.9, sm: 2, md: 2 }}>
                 {/* Earnings Overview Chart */}
                 <Grid item xs={12} md={4}>
                   <Grow in timeout={460}>
                     <Paper
                       elevation={0}
                       sx={{
-                        p: { xs: 1.5, sm: 2, md: 3 },
+                        p: { xs: 1.05, sm: 2, md: 3 },
                         borderRadius: 2.5,
                         backgroundColor: alpha(
                           theme.palette.background.paper,
@@ -1534,12 +1570,12 @@ const WorkerDashboardPage = () => {
                           color: 'text.primary',
                           fontWeight: 600,
                           mb: 2,
-                          fontSize: { xs: '1rem', sm: '1.25rem' },
+                          fontSize: { xs: '0.96rem', sm: '1.25rem' },
                         }}
                       >
                         Earnings Overview
                       </Typography>
-                      <Box sx={{ height: { xs: 220, md: 280 } }}>
+                      <Box sx={{ height: { xs: 174, md: 280 } }}>
                         {earningsData.some((d) => d.value > 0) ? (
                           <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
@@ -1620,7 +1656,7 @@ const WorkerDashboardPage = () => {
                     <Paper
                       elevation={0}
                       sx={{
-                        p: { xs: 1.5, sm: 2, md: 3 },
+                        p: { xs: 1.05, sm: 2, md: 3 },
                         borderRadius: 2.5,
                         backgroundColor: alpha(
                           theme.palette.background.paper,
@@ -1636,12 +1672,12 @@ const WorkerDashboardPage = () => {
                           color: 'text.primary',
                           fontWeight: 600,
                           mb: 2,
-                          fontSize: { xs: '1rem', sm: '1.25rem' },
+                          fontSize: { xs: '0.96rem', sm: '1.25rem' },
                         }}
                       >
                         Applications Overview
                       </Typography>
-                      <Box sx={{ height: { xs: 220, md: 280 } }}>
+                      <Box sx={{ height: { xs: 174, md: 280 } }}>
                         {applicationsData.some((d) => d.value > 0) ? (
                           <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
@@ -1720,7 +1756,7 @@ const WorkerDashboardPage = () => {
                     <Paper
                       elevation={0}
                       sx={{
-                        p: { xs: 1.5, sm: 2, md: 3 },
+                        p: { xs: 1.05, sm: 2, md: 3 },
                         borderRadius: 2.5,
                         backgroundColor: alpha(
                           theme.palette.background.paper,
@@ -1737,12 +1773,12 @@ const WorkerDashboardPage = () => {
                           color: 'text.primary',
                           fontWeight: 600,
                           mb: 2,
-                          fontSize: { xs: '1rem', sm: '1.25rem' },
+                          fontSize: { xs: '0.96rem', sm: '1.25rem' },
                         }}
                       >
                         Pipeline Health
                       </Typography>
-                      <Stack spacing={1.4}>
+                      <Stack spacing={1.1}>
                         {applicationsData.map((item) => (
                           <Box key={`desktop-${item.name}`}>
                             <Box

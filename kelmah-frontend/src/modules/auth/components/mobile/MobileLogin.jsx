@@ -35,6 +35,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, Link as RouterLink, useLocation } from 'react-router-dom';
 import logoIcon from '../../../../assets/images/logo.png';
 import { resolveLoginRedirectPath } from '../../../../utils/authRedirect';
+import { withSafeAreaBottom, withSafeAreaTop } from '@/utils/safeArea';
 
 const MobileLogin = ({ registrationSuccess = false }) => {
   const navigate = useNavigate();
@@ -139,16 +140,17 @@ const MobileLogin = ({ registrationSuccess = false }) => {
   return (
     <Box
       sx={{
-        minHeight: '100vh',
+        minHeight: '100dvh',
         backgroundColor: theme.palette.background.default,
         display: 'flex',
         flexDirection: 'column',
-        px: 3,
-        py: `max(24px, env(safe-area-inset-top, 0px))`,
+        px: 2,
+        pt: withSafeAreaTop(12),
+        pb: withSafeAreaBottom(16),
       }}
     >
       {/* Header with Logo */}
-      <Box sx={{ textAlign: 'center', mb: 2, mt: 1 }}>
+      <Box sx={{ textAlign: 'center', mb: 1.5, mt: 0.5 }}>
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -197,14 +199,14 @@ const MobileLogin = ({ registrationSuccess = false }) => {
           sx={{
             backgroundColor: alpha(theme.palette.background.paper, 0.9),
             borderRadius: 3,
-            p: 3,
+            p: 2.25,
             border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
             boxShadow: `0 12px 32px ${alpha(theme.palette.common.black, isDark ? 0.28 : 0.08)}`,
           }}
           aria-label="Mobile login form"
         >
           {/* Back button & Title */}
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
             <IconButton
               onClick={() => navigate('/')}
               sx={{
@@ -245,7 +247,7 @@ const MobileLogin = ({ registrationSuccess = false }) => {
             spacing={1}
             useFlexGap
             flexWrap="wrap"
-            sx={{ mb: 2 }}
+            sx={{ mb: 1.5 }}
           >
             <Chip label="Find work faster" size="small" variant="outlined" />
             <Chip label="Track applications" size="small" variant="outlined" />
@@ -483,7 +485,7 @@ const MobileLogin = ({ registrationSuccess = false }) => {
           <Box
             sx={{
               textAlign: 'center',
-              mt: 3,
+              mt: 2,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -518,9 +520,6 @@ const MobileLogin = ({ registrationSuccess = false }) => {
           </Box>
         </Box>
       </motion.div>
-
-      {/* Spacer for bottom safe area */}
-      <Box sx={{ pb: 'env(safe-area-inset-bottom, 0px)' }} />
     </Box>
   );
 };

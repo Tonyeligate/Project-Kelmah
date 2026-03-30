@@ -329,6 +329,30 @@ const LegacyMessageThreadRedirect = () => {
   return <Navigate to={`/messages${query ? `?${query}` : ''}`} replace />;
 };
 
+const LegacyContractAliasRedirect = ({ mode = 'details' }) => {
+  const { id } = useParams();
+
+  if (!id) {
+    return <Navigate to="/contracts" replace />;
+  }
+
+  if (mode === 'edit') {
+    return <Navigate to={`/contracts/${id}/edit`} replace />;
+  }
+
+  return <Navigate to={`/contracts/${id}`} replace />;
+};
+
+const LegacyPaymentsEscrowRedirect = () => {
+  const { escrowId } = useParams();
+
+  if (!escrowId) {
+    return <Navigate to="/payments" replace />;
+  }
+
+  return <Navigate to={`/payment/escrow/${escrowId}`} replace />;
+};
+
 const routes = [
   {
     path: '/',
@@ -472,6 +496,38 @@ const routes = [
                 <PaymentsPage />
               </PaymentProvider>
             </RouteErrorBoundary>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'payments/settings',
+        element: (
+          <ProtectedRoute roles={['admin']}>
+            <Navigate to="/payment/settings" replace />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'payments/methods',
+        element: (
+          <ProtectedRoute roles={['worker', 'admin']}>
+            <Navigate to="/payment/methods" replace />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'payments/bill',
+        element: (
+          <ProtectedRoute roles={['worker', 'hirer', 'admin']}>
+            <Navigate to="/payment/bill" replace />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'payments/escrow/:escrowId',
+        element: (
+          <ProtectedRoute roles={['worker', 'hirer', 'admin']}>
+            <LegacyPaymentsEscrowRedirect />
           </ProtectedRoute>
         ),
       },
@@ -1048,8 +1104,32 @@ const routes = [
         ),
       },
       {
+        path: 'profile/edit',
+        element: (
+          <ProtectedRoute>
+            <RoleAliasRedirect
+              workerPath="/worker/profile/edit"
+              hirerPath="/hirer/profile"
+              adminPath="/settings"
+            />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'profile/settings',
+        element: (
+          <ProtectedRoute>
+            <Navigate to="/settings" replace />
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: 'profile/:workerId',
         element: <WorkerProfilePage />,
+      },
+      {
+        path: 'profiles/:workerId',
+        element: <LegacyWorkerProfileRedirect />,
       },
       {
         path: 'wallet',
@@ -1176,6 +1256,38 @@ const routes = [
             ),
           },
         ],
+      },
+      {
+        path: 'contracts/new',
+        element: (
+          <ProtectedRoute roles={['hirer', 'admin']}>
+            <Navigate to="/contracts/create" replace />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'contracts/:id/details',
+        element: (
+          <ProtectedRoute roles={['worker', 'hirer', 'admin']}>
+            <LegacyContractAliasRedirect />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'contract/:id/edit',
+        element: (
+          <ProtectedRoute roles={['hirer', 'admin']}>
+            <LegacyContractAliasRedirect mode="edit" />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'contract/:id',
+        element: (
+          <ProtectedRoute roles={['worker', 'hirer', 'admin']}>
+            <LegacyContractAliasRedirect />
+          </ProtectedRoute>
+        ),
       },
 
       // ==========================================

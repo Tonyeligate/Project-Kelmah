@@ -59,6 +59,8 @@ import { Helmet } from 'react-helmet-async';
 import { useVisibilityPolling } from '../../../hooks/useVisibilityPolling';
 import PageCanvas from '../../common/components/PageCanvas';
 import { useBreakpointDown } from '@/hooks/useResponsive';
+import { TOUCH_TARGET_MIN, Z_INDEX } from '@/constants/layout';
+import { withBottomNavSafeArea } from '@/utils/safeArea';
 
 // Job status steps for worker
 const workerSteps = [
@@ -381,11 +383,11 @@ const QuickJobTrackingPage = () => {
   return (
     <PageCanvas
       disableContainer
-      sx={{ pt: { xs: 1.25, md: 4 }, pb: { xs: 4, md: 6 } }}
+      sx={{ pt: { xs: 1.25, md: 4 }, pb: { xs: withBottomNavSafeArea(12), md: 6 } }}
     >
       <Container
         maxWidth="sm"
-        sx={{ py: { xs: 1.5, md: 3 }, pb: { xs: 10, md: 3 } }}
+        sx={{ py: { xs: 1.5, md: 3 }, pb: { xs: withBottomNavSafeArea(72), md: 3 } }}
       >
         <Helmet>
           <title>Track Quick Job | Kelmah</title>
@@ -727,10 +729,9 @@ const QuickJobTrackingPage = () => {
               position: 'fixed',
               left: 0,
               right: 0,
-              bottom: 0,
-              zIndex: 1300,
+              bottom: withBottomNavSafeArea(0),
+              zIndex: Z_INDEX.stickyCta,
               p: 1,
-              pb: 'calc(8px + env(safe-area-inset-bottom, 0px))',
               bgcolor: 'background.paper',
               borderTop: '1px solid',
               borderColor: 'divider',
@@ -745,7 +746,7 @@ const QuickJobTrackingPage = () => {
                 color="error"
                 onClick={() => setCancelDialogOpen(true)}
                 disabled={actionLoading}
-                sx={{ minHeight: 44 }}
+                sx={{ minHeight: TOUCH_TARGET_MIN }}
               >
                 Cancel
               </Button>
@@ -762,7 +763,7 @@ const QuickJobTrackingPage = () => {
                   mobilePrimaryAction.icon
                 )
               }
-              sx={{ minHeight: 44, fontWeight: 700 }}
+              sx={{ minHeight: TOUCH_TARGET_MIN, fontWeight: 700 }}
             >
               {mobilePrimaryAction.label}
             </Button>
