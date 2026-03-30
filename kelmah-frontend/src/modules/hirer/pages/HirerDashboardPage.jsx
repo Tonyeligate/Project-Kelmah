@@ -1,6 +1,37 @@
-import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  useMemo,
+} from 'react';
 import PullToRefresh from '../../../components/common/PullToRefresh';
-import { Box, Container, Grid, Paper, ButtonBase, Typography, Button, CircularProgress, Alert, IconButton, Tooltip, Chip, LinearProgress, Stack, useTheme, Fade, Grow, SpeedDial, SpeedDialAction, SpeedDialIcon, Breadcrumbs, Link as MUILink, Skeleton, alpha } from '@mui/material';
+import {
+  Box,
+  Container,
+  Grid,
+  Paper,
+  ButtonBase,
+  Typography,
+  Button,
+  CircularProgress,
+  Alert,
+  IconButton,
+  Tooltip,
+  Chip,
+  LinearProgress,
+  Stack,
+  useTheme,
+  Fade,
+  Grow,
+  SpeedDial,
+  SpeedDialAction,
+  SpeedDialIcon,
+  Breadcrumbs,
+  Link as MUILink,
+  Skeleton,
+  alpha,
+} from '@mui/material';
 import {
   Work as WorkIcon,
   Payment as PaymentIcon,
@@ -62,13 +93,15 @@ const APPLICATION_REFRESH_TTL_MS = 2 * 60 * 1000; // 2 minutes
 const AUTO_REFRESH_INTERVAL_MS = 60 * 1000; // DASH-001: Auto-refresh every 60 seconds
 const MAX_APPLICATION_HYDRATE_PER_CYCLE = 2;
 
-const isGatewayPressureStatus = (status) => [429, 502, 503, 504].includes(status);
+const isGatewayPressureStatus = (status) =>
+  [429, 502, 503, 504].includes(status);
 
 const HirerDashboardPage = () => {
   const theme = useTheme();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const dashboardFontFamily = '"Plus Jakarta Sans", "Manrope", "Segoe UI", sans-serif';
+  const dashboardFontFamily =
+    '"Plus Jakarta Sans", "Manrope", "Segoe UI", sans-serif';
 
   const [error, setError] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -150,8 +183,8 @@ const HirerDashboardPage = () => {
 
     const hasRenderableSnapshot = Boolean(
       (Array.isArray(activeJobs) && activeJobs.length > 0) ||
-      hirerProfile ||
-      (Array.isArray(completedJobs) && completedJobs.length > 0),
+        hirerProfile ||
+        (Array.isArray(completedJobs) && completedJobs.length > 0),
     );
 
     if (hasRenderableSnapshot) {
@@ -213,19 +246,19 @@ const HirerDashboardPage = () => {
         };
 
         const profilePayload = await runDashboardRequest(() =>
-          dispatch(fetchHirerProfile()).unwrap()
+          dispatch(fetchHirerProfile()).unwrap(),
         );
         const activePayload = await runDashboardRequest(() =>
-          dispatch(fetchHirerJobs('active')).unwrap()
+          dispatch(fetchHirerJobs('active')).unwrap(),
         );
         const completedPayload = await runDashboardRequest(() =>
-          dispatch(fetchHirerJobs('completed')).unwrap()
+          dispatch(fetchHirerJobs('completed')).unwrap(),
         );
         await runDashboardRequest(() =>
-          dispatch(fetchPaymentSummary()).unwrap()
+          dispatch(fetchPaymentSummary()).unwrap(),
         );
         const activityPayload = await runDashboardRequest(() =>
-          dashboardService.getRecentActivity(1, 5)
+          dashboardService.getRecentActivity(1, 5),
         );
 
         fetchPromiseRef.current = null;
@@ -234,7 +267,11 @@ const HirerDashboardPage = () => {
           return;
         }
 
-        setRecentActivity(Array.isArray(activityPayload?.activities) ? activityPayload.activities : []);
+        setRecentActivity(
+          Array.isArray(activityPayload?.activities)
+            ? activityPayload.activities
+            : [],
+        );
 
         clearLoadingTimeout();
         setLoadingTimeout(false);
@@ -247,7 +284,10 @@ const HirerDashboardPage = () => {
 
         const jobIdsToHydrate = getJobsRequiringApplications(activeList);
         if (!gatewayUnderPressure && jobIdsToHydrate.length > 0) {
-          const limitedJobIds = jobIdsToHydrate.slice(0, MAX_APPLICATION_HYDRATE_PER_CYCLE);
+          const limitedJobIds = jobIdsToHydrate.slice(
+            0,
+            MAX_APPLICATION_HYDRATE_PER_CYCLE,
+          );
           for (const jobId of limitedJobIds) {
             try {
               await dispatch(
@@ -266,7 +306,9 @@ const HirerDashboardPage = () => {
         }
 
         if (!profilePayload && !activePayload && !completedPayload) {
-          setError('Backend services are temporarily unavailable. Please retry in a few seconds.');
+          setError(
+            'Backend services are temporarily unavailable. Please retry in a few seconds.',
+          );
         }
       } catch (err) {
         // Error captured in state — no console logging in production
@@ -386,8 +428,7 @@ const HirerDashboardPage = () => {
   };
 
   const isNewHirer =
-    summaryData.activeJobs === 0 &&
-    summaryData.completedJobs === 0;
+    summaryData.activeJobs === 0 && summaryData.completedJobs === 0;
 
   // Get time-based greeting
   const getGreeting = () => {
@@ -398,7 +439,7 @@ const HirerDashboardPage = () => {
   };
 
   // LC Portal-inspired Dashboard Overview - IMPROVED with empty state CTAs
-  const renderDashboardOverview = () => (
+  const renderDashboardOverview = () =>
     isMobile ? (
       <Fade in timeout={400}>
         <Box
@@ -431,20 +472,47 @@ const HirerDashboardPage = () => {
                   : 'linear-gradient(145deg, #ffffff 0%, #f2f7ff 100%)',
             }}
           >
-            <Typography variant="h5" sx={{ fontWeight: 800, letterSpacing: -0.3, mb: 0.75 }}>
-              {getGreeting()}, {hirerProfile?.firstName || user?.firstName || 'there'}
+            <Typography
+              variant="h5"
+              sx={{ fontWeight: 800, letterSpacing: -0.3, mb: 0.75 }}
+            >
+              {getGreeting()},{' '}
+              {hirerProfile?.firstName || user?.firstName || 'there'}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-              Hiring cockpit: launch opportunities, shortlist top talent, and keep every live role moving.
+              Hiring cockpit: launch opportunities, shortlist top talent, and
+              keep every live role moving.
             </Typography>
-            <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ mb: 1.5 }}>
-              <Chip label={`Active ${summaryData.activeJobs}`} size="small" sx={{ fontWeight: 700 }} />
-              <Chip label={`Applications ${summaryData.pendingProposals}`} size="small" sx={{ fontWeight: 700 }} />
-              <Chip label={`Spent ${formatGhanaCurrency(summaryData.totalSpent)}`} size="small" sx={{ fontWeight: 700 }} />
+            <Stack
+              direction="row"
+              spacing={1}
+              useFlexGap
+              flexWrap="wrap"
+              sx={{ mb: 1.5 }}
+            >
+              <Chip
+                label={`Active ${summaryData.activeJobs}`}
+                size="small"
+                sx={{ fontWeight: 700 }}
+              />
+              <Chip
+                label={`Applications ${summaryData.pendingProposals}`}
+                size="small"
+                sx={{ fontWeight: 700 }}
+              />
+              <Chip
+                label={`Spent ${formatGhanaCurrency(summaryData.totalSpent)}`}
+                size="small"
+                sx={{ fontWeight: 700 }}
+              />
             </Stack>
             <Chip
               size="small"
-              label={autoRefreshEnabled ? `Live • ${timeSinceRefresh}` : 'Live updates paused'}
+              label={
+                autoRefreshEnabled
+                  ? `Live • ${timeSinceRefresh}`
+                  : 'Live updates paused'
+              }
               color={autoRefreshEnabled ? 'success' : 'default'}
               variant="outlined"
               onClick={() => setAutoRefreshEnabled((prev) => !prev)}
@@ -454,9 +522,24 @@ const HirerDashboardPage = () => {
 
           <Grid container spacing={1.25} sx={{ mb: 2 }}>
             {[
-              { title: 'Pipeline', value: summaryData.pendingProposals, helper: 'Applications waiting for review', tone: theme.palette.warning.main },
-              { title: 'Active jobs', value: summaryData.activeJobs, helper: 'Open listings currently running', tone: theme.palette.info.main },
-              { title: 'Completed jobs', value: summaryData.completedJobs, helper: 'Contracts delivered successfully', tone: theme.palette.success.main },
+              {
+                title: 'Pipeline',
+                value: summaryData.pendingProposals,
+                helper: 'Applications waiting for review',
+                tone: theme.palette.warning.main,
+              },
+              {
+                title: 'Active jobs',
+                value: summaryData.activeJobs,
+                helper: 'Open listings currently running',
+                tone: theme.palette.info.main,
+              },
+              {
+                title: 'Completed jobs',
+                value: summaryData.completedJobs,
+                helper: 'Contracts delivered successfully',
+                tone: theme.palette.success.main,
+              },
             ].map((item) => (
               <Grid item xs={12} key={`mobile-summary-${item.title}`}>
                 <Box
@@ -465,10 +548,20 @@ const HirerDashboardPage = () => {
                     borderRadius: 2,
                     border: '1px solid',
                     borderColor: alpha(item.tone, 0.32),
-                    backgroundColor: alpha(item.tone, theme.palette.mode === 'dark' ? 0.12 : 0.08),
+                    backgroundColor: alpha(
+                      item.tone,
+                      theme.palette.mode === 'dark' ? 0.12 : 0.08,
+                    ),
                   }}
                 >
-                  <Typography variant="caption" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, color: 'text.secondary' }}>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      textTransform: 'uppercase',
+                      letterSpacing: 0.5,
+                      color: 'text.secondary',
+                    }}
+                  >
                     {item.title}
                   </Typography>
                   <Typography variant="h5" sx={{ fontWeight: 800, mt: 0.25 }}>
@@ -484,571 +577,946 @@ const HirerDashboardPage = () => {
 
           <Grid container spacing={1.5} sx={{ mb: 2 }}>
             <Grid item xs={6}>
-              <Button fullWidth variant="contained" startIcon={<PostAddIcon />} onClick={() => navigate('/hirer/jobs/post')} sx={{ minHeight: 44, textTransform: 'none', fontWeight: 700 }}>
+              <Button
+                fullWidth
+                variant="contained"
+                startIcon={<PostAddIcon />}
+                onClick={() => navigate('/hirer/jobs/post')}
+                sx={{ minHeight: 44, textTransform: 'none', fontWeight: 700 }}
+              >
                 Post Job
               </Button>
             </Grid>
             <Grid item xs={6}>
-              <Button fullWidth variant="outlined" startIcon={<PeopleIcon />} onClick={() => navigate('/hirer/find-talents')} sx={{ minHeight: 44, textTransform: 'none', fontWeight: 700 }}>
+              <Button
+                fullWidth
+                variant="outlined"
+                startIcon={<PeopleIcon />}
+                onClick={() => navigate('/hirer/find-talents')}
+                sx={{ minHeight: 44, textTransform: 'none', fontWeight: 700 }}
+              >
                 Find Talent
               </Button>
             </Grid>
             <Grid item xs={6}>
-              <Button fullWidth variant="outlined" startIcon={<ProposalIcon />} onClick={() => navigate('/hirer/applications')} sx={{ minHeight: 44, textTransform: 'none', fontWeight: 700 }}>
+              <Button
+                fullWidth
+                variant="outlined"
+                startIcon={<ProposalIcon />}
+                onClick={() => navigate('/hirer/applications')}
+                sx={{ minHeight: 44, textTransform: 'none', fontWeight: 700 }}
+              >
                 Applications
               </Button>
             </Grid>
             <Grid item xs={6}>
-              <Button fullWidth variant="outlined" startIcon={<MessageIcon />} onClick={() => navigate('/messages')} sx={{ minHeight: 44, textTransform: 'none', fontWeight: 700 }}>
+              <Button
+                fullWidth
+                variant="outlined"
+                startIcon={<MessageIcon />}
+                onClick={() => navigate('/messages')}
+                sx={{ minHeight: 44, textTransform: 'none', fontWeight: 700 }}
+              >
                 Messages
               </Button>
             </Grid>
           </Grid>
 
           {isNewHirer && (
-            <Paper elevation={0} sx={{ p: 2, mb: 2, borderRadius: 2, backgroundColor: 'background.paper', border: '1px solid', borderColor: alpha(theme.palette.primary.main, 0.35) }}>
-              <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 0.75 }}>
+            <Paper
+              elevation={0}
+              sx={{
+                p: 2,
+                mb: 2,
+                borderRadius: 2,
+                backgroundColor: 'background.paper',
+                border: '1px solid',
+                borderColor: alpha(theme.palette.primary.main, 0.35),
+              }}
+            >
+              <Typography
+                variant="subtitle1"
+                fontWeight={700}
+                sx={{ mb: 0.75 }}
+              >
                 Welcome to Kelmah! 🎉
               </Typography>
               <Typography variant="body2" sx={{ mb: 1.5, opacity: 0.9 }}>
-                Get started by posting your first job to connect with skilled workers in your area.
+                Get started by posting your first job to connect with skilled
+                workers in your area.
               </Typography>
-              <Button variant="contained" startIcon={<PostAddIcon />} onClick={() => navigate('/hirer/jobs/post')}>
+              <Button
+                variant="contained"
+                startIcon={<PostAddIcon />}
+                onClick={() => navigate('/hirer/jobs/post')}
+              >
                 Post Your First Job
               </Button>
             </Paper>
           )}
 
           <Box sx={{ mb: 2 }}>
-            <RecentActivityFeed jobs={activeJobs || []} applications={applicationRecords || {}} activities={recentActivity} />
+            <RecentActivityFeed
+              jobs={activeJobs || []}
+              applications={applicationRecords || {}}
+              activities={recentActivity}
+            />
           </Box>
         </Box>
       </Fade>
     ) : (
-    <Fade in timeout={500}>
-      <Box
-        sx={{
-          background:
-            theme.palette.mode === 'dark'
-              ? 'radial-gradient(circle at 10% 4%, rgba(255,215,0,0.16), transparent 45%), radial-gradient(circle at 88% 8%, rgba(56,189,248,0.14), transparent 40%), radial-gradient(circle at 54% 86%, rgba(34,197,94,0.13), transparent 38%), #04060C'
-              : 'linear-gradient(180deg, #f7f9fd 0%, #eef3fa 58%, #edf3fb 100%)',
-          minHeight: { xs: '100dvh', md: 'auto' },
-          fontFamily: dashboardFontFamily,
-          p: { xs: 1.5, sm: 2, md: 3 },
-          pb: { xs: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px) + 18px)`, md: 3 },
-          overflowX: 'hidden',
-        }}
-      >
-        {/* Breadcrumb - LC Portal Style */}
-        <Breadcrumbs sx={{ mb: 3, display: { xs: 'none', md: 'flex' } }} aria-label="Breadcrumb navigation">
-          <MUILink
-            component={RouterLink}
-            to="/"
-            underline="hover"
-            sx={{ color: 'text.secondary', display: 'flex', alignItems: 'center', gap: 0.5 }}
-          >
-            Home
-          </MUILink>
-          <Typography color="text.primary">Dashboard</Typography>
-        </Breadcrumbs>
-
-        {/* Command Center Header */}
-        <Paper
-          elevation={0}
+      <Fade in timeout={500}>
+        <Box
           sx={{
-            mb: 4,
-            p: { xs: 2, sm: 2.75, md: 3.25 },
-            borderRadius: { xs: 3, md: 4 },
-            border: '1px solid',
-            borderColor: theme.palette.mode === 'dark'
-              ? 'rgba(255,215,0,0.28)'
-              : 'rgba(20,24,35,0.12)',
             background:
               theme.palette.mode === 'dark'
-                ? 'linear-gradient(150deg, rgba(6,10,18,0.97) 0%, rgba(10,19,34,0.96) 52%, rgba(7,16,28,0.95) 100%)'
-                : 'linear-gradient(145deg, #ffffff 0%, #f2f7ff 52%, #edf4ff 100%)',
-            boxShadow: theme.palette.mode === 'dark'
-              ? '0 18px 34px rgba(0,0,0,0.42)'
-              : '0 14px 28px rgba(15,23,42,0.10)',
-            position: 'relative',
-            overflow: 'hidden',
-            '&::after': {
-              content: '""',
-              position: 'absolute',
-              width: { xs: 160, md: 250 },
-              height: { xs: 160, md: 250 },
-              borderRadius: '50%',
-              top: -82,
-              right: -80,
-              background: theme.palette.mode === 'dark'
-                ? 'radial-gradient(circle, rgba(250,204,21,0.24) 0%, rgba(250,204,21,0) 72%)'
-                : 'radial-gradient(circle, rgba(14,165,233,0.15) 0%, rgba(14,165,233,0) 72%)',
-              pointerEvents: 'none',
+                ? 'radial-gradient(circle at 10% 4%, rgba(255,215,0,0.16), transparent 45%), radial-gradient(circle at 88% 8%, rgba(56,189,248,0.14), transparent 40%), radial-gradient(circle at 54% 86%, rgba(34,197,94,0.13), transparent 38%), #04060C'
+                : 'linear-gradient(180deg, #f7f9fd 0%, #eef3fa 58%, #edf3fb 100%)',
+            minHeight: { xs: '100dvh', md: 'auto' },
+            fontFamily: dashboardFontFamily,
+            p: { xs: 1.5, sm: 2, md: 3 },
+            pb: {
+              xs: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px) + 18px)`,
+              md: 3,
             },
+            overflowX: 'hidden',
           }}
         >
-          <Stack spacing={{ xs: 1.5, md: 2.25 }} sx={{ position: 'relative', zIndex: 1 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: 1.5, flexWrap: 'wrap' }}>
-              <Box>
-                <Typography
-                  variant="h4"
-                  sx={{
-                    color: 'text.primary',
-                    fontWeight: 800,
-                    letterSpacing: -0.4,
-                    fontSize: { xs: '1.5rem', md: '2rem' },
-                  }}
-                >
-                  {getGreeting()}, {hirerProfile?.firstName || user?.firstName || 'there'}
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.75, maxWidth: 620, fontSize: { xs: '0.94rem', md: '1rem' } }}>
-                  Hiring cockpit: launch opportunities, shortlist top talent, and keep every live role moving.
-                </Typography>
-              </Box>
-              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
-                <Chip label={`Active ${summaryData.activeJobs}`} size="small" sx={{ fontWeight: 700 }} />
-                <Chip label={`Applications ${summaryData.pendingProposals}`} size="small" sx={{ fontWeight: 700 }} />
-                <Chip label={`Spent ${formatGhanaCurrency(summaryData.totalSpent)}`} size="small" sx={{ fontWeight: 700 }} />
-                <Chip
-                  size="small"
-                  label={autoRefreshEnabled ? `Live • ${timeSinceRefresh}` : 'Live updates paused'}
-                  color={autoRefreshEnabled ? 'success' : 'default'}
-                  variant="outlined"
-                  onClick={() => setAutoRefreshEnabled((prev) => !prev)}
-                  sx={{ fontWeight: 700, cursor: 'pointer' }}
-                />
-              </Box>
-            </Box>
-
-            <Box
+          {/* Breadcrumb - LC Portal Style */}
+          <Breadcrumbs
+            sx={{ mb: 3, display: { xs: 'none', md: 'flex' } }}
+            aria-label="Breadcrumb navigation"
+          >
+            <MUILink
+              component={RouterLink}
+              to="/"
+              underline="hover"
               sx={{
-                display: 'grid',
-                gridTemplateColumns: { xs: 'repeat(2, minmax(0, 1fr))', sm: 'repeat(4, minmax(0, 1fr))' },
-                gap: 1,
+                color: 'text.secondary',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.5,
               }}
             >
+              Home
+            </MUILink>
+            <Typography color="text.primary">Dashboard</Typography>
+          </Breadcrumbs>
+
+          {/* Command Center Header */}
+          <Paper
+            elevation={0}
+            sx={{
+              mb: 4,
+              p: { xs: 2, sm: 2.75, md: 3.25 },
+              borderRadius: { xs: 3, md: 4 },
+              border: '1px solid',
+              borderColor:
+                theme.palette.mode === 'dark'
+                  ? 'rgba(255,215,0,0.28)'
+                  : 'rgba(20,24,35,0.12)',
+              background:
+                theme.palette.mode === 'dark'
+                  ? 'linear-gradient(150deg, rgba(6,10,18,0.97) 0%, rgba(10,19,34,0.96) 52%, rgba(7,16,28,0.95) 100%)'
+                  : 'linear-gradient(145deg, #ffffff 0%, #f2f7ff 52%, #edf4ff 100%)',
+              boxShadow:
+                theme.palette.mode === 'dark'
+                  ? '0 18px 34px rgba(0,0,0,0.42)'
+                  : '0 14px 28px rgba(15,23,42,0.10)',
+              position: 'relative',
+              overflow: 'hidden',
+              '&::after': {
+                content: '""',
+                position: 'absolute',
+                width: { xs: 160, md: 250 },
+                height: { xs: 160, md: 250 },
+                borderRadius: '50%',
+                top: -82,
+                right: -80,
+                background:
+                  theme.palette.mode === 'dark'
+                    ? 'radial-gradient(circle, rgba(250,204,21,0.24) 0%, rgba(250,204,21,0) 72%)'
+                    : 'radial-gradient(circle, rgba(14,165,233,0.15) 0%, rgba(14,165,233,0) 72%)',
+                pointerEvents: 'none',
+              },
+            }}
+          >
+            <Stack
+              spacing={{ xs: 1.5, md: 2.25 }}
+              sx={{ position: 'relative', zIndex: 1 }}
+            >
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: { xs: 'flex-start', sm: 'center' },
+                  gap: 1.5,
+                  flexWrap: 'wrap',
+                }}
+              >
+                <Box>
+                  <Typography
+                    variant="h4"
+                    sx={{
+                      color: 'text.primary',
+                      fontWeight: 800,
+                      letterSpacing: -0.4,
+                      fontSize: { xs: '1.5rem', md: '2rem' },
+                    }}
+                  >
+                    {getGreeting()},{' '}
+                    {hirerProfile?.firstName || user?.firstName || 'there'}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{
+                      mt: 0.75,
+                      maxWidth: 620,
+                      fontSize: { xs: '0.94rem', md: '1rem' },
+                    }}
+                  >
+                    Hiring cockpit: launch opportunities, shortlist top talent,
+                    and keep every live role moving.
+                  </Typography>
+                </Box>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    gap: 1,
+                    flexWrap: 'wrap',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Chip
+                    label={`Active ${summaryData.activeJobs}`}
+                    size="small"
+                    sx={{ fontWeight: 700 }}
+                  />
+                  <Chip
+                    label={`Applications ${summaryData.pendingProposals}`}
+                    size="small"
+                    sx={{ fontWeight: 700 }}
+                  />
+                  <Chip
+                    label={`Spent ${formatGhanaCurrency(summaryData.totalSpent)}`}
+                    size="small"
+                    sx={{ fontWeight: 700 }}
+                  />
+                  <Chip
+                    size="small"
+                    label={
+                      autoRefreshEnabled
+                        ? `Live • ${timeSinceRefresh}`
+                        : 'Live updates paused'
+                    }
+                    color={autoRefreshEnabled ? 'success' : 'default'}
+                    variant="outlined"
+                    onClick={() => setAutoRefreshEnabled((prev) => !prev)}
+                    sx={{ fontWeight: 700, cursor: 'pointer' }}
+                  />
+                </Box>
+              </Box>
+
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: {
+                    xs: 'repeat(2, minmax(0, 1fr))',
+                    sm: 'repeat(4, minmax(0, 1fr))',
+                  },
+                  gap: 1,
+                }}
+              >
+                <Button
+                  variant="contained"
+                  startIcon={<PostAddIcon />}
+                  onClick={() => navigate('/hirer/jobs/post')}
+                  sx={{
+                    borderRadius: 2.5,
+                    minHeight: 44,
+                    fontWeight: 700,
+                    textTransform: 'none',
+                  }}
+                >
+                  Post Job
+                </Button>
+                <Button
+                  variant="outlined"
+                  startIcon={<PeopleIcon />}
+                  onClick={() => navigate('/hirer/find-talents')}
+                  sx={{
+                    borderRadius: 2.5,
+                    minHeight: 44,
+                    fontWeight: 700,
+                    textTransform: 'none',
+                  }}
+                >
+                  Find Talent
+                </Button>
+                <Button
+                  variant="outlined"
+                  startIcon={<ProposalIcon />}
+                  onClick={() => navigate('/hirer/applications')}
+                  sx={{
+                    borderRadius: 2.5,
+                    minHeight: 44,
+                    fontWeight: 700,
+                    textTransform: 'none',
+                  }}
+                >
+                  Applications
+                </Button>
+                <Button
+                  variant="outlined"
+                  startIcon={<MessageIcon />}
+                  onClick={() => navigate('/messages')}
+                  sx={{
+                    borderRadius: 2.5,
+                    minHeight: 44,
+                    fontWeight: 700,
+                    textTransform: 'none',
+                  }}
+                >
+                  Messages
+                </Button>
+              </Box>
+
+              <Grid container spacing={1.25}>
+                {[
+                  {
+                    title: 'Pipeline',
+                    value: summaryData.pendingProposals,
+                    helper: 'Applications waiting for review',
+                    tone: theme.palette.warning.main,
+                  },
+                  {
+                    title: 'Active jobs',
+                    value: summaryData.activeJobs,
+                    helper: 'Open listings currently running',
+                    tone: theme.palette.info.main,
+                  },
+                  {
+                    title: 'Completed jobs',
+                    value: summaryData.completedJobs,
+                    helper: 'Contracts delivered successfully',
+                    tone: theme.palette.success.main,
+                  },
+                ].map((item, index) => (
+                  <Fade
+                    in
+                    timeout={420}
+                    style={{ transitionDelay: `${120 + index * 90}ms` }}
+                    key={`overview-fade-${item.title}`}
+                  >
+                    <Grid item xs={12} sm={4} key={`overview-${item.title}`}>
+                      <Box
+                        sx={{
+                          p: 1.5,
+                          borderRadius: 2,
+                          border: '1px solid',
+                          borderColor: alpha(item.tone, 0.36),
+                          backgroundColor: alpha(
+                            item.tone,
+                            theme.palette.mode === 'dark' ? 0.1 : 0.08,
+                          ),
+                        }}
+                      >
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            textTransform: 'uppercase',
+                            letterSpacing: 0.5,
+                            color: 'text.secondary',
+                          }}
+                        >
+                          {item.title}
+                        </Typography>
+                        <Typography
+                          variant="h6"
+                          sx={{ fontWeight: 800, mt: 0.25 }}
+                        >
+                          {item.value}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {item.helper}
+                        </Typography>
+                      </Box>
+                    </Grid>
+                  </Fade>
+                ))}
+              </Grid>
+            </Stack>
+          </Paper>
+
+          {/* New Hirer Welcome Banner - Shows when no activity */}
+          {isNewHirer && (
+            <Paper
+              elevation={0}
+              sx={{
+                p: 3,
+                mb: 4,
+                borderRadius: 2,
+                backgroundColor: 'background.paper',
+                border: '1px solid',
+                borderColor: alpha(theme.palette.primary.main, 0.35),
+                color: 'text.primary',
+              }}
+            >
+              <Typography variant="h6" fontWeight={600} sx={{ mb: 1 }}>
+                Welcome to Kelmah! 🎉
+              </Typography>
+              <Typography variant="body2" sx={{ mb: 2, opacity: 0.9 }}>
+                Get started by posting your first job to connect with skilled
+                workers in your area.
+              </Typography>
               <Button
                 variant="contained"
                 startIcon={<PostAddIcon />}
                 onClick={() => navigate('/hirer/jobs/post')}
-                sx={{ borderRadius: 2.5, minHeight: 44, fontWeight: 700, textTransform: 'none' }}
               >
-                Post Job
+                Post Your First Job
               </Button>
-              <Button
-                variant="outlined"
-                startIcon={<PeopleIcon />}
-                onClick={() => navigate('/hirer/find-talents')}
-                sx={{ borderRadius: 2.5, minHeight: 44, fontWeight: 700, textTransform: 'none' }}
-              >
-                Find Talent
-              </Button>
-              <Button
-                variant="outlined"
-                startIcon={<ProposalIcon />}
-                onClick={() => navigate('/hirer/applications')}
-                sx={{ borderRadius: 2.5, minHeight: 44, fontWeight: 700, textTransform: 'none' }}
-              >
-                Applications
-              </Button>
-              <Button
-                variant="outlined"
-                startIcon={<MessageIcon />}
-                onClick={() => navigate('/messages')}
-                sx={{ borderRadius: 2.5, minHeight: 44, fontWeight: 700, textTransform: 'none' }}
-              >
-                Messages
-              </Button>
-            </Box>
+            </Paper>
+          )}
 
-            <Grid container spacing={1.25}>
-              {[
-                {
-                  title: 'Pipeline',
-                  value: summaryData.pendingProposals,
-                  helper: 'Applications waiting for review',
-                  tone: theme.palette.warning.main,
-                },
-                {
-                  title: 'Active jobs',
-                  value: summaryData.activeJobs,
-                  helper: 'Open listings currently running',
-                  tone: theme.palette.info.main,
-                },
-                {
-                  title: 'Completed jobs',
-                  value: summaryData.completedJobs,
-                  helper: 'Contracts delivered successfully',
-                  tone: theme.palette.success.main,
-                },
-              ].map((item, index) => (
-                <Fade in timeout={420} style={{ transitionDelay: `${120 + index * 90}ms` }} key={`overview-fade-${item.title}`}>
-                  <Grid item xs={12} sm={4} key={`overview-${item.title}`}>
-                    <Box
-                      sx={{
-                        p: 1.5,
-                        borderRadius: 2,
-                        border: '1px solid',
-                        borderColor: alpha(item.tone, 0.36),
-                        backgroundColor: alpha(item.tone, theme.palette.mode === 'dark' ? 0.1 : 0.08),
-                      }}
-                    >
-                      <Typography variant="caption" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, color: 'text.secondary' }}>
-                        {item.title}
-                      </Typography>
-                      <Typography variant="h6" sx={{ fontWeight: 800, mt: 0.25 }}>
-                        {item.value}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {item.helper}
-                      </Typography>
-                    </Box>
-                  </Grid>
-                </Fade>
-              ))}
-            </Grid>
-          </Stack>
-        </Paper>
-
-        {/* New Hirer Welcome Banner - Shows when no activity */}
-        {isNewHirer && (
-          <Paper
-            elevation={0}
+          {/* Metric Cards - Futuristic & Mobile-Optimized */}
+          <Box
             sx={{
-              p: 3,
+              display: { xs: 'flex', sm: 'grid' },
+              gridTemplateColumns: {
+                sm: 'repeat(2, 1fr)',
+                md: 'repeat(4, 1fr)',
+              },
+              gap: { xs: 1.5, sm: 3, md: 2.5, lg: 2 },
+              overflowX: { xs: 'auto', sm: 'visible' },
+              scrollSnapType: { xs: 'x mandatory', sm: 'none' },
+              WebkitOverflowScrolling: 'touch',
+              '&::-webkit-scrollbar': { display: 'none' },
+              msOverflowStyle: 'none',
+              scrollbarWidth: 'none',
               mb: 4,
-              borderRadius: 2,
-              backgroundColor: 'background.paper',
-              border: '1px solid',
-              borderColor: alpha(theme.palette.primary.main, 0.35),
-              color: 'text.primary',
+              pb: { xs: 1, sm: 0 },
+              mx: { xs: -1.5, sm: 0 },
+              px: { xs: 1.5, sm: 0 },
             }}
           >
-            <Typography variant="h6" fontWeight={600} sx={{ mb: 1 }}>
-              Welcome to Kelmah! 🎉
-            </Typography>
-            <Typography variant="body2" sx={{ mb: 2, opacity: 0.9 }}>
-              Get started by posting your first job to connect with skilled workers in your area.
-            </Typography>
-            <Button
-              variant="contained"
-              startIcon={<PostAddIcon />}
-              onClick={() => navigate('/hirer/jobs/post')}
-            >
-              Post Your First Job
-            </Button>
-          </Paper>
-        )}
-
-        {/* Metric Cards - Futuristic & Mobile-Optimized */}
-        <Box
-          sx={{
-            display: { xs: 'flex', sm: 'grid' },
-            gridTemplateColumns: { sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
-            gap: { xs: 1.5, sm: 3, md: 2.5, lg: 2 },
-            overflowX: { xs: 'auto', sm: 'visible' },
-            scrollSnapType: { xs: 'x mandatory', sm: 'none' },
-            WebkitOverflowScrolling: 'touch',
-            '&::-webkit-scrollbar': { display: 'none' },
-            msOverflowStyle: 'none',
-            scrollbarWidth: 'none',
-            mb: 4,
-            pb: { xs: 1, sm: 0 },
-            mx: { xs: -1.5, sm: 0 },
-            px: { xs: 1.5, sm: 0 },
-          }}
-        >
-          {[
-            {
-              title: 'Active Jobs',
-              value: summaryData.activeJobs,
-              tone: '#F39C12',
-              icon: <WorkIcon sx={{ fontSize: { xs: 32, sm: 42 }, color: alpha('#F39C12', 0.28) }} />,
-              onClick: () => navigate('/hirer/jobs'),
-              tooltip: "Active Jobs: " + summaryData.activeJobs,
-            },
-            {
-              title: 'Completed Jobs',
-              value: summaryData.completedJobs,
-              tone: '#1ABC9C',
-              icon: <CheckCircleIcon sx={{ fontSize: { xs: 32, sm: 42 }, color: alpha('#1ABC9C', 0.28) }} />,
-              onClick: () => navigate('/hirer/jobs?status=completed'),
-              tooltip: "Completed Jobs: " + summaryData.completedJobs,
-            },
-            {
-              title: 'Applications',
-              value: summaryData.pendingProposals,
-              tone: '#3498DB',
-              icon: <ProposalIcon sx={{ fontSize: { xs: 32, sm: 42 }, color: alpha('#3498DB', 0.28) }} />,
-              onClick: () => navigate('/hirer/applications'),
-              tooltip: "Applications: " + summaryData.pendingProposals,
-            },
-            {
-              title: 'Total Spent',
-              value: formatGhanaCurrency(summaryData.totalSpent),
-              tone: theme.palette.info.main,
-              icon: <PaymentIcon sx={{ fontSize: { xs: 32, sm: 42 }, color: alpha(theme.palette.info.main, 0.28) }} />,
-              onClick: () => navigate('/hirer/payments'),
-              tooltip: "Total Spent: " + summaryData.totalSpent,
-            }
-          ].map((card, index) => (
-            <Fade in timeout={420} style={{ transitionDelay: `${80 + index * 70}ms` }} key={`hirer-metric-${card.title}`}>
-              <Box sx={{ minWidth: { xs: '75vw', sm: 'auto' }, scrollSnapAlign: 'start' }}>
-                <Tooltip title={card.tooltip} arrow placement="top">
-                  <ButtonBase
-                    onClick={card.onClick}
-                    aria-label={card.tooltip}
+            {[
+              {
+                title: 'Active Jobs',
+                value: summaryData.activeJobs,
+                tone: '#F39C12',
+                icon: (
+                  <WorkIcon
                     sx={{
-                      display: 'block',
-                      width: '100%',
-                      textAlign: 'left',
-                      borderRadius: { xs: 4, sm: 2.5 },
-                      overflow: 'hidden',
-                      '&:focus-visible': {
-                        outline: `2px solid ${theme.palette.primary.main}`,
-                        outlineOffset: 2,
-                      },
+                      fontSize: { xs: 32, sm: 42 },
+                      color: alpha('#F39C12', 0.28),
                     }}
-                  >
-                  <Paper
-                    elevation={0}
+                  />
+                ),
+                onClick: () => navigate('/hirer/jobs'),
+                tooltip: 'Active Jobs: ' + summaryData.activeJobs,
+              },
+              {
+                title: 'Completed Jobs',
+                value: summaryData.completedJobs,
+                tone: '#1ABC9C',
+                icon: (
+                  <CheckCircleIcon
                     sx={{
-                      p: { xs: 2.5, sm: 2.5 },
-                      borderRadius: { xs: 4, sm: 2.5 },
-                      background: theme.palette.mode === 'dark'
-                        ? `linear-gradient(155deg, ${alpha(card.tone, 0.2)} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`
-                        : `linear-gradient(155deg, ${alpha(card.tone, 0.14)} 0%, ${alpha(theme.palette.background.paper, 0.98)} 62%, ${alpha(theme.palette.background.paper, 0.95)} 100%)`,
-                      backdropFilter: theme.palette.mode === 'dark' ? 'blur(16px)' : 'none',
-                      border: '1px solid',
-                      borderColor: alpha(card.tone, theme.palette.mode === 'dark' ? 0.3 : 0.44),
-                      color: 'text.primary',
-                      position: 'relative',
-                      overflow: 'hidden',
-                      minHeight: { xs: 130, sm: 132 },
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
-                      boxShadow: theme.palette.mode === 'dark' ? `inset 0 1px 1px ${alpha('#fff', 0.1)}` : 'none',
-                      '@media (hover: hover)': {
-                        transition: 'transform 0.2s, box-shadow 0.2s',
-                        '&:hover': {
-                          transform: 'translateY(-4px)',
-                          boxShadow: theme.palette.mode === 'dark' ? `0 8px 25px ${alpha(card.tone, 0.25)}` : '0 8px 25px rgba(0,0,0,0.15)',
-                        },
-                      },
+                      fontSize: { xs: 32, sm: 42 },
+                      color: alpha('#1ABC9C', 0.28),
                     }}
-                  >
-                    <Box
+                  />
+                ),
+                onClick: () => navigate('/hirer/jobs?status=completed'),
+                tooltip: 'Completed Jobs: ' + summaryData.completedJobs,
+              },
+              {
+                title: 'Applications',
+                value: summaryData.pendingProposals,
+                tone: '#3498DB',
+                icon: (
+                  <ProposalIcon
+                    sx={{
+                      fontSize: { xs: 32, sm: 42 },
+                      color: alpha('#3498DB', 0.28),
+                    }}
+                  />
+                ),
+                onClick: () => navigate('/hirer/applications'),
+                tooltip: 'Applications: ' + summaryData.pendingProposals,
+              },
+              {
+                title: 'Total Spent',
+                value: formatGhanaCurrency(summaryData.totalSpent),
+                tone: theme.palette.info.main,
+                icon: (
+                  <PaymentIcon
+                    sx={{
+                      fontSize: { xs: 32, sm: 42 },
+                      color: alpha(theme.palette.info.main, 0.28),
+                    }}
+                  />
+                ),
+                onClick: () => navigate('/hirer/payments'),
+                tooltip: 'Total Spent: ' + summaryData.totalSpent,
+              },
+            ].map((card, index) => (
+              <Fade
+                in
+                timeout={420}
+                style={{ transitionDelay: `${80 + index * 70}ms` }}
+                key={`hirer-metric-${card.title}`}
+              >
+                <Box
+                  sx={{
+                    minWidth: { xs: '75vw', sm: 'auto' },
+                    scrollSnapAlign: 'start',
+                  }}
+                >
+                  <Tooltip title={card.tooltip} arrow placement="top">
+                    <ButtonBase
+                      onClick={card.onClick}
+                      aria-label={card.tooltip}
                       sx={{
-                        position: 'absolute',
-                        right: { xs: 12, sm: 16 },
-                        top: '50%',
-                        transform: 'translateY(-50%)',
+                        display: 'block',
+                        width: '100%',
+                        textAlign: 'left',
+                        borderRadius: { xs: 4, sm: 2.5 },
+                        overflow: 'hidden',
+                        '&:focus-visible': {
+                          outline: `2px solid ${theme.palette.primary.main}`,
+                          outlineOffset: 2,
+                        },
                       }}
                     >
-                      {card.icon}
-                    </Box>
-                    <Typography
-                      variant="body2"
-                      sx={{ fontWeight: 600, color: theme.palette.mode === 'dark' ? alpha('#fff', 0.8) : 'text.secondary', mb: 1, textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.75rem' }}
-                    >
-                      {card.title}
-                    </Typography>
-                    <Typography
-                      variant="h4"
-                      sx={{ fontWeight: 800, letterSpacing: -0.5, fontSize: { xs: '1.75rem', sm: '1.5rem', md: '2rem' } }}
-                    >
-                      {card.value}
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: theme.palette.mode === 'dark' ? alpha('#fff', 0.5) : 'text.secondary', mt: 0.5 }}>
-                      Tap to open details
-                    </Typography>
-                  </Paper>
-                  </ButtonBase>
-                </Tooltip>
-              </Box>
-            </Fade>
-          ))}
-        </Box>
-        {/* TWO CHART SECTIONS - LC Portal Style */}
-        <Grid container spacing={{ xs: 1.5, sm: 3, md: 2.5, lg: 2 }}>
-          {/* Bills Chart / Spending Chart */}
-          <Grid item xs={12} md={6}>
-            <Paper
-              elevation={0}
-              sx={{
-                p: { xs: 1.5, sm: 2, md: 3 },
-                borderRadius: 2.5,
-                bgcolor: alpha(theme.palette.background.paper, 0.9),
-                border: '1px solid',
-                borderColor: alpha(theme.palette.success.main, 0.24),
-                height: { xs: 280, sm: 350 },
-              }}
-            >
-              <Typography variant="h6" fontWeight={600} sx={{ mb: { xs: 1.5, sm: 3 }, color: 'text.primary', fontSize: { xs: '1rem', sm: '1.25rem' } }}>
-                Jobs Overview
-              </Typography>
-              {/* Recharts BarChart replacing manual Box bars */}
-              <Box sx={{ height: 250, width: '100%' }}>
-                {summaryData.totalSpent > 0 || summaryData.completedJobs > 0 || summaryData.activeJobs > 0 ? (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={[
-                        { name: 'Completed', value: summaryData.completedJobs },
-                        { name: 'Active', value: summaryData.activeJobs },
-                      ]}
-                      margin={{ top: 10, right: 10, left: 0, bottom: 5 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
-                      <XAxis
-                        dataKey="name"
-                        tick={{ fill: theme.palette.text.secondary, fontSize: 12 }}
-                      />
-                      <YAxis
-                        allowDecimals={false}
-                        tick={{ fill: theme.palette.text.secondary, fontSize: 12 }}
-                      />
-                      <RechartsTooltip
-                        contentStyle={{
-                          backgroundColor: theme.palette.background.paper,
-                          border: `1px solid ${theme.palette.divider}`,
-                          borderRadius: 8,
+                      <Paper
+                        elevation={0}
+                        sx={{
+                          p: { xs: 2.5, sm: 2.5 },
+                          borderRadius: { xs: 4, sm: 2.5 },
+                          background:
+                            theme.palette.mode === 'dark'
+                              ? `linear-gradient(155deg, ${alpha(card.tone, 0.2)} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`
+                              : `linear-gradient(155deg, ${alpha(card.tone, 0.14)} 0%, ${alpha(theme.palette.background.paper, 0.98)} 62%, ${alpha(theme.palette.background.paper, 0.95)} 100%)`,
+                          backdropFilter:
+                            theme.palette.mode === 'dark'
+                              ? 'blur(16px)'
+                              : 'none',
+                          border: '1px solid',
+                          borderColor: alpha(
+                            card.tone,
+                            theme.palette.mode === 'dark' ? 0.3 : 0.44,
+                          ),
+                          color: 'text.primary',
+                          position: 'relative',
+                          overflow: 'hidden',
+                          minHeight: { xs: 130, sm: 132 },
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: 'space-between',
+                          boxShadow:
+                            theme.palette.mode === 'dark'
+                              ? `inset 0 1px 1px ${alpha('#fff', 0.1)}`
+                              : 'none',
+                          '@media (hover: hover)': {
+                            transition: 'transform 0.2s, box-shadow 0.2s',
+                            '&:hover': {
+                              transform: 'translateY(-4px)',
+                              boxShadow:
+                                theme.palette.mode === 'dark'
+                                  ? `0 8px 25px ${alpha(card.tone, 0.25)}`
+                                  : '0 8px 25px rgba(0,0,0,0.15)',
+                            },
+                          },
                         }}
-                      />
-                      <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                        {[
-                          { name: 'Completed', fill: theme.palette.success.main },
-                          { name: 'Active', fill: theme.palette.secondary.dark },
-                        ].map((entry, index) => (
-                          <RechartsCell key={`bar-${index}`} fill={entry.fill} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 1 }}>
-                    <PaymentIcon sx={{ fontSize: 48, color: 'text.disabled' }} />
-                    <Typography variant="body2" color="text.secondary">
-                      No jobs yet
-                    </Typography>
-                    <Typography variant="caption" color="text.disabled">Post a job to see your overview</Typography>
-                  </Box>
-                )}
-              </Box>
-            </Paper>
-          </Grid>
-
-          {/* Applications Chart - Donut Style */}
-          <Grid item xs={12} md={6}>
-            <Paper
-              elevation={0}
-              sx={{
-                p: { xs: 1.5, sm: 2, md: 3 },
-                borderRadius: 2.5,
-                bgcolor: alpha(theme.palette.background.paper, 0.9),
-                border: '1px solid',
-                borderColor: alpha(theme.palette.info.main, 0.24),
-                height: { xs: 280, sm: 350 },
-              }}
-            >
-              <Typography variant="h6" fontWeight={600} sx={{ mb: { xs: 1.5, sm: 3 }, color: 'text.primary', fontSize: { xs: '1rem', sm: '1.25rem' } }}>
-                Applications Overview
-              </Typography>
-              {(() => {
-                const appDonutData = [
-                  { name: 'Completed', value: summaryData.completedJobs, color: theme.palette.success.main },
-                  { name: 'Applications', value: summaryData.pendingProposals, color: theme.palette.info.main },
-                  { name: 'Active Jobs', value: summaryData.activeJobs, color: theme.palette.warning.main },
-                ].filter(d => d.value > 0);
-                const appTotal = summaryData.activeJobs + summaryData.completedJobs + summaryData.pendingProposals;
-
-                return (
-                  <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, height: { xs: 'auto', sm: 250 }, alignItems: 'center' }}>
-                    {/* Legend */}
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, justifyContent: 'center', pr: { xs: 0, sm: 4 }, pb: { xs: 2, sm: 0 } }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: 'success.main' }} />
-                        <Typography variant="body2">Completed: {summaryData.completedJobs}</Typography>
-                      </Box>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: 'info.main' }} />
-                        <Typography variant="body2">Applications: {summaryData.pendingProposals}</Typography>
-                      </Box>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: 'warning.main' }} />
-                        <Typography variant="body2">Active Jobs: {summaryData.activeJobs}</Typography>
-                      </Box>
-                    </Box>
-                    {/* Donut Chart */}
-                    <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', minHeight: { xs: 160, sm: 220 } }}>
-                      {appDonutData.length > 0 ? (
-                        <ResponsiveContainer width="100%" height={220}>
-                          <PieChart>
-                            <Pie
-                              data={appDonutData}
-                              dataKey="value"
-                              nameKey="name"
-                              cx="50%"
-                              cy="50%"
-                              innerRadius={55}
-                              outerRadius={85}
-                              paddingAngle={2}
-                              stroke="none"
-                            >
-                              {appDonutData.map((entry, idx) => (
-                                <RechartsCell key={`app-cell-${idx}`} fill={entry.color} />
-                              ))}
-                            </Pie>
-                            <RechartsTooltip
-                              contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
-                              formatter={(value, name) => [`${value}`, name]}
-                            />
-                          </PieChart>
-                        </ResponsiveContainer>
-                      ) : (
-                        <Box sx={{ width: 170, height: 170, borderRadius: '50%', bgcolor: 'action.disabledBackground', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
-                          <ProposalIcon sx={{ fontSize: 36, color: 'text.disabled' }} />
-                          <Typography variant="body2" color="text.secondary">No data</Typography>
-                        </Box>
-                      )}
-                      {/* Center label overlaid on donut */}
-                      {appDonutData.length > 0 && (
-                        <Typography
-                          variant="h4"
-                          fontWeight={600}
-                          color="text.secondary"
+                      >
+                        <Box
                           sx={{
                             position: 'absolute',
+                            right: { xs: 12, sm: 16 },
                             top: '50%',
-                            left: '50%',
-                            transform: 'translate(-50%, -50%)',
-                            fontSize: { xs: '1.25rem', sm: '2rem' },
-                            pointerEvents: 'none',
+                            transform: 'translateY(-50%)',
                           }}
                         >
-                          {appTotal}
+                          {card.icon}
+                        </Box>
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            fontWeight: 600,
+                            color:
+                              theme.palette.mode === 'dark'
+                                ? alpha('#fff', 0.8)
+                                : 'text.secondary',
+                            mb: 1,
+                            textTransform: 'uppercase',
+                            letterSpacing: 0.5,
+                            fontSize: '0.75rem',
+                          }}
+                        >
+                          {card.title}
                         </Typography>
-                      )}
+                        <Typography
+                          variant="h4"
+                          sx={{
+                            fontWeight: 800,
+                            letterSpacing: -0.5,
+                            fontSize: {
+                              xs: '1.75rem',
+                              sm: '1.5rem',
+                              md: '2rem',
+                            },
+                          }}
+                        >
+                          {card.value}
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color:
+                              theme.palette.mode === 'dark'
+                                ? alpha('#fff', 0.5)
+                                : 'text.secondary',
+                            mt: 0.5,
+                          }}
+                        >
+                          Tap to open details
+                        </Typography>
+                      </Paper>
+                    </ButtonBase>
+                  </Tooltip>
+                </Box>
+              </Fade>
+            ))}
+          </Box>
+          {/* TWO CHART SECTIONS - LC Portal Style */}
+          <Grid container spacing={{ xs: 1.5, sm: 3, md: 2.5, lg: 2 }}>
+            {/* Bills Chart / Spending Chart */}
+            <Grid item xs={12} md={6}>
+              <Paper
+                elevation={0}
+                sx={{
+                  p: { xs: 1.5, sm: 2, md: 3 },
+                  borderRadius: 2.5,
+                  bgcolor: alpha(theme.palette.background.paper, 0.9),
+                  border: '1px solid',
+                  borderColor: alpha(theme.palette.success.main, 0.24),
+                  height: { xs: 280, sm: 350 },
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  fontWeight={600}
+                  sx={{
+                    mb: { xs: 1.5, sm: 3 },
+                    color: 'text.primary',
+                    fontSize: { xs: '1rem', sm: '1.25rem' },
+                  }}
+                >
+                  Jobs Overview
+                </Typography>
+                {/* Recharts BarChart replacing manual Box bars */}
+                <Box sx={{ height: 250, width: '100%' }}>
+                  {summaryData.totalSpent > 0 ||
+                  summaryData.completedJobs > 0 ||
+                  summaryData.activeJobs > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={[
+                          {
+                            name: 'Completed',
+                            value: summaryData.completedJobs,
+                          },
+                          { name: 'Active', value: summaryData.activeJobs },
+                        ]}
+                        margin={{ top: 10, right: 10, left: 0, bottom: 5 }}
+                      >
+                        <CartesianGrid
+                          strokeDasharray="3 3"
+                          stroke={theme.palette.divider}
+                        />
+                        <XAxis
+                          dataKey="name"
+                          tick={{
+                            fill: theme.palette.text.secondary,
+                            fontSize: 12,
+                          }}
+                        />
+                        <YAxis
+                          allowDecimals={false}
+                          tick={{
+                            fill: theme.palette.text.secondary,
+                            fontSize: 12,
+                          }}
+                        />
+                        <RechartsTooltip
+                          contentStyle={{
+                            backgroundColor: theme.palette.background.paper,
+                            border: `1px solid ${theme.palette.divider}`,
+                            borderRadius: 8,
+                          }}
+                        />
+                        <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                          {[
+                            {
+                              name: 'Completed',
+                              fill: theme.palette.success.main,
+                            },
+                            {
+                              name: 'Active',
+                              fill: theme.palette.secondary.dark,
+                            },
+                          ].map((entry, index) => (
+                            <RechartsCell
+                              key={`bar-${index}`}
+                              fill={entry.fill}
+                            />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        height: '100%',
+                        gap: 1,
+                      }}
+                    >
+                      <PaymentIcon
+                        sx={{ fontSize: 48, color: 'text.disabled' }}
+                      />
+                      <Typography variant="body2" color="text.secondary">
+                        No jobs yet
+                      </Typography>
+                      <Typography variant="caption" color="text.disabled">
+                        Post a job to see your overview
+                      </Typography>
                     </Box>
-                  </Box>
-                );
-              })()}
-            </Paper>
-          </Grid>
-        </Grid>
+                  )}
+                </Box>
+              </Paper>
+            </Grid>
 
-        {/* Recent Activity Feed (Phase 3) */}
-        <Box sx={{ mt: { xs: 2, sm: 3 } }}>
-          <RecentActivityFeed
-            jobs={activeJobs || []}
-            applications={applicationRecords || {}}
-            activities={recentActivity}
-          />
+            {/* Applications Chart - Donut Style */}
+            <Grid item xs={12} md={6}>
+              <Paper
+                elevation={0}
+                sx={{
+                  p: { xs: 1.5, sm: 2, md: 3 },
+                  borderRadius: 2.5,
+                  bgcolor: alpha(theme.palette.background.paper, 0.9),
+                  border: '1px solid',
+                  borderColor: alpha(theme.palette.info.main, 0.24),
+                  height: { xs: 280, sm: 350 },
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  fontWeight={600}
+                  sx={{
+                    mb: { xs: 1.5, sm: 3 },
+                    color: 'text.primary',
+                    fontSize: { xs: '1rem', sm: '1.25rem' },
+                  }}
+                >
+                  Applications Overview
+                </Typography>
+                {(() => {
+                  const appDonutData = [
+                    {
+                      name: 'Completed',
+                      value: summaryData.completedJobs,
+                      color: theme.palette.success.main,
+                    },
+                    {
+                      name: 'Applications',
+                      value: summaryData.pendingProposals,
+                      color: theme.palette.info.main,
+                    },
+                    {
+                      name: 'Active Jobs',
+                      value: summaryData.activeJobs,
+                      color: theme.palette.warning.main,
+                    },
+                  ].filter((d) => d.value > 0);
+                  const appTotal =
+                    summaryData.activeJobs +
+                    summaryData.completedJobs +
+                    summaryData.pendingProposals;
+
+                  return (
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        flexDirection: { xs: 'column', sm: 'row' },
+                        height: { xs: 'auto', sm: 250 },
+                        alignItems: 'center',
+                      }}
+                    >
+                      {/* Legend */}
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: 2,
+                          justifyContent: 'center',
+                          pr: { xs: 0, sm: 4 },
+                          pb: { xs: 2, sm: 0 },
+                        }}
+                      >
+                        <Box
+                          sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+                        >
+                          <Box
+                            sx={{
+                              width: 12,
+                              height: 12,
+                              borderRadius: '50%',
+                              bgcolor: 'success.main',
+                            }}
+                          />
+                          <Typography variant="body2">
+                            Completed: {summaryData.completedJobs}
+                          </Typography>
+                        </Box>
+                        <Box
+                          sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+                        >
+                          <Box
+                            sx={{
+                              width: 12,
+                              height: 12,
+                              borderRadius: '50%',
+                              bgcolor: 'info.main',
+                            }}
+                          />
+                          <Typography variant="body2">
+                            Applications: {summaryData.pendingProposals}
+                          </Typography>
+                        </Box>
+                        <Box
+                          sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+                        >
+                          <Box
+                            sx={{
+                              width: 12,
+                              height: 12,
+                              borderRadius: '50%',
+                              bgcolor: 'warning.main',
+                            }}
+                          />
+                          <Typography variant="body2">
+                            Active Jobs: {summaryData.activeJobs}
+                          </Typography>
+                        </Box>
+                      </Box>
+                      {/* Donut Chart */}
+                      <Box
+                        sx={{
+                          flex: 1,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          position: 'relative',
+                          minHeight: { xs: 160, sm: 220 },
+                        }}
+                      >
+                        {appDonutData.length > 0 ? (
+                          <ResponsiveContainer width="100%" height={220}>
+                            <PieChart>
+                              <Pie
+                                data={appDonutData}
+                                dataKey="value"
+                                nameKey="name"
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={55}
+                                outerRadius={85}
+                                paddingAngle={2}
+                                stroke="none"
+                              >
+                                {appDonutData.map((entry, idx) => (
+                                  <RechartsCell
+                                    key={`app-cell-${idx}`}
+                                    fill={entry.color}
+                                  />
+                                ))}
+                              </Pie>
+                              <RechartsTooltip
+                                contentStyle={{
+                                  borderRadius: 8,
+                                  border: 'none',
+                                  boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                                }}
+                                formatter={(value, name) => [`${value}`, name]}
+                              />
+                            </PieChart>
+                          </ResponsiveContainer>
+                        ) : (
+                          <Box
+                            sx={{
+                              width: 170,
+                              height: 170,
+                              borderRadius: '50%',
+                              bgcolor: 'action.disabledBackground',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: 0.5,
+                            }}
+                          >
+                            <ProposalIcon
+                              sx={{ fontSize: 36, color: 'text.disabled' }}
+                            />
+                            <Typography variant="body2" color="text.secondary">
+                              No data
+                            </Typography>
+                          </Box>
+                        )}
+                        {/* Center label overlaid on donut */}
+                        {appDonutData.length > 0 && (
+                          <Typography
+                            variant="h4"
+                            fontWeight={600}
+                            color="text.secondary"
+                            sx={{
+                              position: 'absolute',
+                              top: '50%',
+                              left: '50%',
+                              transform: 'translate(-50%, -50%)',
+                              fontSize: { xs: '1.25rem', sm: '2rem' },
+                              pointerEvents: 'none',
+                            }}
+                          >
+                            {appTotal}
+                          </Typography>
+                        )}
+                      </Box>
+                    </Box>
+                  );
+                })()}
+              </Paper>
+            </Grid>
+          </Grid>
+
+          {/* Recent Activity Feed (Phase 3) */}
+          <Box sx={{ mt: { xs: 2, sm: 3 } }}>
+            <RecentActivityFeed
+              jobs={activeJobs || []}
+              applications={applicationRecords || {}}
+              activities={recentActivity}
+            />
+          </Box>
         </Box>
-      </Box>
-    </Fade>
-    )
-  );
+      </Fade>
+    );
 
   if (isHydrating) {
     return (
@@ -1058,9 +1526,13 @@ const HirerDashboardPage = () => {
         </Helmet>
         <Skeleton variant="text" width={250} height={40} sx={{ mb: 3 }} />
         <Grid container spacing={2} sx={{ mb: 3 }}>
-          {[1,2,3,4].map(i => (
+          {[1, 2, 3, 4].map((i) => (
             <Grid item xs={6} md={3} key={`dashboard-skeleton-${i}`}>
-              <Skeleton variant="rounded" height={120} sx={{ borderRadius: 2 }} />
+              <Skeleton
+                variant="rounded"
+                height={120}
+                sx={{ borderRadius: 2 }}
+              />
             </Grid>
           ))}
         </Grid>
@@ -1087,8 +1559,8 @@ const HirerDashboardPage = () => {
               </Button>
             }
           >
-            Loading is taking longer than expected. Please check your
-            connection or try refreshing the page.
+            Loading is taking longer than expected. Please check your connection
+            or try refreshing the page.
           </Alert>
         )}
       </Container>
@@ -1096,163 +1568,194 @@ const HirerDashboardPage = () => {
   }
 
   return (
-    <PageCanvas disableContainer sx={{ pt: { xs: 1, md: 4 }, pb: { xs: 10, md: 6 }, overflowX: 'clip' }}>
-    <PullToRefresh onRefresh={() => fetchDashboardData('manual-refresh')}>
-    <Grow in timeout={500}>
-      <Box>
-        {/* SEO & Document Title */}
-        <Helmet>
-          <title>Dashboard | Kelmah</title>
-        </Helmet>
-        {/* Minimal Top Bar - Only shows last updated time */}
-        <Box
-          sx={{
-            display: { xs: 'none', sm: 'flex' },
-            alignItems: 'center',
-            justifyContent: 'flex-end',
-            px: { xs: 2, md: 4 },
-            py: 1,
-            borderBottom: '1px solid',
-            borderColor: 'divider',
-          }}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            {/* DASH-001: Auto-refresh indicator */}
-            <Tooltip title={autoRefreshEnabled ? 'Auto-refresh enabled (every 60s)' : 'Auto-refresh disabled'} arrow>
-              <Chip
-                size="small"
-                label={autoRefreshEnabled ? 'Live' : 'Paused'}
-                color={autoRefreshEnabled ? 'success' : 'default'}
-                variant="outlined"
-                onClick={() => setAutoRefreshEnabled(!autoRefreshEnabled)}
-                sx={{
-                  cursor: 'pointer',
-                  fontSize: '0.7rem',
-                  height: 24,
-                  '& .MuiChip-label': { px: 1 }
-                }}
+    <PageCanvas
+      disableContainer
+      sx={{ pt: { xs: 1, md: 4 }, pb: { xs: 10, md: 6 }, overflowX: 'clip' }}
+    >
+      <PullToRefresh onRefresh={() => fetchDashboardData('manual-refresh')}>
+        <Grow in timeout={500}>
+          <Box>
+            {/* SEO & Document Title */}
+            <Helmet>
+              <title>Dashboard | Kelmah</title>
+            </Helmet>
+            {/* Minimal Top Bar - Only shows last updated time */}
+            <Box
+              sx={{
+                display: { xs: 'none', sm: 'flex' },
+                alignItems: 'center',
+                justifyContent: 'flex-end',
+                px: { xs: 2, md: 4 },
+                py: 1,
+                borderBottom: '1px solid',
+                borderColor: 'divider',
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                {/* DASH-001: Auto-refresh indicator */}
+                <Tooltip
+                  title={
+                    autoRefreshEnabled
+                      ? 'Auto-refresh enabled (every 60s)'
+                      : 'Auto-refresh disabled'
+                  }
+                  arrow
+                >
+                  <Chip
+                    size="small"
+                    label={autoRefreshEnabled ? 'Live' : 'Paused'}
+                    color={autoRefreshEnabled ? 'success' : 'default'}
+                    variant="outlined"
+                    onClick={() => setAutoRefreshEnabled(!autoRefreshEnabled)}
+                    sx={{
+                      cursor: 'pointer',
+                      fontSize: '0.7rem',
+                      height: 24,
+                      '& .MuiChip-label': { px: 1 },
+                    }}
+                  />
+                </Tooltip>
+                <Tooltip title="Refresh Dashboard" arrow>
+                  <IconButton
+                    onClick={handleRefresh}
+                    size="small"
+                    disabled={refreshing}
+                    aria-label="Refresh dashboard data"
+                    sx={{
+                      color: 'text.secondary',
+                      '&:focus-visible': {
+                        outline: '3px solid',
+                        outlineColor: 'primary.main',
+                        outlineOffset: '2px',
+                      },
+                    }}
+                  >
+                    <RefreshIcon
+                      sx={{
+                        animation: refreshing
+                          ? 'spin 1s linear infinite'
+                          : 'none',
+                        '@keyframes spin': {
+                          '0%': { transform: 'rotate(0deg)' },
+                          '100%': { transform: 'rotate(360deg)' },
+                        },
+                      }}
+                    />
+                  </IconButton>
+                </Tooltip>
+                {/* DASH-001: Human-readable time since refresh */}
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ minWidth: 80 }}
+                >
+                  {timeSinceRefresh}
+                </Typography>
+              </Box>
+            </Box>
+            {/* Main Content (full-width container) */}
+            <Container
+              maxWidth="xl"
+              sx={{
+                py: { xs: 2, md: 4 },
+                px: { xs: 0.75, sm: 3, md: 4 },
+                color: 'text.primary',
+                width: '100%',
+                minWidth: 0,
+              }}
+            >
+              {error && (
+                <Alert severity="error" sx={{ mb: 3 }}>
+                  {error}
+                </Alert>
+              )}
+              {/* Dashboard Overview - Direct content without tabs (navigation via sidebar) */}
+              <Box sx={{ mt: 1 }}>{renderDashboardOverview()}</Box>
+            </Container>
+            {/* Floating Quick Actions */}
+            {/* SpeedDial - offset for mobile bottom nav */}
+            <SpeedDial
+              ariaLabel="Quick Actions"
+              sx={{
+                display: { xs: 'none', sm: 'flex' },
+                position: 'fixed',
+                bottom: {
+                  xs: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px) + 12px)`,
+                  md: 32,
+                },
+                right: { xs: 16, md: 32 },
+                zIndex: 1100,
+              }}
+              icon={<SpeedDialIcon openIcon={<AddIcon />} />}
+            >
+              <SpeedDialAction
+                icon={<AddIcon />}
+                tooltipTitle="Post New Job"
+                onClick={() => navigate('/hirer/jobs/post')}
               />
-            </Tooltip>
-            <Tooltip title="Refresh Dashboard" arrow>
-              <IconButton
-                onClick={handleRefresh}
-                size="small"
-                disabled={refreshing}
-                aria-label="Refresh dashboard data"
-                sx={{ color: 'text.secondary' , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
-              >
-                <RefreshIcon sx={{ animation: refreshing ? 'spin 1s linear infinite' : 'none', '@keyframes spin': { '0%': { transform: 'rotate(0deg)' }, '100%': { transform: 'rotate(360deg)' } } }} />
-              </IconButton>
-            </Tooltip>
-            {/* DASH-001: Human-readable time since refresh */}
-            <Typography variant="caption" color="text.secondary" sx={{ minWidth: 80 }}>
-              {timeSinceRefresh}
-            </Typography>
-          </Box>
-        </Box>
-        {/* Main Content (full-width container) */}
-        <Container
-          maxWidth="xl"
-          sx={{
-            py: { xs: 2, md: 4 },
-            px: { xs: 0.75, sm: 3, md: 4 },
-            color: 'text.primary',
-            width: '100%',
-            minWidth: 0,
-          }}
-        >
-          {error && (
-            <Alert severity="error" sx={{ mb: 3 }}>
-              {error}
-            </Alert>
-          )}
-          {/* Dashboard Overview - Direct content without tabs (navigation via sidebar) */}
-          <Box sx={{ mt: 1 }}>
-            {renderDashboardOverview()}
-          </Box>
-        </Container>
-        {/* Floating Quick Actions */}
-        {/* SpeedDial - offset for mobile bottom nav */}
-        <SpeedDial
-          ariaLabel="Quick Actions"
-          sx={{
-            display: { xs: 'none', sm: 'flex' },
-            position: 'fixed',
-            bottom: {
-              xs: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px) + 12px)`,
-              md: 32,
-            },
-            right: { xs: 16, md: 32 },
-            zIndex: 1100,
-          }}
-          icon={<SpeedDialIcon openIcon={<AddIcon />} />}
-        >
-          <SpeedDialAction
-            icon={<AddIcon />}
-            tooltipTitle="Post New Job"
-            onClick={() => navigate('/hirer/jobs/post')}
-          />
-          <SpeedDialAction
-            icon={<PeopleIcon />}
-            tooltipTitle="Find Talent"
-            onClick={() => navigate('/hirer/find-talents')}
-          />
-          <SpeedDialAction
-            icon={<MessageIcon />}
-            tooltipTitle="Messages"
-            onClick={() => navigate('/messages')}
-          />
-          <SpeedDialAction
-            icon={<PaymentIcon />}
-            tooltipTitle="Payments"
-            onClick={() => navigate('/hirer/payments')}
-          />
-        </SpeedDial>
+              <SpeedDialAction
+                icon={<PeopleIcon />}
+                tooltipTitle="Find Talent"
+                onClick={() => navigate('/hirer/find-talents')}
+              />
+              <SpeedDialAction
+                icon={<MessageIcon />}
+                tooltipTitle="Messages"
+                onClick={() => navigate('/messages')}
+              />
+              <SpeedDialAction
+                icon={<PaymentIcon />}
+                tooltipTitle="Payments"
+                onClick={() => navigate('/hirer/payments')}
+              />
+            </SpeedDial>
 
-        <Paper
-          elevation={8}
-          sx={(theme) => ({
-            display: { xs: 'flex', sm: 'none' },
-            position: 'fixed',
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: theme.zIndex.appBar + 2,
-            px: 1,
-            py: 1,
-            gap: 1,
-            borderTop: `1px solid ${theme.palette.divider}`,
-            backgroundColor: theme.palette.background.paper,
-          })}
-        >
-          <Button
-            fullWidth
-            variant="outlined"
-            color="secondary"
-            sx={{ minHeight: 42 }}
-            startIcon={<RefreshIcon />}
-            onClick={handleRefresh}
-            disabled={refreshing}
-          >
-            Refresh
-          </Button>
-          <Button
-            fullWidth
-            variant="contained"
-            color="secondary"
-            sx={{ minHeight: 42, boxShadow: '0 2px 8px rgba(255,215,0,0.35)' }}
-            startIcon={<PostAddIcon />}
-            onClick={() => navigate('/hirer/jobs/post')}
-          >
-            Post Job
-          </Button>
-        </Paper>
-      </Box>
-    </Grow>
-  </PullToRefresh>
+            <Paper
+              elevation={8}
+              sx={(theme) => ({
+                display: { xs: 'flex', sm: 'none' },
+                position: 'fixed',
+                left: 0,
+                right: 0,
+                bottom: 0,
+                zIndex: theme.zIndex.appBar + 2,
+                px: 1,
+                py: 1,
+                gap: 1,
+                borderTop: `1px solid ${theme.palette.divider}`,
+                backgroundColor: theme.palette.background.paper,
+              })}
+            >
+              <Button
+                fullWidth
+                variant="outlined"
+                color="secondary"
+                sx={{ minHeight: 42 }}
+                startIcon={<RefreshIcon />}
+                onClick={handleRefresh}
+                disabled={refreshing}
+              >
+                Refresh
+              </Button>
+              <Button
+                fullWidth
+                variant="contained"
+                color="secondary"
+                sx={{
+                  minHeight: 42,
+                  boxShadow: '0 2px 8px rgba(255,215,0,0.35)',
+                }}
+                startIcon={<PostAddIcon />}
+                onClick={() => navigate('/hirer/jobs/post')}
+              >
+                Post Job
+              </Button>
+            </Paper>
+          </Box>
+        </Grow>
+      </PullToRefresh>
     </PageCanvas>
   );
 };
 
 export default HirerDashboardPage;
-

@@ -44,7 +44,8 @@ const NotificationBells = ({
   onViewAll,
 }) => {
   const theme = useTheme();
-  const totalUnread = (Number(unreadMessages) || 0) + (Number(unreadNotifications) || 0);
+  const totalUnread =
+    (Number(unreadMessages) || 0) + (Number(unreadNotifications) || 0);
 
   return (
     <>
@@ -171,14 +172,24 @@ const NotificationBells = ({
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
-        <Box sx={{ px: 3, py: 2, borderBottom: `1px solid ${theme.palette.divider}` }}>
+        <Box
+          sx={{
+            px: 3,
+            py: 2,
+            borderBottom: `1px solid ${theme.palette.divider}`,
+          }}
+        >
           <Typography variant="h6" fontWeight={700}>
             Notifications
           </Typography>
           <Typography variant="body2" color="text.secondary">
             You have {unreadNotifications} unread notifications
           </Typography>
-          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ display: 'block', mt: 0.5 }}
+          >
             Unread inbox total: {totalUnread}
           </Typography>
         </Box>
@@ -205,10 +216,17 @@ const NotificationBells = ({
 
         <MenuItem
           onClick={() => {
-            try { onMarkAllRead?.(); } catch (_) {}
+            try {
+              onMarkAllRead?.();
+            } catch (_) {}
             onNotificationsClose();
           }}
-          sx={{ py: 1.2, justifyContent: 'center', color: 'text.secondary', fontWeight: 600 }}
+          sx={{
+            py: 1.2,
+            justifyContent: 'center',
+            color: 'text.secondary',
+            fontWeight: 600,
+          }}
         >
           Mark all as read
         </MenuItem>
@@ -218,7 +236,12 @@ const NotificationBells = ({
             onNotificationsClose();
             onViewAll?.('/notifications');
           }}
-          sx={{ py: 1.5, justifyContent: 'center', color: 'primary.main', fontWeight: 600 }}
+          sx={{
+            py: 1.5,
+            justifyContent: 'center',
+            color: 'primary.main',
+            fontWeight: 600,
+          }}
         >
           View All Notifications
         </MenuItem>

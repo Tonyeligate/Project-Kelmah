@@ -46,7 +46,8 @@ const retryWithBackoff = async (fn, maxRetries = 3, baseDelay = 2000) => {
     } catch (error) {
       lastError = error;
       // Only retry on network errors or timeouts (Render cold start scenarios)
-      const isRetryable = !error.response ||
+      const isRetryable =
+        !error.response ||
         error.code === 'ECONNABORTED' ||
         error.message?.includes('timeout') ||
         error.message?.includes('Network Error');
@@ -57,8 +58,10 @@ const retryWithBackoff = async (fn, maxRetries = 3, baseDelay = 2000) => {
 
       // Exponential backoff: 2s, 4s, 8s
       const delay = baseDelay * Math.pow(2, attempt - 1);
-      devLog(`[Auth] Retry attempt ${attempt}/${maxRetries} after ${delay}ms...`);
-      await new Promise(resolve => setTimeout(resolve, delay));
+      devLog(
+        `[Auth] Retry attempt ${attempt}/${maxRetries} after ${delay}ms...`,
+      );
+      await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }
   throw lastError;
@@ -70,7 +73,7 @@ const authService = {
     try {
       // Use retry wrapper to handle Render cold start delays
       const response = await retryWithBackoff(() =>
-        api.post('/auth/login', credentials, { _skipAuthRefresh: true })
+        api.post('/auth/login', credentials, { _skipAuthRefresh: true }),
       );
 
       // Extract data from response (handle different response structures)
@@ -82,9 +85,7 @@ const authService = {
       const normalizedUser = persistNormalizedUser(user, persistOptions);
 
       if (!user) {
-        throw new Error(
-          'Invalid response from server - missing user data',
-        );
+        throw new Error('Invalid response from server - missing user data');
       }
 
       // Store authentication data securely
@@ -104,10 +105,7 @@ const authService = {
         authService.setupTokenRefresh(token);
       }
 
-      devLog(
-        'Login successful for user:',
-        normalizedUser?.email || user.email,
-      );
+      devLog('Login successful for user:', normalizedUser?.email || user.email);
       return {
         token: token || null,
         refreshToken,
@@ -162,10 +160,7 @@ const authService = {
   // Register user
   register: async (userData) => {
     try {
-      const response = await api.post(
-        '/auth/register',
-        userData,
-      );
+      const response = await api.post('/auth/register', userData);
       const { token, user } = response.data.data || response.data;
       const normalizedUser = normalizeUser(user?._raw || user);
 
@@ -258,14 +253,14 @@ const authService = {
       const response = await api.post('/auth/refresh-token', refreshPayload);
       const responseData = response.data.data || response.data;
       const newAccessToken =
-        responseData?.token ||
-        responseData?.accessToken ||
-        null;
+        responseData?.token || responseData?.accessToken || null;
       if (!newAccessToken && !AUTH_CONFIG.httpOnlyCookieAuth) {
         throw new Error('Refresh response did not include a new token');
       }
       return newAccessToken;
-    })().finally(() => { apiClient._refreshPromise = null; });
+    })().finally(() => {
+      apiClient._refreshPromise = null;
+    });
 
     try {
       const newAccessToken = await apiClient._refreshPromise;
@@ -312,10 +307,7 @@ const authService = {
           try {
             window.dispatchEvent(new CustomEvent('auth:tokenExpired'));
           } catch (dispatchError) {
-            devWarn(
-              'Failed to dispatch tokenExpired event:',
-              dispatchError,
-            );
+            devWarn('Failed to dispatch tokenExpired event:', dispatchError);
           }
         }
       }
@@ -333,10 +325,7 @@ const authService = {
   // Forgot password
   forgotPassword: async (email) => {
     try {
-      const response = await api.post(
-        '/auth/forgot-password',
-        { email },
-      );
+      const response = await api.post('/auth/forgot-password', { email });
       return response.data;
     } catch (error) {
       devError('Forgot password error:', error);
@@ -347,10 +336,10 @@ const authService = {
   // Reset password
   resetPassword: async (token, password) => {
     try {
-      const response = await api.post(
-        '/auth/reset-password',
-        { token, password },
-      );
+      const response = await api.post('/auth/reset-password', {
+        token,
+        password,
+      });
       return response.data;
     } catch (error) {
       devError('Reset password error:', error);
@@ -371,7 +360,6 @@ const authService = {
         user: normalizedUser || payload.user || payload,
         message: payload.message,
       };
-
     } catch (error) {
       devError('Profile update error:', error);
       throw error;
@@ -502,7 +490,6 @@ const authService = {
       devWarn('Failed to schedule token refresh:', error.message);
     }
   },
-
 };
 
 export default authService;

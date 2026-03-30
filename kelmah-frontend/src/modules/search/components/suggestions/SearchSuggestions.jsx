@@ -137,7 +137,9 @@ const SearchSuggestions = ({
                     </ListItemIcon>
                     <ListItemText
                       primary={suggestion.text}
-                      primaryTypographyProps={{ sx: { wordBreak: 'break-word' } }}
+                      primaryTypographyProps={{
+                        sx: { wordBreak: 'break-word' },
+                      }}
                       secondary={
                         suggestion.subText ||
                         getSuggestionTypeLabel(suggestion.type)
@@ -150,7 +152,11 @@ const SearchSuggestions = ({
                       size="small"
                       label={getSuggestionTypeLabel(suggestion.type)}
                       variant="outlined"
-                      sx={{ ml: 1, flexShrink: 0, minHeight: { xs: 40, sm: 30 } }}
+                      sx={{
+                        ml: 1,
+                        flexShrink: 0,
+                        minHeight: { xs: 40, sm: 30 },
+                      }}
                     />
                   </ListItemButton>
                 </ListItem>

@@ -1,6 +1,17 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Box, Typography, Alert, List, ListItem, ListItemAvatar, Avatar, ListItemText, Rating, Divider } from '@mui/material';
+import {
+  Box,
+  Typography,
+  Alert,
+  List,
+  ListItem,
+  ListItemAvatar,
+  Avatar,
+  ListItemText,
+  Rating,
+  Divider,
+} from '@mui/material';
 import { RateReview as ReviewIcon } from '@mui/icons-material';
 import { formatRelativeTime } from '../../../../utils/formatters';
 
@@ -22,20 +33,34 @@ const ReviewList = ({ reviews = [], emptyMessage = 'No reviews yet' }) => {
         <React.Fragment key={review.id || review._id || index}>
           <ListItem alignItems="flex-start" sx={{ px: 0 }}>
             <ListItemAvatar>
-              <Avatar src={review.reviewerAvatar} alt={review.reviewerName || 'Reviewer'}>
+              <Avatar
+                src={review.reviewerAvatar}
+                alt={review.reviewerName || 'Reviewer'}
+              >
                 {(review.reviewerName || 'R')[0]}
               </Avatar>
             </ListItemAvatar>
             <ListItemText
               primary={
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Typography variant="subtitle2">{review.reviewerName || 'Anonymous'}</Typography>
-                  <Rating value={review.rating || 0} size="small" readOnly precision={0.5} />
+                  <Typography variant="subtitle2">
+                    {review.reviewerName || 'Anonymous'}
+                  </Typography>
+                  <Rating
+                    value={review.rating || 0}
+                    size="small"
+                    readOnly
+                    precision={0.5}
+                  />
                 </Box>
               }
               secondary={
                 <>
-                  <Typography variant="body2" color="text.primary" sx={{ mt: 0.5 }}>
+                  <Typography
+                    variant="body2"
+                    color="text.primary"
+                    sx={{ mt: 0.5 }}
+                  >
                     {review.comment || review.text || ''}
                   </Typography>
                   {review.createdAt && (
@@ -47,7 +72,9 @@ const ReviewList = ({ reviews = [], emptyMessage = 'No reviews yet' }) => {
               }
             />
           </ListItem>
-          {index < reviews.length - 1 && <Divider variant="inset" component="li" />}
+          {index < reviews.length - 1 && (
+            <Divider variant="inset" component="li" />
+          )}
         </React.Fragment>
       ))}
     </List>

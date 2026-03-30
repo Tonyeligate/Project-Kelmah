@@ -1,7 +1,20 @@
 import { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import {
-  Card, CardMedia, CardContent, CardActions, Typography, Button, Chip, Box, Avatar, Divider, Stack, IconButton, useTheme } from '@mui/material';
+  Card,
+  CardMedia,
+  CardContent,
+  CardActions,
+  Typography,
+  Button,
+  Chip,
+  Box,
+  Avatar,
+  Divider,
+  Stack,
+  IconButton,
+  useTheme,
+} from '@mui/material';
 import {
   LocationOn,
   AttachMoney,
@@ -200,7 +213,11 @@ const JobCard = ({
             borderBottom: `1px solid ${theme.palette.divider}`,
             backgroundColor: theme.palette.action.hover,
           }}
-          onError={(e) => { e.target.onerror = null; e.target.src = ''; e.target.style.display = 'none'; }}
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = '';
+            e.target.style.display = 'none';
+          }}
         />
       )}
       <CardContent sx={{ pb: variant === 'compact' ? 1 : 2 }}>
@@ -220,9 +237,10 @@ const JobCard = ({
               flexGrow: 1,
               mr: 1,
               lineHeight: 1.35,
-              fontSize: variant === 'compact'
-                ? { xs: '0.98rem', sm: '1.02rem' }
-                : { xs: '1.02rem', sm: '1.12rem' },
+              fontSize:
+                variant === 'compact'
+                  ? { xs: '0.98rem', sm: '1.02rem' }
+                  : { xs: '1.02rem', sm: '1.12rem' },
               display: '-webkit-box',
               WebkitLineClamp: variant === 'compact' ? 2 : 3,
               WebkitBoxOrient: 'vertical',
@@ -245,13 +263,16 @@ const JobCard = ({
                 size="small"
                 onClick={handleSaveToggle}
                 disabled={isSaveLoading}
-                aria-label={derivedIsSaved ? `Unsave job ${title}` : `Save job ${title}`}
+                aria-label={
+                  derivedIsSaved ? `Unsave job ${title}` : `Save job ${title}`
+                }
                 color={derivedIsSaved ? 'primary' : 'default'}
                 sx={{
                   minWidth: 44,
                   minHeight: 44,
                   '&.Mui-focusVisible': {
-                    outline: (themeObj) => `3px solid ${themeObj.palette.primary.main}`,
+                    outline: (themeObj) =>
+                      `3px solid ${themeObj.palette.primary.main}`,
                     outlineOffset: 2,
                   },
                 }}
@@ -289,14 +310,22 @@ const JobCard = ({
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             <AttachMoney sx={{ fontSize: 18 }} color="primary" />
-            <Typography variant="body2" fontWeight="medium" sx={{ lineHeight: 1.4 }}>
+            <Typography
+              variant="body2"
+              fontWeight="medium"
+              sx={{ lineHeight: 1.4 }}
+            >
               {formatBudget(budget)}
             </Typography>
           </Box>
           {location && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <LocationOn sx={{ fontSize: 18 }} color="action" />
-              <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.4 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ lineHeight: 1.4 }}
+              >
                 {location}
               </Typography>
             </Box>
@@ -385,7 +414,9 @@ const JobCard = ({
 
       {/* Actions - for all non-compact variants */}
       {variant !== 'compact' && (
-        <CardActions sx={{ px: 2, pb: 2, gap: 1, flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
+        <CardActions
+          sx={{ px: 2, pb: 2, gap: 1, flexWrap: isMobile ? 'wrap' : 'nowrap' }}
+        >
           <Button
             variant="contained"
             color="primary"
@@ -466,4 +497,3 @@ JobCard.propTypes = {
   isSaveLoading: PropTypes.bool,
   onToggleSave: PropTypes.func,
 };
-

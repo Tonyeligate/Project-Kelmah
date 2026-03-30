@@ -13,7 +13,9 @@ const CONTRACTS_BASE = '/jobs/contracts';
 const isValidRouteId = (value) => {
   if (value === null || value === undefined) return false;
   const normalized = String(value).trim();
-  return normalized.length > 0 && normalized !== 'undefined' && normalized !== 'null';
+  return (
+    normalized.length > 0 && normalized !== 'undefined' && normalized !== 'null'
+  );
 };
 
 const assertMilestoneRouteIds = (contractId, milestoneId) => {
@@ -48,7 +50,9 @@ const normalizeContract = (contract = {}, index = 0) => {
     (typeof contract.client === 'string' ? contract.client : '') ||
     'Independent';
 
-  const value = Number(contract.value ?? contract.amount ?? contract.budget ?? 0);
+  const value = Number(
+    contract.value ?? contract.amount ?? contract.budget ?? 0,
+  );
 
   return {
     ...contract,
@@ -73,11 +77,15 @@ const normalizeContract = (contract = {}, index = 0) => {
     value,
     amountPaid: Number(contract.amountPaid || 0),
     currency: contract.currency || 'GHS',
-    lastUpdated: contract.updatedAt || contract.lastUpdated || contract.startDate || Date.now(),
+    lastUpdated:
+      contract.updatedAt ||
+      contract.lastUpdated ||
+      contract.startDate ||
+      Date.now(),
     milestones: Array.isArray(contract.milestones)
       ? contract.milestones.map((milestone, milestoneIndex) =>
-        normalizeMilestone(milestone, milestoneIndex),
-      )
+          normalizeMilestone(milestone, milestoneIndex),
+        )
       : [],
   };
 };
@@ -224,10 +232,10 @@ export const contractService = {
 
       const milestones = Array.isArray(contract.milestones)
         ? contract.milestones.map((milestone) =>
-          String(milestone.id) === String(milestoneId)
-            ? { ...milestone, status: 'completed', ...completionData }
-            : milestone,
-        )
+            String(milestone.id) === String(milestoneId)
+              ? { ...milestone, status: 'completed', ...completionData }
+              : milestone,
+          )
         : [];
 
       await this.updateContract(contractId, { milestones });
@@ -307,13 +315,10 @@ export const contractService = {
       });
       // If dedicated approve endpoint doesn't exist, try generic milestone update
       try {
-        const response = await api.put(
-          `${CONTRACTS_BASE}/${contractId}`,
-          {
-            milestoneId,
-            milestoneStatus: 'approved',
-          },
-        );
+        const response = await api.put(`${CONTRACTS_BASE}/${contractId}`, {
+          milestoneId,
+          milestoneStatus: 'approved',
+        });
         return unwrapPayload(response) || { success: true };
       } catch (fallbackError) {
         captureRecoverableApiError(fallbackError, {

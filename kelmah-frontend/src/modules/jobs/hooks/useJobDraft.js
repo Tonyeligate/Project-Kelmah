@@ -148,4 +148,3 @@ export const useJobDraft = ({
     saveDraft,
   };
 };
-

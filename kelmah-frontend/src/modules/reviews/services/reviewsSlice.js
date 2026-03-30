@@ -14,7 +14,8 @@ const normalizeReviewCollection = (payload) => {
 
   return {
     reviews,
-    totalCount: pagination.total ?? data?.totalCount ?? data?.total ?? reviews.length,
+    totalCount:
+      pagination.total ?? data?.totalCount ?? data?.total ?? reviews.length,
     currentPage: pagination.page ?? data?.currentPage ?? data?.page ?? 1,
   };
 };
@@ -31,7 +32,9 @@ const getRecipientReviewsPath = (recipientType, recipientId) => {
     case 'contract':
       return `/reviews/job/${recipientId}`;
     default:
-      throw new Error('recipientType must be one of worker, user, reviewer, author, job, or contract');
+      throw new Error(
+        'recipientType must be one of worker, user, reviewer, author, job, or contract',
+      );
   }
 };
 
@@ -61,12 +64,15 @@ export const fetchReviewsByRecipient = createAsyncThunk(
     { rejectWithValue },
   ) => {
     try {
-      const response = await api.get(getRecipientReviewsPath(recipientType, recipientId), {
-        params: {
-          page,
-          limit,
+      const response = await api.get(
+        getRecipientReviewsPath(recipientType, recipientId),
+        {
+          params: {
+            page,
+            limit,
+          },
         },
-      });
+      );
 
       return normalizeReviewCollection(response.data);
     } catch (error) {

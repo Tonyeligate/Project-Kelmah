@@ -14,7 +14,10 @@ import { useAuth } from '../../auth/hooks/useAuth';
 import websocketService from '../../../services/websocketService';
 import fileUploadService from '../../common/services/fileUploadService';
 import { normalizeAttachmentListVirusScan } from '../utils/virusScanUtils';
-import { MESSAGE_DELIVERY_ALIASES, SOCKET_EVENTS } from '../../../services/socketEvents';
+import {
+  MESSAGE_DELIVERY_ALIASES,
+  SOCKET_EVENTS,
+} from '../../../services/socketEvents';
 import { createRealtimeMessageDeduper } from '../utils/realtimeMessageDeduper';
 import {
   createFeatureLogger,
@@ -76,17 +79,26 @@ const normalizeContextAttachment = (attachment = {}) => {
       ? 'image'
       : attachment.type === 'video' || String(mimeType).startsWith('video/')
         ? 'video'
-      : attachment.type || 'file';
+        : attachment.type || 'file';
 
   return {
     ...attachment,
     id: attachment.id || attachment._id,
-    url: attachment.url || attachment.fileUrl || attachment.path || attachment.getUrl || null,
+    url:
+      attachment.url ||
+      attachment.fileUrl ||
+      attachment.path ||
+      attachment.getUrl ||
+      null,
     fileUrl: attachment.fileUrl || attachment.url || null,
     type: normalizedType,
     mimeType,
     fileType: attachment.fileType || mimeType || attachment.type,
-    name: attachment.name || attachment.fileName || attachment.filename || 'Attachment',
+    name:
+      attachment.name ||
+      attachment.fileName ||
+      attachment.filename ||
+      'Attachment',
     size: attachment.size || attachment.fileSize || 0,
   };
 };
@@ -111,10 +123,7 @@ const uploadPendingAttachments = async (attachments = [], conversationId) => {
       );
 
       const mimeType =
-        attachment?.mimeType ||
-        attachment?.fileType ||
-        sourceFile.type ||
-        '';
+        attachment?.mimeType || attachment?.fileType || sourceFile.type || '';
 
       return normalizeContextAttachment({
         name: attachment?.name || sourceFile.name,
@@ -192,16 +201,18 @@ const normalizeConversation = (conversation = {}) => {
     ...conversation,
     id: conversation.id || conversation._id,
     participants: Array.isArray(conversation.participants)
-      ? conversation.participants.map((participant) => normalizeParticipant(participant))
+      ? conversation.participants.map((participant) =>
+          normalizeParticipant(participant),
+        )
       : [],
     unread:
       typeof conversation.unread === 'number'
         ? conversation.unread
-        : (conversation.unreadCount || 0),
+        : conversation.unreadCount || 0,
     unreadCount:
       typeof conversation.unreadCount === 'number'
         ? conversation.unreadCount
-        : (conversation.unread || 0),
+        : conversation.unread || 0,
     lastMessage: conversation.lastMessage
       ? normalizeMessageAttachments(conversation.lastMessage)
       : conversation.lastMessage,
@@ -212,7 +223,9 @@ const normalizeConversation = (conversation = {}) => {
 };
 
 const normalizeConversationList = (list = []) =>
-  (Array.isArray(list) ? list : []).map((conversation) => normalizeConversation(conversation));
+  (Array.isArray(list) ? list : []).map((conversation) =>
+    normalizeConversation(conversation),
+  );
 
 const normalizeMessageList = (list = []) =>
   list.map((message) => normalizeMessageAttachments(message || {}));
@@ -227,11 +240,11 @@ const createTemporaryConversation = (participant = {}) => {
     isTemporary: true,
     participants: participantId
       ? [
-        normalizeParticipant({
-          ...participant,
-          id: participantId,
-        }),
-      ]
+          normalizeParticipant({
+            ...participant,
+            id: participantId,
+          }),
+        ]
       : [],
     unread: 0,
     unreadCount: 0,
@@ -245,10 +258,16 @@ const createTemporaryConversation = (participant = {}) => {
 const sortConversationsByActivity = (list = []) =>
   [...list].sort((left, right) => {
     const leftStamp = new Date(
-      left?.lastMessage?.createdAt || left?.lastMessage?.timestamp || left?.updatedAt || 0,
+      left?.lastMessage?.createdAt ||
+        left?.lastMessage?.timestamp ||
+        left?.updatedAt ||
+        0,
     ).getTime();
     const rightStamp = new Date(
-      right?.lastMessage?.createdAt || right?.lastMessage?.timestamp || right?.updatedAt || 0,
+      right?.lastMessage?.createdAt ||
+        right?.lastMessage?.timestamp ||
+        right?.updatedAt ||
+        0,
     ).getTime();
     return rightStamp - leftStamp;
   });
@@ -320,7 +339,10 @@ export const MessageProvider = ({ children }) => {
         return normalized; // Return list for callers that need it
       } catch (error) {
         lastError = error;
-        messagingLog(`loadConversations attempt ${attempt}/2 failed:`, error.message);
+        messagingLog(
+          `loadConversations attempt ${attempt}/2 failed:`,
+          error.message,
+        );
         if (attempt < 2) {
           await new Promise((r) => setTimeout(r, 3000)); // Wait 3s before retry
         }
@@ -356,7 +378,9 @@ export const MessageProvider = ({ children }) => {
         devWarn(
           'WebSocketService socket unavailable - messaging will use REST only',
         );
-        setRealtimeIssue('Real-time connection unavailable. Using standard refresh mode.');
+        setRealtimeIssue(
+          'Real-time connection unavailable. Using standard refresh mode.',
+        );
         connectingRef.current = false;
         return;
       }
@@ -389,7 +413,9 @@ export const MessageProvider = ({ children }) => {
           devError('WebSocket connection error:', error);
           socketErrorLoggedRef.current = true;
         }
-        setRealtimeIssue('Real-time connection failed. Using standard refresh mode.');
+        setRealtimeIssue(
+          'Real-time connection failed. Using standard refresh mode.',
+        );
         connectingRef.current = false;
       };
       const onConnected = (data) => {
@@ -448,7 +474,10 @@ export const MessageProvider = ({ children }) => {
         }
 
         const activeConvId = activeConversation?.id;
-        if (hydratedMessage.senderId && String(hydratedMessage.senderId) !== String(user?.id)) {
+        if (
+          hydratedMessage.senderId &&
+          String(hydratedMessage.senderId) !== String(user?.id)
+        ) {
           const senderName =
             hydratedMessage.senderName ||
             hydratedMessage.sender?.name ||
@@ -462,17 +491,17 @@ export const MessageProvider = ({ children }) => {
             prev.map((conv) =>
               conv.id === hydratedConversationId
                 ? {
-                  ...conv,
-                  lastMessage: hydratedMessage,
-                  updatedAt: hydratedMessage.createdAt,
-                  // Increment unread badge only when this conversation is NOT currently open
-                  unreadCount:
-                    conv.id !== activeConvId
-                      ? (conv.unreadCount || 0) + 1
-                      : 0,
-                  unread:
-                    conv.id !== activeConvId ? (conv.unread || 0) + 1 : 0,
-                }
+                    ...conv,
+                    lastMessage: hydratedMessage,
+                    updatedAt: hydratedMessage.createdAt,
+                    // Increment unread badge only when this conversation is NOT currently open
+                    unreadCount:
+                      conv.id !== activeConvId
+                        ? (conv.unreadCount || 0) + 1
+                        : 0,
+                    unread:
+                      conv.id !== activeConvId ? (conv.unread || 0) + 1 : 0,
+                  }
                 : conv,
             ),
           ),
@@ -508,7 +537,8 @@ export const MessageProvider = ({ children }) => {
         ) {
           setMessages((prev) =>
             prev.map((msg) =>
-              data.messageIds === 'all_unread' || data.messageIds.includes(msg.id)
+              data.messageIds === 'all_unread' ||
+              data.messageIds.includes(msg.id)
                 ? { ...msg, isRead: true, readAt: data.readAt }
                 : msg,
             ),
@@ -528,17 +558,29 @@ export const MessageProvider = ({ children }) => {
           return newSet;
         });
       };
-      const onUserOnline = (data) => onUserStatusChanged({ userId: data.userId, status: 'online' });
-      const onUserOffline = (data) => onUserStatusChanged({ userId: data.userId, status: 'offline' });
+      const onUserOnline = (data) =>
+        onUserStatusChanged({ userId: data.userId, status: 'online' });
+      const onUserOffline = (data) =>
+        onUserStatusChanged({ userId: data.userId, status: 'offline' });
 
       const onMessageDelivered = (data) => {
         messagingLog('Message delivered:', data);
         const activeConversation = selectedConversationRef.current;
-        if (activeConversation && data.conversationId === activeConversation.id) {
+        if (
+          activeConversation &&
+          data.conversationId === activeConversation.id
+        ) {
           setMessages((prev) =>
             prev.map((msg) =>
-              msg.id === data.messageId ? { ...msg, status: 'delivered', isDelivered: true, deliveredAt: data.deliveredAt || Date.now() } : msg
-            )
+              msg.id === data.messageId
+                ? {
+                    ...msg,
+                    status: 'delivered',
+                    isDelivered: true,
+                    deliveredAt: data.deliveredAt || Date.now(),
+                  }
+                : msg,
+            ),
           );
         }
       };
@@ -578,7 +620,9 @@ export const MessageProvider = ({ children }) => {
       }
     } catch (error) {
       devError('Failed to initialize messaging socket:', error);
-      setRealtimeIssue('Real-time connection failed. Using standard refresh mode.');
+      setRealtimeIssue(
+        'Real-time connection failed. Using standard refresh mode.',
+      );
       connectingRef.current = false;
     }
   }, [authLoading, isAuthenticated, user]);
@@ -594,14 +638,19 @@ export const MessageProvider = ({ children }) => {
       conversationLoadTimeoutRef.current = null;
     }
     if (activeSocket) {
-      messagingLog('MessageContext: detaching messaging listeners from shared socket');
+      messagingLog(
+        'MessageContext: detaching messaging listeners from shared socket',
+      );
       const msgListeners = msgListenersRef.current;
       try {
         MESSAGING_SOCKET_EVENTS.forEach((evt) => {
           if (msgListeners[evt]) activeSocket.off(evt, msgListeners[evt]);
         });
         if (conversationJoinHandlerRef.current) {
-          activeSocket.off(SOCKET_EVENTS.CONVERSATION.JOINED, conversationJoinHandlerRef.current);
+          activeSocket.off(
+            SOCKET_EVENTS.CONVERSATION.JOINED,
+            conversationJoinHandlerRef.current,
+          );
           conversationJoinHandlerRef.current = null;
         }
         msgListenersRef.current = {};
@@ -619,7 +668,9 @@ export const MessageProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    const canInitializeMessaging = Boolean(user && isAuthenticated && !authLoading && getTokenRef.current?.());
+    const canInitializeMessaging = Boolean(
+      user && isAuthenticated && !authLoading && getTokenRef.current?.(),
+    );
 
     if (canInitializeMessaging) {
       loadConversations();
@@ -636,7 +687,14 @@ export const MessageProvider = ({ children }) => {
     return () => {
       disconnectWebSocket();
     };
-  }, [authLoading, isAuthenticated, user, loadConversations, connectWebSocket, disconnectWebSocket]);
+  }, [
+    authLoading,
+    isAuthenticated,
+    user,
+    loadConversations,
+    connectWebSocket,
+    disconnectWebSocket,
+  ]);
 
   const loadingMessagesRef = useRef(false);
 
@@ -654,7 +712,10 @@ export const MessageProvider = ({ children }) => {
       }
 
       if (socket && conversationJoinHandlerRef.current) {
-        socket.off(SOCKET_EVENTS.CONVERSATION.JOINED, conversationJoinHandlerRef.current);
+        socket.off(
+          SOCKET_EVENTS.CONVERSATION.JOINED,
+          conversationJoinHandlerRef.current,
+        );
         conversationJoinHandlerRef.current = null;
       }
       if (conversationLoadTimeoutRef.current) {
@@ -699,7 +760,9 @@ export const MessageProvider = ({ children }) => {
       try {
         // Join new conversation room via WebSocket
         if (socket && isConnected) {
-          socket.emit(SOCKET_EVENTS.CONVERSATION.JOIN, { conversationId: normalizedConversation.id });
+          socket.emit(SOCKET_EVENTS.CONVERSATION.JOIN, {
+            conversationId: normalizedConversation.id,
+          });
 
           // Notify backend that messages in this conversation have been read
           socket.emit(SOCKET_EVENTS.CONVERSATION.MARK_READ, {
@@ -709,11 +772,16 @@ export const MessageProvider = ({ children }) => {
 
           // Listen for conversation joined event
           const handleConversationJoined = (data) => {
-            if (String(data?.conversationId) !== String(normalizedConversation.id)) {
+            if (
+              String(data?.conversationId) !== String(normalizedConversation.id)
+            ) {
               return;
             }
             if (conversationJoinHandlerRef.current) {
-              socket.off(SOCKET_EVENTS.CONVERSATION.JOINED, conversationJoinHandlerRef.current);
+              socket.off(
+                SOCKET_EVENTS.CONVERSATION.JOINED,
+                conversationJoinHandlerRef.current,
+              );
               conversationJoinHandlerRef.current = null;
             }
             if (conversationLoadTimeoutRef.current) {
@@ -727,14 +795,18 @@ export const MessageProvider = ({ children }) => {
           };
 
           conversationJoinHandlerRef.current = handleConversationJoined;
-          socket.on(SOCKET_EVENTS.CONVERSATION.JOINED, handleConversationJoined);
+          socket.on(
+            SOCKET_EVENTS.CONVERSATION.JOINED,
+            handleConversationJoined,
+          );
 
           // MED-21 FIX: Fallback timeout - fetch via REST if WS doesn't respond in time
           const conversationId = normalizedConversation.id;
           conversationLoadTimeoutRef.current = setTimeout(async () => {
             if (loadingMessagesRef.current) {
               try {
-                const fallbackMessages = await messagingService.getMessages(conversationId);
+                const fallbackMessages =
+                  await messagingService.getMessages(conversationId);
                 setMessages(normalizeMessageList(fallbackMessages));
               } catch (fallbackErr) {
                 messagingLog(
@@ -743,7 +815,10 @@ export const MessageProvider = ({ children }) => {
                 );
               } finally {
                 if (conversationJoinHandlerRef.current) {
-                  socket.off(SOCKET_EVENTS.CONVERSATION.JOINED, conversationJoinHandlerRef.current);
+                  socket.off(
+                    SOCKET_EVENTS.CONVERSATION.JOINED,
+                    conversationJoinHandlerRef.current,
+                  );
                   conversationJoinHandlerRef.current = null;
                 }
                 setLoadingMessages(false);
@@ -786,13 +861,13 @@ export const MessageProvider = ({ children }) => {
       const normalizedMessageType =
         messageType === 'mixed'
           ? rawAttachments.some((attachment) => {
-            const mimeType =
-              attachment?.type ||
-              attachment?.mimeType ||
-              attachment?.fileType ||
-              '';
-            return String(mimeType).startsWith('image/');
-          })
+              const mimeType =
+                attachment?.type ||
+                attachment?.mimeType ||
+                attachment?.fileType ||
+                '';
+              return String(mimeType).startsWith('image/');
+            })
             ? 'image'
             : 'file'
           : messageType;
@@ -810,18 +885,20 @@ export const MessageProvider = ({ children }) => {
             throw new Error('Unable to resolve temporary message recipient');
           }
 
-          const createdConversation = await messagingService.createDirectConversation(tempRecipientId);
-          const normalizedCreatedConversation = normalizeConversation(createdConversation);
+          const createdConversation =
+            await messagingService.createDirectConversation(tempRecipientId);
+          const normalizedCreatedConversation =
+            normalizeConversation(createdConversation);
 
           setConversations((prev) =>
             sortConversationsByActivity(
               prev.map((conversation) =>
                 conversation.id === selectedConversation.id
                   ? {
-                    ...normalizedCreatedConversation,
-                    unreadCount: 0,
-                    unread: 0,
-                  }
+                      ...normalizedCreatedConversation,
+                      unreadCount: 0,
+                      unread: 0,
+                    }
                   : conversation,
               ),
             ),
@@ -835,9 +912,8 @@ export const MessageProvider = ({ children }) => {
           attachments,
           activeConversation.id,
         );
-        const safeAttachments = normalizeAttachmentListVirusScan(
-          uploadedAttachments,
-        );
+        const safeAttachments =
+          normalizeAttachmentListVirusScan(uploadedAttachments);
 
         // Use WebSocket for real-time messaging if available
         if (socket && isConnected) {
@@ -870,10 +946,10 @@ export const MessageProvider = ({ children }) => {
               prev.map((c) =>
                 c.id === activeConversation.id
                   ? {
-                    ...c,
-                    lastMessage: optimisticMessage,
-                    updatedAt: optimisticMessage.createdAt,
-                  }
+                      ...c,
+                      lastMessage: optimisticMessage,
+                      updatedAt: optimisticMessage.createdAt,
+                    }
                   : c,
               ),
             ),
@@ -885,20 +961,20 @@ export const MessageProvider = ({ children }) => {
           const eventName = useEncrypted ? 'send_encrypted' : 'send_message';
           const payload = useEncrypted
             ? {
-              conversationId: activeConversation.id,
-              encryptedBody: trimmedContent,
-              encryption: { scheme: 'beta', version: '1', senderKeyId: 'me' },
-              messageType: normalizedMessageType,
-              attachments: safeAttachments,
-              clientId,
-            }
+                conversationId: activeConversation.id,
+                encryptedBody: trimmedContent,
+                encryption: { scheme: 'beta', version: '1', senderKeyId: 'me' },
+                messageType: normalizedMessageType,
+                attachments: safeAttachments,
+                clientId,
+              }
             : {
-              conversationId: activeConversation.id,
-              content: trimmedContent,
-              messageType: normalizedMessageType,
-              attachments: safeAttachments,
-              clientId,
-            };
+                conversationId: activeConversation.id,
+                content: trimmedContent,
+                messageType: normalizedMessageType,
+                attachments: safeAttachments,
+                clientId,
+              };
 
           socket.emit(eventName, payload, async (ack) => {
             if (!ack || ack.ok !== true) {
@@ -953,10 +1029,10 @@ export const MessageProvider = ({ children }) => {
                     prev.map((c) =>
                       c.id === activeConversation.id
                         ? {
-                          ...c,
-                          lastMessage: normalized,
-                          updatedAt: normalized.createdAt,
-                        }
+                            ...c,
+                            lastMessage: normalized,
+                            updatedAt: normalized.createdAt,
+                          }
                         : c,
                     ),
                   ),
@@ -1013,7 +1089,11 @@ export const MessageProvider = ({ children }) => {
             sortConversationsByActivity(
               prev.map((c) =>
                 c.id === activeConversation.id
-                  ? { ...c, lastMessage: normalized, updatedAt: normalized.createdAt }
+                  ? {
+                      ...c,
+                      lastMessage: normalized,
+                      updatedAt: normalized.createdAt,
+                    }
                   : c,
               ),
             ),
@@ -1021,7 +1101,9 @@ export const MessageProvider = ({ children }) => {
         }
       } catch (error) {
         devError('Error sending message:', error);
-        setSendError(error?.message || 'Failed to send message. Please try again.');
+        setSendError(
+          error?.message || 'Failed to send message. Please try again.',
+        );
       } finally {
         setSendingMessage(false);
       }
@@ -1041,7 +1123,8 @@ export const MessageProvider = ({ children }) => {
 
         // Select the full conversation from the refreshed list (has participant names)
         // Fallback to the partial convo from the bridge if not found in list
-        const fullConvo = (freshList || []).find((c) => c.id === convoId) || convo;
+        const fullConvo =
+          (freshList || []).find((c) => c.id === convoId) || convo;
         await selectConversation(fullConvo);
         return fullConvo;
       } catch (error) {
@@ -1098,7 +1181,10 @@ export const MessageProvider = ({ children }) => {
       });
     }
     if (socket && conversationJoinHandlerRef.current) {
-      socket.off(SOCKET_EVENTS.CONVERSATION.JOINED, conversationJoinHandlerRef.current);
+      socket.off(
+        SOCKET_EVENTS.CONVERSATION.JOINED,
+        conversationJoinHandlerRef.current,
+      );
       conversationJoinHandlerRef.current = null;
     }
     if (conversationLoadTimeoutRef.current) {
@@ -1107,7 +1193,9 @@ export const MessageProvider = ({ children }) => {
     }
     if (selectedConversation?.isTemporary) {
       setConversations((prev) =>
-        prev.filter((conversation) => conversation.id !== selectedConversation.id),
+        prev.filter(
+          (conversation) => conversation.id !== selectedConversation.id,
+        ),
       );
     }
     setSelectedConversation(null);
@@ -1117,21 +1205,40 @@ export const MessageProvider = ({ children }) => {
 
   // Real-time typing functions
   const startTyping = useCallback(() => {
-    if (selectedConversation && socket && isConnected && !selectedConversation.isTemporary) {
-      socket.emit(SOCKET_EVENTS.MESSAGE.TYPING_START, { conversationId: selectedConversation.id });
+    if (
+      selectedConversation &&
+      socket &&
+      isConnected &&
+      !selectedConversation.isTemporary
+    ) {
+      socket.emit(SOCKET_EVENTS.MESSAGE.TYPING_START, {
+        conversationId: selectedConversation.id,
+      });
     }
   }, [selectedConversation, socket, isConnected]);
 
   const stopTyping = useCallback(() => {
-    if (selectedConversation && socket && isConnected && !selectedConversation.isTemporary) {
-      socket.emit(SOCKET_EVENTS.MESSAGE.TYPING_STOP, { conversationId: selectedConversation.id });
+    if (
+      selectedConversation &&
+      socket &&
+      isConnected &&
+      !selectedConversation.isTemporary
+    ) {
+      socket.emit(SOCKET_EVENTS.MESSAGE.TYPING_STOP, {
+        conversationId: selectedConversation.id,
+      });
     }
   }, [selectedConversation, socket, isConnected]);
 
   // Mark messages as read
   const markMessagesAsRead = useCallback(
     (messageIds = []) => {
-      if (selectedConversation && socket && isConnected && !selectedConversation.isTemporary) {
+      if (
+        selectedConversation &&
+        socket &&
+        isConnected &&
+        !selectedConversation.isTemporary
+      ) {
         socket.emit(SOCKET_EVENTS.CONVERSATION.MARK_READ, {
           conversationId: selectedConversation.id,
           messageIds,
@@ -1198,5 +1305,3 @@ MessageProvider.propTypes = {
 };
 
 export default MessageContext;
-
-

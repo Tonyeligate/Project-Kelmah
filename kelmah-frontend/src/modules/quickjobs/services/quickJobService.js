@@ -23,17 +23,37 @@ export const SERVICE_CATEGORIES = [
   { id: 'hvac', name: 'AC & Refrigeration', icon: '❄️', nameGh: 'AC Tech' },
   { id: 'roofing', name: 'Roofing', icon: '🏠', nameGh: 'Roofer' },
   { id: 'tiling', name: 'Tiling', icon: '🔲', nameGh: 'Tiler' },
-  { id: 'general_repair', name: 'General Repair', icon: '🔨', nameGh: 'Handyman' },
-  { id: 'other', name: 'Other', icon: '📋', nameGh: 'Skilled Worker' }
+  {
+    id: 'general_repair',
+    name: 'General Repair',
+    icon: '🔨',
+    nameGh: 'Handyman',
+  },
+  { id: 'other', name: 'Other', icon: '📋', nameGh: 'Skilled Worker' },
 ];
 
 /**
  * Urgency levels for jobs
  */
 export const URGENCY_LEVELS = [
-  { id: 'emergency', name: 'Emergency', description: 'Need someone right now!', color: 'error' },
-  { id: 'soon', name: 'Soon', description: 'Within a few hours', color: 'warning' },
-  { id: 'flexible', name: 'Flexible', description: 'Anytime today/tomorrow', color: 'success' }
+  {
+    id: 'emergency',
+    name: 'Emergency',
+    description: 'Need someone right now!',
+    color: 'error',
+  },
+  {
+    id: 'soon',
+    name: 'Soon',
+    description: 'Within a few hours',
+    color: 'warning',
+  },
+  {
+    id: 'flexible',
+    name: 'Flexible',
+    description: 'Anytime today/tomorrow',
+    color: 'success',
+  },
 ];
 
 /**
@@ -54,10 +74,15 @@ export const createQuickJob = async (jobData) => {
  * @param {string} category - Optional category filter
  * @returns {Promise<Object>} Nearby jobs
  */
-export const getNearbyQuickJobs = async (lng, lat, maxDistance = 10, category = null) => {
+export const getNearbyQuickJobs = async (
+  lng,
+  lat,
+  maxDistance = 10,
+  category = null,
+) => {
   const params = { lng, lat, maxDistance };
   if (category) params.category = category;
-  
+
   const response = await api.get(`${API_BASE}/nearby`, { params });
   return response.data;
 };
@@ -72,7 +97,7 @@ export const getNearbyQuickJobs = async (lng, lat, maxDistance = 10, category = 
 export const getMyQuickJobs = async (status = null, page = 1, limit = 20) => {
   const params = { page, limit };
   if (status) params.status = status;
-  
+
   const response = await api.get(`${API_BASE}/my-jobs`, { params });
   return response.data;
 };
@@ -87,7 +112,7 @@ export const getMyQuickJobs = async (status = null, page = 1, limit = 20) => {
 export const getMyQuotedJobs = async (status = null, page = 1, limit = 20) => {
   const params = { page, limit };
   if (status) params.status = status;
-  
+
   const response = await api.get(`${API_BASE}/my-quotes`, { params });
   return response.data;
 };
@@ -120,7 +145,9 @@ export const submitQuote = async (jobId, quoteData) => {
  * @returns {Promise<Object>} Acceptance result
  */
 export const acceptQuote = async (jobId, quoteId) => {
-  const response = await api.post(`${API_BASE}/${jobId}/accept-quote`, { quoteId });
+  const response = await api.post(`${API_BASE}/${jobId}/accept-quote`, {
+    quoteId,
+  });
   return response.data;
 };
 
@@ -130,8 +157,13 @@ export const acceptQuote = async (jobId, quoteId) => {
  * @param {string} paymentMethod - Payment method key
  * @returns {Promise<Object>} Payment initialization payload
  */
-export const initializeQuickJobPayment = async (jobId, paymentMethod = 'card') => {
-  const response = await api.post(`${API_BASE}/${jobId}/pay`, { paymentMethod });
+export const initializeQuickJobPayment = async (
+  jobId,
+  paymentMethod = 'card',
+) => {
+  const response = await api.post(`${API_BASE}/${jobId}/pay`, {
+    paymentMethod,
+  });
   return response.data;
 };
 
@@ -163,7 +195,10 @@ export const verifyQuickJobPayment = async (reference) => {
  * @returns {Promise<Object>} Status update result
  */
 export const markOnWay = async (jobId, latitude, longitude) => {
-  const response = await api.post(`${API_BASE}/${jobId}/on-way`, { latitude, longitude });
+  const response = await api.post(`${API_BASE}/${jobId}/on-way`, {
+    latitude,
+    longitude,
+  });
   return response.data;
 };
 
@@ -175,7 +210,10 @@ export const markOnWay = async (jobId, latitude, longitude) => {
  * @returns {Promise<Object>} Arrival verification result
  */
 export const markArrived = async (jobId, latitude, longitude) => {
-  const response = await api.post(`${API_BASE}/${jobId}/arrived`, { latitude, longitude });
+  const response = await api.post(`${API_BASE}/${jobId}/arrived`, {
+    latitude,
+    longitude,
+  });
   return response.data;
 };
 
@@ -198,12 +236,18 @@ export const startWork = async (jobId) => {
  * @param {number} longitude - Optional current longitude
  * @returns {Promise<Object>} Completion result
  */
-export const markComplete = async (jobId, photos, note = '', latitude = null, longitude = null) => {
+export const markComplete = async (
+  jobId,
+  photos,
+  note = '',
+  latitude = null,
+  longitude = null,
+) => {
   const response = await api.post(`${API_BASE}/${jobId}/complete`, {
     photos,
     note,
     latitude,
-    longitude
+    longitude,
   });
   return response.data;
 };
@@ -216,7 +260,10 @@ export const markComplete = async (jobId, photos, note = '', latitude = null, lo
  * @returns {Promise<Object>} Approval result
  */
 export const approveWork = async (jobId, rating, review = '') => {
-  const response = await api.post(`${API_BASE}/${jobId}/approve`, { rating, review });
+  const response = await api.post(`${API_BASE}/${jobId}/approve`, {
+    rating,
+    review,
+  });
   return response.data;
 };
 
@@ -228,11 +275,16 @@ export const approveWork = async (jobId, rating, review = '') => {
  * @param {Array} evidence - Evidence items
  * @returns {Promise<Object>} Dispute result
  */
-export const raiseDispute = async (jobId, reason, description, evidence = []) => {
+export const raiseDispute = async (
+  jobId,
+  reason,
+  description,
+  evidence = [],
+) => {
   const response = await api.post(`${API_BASE}/${jobId}/dispute`, {
     reason,
     description,
-    evidence
+    evidence,
   });
   return response.data;
 };
@@ -264,7 +316,7 @@ export const getCurrentLocation = () => {
         resolve({
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
-          accuracy: position.coords.accuracy
+          accuracy: position.coords.accuracy,
         });
       },
       (error) => {
@@ -285,8 +337,8 @@ export const getCurrentLocation = () => {
       {
         enableHighAccuracy: true,
         timeout: 10000,
-        maximumAge: 0
-      }
+        maximumAge: 0,
+      },
     );
   });
 };
@@ -296,7 +348,11 @@ export const getCurrentLocation = () => {
  * @param {{address: string, city?: string, region?: string}} params
  * @returns {Promise<{latitude: number, longitude: number} | null>}
  */
-export const geocodeAddress = async ({ address, city = '', region = '' } = {}) => {
+export const geocodeAddress = async ({
+  address,
+  city = '',
+  region = '',
+} = {}) => {
   const normalizedAddress = String(address || '').trim();
   if (!normalizedAddress) {
     return null;
@@ -430,7 +486,9 @@ export const uploadQuickJobPhotos = async (photoFiles = []) => {
     }
 
     const fallbackUploads = await Promise.all(
-      files.map((file) => fileUploadService.uploadFile(file, 'quickjobs', 'user')),
+      files.map((file) =>
+        fileUploadService.uploadFile(file, 'quickjobs', 'user'),
+      ),
     );
 
     normalizedPhotos = fallbackUploads
@@ -472,5 +530,5 @@ export default {
   geocodeAddress,
   formatCurrency,
   calculateFees,
-  uploadQuickJobPhotos
+  uploadQuickJobPhotos,
 };

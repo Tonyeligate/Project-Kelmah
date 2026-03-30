@@ -81,10 +81,9 @@ const purgeChunkCaches = (() => {
 
     purgeInFlight = true;
 
-    purgeCaches()
-      .catch((error) => {
-        lazyRetryWarn('lazyWithRetry cache purge failed:', error);
-      });
+    purgeCaches().catch((error) => {
+      lazyRetryWarn('lazyWithRetry cache purge failed:', error);
+    });
   };
 })();
 

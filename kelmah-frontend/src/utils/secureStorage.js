@@ -12,7 +12,9 @@ import {
   devWarn as storageWarn,
 } from '../modules/common/utils/devLogger';
 
-const storageLog = createFeatureLogger({ flagName: 'VITE_DEBUG_SECURE_STORAGE' });
+const storageLog = createFeatureLogger({
+  flagName: 'VITE_DEBUG_SECURE_STORAGE',
+});
 
 const AUTH_TOKEN_TTL = 2 * 60 * 60 * 1000;
 const REFRESH_TOKEN_TTL = 7 * 24 * 60 * 60 * 1000;
@@ -22,14 +24,22 @@ const SHOULD_START_CLEANUP_INTERVAL =
   typeof process === 'undefined' || process.env.NODE_ENV !== 'test';
 
 const generateSessionSuffix = () => {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+  if (
+    typeof crypto !== 'undefined' &&
+    typeof crypto.randomUUID === 'function'
+  ) {
     return crypto.randomUUID();
   }
 
-  if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+  if (
+    typeof crypto !== 'undefined' &&
+    typeof crypto.getRandomValues === 'function'
+  ) {
     const bytes = new Uint8Array(12);
     crypto.getRandomValues(bytes);
-    return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+    return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join(
+      '',
+    );
   }
 
   return `${Date.now()}`;
@@ -75,7 +85,10 @@ class SecureStorage {
       // Try to access storage to detect corruption early
       this.cleanupExpiredData();
     } catch (error) {
-      storageWarn('Storage initialization failed, performing recovery:', error.message);
+      storageWarn(
+        'Storage initialization failed, performing recovery:',
+        error.message,
+      );
       this.performStorageRecovery();
     }
   }
@@ -105,7 +118,11 @@ class SecureStorage {
         try {
           localStorage.removeItem(key);
         } catch (removeError) {
-          storageWarn('Failed to remove key during recovery:', key, removeError);
+          storageWarn(
+            'Failed to remove key during recovery:',
+            key,
+            removeError,
+          );
         }
       });
 
@@ -173,7 +190,10 @@ class SecureStorage {
       }
       return secret;
     } catch (error) {
-      storageWarn('localStorage unavailable, using session-scoped secret:', error?.message || error);
+      storageWarn(
+        'localStorage unavailable, using session-scoped secret:',
+        error?.message || error,
+      );
       // Fallback to sessionStorage if localStorage is blocked
       return sessionStorage.getItem('session_id') || this.generateSessionId();
     }
@@ -210,13 +230,18 @@ class SecureStorage {
       const jsonString = decrypted.toString(CryptoJS.enc.Utf8);
 
       if (!jsonString || jsonString.trim() === '') {
-        storageWarn('Decryption resulted in empty string - possibly wrong key or corrupted data');
+        storageWarn(
+          'Decryption resulted in empty string - possibly wrong key or corrupted data',
+        );
         return null;
       }
 
       return JSON.parse(jsonString);
     } catch (error) {
-      storageWarn('Decryption failed, clearing corrupted storage:', error.message);
+      storageWarn(
+        'Decryption failed, clearing corrupted storage:',
+        error.message,
+      );
       // Clear the corrupted data immediately
       try {
         localStorage.removeItem(this.storageKey);
@@ -251,7 +276,9 @@ class SecureStorage {
   getScopedSecureData(persistent = true) {
     try {
       const storage = this.getScopedStorage(persistent);
-      const encryptedData = storage.getItem(this.getScopedStorageKey(persistent));
+      const encryptedData = storage.getItem(
+        this.getScopedStorageKey(persistent),
+      );
       if (!encryptedData) {
         return {};
       }

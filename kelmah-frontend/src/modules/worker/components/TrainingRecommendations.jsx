@@ -18,7 +18,8 @@ const TrainingRecommendations = ({ courses = [], onEnroll }) => {
       </Typography>
       <Paper sx={{ p: 2 }}>
         <Alert severity="info" sx={{ mb: 2 }}>
-          Courses are prioritized to close your top skill gaps first and improve job match quality.
+          Courses are prioritized to close your top skill gaps first and improve
+          job match quality.
         </Alert>
         <List>
           {courses.map((c) => (
@@ -27,7 +28,12 @@ const TrainingRecommendations = ({ courses = [], onEnroll }) => {
               alignItems="flex-start"
               sx={{ flexWrap: 'wrap', gap: 1 }}
               secondaryAction={
-                <Button variant="outlined" onClick={() => onEnroll?.(c)} aria-label={`Enroll in ${c.title}`} sx={{ minHeight: 44 }}>
+                <Button
+                  variant="outlined"
+                  onClick={() => onEnroll?.(c)}
+                  aria-label={`Enroll in ${c.title}`}
+                  sx={{ minHeight: 44 }}
+                >
                   Enroll
                 </Button>
               }
@@ -45,7 +51,8 @@ const TrainingRecommendations = ({ courses = [], onEnroll }) => {
                 No training recommendations yet.
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Complete your profile skills and recent project history to unlock tailored course suggestions.
+                Complete your profile skills and recent project history to
+                unlock tailored course suggestions.
               </Typography>
             </Box>
           )}

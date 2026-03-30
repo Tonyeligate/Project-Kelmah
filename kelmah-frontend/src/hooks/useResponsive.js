@@ -92,8 +92,14 @@ export const useResponsive = () => {
       screenHeight: typeof window !== 'undefined' ? window.innerHeight : 0,
 
       // Orientation
-      isLandscape: typeof window !== 'undefined' ? window.innerWidth > window.innerHeight : false,
-      isPortrait: typeof window !== 'undefined' ? window.innerWidth <= window.innerHeight : true,
+      isLandscape:
+        typeof window !== 'undefined'
+          ? window.innerWidth > window.innerHeight
+          : false,
+      isPortrait:
+        typeof window !== 'undefined'
+          ? window.innerWidth <= window.innerHeight
+          : true,
 
       // Breakpoint values for manual comparisons
       breakpoints: BREAKPOINTS,

@@ -67,18 +67,25 @@ const clearRuntimeCachesAndNotify = async () => {
 
   let attempts = 0;
   try {
-    attempts = Number(window.sessionStorage.getItem(CHUNK_RECOVERY_ATTEMPTS_KEY) || 0);
+    attempts = Number(
+      window.sessionStorage.getItem(CHUNK_RECOVERY_ATTEMPTS_KEY) || 0,
+    );
   } catch {
     attempts = 0;
   }
 
   if (attempts >= CHUNK_RECOVERY_MAX_ATTEMPTS) {
-    pwaWarn('[PWA] Chunk recovery attempts exceeded; skipping repeated recovery.');
+    pwaWarn(
+      '[PWA] Chunk recovery attempts exceeded; skipping repeated recovery.',
+    );
     return;
   }
 
   try {
-    window.sessionStorage.setItem(CHUNK_RECOVERY_ATTEMPTS_KEY, String(attempts + 1));
+    window.sessionStorage.setItem(
+      CHUNK_RECOVERY_ATTEMPTS_KEY,
+      String(attempts + 1),
+    );
   } catch {
     // Ignore sessionStorage write failure and continue recovery.
   }
@@ -94,7 +101,9 @@ const clearRuntimeCachesAndNotify = async () => {
   try {
     if (typeof caches !== 'undefined') {
       const cacheNames = await caches.keys();
-      await Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)));
+      await Promise.all(
+        cacheNames.map((cacheName) => caches.delete(cacheName)),
+      );
     }
   } catch {
     // Non-fatal.
@@ -103,7 +112,8 @@ const clearRuntimeCachesAndNotify = async () => {
   window.dispatchEvent(
     new CustomEvent('app:chunkRecoveryNeeded', {
       detail: {
-        message: 'Kelmah detected a stale app chunk and cleared cached assets. Please retry the page action.',
+        message:
+          'Kelmah detected a stale app chunk and cleared cached assets. Please retry the page action.',
       },
     }),
   );
@@ -120,7 +130,10 @@ const installChunkMismatchRecovery = () => {
       return;
     }
 
-    pwaWarn('[PWA] Detected chunk mismatch runtime error. Starting recovery.', message);
+    pwaWarn(
+      '[PWA] Detected chunk mismatch runtime error. Starting recovery.',
+      message,
+    );
     clearRuntimeCachesAndNotify();
   };
 
@@ -131,7 +144,10 @@ const installChunkMismatchRecovery = () => {
       return;
     }
 
-    pwaWarn('[PWA] Detected chunk mismatch promise rejection. Starting recovery.', message);
+    pwaWarn(
+      '[PWA] Detected chunk mismatch promise rejection. Starting recovery.',
+      message,
+    );
     clearRuntimeCachesAndNotify();
   };
 
@@ -240,7 +256,10 @@ export const registerServiceWorker = async () => {
           return existing;
         }
       } catch (error) {
-        pwaWarn('[PWA] Could not read existing service worker registration:', error);
+        pwaWarn(
+          '[PWA] Could not read existing service worker registration:',
+          error,
+        );
       }
 
       return null;
@@ -250,11 +269,16 @@ export const registerServiceWorker = async () => {
     try {
       const headCheck = await fetch('/sw.js', { method: 'HEAD' });
       if (!headCheck.ok) {
-        pwaWarn('ServiceWorker script not found at /sw.js, checking existing registration');
+        pwaWarn(
+          'ServiceWorker script not found at /sw.js, checking existing registration',
+        );
         return useExistingRegistration();
       }
     } catch (error) {
-      pwaWarn('ServiceWorker script HEAD check failed, checking existing registration', error);
+      pwaWarn(
+        'ServiceWorker script HEAD check failed, checking existing registration',
+        error,
+      );
       const existing = await useExistingRegistration();
       if (existing) {
         return existing;
@@ -358,7 +382,9 @@ const fetchRuntimeHints = async () => {
 
   const cachedHint = readSessionBootstrapHint();
   if (cachedHint?.origin) {
-    pwaLog('[PWA] Using cached bootstrap gateway hint after runtime-config fetch failure');
+    pwaLog(
+      '[PWA] Using cached bootstrap gateway hint after runtime-config fetch failure',
+    );
     return { apiGatewayUrl: cachedHint.origin };
   }
 
@@ -392,9 +418,13 @@ const updatePWA = () => {
     notifyUpdateApplied();
   };
 
-  navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange, {
-    once: true,
-  });
+  navigator.serviceWorker.addEventListener(
+    'controllerchange',
+    handleControllerChange,
+    {
+      once: true,
+    },
+  );
 
   return navigator.serviceWorker
     .getRegistration()
@@ -402,7 +432,9 @@ const updatePWA = () => {
       if (registration?.waiting) {
         registration.waiting.postMessage({ type: 'SKIP_WAITING' });
       } else if (navigator.serviceWorker.controller) {
-        navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
+        navigator.serviceWorker.controller.postMessage({
+          type: 'SKIP_WAITING',
+        });
       } else {
         notifyUpdateApplied();
         return false;

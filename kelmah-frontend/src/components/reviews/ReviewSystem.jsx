@@ -458,7 +458,8 @@ const ReviewSystem = ({
                     variant="subtitle1"
                     sx={{ color: '#fff', fontWeight: 600 }}
                   >
-                    {review.hirerId?.firstName || 'Deleted'} {review.hirerId?.lastName || 'User'}
+                    {review.hirerId?.firstName || 'Deleted'}{' '}
+                    {review.hirerId?.lastName || 'User'}
                   </Typography>
                   {review.isVerified && (
                     <VerifiedIcon sx={{ color: '#2196F3', fontSize: 16 }} />
@@ -497,7 +498,8 @@ const ReviewSystem = ({
                   setMenuAnchor(e.currentTarget);
                 }}
                 sx={{ color: 'rgba(255,255,255,0.5)' }}
-               aria-label="Open review actions menu">
+                aria-label="Open review actions menu"
+              >
                 <MoreVertIcon />
               </IconButton>
             </Stack>
@@ -518,7 +520,8 @@ const ReviewSystem = ({
           </Typography>
 
           {/* Pros and Cons */}
-          {((review.pros?.length || 0) > 0 || (review.cons?.length || 0) > 0) && (
+          {((review.pros?.length || 0) > 0 ||
+            (review.cons?.length || 0) > 0) && (
             <Grid container spacing={2} sx={{ mb: 2 }}>
               {(review.pros?.length || 0) > 0 && (
                 <Grid item xs={12} sm={6}>
@@ -609,8 +612,16 @@ const ReviewSystem = ({
                 onClick={async () => {
                   try {
                     await reviewService.voteHelpful(review._id);
-                    setReviews(prev => prev.map(r => r._id === review._id ? { ...r, helpfulVotes: (r.helpfulVotes || 0) + 1 } : r));
-                  } catch (e) { /* ignore */ }
+                    setReviews((prev) =>
+                      prev.map((r) =>
+                        r._id === review._id
+                          ? { ...r, helpfulVotes: (r.helpfulVotes || 0) + 1 }
+                          : r,
+                      ),
+                    );
+                  } catch (e) {
+                    /* ignore */
+                  }
                 }}
                 sx={{ color: 'rgba(255,255,255,0.7)' }}
               >
@@ -654,7 +665,10 @@ const ReviewSystem = ({
         },
       }}
     >
-      <DialogTitle id="review-submission-dialog-title" sx={{ color: '#FFD700', fontWeight: 700 }}>
+      <DialogTitle
+        id="review-submission-dialog-title"
+        sx={{ color: '#FFD700', fontWeight: 700 }}
+      >
         Submit Review
       </DialogTitle>
       <DialogContent>
@@ -871,7 +885,8 @@ const ReviewSystem = ({
                     'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
                   color: '#000',
                   fontWeight: 700,
-                }}>
+                }}
+              >
                 {checkingEligibility ? 'Checking…' : 'Write Review'}
               </Button>
             </span>
@@ -938,12 +953,18 @@ const ReviewSystem = ({
         aria-labelledby="review-response-dialog-title"
         PaperProps={{
           sx: {
-            background: 'linear-gradient(135deg, rgba(30,30,30,0.98) 0%, rgba(40,40,40,0.98) 100%)',
+            background:
+              'linear-gradient(135deg, rgba(30,30,30,0.98) 0%, rgba(40,40,40,0.98) 100%)',
             border: '1px solid rgba(255,215,0,0.2)',
           },
         }}
       >
-        <DialogTitle id="review-response-dialog-title" sx={{ color: '#FFD700', fontWeight: 700 }}>Respond to Review</DialogTitle>
+        <DialogTitle
+          id="review-response-dialog-title"
+          sx={{ color: '#FFD700', fontWeight: 700 }}
+        >
+          Respond to Review
+        </DialogTitle>
         <DialogContent>
           <TextField
             autoFocus
@@ -954,19 +975,37 @@ const ReviewSystem = ({
             rows={4}
             variant="outlined"
             id="worker-response-text"
-            sx={{ mt: 1, '& .MuiInputBase-root': { color: '#fff' }, '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' } }}
+            sx={{
+              mt: 1,
+              '& .MuiInputBase-root': { color: '#fff' },
+              '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' },
+            }}
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setResponseDialogOpen(false)} sx={{ color: 'rgba(255,255,255,0.7)' }}>Cancel</Button>
+          <Button
+            onClick={() => setResponseDialogOpen(false)}
+            sx={{ color: 'rgba(255,255,255,0.7)' }}
+          >
+            Cancel
+          </Button>
           <Button
             variant="contained"
-            sx={{ backgroundColor: '#FFD700', color: '#000', '&:hover': { backgroundColor: '#FFC107' } }}
-            onClick={() => {
-              const text = document.getElementById('worker-response-text')?.value?.trim();
-              if (text && selectedReview?._id) handleAddResponse(selectedReview._id, text);
+            sx={{
+              backgroundColor: '#FFD700',
+              color: '#000',
+              '&:hover': { backgroundColor: '#FFC107' },
             }}
-          >Submit Response</Button>
+            onClick={() => {
+              const text = document
+                .getElementById('worker-response-text')
+                ?.value?.trim();
+              if (text && selectedReview?._id)
+                handleAddResponse(selectedReview._id, text);
+            }}
+          >
+            Submit Response
+          </Button>
         </DialogActions>
       </Dialog>
 
@@ -983,8 +1022,16 @@ const ReviewSystem = ({
           onClick={async () => {
             try {
               await reviewService.voteHelpful(selectedReview?._id);
-              setReviews(prev => prev.map(r => r._id === selectedReview?._id ? { ...r, helpfulVotes: (r.helpfulVotes || 0) + 1 } : r));
-            } catch (e) { /* ignore */ }
+              setReviews((prev) =>
+                prev.map((r) =>
+                  r._id === selectedReview?._id
+                    ? { ...r, helpfulVotes: (r.helpfulVotes || 0) + 1 }
+                    : r,
+                ),
+              );
+            } catch (e) {
+              /* ignore */
+            }
             setMenuAnchor(null);
             setSelectedReview(null);
           }}

@@ -4,7 +4,10 @@ import WorkerDirectoryExperience from '../components/WorkerDirectoryExperience';
 import PageCanvas from '../../common/components/PageCanvas';
 
 const SearchPage = () => (
-  <PageCanvas disableContainer sx={{ pt: { xs: 1.5, md: 2.5 }, pb: { xs: 4, md: 6 }, overflowX: 'clip' }}>
+  <PageCanvas
+    disableContainer
+    sx={{ pt: { xs: 1.5, md: 2.5 }, pb: { xs: 4, md: 6 }, overflowX: 'clip' }}
+  >
     <Paper
       elevation={0}
       sx={{
@@ -24,7 +27,8 @@ const SearchPage = () => (
         Start with one filter, then refine
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-        Best recovery path for no results: clear filters, choose one trade, then add location.
+        Best recovery path for no results: clear filters, choose one trade, then
+        add location.
       </Typography>
       <Stack direction="row" spacing={0.75} useFlexGap flexWrap="wrap">
         <Chip size="small" label="1. Pick trade" />

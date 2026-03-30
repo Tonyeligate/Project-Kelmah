@@ -12,7 +12,11 @@ const MAX_PULL = 120; // max visual pull distance
  * @param {ReactNode} children    - scrollable content
  * @param {boolean}   [disabled]  - disable the gesture
  */
-export default function PullToRefresh({ onRefresh, children, disabled = false }) {
+export default function PullToRefresh({
+  onRefresh,
+  children,
+  disabled = false,
+}) {
   const isMobile = useBreakpointDown('md');
   const [pullDistance, setPullDistance] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
@@ -20,19 +24,26 @@ export default function PullToRefresh({ onRefresh, children, disabled = false })
   const pulling = useRef(false);
   const containerRef = useRef(null);
 
-  const onTouchStart = useCallback((e) => {
-    if (disabled || refreshing || !isMobile) return;
-    // Only activate when scrolled to top
-    const scrollTop = containerRef.current?.scrollTop ?? window.scrollY;
-    if (scrollTop > 5) return;
-    startY.current = e.touches[0].clientY;
-    pulling.current = true;
-  }, [disabled, refreshing, isMobile]);
+  const onTouchStart = useCallback(
+    (e) => {
+      if (disabled || refreshing || !isMobile) return;
+      // Only activate when scrolled to top
+      const scrollTop = containerRef.current?.scrollTop ?? window.scrollY;
+      if (scrollTop > 5) return;
+      startY.current = e.touches[0].clientY;
+      pulling.current = true;
+    },
+    [disabled, refreshing, isMobile],
+  );
 
   const onTouchMove = useCallback((e) => {
     if (!pulling.current) return;
     const dy = e.touches[0].clientY - startY.current;
-    if (dy < 0) { pulling.current = false; setPullDistance(0); return; }
+    if (dy < 0) {
+      pulling.current = false;
+      setPullDistance(0);
+      return;
+    }
     // Rubber-band effect: diminish after threshold
     const clamped = Math.min(dy * 0.5, MAX_PULL);
     setPullDistance(clamped);
@@ -43,7 +54,11 @@ export default function PullToRefresh({ onRefresh, children, disabled = false })
     pulling.current = false;
     if (pullDistance >= THRESHOLD && onRefresh) {
       setRefreshing(true);
-      try { await onRefresh(); } catch { /* noop */ }
+      try {
+        await onRefresh();
+      } catch {
+        /* noop */
+      }
       setRefreshing(false);
     }
     setPullDistance(0);
@@ -67,7 +82,9 @@ export default function PullToRefresh({ onRefresh, children, disabled = false })
         <Box
           role="status"
           aria-live="polite"
-          aria-label={refreshing ? 'Refreshing content' : 'Pull down to refresh'}
+          aria-label={
+            refreshing ? 'Refreshing content' : 'Pull down to refresh'
+          }
           sx={{
             display: 'flex',
             alignItems: 'center',

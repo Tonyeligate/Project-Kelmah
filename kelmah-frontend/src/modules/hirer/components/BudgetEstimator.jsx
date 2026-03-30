@@ -49,7 +49,9 @@ const BudgetEstimator = () => {
               type="number"
               fullWidth
               value={materials}
-              onChange={(e) => setMaterials(Math.max(0, Number(e.target.value)))}
+              onChange={(e) =>
+                setMaterials(Math.max(0, Number(e.target.value)))
+              }
               inputProps={{ min: 0 }}
             />
           </Grid>
@@ -59,7 +61,9 @@ const BudgetEstimator = () => {
               type="number"
               fullWidth
               value={contingency}
-              onChange={(e) => setContingency(clamp(Number(e.target.value), 0, 100))}
+              onChange={(e) =>
+                setContingency(clamp(Number(e.target.value), 0, 100))
+              }
               inputProps={{ min: 0, max: 100 }}
             />
           </Grid>

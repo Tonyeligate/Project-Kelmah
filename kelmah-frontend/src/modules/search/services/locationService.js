@@ -3,10 +3,34 @@ import { api } from '../../../services/apiClient';
 const API_URL = '/location';
 
 const DEFAULT_POPULAR_LOCATIONS = [
-  { name: 'Accra', type: 'capital', region: 'Greater Accra Region', jobs: 245, coordinates: [5.6037, -0.187] },
-  { name: 'Kumasi', type: 'city', region: 'Ashanti Region', jobs: 189, coordinates: [6.6885, -1.6244] },
-  { name: 'Tamale', type: 'city', region: 'Northern Region', jobs: 96, coordinates: [9.4034, -0.8393] },
-  { name: 'Takoradi', type: 'city', region: 'Western Region', jobs: 88, coordinates: [4.8918, -1.755] },
+  {
+    name: 'Accra',
+    type: 'capital',
+    region: 'Greater Accra Region',
+    jobs: 245,
+    coordinates: [5.6037, -0.187],
+  },
+  {
+    name: 'Kumasi',
+    type: 'city',
+    region: 'Ashanti Region',
+    jobs: 189,
+    coordinates: [6.6885, -1.6244],
+  },
+  {
+    name: 'Tamale',
+    type: 'city',
+    region: 'Northern Region',
+    jobs: 96,
+    coordinates: [9.4034, -0.8393],
+  },
+  {
+    name: 'Takoradi',
+    type: 'city',
+    region: 'Western Region',
+    jobs: 88,
+    coordinates: [4.8918, -1.755],
+  },
 ];
 
 const RECENT_KEY = 'kelmah_recent_location_searches';
@@ -49,7 +73,9 @@ const locationService = {
     try {
       const response = await api.get(`${API_URL}/popular`);
       const payload = unwrap(response);
-      return toResponseShape(Array.isArray(payload) ? payload : payload?.locations || []);
+      return toResponseShape(
+        Array.isArray(payload) ? payload : payload?.locations || [],
+      );
     } catch (error) {
       return toResponseShape([], {
         unavailable: true,
@@ -71,7 +97,9 @@ const locationService = {
         params: { lat, lng, radius },
       });
       const payload = unwrap(response);
-      return toResponseShape(Array.isArray(payload) ? payload : payload?.locations || []);
+      return toResponseShape(
+        Array.isArray(payload) ? payload : payload?.locations || [],
+      );
     } catch (error) {
       return toResponseShape([], {
         unavailable: true,
@@ -91,7 +119,9 @@ const locationService = {
         params: { q: query },
       });
       const payload = unwrap(response);
-      return toResponseShape(Array.isArray(payload) ? payload : payload?.results || []);
+      return toResponseShape(
+        Array.isArray(payload) ? payload : payload?.results || [],
+      );
     } catch (error) {
       const fallback = toStaticLocationSuggestions(query);
       return toResponseShape(fallback, {
@@ -129,7 +159,9 @@ const locationService = {
     try {
       const response = await api.get(`${API_URL}/recent-searches`);
       const payload = unwrap(response);
-      return toResponseShape(Array.isArray(payload) ? payload : payload?.searches || []);
+      return toResponseShape(
+        Array.isArray(payload) ? payload : payload?.searches || [],
+      );
     } catch (error) {
       try {
         const cached = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]');
@@ -155,14 +187,18 @@ const locationService = {
     } catch (error) {
       try {
         const cached = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]');
-        const next = [location, ...(Array.isArray(cached) ? cached : [])].slice(0, 10);
+        const next = [location, ...(Array.isArray(cached) ? cached : [])].slice(
+          0,
+          10,
+        );
         localStorage.setItem(RECENT_KEY, JSON.stringify(next));
       } catch {
         // noop
       }
       return toResponseShape(location, {
         fallback: true,
-        message: 'Saved search locally while the recent-search service is unavailable.',
+        message:
+          'Saved search locally while the recent-search service is unavailable.',
       });
     }
   },
@@ -177,10 +213,13 @@ const locationService = {
       const response = await api.get(`${API_URL}/stats/${locationName}`);
       return toResponseShape(unwrap(response) || {});
     } catch (error) {
-      return toResponseShape({ jobs: 0, workers: 0, demand: 'unknown' }, {
-        unavailable: true,
-        message: 'Location statistics are currently unavailable.',
-      });
+      return toResponseShape(
+        { jobs: 0, workers: 0, demand: 'unknown' },
+        {
+          unavailable: true,
+          message: 'Location statistics are currently unavailable.',
+        },
+      );
     }
   },
 
@@ -198,14 +237,17 @@ const locationService = {
       });
       return toResponseShape(unwrap(response) || {});
     } catch (error) {
-      return toResponseShape({
-        distanceKm: null,
-        durationMinutes: null,
-        mode: 'unknown',
-      }, {
-        unavailable: true,
-        message: 'Travel estimates are currently unavailable.',
-      });
+      return toResponseShape(
+        {
+          distanceKm: null,
+          durationMinutes: null,
+          mode: 'unknown',
+        },
+        {
+          unavailable: true,
+          message: 'Travel estimates are currently unavailable.',
+        },
+      );
     }
   },
 
@@ -220,7 +262,9 @@ const locationService = {
         params: { q: query },
       });
       const payload = unwrap(response);
-      return toResponseShape(Array.isArray(payload) ? payload : payload?.suggestions || []);
+      return toResponseShape(
+        Array.isArray(payload) ? payload : payload?.suggestions || [],
+      );
     } catch (error) {
       const fallback = toStaticLocationSuggestions(query);
       return toResponseShape(fallback, {

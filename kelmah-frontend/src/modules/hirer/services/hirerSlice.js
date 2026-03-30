@@ -18,10 +18,7 @@ export const fetchHirerProfile = createAsyncThunk(
       const response = await api.get('/users/me/credentials');
       return response?.data?.data ?? response?.data ?? {};
     } catch (error) {
-      devWarn(
-        'User service unavailable for hirer profile:',
-        error.message,
-      );
+      devWarn('User service unavailable for hirer profile:', error.message);
       // Fallback: try /users/profile as secondary endpoint
       try {
         const fallback = await api.get('/users/profile');
@@ -39,13 +36,13 @@ export const fetchHirerProfile = createAsyncThunk(
 
 // Map frontend status terminology to database canonical statuses
 const STATUS_MAP = {
-  'active': 'open',      // Frontend "active" = database "open"
-  'completed': 'completed',
+  active: 'open', // Frontend "active" = database "open"
+  completed: 'completed',
   'in-progress': 'in-progress',
-  'cancelled': 'cancelled',
-  'draft': 'draft',
-  'all': null,           // No filter
-  'open': 'open',        // Direct mapping
+  cancelled: 'cancelled',
+  draft: 'draft',
+  all: null, // No filter
+  open: 'open', // Direct mapping
 };
 
 const unwrapApiPayload = (payload) => payload?.data ?? payload ?? null;
@@ -77,7 +74,8 @@ export const fetchHirerJobs = createAsyncThunk(
   async (status = 'all', { rejectWithValue }) => {
     try {
       // Map frontend status to database canonical status
-      const dbStatus = STATUS_MAP[status] !== undefined ? STATUS_MAP[status] : status;
+      const dbStatus =
+        STATUS_MAP[status] !== undefined ? STATUS_MAP[status] : status;
       // Use a high limit for the consolidated 'all' fetch; otherwise 50 per bucket
       const params = { role: 'hirer', limit: status === 'all' ? 200 : 50 };
       if (dbStatus) {
@@ -86,11 +84,19 @@ export const fetchHirerJobs = createAsyncThunk(
 
       const response = await api.get('/jobs/my-jobs', { params });
       const jobs = extractThunkCollectionItems(response.data);
-      devLog('[HirerSlice] Fetched jobs:', { requestedStatus: status, dbStatus, count: Array.isArray(jobs) ? jobs.length : 0 });
+      devLog('[HirerSlice] Fetched jobs:', {
+        requestedStatus: status,
+        dbStatus,
+        count: Array.isArray(jobs) ? jobs.length : 0,
+      });
       return { status, jobs: Array.isArray(jobs) ? jobs : [] };
     } catch (error) {
       devWarn('fetchHirerJobs error:', error);
-      return rejectWithValue(error.response?.data?.message || error.message || 'Failed to fetch jobs');
+      return rejectWithValue(
+        error.response?.data?.message ||
+          error.message ||
+          'Failed to fetch jobs',
+      );
     }
   },
 );
@@ -103,7 +109,11 @@ export const createHirerJob = createAsyncThunk(
       return response.data.data || response.data;
     } catch (error) {
       devWarn('Job service unavailable for job creation:', error.message);
-      return rejectWithValue(error.response?.data?.message || error.message || 'Failed to create job');
+      return rejectWithValue(
+        error.response?.data?.message ||
+          error.message ||
+          'Failed to create job',
+      );
     }
   },
 );
@@ -133,10 +143,7 @@ export const updateHirerProfile = createAsyncThunk(
       const response = await api.put('/users/profile', profileData);
       return response.data.data ?? response.data;
     } catch (error) {
-      devWarn(
-        'User service unavailable for profile update:',
-        error.message,
-      );
+      devWarn('User service unavailable for profile update:', error.message);
       return rejectWithValue(error.response?.data || error.message);
     }
   },
@@ -151,11 +158,12 @@ export const updateJobStatus = createAsyncThunk(
       });
       return unwrapApiPayload(response.data) ?? response.data ?? {};
     } catch (error) {
-      devWarn(
-        'Job service unavailable for status update:',
-        error.message,
+      devWarn('Job service unavailable for status update:', error.message);
+      return rejectWithValue(
+        error.response?.data?.message ||
+          error.message ||
+          'Failed to update job status',
       );
-      return rejectWithValue(error.response?.data?.message || error.message || 'Failed to update job status');
     }
   },
 );
@@ -167,11 +175,12 @@ export const deleteHirerJob = createAsyncThunk(
       await api.delete(`/jobs/${jobId}`);
       return { jobId };
     } catch (error) {
-      devWarn(
-        'Job service unavailable for job deletion:',
-        error.message,
+      devWarn('Job service unavailable for job deletion:', error.message);
+      return rejectWithValue(
+        error.response?.data?.message ||
+          error.message ||
+          'Failed to delete job',
       );
-      return rejectWithValue(error.response?.data?.message || error.message || 'Failed to delete job');
     }
   },
 );
@@ -192,7 +201,10 @@ export const fetchJobApplications = createAsyncThunk(
       const response = await api.get(`/jobs/${jobId}/applications`, {
         params,
       });
-      return { jobId, applications: extractThunkCollectionItems(response.data) };
+      return {
+        jobId,
+        applications: extractThunkCollectionItems(response.data),
+      };
     } catch (error) {
       devWarn('Service unavailable:', error.message);
       throw error;
@@ -208,7 +220,11 @@ export const fetchHirerAnalytics = createAsyncThunk(
       return response.data?.data ?? response.data;
     } catch (error) {
       devWarn('Service unavailable:', error.message);
-      return rejectWithValue(error.response?.data?.message || error.message || 'Failed to fetch analytics');
+      return rejectWithValue(
+        error.response?.data?.message ||
+          error.message ||
+          'Failed to fetch analytics',
+      );
     }
   },
 );
@@ -226,7 +242,9 @@ export const fetchPaymentSummary = createAsyncThunk(
 
       // Unwrap { success: true, data: walletDoc } returned by the backend
       const walletRaw = walletResp?.data;
-      const wallet = walletRaw?.success ? (walletRaw.data ?? walletRaw) : (walletRaw ?? {});
+      const wallet = walletRaw?.success
+        ? (walletRaw.data ?? walletRaw)
+        : (walletRaw ?? {});
       // Escrows: getEscrows returns a plain array already, but guard for raw response
       const escrowRaw = escrowsResp?.data;
       const escrows = Array.isArray(escrowRaw)
@@ -244,9 +262,9 @@ export const fetchPaymentSummary = createAsyncThunk(
       const escrowBalance = Array.isArray(wallet?.accounts)
         ? wallet.accounts.find((a) => a.type === 'escrow')?.balance || 0
         : escrows.reduce(
-          (sum, e) => sum + (e.amount || 0) * (e.status === 'active' ? 1 : 0),
-          0,
-        );
+            (sum, e) => sum + (e.amount || 0) * (e.status === 'active' ? 1 : 0),
+            0,
+          );
 
       // Build pending payments from escrows' pending milestones
       const pending = [];
@@ -297,8 +315,8 @@ export const fetchPaymentSummary = createAsyncThunk(
         .filter((d) => Number.isFinite(d) && d > 0);
       const avgMs = payoutDurations.length
         ? Math.round(
-          payoutDurations.reduce((a, b) => a + b, 0) / payoutDurations.length,
-        )
+            payoutDurations.reduce((a, b) => a + b, 0) / payoutDurations.length,
+          )
         : null;
       const averagePaymentTime = avgMs
         ? `${Math.max(1, Math.round(avgMs / (1000 * 60)))} min`
@@ -365,7 +383,7 @@ const normalizeApplicationsByStatus = (apiPayload) => {
 const initialState = {
   profile: null,
   jobs: {
-    open: [],          // jobs with status 'open'
+    open: [], // jobs with status 'open'
     'in-progress': [],
     completed: [],
     cancelled: [],
@@ -471,7 +489,13 @@ const hirerSlice = createSlice({
         if (status === 'all') {
           // Distribute the consolidated list into per-status buckets so status
           // counts and tab filtering work without additional processing.
-          const buckets = { open: [], 'in-progress': [], completed: [], cancelled: [], draft: [] };
+          const buckets = {
+            open: [],
+            'in-progress': [],
+            completed: [],
+            cancelled: [],
+            draft: [],
+          };
           jobs.forEach((job) => {
             const s = job.status || 'draft';
             if (buckets[s]) buckets[s].push(job);
@@ -525,7 +549,9 @@ const hirerSlice = createSlice({
 
         let placed = false;
         Object.keys(state.jobs).forEach((status) => {
-          const idx = state.jobs[status].findIndex((j) => (j.id || j._id) === updatedId);
+          const idx = state.jobs[status].findIndex(
+            (j) => (j.id || j._id) === updatedId,
+          );
           if (idx !== -1) {
             state.jobs[status][idx] = {
               ...state.jobs[status][idx],
@@ -536,9 +562,10 @@ const hirerSlice = createSlice({
         });
 
         if (!placed) {
-          const target = updatedJob.status && state.jobs[updatedJob.status]
-            ? updatedJob.status
-            : 'draft';
+          const target =
+            updatedJob.status && state.jobs[updatedJob.status]
+              ? updatedJob.status
+              : 'draft';
           state.jobs[target].unshift(updatedJob);
         }
       })
@@ -711,4 +738,3 @@ export const {
 
 // Export reducer
 export default hirerSlice.reducer;
-

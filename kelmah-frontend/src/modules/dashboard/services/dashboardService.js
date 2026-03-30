@@ -24,9 +24,11 @@ class DashboardService {
     this._overviewCache = null;
     this._overviewCacheTime = 0;
     // Bound handlers for removal
-    this._onDashboardUpdate = (data) => this._triggerListeners('dashboardUpdate', data);
+    this._onDashboardUpdate = (data) =>
+      this._triggerListeners('dashboardUpdate', data);
     this._onNewJob = (data) => this._triggerListeners('newJob', data);
-    this._onStatusChange = (data) => this._triggerListeners('statusChange', data);
+    this._onStatusChange = (data) =>
+      this._triggerListeners('statusChange', data);
   }
 
   /**
@@ -66,29 +68,32 @@ class DashboardService {
         performanceMetrics,
         quickActions: topJob
           ? [
-            {
-              id: topJob.id || topJob._id || 'job-highlight',
-              label: `Review ${topJob.title}`,
-              type: 'job',
-              source: 'jobs',
-            },
-            {
-              id: 'update-profile',
-              label: 'Update your profile details',
-              type: 'profile',
-            },
-          ]
+              {
+                id: topJob.id || topJob._id || 'job-highlight',
+                label: `Review ${topJob.title}`,
+                type: 'job',
+                source: 'jobs',
+              },
+              {
+                id: 'update-profile',
+                label: 'Update your profile details',
+                type: 'profile',
+              },
+            ]
           : [
-            {
-              id: 'refresh-dashboard',
-              label: 'Refresh dashboard data',
-              type: 'action',
-            },
-          ],
+              {
+                id: 'refresh-dashboard',
+                label: 'Refresh dashboard data',
+                type: 'action',
+              },
+            ],
         notificationsSummary: {
           unreadMessages: overview.metrics?.unreadMessages || 0,
           pendingJobs: overview.jobs?.totalOpenJobs || 0,
-          newApplicants: overview.metrics?.newApplicants || overview.jobs?.totalJobsToday || 0,
+          newApplicants:
+            overview.metrics?.newApplicants ||
+            overview.jobs?.totalJobsToday ||
+            0,
         },
         realTimeStats: overview.metrics || {},
       };
@@ -168,7 +173,7 @@ class DashboardService {
       try {
         callback(data);
       } catch (error) {
-          devError(`Error in ${event} listener:`, error);
+        devError(`Error in ${event} listener:`, error);
       }
     });
   }
@@ -192,14 +197,14 @@ class DashboardService {
         metricsRes.status === 'fulfilled'
           ? metricsRes.value.data?.data || metricsRes.value.data
           : {
-            totalUsers: 0,
-            totalWorkers: 0,
-            activeWorkers: 0,
-            totalJobs: 0,
-            completedJobs: 0,
-            growthRate: 0,
-            source: 'fallback',
-          };
+              totalUsers: 0,
+              totalWorkers: 0,
+              activeWorkers: 0,
+              totalJobs: 0,
+              completedJobs: 0,
+              growthRate: 0,
+              source: 'fallback',
+            };
 
       const jobsData =
         jobsRes.status === 'fulfilled'
@@ -213,7 +218,11 @@ class DashboardService {
 
       const workers =
         workersRes.status === 'fulfilled'
-          ? workersRes.value.data?.data?.items || workersRes.value.data?.data?.workers || workersRes.value.data?.workers || workersRes.value.data || []
+          ? workersRes.value.data?.data?.items ||
+            workersRes.value.data?.data?.workers ||
+            workersRes.value.data?.workers ||
+            workersRes.value.data ||
+            []
           : [];
 
       const result = { metrics, jobs: jobsData, analytics, workers };
@@ -221,7 +230,7 @@ class DashboardService {
       this._overviewCacheTime = Date.now();
       return result;
     } catch (error) {
-        devError('Error fetching dashboard overview:', error);
+      devError('Error fetching dashboard overview:', error);
       return {
         metrics: {
           totalUsers: 0,
@@ -253,7 +262,8 @@ class DashboardService {
           : Array.isArray(data)
             ? data
             : [];
-      const pagination = data.pagination || response.data?.meta?.pagination || {};
+      const pagination =
+        data.pagination || response.data?.meta?.pagination || {};
       return {
         activities,
         hasMore:
@@ -306,7 +316,7 @@ class DashboardService {
       }
       return [];
     } catch (error) {
-        devError('Error fetching recent messages:', error);
+      devError('Error fetching recent messages:', error);
       return [];
     }
   }
@@ -324,7 +334,7 @@ class DashboardService {
         earningsThisMonth: analytics.earningsThisMonth || 0,
       };
     } catch (error) {
-        devError('Error fetching performance metrics:', error);
+      devError('Error fetching performance metrics:', error);
       return {
         completionRate: 0,
         clientSatisfaction: 0,
@@ -344,16 +354,16 @@ class DashboardService {
       return [
         topJob
           ? {
-            id: topJob.id || 'job-highlight',
-            label: `Review ${topJob.title}`,
-            type: 'job',
-            source: 'jobs',
-          }
+              id: topJob.id || 'job-highlight',
+              label: `Review ${topJob.title}`,
+              type: 'job',
+              source: 'jobs',
+            }
           : {
-            id: 'refresh-dashboard',
-            label: 'Refresh dashboard data',
-            type: 'action',
-          },
+              id: 'refresh-dashboard',
+              label: 'Refresh dashboard data',
+              type: 'action',
+            },
         {
           id: 'update-profile',
           label: 'Update your profile details',
@@ -361,7 +371,7 @@ class DashboardService {
         },
       ];
     } catch (error) {
-        devError('Error fetching quick actions:', error);
+      devError('Error fetching quick actions:', error);
       return [
         {
           id: 'refresh-dashboard',
@@ -381,7 +391,8 @@ class DashboardService {
         // fall back to 0 instead of misusing unrelated worker counts.
         unreadMessages: overview.metrics?.unreadMessages || 0,
         pendingJobs: overview.jobs?.totalOpenJobs || 0,
-        newApplicants: overview.metrics?.newApplicants || overview.jobs?.totalJobsToday || 0,
+        newApplicants:
+          overview.metrics?.newApplicants || overview.jobs?.totalJobsToday || 0,
       };
     } catch (error) {
       devError('Error fetching notifications summary:', error);
@@ -448,4 +459,3 @@ class DashboardService {
 const dashboardService = new DashboardService();
 
 export default dashboardService;
-

@@ -3,41 +3,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import {
   Container,
   Box,
@@ -90,7 +55,11 @@ import {
 } from '../services/hirerSlice';
 import fileUploadService from '../../common/services/fileUploadService';
 import { alpha, useTheme } from '@mui/material/styles';
-import { Z_INDEX, STICKY_CTA_HEIGHT, BOTTOM_NAV_HEIGHT } from '../../../constants/layout';
+import {
+  Z_INDEX,
+  STICKY_CTA_HEIGHT,
+  BOTTOM_NAV_HEIGHT,
+} from '../../../constants/layout';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 import { formatGhanaCurrency } from '@/utils/formatters';
 import PageCanvas from '@/modules/common/components/PageCanvas';
@@ -215,7 +184,9 @@ const JobPreview = ({ snapshot }) => {
         <Box sx={{ mt: 1 }}>
           <Typography variant="body2">
             <strong>Visibility:</strong>{' '}
-            {snapshot.visibility === 'private' ? '🔒 Private (invite only)' : '🌐 Public (visible to all workers)'}
+            {snapshot.visibility === 'private'
+              ? '🔒 Private (invite only)'
+              : '🌐 Public (visible to all workers)'}
           </Typography>
         </Box>
         <Box sx={{ mt: 1 }}>
@@ -281,7 +252,9 @@ const JobPostingPage = () => {
     const allJobs = Object.values(hirerJobsByStatus).flatMap((v) =>
       Array.isArray(v) ? v : [],
     );
-    const existing = allJobs.find((j) => String(j?.id || j?._id) === String(jobId));
+    const existing = allJobs.find(
+      (j) => String(j?.id || j?._id) === String(jobId),
+    );
     if (!existing) return;
 
     const locationType =
@@ -305,7 +278,10 @@ const JobPostingPage = () => {
       skills: Array.isArray(existing?.skills)
         ? existing.skills
         : typeof existing?.skills === 'string'
-          ? existing.skills.split(',').map((s) => s.trim()).filter(Boolean)
+          ? existing.skills
+              .split(',')
+              .map((s) => s.trim())
+              .filter(Boolean)
           : prev.skills,
       description: existing?.description || prev.description,
       requirements: existing?.requirements || prev.requirements,
@@ -313,17 +289,17 @@ const JobPostingPage = () => {
       budget:
         (existing?.paymentType || prev.paymentType) === 'hourly'
           ? {
-            ...prev.budget,
-            min: String(existing?.budget?.min ?? existing?.budget ?? ''),
-            max: String(existing?.budget?.max ?? existing?.budget ?? ''),
-            fixed: '',
-          }
+              ...prev.budget,
+              min: String(existing?.budget?.min ?? existing?.budget ?? ''),
+              max: String(existing?.budget?.max ?? existing?.budget ?? ''),
+              fixed: '',
+            }
           : {
-            ...prev.budget,
-            fixed: String(existing?.budget?.amount ?? existing?.budget ?? ''),
-            min: '',
-            max: '',
-          },
+              ...prev.budget,
+              fixed: String(existing?.budget?.amount ?? existing?.budget ?? ''),
+              min: '',
+              max: '',
+            },
       duration: durationValue || prev.duration,
       locationType,
       location: locationAddress,
@@ -334,9 +310,9 @@ const JobPostingPage = () => {
     const normalized = normalizeDescription(formData.description || '');
     const cleanSkills = Array.isArray(formData.skills)
       ? formData.skills
-        .map((skill) => (typeof skill === 'string' ? skill.trim() : ''))
-        .filter(Boolean)
-        .slice(0, 8)
+          .map((skill) => (typeof skill === 'string' ? skill.trim() : ''))
+          .filter(Boolean)
+          .slice(0, 8)
       : [];
     const safeRequirements = normalizeDescription(formData.requirements);
     const safeLocation = normalizeDescription(formData.location);
@@ -384,9 +360,7 @@ const JobPostingPage = () => {
   const getFieldError = (field, data = formData) => {
     switch (field) {
       case 'title':
-        return normalizeDescription(data.title)
-          ? ''
-          : 'Job title is required.';
+        return normalizeDescription(data.title) ? '' : 'Job title is required.';
       case 'category':
         return data.category ? '' : 'Select a category to continue.';
       case 'description': {
@@ -569,14 +543,23 @@ const JobPostingPage = () => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) {
-      setFieldErrors((prev) => ({ ...prev, coverImage: 'Please select a valid image file.' }));
+      setFieldErrors((prev) => ({
+        ...prev,
+        coverImage: 'Please select a valid image file.',
+      }));
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      setFieldErrors((prev) => ({ ...prev, coverImage: 'Image must be under 5MB.' }));
+      setFieldErrors((prev) => ({
+        ...prev,
+        coverImage: 'Image must be under 5MB.',
+      }));
       return;
     }
-    setFieldErrors((prev) => { const { coverImage, ...rest } = prev; return rest; });
+    setFieldErrors((prev) => {
+      const { coverImage, ...rest } = prev;
+      return rest;
+    });
     const reader = new FileReader();
     reader.onload = () => {
       setCoverImagePreview(reader.result);
@@ -643,7 +626,9 @@ const JobPostingPage = () => {
       } catch (uploadError) {
         setFieldErrors((prev) => ({
           ...prev,
-          submit: uploadError?.message || 'Failed to upload the cover image. Please try again.',
+          submit:
+            uploadError?.message ||
+            'Failed to upload the cover image. Please try again.',
         }));
         return;
       }
@@ -657,7 +642,10 @@ const JobPostingPage = () => {
       paymentType: formData.paymentType,
       budget:
         formData.paymentType === 'hourly'
-          ? { min: Number(formData.budget.min || 0), max: Number(formData.budget.max || 0) }
+          ? {
+              min: Number(formData.budget.min || 0),
+              max: Number(formData.budget.max || 0),
+            }
           : Number(formData.budget.fixed || 0),
       currency: 'GHS',
       duration: (() => {
@@ -677,7 +665,8 @@ const JobPostingPage = () => {
       },
       visibility: formData.visibility || 'public',
       status: asDraft ? 'draft' : 'open',
-      ...((uploadedCoverImage?.url || (!coverImageFile && formData.coverImage)) && {
+      ...((uploadedCoverImage?.url ||
+        (!coverImageFile && formData.coverImage)) && {
         coverImage: uploadedCoverImage?.url || formData.coverImage,
       }),
       ...(uploadedCoverImage && {
@@ -720,7 +709,8 @@ const JobPostingPage = () => {
       .catch((err) => {
         setFieldErrors((prev) => ({
           ...prev,
-          submit: err?.message || err || 'Failed to submit job. Please try again.',
+          submit:
+            err?.message || err || 'Failed to submit job. Please try again.',
         }));
       });
   };
@@ -737,10 +727,18 @@ const JobPostingPage = () => {
 
   if (submitSuccess) {
     return (
-      <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 }, textAlign: 'center' }}>
-        <CheckCircle color="success" sx={{ fontSize: { xs: 60, md: 80 }, mb: 2 }} />
+      <Container
+        maxWidth="md"
+        sx={{ py: { xs: 3, md: 5 }, textAlign: 'center' }}
+      >
+        <CheckCircle
+          color="success"
+          sx={{ fontSize: { xs: 60, md: 80 }, mb: 2 }}
+        />
         <Typography variant="h4" gutterBottom>
-          {isEditMode ? 'Job Updated Successfully!' : 'Job Posted Successfully!'}
+          {isEditMode
+            ? 'Job Updated Successfully!'
+            : 'Job Posted Successfully!'}
         </Typography>
         <Button
           variant="contained"
@@ -862,8 +860,13 @@ const JobPostingPage = () => {
               <Typography variant="subtitle1" gutterBottom>
                 Cover Image (optional)
               </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-                Add a clear site or project photo so workers understand the task faster
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ mb: 1.5 }}
+              >
+                Add a clear site or project photo so workers understand the task
+                faster
               </Typography>
               {coverImagePreview ? (
                 <Box sx={{ position: 'relative', maxWidth: 400 }}>
@@ -890,7 +893,12 @@ const JobPostingPage = () => {
                       bgcolor: 'rgba(0,0,0,0.6)',
                       color: 'white',
                       '&:hover': { bgcolor: 'rgba(0,0,0,0.8)' },
-                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
+                      '&:focus-visible': {
+                        outline: '3px solid',
+                        outlineColor: 'primary.main',
+                        outlineOffset: '2px',
+                      },
+                    }}
                   >
                     <Close fontSize="small" />
                   </IconButton>
@@ -1110,7 +1118,7 @@ const JobPostingPage = () => {
                   onBlur={() => markFieldTouched('budget.fixed')}
                   error={Boolean(
                     touchedFields['budget.fixed'] &&
-                    fieldErrors['budget.fixed'],
+                      fieldErrors['budget.fixed'],
                   )}
                   helperText={
                     (touchedFields['budget.fixed'] &&
@@ -1186,7 +1194,8 @@ const JobPostingPage = () => {
                   sx={{ maxWidth: 300 }}
                 />
                 <Typography variant="caption" color="text.secondary">
-                  Workers will submit bids within your budget range. You choose the best one.
+                  Workers will submit bids within your budget range. You choose
+                  the best one.
                 </Typography>
               </Box>
             )}
@@ -1258,8 +1267,12 @@ const JobPostingPage = () => {
                   control={<Radio />}
                   label={
                     <Box>
-                      <Typography variant="body2" fontWeight="medium">Public</Typography>
-                      <Typography variant="caption" color="text.secondary">Visible to all workers on Kelmah</Typography>
+                      <Typography variant="body2" fontWeight="medium">
+                        Public
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        Visible to all workers on Kelmah
+                      </Typography>
                     </Box>
                   }
                 />
@@ -1268,8 +1281,12 @@ const JobPostingPage = () => {
                   control={<Radio />}
                   label={
                     <Box>
-                      <Typography variant="body2" fontWeight="medium">Private</Typography>
-                      <Typography variant="caption" color="text.secondary">Only workers you invite can see and apply</Typography>
+                      <Typography variant="body2" fontWeight="medium">
+                        Private
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        Only workers you invite can see and apply
+                      </Typography>
                     </Box>
                   }
                 />
@@ -1292,202 +1309,238 @@ const JobPostingPage = () => {
   };
 
   return (
-    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 }, overflowX: 'clip' }}>
-      <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 }, pb: isMobile ? `${STICKY_CTA_HEIGHT + 16}px` : undefined, width: '100%', minWidth: 0 }}>
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {error}
-        </Alert>
-      )}
-      <Helmet>
-        <title>{isEditMode ? 'Edit Job' : 'Post a Job'} | Kelmah</title>
-      </Helmet>
-
-      <Box sx={{ mb: { xs: 2, md: 4 } }}>
-        <Typography variant={isMobile ? 'h5' : 'h4'} component="h1" gutterBottom>
-          {isEditMode ? 'Edit Job' : 'Post a Job'}
-        </Typography>
-        {!isMobile && (
-          <Typography variant="body1" color="text.secondary">
-            Share clear details, budget, and location so the right workers can
-            apply quickly.
-          </Typography>
-        )}
-      </Box>
-
-      <Stepper
-        activeStep={activeStep}
-        orientation={isMobile ? 'vertical' : 'horizontal'}
+    <PageCanvas
+      disableContainer
+      sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 }, overflowX: 'clip' }}
+    >
+      <Container
+        maxWidth="lg"
         sx={{
-          mb: { xs: 2, md: 4 },
-          '& .MuiStepLabel-label': {
-            fontSize: { xs: '0.75rem', md: '0.875rem' },
-          },
+          py: { xs: 2, md: 4 },
+          pb: isMobile ? `${STICKY_CTA_HEIGHT + 16}px` : undefined,
+          width: '100%',
+          minWidth: 0,
         }}
       >
-        {steps.map((step) => (
-          <Step key={step.label}>
-            <StepLabel icon={step.icon}>
-              {step.label}
-            </StepLabel>
-          </Step>
-        ))}
-      </Stepper>
-
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={8}>
-          <Paper sx={{ p: { xs: 2, md: 3 }, mb: 3 }}>
-            {showStepErrors && (
-              <Alert severity="error" sx={{ mb: 2 }}>
-                <Typography variant="subtitle2" fontWeight={600} gutterBottom>
-                  Complete these before continuing
-                </Typography>
-                <Box component="ul" sx={{ pl: 3, mb: 0 }}>
-                  {Object.entries(currentStepErrors).map(([field, message]) => (
-                    <Typography component="li" variant="body2" key={field}>
-                      {message}
-                    </Typography>
-                  ))}
-                </Box>
-              </Alert>
-            )}
-            {getStepContent(activeStep)}
-          </Paper>
-        </Grid>
-        {!isMobile && (
-          <Grid item xs={12} md={4}>
-            <JobPreview snapshot={previewSnapshot} />
-          </Grid>
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
         )}
-      </Grid>
+        <Helmet>
+          <title>{isEditMode ? 'Edit Job' : 'Post a Job'} | Kelmah</title>
+        </Helmet>
 
-      {fieldErrors.submit && (
-        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setFieldErrors((prev) => { const { submit, ...rest } = prev; return rest; })}>
-          {fieldErrors.submit}
-        </Alert>
-      )}
+        <Box sx={{ mb: { xs: 2, md: 4 } }}>
+          <Typography
+            variant={isMobile ? 'h5' : 'h4'}
+            component="h1"
+            gutterBottom
+          >
+            {isEditMode ? 'Edit Job' : 'Post a Job'}
+          </Typography>
+          {!isMobile && (
+            <Typography variant="body1" color="text.secondary">
+              Share clear details, budget, and location so the right workers can
+              apply quickly.
+            </Typography>
+          )}
+        </Box>
 
-      {activeStep !== 5 && (
-        <Box
+        <Stepper
+          activeStep={activeStep}
+          orientation={isMobile ? 'vertical' : 'horizontal'}
           sx={{
-            display: 'flex',
-            flexDirection: { xs: 'column-reverse', sm: 'row' },
-            justifyContent: 'space-between',
-            gap: 1,
-            mb: 2,
+            mb: { xs: 2, md: 4 },
+            '& .MuiStepLabel-label': {
+              fontSize: { xs: '0.75rem', md: '0.875rem' },
+            },
           }}
         >
-          <Button
-            variant="outlined"
-            onClick={handleBack}
-            startIcon={<ArrowBack />}
-            disabled={activeStep === 0}
-            sx={{ minHeight: 44 }}
-          >
-            Back
-          </Button>
+          {steps.map((step) => (
+            <Step key={step.label}>
+              <StepLabel icon={step.icon}>{step.label}</StepLabel>
+            </Step>
+          ))}
+        </Stepper>
 
-          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: { xs: 'stretch', sm: 'flex-end' } }}>
-            {activeStep === steps.length - 1 ? (
-              <>
-                <Button
-                  variant="outlined"
-                  onClick={() => handleSubmit(true)}
-                  startIcon={<Save />}
-                  sx={{ mr: 1, minHeight: 44, flex: { xs: 1, sm: 'none' } }}
-                  disabled={isLoading}
-                >
-                  Save as Draft
-                </Button>
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={8}>
+            <Paper sx={{ p: { xs: 2, md: 3 }, mb: 3 }}>
+              {showStepErrors && (
+                <Alert severity="error" sx={{ mb: 2 }}>
+                  <Typography variant="subtitle2" fontWeight={600} gutterBottom>
+                    Complete these before continuing
+                  </Typography>
+                  <Box component="ul" sx={{ pl: 3, mb: 0 }}>
+                    {Object.entries(currentStepErrors).map(
+                      ([field, message]) => (
+                        <Typography component="li" variant="body2" key={field}>
+                          {message}
+                        </Typography>
+                      ),
+                    )}
+                  </Box>
+                </Alert>
+              )}
+              {getStepContent(activeStep)}
+            </Paper>
+          </Grid>
+          {!isMobile && (
+            <Grid item xs={12} md={4}>
+              <JobPreview snapshot={previewSnapshot} />
+            </Grid>
+          )}
+        </Grid>
+
+        {fieldErrors.submit && (
+          <Alert
+            severity="error"
+            sx={{ mb: 2 }}
+            onClose={() =>
+              setFieldErrors((prev) => {
+                const { submit, ...rest } = prev;
+                return rest;
+              })
+            }
+          >
+            {fieldErrors.submit}
+          </Alert>
+        )}
+
+        {activeStep !== 5 && (
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: { xs: 'column-reverse', sm: 'row' },
+              justifyContent: 'space-between',
+              gap: 1,
+              mb: 2,
+            }}
+          >
+            <Button
+              variant="outlined"
+              onClick={handleBack}
+              startIcon={<ArrowBack />}
+              disabled={activeStep === 0}
+              sx={{ minHeight: 44 }}
+            >
+              Back
+            </Button>
+
+            <Box
+              sx={{
+                display: 'flex',
+                gap: 1,
+                flexWrap: 'wrap',
+                justifyContent: { xs: 'stretch', sm: 'flex-end' },
+              }}
+            >
+              {activeStep === steps.length - 1 ? (
+                <>
+                  <Button
+                    variant="outlined"
+                    onClick={() => handleSubmit(true)}
+                    startIcon={<Save />}
+                    sx={{ mr: 1, minHeight: 44, flex: { xs: 1, sm: 'none' } }}
+                    disabled={isLoading}
+                  >
+                    Save as Draft
+                  </Button>
+                  <Button
+                    variant="contained"
+                    onClick={() => handleSubmit(false)}
+                    endIcon={<Publish />}
+                    disabled={isLoading}
+                    color="primary"
+                    sx={{ minHeight: 44, flex: { xs: 1, sm: 'none' } }}
+                  >
+                    {isLoading ? (
+                      <CircularProgress size={24} />
+                    ) : isEditMode ? (
+                      'Save Changes'
+                    ) : (
+                      'Post Job'
+                    )}
+                  </Button>
+                </>
+              ) : (
                 <Button
                   variant="contained"
-                  onClick={() => handleSubmit(false)}
-                  endIcon={<Publish />}
+                  onClick={handleNext}
+                  endIcon={<ArrowForward />}
                   disabled={isLoading}
-                  color="primary"
-                  sx={{ minHeight: 44, flex: { xs: 1, sm: 'none' } }}
+                  sx={{ minHeight: 44, width: { xs: '100%', sm: 'auto' } }}
                 >
-                  {isLoading ? (
-                    <CircularProgress size={24} />
-                  ) : isEditMode ? (
-                    'Save Changes'
-                  ) : (
-                    'Post Job'
-                  )}
+                  Next
                 </Button>
-              </>
+              )}
+            </Box>
+          </Box>
+        )}
+
+        {/* Sticky bottom action bar for mobile */}
+        {isMobile && activeStep !== 5 && (
+          <Box
+            sx={{
+              position: 'fixed',
+              bottom: { xs: `${BOTTOM_NAV_HEIGHT}px`, md: 0 },
+              left: 0,
+              right: 0,
+              zIndex: Z_INDEX.stickyCta,
+              bgcolor: 'background.paper',
+              borderTop: 1,
+              borderColor: 'divider',
+              px: 2,
+              py: 1.5,
+              display: 'flex',
+              justifyContent: 'space-between',
+              gap: 1,
+              boxShadow: '0 -2px 8px rgba(0,0,0,0.1)',
+            }}
+          >
+            <Button
+              variant="outlined"
+              onClick={handleBack}
+              startIcon={<ArrowBack />}
+              disabled={activeStep === 0}
+              sx={{ minHeight: 44, flex: 1 }}
+            >
+              Back
+            </Button>
+            {activeStep === steps.length - 1 ? (
+              <Button
+                variant="contained"
+                onClick={() => handleSubmit(false)}
+                endIcon={<Publish />}
+                disabled={isLoading}
+                color="primary"
+                sx={{ minHeight: 44, flex: 1 }}
+              >
+                {isLoading ? (
+                  <CircularProgress size={24} />
+                ) : isEditMode ? (
+                  'Save'
+                ) : (
+                  'Post Job'
+                )}
+              </Button>
             ) : (
               <Button
                 variant="contained"
                 onClick={handleNext}
                 endIcon={<ArrowForward />}
                 disabled={isLoading}
-                sx={{ minHeight: 44, width: { xs: '100%', sm: 'auto' } }}
+                sx={{ minHeight: 44, flex: 1 }}
               >
                 Next
               </Button>
             )}
           </Box>
-        </Box>
-      )}
-
-      {/* Sticky bottom action bar for mobile */}
-      {isMobile && activeStep !== 5 && (
-        <Box
-          sx={{
-            position: 'fixed',
-            bottom: { xs: `${BOTTOM_NAV_HEIGHT}px`, md: 0 },
-            left: 0,
-            right: 0,
-            zIndex: Z_INDEX.stickyCta,
-            bgcolor: 'background.paper',
-            borderTop: 1,
-            borderColor: 'divider',
-            px: 2,
-            py: 1.5,
-            display: 'flex',
-            justifyContent: 'space-between',
-            gap: 1,
-            boxShadow: '0 -2px 8px rgba(0,0,0,0.1)',
-          }}
-        >
-          <Button
-            variant="outlined"
-            onClick={handleBack}
-            startIcon={<ArrowBack />}
-            disabled={activeStep === 0}
-            sx={{ minHeight: 44, flex: 1 }}
-          >
-            Back
-          </Button>
-          {activeStep === steps.length - 1 ? (
-            <Button
-              variant="contained"
-              onClick={() => handleSubmit(false)}
-              endIcon={<Publish />}
-              disabled={isLoading}
-              color="primary"
-              sx={{ minHeight: 44, flex: 1 }}
-            >
-              {isLoading ? <CircularProgress size={24} /> : isEditMode ? 'Save' : 'Post Job'}
-            </Button>
-          ) : (
-            <Button
-              variant="contained"
-              onClick={handleNext}
-              endIcon={<ArrowForward />}
-              disabled={isLoading}
-              sx={{ minHeight: 44, flex: 1 }}
-            >
-              Next
-            </Button>
-          )}
-        </Box>
-      )}
+        )}
       </Container>
     </PageCanvas>
   );
 };
 
 export default JobPostingPage;
-

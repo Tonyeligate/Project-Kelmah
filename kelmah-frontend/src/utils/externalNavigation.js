@@ -29,8 +29,10 @@ const EXTRA_ALLOWED_EXTERNAL_HOSTS = String(
 
 const asHostSet = (hosts) => {
   if (!hosts) return new Set();
-  if (hosts instanceof Set) return new Set([...hosts].map((h) => String(h).toLowerCase()));
-  if (Array.isArray(hosts)) return new Set(hosts.map((h) => String(h).toLowerCase()));
+  if (hosts instanceof Set)
+    return new Set([...hosts].map((h) => String(h).toLowerCase()));
+  if (Array.isArray(hosts))
+    return new Set(hosts.map((h) => String(h).toLowerCase()));
   return new Set([String(hosts).toLowerCase()]);
 };
 
@@ -83,10 +85,8 @@ export const isSafeInternalPath = (value) => {
 };
 
 export const sanitizeExternalUrl = (value, options = {}) => {
-  const {
-    allowedHosts = ALLOWED_EXTERNAL_HOSTS,
-    requireHttps = true,
-  } = options;
+  const { allowedHosts = ALLOWED_EXTERNAL_HOSTS, requireHttps = true } =
+    options;
 
   const normalized = normalizeString(value);
   if (!normalized) return null;
@@ -104,7 +104,10 @@ export const sanitizeExternalUrl = (value, options = {}) => {
     }
 
     const hostAllowlist = asHostSet(allowedHosts);
-    if (hostAllowlist.size > 0 && !isHostAllowed(parsed.hostname, hostAllowlist)) {
+    if (
+      hostAllowlist.size > 0 &&
+      !isHostAllowed(parsed.hostname, hostAllowlist)
+    ) {
       return null;
     }
 

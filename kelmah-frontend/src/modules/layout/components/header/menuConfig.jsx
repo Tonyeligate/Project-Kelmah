@@ -10,7 +10,11 @@ import {
 
 const SHARED_ITEMS = [
   { label: 'Profile', path: '/profile', icon: <PersonIcon color="primary" /> },
-  { label: 'Help & Support', path: '/support', icon: <SupportIcon color="primary" /> },
+  {
+    label: 'Help & Support',
+    path: '/support',
+    icon: <SupportIcon color="primary" />,
+  },
 ];
 
 export default function buildMenuItems(role) {

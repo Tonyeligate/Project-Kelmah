@@ -26,7 +26,8 @@ const ProposalBuilder = ({ onSubmit }) => {
       <Paper sx={{ p: 2 }}>
         <Stack spacing={2}>
           <Alert severity="info">
-            Keep your proposal short and practical: what you will do, timeline, and total cost.
+            Keep your proposal short and practical: what you will do, timeline,
+            and total cost.
           </Alert>
           <TextField
             label="Proposal Title"
@@ -57,7 +58,11 @@ const ProposalBuilder = ({ onSubmit }) => {
             inputProps={{ 'aria-label': 'Proposed rate in Ghana cedis' }}
             helperText={`Enter your full quote so hirers can compare fairly. Preview: ${new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' }).format(Number(rate) || 0)}`}
           />
-          <Button variant="contained" onClick={handleSubmit} sx={{ minHeight: 44, width: { xs: '100%', sm: 'auto' } }}>
+          <Button
+            variant="contained"
+            onClick={handleSubmit}
+            sx={{ minHeight: 44, width: { xs: '100%', sm: 'auto' } }}
+          >
             Submit Proposal
           </Button>
           <Typography variant="body2" color="text.secondary">

@@ -119,7 +119,11 @@ const PaymentMethodCard = ({ method, onEdit }) => {
         <Typography variant="body1" sx={{ mt: 2, wordBreak: 'break-word' }}>
           {maskedCardNumber}
         </Typography>
-        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ display: 'block', mt: 0.5 }}
+        >
           For your security, only the last 4 digits are shown.
         </Typography>
 

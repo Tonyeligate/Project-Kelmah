@@ -32,13 +32,21 @@ export const getMessagePreview = (message) => {
   if (messageType === 'audio') return '🎵 Audio';
   if (messageType === 'file' || messageType === 'document') return '📎 File';
 
-  const isImageUrl = text.match(/\.(jpeg|jpg|gif|png|webp|bmp)($|\?)/i) || text.includes('/image/upload/') || text.includes('cloudinary.com/');
-  const isVideoUrl = text.match(/\.(mp4|webm|avi|mov)($|\?)/i) || text.includes('/video/upload/');
+  const isImageUrl =
+    text.match(/\.(jpeg|jpg|gif|png|webp|bmp)($|\?)/i) ||
+    text.includes('/image/upload/') ||
+    text.includes('cloudinary.com/');
+  const isVideoUrl =
+    text.match(/\.(mp4|webm|avi|mov)($|\?)/i) ||
+    text.includes('/video/upload/');
 
   if (isImageUrl) return '🖼️ Photo';
   if (isVideoUrl) return '🎥 Video';
 
-  if (message.hasAttachment || (Array.isArray(message.attachments) && message.attachments.length > 0)) {
+  if (
+    message.hasAttachment ||
+    (Array.isArray(message.attachments) && message.attachments.length > 0)
+  ) {
     if (!text.trim() || text.startsWith('http')) return '📎 Attachment';
   }
 

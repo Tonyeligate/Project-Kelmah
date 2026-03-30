@@ -2,10 +2,7 @@ import { api } from '../../../services/apiClient';
 import workerService from '../../worker/services/workerService';
 import { unwrapApiData } from '../../../services/responseNormalizer';
 import { captureRecoverableApiError } from '../../../services/errorTelemetry';
-import {
-  createFeatureLogger,
-  devError,
-} from '../../common/utils/devLogger';
+import { createFeatureLogger, devError } from '../../common/utils/devLogger';
 
 const SUGGESTION_DEBOUNCE_MS = 250;
 const STATIC_LOOKUP_TTL_MS = 5 * 60 * 1000;
@@ -80,7 +77,8 @@ const requestWithFallback = async (endpoints, requestFactory) => {
       return await requestFactory(endpoint);
     } catch (error) {
       lastError = error;
-      const canRetryWithFallback = index < endpoints.length - 1 && shouldTryFallback(error);
+      const canRetryWithFallback =
+        index < endpoints.length - 1 && shouldTryFallback(error);
       if (!canRetryWithFallback) {
         break;
       }
@@ -210,7 +208,10 @@ const searchService = {
       return Promise.resolve([]);
     }
 
-    if (scheduledSuggestionQuery === normalizedQuery && scheduledSuggestionPromise) {
+    if (
+      scheduledSuggestionQuery === normalizedQuery &&
+      scheduledSuggestionPromise
+    ) {
       return scheduledSuggestionPromise;
     }
 
@@ -305,10 +306,12 @@ const searchService = {
    */
   getPopularTerms: async (limit = 5) => {
     try {
-      const response = await requestWithFallback(POPULAR_ENDPOINTS, (endpoint) =>
-        api.get(endpoint, {
-          params: { limit },
-        }),
+      const response = await requestWithFallback(
+        POPULAR_ENDPOINTS,
+        (endpoint) =>
+          api.get(endpoint, {
+            params: { limit },
+          }),
       );
       const payload = unwrapApiData(response);
       return normalizeArrayPayload(payload, ['terms']);
@@ -340,11 +343,10 @@ const searchService = {
   // Get job skills
   getSkills: async () => {
     try {
-      return await getCachedLookup(
+      return await getCachedLookup('skills', () => api.get('/jobs/skills'), [
         'skills',
-        () => api.get('/jobs/skills'),
-        ['skills', 'items'],
-      );
+        'items',
+      ]);
     } catch (error) {
       devError('Skills fetch error:', error);
       throw error;

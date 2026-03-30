@@ -238,4 +238,3 @@ class SchedulingService {
 }
 
 export default new SchedulingService();
-

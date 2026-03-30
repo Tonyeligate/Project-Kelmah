@@ -16,8 +16,11 @@ import {
 import PropTypes from 'prop-types';
 import SettingsSection from '../SettingsSection';
 
-const PrivacySettings = ({ settings = null, loading = false, updatePrivacySettings }) => {
-
+const PrivacySettings = ({
+  settings = null,
+  loading = false,
+  updatePrivacySettings,
+}) => {
   const [localPrivacy, setLocalPrivacy] = useState({
     profileVisibility: 'public',
     searchVisibility: true,
@@ -67,9 +70,22 @@ const PrivacySettings = ({ settings = null, loading = false, updatePrivacySettin
         loading={loading}
       >
         <Stack spacing={1.5}>
-          <Box sx={{ p: 1.5, borderRadius: 2, border: '1px solid', borderColor: 'divider', bgcolor: 'background.default' }}>
+          <Box
+            sx={{
+              p: 1.5,
+              borderRadius: 2,
+              border: '1px solid',
+              borderColor: 'divider',
+              bgcolor: 'background.default',
+            }}
+          >
             <FormControlLabel
-              sx={{ alignItems: 'flex-start', m: 0, width: '100%', justifyContent: 'space-between' }}
+              sx={{
+                alignItems: 'flex-start',
+                m: 0,
+                width: '100%',
+                justifyContent: 'space-between',
+              }}
               control={
                 <Switch
                   checked={localPrivacy.searchVisibility}
@@ -77,18 +93,36 @@ const PrivacySettings = ({ settings = null, loading = false, updatePrivacySettin
                   color="primary"
                 />
               }
-              label={(
+              label={
                 <Box sx={{ pr: 2 }}>
-                  <Typography variant="subtitle2" fontWeight={700}>Appear in search results</Typography>
-                  <Typography variant="body2" color="text.secondary">Let hirers discover your profile when they search for workers.</Typography>
+                  <Typography variant="subtitle2" fontWeight={700}>
+                    Appear in search results
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Let hirers discover your profile when they search for
+                    workers.
+                  </Typography>
                 </Box>
-              )}
+              }
               labelPlacement="start"
             />
           </Box>
-          <Box sx={{ p: 1.5, borderRadius: 2, border: '1px solid', borderColor: 'divider', bgcolor: 'background.default' }}>
+          <Box
+            sx={{
+              p: 1.5,
+              borderRadius: 2,
+              border: '1px solid',
+              borderColor: 'divider',
+              bgcolor: 'background.default',
+            }}
+          >
             <FormControlLabel
-              sx={{ alignItems: 'flex-start', m: 0, width: '100%', justifyContent: 'space-between' }}
+              sx={{
+                alignItems: 'flex-start',
+                m: 0,
+                width: '100%',
+                justifyContent: 'space-between',
+              }}
               control={
                 <Switch
                   checked={localPrivacy.dataSharing}
@@ -96,21 +130,35 @@ const PrivacySettings = ({ settings = null, loading = false, updatePrivacySettin
                   color="primary"
                 />
               }
-              label={(
+              label={
                 <Box sx={{ pr: 2 }}>
-                  <Typography variant="subtitle2" fontWeight={700}>Allow trusted data sharing</Typography>
-                  <Typography variant="body2" color="text.secondary">Share limited profile data with trusted Kelmah partners when it improves matching.</Typography>
+                  <Typography variant="subtitle2" fontWeight={700}>
+                    Allow trusted data sharing
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Share limited profile data with trusted Kelmah partners when
+                    it improves matching.
+                  </Typography>
                 </Box>
-              )}
+              }
               labelPlacement="start"
             />
           </Box>
-          <Box sx={{ p: 1.5, borderRadius: 2, border: '1px solid', borderColor: 'divider', bgcolor: 'background.default' }}>
+          <Box
+            sx={{
+              p: 1.5,
+              borderRadius: 2,
+              border: '1px solid',
+              borderColor: 'divider',
+              bgcolor: 'background.default',
+            }}
+          >
             <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 0.75 }}>
               Profile visibility
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-              Choose whether your profile is visible to the public or only to you.
+              Choose whether your profile is visible to the public or only to
+              you.
             </Typography>
             <FormControl>
               <RadioGroup
@@ -122,8 +170,16 @@ const PrivacySettings = ({ settings = null, loading = false, updatePrivacySettin
                   }))
                 }
               >
-                <FormControlLabel value="public" control={<Radio />} label="Public — hirers can view your profile" />
-                <FormControlLabel value="private" control={<Radio />} label="Private — only you can view your profile" />
+                <FormControlLabel
+                  value="public"
+                  control={<Radio />}
+                  label="Public — hirers can view your profile"
+                />
+                <FormControlLabel
+                  value="private"
+                  control={<Radio />}
+                  label="Private — only you can view your profile"
+                />
               </RadioGroup>
             </FormControl>
           </Box>
@@ -162,7 +218,5 @@ PrivacySettings.propTypes = {
   loading: PropTypes.bool,
   updatePrivacySettings: PropTypes.func.isRequired,
 };
-
-
 
 export default PrivacySettings;

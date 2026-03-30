@@ -17,7 +17,9 @@ const DEFAULT_ALLOWED_MEDIA_HOSTS = new Set([
   'tile.openstreetmap.org',
 ]);
 
-const EXTRA_ALLOWED_MEDIA_HOSTS = String(import.meta.env.VITE_ALLOWED_MEDIA_HOSTS || '')
+const EXTRA_ALLOWED_MEDIA_HOSTS = String(
+  import.meta.env.VITE_ALLOWED_MEDIA_HOSTS || '',
+)
   .split(',')
   .map((host) => host.trim().toLowerCase())
   .filter(Boolean);
@@ -50,7 +52,10 @@ const isAllowedMediaUrl = (value) => {
       return false;
     }
 
-    if (typeof window !== 'undefined' && parsed.origin === window.location.origin) {
+    if (
+      typeof window !== 'undefined' &&
+      parsed.origin === window.location.origin
+    ) {
       return true;
     }
 
@@ -191,7 +196,9 @@ const normalizeEntityId = (value) => {
     return String(value).trim();
   }
   if (typeof value === 'object') {
-    return normalizeEntityId(value._id || value.id || value.ownerId || value.jobId || value.$oid);
+    return normalizeEntityId(
+      value._id || value.id || value.ownerId || value.jobId || value.$oid,
+    );
   }
   return '';
 };
@@ -213,7 +220,9 @@ const isBoundToJobCover = (job = {}) => {
     return metadataJobId === currentJobId;
   }
 
-  const bindingKey = asTrimmedString(metadata.imageBindingKey || metadata.bindingKey);
+  const bindingKey = asTrimmedString(
+    metadata.imageBindingKey || metadata.bindingKey,
+  );
   if (bindingKey) {
     return bindingKey === `job:${currentJobId}:cover`;
   }
@@ -222,22 +231,102 @@ const isBoundToJobCover = (job = {}) => {
 };
 
 const JOB_VISUAL_THEMES = {
-  plumbing: { start: '#0f766e', end: '#0ea5e9', accent: '#67e8f9', badge: '#cffafe' },
-  electrical: { start: '#312e81', end: '#2563eb', accent: '#facc15', badge: '#dbeafe' },
-  carpentry: { start: '#78350f', end: '#b45309', accent: '#fde68a', badge: '#fef3c7' },
-  construction: { start: '#374151', end: '#0f766e', accent: '#f59e0b', badge: '#dcfce7' },
-  painting: { start: '#7c3aed', end: '#ec4899', accent: '#f9a8d4', badge: '#f5d0fe' },
-  welding: { start: '#9a3412', end: '#ea580c', accent: '#fdba74', badge: '#ffedd5' },
-  masonry: { start: '#7c2d12', end: '#c2410c', accent: '#fdba74', badge: '#ffedd5' },
-  roofing: { start: '#14532d', end: '#16a34a', accent: '#86efac', badge: '#dcfce7' },
-  flooring: { start: '#1f2937', end: '#0f766e', accent: '#5eead4', badge: '#ccfbf1' },
-  tiling: { start: '#1d4ed8', end: '#0891b2', accent: '#93c5fd', badge: '#dbeafe' },
-  hvac: { start: '#0f172a', end: '#2563eb', accent: '#93c5fd', badge: '#dbeafe' },
-  landscaping: { start: '#166534', end: '#15803d', accent: '#86efac', badge: '#dcfce7' },
-  'interior design': { start: '#7c2d12', end: '#be123c', accent: '#fda4af', badge: '#ffe4e6' },
-  'general repairs': { start: '#334155', end: '#475569', accent: '#facc15', badge: '#fef9c3' },
-  handyman: { start: '#334155', end: '#0f766e', accent: '#facc15', badge: '#fef9c3' },
-  default: { start: '#0f172a', end: '#0f766e', accent: '#facc15', badge: '#fef3c7' },
+  plumbing: {
+    start: '#0f766e',
+    end: '#0ea5e9',
+    accent: '#67e8f9',
+    badge: '#cffafe',
+  },
+  electrical: {
+    start: '#312e81',
+    end: '#2563eb',
+    accent: '#facc15',
+    badge: '#dbeafe',
+  },
+  carpentry: {
+    start: '#78350f',
+    end: '#b45309',
+    accent: '#fde68a',
+    badge: '#fef3c7',
+  },
+  construction: {
+    start: '#374151',
+    end: '#0f766e',
+    accent: '#f59e0b',
+    badge: '#dcfce7',
+  },
+  painting: {
+    start: '#7c3aed',
+    end: '#ec4899',
+    accent: '#f9a8d4',
+    badge: '#f5d0fe',
+  },
+  welding: {
+    start: '#9a3412',
+    end: '#ea580c',
+    accent: '#fdba74',
+    badge: '#ffedd5',
+  },
+  masonry: {
+    start: '#7c2d12',
+    end: '#c2410c',
+    accent: '#fdba74',
+    badge: '#ffedd5',
+  },
+  roofing: {
+    start: '#14532d',
+    end: '#16a34a',
+    accent: '#86efac',
+    badge: '#dcfce7',
+  },
+  flooring: {
+    start: '#1f2937',
+    end: '#0f766e',
+    accent: '#5eead4',
+    badge: '#ccfbf1',
+  },
+  tiling: {
+    start: '#1d4ed8',
+    end: '#0891b2',
+    accent: '#93c5fd',
+    badge: '#dbeafe',
+  },
+  hvac: {
+    start: '#0f172a',
+    end: '#2563eb',
+    accent: '#93c5fd',
+    badge: '#dbeafe',
+  },
+  landscaping: {
+    start: '#166534',
+    end: '#15803d',
+    accent: '#86efac',
+    badge: '#dcfce7',
+  },
+  'interior design': {
+    start: '#7c2d12',
+    end: '#be123c',
+    accent: '#fda4af',
+    badge: '#ffe4e6',
+  },
+  'general repairs': {
+    start: '#334155',
+    end: '#475569',
+    accent: '#facc15',
+    badge: '#fef9c3',
+  },
+  handyman: {
+    start: '#334155',
+    end: '#0f766e',
+    accent: '#facc15',
+    badge: '#fef9c3',
+  },
+  default: {
+    start: '#0f172a',
+    end: '#0f766e',
+    accent: '#facc15',
+    badge: '#fef3c7',
+  },
 };
 
 const getJobCategoryKey = (job = {}) =>
@@ -272,9 +361,15 @@ const getJobLocationLabel = (job = {}) => {
 const createJobFallbackVisual = (job = {}) => {
   const categoryKey = getJobCategoryKey(job);
   const theme = JOB_VISUAL_THEMES[categoryKey] || JOB_VISUAL_THEMES.default;
-  const categoryLabel = escapeSvgText(truncateText(job?.category || job?.type || 'Trade Opportunity', 24));
-  const titleLabel = escapeSvgText(truncateText(job?.title || 'Skilled trade opportunity', 34));
-  const locationLabel = escapeSvgText(truncateText(getJobLocationLabel(job), 28));
+  const categoryLabel = escapeSvgText(
+    truncateText(job?.category || job?.type || 'Trade Opportunity', 24),
+  );
+  const titleLabel = escapeSvgText(
+    truncateText(job?.title || 'Skilled trade opportunity', 34),
+  );
+  const locationLabel = escapeSvgText(
+    truncateText(getJobLocationLabel(job), 28),
+  );
   const svg = `
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" role="img" aria-label="${categoryLabel} job preview">
       <defs>
@@ -309,12 +404,10 @@ export const resolveJobVisualUrl = (job = {}, options = {}) => {
   const resolvedCoverImage = isBoundToJobCover(job)
     ? resolveMediaAssetUrl([job?.coverImage, job?.coverImageMetadata], options)
     : '';
-  const resolvedGalleryImage = resolveMediaAssetUrl([
-    job?.images,
-    job?.attachments,
-    job?.media,
-    job?.gallery,
-  ], options);
+  const resolvedGalleryImage = resolveMediaAssetUrl(
+    [job?.images, job?.attachments, job?.media, job?.gallery],
+    options,
+  );
   const resolved = resolvedCoverImage || resolvedGalleryImage;
 
   if (resolved) {

@@ -74,11 +74,31 @@ const workerDebugError = createFeatureLogger({
 });
 
 const STATUS_CONFIG = {
-  pending: { label: 'Pending', color: 'warning', icon: <PendingIcon fontSize="small" /> },
-  accepted: { label: 'Accepted', color: 'success', icon: <AcceptedIcon fontSize="small" /> },
-  rejected: { label: 'Rejected', color: 'error', icon: <RejectedIcon fontSize="small" /> },
-  withdrawn: { label: 'Withdrawn', color: 'default', icon: <WithdrawIcon fontSize="small" /> },
-  expired: { label: 'Expired', color: 'default', icon: <ExpiredIcon fontSize="small" /> },
+  pending: {
+    label: 'Pending',
+    color: 'warning',
+    icon: <PendingIcon fontSize="small" />,
+  },
+  accepted: {
+    label: 'Accepted',
+    color: 'success',
+    icon: <AcceptedIcon fontSize="small" />,
+  },
+  rejected: {
+    label: 'Rejected',
+    color: 'error',
+    icon: <RejectedIcon fontSize="small" />,
+  },
+  withdrawn: {
+    label: 'Withdrawn',
+    color: 'default',
+    icon: <WithdrawIcon fontSize="small" />,
+  },
+  expired: {
+    label: 'Expired',
+    color: 'default',
+    icon: <ExpiredIcon fontSize="small" />,
+  },
 };
 
 const BidCard = ({ bid, onWithdraw, onViewJob, isMobile }) => {
@@ -100,7 +120,11 @@ const BidCard = ({ bid, onWithdraw, onViewJob, isMobile }) => {
     if (days === 0) return 'Today';
     if (days === 1) return '1 day ago';
     if (days < 30) return `${days} days ago`;
-    return d.toLocaleDateString('en-GH', { month: 'short', day: 'numeric', year: 'numeric' });
+    return d.toLocaleDateString('en-GH', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
   };
 
   return (
@@ -118,7 +142,12 @@ const BidCard = ({ bid, onWithdraw, onViewJob, isMobile }) => {
     >
       <CardContent sx={{ p: { xs: 2, md: 2.5 } }}>
         {/* Header: job title + bid status */}
-        <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={1}>
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="flex-start"
+          spacing={1}
+        >
           <ButtonBase
             onClick={() => onViewJob(job._id || job.id)}
             sx={{
@@ -161,14 +190,26 @@ const BidCard = ({ bid, onWithdraw, onViewJob, isMobile }) => {
             color={status.color}
             size="small"
             variant="outlined"
-            sx={{ height: { xs: 22, md: 24 }, '& .MuiChip-label': { px: 0.8, fontSize: { xs: '0.66rem', md: '0.75rem' }, fontWeight: 700 } }}
+            sx={{
+              height: { xs: 22, md: 24 },
+              '& .MuiChip-label': {
+                px: 0.8,
+                fontSize: { xs: '0.66rem', md: '0.75rem' },
+                fontWeight: 700,
+              },
+            }}
           />
         </Stack>
 
         <Divider sx={{ my: { xs: 1, md: 1.5 } }} />
 
         {/* Bid details row */}
-        <Stack direction="row" spacing={isMobile ? 1.25 : 3} flexWrap="wrap" useFlexGap>
+        <Stack
+          direction="row"
+          spacing={isMobile ? 1.25 : 3}
+          flexWrap="wrap"
+          useFlexGap
+        >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             <MoneyIcon fontSize="small" color="primary" />
             <Typography variant="body2" fontWeight={600}>
@@ -199,7 +240,9 @@ const BidCard = ({ bid, onWithdraw, onViewJob, isMobile }) => {
                   textOverflow: 'ellipsis',
                 }}
               >
-                {typeof job.location === 'string' ? job.location : job.location?.address || ''}
+                {typeof job.location === 'string'
+                  ? job.location
+                  : job.location?.address || ''}
               </Typography>
             </Box>
           )}
@@ -224,7 +267,12 @@ const BidCard = ({ bid, onWithdraw, onViewJob, isMobile }) => {
         )}
 
         {/* Actions */}
-        <Stack direction="row" justifyContent="flex-end" spacing={1} sx={{ mt: { xs: 1, md: 1.5 } }}>
+        <Stack
+          direction="row"
+          justifyContent="flex-end"
+          spacing={1}
+          sx={{ mt: { xs: 1, md: 1.5 } }}
+        >
           <Button
             size="small"
             variant="text"
@@ -257,9 +305,21 @@ const BidStatsSummary = ({ stats }) => {
   if (!stats) return null;
 
   const items = [
-    { label: 'Bids This Month', value: stats.count ?? 0, color: theme.palette.primary.main },
-    { label: 'Monthly Quota', value: stats.quota ?? 5, color: theme.palette.info.main },
-    { label: 'Remaining', value: stats.remaining ?? 5, color: theme.palette.success.main },
+    {
+      label: 'Bids This Month',
+      value: stats.count ?? 0,
+      color: theme.palette.primary.main,
+    },
+    {
+      label: 'Monthly Quota',
+      value: stats.quota ?? 5,
+      color: theme.palette.info.main,
+    },
+    {
+      label: 'Remaining',
+      value: stats.remaining ?? 5,
+      color: theme.palette.success.main,
+    },
   ];
 
   return (
@@ -275,12 +335,18 @@ const BidStatsSummary = ({ stats }) => {
     >
       <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1.5 }}>
         <StatsIcon color="primary" fontSize="small" />
-        <Typography variant="subtitle2" fontWeight={700}>Monthly Bid Stats</Typography>
+        <Typography variant="subtitle2" fontWeight={700}>
+          Monthly Bid Stats
+        </Typography>
       </Stack>
       <Stack direction="row" spacing={3} flexWrap="wrap" useFlexGap>
         {items.map((item) => (
           <Box key={item.label}>
-            <Typography variant="h5" fontWeight={700} sx={{ color: item.color }}>
+            <Typography
+              variant="h5"
+              fontWeight={700}
+              sx={{ color: item.color }}
+            >
               {item.value}
             </Typography>
             <Typography variant="caption" color="text.secondary">
@@ -296,7 +362,12 @@ const BidStatsSummary = ({ stats }) => {
 const BidCardSkeleton = () => (
   <Card sx={{ mb: 2, borderRadius: 2.5 }}>
     <CardContent>
-      <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1.5}>
+      <Stack
+        direction="row"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={1.5}
+      >
         <Box sx={{ flex: 1 }}>
           <Skeleton width="60%" height={24} />
           <Skeleton width="40%" height={16} />
@@ -324,55 +395,77 @@ const MyBidsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [tabValue, setTabValue] = useState(0);
-  const [withdrawDialog, setWithdrawDialog] = useState({ open: false, bid: null });
+  const [withdrawDialog, setWithdrawDialog] = useState({
+    open: false,
+    bid: null,
+  });
   const [withdrawReason, setWithdrawReason] = useState('');
   const [withdrawing, setWithdrawing] = useState(false);
-  const [toast, setToast] = useState({ open: false, message: '', severity: 'info', title: null });
+  const [toast, setToast] = useState({
+    open: false,
+    message: '',
+    severity: 'info',
+    title: null,
+  });
 
-  const TAB_STATUSES = ['all', 'pending', 'accepted', 'rejected', 'withdrawn', 'expired'];
+  const TAB_STATUSES = [
+    'all',
+    'pending',
+    'accepted',
+    'rejected',
+    'withdrawn',
+    'expired',
+  ];
 
-  const fetchBids = useCallback(async (signal) => {
-    if (signal?.aborted) {
-      return;
-    }
-
-    if (!user) {
-      navigate('/login', { state: { from: '/worker/bids' } });
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    try {
-      const [bidsResult, statsResult] = await Promise.allSettled([
-        bidApi.getMyBids({}, { signal }),
-        bidApi.getMyBidStats({ signal }),
-      ]);
-
+  const fetchBids = useCallback(
+    async (signal) => {
       if (signal?.aborted) {
         return;
       }
 
-      const bidsData = bidsResult.status === 'fulfilled' ? bidsResult.value : [];
-      setBids(bidsData);
-      if (statsResult.status === 'fulfilled') {
-        setStats(statsResult.value);
-      }
-      if (bidsResult.status === 'rejected' && statsResult.status === 'rejected') {
-        setError('Failed to load your bids. Please try again.');
-      }
-    } catch (err) {
-      if (isAbortError(err) || signal?.aborted) {
+      if (!user) {
+        navigate('/login', { state: { from: '/worker/bids' } });
         return;
       }
+      setLoading(true);
+      setError(null);
+      try {
+        const [bidsResult, statsResult] = await Promise.allSettled([
+          bidApi.getMyBids({}, { signal }),
+          bidApi.getMyBidStats({ signal }),
+        ]);
 
-      setError('Failed to load your bids. Please try again.');
-      workerDebugError('MyBidsPage fetch error:', err);
-    } finally {
-      if (!signal?.aborted) {
-        setLoading(false);
+        if (signal?.aborted) {
+          return;
+        }
+
+        const bidsData =
+          bidsResult.status === 'fulfilled' ? bidsResult.value : [];
+        setBids(bidsData);
+        if (statsResult.status === 'fulfilled') {
+          setStats(statsResult.value);
+        }
+        if (
+          bidsResult.status === 'rejected' &&
+          statsResult.status === 'rejected'
+        ) {
+          setError('Failed to load your bids. Please try again.');
+        }
+      } catch (err) {
+        if (isAbortError(err) || signal?.aborted) {
+          return;
+        }
+
+        setError('Failed to load your bids. Please try again.');
+        workerDebugError('MyBidsPage fetch error:', err);
+      } finally {
+        if (!signal?.aborted) {
+          setLoading(false);
+        }
       }
-    }
-  }, [navigate, user]);
+    },
+    [navigate, user],
+  );
 
   useEffect(() => {
     const controller = new AbortController();
@@ -380,9 +473,10 @@ const MyBidsPage = () => {
     return () => controller.abort();
   }, [fetchBids]);
 
-  const filteredBids = tabValue === 0
-    ? bids
-    : bids.filter((b) => b.status === TAB_STATUSES[tabValue]);
+  const filteredBids =
+    tabValue === 0
+      ? bids
+      : bids.filter((b) => b.status === TAB_STATUSES[tabValue]);
 
   const handleWithdrawOpen = (bid) => {
     setWithdrawDialog({ open: true, bid });
@@ -397,7 +491,9 @@ const MyBidsPage = () => {
       await bidApi.withdrawBid(bid._id || bid.id, { reason: withdrawReason });
       setBids((prev) =>
         prev.map((b) =>
-          (b._id || b.id) === (bid._id || bid.id) ? { ...b, status: 'withdrawn' } : b,
+          (b._id || b.id) === (bid._id || bid.id)
+            ? { ...b, status: 'withdrawn' }
+            : b,
         ),
       );
       setWithdrawDialog({ open: false, bid: null });
@@ -405,7 +501,8 @@ const MyBidsPage = () => {
         open: true,
         severity: 'success',
         title: 'Bid withdrawn',
-        message: 'Your bid has been withdrawn and will no longer be considered for this job.',
+        message:
+          'Your bid has been withdrawn and will no longer be considered for this job.',
       });
     } catch (err) {
       workerDebugError('Failed to withdraw bid:', err);
@@ -424,203 +521,267 @@ const MyBidsPage = () => {
     if (jobId) navigate(`/jobs/${jobId}`);
   };
 
-  const bidCounts = useMemo(() => ({
-    all: bids.length,
-    pending: bids.filter((b) => b.status === 'pending').length,
-    accepted: bids.filter((b) => b.status === 'accepted').length,
-    rejected: bids.filter((b) => b.status === 'rejected').length,
-    withdrawn: bids.filter((b) => b.status === 'withdrawn').length,
-    expired: bids.filter((b) => b.status === 'expired').length,
-  }), [bids]);
+  const bidCounts = useMemo(
+    () => ({
+      all: bids.length,
+      pending: bids.filter((b) => b.status === 'pending').length,
+      accepted: bids.filter((b) => b.status === 'accepted').length,
+      rejected: bids.filter((b) => b.status === 'rejected').length,
+      withdrawn: bids.filter((b) => b.status === 'withdrawn').length,
+      expired: bids.filter((b) => b.status === 'expired').length,
+    }),
+    [bids],
+  );
 
   return (
     <PageCanvas disableContainer sx={{ pb: { xs: 10, md: 6 } }}>
       <Container maxWidth="md" sx={{ py: { xs: 1.25, md: 4 } }}>
-      <Helmet>
-        <title>My Bids | Kelmah</title>
-      </Helmet>
+        <Helmet>
+          <title>My Bids | Kelmah</title>
+        </Helmet>
 
-      {/* Page header */}
-      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: { xs: 1.25, md: 3 }, position: { xs: 'sticky', md: 'static' }, top: { xs: HEADER_HEIGHT_MOBILE + 10, md: 'auto' }, zIndex: Z_INDEX.sticky, py: { xs: 0.5, md: 0 }, bgcolor: { xs: 'background.default', md: 'transparent' } }}>
-        <Box>
-          <Typography variant="h5" fontWeight={700} sx={{ fontSize: { xs: '1.15rem', md: '1.5rem' } }}>
-            My Bids
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ display: { xs: 'none', md: 'block' } }}>
-            Track and manage your submitted bids
-          </Typography>
-        </Box>
-        <Tooltip title="Refresh">
-          <IconButton
-            aria-label="Refresh bids"
-            onClick={fetchBids}
-            disabled={loading}
-            sx={{
-              minWidth: 44,
-              minHeight: 44,
-              '&:focus-visible': {
-                outline: '3px solid',
-                outlineColor: 'primary.main',
-                outlineOffset: '2px',
-              },
-            }}
-          >
-            <RefreshIcon />
-          </IconButton>
-        </Tooltip>
-      </Stack>
-
-      {/* Stats summary */}
-      {!isMobile && <BidStatsSummary stats={stats} />}
-
-      {isMobile && (
-        <Stack direction="row" spacing={0.75} sx={{ mb: 1.25, overflowX: 'auto', pb: 0.25, scrollbarWidth: 'none', '&::-webkit-scrollbar': { display: 'none' } }}>
-          <Chip size="small" label={`Total ${bidCounts.all}`} sx={{ fontWeight: 700 }} />
-          <Chip size="small" variant="outlined" label={`Pending ${bidCounts.pending}`} sx={{ fontWeight: 700 }} />
-          <Chip size="small" variant="outlined" label={`Accepted ${bidCounts.accepted}`} sx={{ fontWeight: 700 }} />
-        </Stack>
-      )}
-
-      {/* Filter tabs */}
-      <Tabs
-        value={tabValue}
-        onChange={(_, v) => setTabValue(v)}
-        variant="scrollable"
-        scrollButtons="auto"
-        sx={{
-          mb: 1.25,
-          position: { xs: 'sticky', md: 'static' },
-          top: { xs: HEADER_HEIGHT_MOBILE + 12, md: 'auto' },
-          zIndex: Z_INDEX.sticky,
-          bgcolor: { xs: 'background.default', md: 'transparent' },
-          py: { xs: 0.5, md: 0 },
-          '& .MuiTab-root': { textTransform: 'none', minHeight: 44, fontWeight: 600 },
-        }}
-      >
-        {TAB_STATUSES.map((status, i) => (
-          <Tab
-            key={status}
-            label={
-              <Stack direction="row" spacing={0.5} alignItems="center">
-                <span>{status === 'all' ? 'All' : STATUS_CONFIG[status]?.label || status}</span>
-                <Chip
-                  label={bidCounts[status]}
-                  size="small"
-                  sx={{ height: 20, fontSize: '0.7rem', ml: 0.5 }}
-                />
-              </Stack>
-            }
-          />
-        ))}
-      </Tabs>
-
-      {/* Error state */}
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
-          {error}
-        </Alert>
-      )}
-
-      {/* Loading state */}
-      {loading && (
-        <Box>
-          {[1, 2, 3].map((i) => (
-            <BidCardSkeleton key={`bid-skeleton-${i}`} />
-          ))}
-        </Box>
-      )}
-
-      {/* Bids list */}
-      {!loading && filteredBids.length === 0 && (
-        <Paper
-          elevation={0}
+        {/* Page header */}
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
           sx={{
-            p: 4,
-            textAlign: 'center',
-            borderRadius: 2.5,
-            bgcolor: alpha(theme.palette.background.default, 0.5),
-            border: `1px dashed ${theme.palette.divider}`,
+            mb: { xs: 1.25, md: 3 },
+            position: { xs: 'sticky', md: 'static' },
+            top: { xs: HEADER_HEIGHT_MOBILE + 10, md: 'auto' },
+            zIndex: Z_INDEX.sticky,
+            py: { xs: 0.5, md: 0 },
+            bgcolor: { xs: 'background.default', md: 'transparent' },
           }}
         >
-          <BidIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }} />
-          <Typography variant="h6" color="text.secondary" gutterBottom>
-            {tabValue === 0 ? 'No bids yet' : `No ${TAB_STATUSES[tabValue]} bids`}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Browse available jobs and start bidding on projects that match your skills.
-          </Typography>
-          <Button
-            variant="contained"
-            startIcon={<WorkIcon />}
-            onClick={() => navigate('/worker/find-work')}
-            sx={{ textTransform: 'none' }}
+          <Box>
+            <Typography
+              variant="h5"
+              fontWeight={700}
+              sx={{ fontSize: { xs: '1.15rem', md: '1.5rem' } }}
+            >
+              My Bids
+            </Typography>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ display: { xs: 'none', md: 'block' } }}
+            >
+              Track and manage your submitted bids
+            </Typography>
+          </Box>
+          <Tooltip title="Refresh">
+            <IconButton
+              aria-label="Refresh bids"
+              onClick={fetchBids}
+              disabled={loading}
+              sx={{
+                minWidth: 44,
+                minHeight: 44,
+                '&:focus-visible': {
+                  outline: '3px solid',
+                  outlineColor: 'primary.main',
+                  outlineOffset: '2px',
+                },
+              }}
+            >
+              <RefreshIcon />
+            </IconButton>
+          </Tooltip>
+        </Stack>
+
+        {/* Stats summary */}
+        {!isMobile && <BidStatsSummary stats={stats} />}
+
+        {isMobile && (
+          <Stack
+            direction="row"
+            spacing={0.75}
+            sx={{
+              mb: 1.25,
+              overflowX: 'auto',
+              pb: 0.25,
+              scrollbarWidth: 'none',
+              '&::-webkit-scrollbar': { display: 'none' },
+            }}
           >
-            Find Work
-          </Button>
-        </Paper>
-      )}
+            <Chip
+              size="small"
+              label={`Total ${bidCounts.all}`}
+              sx={{ fontWeight: 700 }}
+            />
+            <Chip
+              size="small"
+              variant="outlined"
+              label={`Pending ${bidCounts.pending}`}
+              sx={{ fontWeight: 700 }}
+            />
+            <Chip
+              size="small"
+              variant="outlined"
+              label={`Accepted ${bidCounts.accepted}`}
+              sx={{ fontWeight: 700 }}
+            />
+          </Stack>
+        )}
 
-      {!loading &&
-        filteredBids.map((bid) => (
-          <BidCard
-            key={bid._id || bid.id}
-            bid={bid}
-            onWithdraw={handleWithdrawOpen}
-            onViewJob={handleViewJob}
-            isMobile={isMobile}
-          />
-        ))}
+        {/* Filter tabs */}
+        <Tabs
+          value={tabValue}
+          onChange={(_, v) => setTabValue(v)}
+          variant="scrollable"
+          scrollButtons="auto"
+          sx={{
+            mb: 1.25,
+            position: { xs: 'sticky', md: 'static' },
+            top: { xs: HEADER_HEIGHT_MOBILE + 12, md: 'auto' },
+            zIndex: Z_INDEX.sticky,
+            bgcolor: { xs: 'background.default', md: 'transparent' },
+            py: { xs: 0.5, md: 0 },
+            '& .MuiTab-root': {
+              textTransform: 'none',
+              minHeight: 44,
+              fontWeight: 600,
+            },
+          }}
+        >
+          {TAB_STATUSES.map((status, i) => (
+            <Tab
+              key={status}
+              label={
+                <Stack direction="row" spacing={0.5} alignItems="center">
+                  <span>
+                    {status === 'all'
+                      ? 'All'
+                      : STATUS_CONFIG[status]?.label || status}
+                  </span>
+                  <Chip
+                    label={bidCounts[status]}
+                    size="small"
+                    sx={{ height: 20, fontSize: '0.7rem', ml: 0.5 }}
+                  />
+                </Stack>
+              }
+            />
+          ))}
+        </Tabs>
 
-      {/* Withdraw confirmation dialog */}
-      <Dialog
-        open={withdrawDialog.open}
-        onClose={() => setWithdrawDialog({ open: false, bid: null })}
-        maxWidth="sm"
-        fullWidth
-        aria-labelledby="withdraw-bid-dialog-title"
-      >
-        <DialogTitle id="withdraw-bid-dialog-title">Withdraw Bid</DialogTitle>
-        <DialogContent>
-          <DialogContentText sx={{ mb: 2 }}>
-            Are you sure you want to withdraw your bid of{' '}
-            <strong>{currencyFormatter.format(withdrawDialog.bid?.bidAmount || 0)}</strong>? This action
-            cannot be undone.
-          </DialogContentText>
-          <TextField
-            label="Reason (optional)"
-            value={withdrawReason}
-            onChange={(e) => setWithdrawReason(e.target.value)}
-            multiline
-            rows={2}
-            fullWidth
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setWithdrawDialog({ open: false, bid: null })}>
-            Cancel
-          </Button>
-          <Button
-            variant="contained"
-            color="warning"
-            onClick={handleWithdrawConfirm}
-            disabled={withdrawing}
-            startIcon={withdrawing ? <CircularProgress size={16} /> : <WithdrawIcon />}>
-            {withdrawing ? 'Withdrawing...' : 'Withdraw Bid'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        {/* Error state */}
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+            {error}
+          </Alert>
+        )}
 
-      <Toast
-        open={toast.open}
-        title={toast.title}
-        message={toast.message}
-        severity={toast.severity}
-        onClose={() => setToast((prev) => ({ ...prev, open: false }))}
-      />
+        {/* Loading state */}
+        {loading && (
+          <Box>
+            {[1, 2, 3].map((i) => (
+              <BidCardSkeleton key={`bid-skeleton-${i}`} />
+            ))}
+          </Box>
+        )}
+
+        {/* Bids list */}
+        {!loading && filteredBids.length === 0 && (
+          <Paper
+            elevation={0}
+            sx={{
+              p: 4,
+              textAlign: 'center',
+              borderRadius: 2.5,
+              bgcolor: alpha(theme.palette.background.default, 0.5),
+              border: `1px dashed ${theme.palette.divider}`,
+            }}
+          >
+            <BidIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }} />
+            <Typography variant="h6" color="text.secondary" gutterBottom>
+              {tabValue === 0
+                ? 'No bids yet'
+                : `No ${TAB_STATUSES[tabValue]} bids`}
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              Browse available jobs and start bidding on projects that match
+              your skills.
+            </Typography>
+            <Button
+              variant="contained"
+              startIcon={<WorkIcon />}
+              onClick={() => navigate('/worker/find-work')}
+              sx={{ textTransform: 'none' }}
+            >
+              Find Work
+            </Button>
+          </Paper>
+        )}
+
+        {!loading &&
+          filteredBids.map((bid) => (
+            <BidCard
+              key={bid._id || bid.id}
+              bid={bid}
+              onWithdraw={handleWithdrawOpen}
+              onViewJob={handleViewJob}
+              isMobile={isMobile}
+            />
+          ))}
+
+        {/* Withdraw confirmation dialog */}
+        <Dialog
+          open={withdrawDialog.open}
+          onClose={() => setWithdrawDialog({ open: false, bid: null })}
+          maxWidth="sm"
+          fullWidth
+          aria-labelledby="withdraw-bid-dialog-title"
+        >
+          <DialogTitle id="withdraw-bid-dialog-title">Withdraw Bid</DialogTitle>
+          <DialogContent>
+            <DialogContentText sx={{ mb: 2 }}>
+              Are you sure you want to withdraw your bid of{' '}
+              <strong>
+                {currencyFormatter.format(withdrawDialog.bid?.bidAmount || 0)}
+              </strong>
+              ? This action cannot be undone.
+            </DialogContentText>
+            <TextField
+              label="Reason (optional)"
+              value={withdrawReason}
+              onChange={(e) => setWithdrawReason(e.target.value)}
+              multiline
+              rows={2}
+              fullWidth
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={() => setWithdrawDialog({ open: false, bid: null })}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="contained"
+              color="warning"
+              onClick={handleWithdrawConfirm}
+              disabled={withdrawing}
+              startIcon={
+                withdrawing ? <CircularProgress size={16} /> : <WithdrawIcon />
+              }
+            >
+              {withdrawing ? 'Withdrawing...' : 'Withdraw Bid'}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        <Toast
+          open={toast.open}
+          title={toast.title}
+          message={toast.message}
+          severity={toast.severity}
+          onClose={() => setToast((prev) => ({ ...prev, open: false }))}
+        />
       </Container>
     </PageCanvas>
   );
 };
 
 export default MyBidsPage;
-

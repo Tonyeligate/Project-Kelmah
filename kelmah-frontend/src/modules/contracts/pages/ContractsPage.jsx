@@ -1,5 +1,21 @@
 ﻿import React, { useMemo, useState, useEffect, useCallback } from 'react';
-import { Box, Button, Card, CardActions, CardContent, Chip, Skeleton, Divider, Grid, IconButton, Paper, Stack, TextField, Typography, Alert } from '@mui/material';
+import {
+  Box,
+  Button,
+  Card,
+  CardActions,
+  CardContent,
+  Chip,
+  Skeleton,
+  Divider,
+  Grid,
+  IconButton,
+  Paper,
+  Stack,
+  TextField,
+  Typography,
+  Alert,
+} from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import SearchIcon from '@mui/icons-material/Search';
 
@@ -78,11 +94,18 @@ const ContractsPage = () => {
       setLoading(true);
       setError(null);
       const result = await contractService.getContracts();
-      const data = result?.contracts || result?.data || (Array.isArray(result) ? result : []);
+      const data =
+        result?.contracts ||
+        result?.data ||
+        (Array.isArray(result) ? result : []);
       setContracts(data);
     } catch (err) {
       devError('Failed to load contracts:', err);
-      setError(toUserMessage(err, { fallback: 'Unable to load contracts. Please try again.' }));
+      setError(
+        toUserMessage(err, {
+          fallback: 'Unable to load contracts. Please try again.',
+        }),
+      );
       setContracts([]);
     } finally {
       setLoading(false);
@@ -123,8 +146,7 @@ const ContractsPage = () => {
       if (statusFilter === 'all') return true;
       if (statusFilter === 'closed') {
         return (
-          contract.status === 'terminated' ||
-          contract.status === 'cancelled'
+          contract.status === 'terminated' || contract.status === 'cancelled'
         );
       }
       if (statusFilter === 'pending') {
@@ -179,312 +201,398 @@ const ContractsPage = () => {
   );
 
   return (
-    <PageCanvas disableContainer sx={{ pt: { xs: 1, md: 4 }, pb: { xs: 10, md: 6 }, overflowX: 'clip' }}>
-      <Box sx={{ p: { xs: 1, md: 4 }, width: '100%', minWidth: 0, maxWidth: 1440, mx: 'auto' }}>
-      <Helmet><title>Contracts | Kelmah</title></Helmet>
-      <Stack
-        direction={{ xs: 'column', md: 'row' }}
-        spacing={2}
-        alignItems={{ md: 'center' }}
-        justifyContent="space-between"
-        sx={{ mb: 2, position: { xs: 'sticky', md: 'static' }, top: { xs: HEADER_HEIGHT_MOBILE, md: 'auto' }, zIndex: { xs: Z_INDEX.sticky, md: 'auto' }, py: { xs: 0.5, md: 0 }, backgroundColor: { xs: 'background.default', md: 'transparent' } }}
+    <PageCanvas
+      disableContainer
+      sx={{ pt: { xs: 1, md: 4 }, pb: { xs: 10, md: 6 }, overflowX: 'clip' }}
+    >
+      <Box
+        sx={{
+          p: { xs: 1, md: 4 },
+          width: '100%',
+          minWidth: 0,
+          maxWidth: 1440,
+          mx: 'auto',
+        }}
       >
-        <Box>
-          <Typography variant={isMobile ? 'h5' : 'h4'} sx={{ fontWeight: 700, lineHeight: 1.1 }}>
-            {canCreateContract ? 'Contracts Overview' : 'My Contracts'}
+        <Helmet>
+          <title>Contracts | Kelmah</title>
+        </Helmet>
+        <Stack
+          direction={{ xs: 'column', md: 'row' }}
+          spacing={2}
+          alignItems={{ md: 'center' }}
+          justifyContent="space-between"
+          sx={{
+            mb: 2,
+            position: { xs: 'sticky', md: 'static' },
+            top: { xs: HEADER_HEIGHT_MOBILE, md: 'auto' },
+            zIndex: { xs: Z_INDEX.sticky, md: 'auto' },
+            py: { xs: 0.5, md: 0 },
+            backgroundColor: { xs: 'background.default', md: 'transparent' },
+          }}
+        >
+          <Box>
+            <Typography
+              variant={isMobile ? 'h5' : 'h4'}
+              sx={{ fontWeight: 700, lineHeight: 1.1 }}
+            >
+              {canCreateContract ? 'Contracts Overview' : 'My Contracts'}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {canCreateContract
+                ? 'Manage and track all your contracts in one place'
+                : 'Track every contract that has been sent to you and monitor delivery progress'}
+              {user?.profile?.name ? `, ${user.profile.name}` : ''}.
+            </Typography>
+          </Box>
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={1}
+            sx={{
+              width: { xs: '100%', sm: 'auto' },
+              display: { xs: 'none', sm: 'flex' },
+            }}
+          >
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<RefreshIcon />}
+              onClick={refreshContracts}
+              disabled={isRefreshing}
+              aria-label="Refresh contracts list"
+              fullWidth={isMobile}
+            >
+              {isRefreshing ? 'Refreshing...' : 'Refresh'}
+            </Button>
+            {canCreateContract ? (
+              <Button
+                variant="contained"
+                color="secondary"
+                component={RouterLink}
+                to="/contracts/create"
+                fullWidth={isMobile}
+              >
+                New Contract
+              </Button>
+            ) : null}
+          </Stack>
+        </Stack>
+
+        <Paper sx={{ p: { xs: 1.5, sm: 2 }, mb: 2 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1.25 }}>
+            Use search, status, and sort to quickly find the right contract.
           </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {canCreateContract
-              ? 'Manage and track all your contracts in one place'
-              : 'Track every contract that has been sent to you and monitor delivery progress'}
-            {user?.profile?.name ? `, ${user.profile.name}` : ''}.
-          </Typography>
-        </Box>
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ width: { xs: '100%', sm: 'auto' }, display: { xs: 'none', sm: 'flex' } }}>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <TextField
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Search contracts"
+              aria-label="Search contracts"
+              fullWidth
+              size="small"
+              InputProps={{
+                startAdornment: (
+                  <Box sx={{ display: 'flex', alignItems: 'center', pr: 1 }}>
+                    <SearchIcon fontSize="small" />
+                  </Box>
+                ),
+              }}
+            />
+            <MobileFilterSheet
+              title="Filters & Sort"
+              activeCount={
+                (statusFilter !== 'all' ? 1 : 0) +
+                (sortOption !== 'newest' ? 1 : 0)
+              }
+              onReset={() => {
+                setStatusFilter('all');
+                setSortOption('newest');
+              }}
+            >
+              <Stack spacing={2} sx={{ minWidth: isMobile ? 'auto' : 300 }}>
+                <TextField
+                  select
+                  value={statusFilter}
+                  onChange={(event) => setStatusFilter(event.target.value)}
+                  fullWidth
+                  size="small"
+                  label="Status"
+                  inputProps={{ 'aria-label': 'Filter contracts by status' }}
+                  SelectProps={{ native: true }}
+                >
+                  {STATUS_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </TextField>
+                <TextField
+                  select
+                  value={sortOption}
+                  onChange={(event) => setSortOption(event.target.value)}
+                  fullWidth
+                  size="small"
+                  label="Sort"
+                  inputProps={{ 'aria-label': 'Sort contracts list' }}
+                  SelectProps={{ native: true }}
+                >
+                  {SORT_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </TextField>
+              </Stack>
+            </MobileFilterSheet>
+          </Stack>
+        </Paper>
+
+        {loading && (
+          <Box sx={{ py: 2 }}>
+            {showLoadingHint && (
+              <Alert severity="info" sx={{ mb: 2 }}>
+                This is taking longer than usual. If your network is slow, wait
+                a few seconds or retry.
+              </Alert>
+            )}
+            {[1, 2, 3].map((i) => (
+              <Skeleton
+                key={`contracts-skeleton-${i}`}
+                variant="rounded"
+                height={100}
+                sx={{ borderRadius: 2, mb: 2 }}
+              />
+            ))}
+          </Box>
+        )}
+
+        {error && !loading && (
+          <Alert
+            severity="error"
+            sx={{ mb: 3 }}
+            onClose={() => setError(null)}
+            action={
+              <Button color="inherit" size="small" onClick={refreshContracts}>
+                Retry
+              </Button>
+            }
+          >
+            {error}
+          </Alert>
+        )}
+
+        {!loading && (
+          <Grid container spacing={3}>
+            {filteredContracts.map((contract) => (
+              <Grid
+                item
+                key={contract.id || contract._id}
+                xs={12}
+                md={6}
+                lg={4}
+              >
+                <Card
+                  sx={{
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    borderRadius: 2,
+                    border: `1px solid ${alpha('#000', 0.06)}`,
+                    // MOBILE-AUDIT P4: removed deep boxShadow, let theme handle
+                  }}
+                >
+                  <CardContent>
+                    <Stack
+                      direction="row"
+                      justifyContent="space-between"
+                      alignItems="flex-start"
+                      spacing={1}
+                    >
+                      <Box>
+                        <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                          {contract.title || 'Untitled Contract'}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {contract.client?.name || 'Client'}
+                          {contract.client?.company
+                            ? ` - ${contract.client.company}`
+                            : ''}
+                        </Typography>
+                      </Box>
+                      <Chip
+                        label={(contract.status || 'pending').replace(
+                          /[-_]/g,
+                          ' ',
+                        )}
+                        color={statusChipColor[contract.status] || 'default'}
+                        icon={
+                          statusIconMap[contract.status] || (
+                            <WatchLaterIcon fontSize="small" />
+                          )
+                        }
+                        sx={{ textTransform: 'capitalize', fontWeight: 600 }}
+                      />
+                    </Stack>
+
+                    <Typography variant="h5" sx={{ mt: 2, fontWeight: 700 }}>
+                      {'GHS '}
+                      {(contract.budget ?? 0).toLocaleString()}
+                    </Typography>
+
+                    <Typography variant="caption" color="text.secondary">
+                      Updated{' '}
+                      {contract.lastUpdated &&
+                      isValid(new Date(contract.lastUpdated))
+                        ? formatDistanceToNow(new Date(contract.lastUpdated), {
+                            addSuffix: true,
+                          })
+                        : 'recently'}
+                    </Typography>
+
+                    {Array.isArray(contract.milestones) &&
+                      contract.milestones.length > 0 &&
+                      renderMilestones(contract.milestones)}
+                  </CardContent>
+
+                  <Divider sx={{ mt: 'auto' }} />
+
+                  <CardActions
+                    sx={{
+                      justifyContent: 'space-between',
+                      px: 3,
+                      py: 2,
+                      gap: 1,
+                      flexWrap: 'wrap',
+                    }}
+                  >
+                    <Button
+                      startIcon={<VisibilityIcon />}
+                      size="small"
+                      variant="outlined"
+                      aria-label={`Open contract ${contract.title || 'details'}`}
+                      component={RouterLink}
+                      to={`/contracts/${contract.id || contract._id}`}
+                    >
+                      Open Contract
+                    </Button>
+                    <IconButton
+                      size="small"
+                      aria-label={`Open ${contract.title || 'contract'} details`}
+                      component={RouterLink}
+                      to={`/contracts/${contract.id || contract._id}`}
+                      sx={{
+                        minWidth: 44,
+                        minHeight: 44,
+                        '&:focus-visible': {
+                          outline: '3px solid',
+                          outlineColor: 'primary.main',
+                          outlineOffset: '2px',
+                        },
+                      }}
+                    >
+                      <VisibilityIcon fontSize="small" />
+                    </IconButton>
+                  </CardActions>
+                </Card>
+              </Grid>
+            ))}
+
+            {filteredContracts.length === 0 && (
+              <Grid item xs={12}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    py: 8,
+                    border: '1px dashed',
+                    borderColor: 'divider',
+                    borderRadius: 3,
+                  }}
+                >
+                  <EmptyState
+                    variant="contracts"
+                    title="No contracts match your filters yet"
+                    subtitle={
+                      canCreateContract
+                        ? 'Try adjusting your search or create a new contract to get started.'
+                        : 'Try adjusting your search or refresh this page. Contracts for accepted jobs will appear here once hirers send them.'
+                    }
+                    actionLabel={
+                      canCreateContract ? 'Create Contract' : 'Refresh'
+                    }
+                    onAction={
+                      canCreateContract
+                        ? () => navigate('/contracts/create')
+                        : refreshContracts
+                    }
+                  />
+                </Box>
+              </Grid>
+            )}
+          </Grid>
+        )}
+
+        <Paper
+          elevation={8}
+          sx={(theme) => ({
+            display: { xs: 'flex', sm: 'none' },
+            position: 'fixed',
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: theme.zIndex.appBar + 2,
+            px: 1,
+            py: 1,
+            gap: 1,
+            borderTop: `1px solid ${theme.palette.divider}`,
+            backgroundColor: theme.palette.background.paper,
+          })}
+        >
           <Button
-            variant="contained"
-            color="primary"
+            fullWidth
+            variant="outlined"
+            color="secondary"
+            sx={{ minHeight: 42 }}
             startIcon={<RefreshIcon />}
             onClick={refreshContracts}
             disabled={isRefreshing}
-            aria-label="Refresh contracts list"
-            fullWidth={isMobile}
           >
-            {isRefreshing ? 'Refreshing...' : 'Refresh'}
+            Refresh
           </Button>
           {canCreateContract ? (
             <Button
+              fullWidth
               variant="contained"
               color="secondary"
+              sx={{
+                minHeight: 42,
+                boxShadow: '0 2px 8px rgba(255,215,0,0.35)',
+              }}
               component={RouterLink}
               to="/contracts/create"
-              fullWidth={isMobile}
             >
               New Contract
             </Button>
-          ) : null}
-        </Stack>
-      </Stack>
-
-      <Paper sx={{ p: { xs: 1.5, sm: 2 }, mb: 2 }}>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 1.25 }}>
-          Use search, status, and sort to quickly find the right contract.
-        </Typography>
-        <Stack direction="row" spacing={1} alignItems="center">
-          <TextField
-            value={searchQuery}
-            onChange={(event) => setSearchQuery(event.target.value)}
-            placeholder="Search contracts"
-            aria-label="Search contracts"
-            fullWidth
-            size="small"
-            InputProps={{
-              startAdornment: (
-                <Box sx={{ display: 'flex', alignItems: 'center', pr: 1 }}>
-                  <SearchIcon fontSize="small" />
-                </Box>
-              ),
-            }}
-          />
-          <MobileFilterSheet
-            title="Filters & Sort"
-            activeCount={(statusFilter !== 'all' ? 1 : 0) + (sortOption !== 'newest' ? 1 : 0)}
-            onReset={() => { setStatusFilter('all'); setSortOption('newest'); }}
-          >
-            <Stack spacing={2} sx={{ minWidth: isMobile ? 'auto' : 300 }}>
-              <TextField
-                select
-                value={statusFilter}
-                onChange={(event) => setStatusFilter(event.target.value)}
-                fullWidth
-                size="small"
-                label="Status"
-                inputProps={{ 'aria-label': 'Filter contracts by status' }}
-                SelectProps={{ native: true }}
-              >
-                {STATUS_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </TextField>
-              <TextField
-                select
-                value={sortOption}
-                onChange={(event) => setSortOption(event.target.value)}
-                fullWidth
-                size="small"
-                label="Sort"
-                inputProps={{ 'aria-label': 'Sort contracts list' }}
-                SelectProps={{ native: true }}
-              >
-                {SORT_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </TextField>
-            </Stack>
-          </MobileFilterSheet>
-        </Stack>
-      </Paper>
-
-      {loading && (
-        <Box sx={{ py: 2 }}>
-          {showLoadingHint && (
-            <Alert severity="info" sx={{ mb: 2 }}>
-              This is taking longer than usual. If your network is slow, wait a few seconds or retry.
-            </Alert>
-          )}
-          {[1,2,3].map(i => (
-            <Skeleton key={`contracts-skeleton-${i}`} variant="rounded" height={100} sx={{ borderRadius: 2, mb: 2 }} />
-          ))}
-        </Box>
-      )}
-
-      {error && !loading && (
-        <Alert
-          severity="error"
-          sx={{ mb: 3 }}
-          onClose={() => setError(null)}
-          action={(
-            <Button color="inherit" size="small" onClick={refreshContracts}>
-              Retry
+          ) : (
+            <Button
+              fullWidth
+              variant="contained"
+              color="secondary"
+              sx={{
+                minHeight: 42,
+                boxShadow: '0 2px 8px rgba(255,215,0,0.35)',
+              }}
+              onClick={() => navigate('/jobs')}
+            >
+              Browse Jobs
             </Button>
           )}
-        >
-          {error}
-        </Alert>
-      )}
-
-      {!loading && <Grid container spacing={3}>
-        {filteredContracts.map((contract) => (
-          <Grid item key={contract.id || contract._id} xs={12} md={6} lg={4}>
-            <Card
-              sx={{
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                borderRadius: 2,
-                border: `1px solid ${alpha('#000', 0.06)}`,
-                // MOBILE-AUDIT P4: removed deep boxShadow, let theme handle
-              }}
-            >
-              <CardContent>
-                <Stack
-                  direction="row"
-                  justifyContent="space-between"
-                  alignItems="flex-start"
-                  spacing={1}
-                >
-                  <Box>
-                    <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                      {contract.title || 'Untitled Contract'}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {contract.client?.name || 'Client'}{contract.client?.company ? ` - ${contract.client.company}` : ''}
-                    </Typography>
-                  </Box>
-                  <Chip
-                    label={(contract.status || 'pending').replace(/[-_]/g, ' ')}
-                    color={statusChipColor[contract.status] || 'default'}
-                    icon={
-                      statusIconMap[contract.status] || (
-                        <WatchLaterIcon fontSize="small" />
-                      )
-                    }
-                    sx={{ textTransform: 'capitalize', fontWeight: 600 }}
-                  />
-                </Stack>
-
-                <Typography variant="h5" sx={{ mt: 2, fontWeight: 700 }}>
-                  {'GHS '}
-                  {(contract.budget ?? 0).toLocaleString()}
-                </Typography>
-
-                <Typography variant="caption" color="text.secondary">
-                  Updated{' '}
-                  {contract.lastUpdated && isValid(new Date(contract.lastUpdated))
-                    ? formatDistanceToNow(new Date(contract.lastUpdated), { addSuffix: true })
-                    : 'recently'}
-                </Typography>
-
-                {Array.isArray(contract.milestones) && contract.milestones.length > 0 && renderMilestones(contract.milestones)}
-              </CardContent>
-
-              <Divider sx={{ mt: 'auto' }} />
-
-              <CardActions
-                sx={{ justifyContent: 'space-between', px: 3, py: 2, gap: 1, flexWrap: 'wrap' }}
-              >
-                <Button
-                  startIcon={<VisibilityIcon />}
-                  size="small"
-                  variant="outlined"
-                  aria-label={`Open contract ${contract.title || 'details'}`}
-                  component={RouterLink}
-                  to={`/contracts/${contract.id || contract._id}`}
-                >
-                  Open Contract
-                </Button>
-                <IconButton
-                  size="small"
-                  aria-label={`Open ${contract.title || 'contract'} details`}
-                  component={RouterLink}
-                  to={`/contracts/${contract.id || contract._id}`}
-                  sx={{ minWidth: 44, minHeight: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
-                >
-                  <VisibilityIcon fontSize="small" />
-                </IconButton>
-              </CardActions>
-            </Card>
-          </Grid>
-        ))}
-
-        {filteredContracts.length === 0 && (
-          <Grid item xs={12}>
-            <Box
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                py: 8,
-                border: '1px dashed',
-                borderColor: 'divider',
-                borderRadius: 3,
-              }}
-            >
-              <EmptyState
-                variant="contracts"
-                title="No contracts match your filters yet"
-                subtitle={canCreateContract
-                  ? 'Try adjusting your search or create a new contract to get started.'
-                  : 'Try adjusting your search or refresh this page. Contracts for accepted jobs will appear here once hirers send them.'}
-                actionLabel={canCreateContract ? 'Create Contract' : 'Refresh'}
-                onAction={canCreateContract
-                  ? () => navigate('/contracts/create')
-                  : refreshContracts}
-              />
-            </Box>
-          </Grid>
-        )}
-      </Grid>}
-
-      <Paper
-        elevation={8}
-        sx={(theme) => ({
-          display: { xs: 'flex', sm: 'none' },
-          position: 'fixed',
-          left: 0,
-          right: 0,
-          bottom: 0,
-          zIndex: theme.zIndex.appBar + 2,
-          px: 1,
-          py: 1,
-          gap: 1,
-          borderTop: `1px solid ${theme.palette.divider}`,
-          backgroundColor: theme.palette.background.paper,
-        })}
-      >
-        <Button
-          fullWidth
-          variant="outlined"
-          color="secondary"
-          sx={{ minHeight: 42 }}
-          startIcon={<RefreshIcon />}
-          onClick={refreshContracts}
-          disabled={isRefreshing}
-        >
-          Refresh
-        </Button>
-        {canCreateContract ? (
-          <Button
-            fullWidth
-            variant="contained"
-            color="secondary"
-            sx={{ minHeight: 42, boxShadow: '0 2px 8px rgba(255,215,0,0.35)' }}
-            component={RouterLink}
-            to="/contracts/create"
-          >
-            New Contract
-          </Button>
-        ) : (
-          <Button
-            fullWidth
-            variant="contained"
-            color="secondary"
-            sx={{ minHeight: 42, boxShadow: '0 2px 8px rgba(255,215,0,0.35)' }}
-            onClick={() => navigate('/jobs')}
-          >
-            Browse Jobs
-          </Button>
-        )}
-      </Paper>
+        </Paper>
       </Box>
     </PageCanvas>
   );
 };
 
 export default ContractsPage;
-

@@ -22,7 +22,8 @@ const SkillsVerificationPanel = ({
         Skills Verification
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-        Verified skills help hirers trust your profile faster. Start with your strongest trade skill.
+        Verified skills help hirers trust your profile faster. Start with your
+        strongest trade skill.
       </Typography>
       <Paper sx={{ p: 2 }}>
         <Typography variant="subtitle1" gutterBottom>
@@ -64,18 +65,24 @@ const SkillsVerificationPanel = ({
               }}
             >
               <Typography variant="body2" color="text.secondary">
-                No skills added yet. Add a skill and take a short test so hirers can trust your ability.
+                No skills added yet. Add a skill and take a short test so hirers
+                can trust your ability.
               </Typography>
             </Box>
           )}
         </List>
         <Divider sx={{ my: 2 }} />
         <Stack spacing={1} alignItems="flex-start">
-          <Button variant="contained" onClick={() => onUploadCertificate?.()} sx={{ minHeight: 44 }}>
+          <Button
+            variant="contained"
+            onClick={() => onUploadCertificate?.()}
+            sx={{ minHeight: 44 }}
+          >
             Upload Certificate
           </Button>
           <Typography variant="caption" color="text.secondary">
-            Upload clear certificate photos or PDFs so hirers can verify your training.
+            Upload clear certificate photos or PDFs so hirers can verify your
+            training.
           </Typography>
         </Stack>
       </Paper>

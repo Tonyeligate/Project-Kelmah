@@ -38,4 +38,3 @@ export const getTokenExpiryTime = (token) => {
     return null;
   }
 };
-

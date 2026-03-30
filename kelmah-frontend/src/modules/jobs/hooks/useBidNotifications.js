@@ -31,14 +31,22 @@ const BID_EVENTS = [
 ];
 
 const createNotificationId = (event) => {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+  if (
+    typeof crypto !== 'undefined' &&
+    typeof crypto.randomUUID === 'function'
+  ) {
     return `${event}-${crypto.randomUUID()}`;
   }
 
-  if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+  if (
+    typeof crypto !== 'undefined' &&
+    typeof crypto.getRandomValues === 'function'
+  ) {
     const bytes = new Uint8Array(6);
     crypto.getRandomValues(bytes);
-    const randomPart = Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+    const randomPart = Array.from(bytes, (byte) =>
+      byte.toString(16).padStart(2, '0'),
+    ).join('');
     return `${event}-${Date.now()}-${randomPart}`;
   }
 
@@ -122,23 +130,29 @@ const createNotification = (event, data) => {
  * @param {boolean} options.enabled - Whether to listen for events (default: true)
  * @returns {{ notifications, unreadCount, markAsRead, markAllAsRead, clearAll, latestNotification }}
  */
-const useBidNotifications = ({ maxNotifications = 20, enabled = true } = {}) => {
+const useBidNotifications = ({
+  maxNotifications = 20,
+  enabled = true,
+} = {}) => {
   const [notifications, setNotifications] = useState([]);
   const [latestNotification, setLatestNotification] = useState(null);
   const enabledRef = useRef(enabled);
   enabledRef.current = enabled;
 
-  const handleBidEvent = useCallback((event) => (data) => {
-    if (!enabledRef.current) return;
-    const notification = createNotification(event, data || {});
-    if (!notification) return;
+  const handleBidEvent = useCallback(
+    (event) => (data) => {
+      if (!enabledRef.current) return;
+      const notification = createNotification(event, data || {});
+      if (!notification) return;
 
-    setLatestNotification(notification);
-    setNotifications((prev) => {
-      const updated = [notification, ...prev];
-      return updated.slice(0, maxNotifications);
-    });
-  }, [maxNotifications]);
+      setLatestNotification(notification);
+      setNotifications((prev) => {
+        const updated = [notification, ...prev];
+        return updated.slice(0, maxNotifications);
+      });
+    },
+    [maxNotifications],
+  );
 
   useEffect(() => {
     if (!enabled) return;

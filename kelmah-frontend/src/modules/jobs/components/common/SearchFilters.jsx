@@ -1,9 +1,3 @@
-
-
-
-
-
-
 const JOB_TYPES = [
   { value: 'full_time', label: 'Full Time' },
   { value: 'part_time', label: 'Part Time' },
@@ -71,7 +65,9 @@ function SearchFilters({ filters, onFilterChange }) {
               onClick={() => setExpanded(!expanded)}
               endIcon={expanded ? <ExpandLess /> : <ExpandMore />}
               startIcon={<FilterList />}
-              aria-label={expanded ? 'Hide advanced filters' : 'Show advanced filters'}
+              aria-label={
+                expanded ? 'Hide advanced filters' : 'Show advanced filters'
+              }
               sx={{ minHeight: 44 }}
             >
               Filters
@@ -136,7 +132,10 @@ function SearchFilters({ filters, onFilterChange }) {
               type="number"
               value={filters.min_budget}
               onChange={handleChange('min_budget')}
-              inputProps={{ inputMode: 'decimal', 'aria-label': 'Minimum budget in Ghana cedi' }}
+              inputProps={{
+                inputMode: 'decimal',
+                'aria-label': 'Minimum budget in Ghana cedi',
+              }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">GH₵</InputAdornment>
@@ -152,7 +151,10 @@ function SearchFilters({ filters, onFilterChange }) {
               type="number"
               value={filters.max_budget}
               onChange={handleChange('max_budget')}
-              inputProps={{ inputMode: 'decimal', 'aria-label': 'Maximum budget in Ghana cedi' }}
+              inputProps={{
+                inputMode: 'decimal',
+                'aria-label': 'Maximum budget in Ghana cedi',
+              }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">GH₵</InputAdornment>

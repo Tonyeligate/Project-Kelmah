@@ -5,7 +5,14 @@
  */
 
 import React from 'react';
-import { Paper, TextField, Button, Box, InputAdornment, Typography } from '@mui/material';
+import {
+  Paper,
+  TextField,
+  Button,
+  Box,
+  InputAdornment,
+  Typography,
+} from '@mui/material';
 import {
   Search as SearchIcon,
   FilterList as FilterListIcon,
@@ -39,7 +46,11 @@ const JobsCompactSearchBar = ({
         borderRadius: 2.5,
       }}
     >
-      <Box component="form" onSubmit={handleSearchSubmit} sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+      <Box
+        component="form"
+        onSubmit={handleSearchSubmit}
+        sx={{ display: 'flex', gap: 1, alignItems: 'center' }}
+      >
         {/* Search Input */}
         <TextField
           fullWidth
@@ -47,7 +58,9 @@ const JobsCompactSearchBar = ({
           value={searchValue}
           onChange={(e) => onSearchChange && onSearchChange(e.target.value)}
           placeholder={placeholder}
-          inputProps={{ 'aria-label': 'Search jobs by trade, skill, or location' }}
+          inputProps={{
+            'aria-label': 'Search jobs by trade, skill, or location',
+          }}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -101,7 +114,15 @@ const JobsCompactSearchBar = ({
           <FilterListIcon />
         </Button>
       </Box>
-      <Box sx={{ mt: 0.75, display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
+      <Box
+        sx={{
+          mt: 0.75,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 0.75,
+          flexWrap: 'wrap',
+        }}
+      >
         <Typography
           variant="caption"
           sx={{
@@ -130,7 +151,8 @@ const JobsCompactSearchBar = ({
               fontWeight: 700,
             }}
           >
-            {activeFilterCount} active filter{activeFilterCount === 1 ? '' : 's'}
+            {activeFilterCount} active filter
+            {activeFilterCount === 1 ? '' : 's'}
           </Typography>
         )}
       </Box>

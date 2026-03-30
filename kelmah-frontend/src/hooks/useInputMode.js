@@ -12,9 +12,10 @@ import { useState, useEffect } from 'react';
  */
 export default function useInputMode() {
   const [mode, setMode] = useState(() =>
-    typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches
+    typeof window !== 'undefined' &&
+    window.matchMedia('(pointer: coarse)').matches
       ? 'touch'
-      : 'pointer'
+      : 'pointer',
   );
 
   useEffect(() => {
@@ -24,7 +25,9 @@ export default function useInputMode() {
     const onTouchStart = () => {
       recentTouch = true;
       clearTimeout(timer);
-      timer = setTimeout(() => { recentTouch = false; }, 500);
+      timer = setTimeout(() => {
+        recentTouch = false;
+      }, 500);
       setMode('touch');
     };
 

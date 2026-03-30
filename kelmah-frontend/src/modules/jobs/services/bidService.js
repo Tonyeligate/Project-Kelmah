@@ -46,9 +46,8 @@ const buildDisplayName = (person = {}) => {
 };
 
 const normalizeBidRecord = (bid = {}) => {
-  const worker = bid?.worker && typeof bid.worker === 'object'
-    ? bid.worker
-    : null;
+  const worker =
+    bid?.worker && typeof bid.worker === 'object' ? bid.worker : null;
   const normalizedScore = Number(bid.score ?? bid.performanceScore);
 
   return {
@@ -58,7 +57,11 @@ const normalizeBidRecord = (bid = {}) => {
       ? {
           ...worker,
           name: buildDisplayName(worker) || 'Worker',
-          avatar: worker.avatar || worker.profileImage || worker.profilePicture || null,
+          avatar:
+            worker.avatar ||
+            worker.profileImage ||
+            worker.profilePicture ||
+            null,
         }
       : bid.worker,
   };
@@ -81,11 +84,13 @@ const normalizeBidCollection = (payload) => {
 const normalizeBidStats = (payload = {}) => {
   const count = Number(payload.count ?? payload.monthlyBidCount ?? 0) || 0;
   const quota = Number(payload.quota ?? payload.monthlyBidLimit ?? 5) || 5;
-  const remaining = Number(
-    payload.remaining ?? payload.remainingBids ?? Math.max(quota - count, 0),
-  ) || 0;
+  const remaining =
+    Number(
+      payload.remaining ?? payload.remainingBids ?? Math.max(quota - count, 0),
+    ) || 0;
   const tier = payload.tier ?? payload.performanceTier ?? 'tier3';
-  const successRate = Number(payload.successRate ?? payload.bidSuccessRate ?? 0) || 0;
+  const successRate =
+    Number(payload.successRate ?? payload.bidSuccessRate ?? 0) || 0;
 
   return {
     ...payload,
@@ -99,7 +104,7 @@ const normalizeBidStats = (payload = {}) => {
     remainingBids: payload.remainingBids ?? remaining,
     performanceTier: payload.performanceTier ?? tier,
     bidSuccessRate: payload.bidSuccessRate ?? successRate,
-  }; 
+  };
 };
 
 const toPositiveNumber = (value) => {
@@ -115,7 +120,9 @@ const normalizeDurationUnit = (unit) => {
 
 const normalizeEstimatedDuration = (value) => {
   if (value && typeof value === 'object') {
-    const durationValue = toPositiveNumber(value.value ?? value.amount ?? value.duration);
+    const durationValue = toPositiveNumber(
+      value.value ?? value.amount ?? value.duration,
+    );
     const durationUnit = normalizeDurationUnit(value.unit);
     if (durationValue && durationUnit) {
       return { value: durationValue, unit: durationUnit };
@@ -142,7 +149,9 @@ const normalizeAvailability = (availability = {}) => {
     : new Date();
 
   const normalizedAvailability = {
-    startDate: Number.isNaN(startDate.getTime()) ? new Date().toISOString() : startDate.toISOString(),
+    startDate: Number.isNaN(startDate.getTime())
+      ? new Date().toISOString()
+      : startDate.toISOString(),
     flexible: availability?.flexible ?? true,
   };
 
@@ -249,7 +258,10 @@ const bidApi = {
    * @param {Object} data - { notes? }
    */
   async acceptBid(bidId, data = {}) {
-    const response = await api.patch(`/bids/${bidId}/accept`, normalizeDecisionPayload(data, 'hirerNotes'));
+    const response = await api.patch(
+      `/bids/${bidId}/accept`,
+      normalizeDecisionPayload(data, 'hirerNotes'),
+    );
     return response.data?.data || response.data;
   },
 
@@ -259,7 +271,10 @@ const bidApi = {
    * @param {Object} data - { reason? }
    */
   async rejectBid(bidId, data = {}) {
-    const response = await api.patch(`/bids/${bidId}/reject`, normalizeDecisionPayload(data, 'hirerNotes'));
+    const response = await api.patch(
+      `/bids/${bidId}/reject`,
+      normalizeDecisionPayload(data, 'hirerNotes'),
+    );
     return response.data?.data || response.data;
   },
 
@@ -269,7 +284,10 @@ const bidApi = {
    * @param {Object} data - { reason? }
    */
   async withdrawBid(bidId, data = {}) {
-    const response = await api.patch(`/bids/${bidId}/withdraw`, normalizeDecisionPayload(data, 'workerNotes'));
+    const response = await api.patch(
+      `/bids/${bidId}/withdraw`,
+      normalizeDecisionPayload(data, 'workerNotes'),
+    );
     return response.data?.data || response.data;
   },
 

@@ -69,10 +69,15 @@ export const fetchDashboardData = createAsyncThunk(
 
       // HIGH-20 FIX: Skip cache when previous data has _serviceUnavailable
       // so we always retry when a service was down.
-      const hasUnavailableData = dashboard?.data?.metrics?._serviceUnavailable
-        || dashboard?.data?.recentJobs?._serviceUnavailable;
+      const hasUnavailableData =
+        dashboard?.data?.metrics?._serviceUnavailable ||
+        dashboard?.data?.recentJobs?._serviceUnavailable;
 
-      if (lastUpdated && new Date(lastUpdated).getTime() > fiveMinutesAgo && !hasUnavailableData) {
+      if (
+        lastUpdated &&
+        new Date(lastUpdated).getTime() > fiveMinutesAgo &&
+        !hasUnavailableData
+      ) {
         return dashboard.data; // Return cached data if recent and complete
       }
 
@@ -94,9 +99,9 @@ export const fetchDashboardData = createAsyncThunk(
         metricsResponse.status === 'fulfilled'
           ? metricsResponse.value.data?.data || metricsResponse.value.data
           : {
-            ...initialState.data.metrics,
-            _serviceUnavailable: true,
-          };
+              ...initialState.data.metrics,
+              _serviceUnavailable: true,
+            };
 
       const recentJobs =
         jobsResponse.status === 'fulfilled'
@@ -119,23 +124,32 @@ export const fetchDashboardData = createAsyncThunk(
             ? workersResponse.value.data
             : Array.isArray(workersResponse.value.data?.data?.items)
               ? workersResponse.value.data.data.items
-            : Array.isArray(workersResponse.value.data?.workers)
-              ? workersResponse.value.data.workers
-              : []
+              : Array.isArray(workersResponse.value.data?.workers)
+                ? workersResponse.value.data.workers
+                : []
           : initialState.data.activeWorkers;
 
       const analytics =
         analyticsResponse.status === 'fulfilled'
           ? {
-            ...(analyticsResponse.value.data?.data || analyticsResponse.value.data),
-            topSkills: Array.isArray((analyticsResponse.value.data?.data || analyticsResponse.value.data)?.topSkills)
-              ? (analyticsResponse.value.data?.data || analyticsResponse.value.data).topSkills
-              : [],
-          }
+              ...(analyticsResponse.value.data?.data ||
+                analyticsResponse.value.data),
+              topSkills: Array.isArray(
+                (
+                  analyticsResponse.value.data?.data ||
+                  analyticsResponse.value.data
+                )?.topSkills,
+              )
+                ? (
+                    analyticsResponse.value.data?.data ||
+                    analyticsResponse.value.data
+                  ).topSkills
+                : [],
+            }
           : {
-            ...initialState.data.analytics,
-            _serviceUnavailable: true,
-          };
+              ...initialState.data.analytics,
+              _serviceUnavailable: true,
+            };
 
       // Log which services are using mock data (silent in production)
       // Service unavailability is tracked via _serviceUnavailable flags in state
@@ -210,7 +224,10 @@ const dashboardSlice = createSlice({
     setError: (state, action) => {
       if (typeof action.payload === 'string') {
         state.error = action.payload;
-      } else if (typeof action.payload === 'object' && action.payload !== null) {
+      } else if (
+        typeof action.payload === 'object' &&
+        action.payload !== null
+      ) {
         state.error = Object.values(action.payload).find(Boolean) || null;
       }
     },

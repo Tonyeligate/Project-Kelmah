@@ -1,4 +1,5 @@
-const hasOwn = (obj, key) => Object.prototype.hasOwnProperty.call(obj || {}, key);
+const hasOwn = (obj, key) =>
+  Object.prototype.hasOwnProperty.call(obj || {}, key);
 const CONTRACT_MISMATCH_STATUSES = new Set([404, 405, 501]);
 
 const parseRetryAfterMs = (error) => {
@@ -78,7 +79,10 @@ const isLikelyCorsError = (error) => {
   try {
     const requestOrigin = new URL(baseUrl, window.location.origin).origin;
     const appOrigin = window.location.origin;
-    return requestOrigin !== appOrigin && /network error|failed to fetch/i.test(message);
+    return (
+      requestOrigin !== appOrigin &&
+      /network error|failed to fetch/i.test(message)
+    );
   } catch (_) {
     return false;
   }
@@ -87,7 +91,9 @@ const isLikelyCorsError = (error) => {
 export const isContractMismatchError = (error) => {
   const status = error?.response?.status || error?.status;
   const code = error?.code || error?.response?.data?.error?.code;
-  return CONTRACT_MISMATCH_STATUSES.has(status) || code === 'API_CONTRACT_MISMATCH';
+  return (
+    CONTRACT_MISMATCH_STATUSES.has(status) || code === 'API_CONTRACT_MISMATCH'
+  );
 };
 
 export const isRetryableError = (error) => {
@@ -112,7 +118,10 @@ export const isRetryableError = (error) => {
   return status >= 500;
 };
 
-export const toUserMessage = (error, { fallback = 'Something went wrong. Please try again.' } = {}) => {
+export const toUserMessage = (
+  error,
+  { fallback = 'Something went wrong. Please try again.' } = {},
+) => {
   if (error?.friendlyMessage) {
     return error.friendlyMessage;
   }
@@ -133,7 +142,12 @@ export const toUserMessage = (error, { fallback = 'Something went wrong. Please 
     return 'Connection to the gateway was blocked by browser security policy. Please refresh after backend CORS allowlist is updated.';
   }
 
-  return error?.response?.data?.error?.message || error?.response?.data?.message || error?.message || fallback;
+  return (
+    error?.response?.data?.error?.message ||
+    error?.response?.data?.message ||
+    error?.message ||
+    fallback
+  );
 };
 
 export const normalizeApiError = (error, context = {}) => {
@@ -146,7 +160,11 @@ export const normalizeApiError = (error, context = {}) => {
   return {
     message: error?.message || 'Request failed',
     userMessage: toUserMessage(error),
-    code: error?.code || error?.response?.data?.error?.code || error?.response?.data?.code || null,
+    code:
+      error?.code ||
+      error?.response?.data?.error?.code ||
+      error?.response?.data?.code ||
+      null,
     status,
     retryable,
     isTimeout,
@@ -154,9 +172,9 @@ export const normalizeApiError = (error, context = {}) => {
     retryAfterMs,
     retryHint: retryable
       ? {
-        suggestedDelayMs: retryAfterMs,
-        strategy: status === 429 ? 'backoff' : 'retry-now',
-      }
+          suggestedDelayMs: retryAfterMs,
+          strategy: status === 429 ? 'backoff' : 'retry-now',
+        }
       : null,
     context,
   };
@@ -185,11 +203,7 @@ export const unwrapApiData = (
 
 export const unwrapApiList = (
   responseOrPayload,
-  {
-    keys = [],
-    defaultValue = [],
-    throwOnFailure = true,
-  } = {},
+  { keys = [], defaultValue = [], throwOnFailure = true } = {},
 ) => {
   const payload = unwrapApiData(responseOrPayload, {
     throwOnFailure,

@@ -60,7 +60,11 @@ const Footer = () => {
       title: 'For Workers',
       links: [
         { label: 'Find Work', href: '/jobs', intent: 'Browse available jobs' },
-        { label: 'Create Profile', href: '/register', intent: 'Register as a worker or hirer' },
+        {
+          label: 'Create Profile',
+          href: '/register',
+          intent: 'Register as a worker or hirer',
+        },
         {
           label: 'How Kelmah Works',
           href: '/support/help-center',
@@ -81,14 +85,26 @@ const Footer = () => {
     {
       title: 'For Hirers',
       links: [
-        { label: 'Find Talent', href: '/search', intent: 'Search and discover skilled workers' },
-        { label: 'Post a Job', href: '/hirer/jobs/post', intent: 'Create a new job posting' },
+        {
+          label: 'Find Talent',
+          href: '/search',
+          intent: 'Search and discover skilled workers',
+        },
+        {
+          label: 'Post a Job',
+          href: '/hirer/jobs/post',
+          intent: 'Create a new job posting',
+        },
         {
           label: 'Hiring Guide',
           href: '/support/help-center',
           intent: 'Learn the step-by-step hiring process',
         },
-        { label: 'Pricing', href: '/pricing', intent: 'Review premium and pricing options' },
+        {
+          label: 'Pricing',
+          href: '/pricing',
+          intent: 'Review premium and pricing options',
+        },
         {
           label: 'Business Support',
           href: '/support',
@@ -99,23 +115,51 @@ const Footer = () => {
     {
       title: 'Resources',
       links: [
-        { label: 'Help & Support', href: '/support', intent: 'Get support and troubleshooting help' },
+        {
+          label: 'Help & Support',
+          href: '/support',
+          intent: 'Get support and troubleshooting help',
+        },
         {
           label: 'Safety Centre',
           href: '/support/help-center',
           intent: 'Read safety guidance for workers and hirers',
         },
-        { label: 'Community', href: '/community', intent: 'Explore community discussions and updates' },
-        { label: 'Guides & Docs', href: '/docs', intent: 'Read guides and platform documentation' },
+        {
+          label: 'Community',
+          href: '/community',
+          intent: 'Explore community discussions and updates',
+        },
+        {
+          label: 'Guides & Docs',
+          href: '/docs',
+          intent: 'Read guides and platform documentation',
+        },
       ],
     },
     {
       title: 'Company',
       links: [
-        { label: 'About Us', href: '/about', intent: 'Learn about Kelmah mission and values' },
-        { label: 'Contact', href: '/contact', intent: 'Contact the Kelmah team' },
-        { label: 'Privacy Policy', href: '/privacy', intent: 'Review privacy and data handling policy' },
-        { label: 'Terms of Service', href: '/terms', intent: 'Review service terms and user responsibilities' },
+        {
+          label: 'About Us',
+          href: '/about',
+          intent: 'Learn about Kelmah mission and values',
+        },
+        {
+          label: 'Contact',
+          href: '/contact',
+          intent: 'Contact the Kelmah team',
+        },
+        {
+          label: 'Privacy Policy',
+          href: '/privacy',
+          intent: 'Review privacy and data handling policy',
+        },
+        {
+          label: 'Terms of Service',
+          href: '/terms',
+          intent: 'Review service terms and user responsibilities',
+        },
         {
           label: 'Community Updates',
           href: '/community',
@@ -130,14 +174,16 @@ const Footer = () => {
       icon: FacebookIcon,
       label: 'Facebook',
       href: sanitizeSocialUrl(
-        import.meta.env.VITE_SOCIAL_FACEBOOK_URL || 'https://www.facebook.com/kelmah',
+        import.meta.env.VITE_SOCIAL_FACEBOOK_URL ||
+          'https://www.facebook.com/kelmah',
       ),
     },
     {
       icon: InstagramIcon,
       label: 'Instagram',
       href: sanitizeSocialUrl(
-        import.meta.env.VITE_SOCIAL_INSTAGRAM_URL || 'https://www.instagram.com/kelmah',
+        import.meta.env.VITE_SOCIAL_INSTAGRAM_URL ||
+          'https://www.instagram.com/kelmah',
       ),
     },
     {
@@ -153,10 +199,7 @@ const Footer = () => {
   ].filter((social) => Boolean(social.href));
 
   return (
-    <Box
-      component="footer"
-      sx={{ width: '100%', flexShrink: 0 }}
-    >
+    <Box component="footer" sx={{ width: '100%', flexShrink: 0 }}>
       <Box
         sx={{
           py: { xs: 2.5, md: 6 },
@@ -270,8 +313,9 @@ const Footer = () => {
                       maxWidth: 260,
                     }}
                   >
-                    Your professional platform for skilled trades — connecting experts
-                    and growing businesses across all 16 regions of Ghana.
+                    Your professional platform for skilled trades — connecting
+                    experts and growing businesses across all 16 regions of
+                    Ghana.
                   </Typography>
 
                   <Stack direction="row" spacing={1}>
@@ -308,20 +352,35 @@ const Footer = () => {
 
                   <Stack spacing={1} sx={{ mt: 1 }}>
                     <Stack direction="row" alignItems="center" spacing={1}>
-                      <EmailIcon sx={{ color: 'rgba(255,255,255,0.35)', fontSize: 16 }} />
-                      <Typography variant="caption" sx={{ color: footerTextSoft }}>
+                      <EmailIcon
+                        sx={{ color: 'rgba(255,255,255,0.35)', fontSize: 16 }}
+                      />
+                      <Typography
+                        variant="caption"
+                        sx={{ color: footerTextSoft }}
+                      >
                         {CONTACT.email}
                       </Typography>
                     </Stack>
                     <Stack direction="row" alignItems="center" spacing={1}>
-                      <PhoneIcon sx={{ color: 'rgba(255,255,255,0.35)', fontSize: 16 }} />
-                      <Typography variant="caption" sx={{ color: footerTextSoft }}>
+                      <PhoneIcon
+                        sx={{ color: 'rgba(255,255,255,0.35)', fontSize: 16 }}
+                      />
+                      <Typography
+                        variant="caption"
+                        sx={{ color: footerTextSoft }}
+                      >
                         {CONTACT.phone}
                       </Typography>
                     </Stack>
                     <Stack direction="row" alignItems="center" spacing={1}>
-                      <LocationIcon sx={{ color: 'rgba(255,255,255,0.35)', fontSize: 16 }} />
-                      <Typography variant="caption" sx={{ color: footerTextSoft }}>
+                      <LocationIcon
+                        sx={{ color: 'rgba(255,255,255,0.35)', fontSize: 16 }}
+                      />
+                      <Typography
+                        variant="caption"
+                        sx={{ color: footerTextSoft }}
+                      >
                         {CONTACT.location}
                       </Typography>
                     </Stack>
@@ -333,7 +392,12 @@ const Footer = () => {
                 <Grid key={section.title} item xs={6} sm={3} md={2.125}>
                   <Typography
                     variant="subtitle2"
-                    sx={{ fontWeight: 700, color: '#fff', mb: 2, fontSize: '0.9rem' }}
+                    sx={{
+                      fontWeight: 700,
+                      color: '#fff',
+                      mb: 2,
+                      fontSize: '0.9rem',
+                    }}
                   >
                     {section.title}
                   </Typography>
@@ -370,14 +434,23 @@ const Footer = () => {
           )}
 
           {/* Bottom bar */}
-          <Divider sx={{ mt: { xs: 2, md: 4 }, mb: 1.5, borderColor: 'rgba(255,255,255,0.08)' }} />
+          <Divider
+            sx={{
+              mt: { xs: 2, md: 4 },
+              mb: 1.5,
+              borderColor: 'rgba(255,255,255,0.08)',
+            }}
+          />
           <Stack
             direction={{ xs: 'column', sm: 'row' }}
             justifyContent="space-between"
             alignItems="center"
             spacing={1.5}
           >
-            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.68)' }}>
+            <Typography
+              variant="caption"
+              sx={{ color: 'rgba(255,255,255,0.68)' }}
+            >
               © {currentYear} Kelmah. All rights reserved.
             </Typography>
             <Stack direction="row" spacing={2} alignItems="center">
@@ -420,7 +493,10 @@ const Footer = () => {
                 Terms of Service
               </Link>
               <Stack direction="row" alignItems="center" spacing={0.75}>
-                <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.68)' }}>
+                <Typography
+                  variant="caption"
+                  sx={{ color: 'rgba(255,255,255,0.68)' }}
+                >
                   Made with ❤️ in Ghana
                 </Typography>
                 <Box

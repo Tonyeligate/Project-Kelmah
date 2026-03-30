@@ -94,8 +94,8 @@ class RouteErrorBoundary extends React.Component {
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
               {this.props.label
                 ? `The "${this.props.label}" section encountered an error.`
-                : 'This section encountered an unexpected error.'}
-              {' '}You can try again or go back to the dashboard.
+                : 'This section encountered an unexpected error.'}{' '}
+              You can try again or go back to the dashboard.
             </Typography>
             <Box display="flex" gap={2} justifyContent="center">
               <Button
@@ -135,4 +135,3 @@ class RouteErrorBoundary extends React.Component {
 }
 
 export default RouteErrorBoundary;
-

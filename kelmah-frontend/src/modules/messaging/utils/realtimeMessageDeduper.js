@@ -5,7 +5,12 @@ export const buildRealtimeMessageKey = (message = {}) => {
   const id = message.id || message._id || message.messageId || message.clientId;
   if (!id) return null;
 
-  const conversationId = message.conversationId || message.conversation_id || message.conversation?.id || message.conversation?._id || 'global';
+  const conversationId =
+    message.conversationId ||
+    message.conversation_id ||
+    message.conversation?.id ||
+    message.conversation?._id ||
+    'global';
   return `${String(conversationId)}:${String(id)}`;
 };
 

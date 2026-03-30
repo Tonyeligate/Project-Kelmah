@@ -31,10 +31,22 @@ const Chatbox = ({
         <Toolbar variant="dense">
           <Avatar src={recipientAvatar} alt={displayName} />
           <Box sx={{ ml: 1, minWidth: 0 }}>
-            <Typography variant="body1" sx={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <Typography
+              variant="body1"
+              sx={{
+                fontWeight: 600,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
               {displayName}
             </Typography>
-            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', overflowWrap: 'anywhere' }}>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ display: 'block', overflowWrap: 'anywhere' }}
+            >
               {recipientStatus || 'Status unavailable'}
             </Typography>
           </Box>

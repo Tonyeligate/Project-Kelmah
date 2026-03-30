@@ -1,7 +1,40 @@
 ﻿import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import {
-  Box, Container, Grid, Typography, Tabs, Tab, Paper, CircularProgress, Alert, Button, CardContent, CardActions, Chip, LinearProgress, useTheme, Dialog, DialogTitle, DialogContent, DialogActions, Avatar, Tooltip, RadioGroup, FormControlLabel, Radio, Rating, List, ListItem, ListItemIcon, ListItemText, Breadcrumbs, Link, Snackbar, Skeleton } from '@mui/material';
+  Box,
+  Container,
+  Grid,
+  Typography,
+  Tabs,
+  Tab,
+  Paper,
+  CircularProgress,
+  Alert,
+  Button,
+  CardContent,
+  CardActions,
+  Chip,
+  LinearProgress,
+  useTheme,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Avatar,
+  Tooltip,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
+  Rating,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Breadcrumbs,
+  Link,
+  Snackbar,
+  Skeleton,
+} from '@mui/material';
 import {
   EmojiEvents as EmojiEventsIcon,
   TrendingUp as TrendingUpIcon,
@@ -254,7 +287,7 @@ const SkillsAssessmentPage = () => {
         setPaused(false);
         setTimeRemaining((test.duration || 30) * 60);
       } catch (err) {
-          devError('Failed to load test details', err);
+        devError('Failed to load test details', err);
         setError('Failed to load test details');
       } finally {
         setLoading(false);
@@ -278,7 +311,9 @@ const SkillsAssessmentPage = () => {
   const isMountedRef = useRef(true);
   useEffect(() => {
     isMountedRef.current = true;
-    return () => { isMountedRef.current = false; };
+    return () => {
+      isMountedRef.current = false;
+    };
   }, []);
 
   // Load initial data once credentials are resolved
@@ -434,7 +469,8 @@ const SkillsAssessmentPage = () => {
     if (!assessment?.certificate) {
       setSnackbar({
         open: true,
-        message: 'Certificate is only available for passed certified assessments.',
+        message:
+          'Certificate is only available for passed certified assessments.',
         severity: 'info',
       });
       return;
@@ -447,7 +483,8 @@ const SkillsAssessmentPage = () => {
         'Kelmah Worker';
       const issuedAt = assessment.completedAt || new Date().toISOString();
       const score = assessment.score ?? testResults?.score ?? 0;
-      const title = assessment.title || currentTest?.title || 'Skills Assessment';
+      const title =
+        assessment.title || currentTest?.title || 'Skills Assessment';
       const certificateId = `${assessment.id || assessment._id || 'assessment'}-${Date.parse(issuedAt) || Date.now()}`;
 
       const certificateText = [
@@ -462,8 +499,13 @@ const SkillsAssessmentPage = () => {
         'This certificate confirms the holder passed the listed Kelmah skills assessment.',
       ].join('\n');
 
-      const safeTitle = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-      const blob = new Blob([certificateText], { type: 'text/plain;charset=utf-8' });
+      const safeTitle = title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+      const blob = new Blob([certificateText], {
+        type: 'text/plain;charset=utf-8',
+      });
       const downloadUrl = URL.createObjectURL(blob);
       const anchor = document.createElement('a');
       anchor.href = downloadUrl;
@@ -587,7 +629,12 @@ const SkillsAssessmentPage = () => {
                     }}
                   >
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <Rating value={test.rating} size="small" readOnly aria-label={`${test.name || 'Skill'} rating: ${test.rating} out of 5`} />
+                      <Rating
+                        value={test.rating}
+                        size="small"
+                        readOnly
+                        aria-label={`${test.name || 'Skill'} rating: ${test.rating} out of 5`}
+                      />
                       <Typography variant="caption" sx={{ ml: 0.5 }}>
                         ({test.completions})
                       </Typography>
@@ -637,7 +684,13 @@ const SkillsAssessmentPage = () => {
 
       <Grid container spacing={3}>
         {mySkills.map((skill, index) => (
-          <Grid item xs={12} sm={6} md={4} key={skill.id || skill._id || skill.name}>
+          <Grid
+            item
+            xs={12}
+            sm={6}
+            md={4}
+            key={skill.id || skill._id || skill.name}
+          >
             <GlassCard>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -691,7 +744,13 @@ const SkillsAssessmentPage = () => {
 
       <Grid container spacing={3}>
         {completedTests.map((test, index) => (
-          <Grid item xs={12} sm={6} lg={4} key={test.id || test._id || test.skillId}>
+          <Grid
+            item
+            xs={12}
+            sm={6}
+            lg={4}
+            key={test.id || test._id || test.skillId}
+          >
             <GlassCard>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -800,7 +859,11 @@ const SkillsAssessmentPage = () => {
                         })
                         .catch(() => {});
                     } else {
-                      setSnackbar({ open: true, message: 'Sharing not supported on this device.', severity: 'info' });
+                      setSnackbar({
+                        open: true,
+                        message: 'Sharing not supported on this device.',
+                        severity: 'info',
+                      });
                     }
                   }}
                 >
@@ -1007,10 +1070,20 @@ const SkillsAssessmentPage = () => {
               {currentTest.title}
             </Typography>
 
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                flexWrap: 'wrap',
+              }}
+            >
               <TimerDisplay urgent={timeUrgent}>
                 <TimerIcon />
-                <Typography variant={isMobile ? 'body1' : 'h6'} fontWeight={600}>
+                <Typography
+                  variant={isMobile ? 'body1' : 'h6'}
+                  fontWeight={600}
+                >
                   {formatTime(timeRemaining)}
                 </Typography>
               </TimerDisplay>
@@ -1020,7 +1093,8 @@ const SkillsAssessmentPage = () => {
                 onClick={testPaused ? resumeTest : pauseTest}
                 startIcon={testPaused ? <PlayIcon /> : <PauseIcon />}
                 sx={{ minHeight: 44 }}
-               aria-label="Play">
+                aria-label="Play"
+              >
                 {testPaused ? 'Resume' : 'Pause'}
               </Button>
 
@@ -1192,9 +1266,13 @@ const SkillsAssessmentPage = () => {
       <Container maxWidth="lg" sx={{ py: 3 }}>
         <Skeleton variant="text" width={280} height={40} sx={{ mb: 3 }} />
         <Grid container spacing={2}>
-          {[1,2,3,4,5,6].map(i => (
+          {[1, 2, 3, 4, 5, 6].map((i) => (
             <Grid item xs={12} sm={6} md={4} key={`assessment-skeleton-${i}`}>
-              <Skeleton variant="rounded" height={200} sx={{ borderRadius: 2 }} />
+              <Skeleton
+                variant="rounded"
+                height={200}
+                sx={{ borderRadius: 2 }}
+              />
             </Grid>
           ))}
         </Grid>
@@ -1223,7 +1301,9 @@ const SkillsAssessmentPage = () => {
           onClose={() => setConfirmExitDialog(false)}
           aria-labelledby="confirm-exit-dialog-title"
         >
-          <DialogTitle id="confirm-exit-dialog-title">Exit Assessment?</DialogTitle>
+          <DialogTitle id="confirm-exit-dialog-title">
+            Exit Assessment?
+          </DialogTitle>
           <DialogContent>
             <Typography>
               Are you sure you want to exit this assessment? Your progress will
@@ -1264,7 +1344,11 @@ const SkillsAssessmentPage = () => {
         </Breadcrumbs>
 
         <Box sx={{ mb: { xs: 2, md: 4 } }}>
-          <Typography variant={isMobile ? 'h4' : 'h3'} fontWeight={700} gutterBottom>
+          <Typography
+            variant={isMobile ? 'h4' : 'h3'}
+            fontWeight={700}
+            gutterBottom
+          >
             Skills Assessment Center
           </Typography>
           {!isMobile && (
@@ -1374,8 +1458,8 @@ const SkillsAssessmentPage = () => {
 
                 <Alert severity="info" sx={{ mb: 2 }}>
                   Once you start, the timer will begin counting down. You may
-                  pause briefly, but the assessment cannot be restarted.
-                  Make sure you have enough time to complete it.
+                  pause briefly, but the assessment cannot be restarted. Make
+                  sure you have enough time to complete it.
                 </Alert>
 
                 <Typography variant="body2" color="text.secondary">
@@ -1385,7 +1469,12 @@ const SkillsAssessmentPage = () => {
             )}
           </DialogContent>
           <DialogActions sx={{ p: 3 }}>
-            <Button onClick={() => setStartTestDialog(false)} sx={{ minHeight: 44 }}>Cancel</Button>
+            <Button
+              onClick={() => setStartTestDialog(false)}
+              sx={{ minHeight: 44 }}
+            >
+              Cancel
+            </Button>
             <AnimatedButton
               variant="contained"
               onClick={confirmStartTest}
@@ -1469,7 +1558,9 @@ const SkillsAssessmentPage = () => {
               </Box>
             )}
           </DialogContent>
-          <DialogActions sx={{ justifyContent: 'center', p: 3, flexWrap: 'wrap', gap: 1 }}>
+          <DialogActions
+            sx={{ justifyContent: 'center', p: 3, flexWrap: 'wrap', gap: 1 }}
+          >
             {testResults?.certificate && (
               <Button
                 startIcon={<DownloadIcon />}
@@ -1488,7 +1579,12 @@ const SkillsAssessmentPage = () => {
                 Download Certificate
               </Button>
             )}
-            <Button onClick={() => setResultsDialog(false)} sx={{ minHeight: 44 }}>Close</Button>
+            <Button
+              onClick={() => setResultsDialog(false)}
+              sx={{ minHeight: 44 }}
+            >
+              Close
+            </Button>
             <Button
               variant="contained"
               onClick={() => {
@@ -1521,5 +1617,3 @@ const SkillsAssessmentPage = () => {
 };
 
 export default SkillsAssessmentPage;
-
-

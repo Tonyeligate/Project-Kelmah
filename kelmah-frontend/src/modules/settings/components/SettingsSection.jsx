@@ -41,7 +41,11 @@ const SettingsSection = ({
           {title}
         </Typography>
         {description && (
-          <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 640, lineHeight: 1.6 }}>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ maxWidth: 640, lineHeight: 1.6 }}
+          >
             {description}
           </Typography>
         )}

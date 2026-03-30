@@ -91,8 +91,16 @@ const KelmahLogo = () => {
 export const SIDEBAR_WIDTH_EXPANDED = 260;
 export const SIDEBAR_WIDTH_COLLAPSED = 72;
 
-const Sidebar = ({ variant = 'permanent', open = false, onClose, collapsed = false, onToggleCollapse }) => {
-  const sidebarWidth = collapsed ? SIDEBAR_WIDTH_COLLAPSED : SIDEBAR_WIDTH_EXPANDED;
+const Sidebar = ({
+  variant = 'permanent',
+  open = false,
+  onClose,
+  collapsed = false,
+  onToggleCollapse,
+}) => {
+  const sidebarWidth = collapsed
+    ? SIDEBAR_WIDTH_COLLAPSED
+    : SIDEBAR_WIDTH_EXPANDED;
   const user = useSelector((state) => state.auth.user);
   const { unreadCount: unreadMessages } = useMessages();
   const { unreadCount: unreadNotifications } = useNotifications();
@@ -104,34 +112,100 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose, collapsed = fal
   // Determine role for navigation
   const navRole =
     user?.role === 'hirer' ||
-      user?.userType === 'hirer' ||
-      user?.userRole === 'hirer'
+    user?.userType === 'hirer' ||
+    user?.userRole === 'hirer'
       ? 'hirer'
       : user?.role === 'worker' ||
-        user?.userType === 'worker' ||
-        user?.userRole === 'worker'
+          user?.userType === 'worker' ||
+          user?.userRole === 'worker'
         ? 'worker'
         : null;
 
   // LC Portal style menu items - role specific (mapped to actual routes)
-  const menuItems = navRole === 'hirer'
-    ? [
-      { text: 'Post a Job', icon: <PostAddIcon />, path: '/hirer/jobs/post', tooltip: 'Create a new job posting' },
-      { text: 'My Jobs', icon: <WorkIcon />, path: '/hirer/jobs', tooltip: 'Manage your job postings' },
-      { text: 'Applications', icon: <AssignmentIcon />, path: '/hirer/applications', tooltip: 'Review worker applications' },
-      { text: 'Find Talent', icon: <PeopleIcon />, path: '/hirer/find-talents', tooltip: 'Search for skilled workers' },
-      { text: 'Tools', icon: <MiscellaneousServicesIcon />, path: '/hirer/tools', tooltip: 'Hirer tools and utilities' },
-      { text: 'Support', icon: <SupportAgentIcon />, path: '/support', tooltip: 'Get help and support' },
-    ]
-    : [
-      { text: 'Find Work', icon: <WorkIcon />, path: '/worker/find-work', tooltip: 'Search for available jobs' },
-      { text: 'My Applications', icon: <AssignmentIcon />, path: '/worker/applications', tooltip: 'Track your job applications' },
-      { text: 'Contracts', icon: <ReceiptIcon />, path: '/worker/contracts', tooltip: 'View your active contracts' },
-      { text: 'Earnings', icon: <ReceiptLongIcon />, path: '/worker/earnings', tooltip: 'Track your earnings' },
-      { text: 'Wallet', icon: <CheckCircleIcon />, path: '/worker/wallet', tooltip: 'Manage your wallet' },
-      { text: 'Reviews', icon: <TrackChangesIcon />, path: '/worker/reviews', tooltip: 'See your reviews' },
-      { text: 'Support', icon: <SupportAgentIcon />, path: '/support', tooltip: 'Get help and support' },
-    ];
+  const menuItems =
+    navRole === 'hirer'
+      ? [
+          {
+            text: 'Post a Job',
+            icon: <PostAddIcon />,
+            path: '/hirer/jobs/post',
+            tooltip: 'Create a new job posting',
+          },
+          {
+            text: 'My Jobs',
+            icon: <WorkIcon />,
+            path: '/hirer/jobs',
+            tooltip: 'Manage your job postings',
+          },
+          {
+            text: 'Applications',
+            icon: <AssignmentIcon />,
+            path: '/hirer/applications',
+            tooltip: 'Review worker applications',
+          },
+          {
+            text: 'Find Talent',
+            icon: <PeopleIcon />,
+            path: '/hirer/find-talents',
+            tooltip: 'Search for skilled workers',
+          },
+          {
+            text: 'Tools',
+            icon: <MiscellaneousServicesIcon />,
+            path: '/hirer/tools',
+            tooltip: 'Hirer tools and utilities',
+          },
+          {
+            text: 'Support',
+            icon: <SupportAgentIcon />,
+            path: '/support',
+            tooltip: 'Get help and support',
+          },
+        ]
+      : [
+          {
+            text: 'Find Work',
+            icon: <WorkIcon />,
+            path: '/worker/find-work',
+            tooltip: 'Search for available jobs',
+          },
+          {
+            text: 'My Applications',
+            icon: <AssignmentIcon />,
+            path: '/worker/applications',
+            tooltip: 'Track your job applications',
+          },
+          {
+            text: 'Contracts',
+            icon: <ReceiptIcon />,
+            path: '/worker/contracts',
+            tooltip: 'View your active contracts',
+          },
+          {
+            text: 'Earnings',
+            icon: <ReceiptLongIcon />,
+            path: '/worker/earnings',
+            tooltip: 'Track your earnings',
+          },
+          {
+            text: 'Wallet',
+            icon: <CheckCircleIcon />,
+            path: '/worker/wallet',
+            tooltip: 'Manage your wallet',
+          },
+          {
+            text: 'Reviews',
+            icon: <TrackChangesIcon />,
+            path: '/worker/reviews',
+            tooltip: 'See your reviews',
+          },
+          {
+            text: 'Support',
+            icon: <SupportAgentIcon />,
+            path: '/support',
+            tooltip: 'Get help and support',
+          },
+        ];
 
   // Common items at bottom
   const bottomItems = [
@@ -149,11 +223,18 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose, collapsed = fal
       badge: unreadMessages,
       tooltip: 'View your messages',
     },
-    { text: 'Settings', icon: <SettingsIcon />, path: '/settings', tooltip: 'Account settings' },
+    {
+      text: 'Settings',
+      icon: <SettingsIcon />,
+      path: '/settings',
+      tooltip: 'Account settings',
+    },
   ];
 
-  const dashboardPath = navRole === 'hirer' ? '/hirer/dashboard' : '/worker/dashboard';
-  const isDashboardActive = location.pathname === dashboardPath || location.pathname === '/dashboard';
+  const dashboardPath =
+    navRole === 'hirer' ? '/hirer/dashboard' : '/worker/dashboard';
+  const isDashboardActive =
+    location.pathname === dashboardPath || location.pathname === '/dashboard';
 
   return (
     <Drawer
@@ -179,7 +260,16 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose, collapsed = fal
       }}
     >
       {/* Logo Section */}
-      <Box sx={{ pt: 2, pb: 1, display: 'flex', alignItems: 'center', justifyContent: collapsed ? 'center' : 'flex-start', px: collapsed ? 0 : 2 }}>
+      <Box
+        sx={{
+          pt: 2,
+          pb: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: collapsed ? 'center' : 'flex-start',
+          px: collapsed ? 0 : 2,
+        }}
+      >
         <KelmahLogo />
         {/* Collapse toggle button */}
         {onToggleCollapse && variant === 'permanent' && (
@@ -191,7 +281,12 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose, collapsed = fal
               ml: collapsed ? 0 : 'auto',
               color: 'var(--nav-collapse-icon)',
               '&:hover': { bgcolor: 'var(--nav-collapse-hover)' },
-                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
+              '&:focus-visible': {
+                outline: '3px solid',
+                outlineColor: 'primary.main',
+                outlineOffset: '2px',
+              },
+            }}
           >
             {collapsed ? <ChevronRightIcon /> : <ChevronLeftIcon />}
           </IconButton>
@@ -213,40 +308,53 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose, collapsed = fal
             gap: 1.5,
           }}
         >
-        <Avatar
-          sx={{
-            width: 40,
-            height: 40,
-            bgcolor: '#FFD700',
-            color: (theme) => theme.palette.getContrastText('#FFD700'),
-            fontWeight: 700,
-          }}
-        >
-          {user?.firstName?.[0] || 'U'}
-        </Avatar>
-        <Box sx={{ flex: 1 }}>
-          <Typography variant="body2" fontWeight={600} sx={{ color: 'text.primary' }}>
-            Hi, {user?.firstName || 'User'}
-          </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <FiberManualRecordIcon sx={{ fontSize: 10, color: 'success.main' }} />
-            <Typography variant="caption" sx={{ color: 'success.main' }}>
-              Online
+          <Avatar
+            sx={{
+              width: 40,
+              height: 40,
+              bgcolor: '#FFD700',
+              color: (theme) => theme.palette.getContrastText('#FFD700'),
+              fontWeight: 700,
+            }}
+          >
+            {user?.firstName?.[0] || 'U'}
+          </Avatar>
+          <Box sx={{ flex: 1 }}>
+            <Typography
+              variant="body2"
+              fontWeight={600}
+              sx={{ color: 'text.primary' }}
+            >
+              Hi, {user?.firstName || 'User'}
             </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <FiberManualRecordIcon
+                sx={{ fontSize: 10, color: 'success.main' }}
+              />
+              <Typography variant="caption" sx={{ color: 'success.main' }}>
+                Online
+              </Typography>
+            </Box>
           </Box>
         </Box>
-      </Box>
       )}
 
       {/* Dashboard Item - Highlighted Gold */}
-      <Tooltip title={collapsed ? 'Dashboard' : ''} placement="right" arrow disableHoverListener={!collapsed}>
+      <Tooltip
+        title={collapsed ? 'Dashboard' : ''}
+        placement="right"
+        arrow
+        disableHoverListener={!collapsed}
+      >
         <Box sx={{ px: collapsed ? 1 : 2, mb: 1 }}>
           <ListItem
             button
             component={RouterLink}
             to={dashboardPath}
             sx={{
-              backgroundColor: isDashboardActive ? 'var(--nav-bg-active)' : 'transparent',
+              backgroundColor: isDashboardActive
+                ? 'var(--nav-bg-active)'
+                : 'transparent',
               borderRadius: 1,
               py: 1.5,
               justifyContent: collapsed ? 'center' : 'flex-start',
@@ -255,25 +363,31 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose, collapsed = fal
               },
             }}
           >
-            <ListItemIcon sx={{ minWidth: collapsed ? 'auto' : 40, justifyContent: 'center' }}>
+            <ListItemIcon
+              sx={{
+                minWidth: collapsed ? 'auto' : 40,
+                justifyContent: 'center',
+              }}
+            >
               <DashboardIcon sx={{ color: 'var(--nav-icon-active)' }} />
             </ListItemIcon>
             {!collapsed && (
               <ListItemText
-            primary="Dashboard"
-            sx={{
-              '& .MuiListItemText-primary': {
-                color: 'var(--nav-text-active)',
-                fontWeight: 600,
-                letterSpacing: 'normal',
-                wordSpacing: 'normal',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-                fontFamily: '"Inter", "Roboto", "Helvetica Neue", Arial, sans-serif',
-              },
-            }}
-          />
+                primary="Dashboard"
+                sx={{
+                  '& .MuiListItemText-primary': {
+                    color: 'var(--nav-text-active)',
+                    fontWeight: 600,
+                    letterSpacing: 'normal',
+                    wordSpacing: 'normal',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    fontFamily:
+                      '"Inter", "Roboto", "Helvetica Neue", Arial, sans-serif',
+                  },
+                }}
+              />
             )}
           </ListItem>
         </Box>
@@ -298,44 +412,61 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose, collapsed = fal
       {/* Menu Items */}
       <List sx={{ px: 1, flexGrow: 1 }}>
         {menuItems.map((item) => {
-            const isActive = location.pathname === item.path;
-            const menuItemElement = (
-              <ListItem
-                key={item.text}
-                button
-                component={RouterLink}
-                to={item.path}
-                aria-label={item.tooltip || item.text}
+          const isActive = location.pathname === item.path;
+          const menuItemElement = (
+            <ListItem
+              key={item.text}
+              button
+              component={RouterLink}
+              to={item.path}
+              aria-label={item.tooltip || item.text}
+              sx={{
+                borderRadius: 1,
+                mb: 0.5,
+                py: 1.25,
+                justifyContent: collapsed ? 'center' : 'flex-start',
+                backgroundColor: isActive
+                  ? 'var(--nav-bg-active)'
+                  : 'transparent',
+                '&:hover': {
+                  backgroundColor: 'var(--nav-bg-hover)',
+                },
+              }}
+            >
+              <ListItemIcon
                 sx={{
-                  borderRadius: 1,
-                  mb: 0.5,
-                  py: 1.25,
-                  justifyContent: collapsed ? 'center' : 'flex-start',
-                  backgroundColor: isActive ? 'var(--nav-bg-active)' : 'transparent',
-                  '&:hover': {
-                    backgroundColor: 'var(--nav-bg-hover)',
-                  },
+                  minWidth: collapsed ? 'auto' : 40,
+                  justifyContent: 'center',
                 }}
               >
-                <ListItemIcon sx={{ minWidth: collapsed ? 'auto' : 40, justifyContent: 'center' }}>
-                  {item.badge && item.badge > 0 ? (
-                    <Badge color="error" badgeContent={item.badge} max={99}>
-                      {React.cloneElement(item.icon, {
-                        sx: { color: isActive ? 'var(--nav-icon-active)' : 'var(--nav-icon-inactive)' },
-                      })}
-                    </Badge>
-                  ) : (
-                    React.cloneElement(item.icon, {
-                      sx: { color: isActive ? 'var(--nav-icon-active)' : 'var(--nav-icon-inactive)' },
-                    })
-                  )}
-                </ListItemIcon>
-                {!collapsed && (
-                  <ListItemText
+                {item.badge && item.badge > 0 ? (
+                  <Badge color="error" badgeContent={item.badge} max={99}>
+                    {React.cloneElement(item.icon, {
+                      sx: {
+                        color: isActive
+                          ? 'var(--nav-icon-active)'
+                          : 'var(--nav-icon-inactive)',
+                      },
+                    })}
+                  </Badge>
+                ) : (
+                  React.cloneElement(item.icon, {
+                    sx: {
+                      color: isActive
+                        ? 'var(--nav-icon-active)'
+                        : 'var(--nav-icon-inactive)',
+                    },
+                  })
+                )}
+              </ListItemIcon>
+              {!collapsed && (
+                <ListItemText
                   primary={item.text}
                   sx={{
                     '& .MuiListItemText-primary': {
-                      color: isActive ? 'var(--nav-text-active)' : 'var(--nav-text-inactive)',
+                      color: isActive
+                        ? 'var(--nav-text-active)'
+                        : 'var(--nav-text-inactive)',
                       fontWeight: isActive ? 600 : 400,
                       fontSize: '0.9rem',
                       letterSpacing: 'normal',
@@ -343,30 +474,24 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose, collapsed = fal
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap',
-                      fontFamily: '"Inter", "Roboto", "Helvetica Neue", Arial, sans-serif',
+                      fontFamily:
+                        '"Inter", "Roboto", "Helvetica Neue", Arial, sans-serif',
                     },
                   }}
                 />
-                )}
-              </ListItem>
-            );
+              )}
+            </ListItem>
+          );
 
-            // Wrap in Tooltip when collapsed to show item names on hover
-            return showTooltips ? (
-              <Tooltip
-                key={item.text}
-                title={item.text}
-                placement="right"
-                arrow
-              >
-                {menuItemElement}
-              </Tooltip>
-            ) : (
-              <React.Fragment key={item.text}>
-                {menuItemElement}
-              </React.Fragment>
-            );
-          })}
+          // Wrap in Tooltip when collapsed to show item names on hover
+          return showTooltips ? (
+            <Tooltip key={item.text} title={item.text} placement="right" arrow>
+              {menuItemElement}
+            </Tooltip>
+          ) : (
+            <React.Fragment key={item.text}>{menuItemElement}</React.Fragment>
+          );
+        })}
       </List>
 
       <Divider sx={{ mx: 2, borderColor: 'var(--nav-divider)' }} />
@@ -387,22 +512,37 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose, collapsed = fal
                 mb: 0.5,
                 py: 1.25,
                 justifyContent: collapsed ? 'center' : 'flex-start',
-                backgroundColor: isActive ? 'var(--nav-bg-active)' : 'transparent',
+                backgroundColor: isActive
+                  ? 'var(--nav-bg-active)'
+                  : 'transparent',
                 '&:hover': {
                   backgroundColor: 'var(--nav-bg-hover)',
                 },
               }}
             >
-              <ListItemIcon sx={{ minWidth: collapsed ? 'auto' : 40, justifyContent: 'center' }}>
+              <ListItemIcon
+                sx={{
+                  minWidth: collapsed ? 'auto' : 40,
+                  justifyContent: 'center',
+                }}
+              >
                 {item.badge && item.badge > 0 ? (
                   <Badge color="error" badgeContent={item.badge} max={99}>
                     {React.cloneElement(item.icon, {
-                      sx: { color: isActive ? 'var(--nav-icon-active)' : 'var(--nav-icon-inactive)' },
+                      sx: {
+                        color: isActive
+                          ? 'var(--nav-icon-active)'
+                          : 'var(--nav-icon-inactive)',
+                      },
                     })}
                   </Badge>
                 ) : (
                   React.cloneElement(item.icon, {
-                    sx: { color: isActive ? 'var(--nav-icon-active)' : 'var(--nav-icon-inactive)' },
+                    sx: {
+                      color: isActive
+                        ? 'var(--nav-icon-active)'
+                        : 'var(--nav-icon-inactive)',
+                    },
                   })
                 )}
               </ListItemIcon>
@@ -411,7 +551,9 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose, collapsed = fal
                   primary={item.text}
                   sx={{
                     '& .MuiListItemText-primary': {
-                      color: isActive ? 'var(--nav-text-active)' : 'var(--nav-text-inactive)',
+                      color: isActive
+                        ? 'var(--nav-text-active)'
+                        : 'var(--nav-text-inactive)',
                       fontWeight: isActive ? 600 : 400,
                       fontSize: '0.9rem',
                       letterSpacing: 'normal',
@@ -419,7 +561,8 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose, collapsed = fal
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap',
-                      fontFamily: '"Inter", "Roboto", "Helvetica Neue", Arial, sans-serif',
+                      fontFamily:
+                        '"Inter", "Roboto", "Helvetica Neue", Arial, sans-serif',
                     },
                   }}
                 />
@@ -428,18 +571,11 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose, collapsed = fal
           );
 
           return showTooltips ? (
-            <Tooltip
-              key={item.text}
-              title={item.text}
-              placement="right"
-              arrow
-            >
+            <Tooltip key={item.text} title={item.text} placement="right" arrow>
               {bottomItemElement}
             </Tooltip>
           ) : (
-            <React.Fragment key={item.text}>
-              {bottomItemElement}
-            </React.Fragment>
+            <React.Fragment key={item.text}>{bottomItemElement}</React.Fragment>
           );
         })}
       </List>
@@ -448,5 +584,3 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose, collapsed = fal
 };
 
 export default Sidebar;
-
-

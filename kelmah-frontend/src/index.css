@@ -13,6 +13,13 @@
 /* Dark mode (default — applied first so :root covers SSR) */
 :root,
 [data-theme="dark"] {
+  --k-touch-target-min: 44px;
+  --k-safe-top: env(safe-area-inset-top, 0px);
+  --k-safe-bottom: env(safe-area-inset-bottom, 0px);
+
+  --k-page-pb-mobile: calc(56px + var(--k-safe-bottom) + 24px);
+  --k-sticky-cta-pb-mobile: calc(64px + var(--k-safe-bottom) + 8px);
+
   /* Spacing system */
   --k-space-1: 4px;
   --k-space-2: 8px;
@@ -270,8 +277,8 @@ button {
 .MuiIconButton-root,
 .MuiButton-root,
 .MuiTab-root {
-  min-width: 44px;
-  min-height: 44px;
+  min-width: var(--k-touch-target-min);
+  min-height: var(--k-touch-target-min);
 }
 
 /* Form elements */

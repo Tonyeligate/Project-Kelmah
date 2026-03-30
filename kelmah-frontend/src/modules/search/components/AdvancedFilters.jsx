@@ -452,7 +452,10 @@ const AdvancedFilters = ({
               placeholder="e.g., emergency plumbing in Adenta, AC servicing in Kumasi"
               value={filters.query}
               onChange={(e) => handleQueryChange(e.target.value)}
-              inputProps={{ maxLength: SEARCH_QUERY_MAX_LENGTH, 'aria-label': 'Search keywords for jobs' }}
+              inputProps={{
+                maxLength: SEARCH_QUERY_MAX_LENGTH,
+                'aria-label': 'Search keywords for jobs',
+              }}
               helperText="Use trade + area for better matches. Example: roof repair in Tema."
             />
           </Grid>

@@ -38,7 +38,10 @@ export const useJobs = () => {
     async (query) => {
       try {
         dispatch(setLoading(true));
-        const result = await jobService.searchJobs({ search: query, ...filters });
+        const result = await jobService.searchJobs({
+          search: query,
+          ...filters,
+        });
         dispatch(setJobs(result.jobs || []));
       } catch (error) {
         dispatch(setError(error.message));
@@ -121,10 +124,7 @@ export const useJobs = () => {
     async (jobId, applicationData) => {
       try {
         dispatch(setLoading(true));
-        const application = await jobService.applyToJob(
-          jobId,
-          applicationData,
-        );
+        const application = await jobService.applyToJob(jobId, applicationData);
         return application;
       } catch (error) {
         dispatch(setError(error.message));

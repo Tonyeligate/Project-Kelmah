@@ -8,7 +8,9 @@ const SAVED_SEARCHES_STORAGE_PREFIX = 'kelmah_saved_searches';
 const readSavedSearches = (userId) => {
   if (!userId) return [];
   try {
-    const raw = localStorage.getItem(`${SAVED_SEARCHES_STORAGE_PREFIX}:${userId}`);
+    const raw = localStorage.getItem(
+      `${SAVED_SEARCHES_STORAGE_PREFIX}:${userId}`,
+    );
     const parsed = raw ? JSON.parse(raw) : [];
     return Array.isArray(parsed) ? parsed : [];
   } catch {
@@ -59,7 +61,8 @@ const smartSearchService = {
         insights: payload?.insights || null,
         totalRecommendations: payload?.totalRecommendations,
         averageMatchScore: payload?.averageMatchScore,
-        recommendationSource: response?.data?.meta?.recommendationSource || null,
+        recommendationSource:
+          response?.data?.meta?.recommendationSource || null,
       };
     } catch (error) {
       if (error?.response?.status === 403) {
@@ -281,7 +284,9 @@ const smartSearchService = {
       if (explicitUserId) {
         const existing = readSavedSearches(explicitUserId);
         const next = existing.map((entry) =>
-          entry.id === searchId ? { ...entry, ...updateData, updatedAt: new Date().toISOString() } : entry,
+          entry.id === searchId
+            ? { ...entry, ...updateData, updatedAt: new Date().toISOString() }
+            : entry,
         );
         writeSavedSearches(explicitUserId, next);
         return { success: true };
@@ -291,13 +296,19 @@ const smartSearchService = {
       try {
         for (let index = 0; index < localStorage.length; index += 1) {
           const storageKey = localStorage.key(index);
-          if (!storageKey || !storageKey.startsWith(`${SAVED_SEARCHES_STORAGE_PREFIX}:`)) continue;
+          if (
+            !storageKey ||
+            !storageKey.startsWith(`${SAVED_SEARCHES_STORAGE_PREFIX}:`)
+          )
+            continue;
           const userId = storageKey.split(':')[1];
           const existing = readSavedSearches(userId);
           const hasEntry = existing.some((entry) => entry.id === searchId);
           if (!hasEntry) continue;
           const next = existing.map((entry) =>
-            entry.id === searchId ? { ...entry, ...updateData, updatedAt: new Date().toISOString() } : entry,
+            entry.id === searchId
+              ? { ...entry, ...updateData, updatedAt: new Date().toISOString() }
+              : entry,
           );
           writeSavedSearches(userId, next);
           break;
@@ -334,4 +345,3 @@ const smartSearchService = {
 // Removed: mock job results generator
 
 export default smartSearchService;
-

@@ -1,7 +1,16 @@
 import { api } from '../../../services/apiClient';
 import { captureRecoverableApiError } from '../../../services/errorTelemetry';
 
-const DISPLAY_KEYS = ['label', 'name', 'title', 'value', 'type', 'city', 'address', 'text'];
+const DISPLAY_KEYS = [
+  'label',
+  'name',
+  'title',
+  'value',
+  'type',
+  'city',
+  'address',
+  'text',
+];
 
 const toDisplayString = (value, fallback = '') => {
   if (typeof value === 'string') {
@@ -14,9 +23,7 @@ const toDisplayString = (value, fallback = '') => {
   }
 
   if (Array.isArray(value)) {
-    const parts = value
-      .map((item) => toDisplayString(item))
-      .filter(Boolean);
+    const parts = value.map((item) => toDisplayString(item)).filter(Boolean);
     return parts.join(', ') || fallback;
   }
 
@@ -84,7 +91,6 @@ const applicationsApi = {
     return rawList.map((application, index) =>
       normalizeApplication(application, index),
     );
-
   },
 
   /**
@@ -124,7 +130,8 @@ const applicationsApi = {
       if (!Array.isArray(list)) {
         return null;
       }
-      const found = list.find(
+      const found =
+        list.find(
           (application) =>
             application?._id === applicationId ||
             application?.id === applicationId,
@@ -150,7 +157,10 @@ const applicationsApi = {
    */
   withdrawApplication: async (jobId, applicationId) => {
     if (!jobId || !applicationId) {
-      return { success: false, message: 'jobId and applicationId are required' };
+      return {
+        success: false,
+        message: 'jobId and applicationId are required',
+      };
     }
     try {
       const response = await api.delete(
@@ -159,7 +169,10 @@ const applicationsApi = {
       return response.data;
     } catch (error) {
       if (error.response?.status === 404) {
-        return { success: false, message: 'Application not found or already withdrawn' };
+        return {
+          success: false,
+          message: 'Application not found or already withdrawn',
+        };
       }
       throw error;
     }

@@ -142,7 +142,10 @@ const MobileNav = ({ open, onClose }) => {
   // Close the drawer. Any navigation or logout is stored in pendingActionRef
   // and executed by handleDrawerExited after MUI finishes its modal cleanup.
   const requestClose = () => {
-    if (document.activeElement && typeof document.activeElement.blur === 'function') {
+    if (
+      document.activeElement &&
+      typeof document.activeElement.blur === 'function'
+    ) {
       document.activeElement.blur();
     }
     onClose();
@@ -263,20 +266,44 @@ const MobileNav = ({ open, onClose }) => {
   // Secondary navigation only — bottom navigation owns the primary app sections.
   const navigationItems = useMemo(() => {
     const baseItems = [];
-    
+
     if (showUserMenu) {
       if (isHirer) {
         baseItems.push(
-          { label: 'My Job Posts', icon: <AssignmentIcon />, path: '/hirer/jobs' },
-          { label: 'Applications', icon: <AssignmentIcon />, path: '/hirer/applications' },
-          { label: 'Find Talent', icon: <SearchIcon />, path: '/hirer/find-talents' },
+          {
+            label: 'My Job Posts',
+            icon: <AssignmentIcon />,
+            path: '/hirer/jobs',
+          },
+          {
+            label: 'Applications',
+            icon: <AssignmentIcon />,
+            path: '/hirer/applications',
+          },
+          {
+            label: 'Find Talent',
+            icon: <SearchIcon />,
+            path: '/hirer/find-talents',
+          },
           { label: 'Profile', icon: <PersonIcon />, path: '/profile' },
         );
       } else if (isWorker) {
         baseItems.push(
-          { label: 'My Applications', icon: <AssignmentIcon />, path: '/worker/applications' },
-          { label: 'Saved Jobs', icon: <WorkIcon />, path: '/worker/saved-jobs' },
-          { label: 'My Schedule', icon: <WalletIcon />, path: '/worker/schedule' },
+          {
+            label: 'My Applications',
+            icon: <AssignmentIcon />,
+            path: '/worker/applications',
+          },
+          {
+            label: 'Saved Jobs',
+            icon: <WorkIcon />,
+            path: '/worker/saved-jobs',
+          },
+          {
+            label: 'My Schedule',
+            icon: <WalletIcon />,
+            path: '/worker/schedule',
+          },
           { label: 'Profile', icon: <PersonIcon />, path: '/profile' },
         );
       } else {
@@ -285,7 +312,6 @@ const MobileNav = ({ open, onClose }) => {
           { label: 'Browse Jobs', icon: <WorkIcon />, path: '/jobs' },
         );
       }
-
     } else {
       // Guest navigation
       baseItems.push(
@@ -294,7 +320,7 @@ const MobileNav = ({ open, onClose }) => {
         { label: 'Find Workers', icon: <SearchIcon />, path: '/find-talents' },
       );
     }
-    
+
     return baseItems;
   }, [showUserMenu, isHirer, isWorker, unreadCount]);
 
@@ -348,7 +374,12 @@ const MobileNav = ({ open, onClose }) => {
                   : BRAND_COLORS.black,
               minWidth: 44,
               minHeight: 44,
-                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
+              '&:focus-visible': {
+                outline: '3px solid',
+                outlineColor: 'primary.main',
+                outlineOffset: '2px',
+              },
+            }}
           >
             <CloseIcon />
           </IconButton>
@@ -394,7 +425,11 @@ const MobileNav = ({ open, onClose }) => {
                     fontWeight: 600,
                   }}
                 />
-                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.75 }}>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ display: 'block', mt: 0.75 }}
+                >
                   Account shortcuts and worker tools
                 </Typography>
               </Box>
@@ -404,25 +439,32 @@ const MobileNav = ({ open, onClose }) => {
 
         {/* Navigation Items */}
         <List sx={{ flex: 1, py: 1 }}>
-          <Typography variant="caption" color="text.secondary" sx={{ px: 2.25, py: 0.75, display: 'block' }}>
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ px: 2.25, py: 0.75, display: 'block' }}
+          >
             Quick links. Main tabs stay in the bottom navigation bar.
           </Typography>
           {/* ✅ MOBILE-AUDIT P3: removed motion.div staggered animation from nav items */}
           {navigationItems.map((item) => (
-                <StyledListItemButton key={item.path} onClick={() => handleNavigate(item.path)}>
-                  <ListItemIcon>
-                    <Badge badgeContent={item.badge} color="error">
-                      {item.icon}
-                    </Badge>
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={item.label}
-                    primaryTypographyProps={{
-                      fontWeight: 500,
-                    }}
-                  />
-                </StyledListItemButton>
-            ))}
+            <StyledListItemButton
+              key={item.path}
+              onClick={() => handleNavigate(item.path)}
+            >
+              <ListItemIcon>
+                <Badge badgeContent={item.badge} color="error">
+                  {item.icon}
+                </Badge>
+              </ListItemIcon>
+              <ListItemText
+                primary={item.label}
+                primaryTypographyProps={{
+                  fontWeight: 500,
+                }}
+              />
+            </StyledListItemButton>
+          ))}
 
           {showUserMenu && (
             <>
@@ -435,9 +477,7 @@ const MobileNav = ({ open, onClose }) => {
                 <ListItemText primary="Settings" />
               </StyledListItemButton>
 
-              <StyledListItemButton
-                onClick={() => handleNavigate('/support')}
-              >
+              <StyledListItemButton onClick={() => handleNavigate('/support')}>
                 <ListItemIcon>
                   <SupportIcon />
                 </ListItemIcon>
@@ -452,15 +492,15 @@ const MobileNav = ({ open, onClose }) => {
                     backgroundColor: alpha('#f44336', 0.1),
                   },
                   '& .MuiListItemIcon-root': {
-                      color: '#f44336',
-                    },
-                  }}
-                >
-                  <ListItemIcon>
-                    <LogoutIcon />
-                  </ListItemIcon>
-                  <ListItemText primary="Sign Out" />
-                </StyledListItemButton>
+                    color: '#f44336',
+                  },
+                }}
+              >
+                <ListItemIcon>
+                  <LogoutIcon />
+                </ListItemIcon>
+                <ListItemText primary="Sign Out" />
+              </StyledListItemButton>
             </>
           )}
         </List>
@@ -517,5 +557,3 @@ MobileNav.propTypes = {
 };
 
 export default MobileNav;
-
-

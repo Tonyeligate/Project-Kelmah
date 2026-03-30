@@ -442,7 +442,11 @@ const WorkerSearchResults = ({
               minHeight: 44,
             }}
           >
-            {isHirerUser ? 'Post a job' : isPublicMode ? 'Create hirer account' : 'Browse open jobs'}
+            {isHirerUser
+              ? 'Post a job'
+              : isPublicMode
+                ? 'Create hirer account'
+                : 'Browse open jobs'}
           </Button>
         </Stack>
 
@@ -680,7 +684,12 @@ const WorkerSearchResults = ({
         sx={{ mb: 3 }}
         action={
           onRetry ? (
-            <Button color="inherit" size="small" onClick={onRetry} sx={{ minHeight: 36 }}>
+            <Button
+              color="inherit"
+              size="small"
+              onClick={onRetry}
+              sx={{ minHeight: 36 }}
+            >
               Retry
             </Button>
           ) : null

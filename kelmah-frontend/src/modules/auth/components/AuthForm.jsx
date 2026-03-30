@@ -10,7 +10,12 @@ import {
 } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { selectAuthLoading, selectAuthError, login, register } from '../services/authSlice';
+import {
+  selectAuthLoading,
+  selectAuthError,
+  login,
+  register,
+} from '../services/authSlice';
 import { devError } from '@/modules/common/utils/devLogger';
 
 const AuthForm = ({ mode = 'login', onSuccess }) => {
@@ -216,7 +221,11 @@ const AuthForm = ({ mode = 'login', onSuccess }) => {
               </Link>
             </Typography>
             <Typography variant="body2" sx={{ mt: 1 }}>
-              <Link component={RouterLink} to="/forgot-password" underline="hover">
+              <Link
+                component={RouterLink}
+                to="/forgot-password"
+                underline="hover"
+              >
                 Forgot password?
               </Link>
             </Typography>
@@ -235,4 +244,3 @@ const AuthForm = ({ mode = 'login', onSuccess }) => {
 };
 
 export default AuthForm;
-

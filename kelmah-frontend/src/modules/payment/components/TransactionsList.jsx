@@ -16,7 +16,10 @@ import {
   ArrowUpward as ArrowUpwardIcon,
   ArrowDownward as ArrowDownwardIcon,
 } from '@mui/icons-material';
-import { currencyFormatter, safeFormatDate } from '@/modules/common/utils/formatters';
+import {
+  currencyFormatter,
+  safeFormatDate,
+} from '@/modules/common/utils/formatters';
 
 const TransactionsList = ({ transactions = [], loading = false, limit }) => {
   if (loading) {
@@ -46,7 +49,8 @@ const TransactionsList = ({ transactions = [], loading = false, limit }) => {
           No transactions found.
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          Deposits, withdrawals, and escrow releases will appear here when available.
+          Deposits, withdrawals, and escrow releases will appear here when
+          available.
         </Typography>
       </Paper>
     );
@@ -84,7 +88,9 @@ const TransactionsList = ({ transactions = [], loading = false, limit }) => {
               <ListItemText
                 primary={tx.title || tx.description}
                 secondary={safeFormatDate(tx.date, 'd MMMM yyyy, hh:mm a')}
-                primaryTypographyProps={{ sx: { wordBreak: 'break-word', overflowWrap: 'anywhere' } }}
+                primaryTypographyProps={{
+                  sx: { wordBreak: 'break-word', overflowWrap: 'anywhere' },
+                }}
                 secondaryTypographyProps={{ sx: { whiteSpace: 'normal' } }}
               />
               <Tooltip

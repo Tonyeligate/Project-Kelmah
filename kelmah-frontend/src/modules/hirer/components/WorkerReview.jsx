@@ -1,23 +1,16 @@
 // IconButton focus-visible styling is enforced globally via MuiIconButton theme overrides.
 
-
-
-
-
-
-
-
-
-
-
-
 const WorkerReview = () => {
   const theme = useTheme();
   const isMobile = useBreakpointDown('md');
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success',
+  });
   const [workers, setWorkers] = useState([]);
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedWorker, setSelectedWorker] = useState(null);
@@ -124,26 +117,30 @@ const WorkerReview = () => {
           prev.map((worker) =>
             (worker.id || worker._id) === workerId
               ? {
-                ...worker,
-                completedJobs: Array.isArray(worker.completedJobs)
-                  ? worker.completedJobs.map((job) =>
-                    (job.id || job._id) === jobId
-                      ? {
-                        ...job,
-                        review: {
-                          ...reviewForm,
-                          reviewDate: new Date(),
-                        },
-                      }
-                      : job,
-                  )
-                  : [],
-              }
+                  ...worker,
+                  completedJobs: Array.isArray(worker.completedJobs)
+                    ? worker.completedJobs.map((job) =>
+                        (job.id || job._id) === jobId
+                          ? {
+                              ...job,
+                              review: {
+                                ...reviewForm,
+                                reviewDate: new Date(),
+                              },
+                            }
+                          : job,
+                      )
+                    : [],
+                }
               : worker,
           ),
         );
 
-        setSnackbar({ open: true, message: 'Review submitted successfully!', severity: 'success' });
+        setSnackbar({
+          open: true,
+          message: 'Review submitted successfully!',
+          severity: 'success',
+        });
         handleDialogClose();
       } catch (err) {
         devError('Error submitting review:', err);
@@ -195,9 +192,9 @@ const WorkerReview = () => {
     averageRating:
       completedReviews.length > 0
         ? (
-          completedReviews.reduce((sum, job) => sum + job.review.rating, 0) /
-          completedReviews.length
-        ).toFixed(1)
+            completedReviews.reduce((sum, job) => sum + job.review.rating, 0) /
+            completedReviews.length
+          ).toFixed(1)
         : 0,
     totalSpent: allJobs.reduce((sum, job) => sum + job.amount, 0),
   };
@@ -207,7 +204,13 @@ const WorkerReview = () => {
       <Box>
         <Grid container spacing={3} sx={{ mb: 4 }}>
           {[...Array(4)].map((_, i) => (
-            <Grid item xs={12} sm={6} md={3} key={`worker-review-card-skeleton-${i}`}>
+            <Grid
+              item
+              xs={12}
+              sm={6}
+              md={3}
+              key={`worker-review-card-skeleton-${i}`}
+            >
               <Skeleton variant="rounded" height={120} animation="wave" />
             </Grid>
           ))}
@@ -216,7 +219,12 @@ const WorkerReview = () => {
           <CardContent>
             <Skeleton variant="text" height={40} width="40%" sx={{ mb: 2 }} />
             {[...Array(3)].map((_, i) => (
-              <Skeleton key={`worker-review-row-skeleton-${i}`} variant="text" height={60} sx={{ mb: 1 }} />
+              <Skeleton
+                key={`worker-review-row-skeleton-${i}`}
+                variant="text"
+                height={60}
+                sx={{ mb: 1 }}
+              />
             ))}
           </CardContent>
         </Card>
@@ -468,7 +476,15 @@ const WorkerReview = () => {
                         )}
                       </TableCell>
                       <TableCell align="center">
-                        <IconButton sx={{ ...iconButtonA11ySx, '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' } }}
+                        <IconButton
+                          sx={{
+                            ...iconButtonA11ySx,
+                            '&:focus-visible': {
+                              outline: '3px solid',
+                              outlineColor: 'primary.main',
+                              outlineOffset: '2px',
+                            },
+                          }}
                           size="small"
                           onClick={(e) => handleMenuOpen(e, job.worker, job)}
                           aria-label={`Open review actions for ${job.worker.name}`}
@@ -628,7 +644,10 @@ const WorkerReview = () => {
           {selectedWorker && selectedJob && (
             <Box>
               <Box display="flex" alignItems="center" gap={2} mb={3}>
-                <Avatar src={selectedWorker.avatar} alt={selectedWorker.name || 'Worker avatar'}>
+                <Avatar
+                  src={selectedWorker.avatar}
+                  alt={selectedWorker.name || 'Worker avatar'}
+                >
                   {selectedWorker.name.charAt(0)}
                 </Avatar>
                 <Box>
@@ -790,5 +809,3 @@ const WorkerReview = () => {
 };
 
 export default WorkerReview;
-
-

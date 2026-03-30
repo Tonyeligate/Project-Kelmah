@@ -1,16 +1,5 @@
 // IconButton focus-visible styling is enforced globally via MuiIconButton theme overrides.
 
-
-
-
-
-
-
-
-
-
-
-
 const AdvancedCalendar = ({ schedule = [], onScheduleChange }) => {
   const theme = useTheme();
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -23,9 +12,12 @@ const AdvancedCalendar = ({ schedule = [], onScheduleChange }) => {
     if (schedule.length > 0) {
       const dates = new Set(
         schedule
-          .filter(s => s.available !== false)
-          .map(s => { const d = new Date(s.date || s); return isValid(d) ? format(d, 'yyyy-MM-dd') : null; })
-          .filter(Boolean)
+          .filter((s) => s.available !== false)
+          .map((s) => {
+            const d = new Date(s.date || s);
+            return isValid(d) ? format(d, 'yyyy-MM-dd') : null;
+          })
+          .filter(Boolean),
       );
       setSelectedDates(dates);
     }
@@ -46,22 +38,25 @@ const AdvancedCalendar = ({ schedule = [], onScheduleChange }) => {
     return days;
   }, [currentMonth]);
 
-  const toggleDate = useCallback((date) => {
-    if (isBefore(date, startOfDay(new Date()))) return; // Can't modify past dates
-    const key = format(date, 'yyyy-MM-dd');
-    setSelectedDates(prev => {
-      const next = new Set(prev);
-      if (mode === 'available') {
-        next.has(key) ? next.delete(key) : next.add(key);
-      } else {
-        next.delete(key);
-      }
-      return next;
-    });
-  }, [mode]);
+  const toggleDate = useCallback(
+    (date) => {
+      if (isBefore(date, startOfDay(new Date()))) return; // Can't modify past dates
+      const key = format(date, 'yyyy-MM-dd');
+      setSelectedDates((prev) => {
+        const next = new Set(prev);
+        if (mode === 'available') {
+          next.has(key) ? next.delete(key) : next.add(key);
+        } else {
+          next.delete(key);
+        }
+        return next;
+      });
+    },
+    [mode],
+  );
 
   const handleSave = () => {
-    const scheduleData = Array.from(selectedDates).map(dateStr => ({
+    const scheduleData = Array.from(selectedDates).map((dateStr) => ({
       date: dateStr,
       available: true,
     }));
@@ -74,11 +69,20 @@ const AdvancedCalendar = ({ schedule = [], onScheduleChange }) => {
   const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
   const availableCount = selectedDates.size;
-  const monthDayCount = calendarDays.filter(d => isSameMonth(d, currentMonth)).length;
+  const monthDayCount = calendarDays.filter((d) =>
+    isSameMonth(d, currentMonth),
+  ).length;
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 2,
+        }}
+      >
         <Typography variant="h5" fontWeight="bold">
           Availability Calendar
         </Typography>
@@ -89,20 +93,56 @@ const AdvancedCalendar = ({ schedule = [], onScheduleChange }) => {
 
       {/* Month navigation */}
       <Paper sx={{ p: 2, mb: 2 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <IconButton sx={{ ...iconButtonA11ySx, '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' } }} onClick={() => setCurrentMonth(prev => subMonths(prev, 1))} aria-label="Previous month">
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            mb: 2,
+          }}
+        >
+          <IconButton
+            sx={{
+              ...iconButtonA11ySx,
+              '&:focus-visible': {
+                outline: '3px solid',
+                outlineColor: 'primary.main',
+                outlineOffset: '2px',
+              },
+            }}
+            onClick={() => setCurrentMonth((prev) => subMonths(prev, 1))}
+            aria-label="Previous month"
+          >
             <PrevIcon />
           </IconButton>
           <Typography variant="h6" fontWeight="bold">
             {format(currentMonth, 'MMMM yyyy')}
           </Typography>
-          <IconButton sx={{ ...iconButtonA11ySx, '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' } }} onClick={() => setCurrentMonth(prev => addMonths(prev, 1))} aria-label="Next month">
+          <IconButton
+            sx={{
+              ...iconButtonA11ySx,
+              '&:focus-visible': {
+                outline: '3px solid',
+                outlineColor: 'primary.main',
+                outlineOffset: '2px',
+              },
+            }}
+            onClick={() => setCurrentMonth((prev) => addMonths(prev, 1))}
+            aria-label="Next month"
+          >
             <NextIcon />
           </IconButton>
         </Box>
 
         {/* Selection mode */}
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            mb: 2,
+          }}
+        >
           <ToggleButtonGroup
             value={mode}
             exclusive
@@ -110,10 +150,16 @@ const AdvancedCalendar = ({ schedule = [], onScheduleChange }) => {
             size="small"
           >
             <ToggleButton value="available" sx={{ textTransform: 'none' }}>
-              <AvailableIcon sx={{ mr: 0.5, fontSize: 18, color: 'success.main' }} /> Mark Available
+              <AvailableIcon
+                sx={{ mr: 0.5, fontSize: 18, color: 'success.main' }}
+              />{' '}
+              Mark Available
             </ToggleButton>
             <ToggleButton value="unavailable" sx={{ textTransform: 'none' }}>
-              <UnavailableIcon sx={{ mr: 0.5, fontSize: 18, color: 'error.main' }} /> Mark Unavailable
+              <UnavailableIcon
+                sx={{ mr: 0.5, fontSize: 18, color: 'error.main' }}
+              />{' '}
+              Mark Unavailable
             </ToggleButton>
           </ToggleButtonGroup>
 
@@ -130,11 +176,16 @@ const AdvancedCalendar = ({ schedule = [], onScheduleChange }) => {
 
         {/* Day headers */}
         <Grid container spacing={0.5} sx={{ mb: 0.5 }}>
-          {weekDays.map(day => (
+          {weekDays.map((day) => (
             <Grid item xs={12 / 7} key={day}>
               <Typography
                 variant="caption"
-                sx={{ display: 'block', textAlign: 'center', fontWeight: 'bold', color: 'text.secondary' }}
+                sx={{
+                  display: 'block',
+                  textAlign: 'center',
+                  fontWeight: 'bold',
+                  color: 'text.secondary',
+                }}
               >
                 {day}
               </Typography>
@@ -160,17 +211,21 @@ const AdvancedCalendar = ({ schedule = [], onScheduleChange }) => {
                     borderRadius: 1,
                     cursor: isPast || !isCurrentMonth ? 'default' : 'pointer',
                     opacity: !isCurrentMonth ? 0.3 : isPast ? 0.5 : 1,
-                    bgcolor: isAvailable && isCurrentMonth
-                      ? alpha(theme.palette.success.main, 0.15)
-                      : 'transparent',
+                    bgcolor:
+                      isAvailable && isCurrentMonth
+                        ? alpha(theme.palette.success.main, 0.15)
+                        : 'transparent',
                     border: isCurrentDay
                       ? `2px solid ${theme.palette.primary.main}`
                       : isAvailable && isCurrentMonth
                         ? `1px solid ${alpha(theme.palette.success.main, 0.4)}`
                         : '1px solid transparent',
-                    '&:hover': (!isPast && isCurrentMonth) ? {
-                      bgcolor: alpha(theme.palette.primary.main, 0.1),
-                    } : {},
+                    '&:hover':
+                      !isPast && isCurrentMonth
+                        ? {
+                            bgcolor: alpha(theme.palette.primary.main, 0.1),
+                          }
+                        : {},
                     transition: 'all 0.15s ease',
                     minHeight: 44,
                     display: 'flex',
@@ -183,13 +238,25 @@ const AdvancedCalendar = ({ schedule = [], onScheduleChange }) => {
                     variant="body2"
                     sx={{
                       fontWeight: isCurrentDay ? 'bold' : 'normal',
-                      color: isAvailable && isCurrentMonth ? 'success.main' : 'text.primary',
+                      color:
+                        isAvailable && isCurrentMonth
+                          ? 'success.main'
+                          : 'text.primary',
                     }}
                   >
                     {format(day, 'd')}
                   </Typography>
                   {isAvailable && isCurrentMonth && (
-                    <Box sx={{ position: 'absolute', bottom: 2, width: 6, height: 6, borderRadius: '50%', bgcolor: 'success.main' }} />
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        bottom: 2,
+                        width: 6,
+                        height: 6,
+                        borderRadius: '50%',
+                        bgcolor: 'success.main',
+                      }}
+                    />
                   )}
                 </Box>
               </Grid>
@@ -201,7 +268,7 @@ const AdvancedCalendar = ({ schedule = [], onScheduleChange }) => {
       <Snackbar
         open={snackbar.open}
         autoHideDuration={3000}
-        onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
+        onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
         message={snackbar.message}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       />
@@ -210,5 +277,3 @@ const AdvancedCalendar = ({ schedule = [], onScheduleChange }) => {
 };
 
 export default AdvancedCalendar;
-
-

@@ -92,9 +92,14 @@ jest.mock('../../modules/notifications/contexts/NotificationContext', () => ({
   useNotifications: () => ({ unreadCount: 0 }),
 }));
 
+let mockKeyboardVisible = false;
+
 jest.mock('../../hooks/useKeyboardVisible', () => ({
   __esModule: true,
-  default: () => ({ isKeyboardVisible: false }),
+  default: () => ({
+    isKeyboardVisible: mockKeyboardVisible,
+    keyboardHeight: mockKeyboardVisible ? 320 : 0,
+  }),
 }));
 
 jest.mock('../../modules/common/pages/NotFoundPage', () => ({
@@ -150,6 +155,10 @@ const renderBottomNavAtPath = (path, role = 'worker') =>
   );
 
 describe('routed path smoke suite', () => {
+  beforeEach(() => {
+    mockKeyboardVisible = false;
+  });
+
   test('public route resolves: /find-talents', async () => {
     renderAtPath('/find-talents');
     expect(await screen.findByText('PUBLIC_FIND_TALENTS_PAGE')).toBeInTheDocument();
@@ -177,6 +186,11 @@ describe('routed path smoke suite', () => {
 
   test('legacy message thread alias resolves to messages page: /messages/:conversationId', async () => {
     renderAtPath('/messages/convo-123', 'worker');
+    expect(await screen.findByText('MESSAGES_PAGE')).toBeInTheDocument();
+  });
+
+  test('messages deep-link query resolves to messages page: /messages?conversation=abc123', async () => {
+    renderAtPath('/messages?conversation=abc123', 'worker');
     expect(await screen.findByText('MESSAGES_PAGE')).toBeInTheDocument();
   });
 
@@ -259,5 +273,12 @@ describe('routed path smoke suite', () => {
     await waitFor(() => {
       expect(screen.getByTestId('current-path')).toHaveTextContent('/worker/dashboard');
     });
+  });
+
+  test('mobile bottom-nav hides when virtual keyboard is visible', () => {
+    mockKeyboardVisible = true;
+    const { container } = renderBottomNavAtPath('/messages', 'worker');
+    const nav = container.querySelector('.MuiBottomNavigation-root');
+    expect(nav).toBeNull();
   });
 });

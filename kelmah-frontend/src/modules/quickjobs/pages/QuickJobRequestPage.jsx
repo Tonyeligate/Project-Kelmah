@@ -1,7 +1,7 @@
 /**
  * QuickJobRequestPage - 3-Step Quick Job Request Flow
  * Part of Kelmah's Protected Quick-Hire system
- * 
+ *
  * Flow:
  * Step 1: Describe your problem (voice/text/photo)
  * Step 2: Confirm location
@@ -11,7 +11,29 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
-  Box, Container, Typography, TextField, Button, Stepper, Step, StepLabel, Card, CardContent, Grid, IconButton, Avatar, Alert, CircularProgress, useTheme, Radio, RadioGroup, FormControlLabel, Paper, Chip, LinearProgress } from '@mui/material';
+  Box,
+  Container,
+  Typography,
+  TextField,
+  Button,
+  Stepper,
+  Step,
+  StepLabel,
+  Card,
+  CardContent,
+  Grid,
+  IconButton,
+  Avatar,
+  Alert,
+  CircularProgress,
+  useTheme,
+  Radio,
+  RadioGroup,
+  FormControlLabel,
+  Paper,
+  Chip,
+  LinearProgress,
+} from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
   ArrowForward as ArrowForwardIcon,
@@ -23,12 +45,12 @@ import {
   AccessTime as AccessTimeIcon,
   Send as SendIcon,
   Check as CheckIcon,
-  Close as CloseIcon
+  Close as CloseIcon,
 } from '@mui/icons-material';
-import { 
-  SERVICE_CATEGORIES, 
-  URGENCY_LEVELS, 
-  createQuickJob, 
+import {
+  SERVICE_CATEGORIES,
+  URGENCY_LEVELS,
+  createQuickJob,
   geocodeAddress,
   getCurrentLocation,
   uploadQuickJobPhotos,
@@ -57,8 +79,11 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
   const photoPreviewUrlsRef = useRef(new Set());
 
   // Get category from URL params
-  const categoryId = categoryParam || searchParams.get('category') || 'general_repair';
-  const category = SERVICE_CATEGORIES.find(c => c.id === categoryId) || SERVICE_CATEGORIES[0];
+  const categoryId =
+    categoryParam || searchParams.get('category') || 'general_repair';
+  const category =
+    SERVICE_CATEGORIES.find((c) => c.id === categoryId) ||
+    SERVICE_CATEGORIES[0];
 
   // Form state
   const [activeStep, setActiveStep] = useState(0);
@@ -81,9 +106,22 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
 
   // Ghana regions
   const ghanaRegions = [
-    'Greater Accra', 'Ashanti', 'Western', 'Eastern', 'Central', 
-    'Northern', 'Volta', 'Brong Ahafo', 'Upper East', 'Upper West',
-    'Western North', 'Ahafo', 'Bono East', 'Oti', 'North East', 'Savannah'
+    'Greater Accra',
+    'Ashanti',
+    'Western',
+    'Eastern',
+    'Central',
+    'Northern',
+    'Volta',
+    'Brong Ahafo',
+    'Upper East',
+    'Upper West',
+    'Western North',
+    'Ahafo',
+    'Bono East',
+    'Oti',
+    'North East',
+    'Savannah',
   ];
 
   const toQuickJobErrorMessage = (rawMessage) => {
@@ -102,7 +140,11 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
       return 'We could not upload one or more photos. Try smaller files or a stronger connection, then retry.';
     }
 
-    if (normalized.includes('location') || normalized.includes('geocode') || normalized.includes('address')) {
+    if (
+      normalized.includes('location') ||
+      normalized.includes('geocode') ||
+      normalized.includes('address')
+    ) {
       return 'We could not confirm this location. Tap Use My Current Location or enter a clearer address, then retry.';
     }
 
@@ -129,10 +171,13 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
       clearInterval(recordingTimerRef.current);
       clearTimeout(redirectTimerRef.current);
       // Stop any active media recording and release the microphone
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      if (
+        mediaRecorderRef.current &&
+        mediaRecorderRef.current.state !== 'inactive'
+      ) {
         mediaRecorderRef.current.stop();
       }
-      streamRef.current?.getTracks().forEach(t => t.stop());
+      streamRef.current?.getTracks().forEach((t) => t.stop());
       streamRef.current = null;
     };
   }, []);
@@ -162,14 +207,14 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
   const handleGetLocation = async () => {
     setLocationLoading(true);
     setLocationError('');
-    
+
     try {
       const pos = await getCurrentLocation();
       setLocation({
         type: 'Point',
-        coordinates: [pos.longitude, pos.latitude]
+        coordinates: [pos.longitude, pos.latitude],
       });
-      
+
       // Reverse geocode to get address (simplified - in production use Google Maps API)
       // For now, just set coordinates
       setCity('Accra'); // Default for demo
@@ -183,7 +228,7 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
   // Handle photo upload
   const handlePhotoUpload = (event) => {
     const files = Array.from(event.target.files);
-    
+
     // Limit to 5 photos
     const newPhotos = files.slice(0, 5 - photos.length).map((file) => {
       const preview = URL.createObjectURL(file);
@@ -191,11 +236,11 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
       return {
         file,
         preview,
-        url: null // Will be set after upload
+        url: null, // Will be set after upload
       };
     });
-    
-    setPhotos(prev => [...prev, ...newPhotos].slice(0, 5));
+
+    setPhotos((prev) => [...prev, ...newPhotos].slice(0, 5));
   };
 
   // Remove photo (revoke blob URL to prevent memory leak)
@@ -205,14 +250,17 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
       URL.revokeObjectURL(photo.preview);
       photoPreviewUrlsRef.current.delete(photo.preview);
     }
-    setPhotos(prev => prev.filter((_, i) => i !== index));
+    setPhotos((prev) => prev.filter((_, i) => i !== index));
   };
 
   // Voice recording via MediaRecorder API
   const handleVoiceToggle = async () => {
     if (isRecording) {
       // Stop recording
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      if (
+        mediaRecorderRef.current &&
+        mediaRecorderRef.current.state !== 'inactive'
+      ) {
         mediaRecorderRef.current.stop();
       }
       setIsRecording(false);
@@ -221,10 +269,14 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
     } else {
       // Start recording
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+        });
         streamRef.current = stream;
         const mediaRecorder = new MediaRecorder(stream, {
-          mimeType: MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4',
+          mimeType: MediaRecorder.isTypeSupported('audio/webm')
+            ? 'audio/webm'
+            : 'audio/mp4',
         });
         mediaRecorderRef.current = mediaRecorder;
         audioChunksRef.current = [];
@@ -234,19 +286,25 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
         };
 
         mediaRecorder.onstop = () => {
-          const blob = new Blob(audioChunksRef.current, { type: mediaRecorder.mimeType });
+          const blob = new Blob(audioChunksRef.current, {
+            type: mediaRecorder.mimeType,
+          });
           const url = URL.createObjectURL(blob);
           setVoiceNote({ blob, url, duration: recordingDuration });
-          stream.getTracks().forEach(track => track.stop());
+          stream.getTracks().forEach((track) => track.stop());
         };
 
         mediaRecorder.start(250); // collect chunks every 250ms
         setIsRecording(true);
         setRecordingDuration(0);
         recordingTimerRef.current = setInterval(() => {
-          setRecordingDuration(prev => {
-            if (prev >= 60) { // 60-second max - stop recording directly via ref to avoid stale closure
-              if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+          setRecordingDuration((prev) => {
+            if (prev >= 60) {
+              // 60-second max - stop recording directly via ref to avoid stale closure
+              if (
+                mediaRecorderRef.current &&
+                mediaRecorderRef.current.state !== 'inactive'
+              ) {
                 mediaRecorderRef.current.stop();
               }
               setIsRecording(false);
@@ -258,7 +316,9 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
         }, 1000);
       } catch (err) {
         setError(
-          toQuickJobErrorMessage('Microphone access denied. Please allow microphone access to record a voice note.'),
+          toQuickJobErrorMessage(
+            'Microphone access denied. Please allow microphone access to record a voice note.',
+          ),
         );
       }
     }
@@ -283,7 +343,8 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
         return (
           String(address || '').trim().length > 0 &&
           (hasValidCoordinates(location?.coordinates) ||
-            (String(city || '').trim().length > 0 && String(region || '').trim().length > 0))
+            (String(city || '').trim().length > 0 &&
+              String(region || '').trim().length > 0))
         );
       case 2:
         return urgency;
@@ -295,14 +356,14 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
   // Handle next step
   const handleNext = () => {
     if (activeStep < steps.length - 1) {
-      setActiveStep(prev => prev + 1);
+      setActiveStep((prev) => prev + 1);
     }
   };
 
   // Handle back
   const handleBack = () => {
     if (activeStep > 0) {
-      setActiveStep(prev => prev - 1);
+      setActiveStep((prev) => prev - 1);
     } else {
       navigate(-1);
     }
@@ -327,21 +388,24 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
         try {
           photoUrls = await uploadQuickJobPhotos(files);
         } catch (uploadError) {
-          setError(toQuickJobErrorMessage(uploadError.message || 'Photo upload failed. Please try again.'));
+          setError(
+            toQuickJobErrorMessage(
+              uploadError.message || 'Photo upload failed. Please try again.',
+            ),
+          );
           return;
         }
       }
 
-      let resolvedLocation =
-        hasValidCoordinates(location?.coordinates)
-          ? {
-              type: 'Point',
-              coordinates: [
-                Number(location.coordinates[0]),
-                Number(location.coordinates[1]),
-              ],
-            }
-          : null;
+      let resolvedLocation = hasValidCoordinates(location?.coordinates)
+        ? {
+            type: 'Point',
+            coordinates: [
+              Number(location.coordinates[0]),
+              Number(location.coordinates[1]),
+            ],
+          }
+        : null;
 
       if (!resolvedLocation) {
         const geocoded = await geocodeAddress({
@@ -351,7 +415,11 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
         });
 
         if (!geocoded) {
-          setError(toQuickJobErrorMessage('We could not pinpoint this address. Please tap "Use My Current Location" or enter a more specific address.'));
+          setError(
+            toQuickJobErrorMessage(
+              'We could not pinpoint this address. Please tap "Use My Current Location" or enter a more specific address.',
+            ),
+          );
           return;
         }
 
@@ -372,9 +440,9 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
           address: String(address || '').trim(),
           landmark,
           city: String(city || '').trim(),
-          region: String(region || '').trim()
+          region: String(region || '').trim(),
         },
-        urgency
+        urgency,
       };
 
       const result = await createQuickJob(jobData);
@@ -386,7 +454,11 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
           navigate(`${successBasePath}/${result.data._id || result.data.id}`);
         }, 2000);
       } else {
-        setError(toQuickJobErrorMessage(result.error?.message || 'Failed to create job request'));
+        setError(
+          toQuickJobErrorMessage(
+            result.error?.message || 'Failed to create job request',
+          ),
+        );
       }
     } catch (err) {
       setError(
@@ -409,7 +481,11 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
       return;
     }
 
-    if (activeStep === steps.length - 1 && isStepComplete(activeStep) && !submitting) {
+    if (
+      activeStep === steps.length - 1 &&
+      isStepComplete(activeStep) &&
+      !submitting
+    ) {
       await handleSubmit();
     }
   };
@@ -422,10 +498,19 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
           <Box>
             {/* Category indicator */}
             <Card sx={{ mb: 3, bgcolor: theme.palette.primary.main + '10' }}>
-              <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Avatar sx={{ bgcolor: theme.palette.primary.main, width: 56, height: 56 }}>
+              <CardContent
+                sx={{ display: 'flex', alignItems: 'center', gap: 2 }}
+              >
+                <Avatar
+                  sx={{
+                    bgcolor: theme.palette.primary.main,
+                    width: 56,
+                    height: 56,
+                  }}
+                >
                   <Typography variant="h5">
-                    {SERVICE_CATEGORIES.find(c => c.id === categoryId)?.icon || 'Tool'}
+                    {SERVICE_CATEGORIES.find((c) => c.id === categoryId)
+                      ?.icon || 'Tool'}
                   </Typography>
                 </Avatar>
                 <Box>
@@ -459,7 +544,10 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
             </Typography>
             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
               {photos.map((photo, index) => (
-                <Box key={photo.url || photo.preview || index} sx={{ position: 'relative' }}>
+                <Box
+                  key={photo.url || photo.preview || index}
+                  sx={{ position: 'relative' }}
+                >
                   <Avatar
                     src={photo.preview}
                     alt={`Upload photo ${index + 1}`}
@@ -490,14 +578,14 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
                   </IconButton>
                 </Box>
               ))}
-              
+
               {photos.length < 5 && (
                 <Button
                   variant="outlined"
                   component="label"
-                  sx={{ 
-                    width: 80, 
-                    height: 80, 
+                  sx={{
+                    width: 80,
+                    height: 80,
                     borderStyle: 'dashed',
                     flexDirection: 'column',
                     minHeight: 44,
@@ -523,9 +611,25 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
               Voice note (optional - describe your problem by speaking)
             </Typography>
             {voiceNote ? (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2, p: 1.5, border: '1px solid', borderColor: 'success.main', borderRadius: 2, bgcolor: theme.palette.action.hover }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                  mb: 2,
+                  p: 1.5,
+                  border: '1px solid',
+                  borderColor: 'success.main',
+                  borderRadius: 2,
+                  bgcolor: theme.palette.action.hover,
+                }}
+              >
                 <MicIcon color="success" />
-                <audio src={voiceNote.url} controls style={{ flex: 1, height: 36 }} />
+                <audio
+                  src={voiceNote.url}
+                  controls
+                  style={{ flex: 1, height: 36 }}
+                />
                 <IconButton
                   size="small"
                   onClick={handleRemoveVoiceNote}
@@ -552,10 +656,11 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
                 color={isRecording ? 'error' : 'primary'}
                 sx={{ mb: 2, minHeight: 44 }}
               >
-                {isRecording ? `Stop Recording (${recordingDuration}s)` : 'Record Voice Note'}
+                {isRecording
+                  ? `Stop Recording (${recordingDuration}s)`
+                  : 'Record Voice Note'}
               </Button>
-            )
-            }
+            )}
             {isRecording && (
               <LinearProgress
                 variant="determinate"
@@ -576,12 +681,21 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
             {/* Location button */}
             <Button
               variant="contained"
-              startIcon={locationLoading ? <CircularProgress size={20} color="inherit" /> : <MyLocationIcon />}
+              startIcon={
+                locationLoading ? (
+                  <CircularProgress size={20} color="inherit" />
+                ) : (
+                  <MyLocationIcon />
+                )
+              }
               onClick={handleGetLocation}
               disabled={locationLoading}
               sx={{ mb: 3, minHeight: 44 }}
-              fullWidth>
-              {locationLoading ? 'Getting Location...' : 'Use My Current Location'}
+              fullWidth
+            >
+              {locationLoading
+                ? 'Getting Location...'
+                : 'Use My Current Location'}
             </Button>
 
             {locationError && (
@@ -593,7 +707,8 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
             {hasValidCoordinates(location?.coordinates) && (
               <Alert severity="success" sx={{ mb: 2 }}>
                 <Typography variant="body2">
-                  Location captured: {location.coordinates[1].toFixed(4)}, {location.coordinates[0].toFixed(4)}
+                  Location captured: {location.coordinates[1].toFixed(4)},{' '}
+                  {location.coordinates[0].toFixed(4)}
                 </Typography>
               </Alert>
             )}
@@ -608,7 +723,7 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
               onChange={(e) => setAddress(e.target.value)}
               sx={{ mb: 2 }}
               InputProps={{
-                startAdornment: <LocationIcon color="action" sx={{ mr: 1 }} />
+                startAdornment: <LocationIcon color="action" sx={{ mr: 1 }} />,
               }}
             />
 
@@ -642,8 +757,10 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
                   onChange={(e) => setRegion(e.target.value)}
                   SelectProps={{ native: true }}
                 >
-                  {ghanaRegions.map(r => (
-                    <option key={r} value={r}>{r}</option>
+                  {ghanaRegions.map((r) => (
+                    <option key={r} value={r}>
+                      {r}
+                    </option>
                   ))}
                 </TextField>
               </Grid>
@@ -677,8 +794,8 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
                     cursor: 'pointer',
                     transition: 'all 0.2s',
                     '&:hover': {
-                      borderColor: theme.palette[level.color].main
-                    }
+                      borderColor: theme.palette[level.color].main,
+                    },
                   }}
                   onClick={() => setUrgency(level.id)}
                 >
@@ -704,25 +821,38 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
             {/* Summary */}
             <Card sx={{ mt: 3, bgcolor: theme.palette.grey[50] }}>
               <CardContent>
-                <Typography variant="subtitle2" gutterBottom color="text.secondary">
+                <Typography
+                  variant="subtitle2"
+                  gutterBottom
+                  color="text.secondary"
+                >
                   Job Summary
                 </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                <Box
+                  sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}
+                >
                   <span style={{ fontSize: '1.5rem' }}>{category.icon}</span>
                   <Typography variant="body1" fontWeight="600">
                     {category.name}
                   </Typography>
                 </Box>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mb: 1 }}
+                >
                   {address || 'No address'}, {city || 'No city'}
                 </Typography>
-                <Typography variant="body2" sx={{ 
-                  overflow: 'hidden', 
-                  textOverflow: 'ellipsis',
-                  display: '-webkit-box',
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: 'vertical'
-                }}>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                  }}
+                >
                   "{description || 'No description'}"
                 </Typography>
               </CardContent>
@@ -738,134 +868,168 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
   // Success screen
   if (success) {
     return (
-      <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 }, overflowX: 'clip' }}>
-        <Container maxWidth="sm" sx={{ py: 8, textAlign: 'center', width: '100%', minWidth: 0 }}>
-        <Avatar
-          sx={{ 
-            width: 100, 
-            height: 100, 
-            bgcolor: 'success.main', 
-            mx: 'auto', 
-            mb: 3 
-          }}
+      <PageCanvas
+        disableContainer
+        sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 }, overflowX: 'clip' }}
+      >
+        <Container
+          maxWidth="sm"
+          sx={{ py: 8, textAlign: 'center', width: '100%', minWidth: 0 }}
         >
-          <CheckIcon sx={{ fontSize: 60 }} />
-        </Avatar>
-        <Typography variant="h4" gutterBottom fontWeight="bold">
-          Request Sent!
-        </Typography>
-        <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-          Workers nearby will see your request and send quotes. You'll be notified when they respond.
-        </Typography>
-        <CircularProgress size={24} />
+          <Avatar
+            sx={{
+              width: 100,
+              height: 100,
+              bgcolor: 'success.main',
+              mx: 'auto',
+              mb: 3,
+            }}
+          >
+            <CheckIcon sx={{ fontSize: 60 }} />
+          </Avatar>
+          <Typography variant="h4" gutterBottom fontWeight="bold">
+            Request Sent!
+          </Typography>
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+            Workers nearby will see your request and send quotes. You'll be
+            notified when they respond.
+          </Typography>
+          <CircularProgress size={24} />
         </Container>
       </PageCanvas>
     );
   }
 
   return (
-    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 }, overflowX: 'clip' }}>
+    <PageCanvas
+      disableContainer
+      sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 }, overflowX: 'clip' }}
+    >
       <Container maxWidth="sm" sx={{ py: 3, width: '100%', minWidth: 0 }}>
-      <Helmet><title>Quick Job Request | Kelmah</title></Helmet>
-      {/* Back button & title */}
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-        <IconButton aria-label="Go back" onClick={handleBack} sx={{ mr: 1, minWidth: 44, minHeight: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}>
-          <ArrowBackIcon />
-        </IconButton>
-        <Box>
-          <Typography variant="h5" fontWeight="600">
-            Quick Job Request
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Three short steps: describe the job, confirm location, and send.
-          </Typography>
-        </Box>
-      </Box>
-
-      {/* Stepper */}
-      <Stepper activeStep={activeStep} orientation={isMobile ? 'vertical' : 'horizontal'} sx={{ mb: 4 }}>
-        {steps.map((label, index) => (
-          <Step key={label} completed={isStepComplete(index)}>
-            <StepLabel>{!isMobile && label}</StepLabel>
-          </Step>
-        ))}
-      </Stepper>
-
-      {/* Progress bar */}
-      <LinearProgress 
-        variant="determinate" 
-        value={(activeStep + 1) / steps.length * 100} 
-        sx={{ mb: 3, borderRadius: 1, height: 6 }}
-      />
-
-      {/* Error alert */}
-      {error && (
-        <Alert
-          severity="error"
-          sx={{ mb: 3 }}
-          onClose={() => setError('')}
-          action={
-            <Button
-              color="inherit"
-              size="small"
-              onClick={handleRetryFromError}
-              disabled={submitting}
-            >
-              Retry
-            </Button>
-          }
-        >
-          {toQuickJobErrorMessage(error)}
-        </Alert>
-      )}
-
-      {showSubmittingHint && (
-        <Alert severity="info" sx={{ mb: 3 }}>
-          Submission is taking longer than usual. Please keep this page open while we finish sending your request.
-        </Alert>
-      )}
-
-      {/* Step content */}
-      <Box sx={{ minHeight: 400 }}>
-        {renderStepContent(activeStep)}
-      </Box>
-
-      {/* Navigation buttons */}
-      <Box sx={{ display: 'flex', gap: 2, mt: 4 }}>
-        <Button
-          variant="outlined"
-          onClick={handleBack}
-          sx={{ flex: 1, minHeight: 44 }}
-        >
-          Back
-        </Button>
-        
-        {activeStep < steps.length - 1 ? (
-          <Button
-            variant="contained"
-            onClick={handleNext}
-            disabled={!isStepComplete(activeStep)}
-            endIcon={<ArrowForwardIcon />}
-            sx={{ flex: 2, minHeight: 44 }}
+        <Helmet>
+          <title>Quick Job Request | Kelmah</title>
+        </Helmet>
+        {/* Back button & title */}
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+          <IconButton
+            aria-label="Go back"
+            onClick={handleBack}
+            sx={{
+              mr: 1,
+              minWidth: 44,
+              minHeight: 44,
+              '&:focus-visible': {
+                outline: '3px solid',
+                outlineColor: 'primary.main',
+                outlineOffset: '2px',
+              },
+            }}
           >
-            Continue
-          </Button>
-        ) : (
-          <Button
-            variant="contained"
-            onClick={handleSubmit}
-            disabled={submitting || !isStepComplete(activeStep)}
-            startIcon={submitting ? <CircularProgress size={20} color="inherit" /> : <SendIcon />}
-            color="success"
-            sx={{ flex: 2, minHeight: 44 }}>
-            {submitting ? 'Sending...' : 'Send Request'}
-          </Button>
+            <ArrowBackIcon />
+          </IconButton>
+          <Box>
+            <Typography variant="h5" fontWeight="600">
+              Quick Job Request
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Three short steps: describe the job, confirm location, and send.
+            </Typography>
+          </Box>
+        </Box>
+
+        {/* Stepper */}
+        <Stepper
+          activeStep={activeStep}
+          orientation={isMobile ? 'vertical' : 'horizontal'}
+          sx={{ mb: 4 }}
+        >
+          {steps.map((label, index) => (
+            <Step key={label} completed={isStepComplete(index)}>
+              <StepLabel>{!isMobile && label}</StepLabel>
+            </Step>
+          ))}
+        </Stepper>
+
+        {/* Progress bar */}
+        <LinearProgress
+          variant="determinate"
+          value={((activeStep + 1) / steps.length) * 100}
+          sx={{ mb: 3, borderRadius: 1, height: 6 }}
+        />
+
+        {/* Error alert */}
+        {error && (
+          <Alert
+            severity="error"
+            sx={{ mb: 3 }}
+            onClose={() => setError('')}
+            action={
+              <Button
+                color="inherit"
+                size="small"
+                onClick={handleRetryFromError}
+                disabled={submitting}
+              >
+                Retry
+              </Button>
+            }
+          >
+            {toQuickJobErrorMessage(error)}
+          </Alert>
         )}
-      </Box>
+
+        {showSubmittingHint && (
+          <Alert severity="info" sx={{ mb: 3 }}>
+            Submission is taking longer than usual. Please keep this page open
+            while we finish sending your request.
+          </Alert>
+        )}
+
+        {/* Step content */}
+        <Box sx={{ minHeight: 400 }}>{renderStepContent(activeStep)}</Box>
+
+        {/* Navigation buttons */}
+        <Box sx={{ display: 'flex', gap: 2, mt: 4 }}>
+          <Button
+            variant="outlined"
+            onClick={handleBack}
+            sx={{ flex: 1, minHeight: 44 }}
+          >
+            Back
+          </Button>
+
+          {activeStep < steps.length - 1 ? (
+            <Button
+              variant="contained"
+              onClick={handleNext}
+              disabled={!isStepComplete(activeStep)}
+              endIcon={<ArrowForwardIcon />}
+              sx={{ flex: 2, minHeight: 44 }}
+            >
+              Continue
+            </Button>
+          ) : (
+            <Button
+              variant="contained"
+              onClick={handleSubmit}
+              disabled={submitting || !isStepComplete(activeStep)}
+              startIcon={
+                submitting ? (
+                  <CircularProgress size={20} color="inherit" />
+                ) : (
+                  <SendIcon />
+                )
+              }
+              color="success"
+              sx={{ flex: 2, minHeight: 44 }}
+            >
+              {submitting ? 'Sending...' : 'Send Request'}
+            </Button>
+          )}
+        </Box>
       </Container>
     </PageCanvas>
   );
 };
 
 export default QuickJobRequestPage;
-

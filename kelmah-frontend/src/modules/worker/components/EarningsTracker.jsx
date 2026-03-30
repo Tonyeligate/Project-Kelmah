@@ -1,40 +1,5 @@
 // IconButton focus-visible styling is enforced globally via MuiIconButton theme overrides.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // Styled components
 const GlassCard = styled(Card)(({ theme }) => ({
   background: alpha(theme.palette.background.paper, 0.9),
@@ -143,7 +108,9 @@ const EarningsTracker = () => {
               pendingPayments: payload.pendingPayments || 0,
               growth: payload.growth || 0,
             },
-            monthlyTrend: Array.isArray(payload.monthlyTrend) ? payload.monthlyTrend : [],
+            monthlyTrend: Array.isArray(payload.monthlyTrend)
+              ? payload.monthlyTrend
+              : [],
             categoryBreakdown: Array.isArray(payload.categoryBreakdown)
               ? payload.categoryBreakdown
               : [],
@@ -222,7 +189,9 @@ const EarningsTracker = () => {
 
   const handleExportData = () => {
     if (!Array.isArray(transactions) || transactions.length === 0) {
-      setServiceNotice('No transactions are available to export for this time range.');
+      setServiceNotice(
+        'No transactions are available to export for this time range.',
+      );
       return;
     }
 
@@ -257,13 +226,19 @@ const EarningsTracker = () => {
     const metrics = [
       {
         title: 'Total Earnings',
-        value: new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' }).format(summary.totalEarnings),
+        value: new Intl.NumberFormat('en-GH', {
+          style: 'currency',
+          currency: 'GHS',
+        }).format(summary.totalEarnings),
         icon: <MoneyIcon />,
         growth: summary.growth,
         color: 'primary',
       },
       {
-        value: new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' }).format(summary.monthlyEarnings),
+        value: new Intl.NumberFormat('en-GH', {
+          style: 'currency',
+          currency: 'GHS',
+        }).format(summary.monthlyEarnings),
         icon: <TrendingUpIcon />,
         growth: 8.3,
         color: 'success',
@@ -287,7 +262,13 @@ const EarningsTracker = () => {
     return (
       <Grid container spacing={3} sx={{ mb: 4 }}>
         {metrics.map((metric, index) => (
-          <Grid item xs={12} sm={6} md={3} key={metric.title || `metric-${index}`}>
+          <Grid
+            item
+            xs={12}
+            sm={6}
+            md={3}
+            key={metric.title || `metric-${index}`}
+          >
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -584,7 +565,19 @@ const EarningsTracker = () => {
             >
               Export
             </AnimatedButton>
-            <IconButton sx={{ ...iconButtonA11ySx, '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' } }} onClick={loadEarningsData} disabled={loading} aria-label="Refresh earnings data">
+            <IconButton
+              sx={{
+                ...iconButtonA11ySx,
+                '&:focus-visible': {
+                  outline: '3px solid',
+                  outlineColor: 'primary.main',
+                  outlineOffset: '2px',
+                },
+              }}
+              onClick={loadEarningsData}
+              disabled={loading}
+              aria-label="Refresh earnings data"
+            >
               <RefreshIcon />
             </IconButton>
           </Box>
@@ -630,7 +623,15 @@ const EarningsTracker = () => {
                       <IconButton
                         size="small"
                         aria-label="View transaction details"
-                        sx={{ minWidth: 44, minHeight: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
+                        sx={{
+                          minWidth: 44,
+                          minHeight: 44,
+                          '&:focus-visible': {
+                            outline: '3px solid',
+                            outlineColor: 'primary.main',
+                            outlineOffset: '2px',
+                          },
+                        }}
                         onClick={() => {
                           setSelectedTransaction(transaction);
                           setDetailsDialog(true);
@@ -641,7 +642,8 @@ const EarningsTracker = () => {
                     </Tooltip>
                   </Box>
                   <Typography variant="caption" color="text.secondary">
-                    {format(parseISO(transaction.date), 'MMM dd, yyyy')} • {transaction.client}
+                    {format(parseISO(transaction.date), 'MMM dd, yyyy')} •{' '}
+                    {transaction.client}
                   </Typography>
                   <Box
                     sx={{
@@ -669,7 +671,10 @@ const EarningsTracker = () => {
             ))}
           </Stack>
         ) : (
-          <TableContainer component={Paper} sx={{ borderRadius: 2, overflowX: 'auto' }}>
+          <TableContainer
+            component={Paper}
+            sx={{ borderRadius: 2, overflowX: 'auto' }}
+          >
             <Table sx={{ minWidth: 720 }}>
               <TableHead>
                 <TableRow>
@@ -716,7 +721,15 @@ const EarningsTracker = () => {
                     </TableCell>
                     <TableCell>
                       <Tooltip title="View Details">
-                        <IconButton sx={{ ...iconButtonA11ySx, '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' } }}
+                        <IconButton
+                          sx={{
+                            ...iconButtonA11ySx,
+                            '&:focus-visible': {
+                              outline: '3px solid',
+                              outlineColor: 'primary.main',
+                              outlineOffset: '2px',
+                            },
+                          }}
                           size="small"
                           aria-label="View transaction details"
                           onClick={() => {
@@ -824,7 +837,9 @@ const EarningsTracker = () => {
         fullWidth
         aria-labelledby="transaction-details-dialog-title"
       >
-        <DialogTitle id="transaction-details-dialog-title">Transaction Details</DialogTitle>
+        <DialogTitle id="transaction-details-dialog-title">
+          Transaction Details
+        </DialogTitle>
         <DialogContent>
           {selectedTransaction && (
             <Grid container spacing={2} sx={{ mt: 1 }}>
@@ -882,4 +897,3 @@ const EarningsTracker = () => {
 };
 
 export default EarningsTracker;
-

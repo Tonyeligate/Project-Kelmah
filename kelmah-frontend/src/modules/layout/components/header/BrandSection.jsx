@@ -16,7 +16,9 @@ const PageTitlePill = ({ icon: Icon, name, theme }) => (
       display: 'flex',
       alignItems: 'center',
       backgroundColor:
-        theme.palette.mode === 'dark' ? 'rgba(255, 215, 0, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+        theme.palette.mode === 'dark'
+          ? 'rgba(255, 215, 0, 0.1)'
+          : 'rgba(0, 0, 0, 0.1)',
       borderRadius: 2,
       px: 1.5,
       py: 0.5,
@@ -26,14 +28,19 @@ const PageTitlePill = ({ icon: Icon, name, theme }) => (
     <Icon
       sx={{
         fontSize: '1.2rem',
-        color: theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
+        color:
+          theme.palette.mode === 'dark'
+            ? BRAND_COLORS.gold
+            : BRAND_COLORS.black,
         mr: 0.5,
       }}
     />
     <Typography
       variant="subtitle1"
       fontWeight={600}
-      color={theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black}
+      color={
+        theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black
+      }
       noWrap
     >
       {name}
@@ -41,7 +48,13 @@ const PageTitlePill = ({ icon: Icon, name, theme }) => (
   </Box>
 );
 
-const BrandSection = ({ isMobile, showUserFeatures, isOnAuthPage, currentPage, user }) => {
+const BrandSection = ({
+  isMobile,
+  showUserFeatures,
+  isOnAuthPage,
+  currentPage,
+  user,
+}) => {
   const theme = useTheme();
 
   return (
@@ -52,19 +65,35 @@ const BrandSection = ({ isMobile, showUserFeatures, isOnAuthPage, currentPage, u
     >
       {isMobile && showUserFeatures ? (
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <PageTitlePill icon={currentPage.icon} name={currentPage.name} theme={theme} />
+          <PageTitlePill
+            icon={currentPage.icon}
+            name={currentPage.name}
+            theme={theme}
+          />
           {user && (
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-start',
+              }}
+            >
               <Typography
                 variant="caption"
                 color="text.secondary"
                 sx={{
                   display: { xs: 'none', sm: 'block' },
-                  maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                  maxWidth: 120,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
                   fontSize: '0.7rem',
                 }}
               >
-                {user.firstName || user.name?.split(' ')[0] || user.email?.split('@')[0] || 'User'}
+                {user.firstName ||
+                  user.name?.split(' ')[0] ||
+                  user.email?.split('@')[0] ||
+                  'User'}
               </Typography>
               <Typography
                 variant="caption"
@@ -82,7 +111,11 @@ const BrandSection = ({ isMobile, showUserFeatures, isOnAuthPage, currentPage, u
         </Box>
       ) : isMobile && isOnAuthPage ? (
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <PageTitlePill icon={currentPage.icon} name={currentPage.name} theme={theme} />
+          <PageTitlePill
+            icon={currentPage.icon}
+            name={currentPage.name}
+            theme={theme}
+          />
         </Box>
       ) : (
         <BrandLogo component={RouterLink} to="/">

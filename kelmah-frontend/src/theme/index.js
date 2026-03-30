@@ -74,7 +74,7 @@ const baseTheme = {
   breakpoints: {
     values: {
       xs: 0,
-        mobileCompact: 390,
+      mobileCompact: 390,
       sm: 600,
       md: 900,
       lg: 1200,
@@ -345,19 +345,27 @@ const darkTheme = createTheme({
         },
         elevation1: {
           boxShadow: '0 10px 20px rgba(6, 6, 9, 0.25)',
-          '@media (max-width: 599.95px)': { boxShadow: '0 1px 4px rgba(0,0,0,0.2)' },
+          '@media (max-width: 599.95px)': {
+            boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
+          },
         },
         elevation4: {
           boxShadow: '0 15px 35px rgba(0, 0, 0, 0.35)',
-          '@media (max-width: 599.95px)': { boxShadow: '0 2px 6px rgba(0,0,0,0.22)' },
+          '@media (max-width: 599.95px)': {
+            boxShadow: '0 2px 6px rgba(0,0,0,0.22)',
+          },
         },
         elevation8: {
           boxShadow: '0 20px 50px rgba(0, 0, 0, 0.45)',
-          '@media (max-width: 599.95px)': { boxShadow: '0 2px 8px rgba(0,0,0,0.25)' },
+          '@media (max-width: 599.95px)': {
+            boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
+          },
         },
         elevation12: {
           boxShadow: '0 25px 60px rgba(0, 0, 0, 0.5)',
-          '@media (max-width: 599.95px)': { boxShadow: '0 3px 10px rgba(0,0,0,0.28)' },
+          '@media (max-width: 599.95px)': {
+            boxShadow: '0 3px 10px rgba(0,0,0,0.28)',
+          },
         },
       },
     },
@@ -507,7 +515,7 @@ const darkTheme = createTheme({
             },
           },
           '& .MuiFormHelperText-root': {
-            color: 'rgba(255, 255, 255, 0.76)',
+            color: 'rgba(255, 255, 255, 0.84)',
             fontSize: '0.8rem',
             lineHeight: 1.5,
           },
@@ -596,6 +604,9 @@ const darkTheme = createTheme({
       styleOverrides: {
         root: {
           padding: '20px 24px',
+          '&:first-of-type': {
+            paddingTop: 24,
+          },
         },
       },
     },
@@ -603,6 +614,10 @@ const darkTheme = createTheme({
       styleOverrides: {
         root: {
           padding: '16px 24px',
+          gap: 8,
+          '& .MuiButton-root': {
+            minHeight: 44,
+          },
         },
       },
     },
@@ -900,19 +915,27 @@ const lightTheme = createTheme({
         },
         elevation1: {
           boxShadow: '0 15px 30px rgba(15, 15, 23, 0.08)',
-          '@media (max-width: 599.95px)': { boxShadow: '0 1px 3px rgba(0,0,0,0.06)' },
+          '@media (max-width: 599.95px)': {
+            boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+          },
         },
         elevation4: {
           boxShadow: '0 28px 60px rgba(15, 15, 23, 0.12)',
-          '@media (max-width: 599.95px)': { boxShadow: '0 1px 4px rgba(0,0,0,0.08)' },
+          '@media (max-width: 599.95px)': {
+            boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
+          },
         },
         elevation8: {
           boxShadow: '0 35px 80px rgba(15, 15, 23, 0.15)',
-          '@media (max-width: 599.95px)': { boxShadow: '0 2px 6px rgba(0,0,0,0.1)' },
+          '@media (max-width: 599.95px)': {
+            boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
+          },
         },
         elevation12: {
           boxShadow: '0 45px 90px rgba(15, 15, 23, 0.18)',
-          '@media (max-width: 599.95px)': { boxShadow: '0 2px 8px rgba(0,0,0,0.12)' },
+          '@media (max-width: 599.95px)': {
+            boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
+          },
         },
       },
     },
@@ -1049,7 +1072,7 @@ const lightTheme = createTheme({
             },
           },
           '& .MuiFormHelperText-root': {
-            color: 'rgba(0, 0, 0, 0.7)',
+            color: 'rgba(0, 0, 0, 0.78)',
             fontSize: '0.8rem',
             lineHeight: 1.5,
           },
@@ -1121,6 +1144,25 @@ const lightTheme = createTheme({
             maxWidth: 'calc(100% - 32px)',
             maxHeight: 'calc(100% - 32px)',
             borderRadius: 14,
+          },
+        },
+      },
+    },
+    MuiDialogContent: {
+      styleOverrides: {
+        root: {
+          '&:first-of-type': {
+            paddingTop: 24,
+          },
+        },
+      },
+    },
+    MuiDialogActions: {
+      styleOverrides: {
+        root: {
+          gap: 8,
+          '& .MuiButton-root': {
+            minHeight: 44,
           },
         },
       },

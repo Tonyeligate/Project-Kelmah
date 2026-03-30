@@ -14,7 +14,11 @@ const DEFAULT_LANGUAGES = [
 ];
 
 const DEFAULT_THEMES = [
-  { id: 'light', name: 'Light Mode', description: 'Clean and bright interface' },
+  {
+    id: 'light',
+    name: 'Light Mode',
+    description: 'Clean and bright interface',
+  },
   { id: 'dark', name: 'Dark Mode', description: 'Easy on the eyes' },
   { id: 'auto', name: 'Auto', description: 'Follows system preference' },
 ];
@@ -86,10 +90,16 @@ class SettingsService {
   // Update notification preferences
   async updateNotificationPreferences(preferences) {
     try {
-      const response = await api.put(settingsPath('/notifications'), preferences);
+      const response = await api.put(
+        settingsPath('/notifications'),
+        preferences,
+      );
       return response.data.data;
     } catch (error) {
-      settingsError('Failed to update notification preferences:', error.message);
+      settingsError(
+        'Failed to update notification preferences:',
+        error.message,
+      );
       throw error;
     }
   }
@@ -150,4 +160,3 @@ class SettingsService {
 }
 
 export default new SettingsService();
-

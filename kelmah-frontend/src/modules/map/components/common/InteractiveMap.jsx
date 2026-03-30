@@ -1,24 +1,5 @@
 // IconButton focus-visible styling is enforced globally via MuiIconButton theme overrides.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // Enhanced marker icons with sophisticated styling
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -536,7 +517,12 @@ const SpectacularMarkerPopup = ({
                     '&:hover': {
                       bgcolor: theme.palette.primary.main + '33',
                     },
-                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
+                    '&:focus-visible': {
+                      outline: '3px solid',
+                      outlineColor: 'primary.main',
+                      outlineOffset: '2px',
+                    },
+                  }}
                 >
                   <NavigationIcon />
                 </IconButton>
@@ -850,7 +836,12 @@ const SpectacularMarkerPopup = ({
                   '&:hover': {
                     bgcolor: theme.palette.secondary.main + '33',
                   },
-                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
+                  '&:focus-visible': {
+                    outline: '3px solid',
+                    outlineColor: 'primary.main',
+                    outlineOffset: '2px',
+                  },
+                }}
               >
                 <NavigationIcon />
               </IconButton>
@@ -1199,7 +1190,12 @@ const InteractiveMap = ({
                             transform: 'scale(1.1)',
                           },
                           transition: 'all 0.3s ease',
-                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
+                          '&:focus-visible': {
+                            outline: '3px solid',
+                            outlineColor: 'primary.main',
+                            outlineOffset: '2px',
+                          },
+                        }}
                       >
                         <ZoomInIcon />
                       </IconButton>
@@ -1218,7 +1214,12 @@ const InteractiveMap = ({
                             transform: 'scale(1.1)',
                           },
                           transition: 'all 0.3s ease',
-                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
+                          '&:focus-visible': {
+                            outline: '3px solid',
+                            outlineColor: 'primary.main',
+                            outlineOffset: '2px',
+                          },
+                        }}
                       >
                         <ZoomOutIcon />
                       </IconButton>
@@ -1251,7 +1252,8 @@ const InteractiveMap = ({
                         boxShadow: `0 6px 24px ${theme.palette.primary.main}44`,
                       },
                     }}
-                   aria-label="Switch map style">
+                    aria-label="Switch map style"
+                  >
                     {tileLayer === 'satellite' ? (
                       <SatelliteIcon />
                     ) : tileLayer === 'terrain' ? (
@@ -1289,7 +1291,8 @@ const InteractiveMap = ({
                         boxShadow: `0 6px 24px rgba(0,0,0,0.3)`,
                       },
                     }}
-                   aria-label="Toggle fullscreen map">
+                    aria-label="Toggle fullscreen map"
+                  >
                     {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
                   </Fab>
                 </Tooltip>
@@ -1488,5 +1491,3 @@ const InteractiveMap = ({
 };
 
 export default InteractiveMap;
-
-

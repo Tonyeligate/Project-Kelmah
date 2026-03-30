@@ -65,8 +65,10 @@ function ApplicationDecisionDialog({
         >
           {updating ? (
             <CircularProgress size={24} />
+          ) : isAccepted ? (
+            'Accept Worker'
           ) : (
-            isAccepted ? 'Accept Worker' : 'Reject Application'
+            'Reject Application'
           )}
         </Button>
       </DialogActions>

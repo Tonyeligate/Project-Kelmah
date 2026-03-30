@@ -76,8 +76,13 @@ const WalletSummary = ({
             <Typography variant="h3" color="black" fontWeight="bold">
               {formatGhanaCurrency(walletBalance)}
             </Typography>
-            <Typography variant="body2" color="black" sx={{ mt: 0.5, textAlign: 'center' }}>
-              Available now. Funds in escrow are released after milestone confirmation.
+            <Typography
+              variant="body2"
+              color="black"
+              sx={{ mt: 0.5, textAlign: 'center' }}
+            >
+              Available now. Funds in escrow are released after milestone
+              confirmation.
             </Typography>
             <Box
               sx={{
@@ -140,7 +145,8 @@ const WalletSummary = ({
             color="text.secondary"
             sx={{ display: 'block', mt: 1.5 }}
           >
-            Totals update from completed transactions and active escrow balances.
+            Totals update from completed transactions and active escrow
+            balances.
           </Typography>
         </Grid>
       </Grid>

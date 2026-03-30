@@ -1,4 +1,11 @@
-import { Box, Card, CardContent, Stack, Typography, useTheme } from '@mui/material';
+import {
+  Box,
+  Card,
+  CardContent,
+  Stack,
+  Typography,
+  useTheme,
+} from '@mui/material';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 
 /**
@@ -15,7 +22,13 @@ import { useBreakpointDown } from '@/hooks/useResponsive';
  * @param {string}     [emptyMessage] - shown when rows is empty
  * @param {string}     [listLabel]    - accessible label for the mobile list
  */
-export default function ResponsiveDataView({ children, rows = [], renderCard, emptyMessage = 'No data found.', listLabel = 'Data list' }) {
+export default function ResponsiveDataView({
+  children,
+  rows = [],
+  renderCard,
+  emptyMessage = 'No data found.',
+  listLabel = 'Data list',
+}) {
   const theme = useTheme();
   const isMobile = useBreakpointDown('md');
 
@@ -24,7 +37,9 @@ export default function ResponsiveDataView({ children, rows = [], renderCard, em
   if (rows.length === 0) {
     return (
       <Box role="status" aria-live="polite" sx={{ textAlign: 'center', py: 4 }}>
-        <Typography variant="body2" color="text.secondary">{emptyMessage}</Typography>
+        <Typography variant="body2" color="text.secondary">
+          {emptyMessage}
+        </Typography>
       </Box>
     );
   }
@@ -32,7 +47,12 @@ export default function ResponsiveDataView({ children, rows = [], renderCard, em
   return (
     <Stack spacing={1.5} role="list" aria-label={listLabel}>
       {rows.map((row, index) => (
-        <Card key={row.id || row._id || index} variant="outlined" sx={{ borderRadius: 2 }} role="listitem">
+        <Card
+          key={row.id || row._id || index}
+          variant="outlined"
+          sx={{ borderRadius: 2 }}
+          role="listitem"
+        >
           <CardContent sx={{ py: 1.5, px: 2, '&:last-child': { pb: 1.5 } }}>
             {renderCard(row, index)}
           </CardContent>

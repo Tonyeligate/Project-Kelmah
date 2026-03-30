@@ -13,7 +13,10 @@ const HirerToolsPage = () => {
   const navigate = useNavigate();
 
   return (
-    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
+    <PageCanvas
+      disableContainer
+      sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}
+    >
       <Container sx={{ py: { xs: 2, md: 4 } }}>
         <Helmet>
           <title>Hirer Tools | Kelmah</title>
@@ -23,17 +26,28 @@ const HirerToolsPage = () => {
           Hirer Tools
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-          Use these tools to post jobs faster, estimate budgets, and find trusted workers.
+          Use these tools to post jobs faster, estimate budgets, and find
+          trusted workers.
         </Typography>
 
         <Grid container spacing={3}>
           <Grid item xs={12} md={6}>
-            <Paper sx={{ p: 3, textAlign: 'center', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <Paper
+              sx={{
+                p: 3,
+                textAlign: 'center',
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+              }}
+            >
               <Typography variant="h6" gutterBottom>
                 Post a New Job
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                Share clear job details so qualified workers can respond quickly.
+                Share clear job details so qualified workers can respond
+                quickly.
               </Typography>
               <Box>
                 <Button
@@ -49,7 +63,16 @@ const HirerToolsPage = () => {
             </Paper>
           </Grid>
           <Grid item xs={12} md={6}>
-            <Paper sx={{ p: 3, textAlign: 'center', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <Paper
+              sx={{
+                p: 3,
+                textAlign: 'center',
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+              }}
+            >
               <Typography variant="h6" gutterBottom>
                 Find Skilled Workers
               </Typography>
@@ -82,4 +105,3 @@ const HirerToolsPage = () => {
 };
 
 export default HirerToolsPage;
-

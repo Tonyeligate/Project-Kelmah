@@ -1,7 +1,6 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import {
-  Breadcrumbs, Link, Typography, Box } from '@mui/material';
+import { Breadcrumbs, Link, Typography, Box } from '@mui/material';
 import {
   Home as HomeIcon,
   Work as WorkIcon,
@@ -104,9 +103,14 @@ const BreadcrumbNavigation = () => {
 
   const breadcrumbItems = getBreadcrumbItems();
 
-  const visibleItems = isMobile && breadcrumbItems.length > 3
-    ? [breadcrumbItems[0], breadcrumbItems[breadcrumbItems.length - 2], breadcrumbItems[breadcrumbItems.length - 1]]
-    : breadcrumbItems;
+  const visibleItems =
+    isMobile && breadcrumbItems.length > 3
+      ? [
+          breadcrumbItems[0],
+          breadcrumbItems[breadcrumbItems.length - 2],
+          breadcrumbItems[breadcrumbItems.length - 1],
+        ]
+      : breadcrumbItems;
 
   // Don't show breadcrumbs on home page or if only one item
   if (breadcrumbItems.length <= 1) {
@@ -146,7 +150,7 @@ const BreadcrumbNavigation = () => {
                   display: 'flex',
                   alignItems: 'center',
                   gap: 0.5,
-                    minHeight: { xs: 44, sm: 36 },
+                  minHeight: { xs: 44, sm: 36 },
                 }}
               >
                 {icon && React.cloneElement(icon, { 'aria-hidden': true })}

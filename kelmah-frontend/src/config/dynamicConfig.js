@@ -30,9 +30,10 @@ const getCurrentNgrokUrl = async () => {
       import.meta.env.VITE_API_URL.startsWith('http');
 
     if (isProduction && hasExplicitApiUrl) {
-      if (CONFIG_DEBUG) configLog(
-        '🎯 Production mode: Using explicit API URL instead of ngrok',
-      );
+      if (CONFIG_DEBUG)
+        configLog(
+          '🎯 Production mode: Using explicit API URL instead of ngrok',
+        );
       return null; // Don't use ngrok in production when explicit URL is set
     }
 

@@ -16,4 +16,3 @@ export function getNavLinks(isAuthenticated, user) {
     { label: 'Pricing', to: '/pricing' },
   ];
 }
-

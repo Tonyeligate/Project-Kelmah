@@ -38,7 +38,9 @@ export const normalizeNotificationLink = (notification = {}) => {
       return `/jobs/${legacyJobMatch[1]}`;
     }
 
-    const jobApplicationsMatch = rawLink.match(/^\/jobs\/([^/?#]+)\/applications(?:\?.*)?$/);
+    const jobApplicationsMatch = rawLink.match(
+      /^\/jobs\/([^/?#]+)\/applications(?:\?.*)?$/,
+    );
     if (jobApplicationsMatch) {
       return `/jobs/${jobApplicationsMatch[1]}`;
     }
@@ -119,7 +121,9 @@ class NotificationService {
       }
 
       if (!websocketService.socket) {
-        devWarn('Notifications: shared websocket unavailable; realtime notifications paused');
+        devWarn(
+          'Notifications: shared websocket unavailable; realtime notifications paused',
+        );
         return;
       }
 
@@ -206,13 +210,12 @@ class NotificationService {
       return {
         notifications,
         data: notifications,
-        pagination:
-          pagination || {
-            page: 1,
-            limit: notifications.length,
-            total: notifications.length,
-            pages: notifications.length > 0 ? 1 : 0,
-          },
+        pagination: pagination || {
+          page: 1,
+          limit: notifications.length,
+          total: notifications.length,
+          pages: notifications.length > 0 ? 1 : 0,
+        },
       };
     } catch (error) {
       const statusMsg = getServiceStatusMessage();
@@ -282,7 +285,8 @@ class NotificationService {
       const response = await this.client.get('/notifications/unread/count');
       const payload = response.data;
       if (typeof payload?.unreadCount === 'number') return payload.unreadCount;
-      if (typeof payload?.data?.unreadCount === 'number') return payload.data.unreadCount;
+      if (typeof payload?.data?.unreadCount === 'number')
+        return payload.data.unreadCount;
       return 0;
     } catch (error) {
       devError('Failed to get unread count:', error);
@@ -395,4 +399,3 @@ const notificationServiceUser = {
 };
 
 export default notificationServiceUser;
-

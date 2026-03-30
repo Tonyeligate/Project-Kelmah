@@ -58,21 +58,33 @@ const MessageStatus = ({
         return (
           <CheckCircle
             fontSize="small"
-            sx={{ color: (theme) => theme.palette.text.secondary, width: 14, height: 14 }}
+            sx={{
+              color: (theme) => theme.palette.text.secondary,
+              width: 14,
+              height: 14,
+            }}
           />
         );
       case 'sent':
         return (
           <Check
             fontSize="small"
-            sx={{ color: (theme) => theme.palette.text.secondary, width: 14, height: 14 }}
+            sx={{
+              color: (theme) => theme.palette.text.secondary,
+              width: 14,
+              height: 14,
+            }}
           />
         );
       case 'pending':
         return (
           <AccessTime
             fontSize="small"
-            sx={{ color: (theme) => theme.palette.text.disabled, width: 14, height: 14 }}
+            sx={{
+              color: (theme) => theme.palette.text.disabled,
+              width: 14,
+              height: 14,
+            }}
           />
         );
       default:

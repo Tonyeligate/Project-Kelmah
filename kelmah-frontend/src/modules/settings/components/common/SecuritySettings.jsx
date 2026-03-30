@@ -42,12 +42,13 @@ const PASSWORD_REQUIREMENTS = [
 ];
 
 const getPasswordValidationErrors = (password = '') =>
-  PASSWORD_REQUIREMENTS
-    .filter((rule) => !rule.test(password))
-    .map((rule) => rule.message);
+  PASSWORD_REQUIREMENTS.filter((rule) => !rule.test(password)).map(
+    (rule) => rule.message,
+  );
 
 const extractApiErrorMessage = (error) => {
-  const fallbackMessage = 'Failed to update security settings. Please try again.';
+  const fallbackMessage =
+    'Failed to update security settings. Please try again.';
   const responseData = error?.response?.data;
 
   if (Array.isArray(responseData?.errors) && responseData.errors.length > 0) {
@@ -85,7 +86,12 @@ const SecuritySettings = () => {
   const [showDisable, setShowDisable] = useState(false);
   const [disableForm, setDisableForm] = useState({ password: '', token: '' });
   const [disableLoading, setDisableLoading] = useState(false);
-  const [showPasswords, setShowPasswords] = useState({ current: false, next: false, confirm: false, disable: false });
+  const [showPasswords, setShowPasswords] = useState({
+    current: false,
+    next: false,
+    confirm: false,
+    disable: false,
+  });
   const [disableSnackbar, setDisableSnackbar] = useState({
     open: false,
     message: '',
@@ -195,7 +201,9 @@ const SecuritySettings = () => {
       <InputAdornment position="end">
         <IconButton
           edge="end"
-          onClick={() => setShowPasswords((prev) => ({ ...prev, [key]: !prev[key] }))}
+          onClick={() =>
+            setShowPasswords((prev) => ({ ...prev, [key]: !prev[key] }))
+          }
           aria-label={showPasswords[key] ? 'Hide password' : 'Show password'}
           sx={{
             '&:focus-visible': {
@@ -217,47 +225,55 @@ const SecuritySettings = () => {
         title="Change Password"
         description="Choose a strong password that is different from the one you use on other apps."
       >
-      <Stack spacing={2}>
-        <Alert severity="info">Use at least 12 characters with uppercase, lowercase, number, and symbol.</Alert>
-      <TextField
-        label="Current Password"
-        name="currentPassword"
-        type={showPasswords.current ? 'text' : 'password'}
-        value={form.currentPassword}
-        onChange={handleChange}
-        fullWidth
-        required
-        autoComplete="current-password"
-        InputProps={buildPasswordAdornment('current')}
-      />
-      <TextField
-        label="New Password"
-        name="newPassword"
-        type={showPasswords.next ? 'text' : 'password'}
-        value={form.newPassword}
-        onChange={handleChange}
-        fullWidth
-        required
-        autoComplete="new-password"
-        InputProps={buildPasswordAdornment('next')}
-      />
-      <TextField
-        label="Confirm New Password"
-        name="confirmPassword"
-        type={showPasswords.confirm ? 'text' : 'password'}
-        value={form.confirmPassword}
-        onChange={handleChange}
-        fullWidth
-        required
-        autoComplete="new-password"
-        InputProps={buildPasswordAdornment('confirm')}
-      />
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-        <Button variant="contained" onClick={handleSubmit} disabled={loading} sx={{ minHeight: 44 }}>
-          {loading ? <CircularProgress size={24} /> : 'Update Password'}
-        </Button>
-      </Box>
-      </Stack>
+        <Stack spacing={2}>
+          <Alert severity="info">
+            Use at least 12 characters with uppercase, lowercase, number, and
+            symbol.
+          </Alert>
+          <TextField
+            label="Current Password"
+            name="currentPassword"
+            type={showPasswords.current ? 'text' : 'password'}
+            value={form.currentPassword}
+            onChange={handleChange}
+            fullWidth
+            required
+            autoComplete="current-password"
+            InputProps={buildPasswordAdornment('current')}
+          />
+          <TextField
+            label="New Password"
+            name="newPassword"
+            type={showPasswords.next ? 'text' : 'password'}
+            value={form.newPassword}
+            onChange={handleChange}
+            fullWidth
+            required
+            autoComplete="new-password"
+            InputProps={buildPasswordAdornment('next')}
+          />
+          <TextField
+            label="Confirm New Password"
+            name="confirmPassword"
+            type={showPasswords.confirm ? 'text' : 'password'}
+            value={form.confirmPassword}
+            onChange={handleChange}
+            fullWidth
+            required
+            autoComplete="new-password"
+            InputProps={buildPasswordAdornment('confirm')}
+          />
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <Button
+              variant="contained"
+              onClick={handleSubmit}
+              disabled={loading}
+              sx={{ minHeight: 44 }}
+            >
+              {loading ? <CircularProgress size={24} /> : 'Update Password'}
+            </Button>
+          </Box>
+        </Stack>
       </SettingsSection>
       <Snackbar
         open={snackbar.open}
@@ -328,7 +344,11 @@ const SecuritySettings = () => {
                     'Confirm Disable'
                   )}
                 </Button>
-                <Button variant="text" onClick={() => setShowDisable(false)} sx={{ minHeight: 44 }}>
+                <Button
+                  variant="text"
+                  onClick={() => setShowDisable(false)}
+                  sx={{ minHeight: 44 }}
+                >
                   Cancel
                 </Button>
               </Box>
@@ -350,22 +370,21 @@ const SecuritySettings = () => {
           </>
         )}
       </SettingsSection>
-        <Snackbar
-          open={disableSnackbar.open}
-          autoHideDuration={6000}
+      <Snackbar
+        open={disableSnackbar.open}
+        autoHideDuration={6000}
+        onClose={handleDisableClose}
+      >
+        <Alert
           onClose={handleDisableClose}
+          severity={disableSnackbar.severity}
+          sx={{ width: '100%' }}
         >
-          <Alert
-            onClose={handleDisableClose}
-            severity={disableSnackbar.severity}
-            sx={{ width: '100%' }}
-          >
-            {disableSnackbar.message}
-          </Alert>
-        </Snackbar>
+          {disableSnackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
 
 export default SecuritySettings;
-

@@ -19,4 +19,3 @@ export const lazyLoad = (importFn) => {
 
   return LazyComponent;
 };
-

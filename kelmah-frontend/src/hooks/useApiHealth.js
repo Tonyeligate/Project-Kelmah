@@ -23,7 +23,10 @@ export const useApiHealth = () => {
     retryCountRef.current = 0;
 
     const checkHealth = async (isRetry = false) => {
-      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
+      if (
+        typeof document !== 'undefined' &&
+        document.visibilityState === 'hidden'
+      ) {
         return;
       }
 
@@ -32,9 +35,7 @@ export const useApiHealth = () => {
         // Note: API_BASE_URL includes /api suffix, and /api/health/aggregate is
         // a registered gateway route. /health (without /api) is NOT accessible
         // through the gateway proxy.
-        const healthEndpoints = [
-          `${API_BASE_URL}/health/aggregate`,
-        ];
+        const healthEndpoints = [`${API_BASE_URL}/health/aggregate`];
 
         for (const healthUrl of healthEndpoints) {
           try {
@@ -71,8 +72,14 @@ export const useApiHealth = () => {
         // Retry logic - single retry with backoff to reduce request churn
         if (!isRetry && retryCountRef.current < 1) {
           retryCountRef.current += 1;
-          const backoffMs = Math.min(1000 * Math.pow(2, retryCountRef.current), 5000);
-          retryTimeoutRef.current = setTimeout(() => checkHealth(true), backoffMs);
+          const backoffMs = Math.min(
+            1000 * Math.pow(2, retryCountRef.current),
+            5000,
+          );
+          retryTimeoutRef.current = setTimeout(
+            () => checkHealth(true),
+            backoffMs,
+          );
           return;
         }
 
@@ -93,8 +100,8 @@ export const useApiHealth = () => {
       clearTimeout(retryTimeoutRef.current);
       clearInterval(interval);
     };
-  // LOW-22 FIX: API_BASE_URL is a module-level constant, not a React value.
-  // The empty dependency array is intentional — this effect runs once on mount.
+    // LOW-22 FIX: API_BASE_URL is a module-level constant, not a React value.
+    // The empty dependency array is intentional — this effect runs once on mount.
   }, []);
 
   return { isHealthy, lastCheck };

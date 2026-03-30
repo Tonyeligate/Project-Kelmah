@@ -19,7 +19,30 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
-  Container, Paper, Typography, Box, TextField, Button, Grid, Card, CardContent, Divider, Chip, Avatar, Stack, FormControl, InputLabel, Select, MenuItem, Alert, CircularProgress, Breadcrumbs, Link, useTheme, InputAdornment } from '@mui/material';
+  Container,
+  Paper,
+  Typography,
+  Box,
+  TextField,
+  Button,
+  Grid,
+  Card,
+  CardContent,
+  Divider,
+  Chip,
+  Avatar,
+  Stack,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Alert,
+  CircularProgress,
+  Breadcrumbs,
+  Link,
+  useTheme,
+  InputAdornment,
+} from '@mui/material';
 import {
   Work as WorkIcon,
   LocationOn as LocationIcon,
@@ -66,7 +89,7 @@ const getHirerName = (job) => {
 const formatBudget = (job) => {
   if (!job) return 'Not specified';
   const b = job.budget;
-  const currency = job.currency === 'GHS' ? 'GHS' : (job.currency || 'GHS');
+  const currency = job.currency === 'GHS' ? 'GHS' : job.currency || 'GHS';
   if (!b && b !== 0) return 'Not specified';
   if (typeof b === 'number') return `${currency} ${b.toLocaleString()}`;
   if (typeof b === 'object') {
@@ -120,9 +143,7 @@ const JobApplicationForm = () => {
     }
 
     const summary = applicationData.coverLetter.trim();
-    return details.length > 0
-      ? `${summary}\n\n${details.join('\n')}`
-      : summary;
+    return details.length > 0 ? `${summary}\n\n${details.join('\n')}` : summary;
   };
 
   useEffect(() => {
@@ -304,8 +325,8 @@ const JobApplicationForm = () => {
             {getHirerName(job)}.
           </Typography>
           <Typography variant="body1" sx={{ mb: 3 }}>
-            The employer will review your application and contact you. Check
-            My Applications for updates.
+            The employer will review your application and contact you. Check My
+            Applications for updates.
           </Typography>
           <Box
             sx={{
@@ -505,10 +526,12 @@ const JobApplicationForm = () => {
                 </Typography>
                 <Stack spacing={0.75}>
                   <Typography variant="caption" color="text.secondary">
-                    - Keep your message short and mention similar jobs you completed.
+                    - Keep your message short and mention similar jobs you
+                    completed.
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    - Confirm your price includes your labor and expected timeline.
+                    - Confirm your price includes your labor and expected
+                    timeline.
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
                     - If needed, add a portfolio link with photos of your work.
@@ -536,11 +559,7 @@ const JobApplicationForm = () => {
               <Typography variant="h4" fontWeight={700} sx={{ mb: 1 }}>
                 Send your application
               </Typography>
-              <Typography
-                variant="body1"
-                color="text.secondary"
-                sx={{ mb: 3 }}
-              >
+              <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
                 Fill the details below so the employer can quickly compare your
                 experience, price, and availability.
               </Typography>
@@ -597,7 +616,11 @@ const JobApplicationForm = () => {
                       value={applicationData.proposedRate}
                       onChange={handleInputChange('proposedRate')}
                       required
-                      inputProps={{ min: 0, inputMode: 'decimal', 'aria-label': 'Proposed rate in Ghana cedis' }}
+                      inputProps={{
+                        min: 0,
+                        inputMode: 'decimal',
+                        'aria-label': 'Proposed rate in Ghana cedis',
+                      }}
                       helperText={`Job budget: ${budgetLabel}. Enter your realistic expected price.`}
                       InputProps={{
                         startAdornment: (
@@ -607,7 +630,6 @@ const JobApplicationForm = () => {
                           </InputAdornment>
                         ),
                       }}
-                      
                     />
                   </Grid>
 
@@ -713,7 +735,9 @@ const JobApplicationForm = () => {
                           '&:hover': { bgcolor: '#B8941F' },
                         }}
                       >
-                        {submitting ? 'Sending application...' : 'Send Application'}
+                        {submitting
+                          ? 'Sending application...'
+                          : 'Send Application'}
                       </Button>
                     </Box>
                   </Grid>
@@ -728,4 +752,3 @@ const JobApplicationForm = () => {
 };
 
 export default JobApplicationForm;
-

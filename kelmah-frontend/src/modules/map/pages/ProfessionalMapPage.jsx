@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+} from 'react';
 import {
   Box,
   Typography,
@@ -114,7 +120,9 @@ const BottomSheet = ({ open, onToggle, children, title, count, loading }) => {
             <Typography variant="subtitle1" fontWeight="bold">
               {title}
             </Typography>
-            {count > 0 && <Chip label={`${count} results`} size="small" color="primary" />}
+            {count > 0 && (
+              <Chip label={`${count} results`} size="small" color="primary" />
+            )}
             {loading && <CircularProgress size={16} />}
           </Box>
         </Box>
@@ -184,7 +192,14 @@ const ResultCard = ({ item, viewType, onSelect, onNavigate, onMessage }) => {
             </Avatar>
 
             <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.25 }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 0.5,
+                  mb: 0.25,
+                }}
+              >
                 <Typography variant="subtitle2" noWrap fontWeight="bold">
                   {isJob ? item.title : item.name}
                 </Typography>
@@ -210,7 +225,14 @@ const ResultCard = ({ item, viewType, onSelect, onNavigate, onMessage }) => {
                 {item.distance != null &&
                   ` | ${mapService.formatDistance(item.distance)}`}
               </Typography>
-              <Box sx={{ display: 'flex', gap: 1.5, mt: 0.75, alignItems: 'center' }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  gap: 1.5,
+                  mt: 0.75,
+                  alignItems: 'center',
+                }}
+              >
                 {isJob ? (
                   <Chip
                     icon={<MoneyIcon sx={{ fontSize: 14 }} />}
@@ -222,8 +244,16 @@ const ResultCard = ({ item, viewType, onSelect, onNavigate, onMessage }) => {
                 ) : (
                   <>
                     {item.rating > 0 && (
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
-                        <StarIcon sx={{ fontSize: 14, color: 'warning.main' }} />
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 0.25,
+                        }}
+                      >
+                        <StarIcon
+                          sx={{ fontSize: 14, color: 'warning.main' }}
+                        />
                         <Typography variant="caption" fontWeight="bold">
                           {item.rating.toFixed(1)}
                         </Typography>
@@ -253,53 +283,60 @@ const ResultCard = ({ item, viewType, onSelect, onNavigate, onMessage }) => {
             </Box>
 
             {!isMobile && (
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, ml: 'auto' }}>
-              <Tooltip title="Get Directions">
-                <IconButton
-                  size="small"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onNavigate(item);
-                  }}
-                  aria-label="Get directions"
-                  sx={{
-                    bgcolor: theme.palette.primary.main + '15',
-                    color: theme.palette.primary.main,
-                    width: 44,
-                    height: 44,
-                    '&:focus-visible': {
-                      outline: '3px solid',
-                      outlineColor: 'primary.main',
-                      outlineOffset: '2px',
-                    },
-                  }}
-                >
-                  <NavigationIcon sx={{ fontSize: 16 }} />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Message">
-                <IconButton
-                  size="small"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onMessage(item);
-                  }}
-                  aria-label="Send message"
-                  sx={{
-                    bgcolor: theme.palette.secondary.main + '15',
-                    color: theme.palette.secondary.main,
-                    width: 44,
-                    height: 44,
-                    '&:focus-visible': {
-                      outline: '3px solid',
-                      outlineColor: 'primary.main',
-                      outlineOffset: '2px',
-                    },
-                  }}
-                >
-                  <ChatIcon sx={{ fontSize: 16 }} />
-                </IconButton>
-              </Tooltip>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 0.5,
+                  ml: 'auto',
+                }}
+              >
+                <Tooltip title="Get Directions">
+                  <IconButton
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onNavigate(item);
+                    }}
+                    aria-label="Get directions"
+                    sx={{
+                      bgcolor: theme.palette.primary.main + '15',
+                      color: theme.palette.primary.main,
+                      width: 44,
+                      height: 44,
+                      '&:focus-visible': {
+                        outline: '3px solid',
+                        outlineColor: 'primary.main',
+                        outlineOffset: '2px',
+                      },
+                    }}
+                  >
+                    <NavigationIcon sx={{ fontSize: 16 }} />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Message">
+                  <IconButton
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onMessage(item);
+                    }}
+                    aria-label="Send message"
+                    sx={{
+                      bgcolor: theme.palette.secondary.main + '15',
+                      color: theme.palette.secondary.main,
+                      width: 44,
+                      height: 44,
+                      '&:focus-visible': {
+                        outline: '3px solid',
+                        outlineColor: 'primary.main',
+                        outlineOffset: '2px',
+                      },
+                    }}
+                  >
+                    <ChatIcon sx={{ fontSize: 16 }} />
+                  </IconButton>
+                </Tooltip>
               </Box>
             )}
           </Box>
@@ -374,7 +411,11 @@ const ProfessionalMapPage = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [sheetOpen, setSheetOpen] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
-  const [snack, setSnack] = useState({ open: false, message: '', severity: 'info' });
+  const [snack, setSnack] = useState({
+    open: false,
+    message: '',
+    severity: 'info',
+  });
   const [locating, setLocating] = useState(true);
   const [listMode, setListMode] = useState(false);
 
@@ -436,7 +477,8 @@ const ProfessionalMapPage = () => {
   useEffect(() => {
     refreshTimer.current = setInterval(() => {
       const canRefresh =
-        typeof document === 'undefined' || document.visibilityState === 'visible';
+        typeof document === 'undefined' ||
+        document.visibilityState === 'visible';
       if (!locating && canRefresh) {
         fetchData();
       }
@@ -466,8 +508,10 @@ const ProfessionalMapPage = () => {
     if (!item.coordinates) return;
     // Support both GeoJSON array [lng, lat] and {latitude, longitude} object forms
     const isArray = Array.isArray(item.coordinates);
-    const longitude = isArray ? item.coordinates[0] : item.coordinates.longitude;
-    const latitude  = isArray ? item.coordinates[1] : item.coordinates.latitude;
+    const longitude = isArray
+      ? item.coordinates[0]
+      : item.coordinates.longitude;
+    const latitude = isArray ? item.coordinates[1] : item.coordinates.latitude;
     const hasValidLatitude = latitude !== undefined && latitude !== null;
     const hasValidLongitude = longitude !== undefined && longitude !== null;
     if (!hasValidLatitude || !hasValidLongitude) return;
@@ -483,7 +527,9 @@ const ProfessionalMapPage = () => {
       // Use id || _id pattern; for job, hirer may be a string ID or a populated object
       const userId =
         item.type === 'job'
-          ? item.hirer?.id || item.hirer?._id || (typeof item.hirer === 'string' ? item.hirer : null)
+          ? item.hirer?.id ||
+            item.hirer?._id ||
+            (typeof item.hirer === 'string' ? item.hirer : null)
           : item.id || item._id;
       if (!userId) {
         setSnack({
@@ -498,8 +544,10 @@ const ProfessionalMapPage = () => {
         state: {
           recipientProfile: {
             id: String(userId),
-            name: item.name || item.title || item.displayName || 'New conversation',
-            profilePicture: item.profilePicture || item.avatar || item.photo || null,
+            name:
+              item.name || item.title || item.displayName || 'New conversation',
+            profilePicture:
+              item.profilePicture || item.avatar || item.photo || null,
           },
         },
       });
@@ -538,121 +586,82 @@ const ProfessionalMapPage = () => {
           position: 'relative',
         }}
       >
-      <Helmet><title>Map | Kelmah</title></Helmet>
-      {/* TOP BAR */}
-      <Box
-        sx={{
-          px: { xs: 1.5, md: 3 },
-          py: 1,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1,
-          flexWrap: { xs: 'wrap', md: 'nowrap' },
-          bgcolor: theme.palette.background.paper,
-          borderBottom: `1px solid ${theme.palette.divider}`,
-          zIndex: 10,
-        }}
-      >
-        <TextField
-          size="small"
-          placeholder={
-            viewType === 'jobs'
-              ? 'Search jobs near you…'
-              : 'Search workers near you…'
-          }
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon fontSize="small" />
-              </InputAdornment>
-            ),
-            endAdornment: searchQuery && (
-              <InputAdornment position="end">
-                <IconButton
-                  size="small"
-                  onClick={() => setSearchQuery('')}
-                  aria-label="Clear search text"
-                  sx={{
-                    width: 44,
-                    height: 44,
-                    '&:focus-visible': {
-                      outline: '3px solid',
-                      outlineColor: 'primary.main',
-                      outlineOffset: '2px',
-                    },
-                  }}
-                >
-                  <ClearIcon fontSize="small" />
-                </IconButton>
-              </InputAdornment>
-            ),
+        <Helmet>
+          <title>Map | Kelmah</title>
+        </Helmet>
+        {/* TOP BAR */}
+        <Box
+          sx={{
+            px: { xs: 1.5, md: 3 },
+            py: 1,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            flexWrap: { xs: 'wrap', md: 'nowrap' },
+            bgcolor: theme.palette.background.paper,
+            borderBottom: `1px solid ${theme.palette.divider}`,
+            zIndex: 10,
           }}
-          sx={{ flex: 1, minWidth: 180 }}
-        />
-
-        <ToggleButtonGroup
-          value={viewType}
-          exclusive
-          onChange={(_, v) => v && setViewType(v)}
-          size="small"
         >
-          <ToggleButton value="jobs" sx={{ px: 1.5 }}>
-            <JobIcon sx={{ mr: 0.5, fontSize: 18 }} /> Jobs
-          </ToggleButton>
-          <ToggleButton value="workers" sx={{ px: 1.5 }}>
-            <WorkerIcon sx={{ mr: 0.5, fontSize: 18 }} /> Workers
-          </ToggleButton>
-        </ToggleButtonGroup>
-
-        <Tooltip title="Filters">
-          <IconButton
-            onClick={() => setShowFilters(!showFilters)}
-            color={showFilters ? 'primary' : 'default'}
-            aria-label={showFilters ? 'Hide filters' : 'Show filters'}
+          <TextField
             size="small"
-            sx={{
-              width: 44,
-              height: 44,
-              '&:focus-visible': {
-                outline: '3px solid',
-                outlineColor: 'primary.main',
-                outlineOffset: '2px',
-              },
+            placeholder={
+              viewType === 'jobs'
+                ? 'Search jobs near you…'
+                : 'Search workers near you…'
+            }
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon fontSize="small" />
+                </InputAdornment>
+              ),
+              endAdornment: searchQuery && (
+                <InputAdornment position="end">
+                  <IconButton
+                    size="small"
+                    onClick={() => setSearchQuery('')}
+                    aria-label="Clear search text"
+                    sx={{
+                      width: 44,
+                      height: 44,
+                      '&:focus-visible': {
+                        outline: '3px solid',
+                        outlineColor: 'primary.main',
+                        outlineOffset: '2px',
+                      },
+                    }}
+                  >
+                    <ClearIcon fontSize="small" />
+                  </IconButton>
+                </InputAdornment>
+              ),
             }}
-          >
-            <FilterIcon />
-          </IconButton>
-        </Tooltip>
+            sx={{ flex: 1, minWidth: 180 }}
+          />
 
-        <Tooltip title="Refresh">
-          <IconButton
-            onClick={fetchData}
-            disabled={loading}
-            aria-label="Refresh map results"
+          <ToggleButtonGroup
+            value={viewType}
+            exclusive
+            onChange={(_, v) => v && setViewType(v)}
             size="small"
-            sx={{
-              width: 44,
-              height: 44,
-              '&:focus-visible': {
-                outline: '3px solid',
-                outlineColor: 'primary.main',
-                outlineOffset: '2px',
-              },
-            }}
           >
-            {loading ? <CircularProgress size={18} /> : <RefreshIcon />}
-          </IconButton>
-        </Tooltip>
+            <ToggleButton value="jobs" sx={{ px: 1.5 }}>
+              <JobIcon sx={{ mr: 0.5, fontSize: 18 }} /> Jobs
+            </ToggleButton>
+            <ToggleButton value="workers" sx={{ px: 1.5 }}>
+              <WorkerIcon sx={{ mr: 0.5, fontSize: 18 }} /> Workers
+            </ToggleButton>
+          </ToggleButtonGroup>
 
-        {isMobile && (
-          <Tooltip title={listMode ? 'Map View' : 'List View'}>
+          <Tooltip title="Filters">
             <IconButton
+              onClick={() => setShowFilters(!showFilters)}
+              color={showFilters ? 'primary' : 'default'}
+              aria-label={showFilters ? 'Hide filters' : 'Show filters'}
               size="small"
-              onClick={() => setListMode(!listMode)}
-              aria-label={listMode ? 'Switch to map view' : 'Switch to list view'}
-              color="primary"
               sx={{
                 width: 44,
                 height: 44,
@@ -663,150 +672,286 @@ const ProfessionalMapPage = () => {
                 },
               }}
             >
-              {listMode ? <MapViewIcon /> : <ListViewIcon />}
+              <FilterIcon />
             </IconButton>
           </Tooltip>
-        )}
 
-        <Chip
-          label={`${filtered.length} found`}
-          size="small"
-          color="primary"
-          variant="outlined"
-          sx={{ display: 'flex' }}
-        />
-      </Box>
-
-      {/* FILTER BAR */}
-      <Collapse in={showFilters}>
-        <Box
-          sx={{
-            px: { xs: 1.5, md: 3 },
-            py: 1.5,
-            display: 'flex',
-            gap: 2,
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            bgcolor: theme.palette.background.paper,
-            borderBottom: `1px solid ${theme.palette.divider}`,
-          }}
-        >
-          <FormControl size="small" sx={{ minWidth: 140 }}>
-            <InputLabel>Category</InputLabel>
-            <Select
-              value={filters.category}
-              onChange={(e) =>
-                setFilters((f) => ({ ...f, category: e.target.value }))
-              }
-              label="Category"
+          <Tooltip title="Refresh">
+            <IconButton
+              onClick={fetchData}
+              disabled={loading}
+              aria-label="Refresh map results"
+              size="small"
+              sx={{
+                width: 44,
+                height: 44,
+                '&:focus-visible': {
+                  outline: '3px solid',
+                  outlineColor: 'primary.main',
+                  outlineOffset: '2px',
+                },
+              }}
             >
-              <MenuItem value="">All Categories</MenuItem>
-              {categories.map((cat) => (
-                <MenuItem key={cat} value={cat}>
-                  {cat}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+              {loading ? <CircularProgress size={18} /> : <RefreshIcon />}
+            </IconButton>
+          </Tooltip>
 
-          <FormControl size="small" sx={{ minWidth: 130 }}>
-            <InputLabel>Radius</InputLabel>
-            <Select
-              value={filters.distance}
-              onChange={(e) =>
-                setFilters((f) => ({ ...f, distance: e.target.value }))
-              }
-              label="Radius"
-            >
-              {[5, 10, 25, 50, 100].map((r) => (
-                <MenuItem key={r} value={r}>
-                  Within {r} km
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          {isMobile && (
+            <Tooltip title={listMode ? 'Map View' : 'List View'}>
+              <IconButton
+                size="small"
+                onClick={() => setListMode(!listMode)}
+                aria-label={
+                  listMode ? 'Switch to map view' : 'Switch to list view'
+                }
+                color="primary"
+                sx={{
+                  width: 44,
+                  height: 44,
+                  '&:focus-visible': {
+                    outline: '3px solid',
+                    outlineColor: 'primary.main',
+                    outlineOffset: '2px',
+                  },
+                }}
+              >
+                {listMode ? <MapViewIcon /> : <ListViewIcon />}
+              </IconButton>
+            </Tooltip>
+          )}
 
-          <FormControl size="small" sx={{ minWidth: 130 }}>
-            <InputLabel>Sort</InputLabel>
-            <Select
-              value={filters.sortBy}
-              onChange={(e) =>
-                setFilters((f) => ({ ...f, sortBy: e.target.value }))
-              }
-              label="Sort"
-            >
-              <MenuItem value="distance">Nearest</MenuItem>
-              <MenuItem value="rating">Top Rated</MenuItem>
-              <MenuItem value="price">Price</MenuItem>
-              <MenuItem value="date">Newest</MenuItem>
-            </Select>
-          </FormControl>
-
-          <Button
+          <Chip
+            label={`${filtered.length} found`}
             size="small"
-            startIcon={<ClearIcon />}
-            onClick={handleClearFilters}
-          >
-            Clear
-          </Button>
+            color="primary"
+            variant="outlined"
+            sx={{ display: 'flex' }}
+          />
         </Box>
-      </Collapse>
 
-      {/* MAIN CONTENT */}
-      <Box
-        sx={{
-          flex: 1,
-          display: 'flex',
-          overflow: 'hidden',
-          position: 'relative',
-        }}
-      >
-        {/* SIDE PANEL (desktop) */}
-        {!isMobile && (
+        {/* FILTER BAR */}
+        <Collapse in={showFilters}>
           <Box
             sx={{
-              width: { md: 320, lg: 380 },
-              flexShrink: 0,
+              px: { xs: 1.5, md: 3 },
+              py: 1.5,
               display: 'flex',
-              flexDirection: 'column',
-              borderRight: `1px solid ${theme.palette.divider}`,
+              gap: 2,
+              alignItems: 'center',
+              flexWrap: 'wrap',
               bgcolor: theme.palette.background.paper,
+              borderBottom: `1px solid ${theme.palette.divider}`,
             }}
           >
+            <FormControl size="small" sx={{ minWidth: 140 }}>
+              <InputLabel>Category</InputLabel>
+              <Select
+                value={filters.category}
+                onChange={(e) =>
+                  setFilters((f) => ({ ...f, category: e.target.value }))
+                }
+                label="Category"
+              >
+                <MenuItem value="">All Categories</MenuItem>
+                {categories.map((cat) => (
+                  <MenuItem key={cat} value={cat}>
+                    {cat}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <FormControl size="small" sx={{ minWidth: 130 }}>
+              <InputLabel>Radius</InputLabel>
+              <Select
+                value={filters.distance}
+                onChange={(e) =>
+                  setFilters((f) => ({ ...f, distance: e.target.value }))
+                }
+                label="Radius"
+              >
+                {[5, 10, 25, 50, 100].map((r) => (
+                  <MenuItem key={r} value={r}>
+                    Within {r} km
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <FormControl size="small" sx={{ minWidth: 130 }}>
+              <InputLabel>Sort</InputLabel>
+              <Select
+                value={filters.sortBy}
+                onChange={(e) =>
+                  setFilters((f) => ({ ...f, sortBy: e.target.value }))
+                }
+                label="Sort"
+              >
+                <MenuItem value="distance">Nearest</MenuItem>
+                <MenuItem value="rating">Top Rated</MenuItem>
+                <MenuItem value="price">Price</MenuItem>
+                <MenuItem value="date">Newest</MenuItem>
+              </Select>
+            </FormControl>
+
+            <Button
+              size="small"
+              startIcon={<ClearIcon />}
+              onClick={handleClearFilters}
+            >
+              Clear
+            </Button>
+          </Box>
+        </Collapse>
+
+        {/* MAIN CONTENT */}
+        <Box
+          sx={{
+            flex: 1,
+            display: 'flex',
+            overflow: 'hidden',
+            position: 'relative',
+          }}
+        >
+          {/* SIDE PANEL (desktop) */}
+          {!isMobile && (
             <Box
               sx={{
-                px: 2,
-                py: 1.5,
-                borderBottom: `1px solid ${theme.palette.divider}`,
+                width: { md: 320, lg: 380 },
+                flexShrink: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                borderRight: `1px solid ${theme.palette.divider}`,
+                bgcolor: theme.palette.background.paper,
               }}
             >
               <Box
                 sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
+                  px: 2,
+                  py: 1.5,
+                  borderBottom: `1px solid ${theme.palette.divider}`,
                 }}
               >
-                <Typography variant="subtitle1" fontWeight="bold">
-                  {viewType === 'jobs' ? 'Nearby Jobs' : 'Nearby Workers'}
-                </Typography>
-                <Chip
-                  icon={<GpsFixedIcon sx={{ fontSize: 14 }} />}
-                  label={
-                    locating ? 'Locating…' : `${filtered.length} results`
-                  }
-                  size="small"
-                  color="primary"
-                  variant="outlined"
-                />
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <Typography variant="subtitle1" fontWeight="bold">
+                    {viewType === 'jobs' ? 'Nearby Jobs' : 'Nearby Workers'}
+                  </Typography>
+                  <Chip
+                    icon={<GpsFixedIcon sx={{ fontSize: 14 }} />}
+                    label={
+                      locating ? 'Locating…' : `${filtered.length} results`
+                    }
+                    size="small"
+                    color="primary"
+                    variant="outlined"
+                  />
+                </Box>
+                {loading && <LinearProgress sx={{ mt: 1, borderRadius: 1 }} />}
               </Box>
-              {loading && <LinearProgress sx={{ mt: 1, borderRadius: 1 }} />}
-            </Box>
 
+              <Box sx={{ flex: 1, overflow: 'auto', py: 1 }}>
+                {loading && filtered.length === 0 ? (
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <Box
+                      key={`map-desktop-skeleton-${i}`}
+                      sx={{ px: 2, mb: 1.5 }}
+                    >
+                      <Skeleton variant="rounded" height={80} />
+                    </Box>
+                  ))
+                ) : filtered.length === 0 ? (
+                  <Box sx={{ textAlign: 'center', py: 6, px: 2 }}>
+                    <NearMeIcon
+                      sx={{
+                        fontSize: 48,
+                        color: theme.palette.text.disabled,
+                        mb: 1,
+                      }}
+                    />
+                    <Typography variant="body1" color="text.secondary">
+                      No {viewType} found nearby
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Try increasing your search radius or changing filters
+                    </Typography>
+                  </Box>
+                ) : (
+                  <AnimatePresence mode="popLayout">
+                    {filtered.map((item) => (
+                      <ResultCard
+                        key={item.id || item._id}
+                        item={item}
+                        viewType={viewType}
+                        onSelect={handleMarkerClick}
+                        onNavigate={handleNavigate}
+                        onMessage={handleMessage}
+                      />
+                    ))}
+                  </AnimatePresence>
+                )}
+              </Box>
+            </Box>
+          )}
+
+          {/* MAP */}
+          <Box
+            sx={{
+              flex: 1,
+              position: 'relative',
+              display: isMobile && listMode ? 'none' : 'flex',
+            }}
+          >
+            <InteractiveMap
+              center={mapCenter}
+              zoom={14}
+              markers={filtered}
+              onMarkerClick={handleMarkerClick}
+              showUserLocation
+              showSearchRadius
+              searchRadius={filters.distance}
+              height="100%"
+              controls={{
+                location: true,
+                zoom: true,
+                layers: true,
+                fullscreen: true,
+              }}
+            />
+
+            {locating && (
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  zIndex: 1100,
+                }}
+              >
+                <motion.div
+                  animate={{ scale: [1, 1.4, 1], opacity: [1, 0.4, 1] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                >
+                  <MyLocationIcon
+                    sx={{ fontSize: 48, color: theme.palette.primary.main }}
+                  />
+                </motion.div>
+              </Box>
+            )}
+          </Box>
+
+          {/* MOBILE LIST VIEW */}
+          {isMobile && listMode && (
             <Box sx={{ flex: 1, overflow: 'auto', py: 1 }}>
               {loading && filtered.length === 0 ? (
                 Array.from({ length: 5 }).map((_, i) => (
-                  <Box key={`map-desktop-skeleton-${i}`} sx={{ px: 2, mb: 1.5 }}>
+                  <Box key={`map-mobile-skeleton-${i}`} sx={{ px: 2, mb: 1.5 }}>
                     <Skeleton variant="rounded" height={80} />
                   </Box>
                 ))
@@ -821,9 +966,6 @@ const ProfessionalMapPage = () => {
                   />
                   <Typography variant="body1" color="text.secondary">
                     No {viewType} found nearby
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    Try increasing your search radius or changing filters
                   </Typography>
                 </Box>
               ) : (
@@ -841,320 +983,237 @@ const ProfessionalMapPage = () => {
                 </AnimatePresence>
               )}
             </Box>
-          </Box>
-        )}
-
-        {/* MAP */}
-        <Box
-          sx={{
-            flex: 1,
-            position: 'relative',
-            display: isMobile && listMode ? 'none' : 'flex',
-          }}
-        >
-          <InteractiveMap
-            center={mapCenter}
-            zoom={14}
-            markers={filtered}
-            onMarkerClick={handleMarkerClick}
-            showUserLocation
-            showSearchRadius
-            searchRadius={filters.distance}
-            height="100%"
-            controls={{
-              location: true,
-              zoom: true,
-              layers: true,
-              fullscreen: true,
-            }}
-          />
-
-          {locating && (
-            <Box
-              sx={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                zIndex: 1100,
-              }}
-            >
-              <motion.div
-                animate={{ scale: [1, 1.4, 1], opacity: [1, 0.4, 1] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-              >
-                <MyLocationIcon
-                  sx={{ fontSize: 48, color: theme.palette.primary.main }}
-                />
-              </motion.div>
-            </Box>
           )}
         </Box>
 
-        {/* MOBILE LIST VIEW */}
-        {isMobile && listMode && (
-          <Box sx={{ flex: 1, overflow: 'auto', py: 1 }}>
-            {loading && filtered.length === 0 ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <Box key={`map-mobile-skeleton-${i}`} sx={{ px: 2, mb: 1.5 }}>
-                  <Skeleton variant="rounded" height={80} />
-                </Box>
-              ))
-            ) : filtered.length === 0 ? (
-              <Box sx={{ textAlign: 'center', py: 6, px: 2 }}>
-                <NearMeIcon
-                  sx={{
-                    fontSize: 48,
-                    color: theme.palette.text.disabled,
-                    mb: 1,
-                  }}
-                />
-                <Typography variant="body1" color="text.secondary">
+        {/* MOBILE BOTTOM SHEET */}
+        {isMobile && !listMode && (
+          <BottomSheet
+            open={sheetOpen}
+            onToggle={() => setSheetOpen(!sheetOpen)}
+            title={viewType === 'jobs' ? 'Nearby Jobs' : 'Nearby Workers'}
+            count={filtered.length}
+            loading={loading}
+          >
+            {filtered.length === 0 ? (
+              <Box sx={{ textAlign: 'center', py: 4 }}>
+                <Typography variant="body2" color="text.secondary">
                   No {viewType} found nearby
                 </Typography>
               </Box>
             ) : (
-              <AnimatePresence mode="popLayout">
-                {filtered.map((item) => (
-                  <ResultCard
-                    key={item.id || item._id}
-                    item={item}
-                    viewType={viewType}
-                    onSelect={handleMarkerClick}
-                    onNavigate={handleNavigate}
-                    onMessage={handleMessage}
-                  />
-                ))}
-              </AnimatePresence>
+              filtered.map((item) => (
+                <ResultCard
+                  key={item.id || item._id}
+                  item={item}
+                  viewType={viewType}
+                  onSelect={handleViewDetails}
+                  onNavigate={handleNavigate}
+                  onMessage={handleMessage}
+                />
+              ))
             )}
-          </Box>
+          </BottomSheet>
         )}
-      </Box>
 
-      {/* MOBILE BOTTOM SHEET */}
-      {isMobile && !listMode && (
-        <BottomSheet
-          open={sheetOpen}
-          onToggle={() => setSheetOpen(!sheetOpen)}
-          title={viewType === 'jobs' ? 'Nearby Jobs' : 'Nearby Workers'}
-          count={filtered.length}
-          loading={loading}
-        >
-          {filtered.length === 0 ? (
-            <Box sx={{ textAlign: 'center', py: 4 }}>
-              <Typography variant="body2" color="text.secondary">
-                No {viewType} found nearby
-              </Typography>
-            </Box>
-          ) : (
-            filtered.map((item) => (
-              <ResultCard
-                key={item.id || item._id}
-                item={item}
-                viewType={viewType}
-                onSelect={handleViewDetails}
-                onNavigate={handleNavigate}
-                onMessage={handleMessage}
-              />
-            ))
-          )}
-        </BottomSheet>
-      )}
-
-      {/* SELECTED-ITEM FLYOUT (desktop) */}
-      {!isMobile && selectedItem && (
-        <AnimatePresence>
-          <motion.div
-            initial={{ opacity: 0, x: 40 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 40 }}
-            style={{
-              position: 'absolute',
-              bottom: 24,
-              right: 24,
-              zIndex: 1100,
-              width: 'min(360px, calc(100vw - 48px))',
-            }}
-          >
-            <Card
-              elevation={12}
-              sx={{
-                borderRadius: 3,
-                border: `2px solid ${theme.palette.primary.main}33`,
-                overflow: 'hidden',
+        {/* SELECTED-ITEM FLYOUT (desktop) */}
+        {!isMobile && selectedItem && (
+          <AnimatePresence>
+            <motion.div
+              initial={{ opacity: 0, x: 40 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 40 }}
+              style={{
+                position: 'absolute',
+                bottom: 24,
+                right: 24,
+                zIndex: 1100,
+                width: 'min(360px, calc(100vw - 48px))',
               }}
             >
-              <Box
+              <Card
+                elevation={12}
                 sx={{
-                  height: 4,
-                  background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                  borderRadius: 3,
+                  border: `2px solid ${theme.palette.primary.main}33`,
+                  overflow: 'hidden',
                 }}
-              />
-              <CardContent sx={{ p: 2.5 }}>
+              >
                 <Box
                   sx={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    mb: 1.5,
+                    height: 4,
+                    background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
                   }}
-                >
-                  <Box
-                    sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
-                  >
-                    <Avatar
-                      src={selectedItem.profileImage}
-                      alt={selectedItem.name || selectedItem.title || 'Selected item'}
-                      sx={{
-                        width: 48,
-                        height: 48,
-                        bgcolor: theme.palette.primary.main + '22',
-                        color: theme.palette.primary.main,
-                      }}
-                    >
-                      {selectedItem.type === 'job' ? (
-                        <JobIcon />
-                      ) : (
-                        <WorkerIcon />
-                      )}
-                    </Avatar>
-                    <Box>
-                      <Typography
-                        variant="subtitle1"
-                        fontWeight="bold"
-                        noWrap
-                        sx={{ maxWidth: 200 }}
-                      >
-                        {selectedItem.title || selectedItem.name}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {selectedItem.category}
-                        {selectedItem.distance != null &&
-                          ` · ${mapService.formatDistance(selectedItem.distance)}`}
-                      </Typography>
-                    </Box>
-                  </Box>
-                  <IconButton
-                    size="small"
-                    onClick={() => setSelectedItem(null)}
-                    aria-label="Close map details panel"
-                    sx={{
-                      width: 44,
-                      height: 44,
-                      '&:focus-visible': {
-                        outline: '3px solid',
-                        outlineColor: 'primary.main',
-                        outlineOffset: '2px',
-                      },
-                    }}
-                  >
-                    <CloseIcon fontSize="small" />
-                  </IconButton>
-                </Box>
-
-                {selectedItem.skills?.length > 0 && (
+                />
+                <CardContent sx={{ p: 2.5 }}>
                   <Box
                     sx={{
                       display: 'flex',
-                      gap: 0.5,
-                      flexWrap: 'wrap',
+                      justifyContent: 'space-between',
                       mb: 1.5,
                     }}
                   >
-                    {selectedItem.skills.slice(0, 4).map((s) => (
-                      <Chip
-                        key={s}
-                        label={s}
-                        size="small"
-                        variant="outlined"
-                      />
-                    ))}
-                  </Box>
-                )}
-
-                <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
-                  {selectedItem.budget && (
-                    <Chip
-                      icon={<MoneyIcon />}
-                      label={`GH₵ ${selectedItem.budget.toLocaleString()}`}
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Avatar
+                        src={selectedItem.profileImage}
+                        alt={
+                          selectedItem.name ||
+                          selectedItem.title ||
+                          'Selected item'
+                        }
+                        sx={{
+                          width: 48,
+                          height: 48,
+                          bgcolor: theme.palette.primary.main + '22',
+                          color: theme.palette.primary.main,
+                        }}
+                      >
+                        {selectedItem.type === 'job' ? (
+                          <JobIcon />
+                        ) : (
+                          <WorkerIcon />
+                        )}
+                      </Avatar>
+                      <Box>
+                        <Typography
+                          variant="subtitle1"
+                          fontWeight="bold"
+                          noWrap
+                          sx={{ maxWidth: 200 }}
+                        >
+                          {selectedItem.title || selectedItem.name}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {selectedItem.category}
+                          {selectedItem.distance != null &&
+                            ` · ${mapService.formatDistance(selectedItem.distance)}`}
+                        </Typography>
+                      </Box>
+                    </Box>
+                    <IconButton
                       size="small"
-                      color="secondary"
-                    />
-                  )}
-                  {selectedItem.rating > 0 && (
+                      onClick={() => setSelectedItem(null)}
+                      aria-label="Close map details panel"
+                      sx={{
+                        width: 44,
+                        height: 44,
+                        '&:focus-visible': {
+                          outline: '3px solid',
+                          outlineColor: 'primary.main',
+                          outlineOffset: '2px',
+                        },
+                      }}
+                    >
+                      <CloseIcon fontSize="small" />
+                    </IconButton>
+                  </Box>
+
+                  {selectedItem.skills?.length > 0 && (
                     <Box
                       sx={{
                         display: 'flex',
-                        alignItems: 'center',
                         gap: 0.5,
+                        flexWrap: 'wrap',
+                        mb: 1.5,
                       }}
                     >
-                      <Rating
-                        value={selectedItem.rating}
-                        precision={0.5}
-                        size="small"
-                        readOnly
-                      />
-                      <Typography variant="caption">
-                        ({selectedItem.reviewCount || 0})
-                      </Typography>
+                      {selectedItem.skills.slice(0, 4).map((s) => (
+                        <Chip
+                          key={s}
+                          label={s}
+                          size="small"
+                          variant="outlined"
+                        />
+                      ))}
                     </Box>
                   )}
-                </Stack>
 
-                <Stack direction="row" spacing={1}>
-                  <Button
-                    variant="contained"
-                    size="small"
-                    fullWidth
-                    onClick={() => handleViewDetails(selectedItem)}
-                    sx={{ textTransform: 'none', borderRadius: 2 }}>
-                    {selectedItem.type === 'job'
-                      ? 'View Job'
-                      : 'View Profile'}
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    onClick={() => handleNavigate(selectedItem)}
-                    sx={{ borderRadius: 2, minWidth: 44 }}
-                   aria-label="Get directions">
-                    <NavigationIcon />
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    onClick={() => handleMessage(selectedItem)}
-                    sx={{ borderRadius: 2, minWidth: 44 }}
-                   aria-label="Send message">
-                    <ChatIcon />
-                  </Button>
-                </Stack>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </AnimatePresence>
-      )}
+                  <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
+                    {selectedItem.budget && (
+                      <Chip
+                        icon={<MoneyIcon />}
+                        label={`GH₵ ${selectedItem.budget.toLocaleString()}`}
+                        size="small"
+                        color="secondary"
+                      />
+                    )}
+                    {selectedItem.rating > 0 && (
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 0.5,
+                        }}
+                      >
+                        <Rating
+                          value={selectedItem.rating}
+                          precision={0.5}
+                          size="small"
+                          readOnly
+                        />
+                        <Typography variant="caption">
+                          ({selectedItem.reviewCount || 0})
+                        </Typography>
+                      </Box>
+                    )}
+                  </Stack>
 
-      {/* SNACKBAR */}
-      <Snackbar
-        open={snack.open}
-        autoHideDuration={4000}
-        onClose={() => setSnack((s) => ({ ...s, open: false }))}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert
+                  <Stack direction="row" spacing={1}>
+                    <Button
+                      variant="contained"
+                      size="small"
+                      fullWidth
+                      onClick={() => handleViewDetails(selectedItem)}
+                      sx={{ textTransform: 'none', borderRadius: 2 }}
+                    >
+                      {selectedItem.type === 'job'
+                        ? 'View Job'
+                        : 'View Profile'}
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={() => handleNavigate(selectedItem)}
+                      sx={{ borderRadius: 2, minWidth: 44 }}
+                      aria-label="Get directions"
+                    >
+                      <NavigationIcon />
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={() => handleMessage(selectedItem)}
+                      sx={{ borderRadius: 2, minWidth: 44 }}
+                      aria-label="Send message"
+                    >
+                      <ChatIcon />
+                    </Button>
+                  </Stack>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </AnimatePresence>
+        )}
+
+        {/* SNACKBAR */}
+        <Snackbar
+          open={snack.open}
+          autoHideDuration={4000}
           onClose={() => setSnack((s) => ({ ...s, open: false }))}
-          severity={snack.severity}
-          variant="filled"
-          sx={{ width: '100%' }}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
         >
-          {snack.message}
-        </Alert>
-      </Snackbar>
+          <Alert
+            onClose={() => setSnack((s) => ({ ...s, open: false }))}
+            severity={snack.severity}
+            variant="filled"
+            sx={{ width: '100%' }}
+          >
+            {snack.message}
+          </Alert>
+        </Snackbar>
       </Box>
     </PageCanvas>
   );
 };
 
 export default ProfessionalMapPage;
-

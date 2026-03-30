@@ -96,7 +96,15 @@ const MobileFilterDrawer = ({
           onClick={onClose}
           size="small"
           aria-label="Close mobile filters"
-          sx={{ width: 44, height: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
+          sx={{
+            width: 44,
+            height: 44,
+            '&:focus-visible': {
+              outline: '3px solid',
+              outlineColor: 'primary.main',
+              outlineOffset: '2px',
+            },
+          }}
         >
           <CloseIcon />
         </IconButton>

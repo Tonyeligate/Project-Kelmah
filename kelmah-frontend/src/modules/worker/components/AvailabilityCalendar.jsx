@@ -1,28 +1,5 @@
 // IconButton focus-visible styling is enforced globally via MuiIconButton theme overrides.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 const unwrap = (response) => response?.data?.data ?? response?.data ?? {};
 
 const AvailabilityCalendar = () => {
@@ -61,15 +38,15 @@ const AvailabilityCalendar = () => {
       // Backend returns { success, data: { daySlots: [...] } }
       const normalizedSlots = Array.isArray(data?.daySlots)
         ? data.daySlots.flatMap((day) => {
-          const daySlots = Array.isArray(day?.slots) ? day.slots : [];
-          const currentDate = format(selectedDate, 'yyyy-MM-dd');
-          return daySlots.map((slot, index) => ({
-            id: `${day.dayOfWeek}-${index}`,
-            startTime: `${currentDate}T${slot.start || '09:00'}:00`,
-            endTime: `${currentDate}T${slot.end || '17:00'}:00`,
-            status: data?.isAvailable ? 'available' : 'unavailable',
-          }));
-        })
+            const daySlots = Array.isArray(day?.slots) ? day.slots : [];
+            const currentDate = format(selectedDate, 'yyyy-MM-dd');
+            return daySlots.map((slot, index) => ({
+              id: `${day.dayOfWeek}-${index}`,
+              startTime: `${currentDate}T${slot.start || '09:00'}:00`,
+              endTime: `${currentDate}T${slot.end || '17:00'}:00`,
+              status: data?.isAvailable ? 'available' : 'unavailable',
+            }));
+          })
         : [];
 
       setAvailability(normalizedSlots);
@@ -131,7 +108,9 @@ const AvailabilityCalendar = () => {
 
       const dayOfWeek = selectedDate.getDay();
       const nextSlot = {
-        start: formData?.startTime ? format(formData.startTime, 'HH:mm') : '09:00',
+        start: formData?.startTime
+          ? format(formData.startTime, 'HH:mm')
+          : '09:00',
         end: formData?.endTime ? format(formData.endTime, 'HH:mm') : '17:00',
       };
 
@@ -163,7 +142,9 @@ const AvailabilityCalendar = () => {
     try {
       // Current backend exposes delete for holidays, not per-slot delete.
       // Keep UX stable by showing guidance instead of calling a non-existent endpoint.
-      setError('Direct slot delete is not supported yet. Edit the slot and set unavailable instead.');
+      setError(
+        'Direct slot delete is not supported yet. Edit the slot and set unavailable instead.',
+      );
     } catch (err) {
       setError('Failed to delete availability slot');
       devError(err);
@@ -211,7 +192,15 @@ const AvailabilityCalendar = () => {
       </Box>
       <Box>
         <Tooltip title="Edit">
-          <IconButton sx={{ ...iconButtonA11ySx, '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' } }}
+          <IconButton
+            sx={{
+              ...iconButtonA11ySx,
+              '&:focus-visible': {
+                outline: '3px solid',
+                outlineColor: 'primary.main',
+                outlineOffset: '2px',
+              },
+            }}
             size="small"
             onClick={() => handleDialogOpen(slot)}
             disabled={slot.status === 'booked'}
@@ -221,7 +210,15 @@ const AvailabilityCalendar = () => {
           </IconButton>
         </Tooltip>
         <Tooltip title="Delete">
-          <IconButton sx={{ ...iconButtonA11ySx, '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' } }}
+          <IconButton
+            sx={{
+              ...iconButtonA11ySx,
+              '&:focus-visible': {
+                outline: '3px solid',
+                outlineColor: 'primary.main',
+                outlineOffset: '2px',
+              },
+            }}
             size="small"
             onClick={() => handleDelete(slot.id)}
             disabled={slot.status === 'booked'}
@@ -365,5 +362,3 @@ const AvailabilityCalendar = () => {
 };
 
 export default AvailabilityCalendar;
-
-

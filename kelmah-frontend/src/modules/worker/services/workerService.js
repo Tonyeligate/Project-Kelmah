@@ -67,12 +67,16 @@ const normalizeWorkerSearchRecord = (worker = {}) => {
     title:
       worker.title ||
       worker.profession ||
-      (Array.isArray(worker.specializations) ? worker.specializations[0] : '') ||
+      (Array.isArray(worker.specializations)
+        ? worker.specializations[0]
+        : '') ||
       'Professional Worker',
     profession:
       worker.profession ||
       worker.title ||
-      (Array.isArray(worker.specializations) ? worker.specializations[0] : '') ||
+      (Array.isArray(worker.specializations)
+        ? worker.specializations[0]
+        : '') ||
       'Professional Worker',
     location: worker.location || worker.city || 'Ghana',
     city: worker.city || extractLocationString(worker.location) || 'Ghana',
@@ -149,14 +153,20 @@ const pushUniqueSuggestion = (suggestions, seen, suggestion) => {
 };
 
 const buildWorkerSearchSuggestions = (workers = [], query = '') => {
-  const normalizedQuery = String(query || '').trim().toLowerCase();
+  const normalizedQuery = String(query || '')
+    .trim()
+    .toLowerCase();
   const suggestions = [];
   const seen = new Set();
 
   workers.forEach((worker) => {
     const normalizedWorker = normalizeWorkerSearchRecord(worker);
-    const locationText = extractLocationString(normalizedWorker.location) || normalizedWorker.city || '';
-    const professionText = normalizedWorker.profession || normalizedWorker.title || '';
+    const locationText =
+      extractLocationString(normalizedWorker.location) ||
+      normalizedWorker.city ||
+      '';
+    const professionText =
+      normalizedWorker.profession || normalizedWorker.title || '';
     const workerName = normalizedWorker.name || 'Skilled Worker';
 
     if (professionText) {
@@ -168,17 +178,25 @@ const buildWorkerSearchSuggestions = (workers = [], query = '') => {
     }
 
     normalizeWorkerSkills(normalizedWorker)
-      .filter((skill) => !normalizedQuery || skill.toLowerCase().includes(normalizedQuery))
+      .filter(
+        (skill) =>
+          !normalizedQuery || skill.toLowerCase().includes(normalizedQuery),
+      )
       .slice(0, 2)
       .forEach((skill) => {
         pushUniqueSuggestion(suggestions, seen, {
           type: 'skill',
           text: skill,
-          subText: [professionText || workerName, locationText].filter(Boolean).join(' • '),
+          subText: [professionText || workerName, locationText]
+            .filter(Boolean)
+            .join(' • '),
         });
       });
 
-    if (locationText && (!normalizedQuery || locationText.toLowerCase().includes(normalizedQuery))) {
+    if (
+      locationText &&
+      (!normalizedQuery || locationText.toLowerCase().includes(normalizedQuery))
+    ) {
       pushUniqueSuggestion(suggestions, seen, {
         type: 'location',
         text: locationText,
@@ -302,7 +320,8 @@ const requestWithFallback = async (endpoints, requestFactory) => {
       return await requestFactory(endpoint);
     } catch (error) {
       lastError = error;
-      const canRetryWithFallback = index < endpoints.length - 1 && shouldTryFallback(error);
+      const canRetryWithFallback =
+        index < endpoints.length - 1 && shouldTryFallback(error);
       if (!canRetryWithFallback) {
         break;
       }
@@ -349,7 +368,9 @@ const workerService = {
     const payload = unwrapPayload(response);
 
     return {
-      workers: extractWorkerCollection(payload).map(normalizeWorkerSearchRecord),
+      workers: extractWorkerCollection(payload).map(
+        normalizeWorkerSearchRecord,
+      ),
       pagination: extractWorkerPagination(payload, queryParams),
       payload,
     };
@@ -638,7 +659,10 @@ const workerService = {
       response = await api.get(workerPath(workerId, '/availability'));
     } catch (error) {
       const status = error?.response?.status;
-      const shouldFallback = status === 404 || status === 405 || isTransientWorkerEndpointError(error);
+      const shouldFallback =
+        status === 404 ||
+        status === 405 ||
+        isTransientWorkerEndpointError(error);
       if (!shouldFallback) {
         throw error;
       }
@@ -649,20 +673,25 @@ const workerService = {
         suppressUi: true,
       });
 
-      return attachMetadata({
-        status: 'not_set',
-        isAvailable: false,
-        timezone: 'Africa/Accra',
-        daySlots: [],
-        schedule: [],
-        nextAvailable: null,
-        message: 'Availability not configured',
-        pausedUntil: null,
-        lastUpdated: null,
-      }, {
-        fallback: true,
-        fallbackReason: status ? `availability-endpoint-${status}` : 'availability-endpoint-unavailable',
-      });
+      return attachMetadata(
+        {
+          status: 'not_set',
+          isAvailable: false,
+          timezone: 'Africa/Accra',
+          daySlots: [],
+          schedule: [],
+          nextAvailable: null,
+          message: 'Availability not configured',
+          pausedUntil: null,
+          lastUpdated: null,
+        },
+        {
+          fallback: true,
+          fallbackReason: status
+            ? `availability-endpoint-${status}`
+            : 'availability-endpoint-unavailable',
+        },
+      );
     }
     const payload = unwrapPayload(response);
     const status = payload?.status;
@@ -698,9 +727,12 @@ const workerService = {
 
     const payload = {
       availabilityStatus:
-        availabilityData?.availabilityStatus || availabilityData?.status || 'available',
+        availabilityData?.availabilityStatus ||
+        availabilityData?.status ||
+        'available',
       availableHours:
-        availabilityData?.availableHours && typeof availabilityData.availableHours === 'object'
+        availabilityData?.availableHours &&
+        typeof availabilityData.availableHours === 'object'
           ? availabilityData.availableHours
           : {},
       pausedUntil: availabilityData?.pausedUntil ?? null,
@@ -714,8 +746,12 @@ const workerService = {
       status,
       isAvailable: status === 'available' || status === true,
       timezone: 'Africa/Accra',
-      daySlots: Array.isArray(availabilityData?.daySlots) ? availabilityData.daySlots : [],
-      schedule: Array.isArray(availabilityData?.schedule) ? availabilityData.schedule : [],
+      daySlots: Array.isArray(availabilityData?.daySlots)
+        ? availabilityData.daySlots
+        : [],
+      schedule: Array.isArray(availabilityData?.schedule)
+        ? availabilityData.schedule
+        : [],
       nextAvailable: availabilityData?.nextAvailable ?? null,
       message: availabilityData?.message || null,
       pausedUntil: payload.pausedUntil,
@@ -770,7 +806,8 @@ const workerService = {
       };
     }
 
-    const completion = payload?.completionPercentage ?? payload?.percentage ?? 0;
+    const completion =
+      payload?.completionPercentage ?? payload?.percentage ?? 0;
 
     const normalized = {
       completionPercentage: completion,
@@ -987,7 +1024,9 @@ const workerService = {
    */
   withdrawApplication: (jobId, applicationId) => {
     if (!jobId || !applicationId) {
-      throw new Error('jobId and applicationId are required to withdraw application');
+      throw new Error(
+        'jobId and applicationId are required to withdraw application',
+      );
     }
     return api.delete(`/jobs/${jobId}/applications/${applicationId}`);
   },

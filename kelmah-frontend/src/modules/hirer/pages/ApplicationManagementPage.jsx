@@ -78,7 +78,11 @@ import {
   JobListItem,
 } from '../components/ApplicationManagementCards';
 import { useBreakpointDown } from '../../../hooks/useResponsive';
-import { BOTTOM_NAV_HEIGHT, HEADER_HEIGHT_MOBILE, Z_INDEX } from '../../../constants/layout';
+import {
+  BOTTOM_NAV_HEIGHT,
+  HEADER_HEIGHT_MOBILE,
+  Z_INDEX,
+} from '../../../constants/layout';
 import PageCanvas from '@/modules/common/components/PageCanvas';
 
 /* ─── helpers ─────────────────────────────────────────────────────── */
@@ -94,6 +98,24 @@ const formatGhanaCurrencyLabel = (value) => {
     currency: 'GHS',
     minimumFractionDigits: amount % 1 === 0 ? 0 : 2,
   }).format(Number.isFinite(amount) ? amount : 0);
+};
+
+const QUICK_REJECT_FEEDBACK_TEMPLATE =
+  'Thank you for your application. We are moving forward with another applicant whose proposal better matches this job budget and timeline.';
+
+const QUICK_ACCEPT_FEEDBACK_TEMPLATE =
+  'Application accepted via quick mobile action. Please proceed to chat for next steps.';
+
+const buildQuickRejectFeedbackTemplate = (application) => {
+  const workerName = String(application?.workerName || '').trim();
+  const firstName = workerName.split(' ')[0] || 'there';
+  const jobTitle = String(application?.jobTitle || '').trim();
+
+  if (jobTitle) {
+    return `Thank you ${firstName} for your application to "${jobTitle}". We are moving forward with another applicant whose proposal better matches this job budget and timeline.`;
+  }
+
+  return QUICK_REJECT_FEEDBACK_TEMPLATE;
 };
 
 function ApplicationManagementPage() {
@@ -161,6 +183,7 @@ function ApplicationManagementPage() {
   const [updating, setUpdating] = useState(false);
   const [actionType, setActionType] = useState('');
   const [showJobList, setShowJobList] = useState(!isMobile);
+  const [macroAction, setMacroAction] = useState('');
 
   // Sync URL-derived pane state and redirect bid-based jobs to the bid review screen.
   useEffect(() => {
@@ -244,9 +267,18 @@ function ApplicationManagementPage() {
     if (nextParams.toString() !== searchParams.toString()) {
       setSearchParams(nextParams, { replace: true });
     }
-  }, [activeTab, currentPage, pageSize, searchParams, selectedJobId, setSearchParams, sortBy]);
+  }, [
+    activeTab,
+    currentPage,
+    pageSize,
+    searchParams,
+    selectedJobId,
+    setSearchParams,
+    sortBy,
+  ]);
 
-  const loadApplicationsView = useCallback(async ({ isCancelled = () => false } = {}) => {
+  const loadApplicationsView = useCallback(
+    async ({ isCancelled = () => false } = {}) => {
       setApplicationsLoading(true);
       setError(null);
 
@@ -261,9 +293,9 @@ function ApplicationManagementPage() {
         if (isCancelled()) return;
 
         const summaryJobs = Array.isArray(response?.jobs) ? response.jobs : [];
-        const currentApplications = (Array.isArray(response?.applications) ? response.applications : []).map((app) =>
-          normalizeApplication(app, app?.jobId, app?.jobTitle),
-        );
+        const currentApplications = (
+          Array.isArray(response?.applications) ? response.applications : []
+        ).map((app) => normalizeApplication(app, app?.jobId, app?.jobTitle));
         const nextPagination = {
           currentPage: response?.pagination?.currentPage ?? 1,
           totalPages: response?.pagination?.totalPages ?? 1,
@@ -272,11 +304,13 @@ function ApplicationManagementPage() {
         };
 
         setJobs(summaryJobs);
-        setSummary(response?.summary || {
-          totalJobs: 0,
-          totalApplications: 0,
-          countsByStatus: DEFAULT_APPLICATION_COUNTS,
-        });
+        setSummary(
+          response?.summary || {
+            totalJobs: 0,
+            totalApplications: 0,
+            countsByStatus: DEFAULT_APPLICATION_COUNTS,
+          },
+        );
         setApplications(currentApplications);
         setPagination(nextPagination);
 
@@ -309,14 +343,20 @@ function ApplicationManagementPage() {
           totalItems: 0,
           limit: pageSize,
         });
-        setError(loadError?.response?.data?.message || loadError.message || 'Failed to load applications');
+        setError(
+          loadError?.response?.data?.message ||
+            loadError.message ||
+            'Failed to load applications',
+        );
       } finally {
         if (!isCancelled()) {
           setInitialLoading(false);
           setApplicationsLoading(false);
         }
       }
-    }, [activeTab, currentPage, pageSize, selectedJobId, sortBy, urlJobId]);
+    },
+    [activeTab, currentPage, pageSize, selectedJobId, sortBy, urlJobId],
+  );
 
   // ── Fetch jobs and their applications ──────────────────────────
   useEffect(() => {
@@ -335,20 +375,17 @@ function ApplicationManagementPage() {
 
   const filteredApps = useMemo(() => applications, [applications]);
 
-  const tabCounts = useMemo(
-    () => {
-      const sourceCounts = selectedJobId
-        ? (selectedJob?.applicationCounts || DEFAULT_APPLICATION_COUNTS)
-        : (summary?.countsByStatus || DEFAULT_APPLICATION_COUNTS);
+  const tabCounts = useMemo(() => {
+    const sourceCounts = selectedJobId
+      ? selectedJob?.applicationCounts || DEFAULT_APPLICATION_COUNTS
+      : summary?.countsByStatus || DEFAULT_APPLICATION_COUNTS;
 
-      return {
-        pending: sourceCounts.pending || 0,
-        accepted: sourceCounts.accepted || 0,
-        rejected: sourceCounts.rejected || 0,
-      };
-    },
-    [selectedJob, selectedJobId, summary],
-  );
+    return {
+      pending: sourceCounts.pending || 0,
+      accepted: sourceCounts.accepted || 0,
+      rejected: sourceCounts.rejected || 0,
+    };
+  }, [selectedJob, selectedJobId, summary]);
 
   const totalAppCounts = useMemo(() => {
     const counts = {};
@@ -373,7 +410,8 @@ function ApplicationManagementPage() {
       return { start: 0, end: 0 };
     }
 
-    const start = ((pagination.currentPage || 1) - 1) * (pagination.limit || pageSize) + 1;
+    const start =
+      ((pagination.currentPage || 1) - 1) * (pagination.limit || pageSize) + 1;
     return {
       start,
       end: start + filteredApps.length - 1,
@@ -381,8 +419,8 @@ function ApplicationManagementPage() {
   }, [filteredApps.length, pageSize, pagination.currentPage, pagination.limit]);
 
   const selectedScopeTotal = selectedJobId
-    ? (selectedJob?.applicationCounts?.total || 0)
-    : (summary?.totalApplications || 0);
+    ? selectedJob?.applicationCounts?.total || 0
+    : summary?.totalApplications || 0;
 
   const hasNoStandardJobs = !initialLoading && allJobs.length === 0;
   const mobileDetailMode = isMobile && Boolean(selectedApplication);
@@ -396,15 +434,24 @@ function ApplicationManagementPage() {
   }, [filteredApps, selectedApplication?.id]);
 
   const canSelectPrevious = selectedApplicationIndex > 0;
-  const canSelectNext = selectedApplicationIndex >= 0 && selectedApplicationIndex < filteredApps.length - 1;
+  const canSelectNext =
+    selectedApplicationIndex >= 0 &&
+    selectedApplicationIndex < filteredApps.length - 1;
 
   const triageSummary = useMemo(() => {
-    const withRate = filteredApps.filter((app) => Number.isFinite(Number(app?.proposedRate)));
+    const withRate = filteredApps.filter((app) =>
+      Number.isFinite(Number(app?.proposedRate)),
+    );
     const avgRate = withRate.length
-      ? Math.round(withRate.reduce((sum, app) => sum + Number(app.proposedRate), 0) / withRate.length)
+      ? Math.round(
+          withRate.reduce((sum, app) => sum + Number(app.proposedRate), 0) /
+            withRate.length,
+        )
       : null;
 
-    const ratedProfiles = filteredApps.filter((app) => app?.workerRating !== null && app?.workerRating !== undefined).length;
+    const ratedProfiles = filteredApps.filter(
+      (app) => app?.workerRating !== null && app?.workerRating !== undefined,
+    ).length;
 
     const recent48h = filteredApps.filter((app) => {
       if (!app?.createdAt) return false;
@@ -433,7 +480,9 @@ function ApplicationManagementPage() {
         }
 
         if (current) {
-          const stillVisible = filteredApps.find((app) => app.id === current.id);
+          const stillVisible = filteredApps.find(
+            (app) => app.id === current.id,
+          );
           if (stillVisible) {
             return stillVisible;
           }
@@ -457,20 +506,35 @@ function ApplicationManagementPage() {
     if (isMobile) setShowJobList(false);
   };
 
+  const updateApplicationStatusAndRefresh = useCallback(
+    async ({ application, status, feedbackText = '' }) => {
+      if (!application?.id || !application?.jobId) {
+        throw new Error('Application details are unavailable.');
+      }
+
+      await hirerService.updateApplicationStatus(
+        application.jobId,
+        application.id,
+        status,
+        feedbackText,
+      );
+
+      await loadApplicationsView();
+    },
+    [loadApplicationsView],
+  );
+
   const handleStatusUpdate = useCallback(async () => {
     if (!selectedApplication) return;
     setUpdating(true);
     try {
-      await hirerService.updateApplicationStatus(
-        selectedApplication.jobId,
-        selectedApplication.id,
-        actionType,
-        feedback,
-      );
+      await updateApplicationStatusAndRefresh({
+        application: selectedApplication,
+        status: actionType,
+        feedbackText: feedback,
+      });
       setShowReviewDialog(false);
       setFeedback('');
-
-      await loadApplicationsView();
 
       setError(null);
       enqueueSnackbar(
@@ -479,11 +543,19 @@ function ApplicationManagementPage() {
       );
     } catch (err) {
       setError('Failed to update application status.');
-      enqueueSnackbar('Failed to update application status', { variant: 'error' });
+      enqueueSnackbar('Failed to update application status', {
+        variant: 'error',
+      });
     } finally {
       setUpdating(false);
     }
-  }, [actionType, enqueueSnackbar, feedback, loadApplicationsView, selectedApplication]);
+  }, [
+    actionType,
+    enqueueSnackbar,
+    feedback,
+    selectedApplication,
+    updateApplicationStatusAndRefresh,
+  ]);
 
   const handleOpenReviewDialog = useCallback((type) => {
     setActionType(type);
@@ -510,67 +582,187 @@ function ApplicationManagementPage() {
     }
   };
 
-  const handleSelectApplication = useCallback((application) => {
-    setSelectedApplication(application);
-    if (isMobile) {
-      setShowJobList(false);
-    }
-  }, [isMobile]);
-
-  const handleStepApplication = useCallback((step) => {
-    if (selectedApplicationIndex < 0) return;
-
-    const nextIndex = selectedApplicationIndex + step;
-    if (nextIndex < 0 || nextIndex >= filteredApps.length) return;
-
-    const targetApplication = filteredApps[nextIndex];
-    if (targetApplication) {
-      setSelectedApplication(targetApplication);
+  const handleSelectApplication = useCallback(
+    (application) => {
+      setSelectedApplication(application);
       if (isMobile) {
         setShowJobList(false);
       }
-    }
-  }, [filteredApps, isMobile, selectedApplicationIndex]);
+    },
+    [isMobile],
+  );
 
-  const openReviewDialogForApplication = useCallback((application, type) => {
-    if (!application) return;
-    setSelectedApplication(application);
-    setActionType(type);
-    setFeedback('');
-    setShowReviewDialog(true);
-    if (isMobile) {
-      setShowJobList(false);
-    }
-  }, [isMobile]);
+  const handleStepApplication = useCallback(
+    (step) => {
+      if (selectedApplicationIndex < 0) return;
 
-  const startConversationForApplication = useCallback(async (application) => {
-    if (!application?.workerId) {
-      setError('Worker contact information is unavailable.');
-      return;
-    }
+      const nextIndex = selectedApplicationIndex + step;
+      if (nextIndex < 0 || nextIndex >= filteredApps.length) return;
 
-    try {
-      const conv = await messagingService.createDirectConversation(application.workerId);
-      const conversationId =
-        conv?.id ||
-        conv?._id ||
-        conv?.data?.id ||
-        conv?.data?._id ||
-        conv?.conversation?.id ||
-        conv?.conversation?._id;
-      if (conversationId) {
-        navigate(`/messages?conversation=${conversationId}`);
-        return;
+      const targetApplication = filteredApps[nextIndex];
+      if (targetApplication) {
+        setSelectedApplication(targetApplication);
+        if (isMobile) {
+          setShowJobList(false);
+        }
       }
-      setError('Unable to start chat. Please try again later.');
-    } catch (err) {
-      setError('Unable to start chat. Please try again later.');
-    }
-  }, [navigate]);
+    },
+    [filteredApps, isMobile, selectedApplicationIndex],
+  );
+
+  const openReviewDialogForApplication = useCallback(
+    (application, type) => {
+      if (!application) return;
+      setSelectedApplication(application);
+      setActionType(type);
+      setFeedback('');
+      setShowReviewDialog(true);
+      if (isMobile) {
+        setShowJobList(false);
+      }
+    },
+    [isMobile],
+  );
+
+  const startConversationForApplication = useCallback(
+    async (application) => {
+      if (!application?.workerId) {
+        setError('Worker contact information is unavailable.');
+        return false;
+      }
+
+      try {
+        const conv = await messagingService.createDirectConversation(
+          application.workerId,
+        );
+        const conversationId =
+          conv?.id ||
+          conv?._id ||
+          conv?.data?.id ||
+          conv?.data?._id ||
+          conv?.conversation?.id ||
+          conv?.conversation?._id;
+        if (conversationId) {
+          navigate(`/messages?conversation=${conversationId}`);
+          return true;
+        }
+        setError('Unable to start chat. Please try again later.');
+        return false;
+      } catch (err) {
+        setError('Unable to start chat. Please try again later.');
+        return false;
+      }
+    },
+    [navigate],
+  );
 
   const handleMessage = useCallback(async () => {
     await startConversationForApplication(selectedApplication);
   }, [selectedApplication, startConversationForApplication]);
+
+  const handleAcceptAndMessageMacro = useCallback(async () => {
+    if (!selectedApplication) return;
+
+    setMacroAction('accept-message');
+    try {
+      const targetApplication = selectedApplication;
+      const nextForTriage =
+        filteredApps[selectedApplicationIndex + 1] ||
+        filteredApps[selectedApplicationIndex - 1] ||
+        null;
+
+      if (targetApplication.status !== 'accepted') {
+        await updateApplicationStatusAndRefresh({
+          application: targetApplication,
+          status: 'accepted',
+          feedbackText: QUICK_ACCEPT_FEEDBACK_TEMPLATE,
+        });
+      }
+
+      const opened = await startConversationForApplication(targetApplication);
+      if (!opened) {
+        if (nextForTriage?.id) {
+          setSelectedApplication(nextForTriage);
+        }
+
+        enqueueSnackbar(
+          nextForTriage?.id
+            ? 'Chat could not open. Accepted and moved to next applicant.'
+            : 'Application accepted, but chat could not open.',
+          {
+            variant: 'warning',
+          },
+        );
+      } else if (targetApplication.status !== 'accepted') {
+        enqueueSnackbar('Application accepted and chat opened.', {
+          variant: 'success',
+        });
+      } else {
+        enqueueSnackbar('Chat opened for accepted application.', {
+          variant: 'success',
+        });
+      }
+      setError(null);
+    } catch (err) {
+      setError('Accept + message quick action failed.');
+      enqueueSnackbar('Accept + message quick action failed', {
+        variant: 'error',
+      });
+    } finally {
+      setMacroAction('');
+    }
+  }, [
+    enqueueSnackbar,
+    filteredApps,
+    selectedApplicationIndex,
+    selectedApplication,
+    startConversationForApplication,
+    updateApplicationStatusAndRefresh,
+  ]);
+
+  const handleRejectWithTemplateMacro = useCallback(async () => {
+    if (!selectedApplication || selectedApplication.status === 'rejected') {
+      return;
+    }
+
+    setMacroAction('reject-template');
+    try {
+      const targetApplication = selectedApplication;
+      const nextForTriage =
+        filteredApps[selectedApplicationIndex + 1] ||
+        filteredApps[selectedApplicationIndex - 1] ||
+        null;
+
+      if (nextForTriage?.id) {
+        setSelectedApplication(nextForTriage);
+      }
+
+      await updateApplicationStatusAndRefresh({
+        application: targetApplication,
+        status: 'rejected',
+        feedbackText: buildQuickRejectFeedbackTemplate(targetApplication),
+      });
+      setError(null);
+      enqueueSnackbar('Application rejected with template feedback.', {
+        variant: 'success',
+      });
+    } catch (err) {
+      setError('Reject + template quick action failed.');
+      enqueueSnackbar('Reject + template quick action failed', {
+        variant: 'error',
+      });
+    } finally {
+      setMacroAction('');
+    }
+  }, [
+    enqueueSnackbar,
+    filteredApps,
+    selectedApplication,
+    selectedApplicationIndex,
+    updateApplicationStatusAndRefresh,
+  ]);
+
+  const macroInProgress = macroAction !== '';
 
   useEffect(() => {
     if (!selectedApplication || showReviewDialog) {
@@ -592,13 +784,19 @@ function ApplicationManagementPage() {
 
       const key = String(event.key || '').toLowerCase();
 
-      if ((event.key === 'ArrowLeft' || event.key === 'ArrowUp') && canSelectPrevious) {
+      if (
+        (event.key === 'ArrowLeft' || event.key === 'ArrowUp') &&
+        canSelectPrevious
+      ) {
         event.preventDefault();
         handleStepApplication(-1);
         return;
       }
 
-      if ((event.key === 'ArrowRight' || event.key === 'ArrowDown') && canSelectNext) {
+      if (
+        (event.key === 'ArrowRight' || event.key === 'ArrowDown') &&
+        canSelectNext
+      ) {
         event.preventDefault();
         handleStepApplication(1);
         return;
@@ -641,438 +839,538 @@ function ApplicationManagementPage() {
      ═══════════════════════════════════════════════════════════════ */
 
   return (
-    <PageCanvas disableContainer sx={{ pt: { xs: 1, md: 4 }, pb: { xs: 10, md: 6 }, overflowX: 'clip' }}>
-    <Container
-      maxWidth="xl"
-      sx={{
-        mt: { xs: 1, md: 3 },
-        mb: { xs: 2, md: 4 },
-        px: { xs: 0.75, sm: 2 },
-        pb: { xs: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px) + 12px)`, md: 0 },
-        width: '100%',
-        minWidth: 0,
-      }}
+    <PageCanvas
+      disableContainer
+      sx={{ pt: { xs: 1, md: 4 }, pb: { xs: 10, md: 6 }, overflowX: 'clip' }}
     >
-      <Helmet>
-        <title>Applications | Kelmah</title>
-      </Helmet>
-
-      {/* ── Header ────────────────────────────────────────────── */}
-      <Box
+      <Container
+        maxWidth="xl"
         sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          mb: 1.5,
-          flexWrap: 'wrap',
-          gap: 1,
-          position: { xs: 'sticky', md: 'static' },
-          top: { xs: HEADER_HEIGHT_MOBILE, md: 'auto' },
-          zIndex: { xs: Z_INDEX.sticky, md: 'auto' },
-          py: { xs: 0.5, md: 0 },
-          backgroundColor: { xs: 'background.default', md: 'transparent' },
+          mt: { xs: 1, md: 3 },
+          mb: { xs: 2, md: 4 },
+          px: { xs: 0.75, sm: 2 },
+          pb: {
+            xs: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px) + 12px)`,
+            md: 0,
+          },
+          width: '100%',
+          minWidth: 0,
         }}
       >
-        <Box>
-          <Typography variant={isCompactMobile ? 'h5' : isMobile ? 'h5' : 'h4'} fontWeight={700} sx={{ lineHeight: 1.1 }}>
-            Job Applications
-          </Typography>
-          {biddingJobsCount > 0 && (
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-              Bid-based jobs are reviewed from the dedicated bids screen and are excluded here.
-            </Typography>
-          )}
-          {selectedJob && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
-              <Chip
-                icon={<Work />}
-                label={selectedJob.title}
-                color="primary"
-                variant="outlined"
-                onClick={() => navigate(`/jobs/${selectedJobId}`)}
-                onDelete={() => handleSelectJob(null)}
-                deleteIcon={
-                  <Tooltip title="View all jobs">
-                    <FilterList />
-                  </Tooltip>
-                }
-                sx={{ maxWidth: 400, cursor: 'pointer' }}
-              />
-              <Typography variant="body2" color="text.secondary">
-                {selectedScopeTotal} application
-                {selectedScopeTotal !== 1 ? 's' : ''}
-              </Typography>
-            </Box>
-          )}
-        </Box>
-        {isMobile && (
-          <Button
-            size="small"
-            variant="outlined"
-            startIcon={<Work />}
-            onClick={() => setShowJobList(!showJobList)}>
-            {showJobList ? 'Hide Jobs' : selectedJobId ? 'Switch Job' : 'Select Job'}
-          </Button>
-        )}
-      </Box>
+        <Helmet>
+          <title>Applications | Kelmah</title>
+        </Helmet>
 
-      {!isMobile && !hasNoStandardJobs && (
-        <Paper
-          variant="outlined"
+        {/* ── Header ────────────────────────────────────────────── */}
+        <Box
           sx={{
-            mb: 1.5,
-            px: 1.5,
-            py: 1,
-            borderRadius: 2,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            gap: 1,
+            mb: 1.5,
             flexWrap: 'wrap',
-            bgcolor: alpha(theme.palette.primary.main, 0.03),
+            gap: 1,
+            position: { xs: 'sticky', md: 'static' },
+            top: { xs: HEADER_HEIGHT_MOBILE, md: 'auto' },
+            zIndex: { xs: Z_INDEX.sticky, md: 'auto' },
+            py: { xs: 0.5, md: 0 },
+            backgroundColor: { xs: 'background.default', md: 'transparent' },
           }}
         >
-          <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>
-            Applications Snapshot
-          </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
-            <Chip size="small" variant="outlined" label={`${selectedScopeTotal} in scope`} />
-            {activeTab === 'pending' && (
-              <Chip size="small" color="warning" variant="outlined" label={`${filteredApps.length} pending review`} />
-            )}
-            {triageSummary.avgRate !== null && (
-              <Chip size="small" variant="outlined" label={`Avg offer ${formatGhanaCurrencyLabel(triageSummary.avgRate)}`} />
-            )}
-            <Chip size="small" variant="outlined" label={`${triageSummary.ratedProfiles} rated profiles`} />
-            <Chip size="small" variant="outlined" label={`${triageSummary.recent48h} new in 48h`} />
-          </Box>
-        </Paper>
-      )}
-
-      {hasNoStandardJobs ? (
-        <NoStandardJobsPanel
-          hasBiddingJobs={biddingJobsCount > 0}
-          onGoToJobs={() => navigate('/hirer/jobs')}
-          onPostJob={() => navigate('/hirer/jobs/post')}
-          onFindTalent={() => navigate('/hirer/find-talents')}
-        />
-      ) : (
-        <Paper
-          elevation={0}
-          sx={{
-            border: `1px solid ${theme.palette.divider}`,
-            borderRadius: 2,
-            display: 'flex',
-            flexDirection: isMobile ? 'column' : 'row',
-            minHeight: isMobile ? 'auto' : 560,
-          }}
-        >
-          <JobSidebar
-            isMobile={isMobile}
-            showJobList={showJobList}
-            isTablet={isTablet}
-            allJobs={allJobs}
-            selectedJobId={selectedJobId}
-            totalApplications={summary?.totalApplications || 0}
-            totalAppCounts={totalAppCounts}
-            onSelectJob={handleSelectJob}
-          />
-
-          {/* ── Col 2: Applications list ────────────────────────── */}
-          <Box
-            sx={{
-              width: isMobile ? '100%' : isTablet ? 300 : 360,
-              minWidth: isMobile ? 'auto' : isTablet ? 300 : 360,
-              borderRight: isMobile
-                ? 'none'
-                : `1px solid ${theme.palette.divider}`,
-              display: mobileDetailMode ? 'none' : 'flex',
-              flexDirection: 'column',
-            }}
-          >
-            {/* Status tabs */}
-            <Tabs
-              value={activeTab}
-              onChange={(e, v) => {
-                setCurrentPage(1);
-                setActiveTab(v);
-                setSelectedApplication(null);
-              }}
-              sx={{
-                borderBottom: `1px solid ${theme.palette.divider}`,
-                minHeight: 44,
-                '& .MuiTab-root': {
-                  minWidth: 80,
-                  minHeight: 44,
-                  px: 1.5,
-                  fontSize: '0.8rem',
-                },
-              }}
-              variant={isMobile ? 'scrollable' : 'fullWidth'}
-              scrollButtons={isMobile ? 'auto' : false}
-              allowScrollButtonsMobile={isMobile}
+          <Box>
+            <Typography
+              variant={isCompactMobile ? 'h5' : isMobile ? 'h5' : 'h4'}
+              fontWeight={700}
+              sx={{ lineHeight: 1.1 }}
             >
-              <Tab
-                label={
-                  tabCounts.pending
-                    ? `Pending (${tabCounts.pending})`
-                    : 'Pending'
-                }
-                value="pending"
-              />
-              <Tab
-                label={
-                  tabCounts.accepted
-                    ? `Accepted (${tabCounts.accepted})`
-                    : 'Accepted'
-                }
-                value="accepted"
-              />
-              <Tab
-                label={
-                  tabCounts.rejected
-                    ? `Rejected (${tabCounts.rejected})`
-                    : 'Rejected'
-                }
-                value="rejected"
-              />
-            </Tabs>
-
-            <ApplicationsListContent
-              initialLoading={initialLoading}
-              error={error}
-              applicationsLoading={applicationsLoading}
-              selectedJobId={selectedJobId}
-              filteredApps={filteredApps}
-              activeTab={activeTab}
-              selectedJob={selectedJob}
-              summary={summary}
-              navigate={navigate}
-              selectedApplicationId={selectedApplication?.id}
-              activeTabCountsByJob={activeTabCountsByJob}
-              onClearError={() => setError(null)}
-              onSelectApplication={handleSelectApplication}
-              onSelectJob={handleSelectJob}
-              onQuickAccept={(application) => openReviewDialogForApplication(application, 'accepted')}
-              onQuickReject={(application) => openReviewDialogForApplication(application, 'rejected')}
-              onQuickMessage={startConversationForApplication}
-            />
-
-            <ApplicationsListFooter
-              selectedScopeTotal={selectedScopeTotal}
-              visibleRange={visibleRange}
-              pagination={pagination}
-              selectedJobId={selectedJobId}
-              sortBy={sortBy}
-              pageSize={pageSize}
-              currentPage={currentPage}
-              isMobile={isMobile}
-              onSortChange={handleSortChange}
-              onPageSizeChange={handlePageSizeChange}
-              onPageChange={handlePageChange}
-            />
-          </Box>
-
-          {/* ── Col 3: Application detail ───────────────────────── */}
-          <Box
-            sx={{
-              flex: 1,
-              width: isMobile ? '100%' : 'auto',
-              p: { xs: 2, md: 3 },
-              display: isMobile && !mobileDetailMode ? 'none' : 'flex',
-              flexDirection: 'column',
-            }}
-          >
-            {selectedApplication ? (
-              <>
-                {isMobile && (
-                  <Button
-                    variant="text"
-                    startIcon={<ArrowBack />}
-                    onClick={() => setSelectedApplication(null)}
-                    sx={{ alignSelf: 'flex-start', mb: 1, minHeight: 44 }}
-                  >
-                    Back To Applications
-                  </Button>
-                )}
-                <ApplicationDetailPanel
-                  app={selectedApplication}
-                  onAccept={() => handleOpenReviewDialog('accepted')}
-                  onReject={() => handleOpenReviewDialog('rejected')}
-                  onMessage={handleMessage}
-                  isMobile={isMobile}
-                  selectedIndex={selectedApplicationIndex}
-                  totalCount={filteredApps.length}
-                  canSelectPrevious={canSelectPrevious}
-                  canSelectNext={canSelectNext}
-                  onSelectPrevious={() => handleStepApplication(-1)}
-                  onSelectNext={() => handleStepApplication(1)}
-                  onViewJob={() =>
-                    navigate(`/jobs/${selectedApplication.jobId}`)
-                  }
-                  navigate={navigate}
-                />
-              </>
-            ) : (
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  height: '100%',
-                  minHeight: 300,
-                  textAlign: 'center',
-                  p: 4,
-                }}
+              Job Applications
+            </Typography>
+            {biddingJobsCount > 0 && (
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ mt: 0.5 }}
               >
-                <Box
-                  sx={{
-                    width: 72,
-                    height: 72,
-                    borderRadius: '50%',
-                    bgcolor: 'action.hover',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    mb: 2,
-                  }}
-                >
-                  <BadgeIcon sx={{ fontSize: 36, color: 'text.disabled' }} />
-                </Box>
-                <Typography variant="h6" color="text.secondary" gutterBottom>
-                  Select an application to review
-                </Typography>
-                <Typography variant="body2" color="text.disabled">
-                  {selectedJobId
-                    ? 'Choose an application from the middle list to view details and actions.'
-                    : 'Pick a job first, then open an application to continue.'}
+                Bid-based jobs are reviewed from the dedicated bids screen and
+                are excluded here.
+              </Typography>
+            )}
+            {selectedJob && (
+              <Box
+                sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}
+              >
+                <Chip
+                  icon={<Work />}
+                  label={selectedJob.title}
+                  color="primary"
+                  variant="outlined"
+                  onClick={() => navigate(`/jobs/${selectedJobId}`)}
+                  onDelete={() => handleSelectJob(null)}
+                  deleteIcon={
+                    <Tooltip title="View all jobs">
+                      <FilterList />
+                    </Tooltip>
+                  }
+                  sx={{ maxWidth: 400, cursor: 'pointer' }}
+                />
+                <Typography variant="body2" color="text.secondary">
+                  {selectedScopeTotal} application
+                  {selectedScopeTotal !== 1 ? 's' : ''}
                 </Typography>
               </Box>
             )}
           </Box>
-        </Paper>
-      )}
+          {isMobile && (
+            <Button
+              size="small"
+              variant="outlined"
+              startIcon={<Work />}
+              onClick={() => setShowJobList(!showJobList)}
+            >
+              {showJobList
+                ? 'Hide Jobs'
+                : selectedJobId
+                  ? 'Switch Job'
+                  : 'Select Job'}
+            </Button>
+          )}
+        </Box>
 
-      <Paper
-        elevation={8}
-        sx={(theme) => ({
-          display: { xs: 'flex', md: 'none' },
-          flexDirection: 'column',
-          position: 'fixed',
-          left: 0,
-          right: 0,
-          bottom: 0,
-          zIndex: theme.zIndex.appBar + 2,
-          px: 1,
-          py: 1,
-          gap: 0.75,
-          borderTop: `1px solid ${theme.palette.divider}`,
-          backgroundColor: theme.palette.background.paper,
-        })}
-      >
-        {selectedApplication ? (
-          <>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 0.5 }}>
-              <IconButton
-                size="small"
-                onClick={() => handleStepApplication(-1)}
-                disabled={!canSelectPrevious}
-                aria-label="Previous application"
-                sx={{ width: 36, height: 36 }}
-              >
-                <NavigateBefore fontSize="small" />
-              </IconButton>
-              <Typography variant="caption" color="text.secondary">
-                {selectedApplicationIndex >= 0
-                  ? `Application ${selectedApplicationIndex + 1} of ${filteredApps.length}`
-                  : `Application list (${filteredApps.length})`}
-              </Typography>
-              <IconButton
-                size="small"
-                onClick={() => handleStepApplication(1)}
-                disabled={!canSelectNext}
-                aria-label="Next application"
-                sx={{ width: 36, height: 36 }}
-              >
-                <NavigateNext fontSize="small" />
-              </IconButton>
-            </Box>
-            <Typography variant="caption" color="text.secondary" sx={{ px: 0.5 }}>
-              Quick decision for {selectedApplication.workerName || 'selected applicant'}
+        {!isMobile && !hasNoStandardJobs && (
+          <Paper
+            variant="outlined"
+            sx={{
+              mb: 1.5,
+              px: 1.5,
+              py: 1,
+              borderRadius: 2,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 1,
+              flexWrap: 'wrap',
+              bgcolor: alpha(theme.palette.primary.main, 0.03),
+            }}
+          >
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ fontWeight: 700 }}
+            >
+              Applications Snapshot
             </Typography>
-            <Box sx={{ display: 'flex', gap: 1 }}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.75,
+                flexWrap: 'wrap',
+              }}
+            >
+              <Chip
+                size="small"
+                variant="outlined"
+                label={`${selectedScopeTotal} in scope`}
+              />
+              {activeTab === 'pending' && (
+                <Chip
+                  size="small"
+                  color="warning"
+                  variant="outlined"
+                  label={`${filteredApps.length} pending review`}
+                />
+              )}
+              {triageSummary.avgRate !== null && (
+                <Chip
+                  size="small"
+                  variant="outlined"
+                  label={`Avg offer ${formatGhanaCurrencyLabel(triageSummary.avgRate)}`}
+                />
+              )}
+              <Chip
+                size="small"
+                variant="outlined"
+                label={`${triageSummary.ratedProfiles} rated profiles`}
+              />
+              <Chip
+                size="small"
+                variant="outlined"
+                label={`${triageSummary.recent48h} new in 48h`}
+              />
+            </Box>
+          </Paper>
+        )}
+
+        {hasNoStandardJobs ? (
+          <NoStandardJobsPanel
+            hasBiddingJobs={biddingJobsCount > 0}
+            onGoToJobs={() => navigate('/hirer/jobs')}
+            onPostJob={() => navigate('/hirer/jobs/post')}
+            onFindTalent={() => navigate('/hirer/find-talents')}
+          />
+        ) : (
+          <Paper
+            elevation={0}
+            sx={{
+              border: `1px solid ${theme.palette.divider}`,
+              borderRadius: 2,
+              display: 'flex',
+              flexDirection: isMobile ? 'column' : 'row',
+              minHeight: isMobile ? 'auto' : 560,
+            }}
+          >
+            <JobSidebar
+              isMobile={isMobile}
+              showJobList={showJobList}
+              isTablet={isTablet}
+              allJobs={allJobs}
+              selectedJobId={selectedJobId}
+              totalApplications={summary?.totalApplications || 0}
+              totalAppCounts={totalAppCounts}
+              onSelectJob={handleSelectJob}
+            />
+
+            {/* ── Col 2: Applications list ────────────────────────── */}
+            <Box
+              sx={{
+                width: isMobile ? '100%' : isTablet ? 300 : 360,
+                minWidth: isMobile ? 'auto' : isTablet ? 300 : 360,
+                borderRight: isMobile
+                  ? 'none'
+                  : `1px solid ${theme.palette.divider}`,
+                display: mobileDetailMode ? 'none' : 'flex',
+                flexDirection: 'column',
+              }}
+            >
+              {/* Status tabs */}
+              <Tabs
+                value={activeTab}
+                onChange={(e, v) => {
+                  setCurrentPage(1);
+                  setActiveTab(v);
+                  setSelectedApplication(null);
+                }}
+                sx={{
+                  borderBottom: `1px solid ${theme.palette.divider}`,
+                  minHeight: 44,
+                  '& .MuiTab-root': {
+                    minWidth: 80,
+                    minHeight: 44,
+                    px: 1.5,
+                    fontSize: '0.8rem',
+                  },
+                }}
+                variant={isMobile ? 'scrollable' : 'fullWidth'}
+                scrollButtons={isMobile ? 'auto' : false}
+                allowScrollButtonsMobile={isMobile}
+              >
+                <Tab
+                  label={
+                    tabCounts.pending
+                      ? `Pending (${tabCounts.pending})`
+                      : 'Pending'
+                  }
+                  value="pending"
+                />
+                <Tab
+                  label={
+                    tabCounts.accepted
+                      ? `Accepted (${tabCounts.accepted})`
+                      : 'Accepted'
+                  }
+                  value="accepted"
+                />
+                <Tab
+                  label={
+                    tabCounts.rejected
+                      ? `Rejected (${tabCounts.rejected})`
+                      : 'Rejected'
+                  }
+                  value="rejected"
+                />
+              </Tabs>
+
+              <ApplicationsListContent
+                initialLoading={initialLoading}
+                error={error}
+                applicationsLoading={applicationsLoading}
+                selectedJobId={selectedJobId}
+                filteredApps={filteredApps}
+                activeTab={activeTab}
+                selectedJob={selectedJob}
+                summary={summary}
+                navigate={navigate}
+                selectedApplicationId={selectedApplication?.id}
+                activeTabCountsByJob={activeTabCountsByJob}
+                onClearError={() => setError(null)}
+                onSelectApplication={handleSelectApplication}
+                onSelectJob={handleSelectJob}
+                onQuickAccept={(application) =>
+                  openReviewDialogForApplication(application, 'accepted')
+                }
+                onQuickReject={(application) =>
+                  openReviewDialogForApplication(application, 'rejected')
+                }
+                onQuickMessage={startConversationForApplication}
+              />
+
+              <ApplicationsListFooter
+                selectedScopeTotal={selectedScopeTotal}
+                visibleRange={visibleRange}
+                pagination={pagination}
+                selectedJobId={selectedJobId}
+                sortBy={sortBy}
+                pageSize={pageSize}
+                currentPage={currentPage}
+                isMobile={isMobile}
+                onSortChange={handleSortChange}
+                onPageSizeChange={handlePageSizeChange}
+                onPageChange={handlePageChange}
+              />
+            </Box>
+
+            {/* ── Col 3: Application detail ───────────────────────── */}
+            <Box
+              sx={{
+                flex: 1,
+                width: isMobile ? '100%' : 'auto',
+                p: { xs: 2, md: 3 },
+                display: isMobile && !mobileDetailMode ? 'none' : 'flex',
+                flexDirection: 'column',
+              }}
+            >
+              {selectedApplication ? (
+                <>
+                  {isMobile && (
+                    <Button
+                      variant="text"
+                      startIcon={<ArrowBack />}
+                      onClick={() => setSelectedApplication(null)}
+                      sx={{ alignSelf: 'flex-start', mb: 1, minHeight: 44 }}
+                    >
+                      Back To Applications
+                    </Button>
+                  )}
+                  <ApplicationDetailPanel
+                    app={selectedApplication}
+                    onAccept={() => handleOpenReviewDialog('accepted')}
+                    onReject={() => handleOpenReviewDialog('rejected')}
+                    onMessage={handleMessage}
+                    isMobile={isMobile}
+                    selectedIndex={selectedApplicationIndex}
+                    totalCount={filteredApps.length}
+                    canSelectPrevious={canSelectPrevious}
+                    canSelectNext={canSelectNext}
+                    onSelectPrevious={() => handleStepApplication(-1)}
+                    onSelectNext={() => handleStepApplication(1)}
+                    onViewJob={() =>
+                      navigate(`/jobs/${selectedApplication.jobId}`)
+                    }
+                    navigate={navigate}
+                  />
+                </>
+              ) : (
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    height: '100%',
+                    minHeight: 300,
+                    textAlign: 'center',
+                    p: 4,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      width: 72,
+                      height: 72,
+                      borderRadius: '50%',
+                      bgcolor: 'action.hover',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      mb: 2,
+                    }}
+                  >
+                    <BadgeIcon sx={{ fontSize: 36, color: 'text.disabled' }} />
+                  </Box>
+                  <Typography variant="h6" color="text.secondary" gutterBottom>
+                    Select an application to review
+                  </Typography>
+                  <Typography variant="body2" color="text.disabled">
+                    {selectedJobId
+                      ? 'Choose an application from the middle list to view details and actions.'
+                      : 'Pick a job first, then open an application to continue.'}
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+          </Paper>
+        )}
+
+        <Paper
+          elevation={8}
+          sx={(theme) => ({
+            display: { xs: 'flex', md: 'none' },
+            flexDirection: 'column',
+            position: 'fixed',
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: theme.zIndex.appBar + 2,
+            px: 1,
+            py: 1,
+            gap: 0.75,
+            borderTop: `1px solid ${theme.palette.divider}`,
+            backgroundColor: theme.palette.background.paper,
+          })}
+        >
+          {selectedApplication ? (
+            <>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  px: 0.5,
+                }}
+              >
+                <IconButton
+                  size="small"
+                  onClick={() => handleStepApplication(-1)}
+                  disabled={!canSelectPrevious}
+                  aria-label="Previous application"
+                  sx={{ width: 36, height: 36 }}
+                >
+                  <NavigateBefore fontSize="small" />
+                </IconButton>
+                <Typography variant="caption" color="text.secondary">
+                  {selectedApplicationIndex >= 0
+                    ? `Application ${selectedApplicationIndex + 1} of ${filteredApps.length}`
+                    : `Application list (${filteredApps.length})`}
+                </Typography>
+                <IconButton
+                  size="small"
+                  onClick={() => handleStepApplication(1)}
+                  disabled={!canSelectNext}
+                  aria-label="Next application"
+                  sx={{ width: 36, height: 36 }}
+                >
+                  <NavigateNext fontSize="small" />
+                </IconButton>
+              </Box>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ px: 0.5 }}
+              >
+                Quick decision for{' '}
+                {selectedApplication.workerName || 'selected applicant'}
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  sx={{ minHeight: 42 }}
+                  startIcon={<Message />}
+                  onClick={handleMessage}
+                  disabled={macroInProgress}
+                >
+                  Message
+                </Button>
+                <Button
+                  fullWidth
+                  color="success"
+                  variant="contained"
+                  sx={{ minHeight: 42 }}
+                  startIcon={<CheckCircle />}
+                  onClick={handleAcceptAndMessageMacro}
+                  disabled={macroInProgress}
+                >
+                  {macroAction === 'accept-message'
+                    ? 'Processing...'
+                    : selectedApplication.status === 'accepted'
+                      ? 'Message Worker'
+                      : 'Accept + Message'}
+                </Button>
+              </Box>
+              <Button
+                fullWidth
+                color="error"
+                variant="outlined"
+                sx={{ minHeight: 42 }}
+                startIcon={<Cancel />}
+                onClick={handleRejectWithTemplateMacro}
+                disabled={
+                  macroInProgress || selectedApplication.status === 'rejected'
+                }
+              >
+                {macroAction === 'reject-template'
+                  ? 'Processing...'
+                  : selectedApplication.status === 'rejected'
+                    ? 'Rejected'
+                    : 'Reject + Template'}
+              </Button>
+              <Button
+                fullWidth
+                size="small"
+                variant="text"
+                sx={{ minHeight: 34 }}
+                onClick={() => handleOpenReviewDialog('rejected')}
+                disabled={
+                  macroInProgress || selectedApplication.status === 'rejected'
+                }
+              >
+                Add custom rejection note
+              </Button>
+            </>
+          ) : (
+            <>
               <Button
                 fullWidth
                 variant="outlined"
+                color="secondary"
                 sx={{ minHeight: 42 }}
-                startIcon={<Message />}
-                onClick={handleMessage}
+                startIcon={<Work />}
+                onClick={() => setShowJobList((prev) => !prev)}
               >
-                Message
+                {showJobList
+                  ? 'Hide Jobs'
+                  : selectedJobId
+                    ? 'Switch Job'
+                    : 'Select Job'}
               </Button>
               <Button
                 fullWidth
-                color="success"
                 variant="contained"
-                sx={{ minHeight: 42 }}
-                startIcon={<CheckCircle />}
-                onClick={() => handleOpenReviewDialog('accepted')}
-                disabled={selectedApplication.status === 'accepted'}
+                color="secondary"
+                sx={{
+                  minHeight: 42,
+                  boxShadow: '0 2px 8px rgba(255,215,0,0.35)',
+                }}
+                startIcon={<ArrowForward />}
+                onClick={() => navigate('/hirer/jobs/post')}
               >
-                {selectedApplication.status === 'accepted' ? 'Accepted' : 'Accept'}
+                Post Job
               </Button>
-            </Box>
-            <Button
-              fullWidth
-              color="error"
-              variant="outlined"
-              sx={{ minHeight: 42 }}
-              startIcon={<Cancel />}
-              onClick={() => handleOpenReviewDialog('rejected')}
-              disabled={selectedApplication.status === 'rejected'}
-            >
-              {selectedApplication.status === 'rejected' ? 'Rejected' : 'Reject'}
-            </Button>
-          </>
-        ) : (
-          <>
-            <Button
-              fullWidth
-              variant="outlined"
-              color="secondary"
-              sx={{ minHeight: 42 }}
-              startIcon={<Work />}
-              onClick={() => setShowJobList((prev) => !prev)}
-            >
-              {showJobList ? 'Hide Jobs' : selectedJobId ? 'Switch Job' : 'Select Job'}
-            </Button>
-            <Button
-              fullWidth
-              variant="contained"
-              color="secondary"
-              sx={{ minHeight: 42, boxShadow: '0 2px 8px rgba(255,215,0,0.35)' }}
-              startIcon={<ArrowForward />}
-              onClick={() => navigate('/hirer/jobs/post')}
-            >
-              Post Job
-            </Button>
-          </>
-        )}
-      </Paper>
+            </>
+          )}
+        </Paper>
 
-      <ApplicationReviewDialog
-        open={showReviewDialog}
-        updating={updating}
-        isMobile={isMobile}
-        actionType={actionType}
-        workerName={selectedApplication?.workerName}
-        feedback={feedback}
-        onClose={() => setShowReviewDialog(false)}
-        onFeedbackChange={setFeedback}
-        onConfirm={handleStatusUpdate}
-      />
-    </Container>
+        <ApplicationReviewDialog
+          open={showReviewDialog}
+          updating={updating}
+          isMobile={isMobile}
+          actionType={actionType}
+          workerName={selectedApplication?.workerName}
+          feedback={feedback}
+          onClose={() => setShowReviewDialog(false)}
+          onFeedbackChange={setFeedback}
+          onConfirm={handleStatusUpdate}
+        />
+      </Container>
     </PageCanvas>
   );
 }
@@ -1095,7 +1393,9 @@ function ApplicationsListFooter({
   onPageChange,
 }) {
   const theme = useTheme();
-  const sortLabel = APPLICATION_SORT_OPTIONS.find((option) => option.value === sortBy)?.label || 'Newest First';
+  const sortLabel =
+    APPLICATION_SORT_OPTIONS.find((option) => option.value === sortBy)?.label ||
+    'Newest First';
 
   return (
     <Box
@@ -1119,7 +1419,12 @@ function ApplicationsListFooter({
             ? `Showing ${visibleRange.start}-${visibleRange.end} of ${pagination.totalItems || selectedScopeTotal} ${selectedJobId ? 'applications' : 'applications in this view'}`
             : 'No applications to show'}
         </Typography>
-        <Typography variant="caption" color="text.disabled" display="block" sx={{ mt: 0.25 }}>
+        <Typography
+          variant="caption"
+          color="text.disabled"
+          display="block"
+          sx={{ mt: 0.25 }}
+        >
           Sorted by {sortLabel} • {pageSize} per page
         </Typography>
         <Box
@@ -1212,7 +1517,11 @@ function JobSidebar({
         <Typography variant="overline" color="text.secondary" fontWeight={700}>
           Your Jobs ({allJobs.length})
         </Typography>
-        <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mt: 0.25 }}>
+        <Typography
+          variant="caption"
+          color="text.disabled"
+          sx={{ display: 'block', mt: 0.25 }}
+        >
           Pick a job to narrow this list.
         </Typography>
       </Box>
@@ -1359,13 +1668,17 @@ function ApplicationsListContent({
             grouped[key].apps.push(app);
           });
 
-          const groupedEntries = Object.entries(grouped).sort(([, leftGroup], [, rightGroup]) => {
-            if (rightGroup.apps.length !== leftGroup.apps.length) {
-              return rightGroup.apps.length - leftGroup.apps.length;
-            }
+          const groupedEntries = Object.entries(grouped).sort(
+            ([, leftGroup], [, rightGroup]) => {
+              if (rightGroup.apps.length !== leftGroup.apps.length) {
+                return rightGroup.apps.length - leftGroup.apps.length;
+              }
 
-            return String(leftGroup.title || '').localeCompare(String(rightGroup.title || ''));
-          });
+              return String(leftGroup.title || '').localeCompare(
+                String(rightGroup.title || ''),
+              );
+            },
+          );
 
           return groupedEntries.map(([jobId, group]) => (
             <Box key={jobId} sx={{ mb: 2 }}>
@@ -1402,8 +1715,7 @@ function ApplicationsListContent({
                     noWrap: true,
                   }}
                   sx={{ my: 0 }}
-                >
-                </ListItemText>
+                ></ListItemText>
                 <Chip
                   size="small"
                   label={activeTabCountsByJob[jobId] || group.apps.length}
@@ -1464,10 +1776,8 @@ function ApplicationReviewDialog({
       <DialogContent>
         <Typography>
           You are about to{' '}
-          <strong>
-            {actionType === 'accepted' ? 'accept' : 'reject'}
-          </strong>{' '}
-          the application from <strong>{workerName}</strong>.
+          <strong>{actionType === 'accepted' ? 'accept' : 'reject'}</strong> the
+          application from <strong>{workerName}</strong>.
         </Typography>
         {actionType === 'rejected' && (
           <>
@@ -1480,7 +1790,9 @@ function ApplicationReviewDialog({
               onChange={(e) => onFeedbackChange(e.target.value)}
               sx={{ mt: 2 }}
             />
-            <Box sx={{ mt: 1.25, display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
+            <Box
+              sx={{ mt: 1.25, display: 'flex', gap: 0.75, flexWrap: 'wrap' }}
+            >
               {quickRejectReasons.map((reason) => (
                 <Chip
                   key={reason}
@@ -1585,8 +1897,13 @@ function ApplicationDetailPanel({
       </Box>
 
       {!isMobile && (
-        <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mb: 1.5 }}>
-          Shortcuts: Left/Right to switch, A to accept, R to reject, M to message.
+        <Typography
+          variant="caption"
+          color="text.disabled"
+          sx={{ display: 'block', mb: 1.5 }}
+        >
+          Shortcuts: Left/Right to switch, A to accept, R to reject, M to
+          message.
         </Typography>
       )}
 
@@ -1651,13 +1968,9 @@ function ApplicationDetailPanel({
             fontWeight={600}
             sx={{
               cursor: app.workerId ? 'pointer' : 'default',
-              '&:hover': app.workerId
-                ? { textDecoration: 'underline' }
-                : {},
+              '&:hover': app.workerId ? { textDecoration: 'underline' } : {},
             }}
-            onClick={() =>
-              app.workerId && navigate(`/workers/${app.workerId}`)
-            }
+            onClick={() => app.workerId && navigate(`/workers/${app.workerId}`)}
           >
             {app.workerName}
           </Typography>
@@ -1735,30 +2048,31 @@ function ApplicationDetailPanel({
               </Typography>
             </Paper>
           )}
-          {app.createdAt && Number.isFinite(new Date(app.createdAt).getTime()) && (
-            <Paper
-              variant="outlined"
-              sx={{
-                px: 2,
-                py: 1.5,
-                borderRadius: 2,
-                flex: '1 1 140px',
-              }}
-            >
-              <Typography
-                variant="overline"
-                color="text.secondary"
-                sx={{ fontSize: '0.65rem' }}
+          {app.createdAt &&
+            Number.isFinite(new Date(app.createdAt).getTime()) && (
+              <Paper
+                variant="outlined"
+                sx={{
+                  px: 2,
+                  py: 1.5,
+                  borderRadius: 2,
+                  flex: '1 1 140px',
+                }}
               >
-                Applied
-              </Typography>
-              <Typography variant="body1" fontWeight={500}>
-                {formatDistanceToNow(new Date(app.createdAt), {
-                  addSuffix: true,
-                })}
-              </Typography>
-            </Paper>
-          )}
+                <Typography
+                  variant="overline"
+                  color="text.secondary"
+                  sx={{ fontSize: '0.65rem' }}
+                >
+                  Applied
+                </Typography>
+                <Typography variant="body1" fontWeight={500}>
+                  {formatDistanceToNow(new Date(app.createdAt), {
+                    addSuffix: true,
+                  })}
+                </Typography>
+              </Paper>
+            )}
         </Box>
       )}
 
@@ -1807,7 +2121,8 @@ function ApplicationDetailPanel({
           startIcon={<CheckCircle />}
           onClick={onAccept}
           sx={{ minHeight: 44 }}
-          disabled={app.status === 'accepted'}>
+          disabled={app.status === 'accepted'}
+        >
           {app.status === 'accepted' ? 'Accepted' : 'Accept'}
         </Button>
         <Button
@@ -1816,7 +2131,8 @@ function ApplicationDetailPanel({
           startIcon={<Cancel />}
           onClick={onReject}
           sx={{ minHeight: 44 }}
-          disabled={app.status === 'rejected'}>
+          disabled={app.status === 'rejected'}
+        >
           {app.status === 'rejected' ? 'Rejected' : 'Reject'}
         </Button>
       </Box>
@@ -1824,7 +2140,12 @@ function ApplicationDetailPanel({
   );
 }
 
-function NoStandardJobsPanel({ hasBiddingJobs, onGoToJobs, onPostJob, onFindTalent }) {
+function NoStandardJobsPanel({
+  hasBiddingJobs,
+  onGoToJobs,
+  onPostJob,
+  onFindTalent,
+}) {
   return (
     <Paper
       elevation={0}
@@ -1840,7 +2161,8 @@ function NoStandardJobsPanel({ hasBiddingJobs, onGoToJobs, onPostJob, onFindTale
           width: 72,
           height: 72,
           borderRadius: '50%',
-          background: (t) => `linear-gradient(135deg, ${t.palette.primary.light}22, ${t.palette.primary.main}18)`,
+          background: (t) =>
+            `linear-gradient(135deg, ${t.palette.primary.light}22, ${t.palette.primary.main}18)`,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -1851,21 +2173,38 @@ function NoStandardJobsPanel({ hasBiddingJobs, onGoToJobs, onPostJob, onFindTale
         <InboxOutlined sx={{ fontSize: 36, color: 'primary.main' }} />
       </Box>
       <Typography variant="h6" fontWeight={700} gutterBottom>
-        {hasBiddingJobs ? 'No standard applications to review yet' : 'No applications yet'}
+        {hasBiddingJobs
+          ? 'No standard applications to review yet'
+          : 'No applications yet'}
       </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 520, mx: 'auto', mb: 3 }}>
+      <Typography
+        variant="body2"
+        color="text.secondary"
+        sx={{ maxWidth: 520, mx: 'auto', mb: 3 }}
+      >
         {hasBiddingJobs
           ? 'You currently have bid-based jobs. Review those from job management, or post a standard job to receive direct applications in this view.'
           : 'Workers will appear here after they apply to your posted jobs. Start by posting a clear job or inviting talent.'}
       </Typography>
-      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: 'center' }}>
+      <Box
+        sx={{
+          display: 'flex',
+          gap: 1,
+          flexWrap: 'wrap',
+          justifyContent: 'center',
+        }}
+      >
         <Button variant="contained" onClick={onGoToJobs} sx={{ minHeight: 44 }}>
           Go to Job Management
         </Button>
         <Button variant="outlined" onClick={onPostJob} sx={{ minHeight: 44 }}>
           Post a Job
         </Button>
-        <Button variant="text" onClick={onFindTalent} sx={{ minHeight: 44, textTransform: 'none' }}>
+        <Button
+          variant="text"
+          onClick={onFindTalent}
+          sx={{ minHeight: 44, textTransform: 'none' }}
+        >
           Browse Talent
         </Button>
       </Box>
@@ -1976,4 +2315,3 @@ function EmptyAppsPanel({ tab, hasAnyApps, navigate }) {
 }
 
 export default ApplicationManagementPage;
-

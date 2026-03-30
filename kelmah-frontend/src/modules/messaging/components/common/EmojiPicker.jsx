@@ -263,7 +263,9 @@ const EmojiPicker = ({ onEmojiSelect, onClose }) => {
       }
     });
     // If no category match, include all emojis (user can browse freely)
-    setFilteredEmojis(results.length > 0 ? results : Object.values(emojiData).flat());
+    setFilteredEmojis(
+      results.length > 0 ? results : Object.values(emojiData).flat(),
+    );
   }, [searchQuery]);
 
   const handleToggle = () => {
@@ -470,4 +472,3 @@ EmojiPicker.propTypes = {
 };
 
 export default EmojiPicker;
-

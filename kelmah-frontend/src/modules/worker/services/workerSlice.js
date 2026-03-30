@@ -24,10 +24,7 @@ export const updateWorkerProfile = createAsyncThunk(
   'worker/updateProfile',
   async ({ workerId, profileData }, { rejectWithValue }) => {
     try {
-      const response = await api.put(
-        `/users/workers/${workerId}`,
-        profileData,
-      );
+      const response = await api.put(`/users/workers/${workerId}`, profileData);
       return response.data?.data || response.data;
     } catch (error) {
       return rejectWithValue(
@@ -68,9 +65,7 @@ export const updateWorkerSkills = createAsyncThunk(
               }
 
               if (skill && typeof skill === 'object') {
-                const name = String(
-                  skill.name || skill.skillName || '',
-                ).trim();
+                const name = String(skill.name || skill.skillName || '').trim();
 
                 if (!name) {
                   return null;
@@ -109,7 +104,9 @@ export const updateWorkerSkills = createAsyncThunk(
 
         const existingByName = new Map(
           (Array.isArray(existingSkills) ? existingSkills : []).map((entry) => [
-            String(entry?.name || '').trim().toLowerCase(),
+            String(entry?.name || '')
+              .trim()
+              .toLowerCase(),
             entry,
           ]),
         );
@@ -138,7 +135,9 @@ export const updateWorkerSkills = createAsyncThunk(
 
           const updatePayload = {
             ...(entry.level ? { level: entry.level } : {}),
-            ...(entry.category !== undefined ? { category: entry.category } : {}),
+            ...(entry.category !== undefined
+              ? { category: entry.category }
+              : {}),
             ...(entry.description !== undefined
               ? { description: entry.description }
               : {}),
@@ -225,10 +224,7 @@ export const submitWorkerApplication = createAsyncThunk(
   'worker/submitApplication',
   async ({ jobId, applicationData }, { rejectWithValue }) => {
     try {
-      const response = await api.post(
-        `/jobs/${jobId}/apply`,
-        applicationData,
-      );
+      const response = await api.post(`/jobs/${jobId}/apply`, applicationData);
       return response.data?.data || response.data;
     } catch (error) {
       return rejectWithValue(
@@ -269,7 +265,8 @@ export const updateWorkerAvailability = createAsyncThunk(
       ];
 
       const availableHours = availabilityData?.availableHours || {};
-      const availabilityStatus = availabilityData?.availabilityStatus || 'available';
+      const availabilityStatus =
+        availabilityData?.availabilityStatus || 'available';
       const isAvailable = !['unavailable', 'vacation'].includes(
         String(availabilityStatus).toLowerCase(),
       );
@@ -282,11 +279,11 @@ export const updateWorkerAvailability = createAsyncThunk(
           dayOfWeek,
           slots: hasSlot
             ? [
-              {
-                start: dayData?.start || '09:00',
-                end: dayData?.end || '17:00',
-              },
-            ]
+                {
+                  start: dayData?.start || '09:00',
+                  end: dayData?.end || '17:00',
+                },
+              ]
             : [],
         };
       });
@@ -428,7 +425,8 @@ const workerSlice = createSlice({
       .addCase(fetchWorkerJobs.fulfilled, (state, action) => {
         state.loading.jobs = false;
         const { jobs, status } = action.payload;
-        const normalizedStatus = status === 'completed' ? 'completed' : 'active';
+        const normalizedStatus =
+          status === 'completed' ? 'completed' : 'active';
         state.jobs[normalizedStatus] = jobs;
       })
       .addCase(fetchWorkerJobs.rejected, (state, action) => {
@@ -502,9 +500,6 @@ export const selectWorkerLoading = (key) => (state) =>
   state.worker.loading[key];
 export const selectWorkerError = (key) => (state) => state.worker.error[key];
 
-export const {
-  clearWorkerErrors,
-} = workerSlice.actions;
+export const { clearWorkerErrors } = workerSlice.actions;
 
 export default workerSlice.reducer;
-

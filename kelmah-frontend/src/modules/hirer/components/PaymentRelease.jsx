@@ -1,28 +1,5 @@
 // IconButton focus-visible styling is enforced globally via MuiIconButton theme overrides.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // No mock data - using real API data only
 
 const PAYMENT_SUMMARY_TIMEOUT_MS = 8000;
@@ -46,7 +23,11 @@ const PaymentRelease = () => {
   const [manualRefreshPending, setManualRefreshPending] = useState(false);
   const [summaryTimeout, setSummaryTimeout] = useState(false);
   const [lastSyncedAt, setLastSyncedAt] = useState(null);
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success',
+  });
 
   const lastFetchRef = useRef(0);
   const summaryTimeoutRef = useRef(null);
@@ -226,10 +207,18 @@ const PaymentRelease = () => {
         });
       }
       handleDialogClose();
-      setSnackbar({ open: true, message: 'Payment released successfully', severity: 'success' });
+      setSnackbar({
+        open: true,
+        message: 'Payment released successfully',
+        severity: 'success',
+      });
     } catch (error) {
       devError('Error releasing payment:', error);
-      setSnackbar({ open: true, message: error?.message || 'Failed to release payment', severity: 'error' });
+      setSnackbar({
+        open: true,
+        message: error?.message || 'Failed to release payment',
+        severity: 'error',
+      });
     } finally {
       setLoading(false);
     }
@@ -357,7 +346,13 @@ const PaymentRelease = () => {
       <Box>
         <Grid container spacing={3} sx={{ mb: 4 }}>
           {[...Array(4)].map((_, i) => (
-            <Grid item xs={12} sm={6} md={3} key={`payment-release-card-skeleton-${i}`}>
+            <Grid
+              item
+              xs={12}
+              sm={6}
+              md={3}
+              key={`payment-release-card-skeleton-${i}`}
+            >
               <Skeleton variant="rounded" height={120} animation="wave" />
             </Grid>
           ))}
@@ -366,7 +361,12 @@ const PaymentRelease = () => {
           <CardContent>
             <Skeleton variant="text" height={40} width="40%" sx={{ mb: 2 }} />
             {[...Array(3)].map((_, i) => (
-              <Skeleton key={`payment-release-row-skeleton-${i}`} variant="text" height={60} sx={{ mb: 1 }} />
+              <Skeleton
+                key={`payment-release-row-skeleton-${i}`}
+                variant="text"
+                height={60}
+                sx={{ mb: 1 }}
+              />
             ))}
           </CardContent>
         </Card>
@@ -455,7 +455,11 @@ const PaymentRelease = () => {
                 <Card key={payment.id || payment._id} variant="outlined">
                   <CardContent sx={{ pb: '12px !important' }}>
                     <Box display="flex" alignItems="center" gap={2} mb={1}>
-                      <Avatar src={payment.worker?.avatar} alt={payment.worker?.name || 'Worker avatar'} sx={{ width: 40, height: 40 }}>
+                      <Avatar
+                        src={payment.worker?.avatar}
+                        alt={payment.worker?.name || 'Worker avatar'}
+                        sx={{ width: 40, height: 40 }}
+                      >
                         {(payment.worker?.name || 'W').charAt(0)}
                       </Avatar>
                       <Box sx={{ flex: 1 }}>
@@ -467,23 +471,62 @@ const PaymentRelease = () => {
                         </Typography>
                       </Box>
                     </Box>
-                    <Box display="flex" flexWrap="wrap" gap={1} alignItems="center" mb={1}>
-                      <Typography variant="body2" color="text.secondary">{payment.milestone}</Typography>
-                      <Chip label={getStatusLabel(payment.status)} color={getStatusColor(payment.status)} size="small" />
-                      <Typography variant="subtitle2" fontWeight="bold" color="primary.main" sx={{ ml: 'auto' }}>
+                    <Box
+                      display="flex"
+                      flexWrap="wrap"
+                      gap={1}
+                      alignItems="center"
+                      mb={1}
+                    >
+                      <Typography variant="body2" color="text.secondary">
+                        {payment.milestone}
+                      </Typography>
+                      <Chip
+                        label={getStatusLabel(payment.status)}
+                        color={getStatusColor(payment.status)}
+                        size="small"
+                      />
+                      <Typography
+                        variant="subtitle2"
+                        fontWeight="bold"
+                        color="primary.main"
+                        sx={{ ml: 'auto' }}
+                      >
                         {formatCurrency(payment.amount)}
                       </Typography>
                     </Box>
-                    <Box display="flex" justifyContent="space-between" alignItems="center">
+                    <Box
+                      display="flex"
+                      justifyContent="space-between"
+                      alignItems="center"
+                    >
                       <Typography variant="caption" color="text.secondary">
                         Due: {formatDate(payment.dueDate)}
                       </Typography>
                       <Box display="flex" gap={1}>
-                        <IconButton sx={{ ...iconButtonA11ySx, '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' } }} size="small" onClick={() => handleDialogOpen('view', payment)} aria-label="View payment details">
-                            <ViewIcon />
+                        <IconButton
+                          sx={{
+                            ...iconButtonA11ySx,
+                            '&:focus-visible': {
+                              outline: '3px solid',
+                              outlineColor: 'primary.main',
+                              outlineOffset: '2px',
+                            },
+                          }}
+                          size="small"
+                          onClick={() => handleDialogOpen('view', payment)}
+                          aria-label="View payment details"
+                        >
+                          <ViewIcon />
                         </IconButton>
                         {payment.status === 'ready_for_release' && (
-                          <Button size="small" variant="contained" color="primary" startIcon={<MoneyIcon />} onClick={() => handleDialogOpen('release', payment)}>
+                          <Button
+                            size="small"
+                            variant="contained"
+                            color="primary"
+                            startIcon={<MoneyIcon />}
+                            onClick={() => handleDialogOpen('release', payment)}
+                          >
                             Release
                           </Button>
                         )}
@@ -498,12 +541,24 @@ const PaymentRelease = () => {
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell><strong>Job & Worker</strong></TableCell>
-                    <TableCell><strong>Milestone</strong></TableCell>
-                    <TableCell><strong>Amount</strong></TableCell>
-                    <TableCell><strong>Status</strong></TableCell>
-                    <TableCell><strong>Due Date</strong></TableCell>
-                    <TableCell align="center"><strong>Actions</strong></TableCell>
+                    <TableCell>
+                      <strong>Job & Worker</strong>
+                    </TableCell>
+                    <TableCell>
+                      <strong>Milestone</strong>
+                    </TableCell>
+                    <TableCell>
+                      <strong>Amount</strong>
+                    </TableCell>
+                    <TableCell>
+                      <strong>Status</strong>
+                    </TableCell>
+                    <TableCell>
+                      <strong>Due Date</strong>
+                    </TableCell>
+                    <TableCell align="center">
+                      <strong>Actions</strong>
+                    </TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -556,7 +611,15 @@ const PaymentRelease = () => {
                       <TableCell align="center">
                         <Box display="flex" gap={1} justifyContent="center">
                           <Tooltip title="View Details">
-                            <IconButton sx={{ ...iconButtonA11ySx, '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' } }}
+                            <IconButton
+                              sx={{
+                                ...iconButtonA11ySx,
+                                '&:focus-visible': {
+                                  outline: '3px solid',
+                                  outlineColor: 'primary.main',
+                                  outlineOffset: '2px',
+                                },
+                              }}
                               size="small"
                               onClick={() => handleDialogOpen('view', payment)}
                               aria-label={`View payment details for ${payment.workerName || 'worker'}`}
@@ -705,7 +768,10 @@ const PaymentRelease = () => {
                   Payment Details
                 </Typography>
                 <Box display="flex" alignItems="center" gap={2} mb={2}>
-                  <Avatar src={selectedPayment.worker?.avatar} alt={selectedPayment.worker?.name || 'Worker avatar'}>
+                  <Avatar
+                    src={selectedPayment.worker?.avatar}
+                    alt={selectedPayment.worker?.name || 'Worker avatar'}
+                  >
                     {(selectedPayment.worker?.name || 'W').charAt(0)}
                   </Avatar>
                   <Box>
@@ -739,7 +805,8 @@ const PaymentRelease = () => {
                         paymentMethod === method ? 'contained' : 'outlined'
                       }
                       onClick={() => setPaymentMethod(method)}
-                      sx={{ textTransform: 'capitalize' }}>
+                      sx={{ textTransform: 'capitalize' }}
+                    >
                       {method.replace('_', ' ')}
                     </Button>
                   ))}
@@ -765,7 +832,8 @@ const PaymentRelease = () => {
             onClick={handlePaymentRelease}
             variant="contained"
             disabled={loading}
-            startIcon={loading ? <CircularProgress size={18} /> : <MoneyIcon />}>
+            startIcon={loading ? <CircularProgress size={18} /> : <MoneyIcon />}
+          >
             {loading ? 'Processing...' : 'Release Payment'}
           </Button>
         </DialogActions>
@@ -796,7 +864,10 @@ const PaymentRelease = () => {
                     Worker
                   </Typography>
                   <Box display="flex" alignItems="center" gap={2}>
-                    <Avatar src={selectedPayment.worker?.avatar} alt={selectedPayment.worker?.name || 'Worker avatar'}>
+                    <Avatar
+                      src={selectedPayment.worker?.avatar}
+                      alt={selectedPayment.worker?.name || 'Worker avatar'}
+                    >
                       {(selectedPayment.worker?.name || 'W').charAt(0)}
                     </Avatar>
                     <Typography variant="body2">
@@ -860,5 +931,3 @@ const PaymentRelease = () => {
 };
 
 export default PaymentRelease;
-
-

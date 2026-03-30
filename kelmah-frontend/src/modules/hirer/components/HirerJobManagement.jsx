@@ -1,18 +1,5 @@
 // IconButton focus-visible styling is enforced globally via MuiIconButton theme overrides.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 const HirerJobManagement = () => {
   const theme = useTheme();
   const isMobile = useBreakpointDown('md');
@@ -26,7 +13,11 @@ const HirerJobManagement = () => {
   const [dialogType, setDialogType] = useState(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success',
+  });
 
   // Redux selectors
   const activeJobs = useSelector(selectHirerJobs('active'));
@@ -50,9 +41,13 @@ const HirerJobManagement = () => {
     ];
     const totalJobs = allJobs.length;
     const totalSpent = allJobs.reduce((sum, job) => sum + (job.budget || 0), 0);
-    const totalApplications = allJobs.reduce((sum, job) => sum + (job.applicationsCount || 0), 0);
+    const totalApplications = allJobs.reduce(
+      (sum, job) => sum + (job.applicationsCount || 0),
+      0,
+    );
     const completed = Array.isArray(completedJobs) ? completedJobs.length : 0;
-    const hireSuccessRate = totalJobs > 0 ? Math.round((completed / totalJobs) * 100) : 0;
+    const hireSuccessRate =
+      totalJobs > 0 ? Math.round((completed / totalJobs) * 100) : 0;
     return { totalJobs, totalSpent, totalApplications, hireSuccessRate };
   }, [activeJobs, completedJobs, draftJobs]);
 
@@ -123,11 +118,21 @@ const HirerJobManagement = () => {
   const handleDeleteJob = async () => {
     if (selectedJob) {
       try {
-        await dispatch(deleteHirerJob(selectedJob.id || selectedJob._id)).unwrap();
-        setSnackbar({ open: true, message: 'Job deleted successfully', severity: 'success' });
+        await dispatch(
+          deleteHirerJob(selectedJob.id || selectedJob._id),
+        ).unwrap();
+        setSnackbar({
+          open: true,
+          message: 'Job deleted successfully',
+          severity: 'success',
+        });
         handleDialogClose();
       } catch (err) {
-        setSnackbar({ open: true, message: err?.message || 'Failed to delete job', severity: 'error' });
+        setSnackbar({
+          open: true,
+          message: err?.message || 'Failed to delete job',
+          severity: 'error',
+        });
         handleDialogClose();
       }
     }
@@ -142,10 +147,18 @@ const HirerJobManagement = () => {
             status: 'active',
           }),
         ).unwrap();
-        setSnackbar({ open: true, message: 'Job published successfully', severity: 'success' });
+        setSnackbar({
+          open: true,
+          message: 'Job published successfully',
+          severity: 'success',
+        });
         handleDialogClose();
       } catch (err) {
-        setSnackbar({ open: true, message: err?.message || 'Failed to publish job', severity: 'error' });
+        setSnackbar({
+          open: true,
+          message: err?.message || 'Failed to publish job',
+          severity: 'error',
+        });
         handleDialogClose();
       }
     }
@@ -217,7 +230,11 @@ const HirerJobManagement = () => {
                 </Typography>
                 <Typography
                   variant="body2"
-                  sx={{ opacity: 0.9, whiteSpace: 'normal', fontSize: { xs: '0.7rem', sm: '0.875rem' } }}
+                  sx={{
+                    opacity: 0.9,
+                    whiteSpace: 'normal',
+                    fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                  }}
                 >
                   Total Jobs Posted
                 </Typography>
@@ -260,7 +277,11 @@ const HirerJobManagement = () => {
                 </Typography>
                 <Typography
                   variant="body2"
-                  sx={{ opacity: 0.9, whiteSpace: 'normal', fontSize: { xs: '0.7rem', sm: '0.875rem' } }}
+                  sx={{
+                    opacity: 0.9,
+                    whiteSpace: 'normal',
+                    fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                  }}
                 >
                   Total Amount Spent
                 </Typography>
@@ -303,7 +324,11 @@ const HirerJobManagement = () => {
                 </Typography>
                 <Typography
                   variant="body2"
-                  sx={{ opacity: 0.9, whiteSpace: 'normal', fontSize: { xs: '0.7rem', sm: '0.875rem' } }}
+                  sx={{
+                    opacity: 0.9,
+                    whiteSpace: 'normal',
+                    fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                  }}
                 >
                   Total Applications
                 </Typography>
@@ -346,12 +371,18 @@ const HirerJobManagement = () => {
                 </Typography>
                 <Typography
                   variant="body2"
-                  sx={{ opacity: 0.9, whiteSpace: 'normal', fontSize: { xs: '0.7rem', sm: '0.875rem' } }}
+                  sx={{
+                    opacity: 0.9,
+                    whiteSpace: 'normal',
+                    fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                  }}
                 >
                   Success Rate
                 </Typography>
               </Box>
-              <TrendingUpIcon sx={{ fontSize: { xs: 26, sm: 40 }, opacity: 0.8 }} />
+              <TrendingUpIcon
+                sx={{ fontSize: { xs: 26, sm: 40 }, opacity: 0.8 }}
+              />
             </Box>
           </CardContent>
         </Card>
@@ -373,7 +404,12 @@ const HirerJobManagement = () => {
         <CardContent>
           <Skeleton variant="text" height={40} width="40%" sx={{ mb: 2 }} />
           {[...Array(5)].map((_, i) => (
-            <Skeleton key={`hirer-job-row-skeleton-${i}`} variant="text" height={60} sx={{ mb: 1 }} />
+            <Skeleton
+              key={`hirer-job-row-skeleton-${i}`}
+              variant="text"
+              height={60}
+              sx={{ mb: 1 }}
+            />
           ))}
         </CardContent>
       </Card>
@@ -445,25 +481,50 @@ const HirerJobManagement = () => {
                     : "You haven't posted any jobs yet"}
               </Typography>
               {analytics.totalJobs > 0 && (
-                <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center', flexWrap: 'wrap', mb: 1 }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    gap: 1,
+                    justifyContent: 'center',
+                    flexWrap: 'wrap',
+                    mb: 1,
+                  }}
+                >
                   {activeTab !== 0 && activeJobs?.length > 0 && (
-                    <Button variant="outlined" size="small" onClick={() => setActiveTab(0)}>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={() => setActiveTab(0)}
+                    >
                       Active ({activeJobs.length})
                     </Button>
                   )}
                   {activeTab !== 1 && completedJobs?.length > 0 && (
-                    <Button variant="outlined" size="small" onClick={() => setActiveTab(1)}>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={() => setActiveTab(1)}
+                    >
                       Completed ({completedJobs.length})
                     </Button>
                   )}
                   {activeTab !== 2 && draftJobs?.length > 0 && (
-                    <Button variant="outlined" size="small" onClick={() => setActiveTab(2)}>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={() => setActiveTab(2)}
+                    >
                       Drafts ({draftJobs.length})
                     </Button>
                   )}
                 </Box>
               )}
-              <Button variant="contained" color="primary" onClick={() => navigate('/hirer/jobs/post')} sx={{ mt: 1 }}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => navigate('/hirer/jobs/post')}
+                sx={{ mt: 1 }}
+              >
                 Post New Job
               </Button>
             </Box>
@@ -475,27 +536,71 @@ const HirerJobManagement = () => {
                   {paginatedJobs.map((job) => (
                     <Card key={job.id || job._id} variant="outlined">
                       <CardContent sx={{ pb: '12px !important' }}>
-                        <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={1}>
+                        <Box
+                          display="flex"
+                          justifyContent="space-between"
+                          alignItems="flex-start"
+                          mb={1}
+                        >
                           <Box sx={{ flex: 1, mr: 1 }}>
                             <Typography variant="subtitle2" fontWeight="bold">
                               {job.title}
                             </Typography>
-                            <Typography variant="body2" color="text.secondary" noWrap>
+                            <Typography
+                              variant="body2"
+                              color="text.secondary"
+                              noWrap
+                            >
                               {job.description?.substring(0, 60)}...
                             </Typography>
                           </Box>
-                          <IconButton sx={{ ...iconButtonA11ySx, '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' } }} size="small" onClick={(e) => handleMenuOpen(e, job)} aria-label="Job actions">
+                          <IconButton
+                            sx={{
+                              ...iconButtonA11ySx,
+                              '&:focus-visible': {
+                                outline: '3px solid',
+                                outlineColor: 'primary.main',
+                                outlineOffset: '2px',
+                              },
+                            }}
+                            size="small"
+                            onClick={(e) => handleMenuOpen(e, job)}
+                            aria-label="Job actions"
+                          >
                             <MoreVertIcon />
                           </IconButton>
                         </Box>
-                        <Box display="flex" flexWrap="wrap" gap={1} alignItems="center">
-                          <Chip label={job.category} size="small" variant="outlined" color="primary" />
-                          <Chip label={job.status?.toUpperCase()} size="small" color={getStatusColor(job.status)} variant="filled" />
-                          <Typography variant="subtitle2" fontWeight="bold" sx={{ ml: 'auto' }}>
+                        <Box
+                          display="flex"
+                          flexWrap="wrap"
+                          gap={1}
+                          alignItems="center"
+                        >
+                          <Chip
+                            label={job.category}
+                            size="small"
+                            variant="outlined"
+                            color="primary"
+                          />
+                          <Chip
+                            label={job.status?.toUpperCase()}
+                            size="small"
+                            color={getStatusColor(job.status)}
+                            variant="filled"
+                          />
+                          <Typography
+                            variant="subtitle2"
+                            fontWeight="bold"
+                            sx={{ ml: 'auto' }}
+                          >
                             {formatCurrency(job.budget)}
                           </Typography>
                         </Box>
-                        <Box display="flex" justifyContent="space-between" mt={1}>
+                        <Box
+                          display="flex"
+                          justifyContent="space-between"
+                          mt={1}
+                        >
                           <Typography variant="caption" color="text.secondary">
                             {job.applicationsCount || 0} applications
                           </Typography>
@@ -509,102 +614,110 @@ const HirerJobManagement = () => {
                 </Box>
               ) : (
                 <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>
-                        <strong>Job Title</strong>
-                      </TableCell>
-                      <TableCell>
-                        <strong>Category</strong>
-                      </TableCell>
-                      <TableCell>
-                        <strong>Budget</strong>
-                      </TableCell>
-                      <TableCell>
-                        <strong>Applications</strong>
-                      </TableCell>
-                      <TableCell>
-                        <strong>Status</strong>
-                      </TableCell>
-                      <TableCell>
-                        <strong>Created</strong>
-                      </TableCell>
-                      <TableCell align="center">
-                        <strong>Actions</strong>
-                      </TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {paginatedJobs.map((job) => (
-                      <TableRow key={job.id || job._id} hover>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
                         <TableCell>
-                          <Typography variant="subtitle2" fontWeight="bold">
-                            {job.title}
-                          </Typography>
-                          <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            noWrap
-                          >
-                            {job.description?.substring(0, 60)}...
-                          </Typography>
+                          <strong>Job Title</strong>
                         </TableCell>
                         <TableCell>
-                          <Chip
-                            label={job.category}
-                            size="small"
-                            variant="outlined"
-                            color="primary"
-                          />
+                          <strong>Category</strong>
                         </TableCell>
                         <TableCell>
-                          <Typography variant="subtitle2" fontWeight="bold">
-                            {formatCurrency(job.budget)}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            {job.type === 'hourly' ? 'Hourly' : 'Fixed Price'}
-                          </Typography>
+                          <strong>Budget</strong>
                         </TableCell>
                         <TableCell>
-                          <Box display="flex" alignItems="center" gap={1}>
-                            <Avatar
-                              sx={{ width: 24, height: 24, fontSize: 12 }}
-                            >
-                              {job.applicationsCount || 0}
-                            </Avatar>
-                            <Typography variant="body2">
-                              Applications
-                            </Typography>
-                          </Box>
+                          <strong>Applications</strong>
                         </TableCell>
                         <TableCell>
-                          <Chip
-                            label={job.status?.toUpperCase()}
-                            size="small"
-                            color={getStatusColor(job.status)}
-                            variant="filled"
-                          />
+                          <strong>Status</strong>
                         </TableCell>
                         <TableCell>
-                          <Typography variant="body2">
-                            {formatDate(job.createdAt)}
-                          </Typography>
+                          <strong>Created</strong>
                         </TableCell>
                         <TableCell align="center">
-                          <IconButton sx={{ ...iconButtonA11ySx, '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' } }}
-                            size="small"
-                            onClick={(e) => handleMenuOpen(e, job)}
-                            aria-label={`Open actions for ${job.title || 'job'}`}
-                          >
-                            <MoreVertIcon />
-                          </IconButton>
+                          <strong>Actions</strong>
                         </TableCell>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+                    </TableHead>
+                    <TableBody>
+                      {paginatedJobs.map((job) => (
+                        <TableRow key={job.id || job._id} hover>
+                          <TableCell>
+                            <Typography variant="subtitle2" fontWeight="bold">
+                              {job.title}
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              color="text.secondary"
+                              noWrap
+                            >
+                              {job.description?.substring(0, 60)}...
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              label={job.category}
+                              size="small"
+                              variant="outlined"
+                              color="primary"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="subtitle2" fontWeight="bold">
+                              {formatCurrency(job.budget)}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              {job.type === 'hourly' ? 'Hourly' : 'Fixed Price'}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Box display="flex" alignItems="center" gap={1}>
+                              <Avatar
+                                sx={{ width: 24, height: 24, fontSize: 12 }}
+                              >
+                                {job.applicationsCount || 0}
+                              </Avatar>
+                              <Typography variant="body2">
+                                Applications
+                              </Typography>
+                            </Box>
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              label={job.status?.toUpperCase()}
+                              size="small"
+                              color={getStatusColor(job.status)}
+                              variant="filled"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">
+                              {formatDate(job.createdAt)}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="center">
+                            <IconButton
+                              sx={{
+                                ...iconButtonA11ySx,
+                                '&:focus-visible': {
+                                  outline: '3px solid',
+                                  outlineColor: 'primary.main',
+                                  outlineOffset: '2px',
+                                },
+                              }}
+                              size="small"
+                              onClick={(e) => handleMenuOpen(e, job)}
+                              aria-label={`Open actions for ${job.title || 'job'}`}
+                            >
+                              <MoreVertIcon />
+                            </IconButton>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
               )}
 
               <TablePagination
@@ -654,7 +767,11 @@ const HirerJobManagement = () => {
       </Menu>
 
       {/* Confirmation Dialogs */}
-      <Dialog open={dialogOpen} onClose={handleDialogClose} fullScreen={isMobile}>
+      <Dialog
+        open={dialogOpen}
+        onClose={handleDialogClose}
+        fullScreen={isMobile}
+      >
         <DialogTitle>
           {dialogType === 'delete' && 'Delete Job'}
           {dialogType === 'publish' && 'Publish Job'}
@@ -675,7 +792,8 @@ const HirerJobManagement = () => {
             }
             color={dialogType === 'delete' ? 'error' : 'primary'}
             variant="contained"
-           aria-label="Delete item">
+            aria-label="Delete item"
+          >
             {dialogType === 'delete' ? 'Delete' : 'Publish'}
           </Button>
         </DialogActions>
@@ -702,5 +820,3 @@ const HirerJobManagement = () => {
 };
 
 export default HirerJobManagement;
-
-

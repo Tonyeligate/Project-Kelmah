@@ -9,7 +9,9 @@ import { devError } from '@/modules/common/utils/devLogger';
 const unwrapData = (response) => response?.data?.data ?? response?.data ?? {};
 const unwrapResponse = (response) => response?.data ?? {};
 const normalizeReview = (review = {}, index = 0) => {
-  const reviewerAvatar = resolveProfileImageUrl(review?.reviewer || review?.hirerId || {});
+  const reviewerAvatar = resolveProfileImageUrl(
+    review?.reviewer || review?.hirerId || {},
+  );
   const jobGallery = resolveMediaAssetUrls(
     review?.job?.coverImage,
     review?.job?.mainImage,
@@ -332,4 +334,3 @@ class ReviewService {
 
 const reviewService = new ReviewService();
 export default reviewService;
-

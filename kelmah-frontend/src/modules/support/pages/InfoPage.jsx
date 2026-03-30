@@ -11,13 +11,11 @@ const PAGE_CONTENT = {
     sections: [
       {
         heading: 'Our mission',
-        body:
-          'We make it easier for skilled workers to find fair jobs and for hirers to find reliable talent quickly.',
+        body: 'We make it easier for skilled workers to find fair jobs and for hirers to find reliable talent quickly.',
       },
       {
         heading: 'Who we serve',
-        body:
-          'Carpenters, masons, electricians, plumbers, painters, and businesses that need dependable craft work.',
+        body: 'Carpenters, masons, electricians, plumbers, painters, and businesses that need dependable craft work.',
       },
     ],
   },
@@ -37,33 +35,31 @@ const PAGE_CONTENT = {
   },
   privacy: {
     title: 'Privacy Policy',
-    subtitle: 'How Kelmah collects, stores, and protects your personal information.',
+    subtitle:
+      'How Kelmah collects, stores, and protects your personal information.',
     sections: [
       {
         heading: 'Data usage',
-        body:
-          'We use account, profile, and activity data to deliver matching, messaging, and secure payments.',
+        body: 'We use account, profile, and activity data to deliver matching, messaging, and secure payments.',
       },
       {
         heading: 'Data protection',
-        body:
-          'We apply encryption and access controls to reduce unauthorized access and protect user information.',
+        body: 'We apply encryption and access controls to reduce unauthorized access and protect user information.',
       },
     ],
   },
   terms: {
     title: 'Terms of Service',
-    subtitle: 'Rules and responsibilities for workers, hirers, and platform use.',
+    subtitle:
+      'Rules and responsibilities for workers, hirers, and platform use.',
     sections: [
       {
         heading: 'Account responsibilities',
-        body:
-          'Users are responsible for accurate profile details and lawful use of the platform and communications.',
+        body: 'Users are responsible for accurate profile details and lawful use of the platform and communications.',
       },
       {
         heading: 'Marketplace conduct',
-        body:
-          'Kelmah expects respectful behavior, honest job details, and timely dispute cooperation when needed.',
+        body: 'Kelmah expects respectful behavior, honest job details, and timely dispute cooperation when needed.',
       },
     ],
   },
@@ -85,13 +81,20 @@ const InfoPage = ({ variant }) => {
   const content = PAGE_CONTENT[activeVariant];
 
   return (
-    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
+    <PageCanvas
+      disableContainer
+      sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}
+    >
       <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
         <Helmet>
           <title>{`${content.title} | Kelmah`}</title>
         </Helmet>
         <Box sx={{ mb: 3 }}>
-          <Typography variant="h4" fontWeight={700} sx={{ mb: 1, wordBreak: 'break-word' }}>
+          <Typography
+            variant="h4"
+            fontWeight={700}
+            sx={{ mb: 1, wordBreak: 'break-word' }}
+          >
             {content.title}
           </Typography>
           <Typography color="text.secondary" sx={{ maxWidth: '72ch' }}>
@@ -116,11 +119,22 @@ const InfoPage = ({ variant }) => {
         </Box>
         <Stack spacing={2.5}>
           {content.sections.map((section) => (
-            <Box key={section.heading} sx={{ p: 2.5, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
+            <Box
+              key={section.heading}
+              sx={{
+                p: 2.5,
+                borderRadius: 2,
+                border: '1px solid',
+                borderColor: 'divider',
+              }}
+            >
               <Typography variant="h6" fontWeight={600} sx={{ mb: 1 }}>
                 {section.heading}
               </Typography>
-              <Typography color="text.secondary" sx={{ wordBreak: 'break-word' }}>
+              <Typography
+                color="text.secondary"
+                sx={{ wordBreak: 'break-word' }}
+              >
                 {section.body}
               </Typography>
             </Box>

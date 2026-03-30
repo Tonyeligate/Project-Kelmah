@@ -135,7 +135,11 @@ const JobSearch = () => {
               {job.description}
             </Typography>
             <Box sx={{ mt: 1, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-              <Chip icon={<LocationOn />} label={formatJobLocation(job.location)} size="small" />
+              <Chip
+                icon={<LocationOn />}
+                label={formatJobLocation(job.location)}
+                size="small"
+              />
               <Chip icon={<Work />} label={job.category} size="small" />
               <Chip
                 icon={<AttachMoney />}
@@ -333,5 +337,3 @@ const JobSearch = () => {
 };
 
 export default JobSearch;
-
-

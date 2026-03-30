@@ -45,7 +45,7 @@ const ContractForm = ({ jobId, workerId, onSubmit, onCancel }) => {
   const [snackbar, setSnackbar] = useState({ open: false, message: '' });
 
   const addMilestone = () => {
-    setMilestones(prev => [
+    setMilestones((prev) => [
       ...prev,
       { title: '', amount: '', dueDate: '', description: '' },
     ]);
@@ -53,11 +53,11 @@ const ContractForm = ({ jobId, workerId, onSubmit, onCancel }) => {
 
   const removeMilestone = (index) => {
     if (milestones.length <= 1) return;
-    setMilestones(prev => prev.filter((_, i) => i !== index));
+    setMilestones((prev) => prev.filter((_, i) => i !== index));
   };
 
   const updateMilestone = (index, field, value) => {
-    setMilestones(prev =>
+    setMilestones((prev) =>
       prev.map((m, i) => (i === index ? { ...m, [field]: value } : m)),
     );
   };
@@ -74,7 +74,9 @@ const ContractForm = ({ jobId, workerId, onSubmit, onCancel }) => {
   const handleSubmit = async () => {
     setError('');
     if (!isFormValid()) {
-      setError('Please fill in contract title, amount, start date, and at least one milestone.');
+      setError(
+        'Please fill in contract title, amount, start date, and at least one milestone.',
+      );
       return;
     }
     if (!milestoneTotalValid()) {
@@ -91,12 +93,14 @@ const ContractForm = ({ jobId, workerId, onSubmit, onCancel }) => {
         startDate,
         endDate: endDate || undefined,
         paymentTerms,
-        milestones: milestones.filter(m => m.title.trim()).map(m => ({
-          title: m.title,
-          amount: parseFloat(m.amount) || 0,
-          dueDate: m.dueDate || undefined,
-          description: m.description || undefined,
-        })),
+        milestones: milestones
+          .filter((m) => m.title.trim())
+          .map((m) => ({
+            title: m.title,
+            amount: parseFloat(m.amount) || 0,
+            dueDate: m.dueDate || undefined,
+            description: m.description || undefined,
+          })),
         jobId: jobId || undefined,
         workerId: workerId || undefined,
       };
@@ -108,7 +112,11 @@ const ContractForm = ({ jobId, workerId, onSubmit, onCancel }) => {
       }
       setSnackbar({ open: true, message: 'Contract created successfully!' });
     } catch (err) {
-      setError(err.response?.data?.error?.message || err.message || 'Failed to create contract.');
+      setError(
+        err.response?.data?.error?.message ||
+          err.message ||
+          'Failed to create contract.',
+      );
     } finally {
       setSubmitting(false);
     }
@@ -118,10 +126,16 @@ const ContractForm = ({ jobId, workerId, onSubmit, onCancel }) => {
     <Paper sx={{ p: { xs: 2, sm: 4 }, maxWidth: 700, mx: 'auto' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
         <ContractIcon sx={{ fontSize: 36, color: 'primary.main' }} />
-        <Typography variant="h5" fontWeight="bold">Create Contract</Typography>
+        <Typography variant="h5" fontWeight="bold">
+          Create Contract
+        </Typography>
       </Box>
 
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
 
       <Grid container spacing={2}>
         <Grid item xs={12}>
@@ -132,7 +146,13 @@ const ContractForm = ({ jobId, workerId, onSubmit, onCancel }) => {
             placeholder="e.g. Kitchen renovation contract"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            InputProps={{ startAdornment: <InputAdornment position="start"><AssignmentIcon color="action" /></InputAdornment> }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <AssignmentIcon color="action" />
+                </InputAdornment>
+              ),
+            }}
           />
         </Grid>
         <Grid item xs={12}>
@@ -156,7 +176,14 @@ const ContractForm = ({ jobId, workerId, onSubmit, onCancel }) => {
             value={totalAmount}
             onChange={(e) => setTotalAmount(e.target.value)}
             inputProps={{ min: 0, step: '0.01' }}
-            InputProps={{ startAdornment: <InputAdornment position="start"><MoneyIcon color="action" />GH₵</InputAdornment> }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <MoneyIcon color="action" />
+                  GH₵
+                </InputAdornment>
+              ),
+            }}
           />
         </Grid>
         <Grid item xs={6} sm={4}>
@@ -183,9 +210,11 @@ const ContractForm = ({ jobId, workerId, onSubmit, onCancel }) => {
 
         {/* Payment Terms */}
         <Grid item xs={12}>
-          <Typography variant="subtitle2" sx={{ mb: 1 }}>Payment Terms</Typography>
+          <Typography variant="subtitle2" sx={{ mb: 1 }}>
+            Payment Terms
+          </Typography>
           <Stack direction="row" spacing={1}>
-            {['milestone', 'upfront', 'completion'].map(term => (
+            {['milestone', 'upfront', 'completion'].map((term) => (
               <Chip
                 key={term}
                 label={term.charAt(0).toUpperCase() + term.slice(1)}
@@ -201,7 +230,14 @@ const ContractForm = ({ jobId, workerId, onSubmit, onCancel }) => {
         {/* Milestones */}
         <Grid item xs={12}>
           <Divider sx={{ my: 1 }} />
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              mb: 1,
+            }}
+          >
             <Typography variant="subtitle1" fontWeight="bold">
               Milestones ({milestones.length})
             </Typography>
@@ -211,19 +247,50 @@ const ContractForm = ({ jobId, workerId, onSubmit, onCancel }) => {
           </Box>
           {!milestoneTotalValid() && (
             <Alert severity="warning" sx={{ mb: 1, py: 0 }} variant="outlined">
-              Milestone amounts (GH₵ {milestones.reduce((s, m) => s + (parseFloat(m.amount) || 0), 0).toFixed(2)}) should equal total (GH₵ {parseFloat(totalAmount || 0).toFixed(2)})
+              Milestone amounts (GH₵{' '}
+              {milestones
+                .reduce((s, m) => s + (parseFloat(m.amount) || 0), 0)
+                .toFixed(2)}
+              ) should equal total (GH₵{' '}
+              {parseFloat(totalAmount || 0).toFixed(2)})
             </Alert>
           )}
         </Grid>
 
         {milestones.map((ms, i) => (
-          <Grid item xs={12} key={ms.id || ms._id || `${ms.title || 'milestone'}-${ms.dueDate || 'due'}-${i}`}>
+          <Grid
+            item
+            xs={12}
+            key={
+              ms.id ||
+              ms._id ||
+              `${ms.title || 'milestone'}-${ms.dueDate || 'due'}-${i}`
+            }
+          >
             <Paper variant="outlined" sx={{ p: 2, position: 'relative' }}>
-              <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ mb: 1, display: 'block' }}
+              >
                 Milestone {i + 1}
               </Typography>
               {milestones.length > 1 && (
-                <IconButton size="small" onClick={() => removeMilestone(i)} aria-label={`Remove milestone ${i + 1}`} sx={{ position: 'absolute', top: 8, right: 8 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}>
+                <IconButton
+                  size="small"
+                  onClick={() => removeMilestone(i)}
+                  aria-label={`Remove milestone ${i + 1}`}
+                  sx={{
+                    position: 'absolute',
+                    top: 8,
+                    right: 8,
+                    '&:focus-visible': {
+                      outline: '3px solid',
+                      outlineColor: 'primary.main',
+                      outlineOffset: '2px',
+                    },
+                  }}
+                >
                   <DeleteIcon fontSize="small" />
                 </IconButton>
               )}
@@ -236,7 +303,9 @@ const ContractForm = ({ jobId, workerId, onSubmit, onCancel }) => {
                     label="Milestone Title"
                     placeholder="e.g. Foundation complete"
                     value={ms.title}
-                    onChange={(e) => updateMilestone(i, 'title', e.target.value)}
+                    onChange={(e) =>
+                      updateMilestone(i, 'title', e.target.value)
+                    }
                   />
                 </Grid>
                 <Grid item xs={6} sm={3}>
@@ -246,7 +315,9 @@ const ContractForm = ({ jobId, workerId, onSubmit, onCancel }) => {
                     type="number"
                     label="Amount (GHS)"
                     value={ms.amount}
-                    onChange={(e) => updateMilestone(i, 'amount', e.target.value)}
+                    onChange={(e) =>
+                      updateMilestone(i, 'amount', e.target.value)
+                    }
                     inputProps={{ min: 0, step: '0.01' }}
                   />
                 </Grid>
@@ -257,7 +328,9 @@ const ContractForm = ({ jobId, workerId, onSubmit, onCancel }) => {
                     type="date"
                     label="Due Date"
                     value={ms.dueDate}
-                    onChange={(e) => updateMilestone(i, 'dueDate', e.target.value)}
+                    onChange={(e) =>
+                      updateMilestone(i, 'dueDate', e.target.value)
+                    }
                     InputLabelProps={{ shrink: true }}
                   />
                 </Grid>
@@ -288,7 +361,10 @@ const ContractForm = ({ jobId, workerId, onSubmit, onCancel }) => {
           variant="contained"
           onClick={handleSubmit}
           disabled={submitting || !isFormValid()}
-          startIcon={submitting ? <CircularProgress size={18} /> : <CheckIcon />}>
+          startIcon={
+            submitting ? <CircularProgress size={18} /> : <CheckIcon />
+          }
+        >
           {submitting ? 'Creating...' : 'Create Contract'}
         </Button>
       </Box>
@@ -296,7 +372,7 @@ const ContractForm = ({ jobId, workerId, onSubmit, onCancel }) => {
       <Snackbar
         open={snackbar.open}
         autoHideDuration={4000}
-        onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
+        onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
         message={snackbar.message}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       />
@@ -312,4 +388,3 @@ ContractForm.propTypes = {
 };
 
 export default ContractForm;
-

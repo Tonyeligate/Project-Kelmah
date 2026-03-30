@@ -1,9 +1,37 @@
-import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import React, {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useCallback,
+} from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { normalizeUser } from '../../../utils/userUtils';
 import PullToRefresh from '../../../components/common/PullToRefresh';
 import {
-  Box, Container, Typography, Grid, Paper, ButtonBase, Breadcrumbs, Link, Tooltip, IconButton, Skeleton, Button, useTheme, Alert, AlertTitle, Chip, LinearProgress, Stack, Snackbar, Fade, Grow, alpha } from '@mui/material';
+  Box,
+  Container,
+  Typography,
+  Grid,
+  Paper,
+  ButtonBase,
+  Breadcrumbs,
+  Link,
+  Tooltip,
+  IconButton,
+  Skeleton,
+  Button,
+  useTheme,
+  Alert,
+  AlertTitle,
+  Chip,
+  LinearProgress,
+  Stack,
+  Snackbar,
+  Fade,
+  Grow,
+  alpha,
+} from '@mui/material';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import HomeIcon from '@mui/icons-material/Home';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
@@ -16,7 +44,14 @@ import SearchIcon from '@mui/icons-material/Search';
 import MessageIcon from '@mui/icons-material/Message';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip as RechartsTooltip } from 'recharts';
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Legend,
+  Tooltip as RechartsTooltip,
+} from 'recharts';
 import {
   fetchWorkerApplications,
   fetchWorkerJobs,
@@ -81,15 +116,22 @@ const WorkerDashboardPage = () => {
   const theme = useTheme();
   const isMobile = useBreakpointDown('md');
   const isCompactMobile = useBreakpointDown('sm');
-  const dashboardFontFamily = '"Plus Jakarta Sans", "Manrope", "Segoe UI", sans-serif';
+  const dashboardFontFamily =
+    '"Plus Jakarta Sans", "Manrope", "Segoe UI", sans-serif';
 
   const { user: rawUser } = useSelector((state) => state.auth);
   const user = normalizeUser(rawUser);
 
   // Memoize curried selectors so useSelector receives stable references (prevents selector recreation every render)
   const selectPending = useMemo(() => selectWorkerApplications('pending'), []);
-  const selectAccepted = useMemo(() => selectWorkerApplications('accepted'), []);
-  const selectRejected = useMemo(() => selectWorkerApplications('rejected'), []);
+  const selectAccepted = useMemo(
+    () => selectWorkerApplications('accepted'),
+    [],
+  );
+  const selectRejected = useMemo(
+    () => selectWorkerApplications('rejected'),
+    [],
+  );
   const selectCompletedJobs = useMemo(() => selectWorkerJobs('completed'), []);
 
   // Redux selectors for real data
@@ -98,13 +140,19 @@ const WorkerDashboardPage = () => {
   const rejectedApplications = useSelector(selectRejected) || [];
   const completedJobs = useSelector(selectCompletedJobs) || [];
   // Memoize curried loading/error selectors to avoid selector recreation on every render
-  const selectLoadingApps = useMemo(() => selectWorkerLoading('applications'), []);
-  const selectErrorApps   = useMemo(() => selectWorkerError('applications'),   []);
+  const selectLoadingApps = useMemo(
+    () => selectWorkerLoading('applications'),
+    [],
+  );
+  const selectErrorApps = useMemo(() => selectWorkerError('applications'), []);
   const isLoading = useSelector(selectLoadingApps);
-  const error     = useSelector(selectErrorApps);
+  const error = useSelector(selectErrorApps);
 
   // U-04 FIX: Default to 0% so incomplete profiles always see the prompt
-  const [profileCompletion, setProfileCompletion] = useState({ percentage: 0, missingFields: ['Loading...'] });
+  const [profileCompletion, setProfileCompletion] = useState({
+    percentage: 0,
+    missingFields: ['Loading...'],
+  });
 
   // U-01: Job recommendations state
   const [recommendations, setRecommendations] = useState([]);
@@ -189,7 +237,9 @@ const WorkerDashboardPage = () => {
         dispatch(fetchWorkerApplications('rejected')).unwrap(),
         dispatch(fetchWorkerJobs('completed')).unwrap(),
       ]);
-      const hasFailures = results.some((result) => result.status === 'rejected');
+      const hasFailures = results.some(
+        (result) => result.status === 'rejected',
+      );
 
       clearTimeout(timeoutId);
       if (loadingTimeoutRef.current === timeoutId) {
@@ -254,7 +304,9 @@ const WorkerDashboardPage = () => {
       }
     };
     loadProfileCompletion();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [user?.id, user?._id, user?.userId]);
 
   // U-01: Fetch job recommendations for the worker
@@ -263,7 +315,9 @@ const WorkerDashboardPage = () => {
     const loadRecs = async () => {
       setRecsLoading(true);
       try {
-        const jobs = await jobsService.getPersonalizedJobRecommendations({ limit: 6 });
+        const jobs = await jobsService.getPersonalizedJobRecommendations({
+          limit: 6,
+        });
         if (!cancelled) setRecommendations(Array.isArray(jobs) ? jobs : []);
       } catch (_) {
         // Non-blocking — recommendations section will show empty state
@@ -272,7 +326,9 @@ const WorkerDashboardPage = () => {
       }
     };
     loadRecs();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Get time-based greeting
@@ -291,7 +347,9 @@ const WorkerDashboardPage = () => {
     const previousMonth = previousMonthDate.getMonth();
     const previousMonthYear = previousMonthDate.getFullYear();
 
-    const completedTotals = (Array.isArray(completedJobs) ? completedJobs : []).reduce(
+    const completedTotals = (
+      Array.isArray(completedJobs) ? completedJobs : []
+    ).reduce(
       (acc, job) => {
         const amount = getAmountValue(
           job?.payment?.amount ||
@@ -324,7 +382,9 @@ const WorkerDashboardPage = () => {
       { total: 0, thisMonth: 0, lastMonth: 0 },
     );
 
-    const pendingEarnings = (Array.isArray(pendingApplications) ? pendingApplications : []).reduce(
+    const pendingEarnings = (
+      Array.isArray(pendingApplications) ? pendingApplications : []
+    ).reduce(
       (sum, application) => sum + getAmountValue(application?.proposedRate),
       0,
     );
@@ -342,13 +402,22 @@ const WorkerDashboardPage = () => {
   }, [completedJobs, pendingApplications, user, getAmountValue]);
 
   // Calculate real stats from Redux state
-  const stats = useMemo(() => ({
-    applications: pendingApplications.length + acceptedApplications.length,
-    completedJobs: completedJobs.length,
-    earnings: earningsSummary.total,
-    // rating is not in the auth user object; sourced from review service at a later point
-    rating: user?.rating ?? null,
-  }), [pendingApplications, acceptedApplications, completedJobs, earningsSummary, user]);
+  const stats = useMemo(
+    () => ({
+      applications: pendingApplications.length + acceptedApplications.length,
+      completedJobs: completedJobs.length,
+      earnings: earningsSummary.total,
+      // rating is not in the auth user object; sourced from review service at a later point
+      rating: user?.rating ?? null,
+    }),
+    [
+      pendingApplications,
+      acceptedApplications,
+      completedJobs,
+      earningsSummary,
+      user,
+    ],
+  );
 
   // Determine if this is a brand-new worker with no activity
   const isNewWorker =
@@ -366,58 +435,108 @@ const WorkerDashboardPage = () => {
 
   // Auto-retry on error (up to MAX_RETRIES) — guarded to prevent re-entrant loops
   useEffect(() => {
-    if (error && retryCount < MAX_RETRIES && !isLoading && !isRetryingRef.current) {
+    if (
+      error &&
+      retryCount < MAX_RETRIES &&
+      !isLoading &&
+      !isRetryingRef.current
+    ) {
       isRetryingRef.current = true;
-      const retryTimer = setTimeout(() => {
-        setSnackbarMessage(`Retrying... (${retryCount + 1}/${MAX_RETRIES})`);
-        setSnackbarSeverity('info');
-        setSnackbarOpen(true);
-        handleRefresh();
-      }, 3000 * (retryCount + 1)); // Exponential backoff
+      const retryTimer = setTimeout(
+        () => {
+          setSnackbarMessage(`Retrying... (${retryCount + 1}/${MAX_RETRIES})`);
+          setSnackbarSeverity('info');
+          setSnackbarOpen(true);
+          handleRefresh();
+        },
+        3000 * (retryCount + 1),
+      ); // Exponential backoff
       return () => clearTimeout(retryTimer);
     }
   }, [error, retryCount, isLoading, handleRefresh]);
 
   // Chart data for Earnings Overview — only include segments with non-zero values
-  const earningsData = useMemo(() => [
-    { name: 'This Month', value: earningsSummary.thisMonth, color: theme.palette.success.main },
-    { name: 'Last Month', value: earningsSummary.lastMonth, color: theme.palette.info.main },
-    { name: 'Pending', value: earningsSummary.pending, color: theme.palette.warning.main },
-  ].filter(d => d.value > 0), [earningsSummary, theme]);
+  const earningsData = useMemo(
+    () =>
+      [
+        {
+          name: 'This Month',
+          value: earningsSummary.thisMonth,
+          color: theme.palette.success.main,
+        },
+        {
+          name: 'Last Month',
+          value: earningsSummary.lastMonth,
+          color: theme.palette.info.main,
+        },
+        {
+          name: 'Pending',
+          value: earningsSummary.pending,
+          color: theme.palette.warning.main,
+        },
+      ].filter((d) => d.value > 0),
+    [earningsSummary, theme],
+  );
 
   // Chart data for Applications Overview - using real data
-  const applicationsData = useMemo(() => [
-    { name: 'Accepted', value: acceptedApplications.length || 0, color: theme.palette.success.main },
-    { name: 'Pending', value: pendingApplications.length || 0, color: theme.palette.warning.main },
-    { name: 'Rejected', value: rejectedApplications.length || 0, color: theme.palette.error.main },
-  ], [acceptedApplications, pendingApplications, rejectedApplications]);
+  const applicationsData = useMemo(
+    () => [
+      {
+        name: 'Accepted',
+        value: acceptedApplications.length || 0,
+        color: theme.palette.success.main,
+      },
+      {
+        name: 'Pending',
+        value: pendingApplications.length || 0,
+        color: theme.palette.warning.main,
+      },
+      {
+        name: 'Rejected',
+        value: rejectedApplications.length || 0,
+        color: theme.palette.error.main,
+      },
+    ],
+    [acceptedApplications, pendingApplications, rejectedApplications],
+  );
 
   const formatGhanaCurrencyLabel = (value) => {
     const amount = Number(value);
     if (!Number.isFinite(amount)) return 'GH₵0.00';
-    return new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' }).format(amount);
+    return new Intl.NumberFormat('en-GH', {
+      style: 'currency',
+      currency: 'GHS',
+    }).format(amount);
   };
 
-  const insightCards = useMemo(() => ([
-    {
-      title: 'This month',
-      value: formatGhanaCurrencyLabel(earningsSummary.thisMonth || 0),
-      helper: 'Earned from completed jobs',
-      tone: theme.palette.success.main,
-    },
-    {
-      title: 'Pending offers',
-      value: pendingApplications.length,
-      helper: 'Applications awaiting response',
-      tone: theme.palette.warning.main,
-    },
-    {
-      title: 'Completed jobs',
-      value: completedJobs.length,
-      helper: 'Jobs you have finished',
-      tone: theme.palette.info.main,
-    },
-  ]), [earningsSummary.thisMonth, pendingApplications.length, completedJobs.length, theme]);
+  const insightCards = useMemo(
+    () => [
+      {
+        title: 'This month',
+        value: formatGhanaCurrencyLabel(earningsSummary.thisMonth || 0),
+        helper: 'Earned from completed jobs',
+        tone: theme.palette.success.main,
+      },
+      {
+        title: 'Pending offers',
+        value: pendingApplications.length,
+        helper: 'Applications awaiting response',
+        tone: theme.palette.warning.main,
+      },
+      {
+        title: 'Completed jobs',
+        value: completedJobs.length,
+        helper: 'Jobs you have finished',
+        tone: theme.palette.info.main,
+      },
+    ],
+    [
+      earningsSummary.thisMonth,
+      pendingApplications.length,
+      completedJobs.length,
+      theme,
+    ],
+  );
 
   // Metric cards configuration - LC Portal style with tooltips
   const metricCards = [
@@ -425,7 +544,14 @@ const WorkerDashboardPage = () => {
       title: 'Active Applications',
       value: stats.applications,
       tone: theme.palette.warning.main,
-      icon: <WorkIcon sx={{ fontSize: { xs: 32, sm: 42 }, color: alpha(theme.palette.warning.main, 0.25) }} />,
+      icon: (
+        <WorkIcon
+          sx={{
+            fontSize: { xs: 32, sm: 42 },
+            color: alpha(theme.palette.warning.main, 0.25),
+          }}
+        />
+      ),
       tooltip: 'Total number of job applications you have submitted',
       onClick: () => navigate('/worker/applications'),
     },
@@ -433,15 +559,31 @@ const WorkerDashboardPage = () => {
       title: 'Completed Jobs',
       value: stats.completedJobs,
       tone: theme.palette.success.main,
-      icon: <AssignmentTurnedInIcon sx={{ fontSize: { xs: 32, sm: 42 }, color: alpha(theme.palette.success.main, 0.25) }} />,
+      icon: (
+        <AssignmentTurnedInIcon
+          sx={{
+            fontSize: { xs: 32, sm: 42 },
+            color: alpha(theme.palette.success.main, 0.25),
+          }}
+        />
+      ),
       tooltip: 'Jobs you have successfully completed',
       onClick: () => navigate('/worker/contracts'),
     },
     {
       title: 'Total Earnings',
-      value: formatGhanaCurrencyLabel(Number.isFinite(stats.earnings) ? stats.earnings : 0),
+      value: formatGhanaCurrencyLabel(
+        Number.isFinite(stats.earnings) ? stats.earnings : 0,
+      ),
       tone: theme.palette.info.main,
-      icon: <AttachMoneyIcon sx={{ fontSize: { xs: 32, sm: 42 }, color: alpha(theme.palette.info.main, 0.25) }} />,
+      icon: (
+        <AttachMoneyIcon
+          sx={{
+            fontSize: { xs: 32, sm: 42 },
+            color: alpha(theme.palette.info.main, 0.25),
+          }}
+        />
+      ),
       tooltip: 'Your total earnings from completed jobs',
       onClick: () => navigate('/worker/earnings'),
     },
@@ -449,7 +591,14 @@ const WorkerDashboardPage = () => {
       title: 'Average Rating',
       value: stats.rating > 0 ? stats.rating.toFixed(1) : 'N/A',
       tone: theme.palette.secondary.main,
-      icon: <StarIcon sx={{ fontSize: { xs: 32, sm: 42 }, color: alpha(theme.palette.secondary.main, 0.25) }} />,
+      icon: (
+        <StarIcon
+          sx={{
+            fontSize: { xs: 32, sm: 42 },
+            color: alpha(theme.palette.secondary.main, 0.25),
+          }}
+        />
+      ),
       tooltip: 'Your average rating from hirers',
       onClick: () => navigate('/worker/reviews'),
     },
@@ -459,7 +608,7 @@ const WorkerDashboardPage = () => {
   const renderErrorDisplay = () => (
     <Box sx={{ mb: 3 }}>
       <Alert
-        severity={retryCount >= MAX_RETRIES ? "error" : "warning"}
+        severity={retryCount >= MAX_RETRIES ? 'error' : 'warning'}
         icon={<ErrorOutlineIcon />}
         action={
           <Button
@@ -467,25 +616,40 @@ const WorkerDashboardPage = () => {
             size="small"
             onClick={handleRefresh}
             disabled={isLoading}
-            startIcon={isLoading ? <RefreshIcon sx={{ animation: 'spin 1s linear infinite', ...spinKeyframes }} /> : <RefreshIcon />}
-           aria-label="Refresh dashboard data">
+            startIcon={
+              isLoading ? (
+                <RefreshIcon
+                  sx={{
+                    animation: 'spin 1s linear infinite',
+                    ...spinKeyframes,
+                  }}
+                />
+              ) : (
+                <RefreshIcon />
+              )
+            }
+            aria-label="Refresh dashboard data"
+          >
             {isLoading ? 'Retrying...' : 'Try Again'}
           </Button>
         }
         sx={{
           borderRadius: 2,
-          '& .MuiAlert-message': { width: '100%' }
+          '& .MuiAlert-message': { width: '100%' },
         }}
       >
         <AlertTitle sx={{ fontWeight: 600 }}>
-          {retryCount >= MAX_RETRIES ? 'Unable to Load Dashboard' : 'Loading Issue Detected'}
+          {retryCount >= MAX_RETRIES
+            ? 'Unable to Load Dashboard'
+            : 'Loading Issue Detected'}
         </AlertTitle>
         <Typography variant="body2" sx={{ mb: 1 }}>
           {error || 'Could not load your dashboard. Please try again.'}
         </Typography>
         {retryCount < MAX_RETRIES && (
           <Typography variant="caption" color="text.secondary">
-            Auto-retry in {3 * (retryCount + 1)} seconds ({retryCount}/{MAX_RETRIES} attempts)
+            Auto-retry in {3 * (retryCount + 1)} seconds ({retryCount}/
+            {MAX_RETRIES} attempts)
           </Typography>
         )}
         {retryCount >= MAX_RETRIES && (
@@ -498,859 +662,1220 @@ const WorkerDashboardPage = () => {
   );
 
   return (
-    <PageCanvas disableContainer sx={{ pt: { xs: 1, md: 4 }, pb: { xs: 10, md: 6 } }}>
-      <PullToRefresh onRefresh={fetchDashboardData}>
-    <Box
-      sx={{
-        background:
-          theme.palette.mode === 'dark'
-            ? 'radial-gradient(circle at 10% 4%, rgba(255,215,0,0.16), transparent 44%), radial-gradient(circle at 88% 8%, rgba(34,197,94,0.13), transparent 36%), radial-gradient(circle at 52% 88%, rgba(59,130,246,0.14), transparent 38%), #04060C'
-            : 'linear-gradient(180deg, #f7f9fd 0%, #eef3fa 55%, #edf2fb 100%)',
-        minHeight: '100dvh',
-        fontFamily: dashboardFontFamily,
-        p: { xs: 1, sm: 2, md: 3 },
-        pb: 'calc(env(safe-area-inset-bottom, 0px) + 12px)',
-      }}
+    <PageCanvas
+      disableContainer
+      sx={{ pt: { xs: 1, md: 4 }, pb: { xs: 10, md: 6 } }}
     >
-      <Helmet><title>Worker Dashboard | Kelmah</title></Helmet>
-      <Container maxWidth="xl" disableGutters>
-      {/* Snackbar for notifications */}
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={4000}
-        onClose={() => setSnackbarOpen(false)}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-      >
-        <Alert
-          onClose={() => setSnackbarOpen(false)}
-          severity={snackbarSeverity}
-          sx={{ width: '100%' }}
-          icon={snackbarSeverity === 'success' ? <CheckCircleIcon /> : undefined}
-        >
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
-
-      {/* Loading Progress Bar */}
-      {isLoading && (
-        <LinearProgress
-          sx={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            zIndex: 1200,
-            height: 3,
-          }}
-        />
-      )}
-
-      {/* Breadcrumb Navigation */}
-      <Breadcrumbs
-        separator={<NavigateNextIcon fontSize="small" />}
-        sx={{ mb: 2, display: { xs: 'none', md: 'flex' } }}
-        aria-label="Breadcrumb navigation"
-      >
-        <Link
-          component={RouterLink}
-          to="/"
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            color: 'text.secondary',
-            textDecoration: 'none',
-            '&:hover': { color: 'primary.main' },
-          }}
-        >
-          <HomeIcon sx={{ fontSize: 18, mr: 0.5 }} />
-          Home
-        </Link>
-        <Typography sx={{ color: 'text.primary', fontWeight: 500 }}>
-          Dashboard
-        </Typography>
-      </Breadcrumbs>
-
-      {/* Command Center Header */}
-      <Paper
-        elevation={0}
-        sx={{
-          mb: { xs: 2, md: 3 },
-          p: { xs: 1.5, sm: 2.75, md: 3.25 },
-          borderRadius: { xs: 3, md: 4 },
-          border: '1px solid',
-          borderColor: theme.palette.mode === 'dark'
-            ? 'rgba(255,215,0,0.28)'
-            : 'rgba(20,24,35,0.12)',
-          background:
-            theme.palette.mode === 'dark'
-              ? 'linear-gradient(150deg, rgba(6,10,18,0.97) 0%, rgba(9,19,36,0.96) 55%, rgba(7,17,28,0.96) 100%)'
-              : 'linear-gradient(145deg, #ffffff 0%, #f2f7ff 54%, #edf4ff 100%)',
-          boxShadow: theme.palette.mode === 'dark'
-            ? '0 18px 34px rgba(0,0,0,0.42)'
-            : '0 14px 28px rgba(15,23,42,0.10)',
-          position: { xs: 'sticky', md: 'relative' },
-          top: { xs: HEADER_HEIGHT_MOBILE, md: 'auto' },
-          zIndex: { xs: Z_INDEX.sticky, md: 1 },
-          overflow: 'hidden',
-          '&::after': {
-            content: '""',
-            position: 'absolute',
-            width: { xs: 140, md: 220 },
-            height: { xs: 140, md: 220 },
-            borderRadius: '50%',
-            top: -70,
-            right: -55,
-            background: theme.palette.mode === 'dark'
-              ? 'radial-gradient(circle, rgba(250,204,21,0.24) 0%, rgba(250,204,21,0) 70%)'
-              : 'radial-gradient(circle, rgba(14,165,233,0.16) 0%, rgba(14,165,233,0) 70%)',
-            pointerEvents: 'none',
-          },
-        }}
-      >
-        <Stack spacing={{ xs: 1.5, md: 2.25 }} sx={{ position: 'relative', zIndex: 1 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: 1.5, flexWrap: 'wrap' }}>
-            <Box>
-              <Typography variant={isCompactMobile ? 'h5' : 'h4'} sx={{ color: 'text.primary', fontWeight: 800, letterSpacing: -0.4, lineHeight: 1.1 }}>
-                {getGreeting()}, {user?.firstName || 'Worker'}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.75, maxWidth: 620, fontSize: { xs: '0.94rem', md: '1rem' } }}>
-                Your talent cockpit: watch your pipeline, earnings momentum, and the next best jobs to apply for.
-              </Typography>
-            </Box>
-            <Tooltip title="Refresh dashboard data" arrow>
-              <IconButton
-                onClick={handleRefresh}
-                disabled={isLoading}
-                sx={{
-                  color: 'text.secondary',
-                  border: '1px solid',
-                  borderColor: alpha(theme.palette.warning.main, 0.4),
-                  backgroundColor: alpha(theme.palette.warning.main, 0.08),
-                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
-                aria-label="Refresh dashboard"
-              >
-                <RefreshIcon sx={{ animation: isLoading ? 'spin 1s linear infinite' : 'none', ...spinKeyframes }} />
-              </IconButton>
-            </Tooltip>
-          </Box>
-
-          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-            <Chip label={`Applications ${stats.applications}`} size="small" sx={{ fontWeight: 700 }} />
-            <Chip label={`Completed ${stats.completedJobs}`} size="small" sx={{ fontWeight: 700 }} />
-            <Chip label={formatGhanaCurrencyLabel(Number.isFinite(stats.earnings) ? stats.earnings : 0)} size="small" sx={{ fontWeight: 700 }} />
-          </Box>
-
-          <Box
-            sx={{
-              p: 1.25,
-              borderRadius: 2,
-              border: '1px solid',
-              borderColor: alpha(theme.palette.primary.main, 0.3),
-              backgroundColor: alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.12 : 0.08),
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: 1,
-              flexWrap: 'wrap',
-            }}
-          >
-            <Typography variant="body2" sx={{ color: 'text.primary', fontWeight: 700 }}>
-              Next best action: review pending applications before opening new searches.
-            </Typography>
-            <Button
-              size="small"
-              variant="contained"
-              onClick={() => navigate('/worker/applications')}
-              sx={{ textTransform: 'none', fontWeight: 700, minHeight: 44 }}
-            >
-              Open Pipeline
-            </Button>
-          </Box>
-
-          <Box
-            sx={{
-              display: { xs: 'none', sm: 'grid' },
-              gridTemplateColumns: { xs: 'repeat(2, minmax(0, 1fr))', sm: 'repeat(4, minmax(0, 1fr))' },
-              gap: 1,
-            }}
-          >
-            <Button
-              variant="contained"
-              startIcon={<SearchIcon />}
-              onClick={() => navigate('/worker/find-work')}
-              sx={{ borderRadius: 2.5, minHeight: 44, fontWeight: 700, textTransform: 'none' }}
-            >
-              Find Work
-            </Button>
-            <Button
-              variant="outlined"
-              startIcon={<AssignmentTurnedInIcon />}
-              onClick={() => navigate('/worker/applications')}
-              sx={{ borderRadius: 2.5, minHeight: 44, fontWeight: 700, textTransform: 'none' }}
-            >
-              Applications
-            </Button>
-            <Button
-              variant="outlined"
-              startIcon={<MessageIcon />}
-              onClick={() => navigate('/messages')}
-              sx={{ borderRadius: 2.5, minHeight: 44, fontWeight: 700, textTransform: 'none' }}
-            >
-              Messages
-            </Button>
-            <Button
-              variant="outlined"
-              startIcon={<RefreshIcon sx={{ animation: isLoading ? 'spin 1s linear infinite' : 'none', ...spinKeyframes }} />}
-              onClick={handleRefresh}
-              disabled={isLoading}
-              sx={{ borderRadius: 2.5, minHeight: 44, fontWeight: 700, textTransform: 'none' }}
-            >
-              Refresh
-            </Button>
-          </Box>
-
-          <Grid container spacing={1.25}>
-            {insightCards.map((item, index) => (
-              <Fade in timeout={420} style={{ transitionDelay: `${120 + index * 90}ms` }} key={`hero-fade-${item.title}`}>
-                <Grid item xs={12} sm={4} key={`hero-${item.title}`}>
-                  <Box
-                    sx={{
-                      p: 1.5,
-                      borderRadius: 2,
-                      border: '1px solid',
-                      borderColor: alpha(item.tone, 0.36),
-                      backgroundColor: alpha(item.tone, theme.palette.mode === 'dark' ? 0.1 : 0.08),
-                    }}
-                  >
-                    <Typography variant="caption" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, color: 'text.secondary' }}>
-                      {item.title}
-                    </Typography>
-                    <Typography variant="h6" sx={{ fontWeight: 800, mt: 0.25 }}>
-                      {item.value}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {item.helper}
-                    </Typography>
-                  </Box>
-                </Grid>
-              </Fade>
-            ))}
-          </Grid>
-        </Stack>
-      </Paper>
-
-      {/* Error Display - Shows inline instead of blocking */}
-      {error && renderErrorDisplay()}
-
-      {/* New Worker Welcome Banner - Shows when no activity */}
-      {!isLoading && isNewWorker && (
-        <Paper
-          elevation={0}
-          sx={{
-            p: 3,
-            mb: 4,
-            borderRadius: 2,
-            backgroundColor: 'background.paper',
-            border: '1px solid',
-            borderColor: alpha(theme.palette.primary.main, 0.35),
-            color: 'text.primary',
-          }}
-        >
-          <Typography variant="h6" fontWeight={600} sx={{ mb: 1 }}>
-            Welcome to Kelmah! 🎉
-          </Typography>
-          <Typography variant="body2" sx={{ mb: 2, opacity: 0.9 }}>
-            Start by browsing available jobs and submitting your first application. Skilled workers like you are in high demand!
-          </Typography>
-          <Button
-            variant="contained"
-            startIcon={<SearchIcon />}
-            onClick={() => navigate('/worker/find-work')}
-            sx={{
-              minHeight: 44,
-              '&:focus-visible': {
-                outline: `3px solid ${theme.palette.primary.main}`,
-                outlineOffset: 2,
-              },
-            }}
-          >
-            Find Your First Job
-          </Button>
-        </Paper>
-      )}
-
-      {/* Loading Timeout Warning */}
-      {loadingTimeout && isLoading && <LoadingTimeoutWarning onRefresh={handleRefresh} />}
-
-      {/* Profile Completion Widget (Phase 1) */}
-      {!isLoading && profileCompletion.percentage < 100 && (
-        <Fade in timeout={500}>
-          <Box>
-            <ProfileCompletionCard
-              percentage={profileCompletion.percentage}
-              missingFields={profileCompletion.missingFields}
-              onStepClick={(path) => navigate(path)}
-            />
-          </Box>
-        </Fade>
-      )}
-
-      {/* Loading State */}
-      {isLoading ? (
-        <LoadingSkeleton />
-      ) : (
-        <>
-          {/* Quick Actions Row (Phase 2) */}
-          {!isLoading && (
-            <Box
-              sx={{
-                mb: 3,
-                p: { xs: 1.5, sm: 2 },
-                borderRadius: 2.5,
-                border: '1px solid',
-                borderColor: 'divider',
-                backgroundColor: alpha(theme.palette.background.paper, 0.86),
-                backdropFilter: 'blur(4px)',
-              }}
-            >
-              <Typography variant="body2" fontWeight={600} sx={{ mb: 1.5, color: 'text.primary' }}>
-                Quick Actions
-              </Typography>
-              <QuickActionsRow />
-            </Box>
-          )}
-
-          {/* Metric Cards - 4 colored cards LC Portal style */}
-          <Grid container spacing={{ xs: 1.5, sm: 2.5, md: 3, lg: 3 }} sx={{ mb: 4 }}>
-            {metricCards.map((card, index) => (
-              <Fade in timeout={420} style={{ transitionDelay: `${200 + index * 80}ms` }} key={`metric-fade-${card.title}`}>
-                <Grid item xs={12} sm={6} md={6} lg={4} key={card.title}>
-                  <Tooltip title={card.tooltip} arrow placement="top">
-                    <ButtonBase
-                      onClick={card.onClick}
-                      aria-label={`${card.title}: ${card.value}. Click to view details.`}
-                      sx={{
-                        display: 'block',
-                        width: '100%',
-                        textAlign: 'left',
-                        borderRadius: 2,
-                        overflow: 'hidden',
-                        '&:focus-visible': {
-                          outline: `2px solid ${theme.palette.primary.main}`,
-                          outlineOffset: 2,
-                        },
-                      }}
-                    >
-                    <Paper
-                      elevation={0}
-                      sx={{
-                        p: { xs: 1.5, sm: 2.5 },
-                        borderRadius: 2.5,
-                        background: `linear-gradient(155deg, ${alpha(card.tone, theme.palette.mode === 'dark' ? 0.2 : 0.14)} 0%, ${alpha(theme.palette.background.paper, 0.98)} 62%, ${alpha(theme.palette.background.paper, 0.95)} 100%)`,
-                        border: '1px solid',
-                        borderColor: alpha(card.tone, 0.44),
-                        color: 'text.primary',
-                        position: 'relative',
-                        overflow: 'hidden',
-                        minHeight: { xs: 96, sm: 132, md: 144 },
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'space-between',
-                        // ✅ MOBILE-AUDIT P7: hover only on pointer devices
-                        '@media (hover: hover)': {
-                          transition: 'transform 0.2s, box-shadow 0.2s',
-                          '&:hover': {
-                            transform: 'translateY(-4px)',
-                            boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
-                          },
-                        },
-                      }}
-                    >
-                      {/* Icon positioned on the right */}
-                      <Box
-                        sx={{
-                          position: 'absolute',
-                          right: 16,
-                          top: '50%',
-                          transform: 'translateY(-50%)',
-                        }}
-                      >
-                        {card.icon}
-                      </Box>
-
-                      {/* Text content */}
-                      <Typography
-                        variant="body2"
-                        sx={{ fontWeight: 600, color: 'text.secondary', mb: 1 }}
-                      >
-                        {card.title}
-                      </Typography>
-                      <Typography
-                        variant="h4"
-                        sx={{ fontWeight: 700, fontSize: { xs: '1.25rem', sm: '1.5rem', md: '2rem' } }}
-                      >
-                        {card.value}
-                      </Typography>
-                      <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                        Tap to open details
-                      </Typography>
-                    </Paper>
-                    </ButtonBase>
-                  </Tooltip>
-                </Grid>
-              </Fade>
-            ))}
-          </Grid>
-        </>
-      )}
-
-      {/* U-01 FIX: Job Recommendations Section */}
-      {!isLoading && (
+      <PullToRefresh onRefresh={fetchDashboardData}>
         <Box
           sx={{
-            mb: 3,
-            p: { xs: 1.5, sm: 2 },
-            borderRadius: 2.5,
-            border: '1px solid',
-            borderColor: 'divider',
-            backgroundColor: alpha(theme.palette.background.paper, 0.88),
-            backdropFilter: 'blur(4px)',
+            background:
+              theme.palette.mode === 'dark'
+                ? 'radial-gradient(circle at 10% 4%, rgba(255,215,0,0.16), transparent 44%), radial-gradient(circle at 88% 8%, rgba(34,197,94,0.13), transparent 36%), radial-gradient(circle at 52% 88%, rgba(59,130,246,0.14), transparent 38%), #04060C'
+                : 'linear-gradient(180deg, #f7f9fd 0%, #eef3fa 55%, #edf2fb 100%)',
+            minHeight: '100dvh',
+            fontFamily: dashboardFontFamily,
+            p: { xs: 1, sm: 2, md: 3 },
+            pb: 'calc(env(safe-area-inset-bottom, 0px) + 12px)',
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
-            <Typography variant="body2" fontWeight={600} color="text.primary">
-              Recommended Jobs
-            </Typography>
-            <Button
-              size="small"
-              component={RouterLink}
-              to="/jobs"
-              sx={{ textTransform: 'none', fontWeight: 600 }}
+          <Helmet>
+            <title>Worker Dashboard | Kelmah</title>
+          </Helmet>
+          <Container maxWidth="xl" disableGutters>
+            {/* Snackbar for notifications */}
+            <Snackbar
+              open={snackbarOpen}
+              autoHideDuration={4000}
+              onClose={() => setSnackbarOpen(false)}
+              anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
             >
-              Browse All
-            </Button>
-          </Box>
-          {recsLoading ? (
-            <Grid container spacing={1.5}>
-              {[1, 2, 3].map((i) => (
-                <Grid item xs={12} sm={6} md={4} key={`recommendation-skeleton-${i}`}>
-                  <Skeleton variant="rounded" height={120} />
-                </Grid>
-              ))}
-            </Grid>
-          ) : recommendations.length > 0 ? (
-            <Grid container spacing={1.5}>
-              {recommendations.slice(0, 8).map((job, index) => (
-                <Grid item xs={12} sm={6} md={3} key={job.id}>
-                  <Paper
-                    elevation={0}
-                    component={ButtonBase}
-                    sx={{
-                      p: 2,
-                      borderRadius: 2,
-                      border: '1px solid',
-                      borderColor: 'divider',
-                      cursor: 'pointer',
-                      transition: 'box-shadow 0.2s',
-                      '&:hover': { boxShadow: 2 },
-                      '&:focus-visible': {
-                        outline: `3px solid ${theme.palette.primary.main}`,
-                        outlineOffset: 2,
-                      },
-                      animation: 'workerCardRise 420ms ease-out both',
-                      animationDelay: `${index * 55}ms`,
-                      '@keyframes workerCardRise': {
-                        from: { opacity: 0, transform: 'translateY(12px)' },
-                        to: { opacity: 1, transform: 'translateY(0)' },
-                      },
-                    }}
-                    onClick={() => navigate(`/jobs/${job.id}`)}
-                  >
-                    <Typography variant="subtitle2" fontWeight={600} noWrap>
-                      {job.title}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary" noWrap>
-                      {job.employer?.name || 'Employer'} | {job.location || 'Remote'}
-                    </Typography>
-                    <Box sx={{ mt: 1, display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-                      {(job.skills || []).slice(0, 3).map((skill) => (
-                        <Box
-                          key={skill}
-                          sx={{
-                            px: 1,
-                            py: 0.25,
-                            borderRadius: 1,
-                            bgcolor: 'action.hover',
-                            fontSize: '0.7rem',
-                          }}
-                        >
-                          {skill}
-                        </Box>
-                      ))}
-                    </Box>
-                    {job.budget && (
-                      <Typography variant="body2" fontWeight={600} color="primary" sx={{ mt: 1 }}>
-                        {job.currency || 'GHS'} {typeof job.budget === 'object' ? `${job.budget.min}-${job.budget.max}` : job.budget}
-                      </Typography>
-                    )}
-                  </Paper>
-                </Grid>
-              ))}
-            </Grid>
-          ) : (
-            <Paper
-              elevation={0}
-              sx={{ p: 3, textAlign: 'center', borderRadius: 2, border: '1px solid', borderColor: 'divider' }}
-            >
-              <SearchIcon sx={{ fontSize: 40, color: 'text.disabled', mb: 1 }} />
-              <Typography variant="body2" color="text.secondary">
-                No recommendations yet. Complete your profile and add skills to get matched!
-              </Typography>
-            </Paper>
-          )}
-        </Box>
-      )}
+              <Alert
+                onClose={() => setSnackbarOpen(false)}
+                severity={snackbarSeverity}
+                sx={{ width: '100%' }}
+                icon={
+                  snackbarSeverity === 'success' ? (
+                    <CheckCircleIcon />
+                  ) : undefined
+                }
+              >
+                {snackbarMessage}
+              </Alert>
+            </Snackbar>
 
-      {false ? (
-        <Grid container spacing={1.5}>
-          <Grid item xs={12}>
+            {/* Loading Progress Bar */}
+            {isLoading && (
+              <LinearProgress
+                sx={{
+                  position: 'fixed',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  zIndex: 1200,
+                  height: 3,
+                }}
+              />
+            )}
+
+            {/* Breadcrumb Navigation */}
+            <Breadcrumbs
+              separator={<NavigateNextIcon fontSize="small" />}
+              sx={{ mb: 2, display: { xs: 'none', md: 'flex' } }}
+              aria-label="Breadcrumb navigation"
+            >
+              <Link
+                component={RouterLink}
+                to="/"
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  color: 'text.secondary',
+                  textDecoration: 'none',
+                  '&:hover': { color: 'primary.main' },
+                }}
+              >
+                <HomeIcon sx={{ fontSize: 18, mr: 0.5 }} />
+                Home
+              </Link>
+              <Typography sx={{ color: 'text.primary', fontWeight: 500 }}>
+                Dashboard
+              </Typography>
+            </Breadcrumbs>
+
+            {/* Command Center Header */}
             <Paper
               elevation={0}
               sx={{
-                p: 2,
-                borderRadius: 2,
-                backgroundColor: 'background.paper',
+                mb: { xs: 2, md: 3 },
+                p: { xs: 1.5, sm: 2.75, md: 3.25 },
+                borderRadius: { xs: 3, md: 4 },
                 border: '1px solid',
-                borderColor: 'divider',
+                borderColor:
+                  theme.palette.mode === 'dark'
+                    ? 'rgba(255,215,0,0.28)'
+                    : 'rgba(20,24,35,0.12)',
+                background:
+                  theme.palette.mode === 'dark'
+                    ? 'linear-gradient(150deg, rgba(6,10,18,0.97) 0%, rgba(9,19,36,0.96) 55%, rgba(7,17,28,0.96) 100%)'
+                    : 'linear-gradient(145deg, #ffffff 0%, #f2f7ff 54%, #edf4ff 100%)',
+                boxShadow:
+                  theme.palette.mode === 'dark'
+                    ? '0 18px 34px rgba(0,0,0,0.42)'
+                    : '0 14px 28px rgba(15,23,42,0.10)',
+                position: { xs: 'sticky', md: 'relative' },
+                top: { xs: HEADER_HEIGHT_MOBILE, md: 'auto' },
+                zIndex: { xs: Z_INDEX.sticky, md: 1 },
+                overflow: 'hidden',
+                '&::after': {
+                  content: '""',
+                  position: 'absolute',
+                  width: { xs: 140, md: 220 },
+                  height: { xs: 140, md: 220 },
+                  borderRadius: '50%',
+                  top: -70,
+                  right: -55,
+                  background:
+                    theme.palette.mode === 'dark'
+                      ? 'radial-gradient(circle, rgba(250,204,21,0.24) 0%, rgba(250,204,21,0) 70%)'
+                      : 'radial-gradient(circle, rgba(14,165,233,0.16) 0%, rgba(14,165,233,0) 70%)',
+                  pointerEvents: 'none',
+                },
               }}
             >
-              <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>
-                Today&apos;s overview
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                Focus on the next action that keeps your Kelmah profile active and visible.
-              </Typography>
-              <Grid container spacing={1.5}>
-                {insightCards.map((item) => (
-                  <Grid item xs={12} key={item.title}>
-                    <Box
+              <Stack
+                spacing={{ xs: 1.5, md: 2.25 }}
+                sx={{ position: 'relative', zIndex: 1 }}
+              >
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: { xs: 'flex-start', sm: 'center' },
+                    gap: 1.5,
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  <Box>
+                    <Typography
+                      variant={isCompactMobile ? 'h5' : 'h4'}
                       sx={{
-                        p: 1.5,
-                        borderRadius: 2,
-                        backgroundColor: alpha(item.tone, 0.08),
-                        border: '1px solid',
-                        borderColor: alpha(item.tone, 0.24),
+                        color: 'text.primary',
+                        fontWeight: 800,
+                        letterSpacing: -0.4,
+                        lineHeight: 1.1,
                       }}
                     >
-                      <Typography variant="caption" sx={{ color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 0.4 }}>
-                        {item.title}
-                      </Typography>
-                      <Typography variant="h6" sx={{ fontWeight: 700, mt: 0.25 }}>
-                        {item.value}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {item.helper}
-                      </Typography>
-                    </Box>
-                  </Grid>
-                ))}
-              </Grid>
-            </Paper>
-          </Grid>
-          <Grid item xs={12}>
-            <Paper
-              elevation={0}
-              sx={{
-                p: 2,
-                borderRadius: 2,
-                backgroundColor: 'background.paper',
-                border: '1px solid',
-                borderColor: 'divider',
-              }}
-            >
-              <Typography variant="h6" sx={{ fontWeight: 700, mb: 1.5 }}>
-                Application pipeline
-              </Typography>
-              <Stack spacing={1.25}>
-                {applicationsData.map((item) => (
-                  <Box key={item.name}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-                      <Typography variant="body2" fontWeight={600}>
-                        {item.name}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {item.value}
-                      </Typography>
-                    </Box>
-                    <LinearProgress
-                      variant="determinate"
-                      value={stats.applications > 0 ? (item.value / Math.max(stats.applications, 1)) * 100 : 0}
+                      {getGreeting()}, {user?.firstName || 'Worker'}
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
                       sx={{
-                        height: 8,
-                        borderRadius: 999,
-                        backgroundColor: alpha(item.color, 0.12),
-                        '& .MuiLinearProgress-bar': {
-                          backgroundColor: item.color,
-                          borderRadius: 999,
+                        mt: 0.75,
+                        maxWidth: 620,
+                        fontSize: { xs: '0.94rem', md: '1rem' },
+                      }}
+                    >
+                      Your talent cockpit: watch your pipeline, earnings
+                      momentum, and the next best jobs to apply for.
+                    </Typography>
+                  </Box>
+                  <Tooltip title="Refresh dashboard data" arrow>
+                    <IconButton
+                      onClick={handleRefresh}
+                      disabled={isLoading}
+                      sx={{
+                        color: 'text.secondary',
+                        border: '1px solid',
+                        borderColor: alpha(theme.palette.warning.main, 0.4),
+                        backgroundColor: alpha(
+                          theme.palette.warning.main,
+                          0.08,
+                        ),
+                        '&:focus-visible': {
+                          outline: '3px solid',
+                          outlineColor: 'primary.main',
+                          outlineOffset: '2px',
                         },
                       }}
-                    />
-                  </Box>
-                ))}
+                      aria-label="Refresh dashboard"
+                    >
+                      <RefreshIcon
+                        sx={{
+                          animation: isLoading
+                            ? 'spin 1s linear infinite'
+                            : 'none',
+                          ...spinKeyframes,
+                        }}
+                      />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                  <Chip
+                    label={`Applications ${stats.applications}`}
+                    size="small"
+                    sx={{ fontWeight: 700 }}
+                  />
+                  <Chip
+                    label={`Completed ${stats.completedJobs}`}
+                    size="small"
+                    sx={{ fontWeight: 700 }}
+                  />
+                  <Chip
+                    label={formatGhanaCurrencyLabel(
+                      Number.isFinite(stats.earnings) ? stats.earnings : 0,
+                    )}
+                    size="small"
+                    sx={{ fontWeight: 700 }}
+                  />
+                </Box>
+
+                <Box
+                  sx={{
+                    p: 1.25,
+                    borderRadius: 2,
+                    border: '1px solid',
+                    borderColor: alpha(theme.palette.primary.main, 0.3),
+                    backgroundColor: alpha(
+                      theme.palette.primary.main,
+                      theme.palette.mode === 'dark' ? 0.12 : 0.08,
+                    ),
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 1,
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  <Typography
+                    variant="body2"
+                    sx={{ color: 'text.primary', fontWeight: 700 }}
+                  >
+                    Next best action: review pending applications before opening
+                    new searches.
+                  </Typography>
+                  <Button
+                    size="small"
+                    variant="contained"
+                    onClick={() => navigate('/worker/applications')}
+                    sx={{
+                      textTransform: 'none',
+                      fontWeight: 700,
+                      minHeight: 44,
+                    }}
+                  >
+                    Open Pipeline
+                  </Button>
+                </Box>
+
+                <Box
+                  sx={{
+                    display: { xs: 'none', sm: 'grid' },
+                    gridTemplateColumns: {
+                      xs: 'repeat(2, minmax(0, 1fr))',
+                      sm: 'repeat(4, minmax(0, 1fr))',
+                    },
+                    gap: 1,
+                  }}
+                >
+                  <Button
+                    variant="contained"
+                    startIcon={<SearchIcon />}
+                    onClick={() => navigate('/worker/find-work')}
+                    sx={{
+                      borderRadius: 2.5,
+                      minHeight: 44,
+                      fontWeight: 700,
+                      textTransform: 'none',
+                    }}
+                  >
+                    Find Work
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    startIcon={<AssignmentTurnedInIcon />}
+                    onClick={() => navigate('/worker/applications')}
+                    sx={{
+                      borderRadius: 2.5,
+                      minHeight: 44,
+                      fontWeight: 700,
+                      textTransform: 'none',
+                    }}
+                  >
+                    Applications
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    startIcon={<MessageIcon />}
+                    onClick={() => navigate('/messages')}
+                    sx={{
+                      borderRadius: 2.5,
+                      minHeight: 44,
+                      fontWeight: 700,
+                      textTransform: 'none',
+                    }}
+                  >
+                    Messages
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    startIcon={
+                      <RefreshIcon
+                        sx={{
+                          animation: isLoading
+                            ? 'spin 1s linear infinite'
+                            : 'none',
+                          ...spinKeyframes,
+                        }}
+                      />
+                    }
+                    onClick={handleRefresh}
+                    disabled={isLoading}
+                    sx={{
+                      borderRadius: 2.5,
+                      minHeight: 44,
+                      fontWeight: 700,
+                      textTransform: 'none',
+                    }}
+                  >
+                    Refresh
+                  </Button>
+                </Box>
+
+                <Grid container spacing={1.25}>
+                  {insightCards.map((item, index) => (
+                    <Fade
+                      in
+                      timeout={420}
+                      style={{ transitionDelay: `${120 + index * 90}ms` }}
+                      key={`hero-fade-${item.title}`}
+                    >
+                      <Grid item xs={12} sm={4} key={`hero-${item.title}`}>
+                        <Box
+                          sx={{
+                            p: 1.5,
+                            borderRadius: 2,
+                            border: '1px solid',
+                            borderColor: alpha(item.tone, 0.36),
+                            backgroundColor: alpha(
+                              item.tone,
+                              theme.palette.mode === 'dark' ? 0.1 : 0.08,
+                            ),
+                          }}
+                        >
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              textTransform: 'uppercase',
+                              letterSpacing: 0.5,
+                              color: 'text.secondary',
+                            }}
+                          >
+                            {item.title}
+                          </Typography>
+                          <Typography
+                            variant="h6"
+                            sx={{ fontWeight: 800, mt: 0.25 }}
+                          >
+                            {item.value}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {item.helper}
+                          </Typography>
+                        </Box>
+                      </Grid>
+                    </Fade>
+                  ))}
+                </Grid>
               </Stack>
             </Paper>
-          </Grid>
-        </Grid>
-      ) : (
-      /* Charts Section - denser desktop analytics row */
-      <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
-        {/* Earnings Overview Chart */}
-        <Grid item xs={12} md={4}>
-          <Grow in timeout={460}>
-          <Paper
-            elevation={0}
-            sx={{
-              p: { xs: 1.5, sm: 2, md: 3 },
-              borderRadius: 2.5,
-              backgroundColor: alpha(theme.palette.background.paper, 0.92),
-              border: '1px solid',
-              borderColor: alpha(theme.palette.success.main, 0.24),
-            }}
-          >
-            <Typography
-              variant="h6"
-              sx={{ color: 'text.primary', fontWeight: 600, mb: 2, fontSize: { xs: '1rem', sm: '1.25rem' } }}
-            >
-              Earnings Overview
-            </Typography>
-            <Box sx={{ height: { xs: 220, md: 280 } }}>
-              {earningsData.some(d => d.value > 0) ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={earningsData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={false ? 40 : 60}
-                    outerRadius={false ? 70 : 100}
-                    paddingAngle={2}
-                    dataKey="value"
-                  >
-                    {earningsData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <RechartsTooltip
-                    formatter={(value) => [formatGhanaCurrencyLabel(value), '']}
-                    contentStyle={{
-                      backgroundColor: theme.palette.background.paper,
-                      border: `1px solid ${theme.palette.divider}`,
-                      borderRadius: 8,
-                    }}
-                  />
-                  <Legend
-                    verticalAlign="bottom"
-                    height={36}
-                    formatter={(value) => (
-                      <span style={{ color: theme.palette.text.secondary, fontSize: 12 }}>{value}</span>
-                    )}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-              ) : (
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 1 }}>
-                  <TrendingUpIcon sx={{ fontSize: 48, color: 'text.disabled' }} />
-                  <Typography variant="body2" color="text.secondary">No earnings yet</Typography>
-                  <Typography variant="caption" color="text.disabled">Complete jobs to start earning</Typography>
-                </Box>
-              )}
-            </Box>
-          </Paper>
-          </Grow>
-        </Grid>
 
-        {/* Applications Overview Chart */}
-        <Grid item xs={12} md={4}>
-          <Grow in timeout={540}>
-          <Paper
-            elevation={0}
-            sx={{
-              p: { xs: 1.5, sm: 2, md: 3 },
-              borderRadius: 2.5,
-              backgroundColor: alpha(theme.palette.background.paper, 0.92),
-              border: '1px solid',
-              borderColor: alpha(theme.palette.info.main, 0.24),
-            }}
-          >
-            <Typography
-              variant="h6"
-              sx={{ color: 'text.primary', fontWeight: 600, mb: 2, fontSize: { xs: '1rem', sm: '1.25rem' } }}
-            >
-              Applications Overview
-            </Typography>
-            <Box sx={{ height: { xs: 220, md: 280 } }}>
-              {applicationsData.some(d => d.value > 0) ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={applicationsData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={false ? 40 : 60}
-                    outerRadius={false ? 70 : 100}
-                    paddingAngle={2}
-                    dataKey="value"
-                  >
-                    {applicationsData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <RechartsTooltip
-                    contentStyle={{
-                      backgroundColor: theme.palette.background.paper,
-                      border: `1px solid ${theme.palette.divider}`,
-                      borderRadius: 8,
-                    }}
-                  />
-                  <Legend
-                    verticalAlign="bottom"
-                    height={36}
-                    formatter={(value) => (
-                      <span style={{ color: theme.palette.text.secondary, fontSize: 12 }}>{value}</span>
-                    )}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-              ) : (
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 1 }}>
-                  <InboxOutlinedIcon sx={{ fontSize: 48, color: 'text.disabled' }} />
-                  <Typography variant="body2" color="text.secondary">No applications yet</Typography>
-                  <Button size="small" onClick={() => navigate('/worker/find-work')}>Browse Jobs</Button>
-                </Box>
-              )}
-            </Box>
-          </Paper>
-          </Grow>
-        </Grid>
+            {/* Error Display - Shows inline instead of blocking */}
+            {error && renderErrorDisplay()}
 
-        <Grid item xs={12} md={4}>
-          <Grow in timeout={620}>
-          <Paper
-            elevation={0}
-            sx={{
-              p: { xs: 1.5, sm: 2, md: 3 },
-              borderRadius: 2.5,
-              backgroundColor: alpha(theme.palette.background.paper, 0.92),
-              border: '1px solid',
-              borderColor: alpha(theme.palette.warning.main, 0.24),
-              height: '100%',
-            }}
-          >
-            <Typography
-              variant="h6"
-              sx={{ color: 'text.primary', fontWeight: 600, mb: 2, fontSize: { xs: '1rem', sm: '1.25rem' } }}
-            >
-              Pipeline Health
-            </Typography>
-            <Stack spacing={1.4}>
-              {applicationsData.map((item) => (
-                <Box key={`desktop-${item.name}`}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-                    <Typography variant="body2" fontWeight={600}>
-                      {item.name}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {item.value}
-                    </Typography>
-                  </Box>
-                  <LinearProgress
-                    variant="determinate"
-                    value={stats.applications > 0 ? (item.value / Math.max(stats.applications, 1)) * 100 : 0}
-                    sx={{
-                      height: 8,
-                      borderRadius: 999,
-                      backgroundColor: alpha(item.color, 0.12),
-                      '& .MuiLinearProgress-bar': {
-                        backgroundColor: item.color,
-                        borderRadius: 999,
-                      },
-                    }}
-                  />
-                </Box>
-              ))}
+            {/* New Worker Welcome Banner - Shows when no activity */}
+            {!isLoading && isNewWorker && (
               <Paper
                 elevation={0}
                 sx={{
-                  mt: 0.5,
-                  p: 1.5,
+                  p: 3,
+                  mb: 4,
                   borderRadius: 2,
+                  backgroundColor: 'background.paper',
                   border: '1px solid',
-                  borderColor: alpha(theme.palette.primary.main, 0.25),
-                  backgroundColor: alpha(theme.palette.primary.main, 0.06),
+                  borderColor: alpha(theme.palette.primary.main, 0.35),
+                  color: 'text.primary',
                 }}
               >
-                <Typography variant="caption" sx={{ color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 0.4 }}>
-                  Conversion snapshot
+                <Typography variant="h6" fontWeight={600} sx={{ mb: 1 }}>
+                  Welcome to Kelmah! 🎉
                 </Typography>
-                <Typography variant="h5" sx={{ fontWeight: 800, mt: 0.25 }}>
-                  {stats.applications > 0 ? `${Math.round((acceptedApplications.length / Math.max(stats.applications, 1)) * 100)}%` : '0%'}
+                <Typography variant="body2" sx={{ mb: 2, opacity: 0.9 }}>
+                  Start by browsing available jobs and submitting your first
+                  application. Skilled workers like you are in high demand!
                 </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  Application acceptance ratio
-                </Typography>
+                <Button
+                  variant="contained"
+                  startIcon={<SearchIcon />}
+                  onClick={() => navigate('/worker/find-work')}
+                  sx={{
+                    minHeight: 44,
+                    '&:focus-visible': {
+                      outline: `3px solid ${theme.palette.primary.main}`,
+                      outlineOffset: 2,
+                    },
+                  }}
+                >
+                  Find Your First Job
+                </Button>
               </Paper>
-            </Stack>
-          </Paper>
-          </Grow>
-        </Grid>
-      </Grid>
-      )}
+            )}
 
-      <Paper
-        elevation={8}
-        sx={(theme) => ({
-          display: { xs: 'flex', sm: 'none' },
-          position: 'fixed',
-          left: 0,
-          right: 0,
-          bottom: 0,
-          zIndex: theme.zIndex.appBar + 2,
-          px: 1,
-          py: 1,
-          gap: 1,
-          borderTop: `1px solid ${theme.palette.divider}`,
-          backgroundColor: theme.palette.background.paper,
-        })}
-      >
-        <Button
-          fullWidth
-          variant="outlined"
-          color="secondary"
-          sx={{ minHeight: 42 }}
-          startIcon={<RefreshIcon />}
-          onClick={handleRefresh}
-          disabled={isLoading}
-        >
-          Refresh
-        </Button>
-        <Button
-          fullWidth
-          variant="contained"
-          color="secondary"
-          sx={{ minHeight: 42, boxShadow: '0 2px 8px rgba(255,215,0,0.35)' }}
-          startIcon={<SearchIcon />}
-          onClick={() => navigate('/worker/find-work')}
-        >
-          Find Work
-        </Button>
-      </Paper>
-      </Container>
-    </Box>
+            {/* Loading Timeout Warning */}
+            {loadingTimeout && isLoading && (
+              <LoadingTimeoutWarning onRefresh={handleRefresh} />
+            )}
+
+            {/* Profile Completion Widget (Phase 1) */}
+            {!isLoading && profileCompletion.percentage < 100 && (
+              <Fade in timeout={500}>
+                <Box>
+                  <ProfileCompletionCard
+                    percentage={profileCompletion.percentage}
+                    missingFields={profileCompletion.missingFields}
+                    onStepClick={(path) => navigate(path)}
+                  />
+                </Box>
+              </Fade>
+            )}
+
+            {/* Loading State */}
+            {isLoading ? (
+              <LoadingSkeleton />
+            ) : (
+              <>
+                {/* Quick Actions Row (Phase 2) */}
+                {!isLoading && (
+                  <Box
+                    sx={{
+                      mb: 3,
+                      p: { xs: 1.5, sm: 2 },
+                      borderRadius: 2.5,
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      backgroundColor: alpha(
+                        theme.palette.background.paper,
+                        0.86,
+                      ),
+                      backdropFilter: 'blur(4px)',
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      fontWeight={600}
+                      sx={{ mb: 1.5, color: 'text.primary' }}
+                    >
+                      Quick Actions
+                    </Typography>
+                    <QuickActionsRow />
+                  </Box>
+                )}
+
+                {/* Metric Cards - 4 colored cards LC Portal style */}
+                <Grid
+                  container
+                  spacing={{ xs: 1.5, sm: 2.5, md: 3, lg: 3 }}
+                  sx={{ mb: 4 }}
+                >
+                  {metricCards.map((card, index) => (
+                    <Fade
+                      in
+                      timeout={420}
+                      style={{ transitionDelay: `${200 + index * 80}ms` }}
+                      key={`metric-fade-${card.title}`}
+                    >
+                      <Grid item xs={12} sm={6} md={6} lg={4} key={card.title}>
+                        <Tooltip title={card.tooltip} arrow placement="top">
+                          <ButtonBase
+                            onClick={card.onClick}
+                            aria-label={`${card.title}: ${card.value}. Click to view details.`}
+                            sx={{
+                              display: 'block',
+                              width: '100%',
+                              textAlign: 'left',
+                              borderRadius: 2,
+                              overflow: 'hidden',
+                              '&:focus-visible': {
+                                outline: `2px solid ${theme.palette.primary.main}`,
+                                outlineOffset: 2,
+                              },
+                            }}
+                          >
+                            <Paper
+                              elevation={0}
+                              sx={{
+                                p: { xs: 1.5, sm: 2.5 },
+                                borderRadius: 2.5,
+                                background: `linear-gradient(155deg, ${alpha(card.tone, theme.palette.mode === 'dark' ? 0.2 : 0.14)} 0%, ${alpha(theme.palette.background.paper, 0.98)} 62%, ${alpha(theme.palette.background.paper, 0.95)} 100%)`,
+                                border: '1px solid',
+                                borderColor: alpha(card.tone, 0.44),
+                                color: 'text.primary',
+                                position: 'relative',
+                                overflow: 'hidden',
+                                minHeight: { xs: 96, sm: 132, md: 144 },
+                                display: 'flex',
+                                flexDirection: 'column',
+                                justifyContent: 'space-between',
+                                // ✅ MOBILE-AUDIT P7: hover only on pointer devices
+                                '@media (hover: hover)': {
+                                  transition: 'transform 0.2s, box-shadow 0.2s',
+                                  '&:hover': {
+                                    transform: 'translateY(-4px)',
+                                    boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                                  },
+                                },
+                              }}
+                            >
+                              {/* Icon positioned on the right */}
+                              <Box
+                                sx={{
+                                  position: 'absolute',
+                                  right: 16,
+                                  top: '50%',
+                                  transform: 'translateY(-50%)',
+                                }}
+                              >
+                                {card.icon}
+                              </Box>
+
+                              {/* Text content */}
+                              <Typography
+                                variant="body2"
+                                sx={{
+                                  fontWeight: 600,
+                                  color: 'text.secondary',
+                                  mb: 1,
+                                }}
+                              >
+                                {card.title}
+                              </Typography>
+                              <Typography
+                                variant="h4"
+                                sx={{
+                                  fontWeight: 700,
+                                  fontSize: {
+                                    xs: '1.25rem',
+                                    sm: '1.5rem',
+                                    md: '2rem',
+                                  },
+                                }}
+                              >
+                                {card.value}
+                              </Typography>
+                              <Typography
+                                variant="caption"
+                                sx={{ color: 'text.secondary' }}
+                              >
+                                Tap to open details
+                              </Typography>
+                            </Paper>
+                          </ButtonBase>
+                        </Tooltip>
+                      </Grid>
+                    </Fade>
+                  ))}
+                </Grid>
+              </>
+            )}
+
+            {/* U-01 FIX: Job Recommendations Section */}
+            {!isLoading && (
+              <Box
+                sx={{
+                  mb: 3,
+                  p: { xs: 1.5, sm: 2 },
+                  borderRadius: 2.5,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  backgroundColor: alpha(theme.palette.background.paper, 0.88),
+                  backdropFilter: 'blur(4px)',
+                }}
+              >
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    mb: 1.5,
+                  }}
+                >
+                  <Typography
+                    variant="body2"
+                    fontWeight={600}
+                    color="text.primary"
+                  >
+                    Recommended Jobs
+                  </Typography>
+                  <Button
+                    size="small"
+                    component={RouterLink}
+                    to="/jobs"
+                    sx={{ textTransform: 'none', fontWeight: 600 }}
+                  >
+                    Browse All
+                  </Button>
+                </Box>
+                {recsLoading ? (
+                  <Grid container spacing={1.5}>
+                    {[1, 2, 3].map((i) => (
+                      <Grid
+                        item
+                        xs={12}
+                        sm={6}
+                        md={4}
+                        key={`recommendation-skeleton-${i}`}
+                      >
+                        <Skeleton variant="rounded" height={120} />
+                      </Grid>
+                    ))}
+                  </Grid>
+                ) : recommendations.length > 0 ? (
+                  <Grid container spacing={1.5}>
+                    {recommendations.slice(0, 8).map((job, index) => (
+                      <Grid item xs={12} sm={6} md={3} key={job.id}>
+                        <Paper
+                          elevation={0}
+                          component={ButtonBase}
+                          sx={{
+                            p: 2,
+                            borderRadius: 2,
+                            border: '1px solid',
+                            borderColor: 'divider',
+                            cursor: 'pointer',
+                            transition: 'box-shadow 0.2s',
+                            '&:hover': { boxShadow: 2 },
+                            '&:focus-visible': {
+                              outline: `3px solid ${theme.palette.primary.main}`,
+                              outlineOffset: 2,
+                            },
+                            animation: 'workerCardRise 420ms ease-out both',
+                            animationDelay: `${index * 55}ms`,
+                            '@keyframes workerCardRise': {
+                              from: {
+                                opacity: 0,
+                                transform: 'translateY(12px)',
+                              },
+                              to: { opacity: 1, transform: 'translateY(0)' },
+                            },
+                          }}
+                          onClick={() => navigate(`/jobs/${job.id}`)}
+                        >
+                          <Typography
+                            variant="subtitle2"
+                            fontWeight={600}
+                            noWrap
+                          >
+                            {job.title}
+                          </Typography>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            noWrap
+                          >
+                            {job.employer?.name || 'Employer'} |{' '}
+                            {job.location || 'Remote'}
+                          </Typography>
+                          <Box
+                            sx={{
+                              mt: 1,
+                              display: 'flex',
+                              gap: 0.5,
+                              flexWrap: 'wrap',
+                            }}
+                          >
+                            {(job.skills || []).slice(0, 3).map((skill) => (
+                              <Box
+                                key={skill}
+                                sx={{
+                                  px: 1,
+                                  py: 0.25,
+                                  borderRadius: 1,
+                                  bgcolor: 'action.hover',
+                                  fontSize: '0.7rem',
+                                }}
+                              >
+                                {skill}
+                              </Box>
+                            ))}
+                          </Box>
+                          {job.budget && (
+                            <Typography
+                              variant="body2"
+                              fontWeight={600}
+                              color="primary"
+                              sx={{ mt: 1 }}
+                            >
+                              {job.currency || 'GHS'}{' '}
+                              {typeof job.budget === 'object'
+                                ? `${job.budget.min}-${job.budget.max}`
+                                : job.budget}
+                            </Typography>
+                          )}
+                        </Paper>
+                      </Grid>
+                    ))}
+                  </Grid>
+                ) : (
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      p: 3,
+                      textAlign: 'center',
+                      borderRadius: 2,
+                      border: '1px solid',
+                      borderColor: 'divider',
+                    }}
+                  >
+                    <SearchIcon
+                      sx={{ fontSize: 40, color: 'text.disabled', mb: 1 }}
+                    />
+                    <Typography variant="body2" color="text.secondary">
+                      No recommendations yet. Complete your profile and add
+                      skills to get matched!
+                    </Typography>
+                  </Paper>
+                )}
+              </Box>
+            )}
+
+            {false ? (
+              <Grid container spacing={1.5}>
+                <Grid item xs={12}>
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      p: 2,
+                      borderRadius: 2,
+                      backgroundColor: 'background.paper',
+                      border: '1px solid',
+                      borderColor: 'divider',
+                    }}
+                  >
+                    <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>
+                      Today&apos;s overview
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ mb: 2 }}
+                    >
+                      Focus on the next action that keeps your Kelmah profile
+                      active and visible.
+                    </Typography>
+                    <Grid container spacing={1.5}>
+                      {insightCards.map((item) => (
+                        <Grid item xs={12} key={item.title}>
+                          <Box
+                            sx={{
+                              p: 1.5,
+                              borderRadius: 2,
+                              backgroundColor: alpha(item.tone, 0.08),
+                              border: '1px solid',
+                              borderColor: alpha(item.tone, 0.24),
+                            }}
+                          >
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                color: 'text.secondary',
+                                textTransform: 'uppercase',
+                                letterSpacing: 0.4,
+                              }}
+                            >
+                              {item.title}
+                            </Typography>
+                            <Typography
+                              variant="h6"
+                              sx={{ fontWeight: 700, mt: 0.25 }}
+                            >
+                              {item.value}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              {item.helper}
+                            </Typography>
+                          </Box>
+                        </Grid>
+                      ))}
+                    </Grid>
+                  </Paper>
+                </Grid>
+                <Grid item xs={12}>
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      p: 2,
+                      borderRadius: 2,
+                      backgroundColor: 'background.paper',
+                      border: '1px solid',
+                      borderColor: 'divider',
+                    }}
+                  >
+                    <Typography variant="h6" sx={{ fontWeight: 700, mb: 1.5 }}>
+                      Application pipeline
+                    </Typography>
+                    <Stack spacing={1.25}>
+                      {applicationsData.map((item) => (
+                        <Box key={item.name}>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              mb: 0.5,
+                            }}
+                          >
+                            <Typography variant="body2" fontWeight={600}>
+                              {item.name}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              {item.value}
+                            </Typography>
+                          </Box>
+                          <LinearProgress
+                            variant="determinate"
+                            value={
+                              stats.applications > 0
+                                ? (item.value /
+                                    Math.max(stats.applications, 1)) *
+                                  100
+                                : 0
+                            }
+                            sx={{
+                              height: 8,
+                              borderRadius: 999,
+                              backgroundColor: alpha(item.color, 0.12),
+                              '& .MuiLinearProgress-bar': {
+                                backgroundColor: item.color,
+                                borderRadius: 999,
+                              },
+                            }}
+                          />
+                        </Box>
+                      ))}
+                    </Stack>
+                  </Paper>
+                </Grid>
+              </Grid>
+            ) : (
+              /* Charts Section - denser desktop analytics row */
+              <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
+                {/* Earnings Overview Chart */}
+                <Grid item xs={12} md={4}>
+                  <Grow in timeout={460}>
+                    <Paper
+                      elevation={0}
+                      sx={{
+                        p: { xs: 1.5, sm: 2, md: 3 },
+                        borderRadius: 2.5,
+                        backgroundColor: alpha(
+                          theme.palette.background.paper,
+                          0.92,
+                        ),
+                        border: '1px solid',
+                        borderColor: alpha(theme.palette.success.main, 0.24),
+                      }}
+                    >
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          color: 'text.primary',
+                          fontWeight: 600,
+                          mb: 2,
+                          fontSize: { xs: '1rem', sm: '1.25rem' },
+                        }}
+                      >
+                        Earnings Overview
+                      </Typography>
+                      <Box sx={{ height: { xs: 220, md: 280 } }}>
+                        {earningsData.some((d) => d.value > 0) ? (
+                          <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                              <Pie
+                                data={earningsData}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={false ? 40 : 60}
+                                outerRadius={false ? 70 : 100}
+                                paddingAngle={2}
+                                dataKey="value"
+                              >
+                                {earningsData.map((entry, index) => (
+                                  <Cell
+                                    key={`cell-${index}`}
+                                    fill={entry.color}
+                                  />
+                                ))}
+                              </Pie>
+                              <RechartsTooltip
+                                formatter={(value) => [
+                                  formatGhanaCurrencyLabel(value),
+                                  '',
+                                ]}
+                                contentStyle={{
+                                  backgroundColor:
+                                    theme.palette.background.paper,
+                                  border: `1px solid ${theme.palette.divider}`,
+                                  borderRadius: 8,
+                                }}
+                              />
+                              <Legend
+                                verticalAlign="bottom"
+                                height={36}
+                                formatter={(value) => (
+                                  <span
+                                    style={{
+                                      color: theme.palette.text.secondary,
+                                      fontSize: 12,
+                                    }}
+                                  >
+                                    {value}
+                                  </span>
+                                )}
+                              />
+                            </PieChart>
+                          </ResponsiveContainer>
+                        ) : (
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              height: '100%',
+                              gap: 1,
+                            }}
+                          >
+                            <TrendingUpIcon
+                              sx={{ fontSize: 48, color: 'text.disabled' }}
+                            />
+                            <Typography variant="body2" color="text.secondary">
+                              No earnings yet
+                            </Typography>
+                            <Typography variant="caption" color="text.disabled">
+                              Complete jobs to start earning
+                            </Typography>
+                          </Box>
+                        )}
+                      </Box>
+                    </Paper>
+                  </Grow>
+                </Grid>
+
+                {/* Applications Overview Chart */}
+                <Grid item xs={12} md={4}>
+                  <Grow in timeout={540}>
+                    <Paper
+                      elevation={0}
+                      sx={{
+                        p: { xs: 1.5, sm: 2, md: 3 },
+                        borderRadius: 2.5,
+                        backgroundColor: alpha(
+                          theme.palette.background.paper,
+                          0.92,
+                        ),
+                        border: '1px solid',
+                        borderColor: alpha(theme.palette.info.main, 0.24),
+                      }}
+                    >
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          color: 'text.primary',
+                          fontWeight: 600,
+                          mb: 2,
+                          fontSize: { xs: '1rem', sm: '1.25rem' },
+                        }}
+                      >
+                        Applications Overview
+                      </Typography>
+                      <Box sx={{ height: { xs: 220, md: 280 } }}>
+                        {applicationsData.some((d) => d.value > 0) ? (
+                          <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                              <Pie
+                                data={applicationsData}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={false ? 40 : 60}
+                                outerRadius={false ? 70 : 100}
+                                paddingAngle={2}
+                                dataKey="value"
+                              >
+                                {applicationsData.map((entry, index) => (
+                                  <Cell
+                                    key={`cell-${index}`}
+                                    fill={entry.color}
+                                  />
+                                ))}
+                              </Pie>
+                              <RechartsTooltip
+                                contentStyle={{
+                                  backgroundColor:
+                                    theme.palette.background.paper,
+                                  border: `1px solid ${theme.palette.divider}`,
+                                  borderRadius: 8,
+                                }}
+                              />
+                              <Legend
+                                verticalAlign="bottom"
+                                height={36}
+                                formatter={(value) => (
+                                  <span
+                                    style={{
+                                      color: theme.palette.text.secondary,
+                                      fontSize: 12,
+                                    }}
+                                  >
+                                    {value}
+                                  </span>
+                                )}
+                              />
+                            </PieChart>
+                          </ResponsiveContainer>
+                        ) : (
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              height: '100%',
+                              gap: 1,
+                            }}
+                          >
+                            <InboxOutlinedIcon
+                              sx={{ fontSize: 48, color: 'text.disabled' }}
+                            />
+                            <Typography variant="body2" color="text.secondary">
+                              No applications yet
+                            </Typography>
+                            <Button
+                              size="small"
+                              onClick={() => navigate('/worker/find-work')}
+                            >
+                              Browse Jobs
+                            </Button>
+                          </Box>
+                        )}
+                      </Box>
+                    </Paper>
+                  </Grow>
+                </Grid>
+
+                <Grid item xs={12} md={4}>
+                  <Grow in timeout={620}>
+                    <Paper
+                      elevation={0}
+                      sx={{
+                        p: { xs: 1.5, sm: 2, md: 3 },
+                        borderRadius: 2.5,
+                        backgroundColor: alpha(
+                          theme.palette.background.paper,
+                          0.92,
+                        ),
+                        border: '1px solid',
+                        borderColor: alpha(theme.palette.warning.main, 0.24),
+                        height: '100%',
+                      }}
+                    >
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          color: 'text.primary',
+                          fontWeight: 600,
+                          mb: 2,
+                          fontSize: { xs: '1rem', sm: '1.25rem' },
+                        }}
+                      >
+                        Pipeline Health
+                      </Typography>
+                      <Stack spacing={1.4}>
+                        {applicationsData.map((item) => (
+                          <Box key={`desktop-${item.name}`}>
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                mb: 0.5,
+                              }}
+                            >
+                              <Typography variant="body2" fontWeight={600}>
+                                {item.name}
+                              </Typography>
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                              >
+                                {item.value}
+                              </Typography>
+                            </Box>
+                            <LinearProgress
+                              variant="determinate"
+                              value={
+                                stats.applications > 0
+                                  ? (item.value /
+                                      Math.max(stats.applications, 1)) *
+                                    100
+                                  : 0
+                              }
+                              sx={{
+                                height: 8,
+                                borderRadius: 999,
+                                backgroundColor: alpha(item.color, 0.12),
+                                '& .MuiLinearProgress-bar': {
+                                  backgroundColor: item.color,
+                                  borderRadius: 999,
+                                },
+                              }}
+                            />
+                          </Box>
+                        ))}
+                        <Paper
+                          elevation={0}
+                          sx={{
+                            mt: 0.5,
+                            p: 1.5,
+                            borderRadius: 2,
+                            border: '1px solid',
+                            borderColor: alpha(
+                              theme.palette.primary.main,
+                              0.25,
+                            ),
+                            backgroundColor: alpha(
+                              theme.palette.primary.main,
+                              0.06,
+                            ),
+                          }}
+                        >
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              color: 'text.secondary',
+                              textTransform: 'uppercase',
+                              letterSpacing: 0.4,
+                            }}
+                          >
+                            Conversion snapshot
+                          </Typography>
+                          <Typography
+                            variant="h5"
+                            sx={{ fontWeight: 800, mt: 0.25 }}
+                          >
+                            {stats.applications > 0
+                              ? `${Math.round((acceptedApplications.length / Math.max(stats.applications, 1)) * 100)}%`
+                              : '0%'}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            Application acceptance ratio
+                          </Typography>
+                        </Paper>
+                      </Stack>
+                    </Paper>
+                  </Grow>
+                </Grid>
+              </Grid>
+            )}
+
+            <Paper
+              elevation={8}
+              sx={(theme) => ({
+                display: { xs: 'flex', sm: 'none' },
+                position: 'fixed',
+                left: 0,
+                right: 0,
+                bottom: 0,
+                zIndex: theme.zIndex.appBar + 2,
+                px: 1,
+                py: 1,
+                gap: 1,
+                borderTop: `1px solid ${theme.palette.divider}`,
+                backgroundColor: theme.palette.background.paper,
+              })}
+            >
+              <Button
+                fullWidth
+                variant="outlined"
+                color="secondary"
+                sx={{ minHeight: 42 }}
+                startIcon={<RefreshIcon />}
+                onClick={handleRefresh}
+                disabled={isLoading}
+              >
+                Refresh
+              </Button>
+              <Button
+                fullWidth
+                variant="contained"
+                color="secondary"
+                sx={{
+                  minHeight: 42,
+                  boxShadow: '0 2px 8px rgba(255,215,0,0.35)',
+                }}
+                startIcon={<SearchIcon />}
+                onClick={() => navigate('/worker/find-work')}
+              >
+                Find Work
+              </Button>
+            </Paper>
+          </Container>
+        </Box>
       </PullToRefresh>
     </PageCanvas>
   );
 };
 
 export default WorkerDashboardPage;
-
-

@@ -100,9 +100,7 @@ import ReviewSystem from '../../../components/reviews/ReviewSystem';
 import { BOTTOM_NAV_HEIGHT } from '../../../constants/layout';
 import reviewService from '../../reviews/services/reviewService';
 import { hasRole } from '../../../utils/userUtils';
-import {
-  useBreakpointDown,
-} from '../../../hooks/useResponsive';
+import { useBreakpointDown } from '../../../hooks/useResponsive';
 import {
   resolveMediaAssetUrl,
   resolveProfileImageUrl,
@@ -112,7 +110,10 @@ import { devError } from '@/modules/common/utils/devLogger';
 const formatGhanaCurrencyLabel = (value) => {
   const amount = Number(value);
   if (!Number.isFinite(amount)) return 'GH₵0.00';
-  return new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' }).format(amount);
+  return new Intl.NumberFormat('en-GH', {
+    style: 'currency',
+    currency: 'GHS',
+  }).format(amount);
 };
 
 const Input = styled('input')({
@@ -209,15 +210,21 @@ const AnimatedButton = styled(Button)(({ theme }) => ({
 }));
 
 const getCanonicalWorkerProfilePath = (workerId) =>
-  workerId ? `/workers/${encodeURIComponent(String(workerId))}` : '/find-talents';
+  workerId
+    ? `/workers/${encodeURIComponent(String(workerId))}`
+    : '/find-talents';
 
 const normalizeWorkerSkillList = (skills) =>
   Array.isArray(skills)
     ? skills
-      .map((skill) => ({
-        name: skill?.name || skill?.skillName || skill?.label || String(skill || '').trim(),
-      }))
-      .filter((skill) => skill.name)
+        .map((skill) => ({
+          name:
+            skill?.name ||
+            skill?.skillName ||
+            skill?.label ||
+            String(skill || '').trim(),
+        }))
+        .filter((skill) => skill.name)
     : [];
 
 const normalizeAvailabilityHoursMap = (availableHours) => {
@@ -245,7 +252,9 @@ const normalizeAvailabilityHoursMap = (availableHours) => {
 };
 
 const buildAvailabilityHoursMap = (availability) => {
-  const directHours = normalizeAvailabilityHoursMap(availability?.availableHours);
+  const directHours = normalizeAvailabilityHoursMap(
+    availability?.availableHours,
+  );
   if (Object.keys(directHours).length > 0) {
     return directHours;
   }
@@ -254,9 +263,18 @@ const buildAvailabilityHoursMap = (availability) => {
     return {};
   }
 
-  const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  const days = [
+    'sunday',
+    'monday',
+    'tuesday',
+    'wednesday',
+    'thursday',
+    'friday',
+    'saturday',
+  ];
   return availability.daySlots.reduce((accumulator, slot) => {
-    const dayName = typeof slot?.dayOfWeek === 'number' ? days[slot.dayOfWeek] : null;
+    const dayName =
+      typeof slot?.dayOfWeek === 'number' ? days[slot.dayOfWeek] : null;
     const firstSlot = Array.isArray(slot?.slots) ? slot.slots[0] : null;
 
     if (!dayName || !firstSlot?.start || !firstSlot?.end) {
@@ -277,11 +295,15 @@ const getPortfolioItems = (worker) =>
   Array.isArray(worker?.portfolio?.items) ? worker.portfolio.items : [];
 
 const getCertificateItems = (worker) =>
-  Array.isArray(worker?.certifications?.items) ? worker.certifications.items : [];
+  Array.isArray(worker?.certifications?.items)
+    ? worker.certifications.items
+    : [];
 
 function WorkerProfile({ workerId: workerIdProp }) {
   const routeParams = useParams();
-  const { user: authUser, isAuthenticated } = useSelector((state) => state.auth);
+  const { user: authUser, isAuthenticated } = useSelector(
+    (state) => state.auth,
+  );
   const resolvedWorkerId =
     workerIdProp ?? routeParams?.workerId ?? authUser?.userId ?? null;
 
@@ -336,10 +358,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
       resolveMediaAssetUrl(certificate?.metadata?.file, {
         preferThumbnail: true,
       }) ||
-      resolveMediaAssetUrl([
-        certificate?.thumbnailUrl,
-        certificate?.url,
-      ]) ||
+      resolveMediaAssetUrl([certificate?.thumbnailUrl, certificate?.url]) ||
       null
     );
   }, []);
@@ -405,26 +424,30 @@ function WorkerProfile({ workerId: workerIdProp }) {
 
       const fallbackRatingSummary = {
         averageRating: Number(worker?.stats?.rating ?? worker?.rating ?? 0),
-        totalReviews: Number(worker?.stats?.totalReviews ?? worker?.totalReviews ?? 0),
+        totalReviews: Number(
+          worker?.stats?.totalReviews ?? worker?.totalReviews ?? 0,
+        ),
       };
 
       const normalizedProfile = worker
         ? {
-          ...worker,
-          user: worker.user,
-          hourly_rate:
-            worker.rate?.amount ??
-            worker.hourlyRate ??
-            worker.rate?.min ??
-            worker.rate?.max ??
-            0,
-          is_verified:
-            worker.verification?.isVerified ?? worker.isVerified ?? false,
-          profile_picture: worker.profile?.picture ?? worker.profilePicture,
-          average_rating: fallbackRatingSummary.averageRating,
-          experience_years: Number(worker.experience?.years ?? worker.yearsOfExperience ?? 0),
-          is_online: false,
-        }
+            ...worker,
+            user: worker.user,
+            hourly_rate:
+              worker.rate?.amount ??
+              worker.hourlyRate ??
+              worker.rate?.min ??
+              worker.rate?.max ??
+              0,
+            is_verified:
+              worker.verification?.isVerified ?? worker.isVerified ?? false,
+            profile_picture: worker.profile?.picture ?? worker.profilePicture,
+            average_rating: fallbackRatingSummary.averageRating,
+            experience_years: Number(
+              worker.experience?.years ?? worker.yearsOfExperience ?? 0,
+            ),
+            is_online: false,
+          }
         : null;
 
       setProfile(normalizedProfile);
@@ -460,13 +483,13 @@ function WorkerProfile({ workerId: workerIdProp }) {
 
       // Load secondary sections sequentially to avoid request bursts that trip gateway throttling.
       const historyRes = await runOptionalProfileRequest(() =>
-        workerService.getWorkHistory(resolvedWorkerId)
+        workerService.getWorkHistory(resolvedWorkerId),
       );
       const completionRes = await runOptionalProfileRequest(() =>
-        workerService.getWorkerStats(resolvedWorkerId)
+        workerService.getWorkerStats(resolvedWorkerId),
       );
       const ratingRes = await runOptionalProfileRequest(() =>
-        reviewService.getWorkerRating(resolvedWorkerId)
+        reviewService.getWorkerRating(resolvedWorkerId),
       );
       const reviewListRes = await runOptionalProfileRequest(() =>
         reviewService.getWorkerReviews(resolvedWorkerId, {
@@ -475,14 +498,13 @@ function WorkerProfile({ workerId: workerIdProp }) {
           status: 'approved',
           sortBy: 'createdAt',
           order: 'desc',
-        })
+        }),
       );
-      const earningsRes =
-        viewingOwnProfile
-          ? await runOptionalProfileRequest(() =>
-            workerService.getWorkerEarnings(resolvedWorkerId)
+      const earningsRes = viewingOwnProfile
+        ? await runOptionalProfileRequest(() =>
+            workerService.getWorkerEarnings(resolvedWorkerId),
           )
-          : null;
+        : null;
 
       const historyPayload = historyRes?.data?.data || historyRes?.data || [];
       const normalizedHistory = Array.isArray(historyPayload)
@@ -509,7 +531,9 @@ function WorkerProfile({ workerId: workerIdProp }) {
       if (status === 404) {
         setError('Worker profile not found.');
       } else if (status === 429) {
-        setError('This profile is temporarily rate-limited. Please wait a few seconds and try again.');
+        setError(
+          'This profile is temporarily rate-limited. Please wait a few seconds and try again.',
+        );
       } else {
         setError('Could not load this worker profile. Please try again.');
       }
@@ -596,7 +620,9 @@ function WorkerProfile({ workerId: workerIdProp }) {
 
   const handleContactWorker = () => {
     if (!authUser) {
-      navigate('/login', { state: { from: window.location.pathname + window.location.search } });
+      navigate('/login', {
+        state: { from: window.location.pathname + window.location.search },
+      });
       return;
     }
     const recipientId =
@@ -606,23 +632,28 @@ function WorkerProfile({ workerId: workerIdProp }) {
       resolvedWorkerId;
 
     if (recipientId) {
-      navigate(`/messages?recipient=${encodeURIComponent(String(recipientId))}`, {
-        state: {
-          recipientProfile: {
-            id: String(recipientId),
-            name:
-              profile?.user?.name ||
-              [profile?.user?.firstName, profile?.user?.lastName].filter(Boolean).join(' ') ||
-              profile?.name ||
-              'New conversation',
-            profilePicture:
-              profile?.profile_picture ||
-              profile?.user?.profilePicture ||
-              profile?.profilePicture ||
-              null,
+      navigate(
+        `/messages?recipient=${encodeURIComponent(String(recipientId))}`,
+        {
+          state: {
+            recipientProfile: {
+              id: String(recipientId),
+              name:
+                profile?.user?.name ||
+                [profile?.user?.firstName, profile?.user?.lastName]
+                  .filter(Boolean)
+                  .join(' ') ||
+                profile?.name ||
+                'New conversation',
+              profilePicture:
+                profile?.profile_picture ||
+                profile?.user?.profilePicture ||
+                profile?.profilePicture ||
+                null,
+            },
           },
         },
-      });
+      );
     }
   };
 
@@ -794,7 +825,12 @@ function WorkerProfile({ workerId: workerIdProp }) {
                 '&:hover': { bgcolor: theme.palette.background.paper },
                 width: 44,
                 height: 44,
-                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
+                '&:focus-visible': {
+                  outline: '3px solid',
+                  outlineColor: 'primary.main',
+                  outlineOffset: '2px',
+                },
+              }}
             >
               {isBookmarked ? (
                 <BookmarkIcon color="primary" />
@@ -810,7 +846,12 @@ function WorkerProfile({ workerId: workerIdProp }) {
                 '&:hover': { bgcolor: theme.palette.background.paper },
                 width: 44,
                 height: 44,
-                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
+                '&:focus-visible': {
+                  outline: '3px solid',
+                  outlineColor: 'primary.main',
+                  outlineOffset: '2px',
+                },
+              }}
             >
               <ShareIcon />
             </IconButton>
@@ -823,7 +864,12 @@ function WorkerProfile({ workerId: workerIdProp }) {
                   '&:hover': { bgcolor: theme.palette.background.paper },
                   width: 44,
                   height: 44,
-                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
+                  '&:focus-visible': {
+                    outline: '3px solid',
+                    outlineColor: 'primary.main',
+                    outlineOffset: '2px',
+                  },
+                }}
               >
                 <EditIcon />
               </IconButton>
@@ -892,7 +938,11 @@ function WorkerProfile({ workerId: workerIdProp }) {
               color="primary"
               gutterBottom
               fontWeight={600}
-              sx={{ mb: 2, fontSize: { xs: '1.05rem', sm: '1.2rem', md: '1.3rem' }, lineHeight: 1.35 }}
+              sx={{
+                mb: 2,
+                fontSize: { xs: '1.05rem', sm: '1.2rem', md: '1.3rem' },
+                lineHeight: 1.35,
+              }}
             >
               {profile.profession}
             </Typography>
@@ -906,16 +956,26 @@ function WorkerProfile({ workerId: workerIdProp }) {
             >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Rating
-                  value={ratingSummary?.averageRating ?? profile.average_rating ?? 0}
+                  value={
+                    ratingSummary?.averageRating ?? profile.average_rating ?? 0
+                  }
                   precision={0.1}
                   readOnly
                   size="large"
                 />
                 <Typography variant="h6" fontWeight={600}>
-                  {(ratingSummary?.averageRating ?? profile.average_rating ?? 0).toFixed(1)}
+                  {(
+                    ratingSummary?.averageRating ??
+                    profile.average_rating ??
+                    0
+                  ).toFixed(1)}
                 </Typography>
                 <Typography variant="body1" color="text.secondary">
-                  ({ratingSummary?.totalReviews ?? stats.totalReviews ?? reviews.length} reviews)
+                  (
+                  {ratingSummary?.totalReviews ??
+                    stats.totalReviews ??
+                    reviews.length}{' '}
+                  reviews)
                 </Typography>
               </Box>
             </Stack>
@@ -943,9 +1003,21 @@ function WorkerProfile({ workerId: workerIdProp }) {
               useFlexGap
               sx={{ mb: 3 }}
             >
-              <Chip label={`${portfolio.length} portfolio item${portfolio.length === 1 ? '' : 's'}`} variant="outlined" />
-              <Chip label={`${certificates.length} certificate${certificates.length === 1 ? '' : 's'}`} variant="outlined" />
-              {profileHeroImage ? <Chip label="Visual profile ready" color="success" variant="outlined" /> : null}
+              <Chip
+                label={`${portfolio.length} portfolio item${portfolio.length === 1 ? '' : 's'}`}
+                variant="outlined"
+              />
+              <Chip
+                label={`${certificates.length} certificate${certificates.length === 1 ? '' : 's'}`}
+                variant="outlined"
+              />
+              {profileHeroImage ? (
+                <Chip
+                  label="Visual profile ready"
+                  color="success"
+                  variant="outlined"
+                />
+              ) : null}
             </Stack>
 
             <Typography
@@ -953,7 +1025,8 @@ function WorkerProfile({ workerId: workerIdProp }) {
               color="text.secondary"
               sx={{ mb: 3, maxWidth: 680, mx: 'auto' }}
             >
-              Trust tip: review verified badges, ratings, and recent portfolio examples before confirming a hire.
+              Trust tip: review verified badges, ratings, and recent portfolio
+              examples before confirming a hire.
             </Typography>
 
             <Stack
@@ -999,10 +1072,10 @@ function WorkerProfile({ workerId: workerIdProp }) {
     const jobsCompleted =
       statsData.totalJobsCompleted || statsData.jobsCompleted || 0;
     const completionRate =
-      completionData.completionPercentage ??
-      statsData.completionRate ??
-      0;
-    const averageRating = Number(statsData.rating ?? ratingSummary?.averageRating ?? 0);
+      completionData.completionPercentage ?? statsData.completionRate ?? 0;
+    const averageRating = Number(
+      statsData.rating ?? ratingSummary?.averageRating ?? 0,
+    );
     const averageResponseTime = Number(statsData.averageResponseTime ?? 0);
 
     return (
@@ -1049,7 +1122,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                       color: theme.palette.primary.main,
                     }}
                   >
-                          {formatGhanaCurrencyLabel(last30)}
+                    {formatGhanaCurrencyLabel(last30)}
                   </Typography>
                   <Typography
                     sx={{
@@ -1224,7 +1297,9 @@ function WorkerProfile({ workerId: workerIdProp }) {
                             color: '#1565C0',
                           }}
                         >
-                          {averageResponseTime > 0 ? `${averageResponseTime}h` : 'N/A'}
+                          {averageResponseTime > 0
+                            ? `${averageResponseTime}h`
+                            : 'N/A'}
                         </Typography>
                       </Box>
                     </Grid>
@@ -1308,8 +1383,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
             <MetricCard>
               <TrendingIcon color="primary" sx={{ fontSize: 40, mb: 1 }} />
               <Typography variant="h4" fontWeight={700} color="primary">
-                {completionRate}
-                %
+                {completionRate}%
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 Profile Completion
@@ -1478,14 +1552,32 @@ function WorkerProfile({ workerId: workerIdProp }) {
                       height="200"
                       image={getPortfolioPreviewImage(item)}
                       alt={item.title}
-                      onError={(e) => { e.target.onerror = null; e.target.src = ''; e.target.style.display = 'none'; }}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = '';
+                        e.target.style.display = 'none';
+                      }}
                     />
                   ) : null}
                   <CardContent>
-                    <Typography variant="h6" fontWeight={600} noWrap sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <Typography
+                      variant="h6"
+                      fontWeight={600}
+                      noWrap
+                      sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}
+                    >
                       {item.title}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                      }}
+                    >
                       {item.description}
                     </Typography>
                   </CardContent>
@@ -1526,7 +1618,8 @@ function WorkerProfile({ workerId: workerIdProp }) {
   );
 
   const renderAvailability = () => {
-    const availabilityStatus = availability?.status || availability?.availabilityStatus || 'available';
+    const availabilityStatus =
+      availability?.status || availability?.availabilityStatus || 'available';
     const availabilityHours = buildAvailabilityHoursMap(availability);
     const averageResponseLabel = stats?.averageResponseTime
       ? `${stats.averageResponseTime}h average`
@@ -1554,7 +1647,9 @@ function WorkerProfile({ workerId: workerIdProp }) {
                 label={availabilityStatus
                   .toString()
                   .replace(/\b\w/g, (c) => c.toUpperCase())}
-                color={availabilityStatus === 'available' ? 'success' : 'warning'}
+                color={
+                  availabilityStatus === 'available' ? 'success' : 'warning'
+                }
                 size="large"
                 sx={{ mb: 2 }}
               />
@@ -1730,7 +1825,8 @@ function WorkerProfile({ workerId: workerIdProp }) {
                         size="small"
                         variant={d.available ? 'contained' : 'outlined'}
                         sx={{ minHeight: 44 }}
-                        onClick={() => setDay(day, { available: !d.available })}>
+                        onClick={() => setDay(day, { available: !d.available })}
+                      >
                         {d.available ? 'Available' : 'Unavailable'}
                       </Button>
                       <TextField
@@ -1756,7 +1852,12 @@ function WorkerProfile({ workerId: workerIdProp }) {
             })}
           </Grid>
           <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
-            <Button variant="contained" startIcon={<CheckIcon />} sx={{ minHeight: 44 }} onClick={save}>
+            <Button
+              variant="contained"
+              startIcon={<CheckIcon />}
+              sx={{ minHeight: 44 }}
+              onClick={save}
+            >
               Save
             </Button>
             <Button
@@ -1796,7 +1897,9 @@ function WorkerProfile({ workerId: workerIdProp }) {
                   item
                   xs={12}
                   md={6}
-                  key={cert.id || cert._id || cert.name || `certificate-${index}`}
+                  key={
+                    cert.id || cert._id || cert.name || `certificate-${index}`
+                  }
                 >
                   <Card variant="outlined" sx={{ p: 2 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -1816,7 +1919,13 @@ function WorkerProfile({ workerId: workerIdProp }) {
                           }}
                         />
                       ) : (
-                        <Avatar sx={{ bgcolor: 'primary.main', width: 72, height: 72 }}>
+                        <Avatar
+                          sx={{
+                            bgcolor: 'primary.main',
+                            width: 72,
+                            height: 72,
+                          }}
+                        >
                           <AwardIcon />
                         </Avatar>
                       )}
@@ -1828,13 +1937,22 @@ function WorkerProfile({ workerId: workerIdProp }) {
                           {cert.issuing_organization}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
-                          Issued: {cert.issue_date ? new Date(cert.issue_date).toLocaleDateString() : 'N/A'}
+                          Issued:{' '}
+                          {cert.issue_date
+                            ? new Date(cert.issue_date).toLocaleDateString()
+                            : 'N/A'}
                         </Typography>
                       </Box>
                       {cert.is_verified && <VerifiedIcon color="success" />}
                     </Box>
                     {cert.url && (
-                      <Box sx={{ mt: 1.5, display: 'flex', justifyContent: 'flex-end' }}>
+                      <Box
+                        sx={{
+                          mt: 1.5,
+                          display: 'flex',
+                          justifyContent: 'flex-end',
+                        }}
+                      >
                         <Button
                           component="a"
                           href={cert.url}
@@ -1869,10 +1987,14 @@ function WorkerProfile({ workerId: workerIdProp }) {
 
   const renderMobileProfileLayout = () => {
     const isDark = theme.palette.mode === 'dark';
-    const dashboardFontFamily = '"Plus Jakarta Sans", "Manrope", "Segoe UI", sans-serif';
+    const dashboardFontFamily =
+      '"Plus Jakarta Sans", "Manrope", "Segoe UI", sans-serif';
     const accent = theme.palette.secondary.main || '#F5B324';
     const panel = alpha(theme.palette.background.paper, isDark ? 0.94 : 0.97);
-    const panelMuted = alpha(theme.palette.background.paper, isDark ? 0.86 : 0.92);
+    const panelMuted = alpha(
+      theme.palette.background.paper,
+      isDark ? 0.86 : 0.92,
+    );
     const textPrimary = theme.palette.text.primary;
     const textMuted = alpha(theme.palette.text.primary, isDark ? 0.72 : 0.66);
     const sectionRadius = 18;
@@ -1903,7 +2025,9 @@ function WorkerProfile({ workerId: workerIdProp }) {
     const responseTimeValue = Number(stats?.averageResponseTime ?? 0);
     const availabilityLabel =
       availability?.status || availability?.availabilityStatus || 'available';
-    const mobilePortfolioItems = (portfolio.length > 0 ? portfolio : [{ title: 'Project work' }]).slice(0, 6);
+    const mobilePortfolioItems = (
+      portfolio.length > 0 ? portfolio : [{ title: 'Project work' }]
+    ).slice(0, 6);
 
     const trustMetricItems = [
       {
@@ -1961,230 +2085,303 @@ function WorkerProfile({ workerId: workerIdProp }) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.28, ease: motionEase }}
         >
-        <Paper
-          elevation={0}
-          sx={{
-            p: 1.5,
-            borderRadius: sectionRadius,
-            background: `linear-gradient(145deg, ${panel} 0%, ${alpha(accent, 0.08)} 100%)`,
-            border: `1px solid ${alpha(accent, 0.28)}`,
-            boxShadow: `0 12px 32px ${alpha('#000', 0.34)}`,
-            position: 'relative',
-            overflow: 'hidden',
-            transform: `translateY(-${mobileHeroParallaxOffset}px)`,
-            transition: 'transform 120ms linear',
-            '&::after': {
-              content: '""',
-              position: 'absolute',
-              top: -50,
-              right: -50,
-              width: 140,
-              height: 140,
-              borderRadius: '50%',
-              background: `radial-gradient(circle, ${alpha(accent, 0.22)} 0%, transparent 70%)`,
-              pointerEvents: 'none',
-            },
-          }}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-            <Avatar
-              src={profileAvatarUrl}
-              sx={{
-                width: 66,
-                height: 66,
-                border: `2px solid ${accent}`,
-                boxShadow: `0 0 12px 2px ${alpha(accent, 0.4)}`,
-                bgcolor: alpha(accent, 0.22),
-              }}
-            >
-              {profile.user?.firstName?.charAt(0)}
-              {profile.user?.lastName?.charAt(0)}
-            </Avatar>
-
-            <Box sx={{ minWidth: 0, flexGrow: 1 }}>
-              <Typography
-                variant="h6"
+          <Paper
+            elevation={0}
+            sx={{
+              p: 1.5,
+              borderRadius: sectionRadius,
+              background: `linear-gradient(145deg, ${panel} 0%, ${alpha(accent, 0.08)} 100%)`,
+              border: `1px solid ${alpha(accent, 0.28)}`,
+              boxShadow: `0 12px 32px ${alpha('#000', 0.34)}`,
+              position: 'relative',
+              overflow: 'hidden',
+              transform: `translateY(-${mobileHeroParallaxOffset}px)`,
+              transition: 'transform 120ms linear',
+              '&::after': {
+                content: '""',
+                position: 'absolute',
+                top: -50,
+                right: -50,
+                width: 140,
+                height: 140,
+                borderRadius: '50%',
+                background: `radial-gradient(circle, ${alpha(accent, 0.22)} 0%, transparent 70%)`,
+                pointerEvents: 'none',
+              },
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+              <Avatar
+                src={profileAvatarUrl}
                 sx={{
-                  color: accent,
-                  fontWeight: 700,
-                  lineHeight: 1.2,
-                  letterSpacing: '-0.02em',
+                  width: 66,
+                  height: 66,
+                  border: `2px solid ${accent}`,
+                  boxShadow: `0 0 12px 2px ${alpha(accent, 0.4)}`,
+                  bgcolor: alpha(accent, 0.22),
                 }}
               >
-                {profile.user?.firstName} {profile.user?.lastName}
-              </Typography>
-              <Typography
-                variant="body2"
-                sx={{ color: textMuted, fontWeight: 600, mb: 0.6 }}
-              >
-                {profile.profession || 'Professional Worker'}
-              </Typography>
+                {profile.user?.firstName?.charAt(0)}
+                {profile.user?.lastName?.charAt(0)}
+              </Avatar>
 
-              <Stack direction="row" spacing={0.8} useFlexGap flexWrap="wrap" sx={{ mb: 0.8 }}>
-                <Chip
-                  size="small"
-                  icon={<VerifiedIcon sx={{ fontSize: 14 }} />}
-                  label={profile.is_verified ? 'Verified' : 'Pending verification'}
+              <Box sx={{ minWidth: 0, flexGrow: 1 }}>
+                <Typography
+                  variant="h6"
                   sx={{
-                    bgcolor: alpha(accent, 0.14),
-                    color: textPrimary,
-                    border: `1px solid ${alpha(accent, 0.34)}`,
-                    '& .MuiChip-icon': { color: accent },
+                    color: accent,
+                    fontWeight: 700,
+                    lineHeight: 1.2,
+                    letterSpacing: '-0.02em',
                   }}
-                />
-                <Chip
-                  size="small"
-                  icon={<ScheduleIcon sx={{ fontSize: 14 }} />}
-                  label={String(availabilityLabel).replace(/\b\w/g, (char) => char.toUpperCase())}
-                  sx={{
-                    bgcolor: alpha('#25B56B', 0.13),
-                    color: textPrimary,
-                    border: `1px solid ${alpha('#25B56B', 0.35)}`,
-                    '& .MuiChip-icon': { color: '#25B56B' },
-                  }}
-                />
-              </Stack>
-
-              <Stack direction="row" spacing={0.8} alignItems="center">
+                >
+                  {profile.user?.firstName} {profile.user?.lastName}
+                </Typography>
                 <Typography
                   variant="body2"
-                  sx={{ color: accent, fontWeight: 700 }}
+                  sx={{ color: textMuted, fontWeight: 600, mb: 0.6 }}
                 >
-                  {averageRatingValue.toFixed(1)}
+                  {profile.profession || 'Professional Worker'}
                 </Typography>
-                <Rating
-                  size="small"
-                  value={averageRatingValue || 0}
-                  precision={0.1}
-                  readOnly
-                />
-                <Typography variant="caption" sx={{ color: textMuted }}>
-                  ({totalReviewsValue} reviews)
-                </Typography>
+
+                <Stack
+                  direction="row"
+                  spacing={0.8}
+                  useFlexGap
+                  flexWrap="wrap"
+                  sx={{ mb: 0.8 }}
+                >
+                  <Chip
+                    size="small"
+                    icon={<VerifiedIcon sx={{ fontSize: 14 }} />}
+                    label={
+                      profile.is_verified ? 'Verified' : 'Pending verification'
+                    }
+                    sx={{
+                      bgcolor: alpha(accent, 0.14),
+                      color: textPrimary,
+                      border: `1px solid ${alpha(accent, 0.34)}`,
+                      '& .MuiChip-icon': { color: accent },
+                    }}
+                  />
+                  <Chip
+                    size="small"
+                    icon={<ScheduleIcon sx={{ fontSize: 14 }} />}
+                    label={String(availabilityLabel).replace(/\b\w/g, (char) =>
+                      char.toUpperCase(),
+                    )}
+                    sx={{
+                      bgcolor: alpha('#25B56B', 0.13),
+                      color: textPrimary,
+                      border: `1px solid ${alpha('#25B56B', 0.35)}`,
+                      '& .MuiChip-icon': { color: '#25B56B' },
+                    }}
+                  />
+                </Stack>
+
+                <Stack direction="row" spacing={0.8} alignItems="center">
+                  <Typography
+                    variant="body2"
+                    sx={{ color: accent, fontWeight: 700 }}
+                  >
+                    {averageRatingValue.toFixed(1)}
+                  </Typography>
+                  <Rating
+                    size="small"
+                    value={averageRatingValue || 0}
+                    precision={0.1}
+                    readOnly
+                  />
+                  <Typography variant="caption" sx={{ color: textMuted }}>
+                    ({totalReviewsValue} reviews)
+                  </Typography>
+                </Stack>
+              </Box>
+
+              <Stack direction="row" spacing={0.5}>
+                <IconButton
+                  onClick={handleBookmarkToggle}
+                  aria-label={
+                    isBookmarked ? 'Remove from saved' : 'Save worker'
+                  }
+                  sx={{
+                    width: 34,
+                    height: 34,
+                    bgcolor: alpha(accent, 0.14),
+                    color: accent,
+                    '&:focus-visible': {
+                      outline: '3px solid',
+                      outlineColor: 'primary.main',
+                      outlineOffset: '2px',
+                    },
+                  }}
+                >
+                  {isBookmarked ? (
+                    <BookmarkIcon sx={{ fontSize: 18 }} />
+                  ) : (
+                    <BookmarkBorderIcon sx={{ fontSize: 18 }} />
+                  )}
+                </IconButton>
+                <IconButton
+                  onClick={handleShare}
+                  aria-label="Share this profile"
+                  sx={{
+                    width: 34,
+                    height: 34,
+                    bgcolor: alpha(accent, 0.14),
+                    color: accent,
+                    '&:focus-visible': {
+                      outline: '3px solid',
+                      outlineColor: 'primary.main',
+                      outlineOffset: '2px',
+                    },
+                  }}
+                >
+                  <ShareIcon sx={{ fontSize: 18 }} />
+                </IconButton>
               </Stack>
             </Box>
 
-            <Stack direction="row" spacing={0.5}>
-              <IconButton
-                onClick={handleBookmarkToggle}
-                aria-label={isBookmarked ? 'Remove from saved' : 'Save worker'}
-                sx={{
-                  width: 34,
-                  height: 34,
-                  bgcolor: alpha(accent, 0.14),
-                  color: accent,
-                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
-              >
-                {isBookmarked ? <BookmarkIcon sx={{ fontSize: 18 }} /> : <BookmarkBorderIcon sx={{ fontSize: 18 }} />}
-              </IconButton>
-              <IconButton
-                onClick={handleShare}
-                aria-label="Share this profile"
-                sx={{
-                  width: 34,
-                  height: 34,
-                  bgcolor: alpha(accent, 0.14),
-                  color: accent,
-                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
-              >
-                <ShareIcon sx={{ fontSize: 18 }} />
-              </IconButton>
+            <Stack
+              direction="row"
+              spacing={0.8}
+              useFlexGap
+              flexWrap="wrap"
+              sx={{ mt: 1.4 }}
+            >
+              {(skills.length > 0
+                ? skills
+                : [
+                    { name: 'Craftsman' },
+                    { name: 'Furniture' },
+                    { name: 'Finishing' },
+                  ]
+              )
+                .slice(0, 3)
+                .map((skill, index) => (
+                  <Chip
+                    key={`mobile-chip-${skill.name}-${index}`}
+                    label={skill.name}
+                    size="small"
+                    sx={{
+                      bgcolor: alpha(accent, 0.18),
+                      color: textPrimary,
+                      border: `1px solid ${alpha(accent, 0.45)}`,
+                      fontWeight: 600,
+                      borderRadius: 999,
+                    }}
+                  />
+                ))}
             </Stack>
-          </Box>
 
-          <Stack
-            direction="row"
-            spacing={0.8}
-            useFlexGap
-            flexWrap="wrap"
-            sx={{ mt: 1.4 }}
-          >
-            {(skills.length > 0 ? skills : [{ name: 'Craftsman' }, { name: 'Furniture' }, { name: 'Finishing' }])
-              .slice(0, 3)
-              .map((skill, index) => (
+            <Stack
+              direction="row"
+              spacing={0.8}
+              useFlexGap
+              flexWrap="wrap"
+              sx={{ mt: 1.2 }}
+            >
+              {[
+                {
+                  label: 'About',
+                  icon: <InfoIcon sx={{ fontSize: 15 }} />,
+                  ref: aboutSectionRef,
+                },
+                {
+                  label: 'Portfolio',
+                  icon: <AutoAwesomeIcon sx={{ fontSize: 15 }} />,
+                  ref: portfolioSectionRef,
+                },
+                {
+                  label: 'Reviews',
+                  icon: <ReviewsIcon sx={{ fontSize: 15 }} />,
+                  ref: reviewsSectionRef,
+                },
+              ].map((jumpItem) => (
                 <Chip
-                  key={`mobile-chip-${skill.name}-${index}`}
-                  label={skill.name}
-                  size="small"
+                  key={jumpItem.label}
+                  icon={jumpItem.icon}
+                  label={jumpItem.label}
+                  onClick={() => scrollToSection(jumpItem.ref)}
                   sx={{
-                    bgcolor: alpha(accent, 0.18),
-                    color: textPrimary,
-                    border: `1px solid ${alpha(accent, 0.45)}`,
-                    fontWeight: 600,
-                    borderRadius: 999,
+                    bgcolor: alpha(accent, 0.1),
+                    color: accent,
+                    border: `1px solid ${alpha(accent, 0.35)}`,
+                    '& .MuiChip-icon': { color: accent },
+                    '&:hover': { bgcolor: alpha(accent, 0.2) },
+                    '&:active': {
+                      transform: 'scale(0.98)',
+                    },
+                    transition:
+                      'transform 120ms ease, background-color 180ms ease',
                   }}
                 />
               ))}
-          </Stack>
+            </Stack>
 
-          <Stack
-            direction="row"
-            spacing={0.8}
-            useFlexGap
-            flexWrap="wrap"
-            sx={{ mt: 1.2 }}
-          >
-            {[
-              { label: 'About', icon: <InfoIcon sx={{ fontSize: 15 }} />, ref: aboutSectionRef },
-              { label: 'Portfolio', icon: <AutoAwesomeIcon sx={{ fontSize: 15 }} />, ref: portfolioSectionRef },
-              { label: 'Reviews', icon: <ReviewsIcon sx={{ fontSize: 15 }} />, ref: reviewsSectionRef },
-            ].map((jumpItem) => (
-              <Chip
-                key={jumpItem.label}
-                icon={jumpItem.icon}
-                label={jumpItem.label}
-                onClick={() => scrollToSection(jumpItem.ref)}
-                sx={{
-                  bgcolor: alpha(accent, 0.1),
-                  color: accent,
-                  border: `1px solid ${alpha(accent, 0.35)}`,
-                  '& .MuiChip-icon': { color: accent },
-                  '&:hover': { bgcolor: alpha(accent, 0.2) },
-                  '&:active': {
-                    transform: 'scale(0.98)',
-                  },
-                  transition: 'transform 120ms ease, background-color 180ms ease',
-                }}
-              />
-            ))}
-          </Stack>
-
-          <Grid container spacing={1.1} sx={{ mt: 0.45 }}>
-            {trustMetricItems.map((metric, index) => (
-              <Grid item xs={6} key={`mobile-trust-${metric.label}`}>
-                <motion.div
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.22, delay: 0.04 + index * 0.035, ease: 'easeOut' }}
-                >
-                  <Box
-                    sx={{
-                      borderRadius: 2.4,
-                      border: `1px solid ${alpha(accent, 0.28)}`,
-                      background: `linear-gradient(170deg, ${alpha(accent, 0.17)} 0%, ${alpha('#000', isDark ? 0.18 : 0.03)} 100%)`,
-                      px: 1.1,
-                      py: 0.95,
-                      minHeight: 75,
+            <Grid container spacing={1.1} sx={{ mt: 0.45 }}>
+              {trustMetricItems.map((metric, index) => (
+                <Grid item xs={6} key={`mobile-trust-${metric.label}`}>
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{
+                      duration: 0.22,
+                      delay: 0.04 + index * 0.035,
+                      ease: 'easeOut',
                     }}
                   >
-                    <Stack direction="row" spacing={0.8} alignItems="center" sx={{ mb: 0.45 }}>
-                      <Box sx={{ color: accent, display: 'flex', alignItems: 'center' }}>{metric.icon}</Box>
-                      <Typography variant="caption" sx={{ color: textMuted, fontWeight: 700 }}>
-                        {metric.label}
+                    <Box
+                      sx={{
+                        borderRadius: 2.4,
+                        border: `1px solid ${alpha(accent, 0.28)}`,
+                        background: `linear-gradient(170deg, ${alpha(accent, 0.17)} 0%, ${alpha('#000', isDark ? 0.18 : 0.03)} 100%)`,
+                        px: 1.1,
+                        py: 0.95,
+                        minHeight: 75,
+                      }}
+                    >
+                      <Stack
+                        direction="row"
+                        spacing={0.8}
+                        alignItems="center"
+                        sx={{ mb: 0.45 }}
+                      >
+                        <Box
+                          sx={{
+                            color: accent,
+                            display: 'flex',
+                            alignItems: 'center',
+                          }}
+                        >
+                          {metric.icon}
+                        </Box>
+                        <Typography
+                          variant="caption"
+                          sx={{ color: textMuted, fontWeight: 700 }}
+                        >
+                          {metric.label}
+                        </Typography>
+                      </Stack>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: textPrimary,
+                          fontWeight: 800,
+                          lineHeight: 1.1,
+                        }}
+                      >
+                        {metric.value}
                       </Typography>
-                    </Stack>
-                    <Typography variant="body2" sx={{ color: textPrimary, fontWeight: 800, lineHeight: 1.1 }}>
-                      {metric.value}
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: textMuted }}>
-                      {metric.subLabel}
-                    </Typography>
-                  </Box>
-                </motion.div>
-              </Grid>
-            ))}
-          </Grid>
-        </Paper>
+                      <Typography variant="caption" sx={{ color: textMuted }}>
+                        {metric.subLabel}
+                      </Typography>
+                    </Box>
+                  </motion.div>
+                </Grid>
+              ))}
+            </Grid>
+          </Paper>
         </motion.div>
 
         <motion.div
@@ -2192,42 +2389,45 @@ function WorkerProfile({ workerId: workerIdProp }) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.24, delay: 0.03, ease: motionEase }}
         >
-        <Paper
-          ref={aboutSectionRef}
-          elevation={0}
-          sx={{
-            mt: compactGap,
-            p: 1.5,
-            borderRadius: sectionRadius,
-            background: panelMuted,
-            border: `1px solid ${alpha(accent, 0.2)}`,
-          }}
-        >
-          <Typography sx={{ color: accent, fontWeight: 700, mb: 0.7 }}>
-            About Me
-          </Typography>
-          <Typography sx={{ color: textPrimary, fontSize: 14, lineHeight: 1.55 }}>
-            {aboutPreview}
-          </Typography>
-          {canTruncate && (
-            <Button
-              size="small"
-              onClick={() => setShowFullBio((prev) => !prev)}
-              sx={{
-                mt: 0.8,
-                px: 1.2,
-                minHeight: 32,
-                borderRadius: 999,
-                color: '#1A1408',
-                backgroundColor: accent,
-                '&:hover': {
-                  backgroundColor: '#e7b843',
-                },
-              }}>
-              {showFullBio ? 'Show Less' : 'Read More'}
-            </Button>
-          )}
-        </Paper>
+          <Paper
+            ref={aboutSectionRef}
+            elevation={0}
+            sx={{
+              mt: compactGap,
+              p: 1.5,
+              borderRadius: sectionRadius,
+              background: panelMuted,
+              border: `1px solid ${alpha(accent, 0.2)}`,
+            }}
+          >
+            <Typography sx={{ color: accent, fontWeight: 700, mb: 0.7 }}>
+              About Me
+            </Typography>
+            <Typography
+              sx={{ color: textPrimary, fontSize: 14, lineHeight: 1.55 }}
+            >
+              {aboutPreview}
+            </Typography>
+            {canTruncate && (
+              <Button
+                size="small"
+                onClick={() => setShowFullBio((prev) => !prev)}
+                sx={{
+                  mt: 0.8,
+                  px: 1.2,
+                  minHeight: 32,
+                  borderRadius: 999,
+                  color: '#1A1408',
+                  backgroundColor: accent,
+                  '&:hover': {
+                    backgroundColor: '#e7b843',
+                  },
+                }}
+              >
+                {showFullBio ? 'Show Less' : 'Read More'}
+              </Button>
+            )}
+          </Paper>
         </motion.div>
 
         <motion.div
@@ -2235,137 +2435,162 @@ function WorkerProfile({ workerId: workerIdProp }) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.24, delay: 0.06, ease: motionEase }}
         >
-        <Paper
-          ref={portfolioSectionRef}
-          elevation={0}
-          sx={{
-            mt: compactGap,
-            p: 1.5,
-            borderRadius: sectionRadius,
-            background: panelMuted,
-            border: `1px solid ${alpha(accent, 0.2)}`,
-          }}
-        >
-          <Typography sx={{ color: accent, fontWeight: 700, mb: 1.1 }}>
-            Portfolio
-          </Typography>
-          <Box
+          <Paper
+            ref={portfolioSectionRef}
+            elevation={0}
             sx={{
-              display: 'flex',
-              gap: 1.2,
-              overflowX: 'auto',
-              pb: 0.9,
-              scrollSnapType: 'x mandatory',
-              scrollPaddingLeft: '4px',
-              '&::-webkit-scrollbar': { height: 6 },
-              '&::-webkit-scrollbar-thumb': {
-                backgroundColor: alpha(accent, 0.45),
-                borderRadius: 99,
-              },
+              mt: compactGap,
+              p: 1.5,
+              borderRadius: sectionRadius,
+              background: panelMuted,
+              border: `1px solid ${alpha(accent, 0.2)}`,
             }}
-            onScroll={handleMobilePortfolioScroll}
           >
-            {mobilePortfolioItems.map((item, index) => {
-              const image = getPortfolioPreviewImage(item);
-              const isRealPortfolioItem = Boolean(item?.id || item?._id || item?.description || image);
+            <Typography sx={{ color: accent, fontWeight: 700, mb: 1.1 }}>
+              Portfolio
+            </Typography>
+            <Box
+              sx={{
+                display: 'flex',
+                gap: 1.2,
+                overflowX: 'auto',
+                pb: 0.9,
+                scrollSnapType: 'x mandatory',
+                scrollPaddingLeft: '4px',
+                '&::-webkit-scrollbar': { height: 6 },
+                '&::-webkit-scrollbar-thumb': {
+                  backgroundColor: alpha(accent, 0.45),
+                  borderRadius: 99,
+                },
+              }}
+              onScroll={handleMobilePortfolioScroll}
+            >
+              {mobilePortfolioItems.map((item, index) => {
+                const image = getPortfolioPreviewImage(item);
+                const isRealPortfolioItem = Boolean(
+                  item?.id || item?._id || item?.description || image,
+                );
 
-              return (
-                <motion.div
-                  key={item.id || item._id || item.title || `mobile-portfolio-${index}`}
-                  whileTap={isRealPortfolioItem ? { scale: 0.98 } : undefined}
-                >
-                  <Card
-                    onClick={() => {
-                      if (!isRealPortfolioItem) {
-                        return;
-                      }
-                      setSelectedPortfolioItem(item);
-                      setPortfolioDialogOpen(true);
-                    }}
-                    sx={{
-                      width: 160,
-                      minWidth: 160,
-                      height: 144,
-                      borderRadius: 3,
-                      overflow: 'hidden',
-                      cursor: isRealPortfolioItem ? 'pointer' : 'default',
-                      border: `1px solid ${alpha(accent, index === activePortfolioIndex ? 0.9 : 0.45)}`,
-                      background: alpha('#000', 0.28),
-                      display: 'flex',
-                      flexDirection: 'column',
-                      position: 'relative',
-                      scrollSnapAlign: 'start',
-                      boxShadow: index === activePortfolioIndex
-                        ? `0 8px 20px ${alpha(accent, 0.24)}`
-                        : 'none',
-                      '&:active': {
-                        transform: isRealPortfolioItem ? 'scale(0.985)' : 'none',
-                      },
-                      transition: 'transform 120ms ease, box-shadow 200ms ease, border-color 200ms ease',
-                    }}
+                return (
+                  <motion.div
+                    key={
+                      item.id ||
+                      item._id ||
+                      item.title ||
+                      `mobile-portfolio-${index}`
+                    }
+                    whileTap={isRealPortfolioItem ? { scale: 0.98 } : undefined}
                   >
-                    {image ? (
-                      <CardMedia component="img" image={image} height="98" alt={item.title || 'Portfolio'} />
-                    ) : (
+                    <Card
+                      onClick={() => {
+                        if (!isRealPortfolioItem) {
+                          return;
+                        }
+                        setSelectedPortfolioItem(item);
+                        setPortfolioDialogOpen(true);
+                      }}
+                      sx={{
+                        width: 160,
+                        minWidth: 160,
+                        height: 144,
+                        borderRadius: 3,
+                        overflow: 'hidden',
+                        cursor: isRealPortfolioItem ? 'pointer' : 'default',
+                        border: `1px solid ${alpha(accent, index === activePortfolioIndex ? 0.9 : 0.45)}`,
+                        background: alpha('#000', 0.28),
+                        display: 'flex',
+                        flexDirection: 'column',
+                        position: 'relative',
+                        scrollSnapAlign: 'start',
+                        boxShadow:
+                          index === activePortfolioIndex
+                            ? `0 8px 20px ${alpha(accent, 0.24)}`
+                            : 'none',
+                        '&:active': {
+                          transform: isRealPortfolioItem
+                            ? 'scale(0.985)'
+                            : 'none',
+                        },
+                        transition:
+                          'transform 120ms ease, box-shadow 200ms ease, border-color 200ms ease',
+                      }}
+                    >
+                      {image ? (
+                        <CardMedia
+                          component="img"
+                          image={image}
+                          height="98"
+                          alt={item.title || 'Portfolio'}
+                        />
+                      ) : (
+                        <Box
+                          sx={{
+                            height: 98,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            bgcolor: alpha(accent, 0.14),
+                          }}
+                        >
+                          <WorkIcon sx={{ color: accent }} />
+                        </Box>
+                      )}
                       <Box
                         sx={{
-                          height: 98,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          bgcolor: alpha(accent, 0.14),
+                          position: 'absolute',
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          height: 56,
+                          background:
+                            'linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.82) 100%)',
                         }}
-                      >
-                        <WorkIcon sx={{ color: accent }} />
-                      </Box>
-                    )}
-                    <Box
-                      sx={{
-                        position: 'absolute',
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        height: 56,
-                        background: 'linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.82) 100%)',
-                      }}
-                    />
-                    <CardContent sx={{ p: 0.9, mt: 'auto', zIndex: 1 }}>
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          color: '#FFF6D8',
-                          fontWeight: 700,
-                          display: '-webkit-box',
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical',
-                          overflow: 'hidden',
-                        }}
-                      >
-                        {item.title || 'Untitled portfolio item'}
-                      </Typography>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              );
-            })}
-          </Box>
-          {mobilePortfolioItems.length > 1 && (
-            <Stack direction="row" spacing={0.7} justifyContent="center" sx={{ mt: 0.3 }}>
-              {mobilePortfolioItems.map((item, index) => (
-                <Box
-                  key={`portfolio-dot-${item.id || item._id || item.title || index}`}
-                  sx={{
-                    width: index === activePortfolioIndex ? 18 : 7,
-                    height: 7,
-                    borderRadius: 99,
-                    bgcolor: index === activePortfolioIndex ? accent : alpha(accent, 0.35),
-                    transition: 'all 0.24s ease',
-                  }}
-                />
-              ))}
-            </Stack>
-          )}
-        </Paper>
+                      />
+                      <CardContent sx={{ p: 0.9, mt: 'auto', zIndex: 1 }}>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: '#FFF6D8',
+                            fontWeight: 700,
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden',
+                          }}
+                        >
+                          {item.title || 'Untitled portfolio item'}
+                        </Typography>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                );
+              })}
+            </Box>
+            {mobilePortfolioItems.length > 1 && (
+              <Stack
+                direction="row"
+                spacing={0.7}
+                justifyContent="center"
+                sx={{ mt: 0.3 }}
+              >
+                {mobilePortfolioItems.map((item, index) => (
+                  <Box
+                    key={`portfolio-dot-${item.id || item._id || item.title || index}`}
+                    sx={{
+                      width: index === activePortfolioIndex ? 18 : 7,
+                      height: 7,
+                      borderRadius: 99,
+                      bgcolor:
+                        index === activePortfolioIndex
+                          ? accent
+                          : alpha(accent, 0.35),
+                      transition: 'all 0.24s ease',
+                    }}
+                  />
+                ))}
+              </Stack>
+            )}
+          </Paper>
         </motion.div>
 
         <motion.div
@@ -2373,74 +2598,109 @@ function WorkerProfile({ workerId: workerIdProp }) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.24, delay: 0.09, ease: motionEase }}
         >
-        <Paper
-          ref={reviewsSectionRef}
-          elevation={0}
-          sx={{
-            mt: compactGap,
-            p: 1.5,
-            borderRadius: sectionRadius,
-            background: panelMuted,
-            border: `1px solid ${alpha(accent, 0.2)}`,
-          }}
-        >
-          <Typography sx={{ color: accent, fontWeight: 700, mb: 1.1 }}>
-            Reviews
-          </Typography>
+          <Paper
+            ref={reviewsSectionRef}
+            elevation={0}
+            sx={{
+              mt: compactGap,
+              p: 1.5,
+              borderRadius: sectionRadius,
+              background: panelMuted,
+              border: `1px solid ${alpha(accent, 0.2)}`,
+            }}
+          >
+            <Typography sx={{ color: accent, fontWeight: 700, mb: 1.1 }}>
+              Reviews
+            </Typography>
 
-          {compactReviews.length > 0 ? (
-            <Stack spacing={1}>
-              {compactReviews.map((review, index) => (
-                <Box
-                  key={review.id || review._id || `mobile-review-${index}`}
-                  sx={{
-                    p: 1,
-                    borderRadius: 2,
-                    border: `1px solid ${alpha(accent, 0.24)}`,
-                    background: alpha('#000', 0.2),
-                  }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.9, mb: 0.5 }}>
-                    <Avatar
-                      src={review?.reviewer?.avatar || review?.author?.avatar || null}
-                      sx={{ width: 28, height: 28 }}
-                    >
-                      {(review?.reviewer?.name || review?.author?.name || 'R').charAt(0)}
-                    </Avatar>
-                    <Box sx={{ minWidth: 0 }}>
-                      <Typography variant="caption" sx={{ color: textPrimary, fontWeight: 700 }}>
-                        {review?.reviewer?.name || review?.author?.name || 'Verified Client'}
-                      </Typography>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <Rating size="small" readOnly value={Number(review.rating || 0)} precision={0.5} />
-                        <Typography variant="caption" sx={{ color: textMuted }}>
-                          {Number(review.rating || 0).toFixed(1)}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </Box>
-                  <Typography
-                    variant="caption"
+            {compactReviews.length > 0 ? (
+              <Stack spacing={1}>
+                {compactReviews.map((review, index) => (
+                  <Box
+                    key={review.id || review._id || `mobile-review-${index}`}
                     sx={{
-                      color: textMuted,
-                      lineHeight: 1.45,
-                      display: '-webkit-box',
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden',
+                      p: 1,
+                      borderRadius: 2,
+                      border: `1px solid ${alpha(accent, 0.24)}`,
+                      background: alpha('#000', 0.2),
                     }}
                   >
-                    {review.comment || 'Great workmanship and clear communication.'}
-                  </Typography>
-                </Box>
-              ))}
-            </Stack>
-          ) : (
-            <Typography variant="body2" sx={{ color: textMuted }}>
-              Reviews will appear here as soon as clients submit feedback.
-            </Typography>
-          )}
-        </Paper>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 0.9,
+                        mb: 0.5,
+                      }}
+                    >
+                      <Avatar
+                        src={
+                          review?.reviewer?.avatar ||
+                          review?.author?.avatar ||
+                          null
+                        }
+                        sx={{ width: 28, height: 28 }}
+                      >
+                        {(
+                          review?.reviewer?.name ||
+                          review?.author?.name ||
+                          'R'
+                        ).charAt(0)}
+                      </Avatar>
+                      <Box sx={{ minWidth: 0 }}>
+                        <Typography
+                          variant="caption"
+                          sx={{ color: textPrimary, fontWeight: 700 }}
+                        >
+                          {review?.reviewer?.name ||
+                            review?.author?.name ||
+                            'Verified Client'}
+                        </Typography>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 0.5,
+                          }}
+                        >
+                          <Rating
+                            size="small"
+                            readOnly
+                            value={Number(review.rating || 0)}
+                            precision={0.5}
+                          />
+                          <Typography
+                            variant="caption"
+                            sx={{ color: textMuted }}
+                          >
+                            {Number(review.rating || 0).toFixed(1)}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </Box>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: textMuted,
+                        lineHeight: 1.45,
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      {review.comment ||
+                        'Great workmanship and clear communication.'}
+                    </Typography>
+                  </Box>
+                ))}
+              </Stack>
+            ) : (
+              <Typography variant="body2" sx={{ color: textMuted }}>
+                Reviews will appear here as soon as clients submit feedback.
+              </Typography>
+            )}
+          </Paper>
         </motion.div>
 
         <Box
@@ -2482,7 +2742,8 @@ function WorkerProfile({ workerId: workerIdProp }) {
                 },
                 transition: 'transform 120ms ease, background 180ms ease',
               }}
-              aria-label={isOwner ? 'Edit profile' : 'Hire this worker'}>
+              aria-label={isOwner ? 'Edit profile' : 'Hire this worker'}
+            >
               {primaryActionLabel}
             </Button>
             <Button
@@ -2501,7 +2762,9 @@ function WorkerProfile({ workerId: workerIdProp }) {
                 letterSpacing: 0.5,
                 color: accent,
                 border: `1px solid ${accent}`,
-                backgroundColor: isDark ? '#000000' : theme.palette.background.paper,
+                backgroundColor: isDark
+                  ? '#000000'
+                  : theme.palette.background.paper,
                 '&:hover': {
                   backgroundColor: alpha(accent, 0.08),
                 },
@@ -2545,11 +2808,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                 <HomeIcon sx={{ mr: 0.5 }} fontSize="inherit" />
                 Home
               </Link>
-              <Link
-                color="inherit"
-                component={RouterLink}
-                to="/find-talents"
-              >
+              <Link color="inherit" component={RouterLink} to="/find-talents">
                 Find Talents
               </Link>
               <Typography color="text.primary">
@@ -2567,11 +2826,27 @@ function WorkerProfile({ workerId: workerIdProp }) {
                 variant={isMobile ? 'scrollable' : 'fullWidth'}
                 scrollButtons="auto"
               >
-                <Tab icon={<PersonIcon />} iconPosition="start" label="Overview" />
-                <Tab icon={<ViewIcon />} iconPosition="start" label="Portfolio" />
+                <Tab
+                  icon={<PersonIcon />}
+                  iconPosition="start"
+                  label="Overview"
+                />
+                <Tab
+                  icon={<ViewIcon />}
+                  iconPosition="start"
+                  label="Portfolio"
+                />
                 <Tab icon={<StarIcon />} iconPosition="start" label="Reviews" />
-                <Tab icon={<ScheduleIcon />} iconPosition="start" label="Availability" />
-                <Tab icon={<SchoolIcon />} iconPosition="start" label="Certificates" />
+                <Tab
+                  icon={<ScheduleIcon />}
+                  iconPosition="start"
+                  label="Availability"
+                />
+                <Tab
+                  icon={<SchoolIcon />}
+                  iconPosition="start"
+                  label="Certificates"
+                />
               </Tabs>
             </Box>
 
@@ -2658,7 +2933,11 @@ function WorkerProfile({ workerId: workerIdProp }) {
         {!isOwner && !isActualMobile && (
           <SpeedDial
             ariaLabel="Worker Actions"
-            sx={{ position: 'fixed', bottom: { xs: BOTTOM_NAV_HEIGHT + 16, md: 16 }, right: 16 }}
+            sx={{
+              position: 'fixed',
+              bottom: { xs: BOTTOM_NAV_HEIGHT + 16, md: 16 },
+              right: 16,
+            }}
             icon={<SpeedDialIcon />}
           >
             <SpeedDialAction
@@ -2692,7 +2971,3 @@ function WorkerProfile({ workerId: workerIdProp }) {
 }
 
 export default WorkerProfile;
-
-
-
-

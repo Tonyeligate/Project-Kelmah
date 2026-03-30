@@ -20,25 +20,10 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import {
-  Close as CloseIcon,
-  Search as SearchIcon,
-} from '@mui/icons-material';
+import { Close as CloseIcon, Search as SearchIcon } from '@mui/icons-material';
 import { formatGhanaCurrency } from '@/utils/formatters';
 import useKeyboardVisible from '@/hooks/useKeyboardVisible';
 import { withSafeAreaBottom } from '@/utils/safeArea';
-
-
-
-
-
-
-
-
-
-
-
-
 
 const JobsMobileFilterDrawer = ({
   open,
@@ -123,14 +108,39 @@ const JobsMobileFilterDrawer = ({
         }}
       >
         <Box sx={{ minWidth: 0, pr: 1 }}>
-          <Typography variant="h6" fontWeight="bold" sx={{ wordBreak: 'break-word', fontSize: '1rem', color: 'var(--k-text-primary)' }}>
+          <Typography
+            variant="h6"
+            fontWeight="bold"
+            sx={{
+              wordBreak: 'break-word',
+              fontSize: '1rem',
+              color: 'var(--k-text-primary)',
+            }}
+          >
             Filter & Sort Jobs
           </Typography>
-          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.25 }}>
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ display: 'block', mt: 0.25 }}
+          >
             Choose simple filters to find suitable jobs faster.
           </Typography>
         </Box>
-        <IconButton onClick={onClose} size="small" aria-label="Close filters" sx={{ width: 44, height: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}>
+        <IconButton
+          onClick={onClose}
+          size="small"
+          aria-label="Close filters"
+          sx={{
+            width: 44,
+            height: 44,
+            '&:focus-visible': {
+              outline: '3px solid',
+              outlineColor: 'primary.main',
+              outlineOffset: '2px',
+            },
+          }}
+        >
           <CloseIcon />
         </IconButton>
       </Box>
@@ -188,7 +198,11 @@ const JobsMobileFilterDrawer = ({
                 <em>All Categories</em>
               </MenuItem>
               {tradeCategories.map((cat) => (
-                <MenuItem key={cat.value} value={cat.value} sx={{ whiteSpace: 'normal' }}>
+                <MenuItem
+                  key={cat.value}
+                  value={cat.value}
+                  sx={{ whiteSpace: 'normal' }}
+                >
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     {cat.icon && (
                       <cat.icon
@@ -216,7 +230,11 @@ const JobsMobileFilterDrawer = ({
                 <em>All Locations</em>
               </MenuItem>
               {locations.map((loc) => (
-                <MenuItem key={loc.value} value={loc.value} sx={{ whiteSpace: 'normal' }}>
+                <MenuItem
+                  key={loc.value}
+                  value={loc.value}
+                  sx={{ whiteSpace: 'normal' }}
+                >
                   {loc.label}
                 </MenuItem>
               ))}

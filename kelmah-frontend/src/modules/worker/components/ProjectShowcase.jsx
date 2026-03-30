@@ -32,7 +32,11 @@ const ProjectShowcase = ({ project }) => {
               height="220"
               image={beforeImageUrl}
               alt={`${title} - before`}
-              onError={(e) => { e.target.onerror = null; e.target.src = ''; e.target.style.display = 'none'; }}
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = '';
+                e.target.style.display = 'none';
+              }}
             />
             <CardContent>
               <Typography variant="subtitle2">Before</Typography>
@@ -46,7 +50,11 @@ const ProjectShowcase = ({ project }) => {
               height="220"
               image={afterImageUrl}
               alt={`${title} - after`}
-              onError={(e) => { e.target.onerror = null; e.target.src = ''; e.target.style.display = 'none'; }}
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = '';
+                e.target.style.display = 'none';
+              }}
             />
             <CardContent>
               <Typography variant="subtitle2">After</Typography>

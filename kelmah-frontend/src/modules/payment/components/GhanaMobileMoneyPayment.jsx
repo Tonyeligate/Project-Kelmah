@@ -498,4 +498,3 @@ const GhanaMobileMoneyPayment = ({
 };
 
 export default GhanaMobileMoneyPayment;
-

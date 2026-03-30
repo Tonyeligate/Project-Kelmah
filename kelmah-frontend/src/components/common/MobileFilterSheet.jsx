@@ -7,7 +7,10 @@ import {
   Button,
   Divider,
 } from '@mui/material';
-import { Close as CloseIcon, FilterList as FilterIcon } from '@mui/icons-material';
+import {
+  Close as CloseIcon,
+  FilterList as FilterIcon,
+} from '@mui/icons-material';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 
 /**
@@ -50,7 +53,9 @@ export default function MobileFilterSheet({
         variant="outlined"
         startIcon={<FilterIcon />}
         onClick={handleOpen}
-        aria-label={activeCount > 0 ? `${title}: ${activeCount} active filters` : title}
+        aria-label={
+          activeCount > 0 ? `${title}: ${activeCount} active filters` : title
+        }
         aria-haspopup="dialog"
         aria-expanded={open}
         sx={{
@@ -110,7 +115,12 @@ export default function MobileFilterSheet({
             py: 1,
           }}
         >
-          <Typography variant="h6" component="h2" fontWeight={600} id="filter-sheet-title">
+          <Typography
+            variant="h6"
+            component="h2"
+            fontWeight={600}
+            id="filter-sheet-title"
+          >
             {title}
           </Typography>
           <IconButton

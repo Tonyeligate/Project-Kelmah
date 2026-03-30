@@ -305,7 +305,15 @@ const AppointmentCard = ({
         <IconButton
           size="small"
           aria-label="Edit appointment"
-          sx={{ minWidth: 44, minHeight: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
+          sx={{
+            minWidth: 44,
+            minHeight: 44,
+            '&:focus-visible': {
+              outline: '3px solid',
+              outlineColor: 'primary.main',
+              outlineOffset: '2px',
+            },
+          }}
           onClick={(e) => {
             e.stopPropagation();
             onEdit(appointment);
@@ -316,7 +324,15 @@ const AppointmentCard = ({
         <IconButton
           size="small"
           aria-label="Delete appointment"
-          sx={{ minWidth: 44, minHeight: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
+          sx={{
+            minWidth: 44,
+            minHeight: 44,
+            '&:focus-visible': {
+              outline: '3px solid',
+              outlineColor: 'primary.main',
+              outlineOffset: '2px',
+            },
+          }}
           onClick={(e) => {
             e.stopPropagation();
             onDelete(appointment.id || appointment._id);
@@ -374,7 +390,8 @@ const SchedulingPage = ({
     searchHelperText ||
     `Search by job or ${resolvedCounterpartyLabel.toLowerCase()}, then switch between calendar, agenda, upcoming, or map view.`;
   const resolvedSearchPlaceholder =
-    searchPlaceholder || `Search by job or ${resolvedCounterpartyLabel.toLowerCase()} name`;
+    searchPlaceholder ||
+    `Search by job or ${resolvedCounterpartyLabel.toLowerCase()} name`;
 
   // Appointments state and loading
   const [appointments, setAppointments] = useState([]);
@@ -464,7 +481,9 @@ const SchedulingPage = ({
     } catch (err) {
       devError('Error loading jobs:', err);
       setJobs([]); // Set empty array as fallback
-      enqueueSnackbar('Failed to load jobs for autocomplete', { variant: 'warning' });
+      enqueueSnackbar('Failed to load jobs for autocomplete', {
+        variant: 'warning',
+      });
     } finally {
       setLoadingJobs(false);
     }
@@ -679,7 +698,10 @@ const SchedulingPage = ({
   const filteredAppointments = Array.isArray(appointments)
     ? appointments.filter((app) => {
         if (!app) return false; // Skip null/undefined appointments
-        const counterpartyName = getAppointmentCounterparty(app, viewerRole).name;
+        const counterpartyName = getAppointmentCounterparty(
+          app,
+          viewerRole,
+        ).name;
         const matchesStatus =
           filterStatus === 'all' || app.status === filterStatus;
         const matchesSearch =
@@ -760,48 +782,53 @@ const SchedulingPage = ({
     : [];
 
   return (
-    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 }, overflowX: 'clip' }}>
+    <PageCanvas
+      disableContainer
+      sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 }, overflowX: 'clip' }}
+    >
       <Container maxWidth="md" sx={{ py: 0, width: '100%', minWidth: 0 }}>
-        <Helmet><title>Schedule | Kelmah</title></Helmet>
+        <Helmet>
+          <title>Schedule | Kelmah</title>
+        </Helmet>
         {/* Page Header */}
         <Box
           sx={{
-          display: 'flex',
-          flexDirection: { xs: 'column', md: 'row' },
-          alignItems: { xs: 'stretch', md: 'center' },
-          justifyContent: 'space-between',
-          gap: 2,
-          mb: 3,
-          width: '100%',
-          minWidth: 0,
-        }}
-        >
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <CalendarTodayIcon
-            sx={{ fontSize: 36, mr: 1.5, color: 'primary.main' }}
-          />
-          <Box>
-            <Typography variant="h4" fontWeight="bold">
-                {resolvedPageTitle}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-                {resolvedPageSubtitle}
-            </Typography>
-          </Box>
-        </Box>
-        <Button
-          variant="contained"
-          onClick={handleOpenCreateDialog}
-          sx={{
-            backgroundColor: 'primary.main',
-            '&:hover': { backgroundColor: 'primary.dark' },
-            fontWeight: 'bold',
-            minHeight: 44,
-            width: { xs: '100%', md: 'auto' },
+            display: 'flex',
+            flexDirection: { xs: 'column', md: 'row' },
+            alignItems: { xs: 'stretch', md: 'center' },
+            justifyContent: 'space-between',
+            gap: 2,
+            mb: 3,
+            width: '100%',
+            minWidth: 0,
           }}
         >
-          Add Appointment
-        </Button>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <CalendarTodayIcon
+              sx={{ fontSize: 36, mr: 1.5, color: 'primary.main' }}
+            />
+            <Box>
+              <Typography variant="h4" fontWeight="bold">
+                {resolvedPageTitle}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {resolvedPageSubtitle}
+              </Typography>
+            </Box>
+          </Box>
+          <Button
+            variant="contained"
+            onClick={handleOpenCreateDialog}
+            sx={{
+              backgroundColor: 'primary.main',
+              '&:hover': { backgroundColor: 'primary.dark' },
+              fontWeight: 'bold',
+              minHeight: 44,
+              width: { xs: '100%', md: 'auto' },
+            }}
+          >
+            Add Appointment
+          </Button>
         </Box>
 
         {error && (
@@ -873,26 +900,153 @@ const SchedulingPage = ({
           </Grid>
         </Paper>
 
-      {viewMode === 'calendar' && (
-        <>
-          {/* Calendar View */}
-          <AppointmentCalendar
-            appointments={filteredAppointments}
-            selectedDate={selectedDate}
-            onDateChange={(newDate) => setSelectedDate(newDate)}
-          />
+        {viewMode === 'calendar' && (
+          <>
+            {/* Calendar View */}
+            <AppointmentCalendar
+              appointments={filteredAppointments}
+              selectedDate={selectedDate}
+              onDateChange={(newDate) => setSelectedDate(newDate)}
+            />
 
-          {/* Appointments for selected date */}
+            {/* Appointments for selected date */}
+            <Box sx={{ mb: 4 }}>
+              <Typography variant="h5" fontWeight={600} sx={{ mb: 2 }}>
+                Appointments for {format(selectedDate, 'PPP')}
+              </Typography>
+              {loading ? (
+                Array.from(new Array(3)).map((_, idx) => (
+                  <AppointmentSkeleton
+                    key={`daily-appointment-skeleton-${idx}`}
+                  />
+                ))
+              ) : dailyAppointments.length > 0 ? (
+                dailyAppointments.map((app) => (
+                  <AppointmentCard
+                    key={app.id}
+                    appointment={app}
+                    onEdit={handleOpenEditDialog}
+                    onDelete={handleDelete}
+                    viewerRole={viewerRole}
+                    counterpartyLabel={resolvedCounterpartyLabel}
+                  />
+                ))
+              ) : (
+                <Paper
+                  sx={{
+                    p: 4,
+                    textAlign: 'center',
+                    backgroundColor: 'background.default',
+                    border: '1px dashed',
+                    borderColor: 'divider',
+                  }}
+                  elevation={0}
+                >
+                  <EventBusyIcon
+                    sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }}
+                  />
+                  <Typography variant="h6" color="text.secondary" gutterBottom>
+                    No appointments for this date
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="text.disabled"
+                    sx={{ mb: 2 }}
+                  >
+                    Choose another date or add a new appointment to keep work
+                    moving.
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    onClick={handleOpenCreateDialog}
+                    sx={{ minHeight: 44 }}
+                  >
+                    Add Appointment
+                  </Button>
+                </Paper>
+              )}
+            </Box>
+          </>
+        )}
+        {viewMode === 'agenda' && (
+          /* Agenda View */
+          <Box sx={{ mb: 4 }}>
+            {loading ? (
+              Array.from(new Array(3)).map((_, idx) => (
+                <AppointmentSkeleton
+                  key={`agenda-appointment-skeleton-${idx}`}
+                />
+              ))
+            ) : Object.keys(appointmentsByDate).length > 0 ? (
+              Object.keys(appointmentsByDate)
+                .sort((a, b) => new Date(a) - new Date(b))
+                .map((dateKey) => (
+                  <Box key={dateKey} sx={{ mb: 4 }}>
+                    <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
+                      {format(parseISO(dateKey), 'PPP')}
+                    </Typography>
+                    {appointmentsByDate[dateKey].map((app) => (
+                      <AppointmentCard
+                        key={app.id}
+                        appointment={app}
+                        onEdit={handleOpenEditDialog}
+                        onDelete={handleDelete}
+                        viewerRole={viewerRole}
+                        counterpartyLabel={resolvedCounterpartyLabel}
+                      />
+                    ))}
+                  </Box>
+                ))
+            ) : (
+              <Paper
+                sx={{
+                  p: 4,
+                  textAlign: 'center',
+                  backgroundColor: 'background.default',
+                  border: '1px dashed',
+                  borderColor: 'divider',
+                }}
+                elevation={0}
+              >
+                <EventBusyIcon
+                  sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }}
+                />
+                <Typography variant="h6" color="text.secondary" gutterBottom>
+                  No appointments found
+                </Typography>
+                <Typography
+                  variant="body2"
+                  color="text.disabled"
+                  sx={{ mb: 2 }}
+                >
+                  Try changing your search words or status filter.
+                </Typography>
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  onClick={handleOpenCreateDialog}
+                  sx={{ minHeight: 44 }}
+                >
+                  Add Appointment
+                </Button>
+              </Paper>
+            )}
+          </Box>
+        )}
+        {viewMode === 'upcoming' && (
           <Box sx={{ mb: 4 }}>
             <Typography variant="h5" fontWeight={600} sx={{ mb: 2 }}>
-              Appointments for {format(selectedDate, 'PPP')}
+              Upcoming Appointments (Next 7 Days)
             </Typography>
             {loading ? (
               Array.from(new Array(3)).map((_, idx) => (
-                <AppointmentSkeleton key={`daily-appointment-skeleton-${idx}`} />
+                <AppointmentSkeleton
+                  key={`upcoming-appointment-skeleton-${idx}`}
+                />
               ))
-            ) : dailyAppointments.length > 0 ? (
-              dailyAppointments.map((app) => (
+            ) : upcomingAppointments.length > 0 ? (
+              upcomingAppointments.map((app) => (
                 <AppointmentCard
                   key={app.id}
                   appointment={app}
@@ -913,203 +1067,115 @@ const SchedulingPage = ({
                 }}
                 elevation={0}
               >
-                <EventBusyIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }} />
+                <EventBusyIcon
+                  sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }}
+                />
                 <Typography variant="h6" color="text.secondary" gutterBottom>
-                  No appointments for this date
+                  No upcoming appointments
                 </Typography>
-                <Typography variant="body2" color="text.disabled" sx={{ mb: 2 }}>
-                  Choose another date or add a new appointment to keep work moving.
+                <Typography
+                  variant="body2"
+                  color="text.disabled"
+                  sx={{ mb: 2 }}
+                >
+                  You have nothing scheduled in the next 7 days. Add one now so
+                  you do not miss a call or site visit.
                 </Typography>
-                <Button variant="contained" color="secondary" onClick={handleOpenCreateDialog} sx={{ minHeight: 44 }}>
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  onClick={handleOpenCreateDialog}
+                  sx={{ minHeight: 44 }}
+                >
                   Add Appointment
                 </Button>
               </Paper>
             )}
           </Box>
-        </>
-      )}
-      {viewMode === 'agenda' && (
-        /* Agenda View */
-        <Box sx={{ mb: 4 }}>
-          {loading ? (
-            Array.from(new Array(3)).map((_, idx) => (
-              <AppointmentSkeleton key={`agenda-appointment-skeleton-${idx}`} />
-            ))
-          ) : Object.keys(appointmentsByDate).length > 0 ? (
-            Object.keys(appointmentsByDate)
-              .sort((a, b) => new Date(a) - new Date(b))
-              .map((dateKey) => (
-                <Box key={dateKey} sx={{ mb: 4 }}>
-                  <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
-                    {format(parseISO(dateKey), 'PPP')}
-                  </Typography>
-                  {appointmentsByDate[dateKey].map((app) => (
-                    <AppointmentCard
-                      key={app.id}
-                      appointment={app}
-                      onEdit={handleOpenEditDialog}
-                      onDelete={handleDelete}
-                      viewerRole={viewerRole}
-                      counterpartyLabel={resolvedCounterpartyLabel}
-                    />
-                  ))}
-                </Box>
-              ))
-          ) : (
-            <Paper
-              sx={{
-                p: 4,
-                textAlign: 'center',
-                backgroundColor: 'background.default',
-                border: '1px dashed',
-                borderColor: 'divider',
-              }}
-              elevation={0}
+        )}
+        {viewMode === 'map' && (
+          <Box sx={{ height: { xs: 300, md: 500 }, mb: 4 }}>
+            <MapContainer
+              center={[7.9465, -1.0232]}
+              zoom={7}
+              style={{ height: '100%', width: '100%' }}
             >
-              <EventBusyIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }} />
-              <Typography variant="h6" color="text.secondary" gutterBottom>
-                No appointments found
-              </Typography>
-              <Typography variant="body2" color="text.disabled" sx={{ mb: 2 }}>
-                Try changing your search words or status filter.
-              </Typography>
-              <Button variant="contained" color="secondary" onClick={handleOpenCreateDialog} sx={{ minHeight: 44 }}>
-                Add Appointment
-              </Button>
-            </Paper>
-          )}
-        </Box>
-      )}
-      {viewMode === 'upcoming' && (
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h5" fontWeight={600} sx={{ mb: 2 }}>
-            Upcoming Appointments (Next 7 Days)
-          </Typography>
-          {loading ? (
-            Array.from(new Array(3)).map((_, idx) => (
-              <AppointmentSkeleton key={`upcoming-appointment-skeleton-${idx}`} />
-            ))
-          ) : upcomingAppointments.length > 0 ? (
-            upcomingAppointments.map((app) => (
-              <AppointmentCard
-                key={app.id}
-                appointment={app}
-                onEdit={handleOpenEditDialog}
-                onDelete={handleDelete}
-                viewerRole={viewerRole}
-                counterpartyLabel={resolvedCounterpartyLabel}
-              />
-            ))
-          ) : (
-            <Paper
-              sx={{
-                p: 4,
-                textAlign: 'center',
-                backgroundColor: 'background.default',
-                border: '1px dashed',
-                borderColor: 'divider',
-              }}
-              elevation={0}
-            >
-              <EventBusyIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }} />
-              <Typography variant="h6" color="text.secondary" gutterBottom>
-                No upcoming appointments
-              </Typography>
-              <Typography variant="body2" color="text.disabled" sx={{ mb: 2 }}>
-                You have nothing scheduled in the next 7 days. Add one now so you do not miss a call or site visit.
-              </Typography>
-              <Button variant="contained" color="secondary" onClick={handleOpenCreateDialog} sx={{ minHeight: 44 }}>
-                Add Appointment
-              </Button>
-            </Paper>
-          )}
-        </Box>
-      )}
-      {viewMode === 'map' && (
-        <Box sx={{ height: { xs: 300, md: 500 }, mb: 4 }}>
-          <MapContainer
-            center={[7.9465, -1.0232]}
-            zoom={7}
-            style={{ height: '100%', width: '100%' }}
-          >
-            <TileLayer url={EXTERNAL_SERVICES.OPENSTREETMAP.TILES} />
-            {appointments
-              .filter((a) => a.coordinates)
-              .map((app) => (
-                <Marker
-                  key={app.id}
-                  position={[app.coordinates.lat, app.coordinates.lng]}
-                >
-                  <Popup>
-                    <Typography variant="subtitle2" fontWeight="bold">
-                      {app.jobTitle}
-                    </Typography>
-                    <Typography variant="body2">
-                      {safeFormatDate(app.date, 'PPP p')}
-                    </Typography>
-                    <Typography variant="body2">{app.location}</Typography>
-                  </Popup>
-                </Marker>
-              ))}
-          </MapContainer>
-        </Box>
-      )}
+              <TileLayer url={EXTERNAL_SERVICES.OPENSTREETMAP.TILES} />
+              {appointments
+                .filter((a) => a.coordinates)
+                .map((app) => (
+                  <Marker
+                    key={app.id}
+                    position={[app.coordinates.lat, app.coordinates.lng]}
+                  >
+                    <Popup>
+                      <Typography variant="subtitle2" fontWeight="bold">
+                        {app.jobTitle}
+                      </Typography>
+                      <Typography variant="body2">
+                        {safeFormatDate(app.date, 'PPP p')}
+                      </Typography>
+                      <Typography variant="body2">{app.location}</Typography>
+                    </Popup>
+                  </Marker>
+                ))}
+            </MapContainer>
+          </Box>
+        )}
 
-      {/* Appointment Dialog */}
-      <Dialog
-        open={dialogOpen}
-        onClose={handleCloseDialog}
-        fullWidth
-        maxWidth="sm"
-        aria-labelledby="appointment-dialog-title"
-      >
-        <DialogTitle id="appointment-dialog-title">
-          {dialogMode === 'create'
-            ? `Add Appointment with ${resolvedCounterpartyLabel}`
-            : `Edit Appointment with ${resolvedCounterpartyLabel}`}
-        </DialogTitle>
-        <DialogContent>
-          <AppointmentForm
-            formData={formData}
-            setFormData={setFormData}
-            onSubmit={handleSubmit}
-            onCancel={handleCloseDialog}
-            jobs={Array.isArray(jobs) ? jobs : []}
-            users={users}
-            loadingJobs={loadingJobs}
-            loadingUsers={loadingUsers}
-            mode={dialogMode}
-            counterpartyLabel={resolvedCounterpartyLabel}
-          />
-        </DialogContent>
-      </Dialog>
+        {/* Appointment Dialog */}
+        <Dialog
+          open={dialogOpen}
+          onClose={handleCloseDialog}
+          fullWidth
+          maxWidth="sm"
+          aria-labelledby="appointment-dialog-title"
+        >
+          <DialogTitle id="appointment-dialog-title">
+            {dialogMode === 'create'
+              ? `Add Appointment with ${resolvedCounterpartyLabel}`
+              : `Edit Appointment with ${resolvedCounterpartyLabel}`}
+          </DialogTitle>
+          <DialogContent>
+            <AppointmentForm
+              formData={formData}
+              setFormData={setFormData}
+              onSubmit={handleSubmit}
+              onCancel={handleCloseDialog}
+              jobs={Array.isArray(jobs) ? jobs : []}
+              users={users}
+              loadingJobs={loadingJobs}
+              loadingUsers={loadingUsers}
+              mode={dialogMode}
+              counterpartyLabel={resolvedCounterpartyLabel}
+            />
+          </DialogContent>
+        </Dialog>
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog
-        open={Boolean(deleteTarget)}
-        onClose={() => setDeleteTarget(null)}
-        aria-labelledby="delete-appointment-dialog-title"
-      >
-        <DialogTitle id="delete-appointment-dialog-title">Delete Appointment?</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Delete this appointment? This action cannot be undone.
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteTarget(null)}>
-            Cancel
-          </Button>
-          <Button onClick={confirmDelete} color="error" variant="contained">
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
+        {/* Delete Confirmation Dialog */}
+        <Dialog
+          open={Boolean(deleteTarget)}
+          onClose={() => setDeleteTarget(null)}
+          aria-labelledby="delete-appointment-dialog-title"
+        >
+          <DialogTitle id="delete-appointment-dialog-title">
+            Delete Appointment?
+          </DialogTitle>
+          <DialogContent>
+            <Typography>
+              Delete this appointment? This action cannot be undone.
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setDeleteTarget(null)}>Cancel</Button>
+            <Button onClick={confirmDelete} color="error" variant="contained">
+              Delete
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Container>
     </PageCanvas>
   );
 };
 
 export default SchedulingPage;
-
-

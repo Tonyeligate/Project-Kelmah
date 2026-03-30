@@ -24,7 +24,8 @@ const useWebSocketConnect = () => {
     if (isAuthenticated && userId) {
       const token = secureStorage.getAuthToken();
       if (token) {
-        const shouldReconnect = sessionKeyRef.current && sessionKeyRef.current !== nextSessionKey;
+        const shouldReconnect =
+          sessionKeyRef.current && sessionKeyRef.current !== nextSessionKey;
 
         if (shouldReconnect) {
           websocketService.disconnect();

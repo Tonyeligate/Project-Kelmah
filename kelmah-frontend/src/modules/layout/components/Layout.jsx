@@ -40,7 +40,11 @@ const DASHBOARD_EXACT_PATHS = [
 ];
 
 const isDashboardRoute = (path = '') => {
-  if (!path || path.startsWith('/worker-profile') || path.startsWith('/workers/')) {
+  if (
+    !path ||
+    path.startsWith('/worker-profile') ||
+    path.startsWith('/workers/')
+  ) {
     return false;
   }
 
@@ -54,9 +58,11 @@ const isDashboardRoute = (path = '') => {
     return false;
   }
 
-  if (DASHBOARD_PATH_PREFIXES.some(
-    (prefix) => path === prefix || path.startsWith(`${prefix}/`),
-  )) {
+  if (
+    DASHBOARD_PATH_PREFIXES.some(
+      (prefix) => path === prefix || path.startsWith(`${prefix}/`),
+    )
+  ) {
     return true;
   }
 
@@ -102,7 +108,9 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
   // Only show footer on homepage
   const isHomePage = location.pathname === '/' || location.pathname === '/home';
   const isMdUp = useBreakpointUp('md');
-  const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
+  const prefersReducedMotion = useMediaQuery(
+    '(prefers-reduced-motion: reduce)',
+  );
   // ✅ MOBILE-AUDIT FIX: Use MUI breakpoint instead of custom query to avoid 769-899px dead zone
   const isMobile = !isMdUp;
   const { isKeyboardVisible } = useKeyboardVisible();
@@ -129,12 +137,22 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
 
   // Sidebar collapse state with localStorage persistence
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('kelmah-sidebar-collapsed')) === true; } catch { return false; }
+    try {
+      return (
+        JSON.parse(localStorage.getItem('kelmah-sidebar-collapsed')) === true
+      );
+    } catch {
+      return false;
+    }
   });
   const handleToggleSidebar = React.useCallback(() => {
     setSidebarCollapsed((prev) => {
       const next = !prev;
-      try { localStorage.setItem('kelmah-sidebar-collapsed', JSON.stringify(next)); } catch { /* noop */ }
+      try {
+        localStorage.setItem('kelmah-sidebar-collapsed', JSON.stringify(next));
+      } catch {
+        /* noop */
+      }
       return next;
     });
   }, []);
@@ -268,7 +286,7 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
     // Desktop (>=md): permanent sidebar + auto-show header
     return (
       <Box sx={{ display: 'flex', minHeight: '100vh', width: '100%' }}>
-          {skipToContentLink}
+        {skipToContentLink}
         <Box component="header">
           <Header
             toggleTheme={resolvedToggleTheme}
@@ -278,7 +296,11 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
           />
         </Box>
         <Box component="aside" aria-label="Sidebar navigation">
-          <Sidebar variant="permanent" collapsed={sidebarCollapsed} onToggleCollapse={handleToggleSidebar} />
+          <Sidebar
+            variant="permanent"
+            collapsed={sidebarCollapsed}
+            onToggleCollapse={handleToggleSidebar}
+          />
         </Box>
         <Box
           component="main"
@@ -344,12 +366,12 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
             pt: isAuthPage
               ? 0
               : isHomePage
-              ? 0
-              : {
-                  xs: `calc(${withSafeAreaTop(HEADER_HEIGHT_MOBILE + 16)} + var(--kelmah-network-banner-offset, 0px))`,
-                  sm: `calc(${withSafeAreaTop(HEADER_HEIGHT_MOBILE + 20)} + var(--kelmah-network-banner-offset, 0px))`,
-                  md: 3,
-                },
+                ? 0
+                : {
+                    xs: `calc(${withSafeAreaTop(HEADER_HEIGHT_MOBILE + 16)} + var(--kelmah-network-banner-offset, 0px))`,
+                    sm: `calc(${withSafeAreaTop(HEADER_HEIGHT_MOBILE + 20)} + var(--kelmah-network-banner-offset, 0px))`,
+                    md: 3,
+                  },
             pb: isAuthPage ? 0 : isHomePage ? 0 : { xs: 2.5, sm: 3, md: 3 },
             px: isAuthPage ? 0 : isHomePage ? 0 : { xs: 1.5, sm: 2.5, md: 3 },
             overflowX: 'hidden',

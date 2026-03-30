@@ -1,7 +1,20 @@
 ﻿import { useEffect, useState, useRef, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import {
-  Avatar, Box, Typography, IconButton, Menu, MenuItem, ListItemIcon, ListItemText, Tooltip, Paper, Fade, Chip, useTheme } from '@mui/material';
+  Avatar,
+  Box,
+  Typography,
+  IconButton,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
+  Tooltip,
+  Paper,
+  Fade,
+  Chip,
+  useTheme,
+} from '@mui/material';
 import { styled, alpha } from '@mui/material/styles';
 import { format } from 'date-fns';
 import useLongPress from '../../../../hooks/useLongPress';
@@ -145,9 +158,12 @@ const Message = ({
 
   const normalizedStatus = String(message.status || '').toLowerCase();
   const isSending = normalizedStatus === 'sending';
-  const isFailed = normalizedStatus === 'failed' || normalizedStatus === 'error';
+  const isFailed =
+    normalizedStatus === 'failed' || normalizedStatus === 'error';
   const isRead = Boolean(message.isRead);
-  const isDelivered = !isRead && (normalizedStatus === 'delivered' || normalizedStatus === 'received');
+  const isDelivered =
+    !isRead &&
+    (normalizedStatus === 'delivered' || normalizedStatus === 'received');
   const isSent = !isRead && !isDelivered && !isSending && !isFailed;
 
   const formatTime = (timestamp) => {
@@ -174,7 +190,7 @@ const Message = ({
       (Array.isArray(message.attachments) && message.attachments.length > 0
         ? 'file'
         : 'text');
-    
+
     // Auto-detect raw media URLs sent as text
     const isRawImageUrl =
       effectiveType !== 'image' &&
@@ -204,7 +220,7 @@ const Message = ({
         </Box>
       );
     }
-    
+
     if (isRawVideoUrl) {
       return (
         <Box>
@@ -246,11 +262,13 @@ const Message = ({
           message.fileUrl || (content?.startsWith('http') ? content : null);
         return (
           <Box>
-            {content && content !== fileUrlToUse && content !== '[Attachment]' && (
-              <Typography variant="body2" sx={{ mb: 1 }}>
-                {content}
-              </Typography>
-            )}
+            {content &&
+              content !== fileUrlToUse &&
+              content !== '[Attachment]' && (
+                <Typography variant="body2" sx={{ mb: 1 }}>
+                  {content}
+                </Typography>
+              )}
             {fileUrlToUse && (
               <Box
                 component="video"
@@ -599,5 +617,3 @@ Message.propTypes = {
 };
 
 export default Message;
-
-

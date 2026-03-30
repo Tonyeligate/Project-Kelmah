@@ -1,5 +1,21 @@
 ﻿import React, { useMemo, useState } from 'react';
-import { Box, ButtonBase, Dialog, DialogContent, DialogTitle, IconButton, ImageList, ImageListItem, ImageListItemBar, Typography, Chip, Stack, useTheme, Fade, Backdrop } from '@mui/material';
+import {
+  Box,
+  ButtonBase,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  ImageList,
+  ImageListItem,
+  ImageListItemBar,
+  Typography,
+  Chip,
+  Stack,
+  useTheme,
+  Fade,
+  Backdrop,
+} from '@mui/material';
 import {
   Close as CloseIcon,
   ZoomIn as ZoomInIcon,
@@ -32,7 +48,9 @@ const ProjectGallery = ({
   };
 
   const handlePrevious = () => {
-    setCurrentIndex((prev) => (prev - 1 + galleryImages.length) % galleryImages.length);
+    setCurrentIndex(
+      (prev) => (prev - 1 + galleryImages.length) % galleryImages.length,
+    );
     setImageLoaded(false);
   };
 
@@ -462,5 +480,3 @@ const ProjectGallery = ({
 };
 
 export default ProjectGallery;
-
-

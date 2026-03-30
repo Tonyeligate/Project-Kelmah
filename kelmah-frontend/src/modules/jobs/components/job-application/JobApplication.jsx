@@ -2,7 +2,33 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import {
-  Box, Paper, Typography, TextField, Button, Grid, CircularProgress, Alert, Divider, Card, CardContent, Chip, IconButton, InputAdornment, MenuItem, Stepper, Step, StepLabel, useTheme, Accordion, AccordionSummary, AccordionDetails, List, ListItem, ListItemText, FormHelperText, LinearProgress,
+  Box,
+  Paper,
+  Typography,
+  TextField,
+  Button,
+  Grid,
+  CircularProgress,
+  Alert,
+  Divider,
+  Card,
+  CardContent,
+  Chip,
+  IconButton,
+  InputAdornment,
+  MenuItem,
+  Stepper,
+  Step,
+  StepLabel,
+  useTheme,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  List,
+  ListItem,
+  ListItemText,
+  FormHelperText,
+  LinearProgress,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import {
@@ -20,10 +46,7 @@ import {
 } from '@mui/icons-material';
 import { format } from 'date-fns';
 import { api } from '../../../../services/apiClient';
-import {
-  useApplyToJobMutation,
-  useJobQuery,
-} from '../../hooks/useJobsQuery';
+import { useApplyToJobMutation, useJobQuery } from '../../hooks/useJobsQuery';
 import fileUploadService from '../../../common/services/fileUploadService';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 import { formatGhanaCurrency } from '@/utils/formatters';
@@ -110,11 +133,12 @@ function JobApplication() {
 
   const getAttachmentSignature = (attachment) => {
     const file = attachment?.file;
-    const lastModified = typeof file?.lastModified === 'number'
-      ? file.lastModified
-      : typeof attachment?.lastModified === 'number'
-        ? attachment.lastModified
-        : 'na';
+    const lastModified =
+      typeof file?.lastModified === 'number'
+        ? file.lastModified
+        : typeof attachment?.lastModified === 'number'
+          ? attachment.lastModified
+          : 'na';
 
     return `${attachment?.name}-${attachment?.size}-${lastModified}`;
   };
@@ -125,10 +149,7 @@ function JobApplication() {
     setApplicationData((prev) => ({
       ...prev,
       proposedBudget:
-        job?.budget?.amount ||
-        job?.budget?.min ||
-        job?.budget ||
-        '',
+        job?.budget?.amount || job?.budget?.min || job?.budget || '',
       currency: job?.currency || 'GHS',
     }));
   }, [job]);
@@ -203,7 +224,11 @@ function JobApplication() {
     }));
 
     setApplicationData((prev) => {
-      const seen = new Set(prev.attachments.map((attachment) => getAttachmentSignature(attachment)));
+      const seen = new Set(
+        prev.attachments.map((attachment) =>
+          getAttachmentSignature(attachment),
+        ),
+      );
       const nextAttachments = [...prev.attachments];
 
       fileObjects.forEach((attachment) => {
@@ -472,10 +497,16 @@ function JobApplication() {
         >
           {isMobile ? (
             <Box>
-              <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700 }}>
+              <Typography
+                variant="caption"
+                sx={{ color: 'text.secondary', fontWeight: 700 }}
+              >
                 Step {activeStep + 1} of {steps.length}
               </Typography>
-              <Typography variant="body2" sx={{ color: 'text.primary', fontWeight: 700, mb: 0.75 }}>
+              <Typography
+                variant="body2"
+                sx={{ color: 'text.primary', fontWeight: 700, mb: 0.75 }}
+              >
                 {steps[activeStep]}
               </Typography>
               <LinearProgress
@@ -835,7 +866,14 @@ function JobApplication() {
                   )}
 
                   {applicationData.milestoneProposal.map((milestone, index) => (
-                    <MilestoneCard key={milestone.id || milestone._id || `${milestone.title || 'milestone'}-${milestone.amount || 0}-${index}`} sx={{ mb: 2 }}>
+                    <MilestoneCard
+                      key={
+                        milestone.id ||
+                        milestone._id ||
+                        `${milestone.title || 'milestone'}-${milestone.amount || 0}-${index}`
+                      }
+                      sx={{ mb: 2 }}
+                    >
                       <CardContent sx={{ py: 2 }}>
                         <Box
                           sx={{
@@ -907,10 +945,12 @@ function JobApplication() {
                       fontWeight={600}
                       color="primary"
                     >
-                      {formatGhanaCurrency(applicationData.milestoneProposal.reduce(
-                        (sum, m) => sum + parseFloat(m.amount || 0),
-                        0,
-                      ))}
+                      {formatGhanaCurrency(
+                        applicationData.milestoneProposal.reduce(
+                          (sum, m) => sum + parseFloat(m.amount || 0),
+                          0,
+                        ),
+                      )}
                     </Typography>
                   </Box>
                 </Box>
@@ -979,7 +1019,11 @@ function JobApplication() {
                       {applicationData.milestoneProposal.map(
                         (milestone, index) => (
                           <ListItem
-                            key={milestone.id || milestone._id || `${milestone.title || 'milestone'}-${milestone.amount || 0}-${index}`}
+                            key={
+                              milestone.id ||
+                              milestone._id ||
+                              `${milestone.title || 'milestone'}-${milestone.amount || 0}-${index}`
+                            }
                             divider={
                               index <
                               applicationData.milestoneProposal.length - 1
@@ -1041,7 +1085,13 @@ function JobApplication() {
           )}
 
           {/* Navigation buttons */}
-          <Box sx={{ display: { xs: 'none', sm: 'flex' }, justifyContent: 'space-between', mt: 4 }}>
+          <Box
+            sx={{
+              display: { xs: 'none', sm: 'flex' },
+              justifyContent: 'space-between',
+              mt: 4,
+            }}
+          >
             <Button
               variant="outlined"
               onClick={handleBack}
@@ -1113,13 +1163,23 @@ function JobApplication() {
               variant="contained"
               onClick={handleSubmit}
               disabled={submitting}
-              endIcon={submitting ? <CircularProgress size={18} color="inherit" /> : <SendIcon />}
+              endIcon={
+                submitting ? (
+                  <CircularProgress size={18} color="inherit" />
+                ) : (
+                  <SendIcon />
+                )
+              }
               sx={{ minHeight: 44, fontWeight: 700 }}
             >
               {submitting ? 'Submitting...' : 'Submit'}
             </Button>
           ) : (
-            <Button variant="contained" onClick={handleNext} sx={{ minHeight: 44, fontWeight: 700 }}>
+            <Button
+              variant="contained"
+              onClick={handleNext}
+              sx={{ minHeight: 44, fontWeight: 700 }}
+            >
               Next
             </Button>
           )}
@@ -1130,4 +1190,3 @@ function JobApplication() {
 }
 
 export default JobApplication;
-

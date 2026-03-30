@@ -27,7 +27,10 @@ const LoginPage = () => {
   // Render clean mobile view without AuthWrapper
   if (isMobile) {
     return (
-      <PageCanvas disableContainer sx={{ pt: { xs: 3, md: 4 }, pb: { xs: 4, md: 6 } }}>
+      <PageCanvas
+        disableContainer
+        sx={{ pt: { xs: 3, md: 4 }, pb: { xs: 4, md: 6 } }}
+      >
         <MobileLogin registrationSuccess={registered} />
       </PageCanvas>
     );
@@ -35,13 +38,18 @@ const LoginPage = () => {
 
   // Desktop view with AuthWrapper
   return (
-    <PageCanvas disableContainer sx={{ pt: { xs: 3, md: 4 }, pb: { xs: 4, md: 6 } }}>
+    <PageCanvas
+      disableContainer
+      sx={{ pt: { xs: 3, md: 4 }, pb: { xs: 4, md: 6 } }}
+    >
       <AuthWrapper>
-        <Helmet><title>Log In | Kelmah</title></Helmet>
+        <Helmet>
+          <title>Log In | Kelmah</title>
+        </Helmet>
         {registered && (
           <Alert severity="success" sx={{ mb: 2 }}>
-            Registration complete. Check your email for a verification link, then
-            sign in.
+            Registration complete. Check your email for a verification link,
+            then sign in.
           </Alert>
         )}
         {!registered && infoMessage && (
@@ -54,7 +62,8 @@ const LoginPage = () => {
             Sign in with the email and password used during registration.
           </Typography>
           <Typography variant="caption" sx={{ display: 'block', mt: 0.5 }}>
-            If login fails after two attempts, use Forgot password to reset access securely.
+            If login fails after two attempts, use Forgot password to reset
+            access securely.
           </Typography>
         </Alert>
         <Login />

@@ -11,7 +11,28 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Dialog, DialogTitle, DialogContent, DialogActions, AppBar, Toolbar, Button, TextField, Box, Typography, Slider, Alert, CircularProgress, Chip, InputAdornment, IconButton, FormControl, InputLabel, Select, MenuItem, useTheme } from '@mui/material';
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  AppBar,
+  Toolbar,
+  Button,
+  TextField,
+  Box,
+  Typography,
+  Slider,
+  Alert,
+  CircularProgress,
+  Chip,
+  InputAdornment,
+  IconButton,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  useTheme,
+} from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import {
   Gavel as GavelIcon,
@@ -34,7 +55,10 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
   const maxBidders = job?.bidding?.maxBidders || 5;
 
   const [bidAmount, setBidAmount] = useState(Math.round((minBid + maxBid) / 2));
-  const [estimatedDuration, setEstimatedDuration] = useState({ value: 1, unit: 'week' });
+  const [estimatedDuration, setEstimatedDuration] = useState({
+    value: 1,
+    unit: 'week',
+  });
   const [hoursPerWeek, setHoursPerWeek] = useState(40);
   const [coverLetter, setCoverLetter] = useState('');
   const [loading, setLoading] = useState(false);
@@ -61,7 +85,9 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
       return;
     }
     if (bidAmount < minBid || bidAmount > maxBid) {
-      setError(`Bid amount must be between ${formatGhanaCurrency(minBid)} and ${formatGhanaCurrency(maxBid)}.`);
+      setError(
+        `Bid amount must be between ${formatGhanaCurrency(minBid)} and ${formatGhanaCurrency(maxBid)}.`,
+      );
       return;
     }
 
@@ -95,20 +121,33 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
 
   if (success) {
     return (
-      <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth fullScreen={isMobile} aria-labelledby="bid-submitted-dialog-title">
-        <DialogTitle id="bid-submitted-dialog-title" sx={{ bgcolor: 'background.paper', color: 'primary.main' }}>
+      <Dialog
+        open={open}
+        onClose={onClose}
+        maxWidth="sm"
+        fullWidth
+        fullScreen={isMobile}
+        aria-labelledby="bid-submitted-dialog-title"
+      >
+        <DialogTitle
+          id="bid-submitted-dialog-title"
+          sx={{ bgcolor: 'background.paper', color: 'primary.main' }}
+        >
           Bid Submitted Successfully
         </DialogTitle>
         <DialogContent sx={{ bgcolor: 'background.paper', pt: 3 }}>
           <Alert severity="success" sx={{ mb: 2 }}>
-              Your bid of <strong>{formatGhanaCurrency(bidAmount)}</strong> has been
-            submitted with your proposed timeline and availability.
+            Your bid of <strong>{formatGhanaCurrency(bidAmount)}</strong> has
+            been submitted with your proposed timeline and availability.
           </Alert>
           <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1 }}>
-            The hirer can now review your offer. If you want to track the status, withdraw it, or check later responses, open your bid dashboard next.
+            The hirer can now review your offer. If you want to track the
+            status, withdraw it, or check later responses, open your bid
+            dashboard next.
           </Typography>
           <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            You can also stay on this job page if you want to keep reviewing the listing details.
+            You can also stay on this job page if you want to keep reviewing the
+            listing details.
           </Typography>
         </DialogContent>
         <DialogActions sx={{ bgcolor: 'background.paper', p: 2 }}>
@@ -131,9 +170,23 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
   }
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth fullScreen={isMobile} aria-labelledby="place-bid-dialog-title">
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="sm"
+      fullWidth
+      fullScreen={isMobile}
+      aria-labelledby="place-bid-dialog-title"
+    >
       {isMobile ? (
-        <AppBar sx={{ position: 'relative', bgcolor: 'background.paper', color: 'text.primary', boxShadow: 1 }}>
+        <AppBar
+          sx={{
+            position: 'relative',
+            bgcolor: 'background.paper',
+            color: 'text.primary',
+            boxShadow: 1,
+          }}
+        >
           <Toolbar>
             <IconButton
               edge="start"
@@ -152,7 +205,11 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
             >
               <CloseIcon />
             </IconButton>
-            <Typography id="place-bid-dialog-title" sx={{ ml: 1, flex: 1, fontWeight: 600 }} variant="subtitle1">
+            <Typography
+              id="place-bid-dialog-title"
+              sx={{ ml: 1, flex: 1, fontWeight: 600 }}
+              variant="subtitle1"
+            >
               Place Your Bid
             </Typography>
             <Button
@@ -161,7 +218,9 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
               size="small"
               onClick={handleSubmit}
               disabled={loading}
-              startIcon={loading ? <CircularProgress size={14} /> : <GavelIcon />}
+              startIcon={
+                loading ? <CircularProgress size={14} /> : <GavelIcon />
+              }
             >
               {loading ? 'Submitting…' : formatGhanaCurrency(bidAmount)}
             </Button>
@@ -209,8 +268,18 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
         )}
 
         {/* Job info summary */}
-        <Box sx={{ mb: 3, p: 2, bgcolor: alpha(theme.palette.text.primary, 0.05), borderRadius: 1 }}>
-          <Typography variant="subtitle1" sx={{ color: 'primary.main', fontWeight: 'bold', mb: 0.5 }}>
+        <Box
+          sx={{
+            mb: 3,
+            p: 2,
+            bgcolor: alpha(theme.palette.text.primary, 0.05),
+            borderRadius: 1,
+          }}
+        >
+          <Typography
+            variant="subtitle1"
+            sx={{ color: 'primary.main', fontWeight: 'bold', mb: 0.5 }}
+          >
             {job?.title}
           </Typography>
           <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
@@ -218,13 +287,19 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
               size="small"
               icon={<AttachMoney sx={{ fontSize: 14 }} />}
               label={`${formatGhanaCurrency(minBid)} - ${formatGhanaCurrency(maxBid)}`}
-              sx={{ bgcolor: alpha(theme.palette.primary.main, 0.15), color: 'primary.main' }}
+              sx={{
+                bgcolor: alpha(theme.palette.primary.main, 0.15),
+                color: 'primary.main',
+              }}
             />
             <Chip
               size="small"
               icon={<Info sx={{ fontSize: 14 }} />}
               label={`${currentBidders}/${maxBidders} bidders`}
-              sx={{ bgcolor: alpha(theme.palette.text.primary, 0.1), color: 'text.primary' }}
+              sx={{
+                bgcolor: alpha(theme.palette.text.primary, 0.1),
+                color: 'text.primary',
+              }}
             />
           </Box>
         </Box>
@@ -244,7 +319,10 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
             valueLabelFormat={(v) => formatGhanaCurrency(v)}
             sx={{
               color: theme.palette.primary.main,
-              '& .MuiSlider-valueLabel': { bgcolor: theme.palette.primary.main, color: theme.palette.primary.contrastText },
+              '& .MuiSlider-valueLabel': {
+                bgcolor: theme.palette.primary.main,
+                color: theme.palette.primary.contrastText,
+              },
             }}
           />
         </Box>
@@ -258,19 +336,30 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
           size="small"
           fullWidth
           InputProps={{
-            startAdornment: <InputAdornment position="start">GH₵</InputAdornment>,
+            startAdornment: (
+              <InputAdornment position="start">GH₵</InputAdornment>
+            ),
           }}
           sx={{
             mb: 3,
             '& .MuiOutlinedInput-root': {
               color: theme.palette.text.primary,
-              '& fieldset': { borderColor: alpha(theme.palette.primary.main, 0.3) },
+              '& fieldset': {
+                borderColor: alpha(theme.palette.primary.main, 0.3),
+              },
             },
           }}
         />
 
         {/* Estimated duration */}
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 140px' }, gap: 2, mb: 3 }}>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', sm: '1fr 140px' },
+            gap: 2,
+            mb: 3,
+          }}
+        >
           <TextField
             label="Estimated Duration"
             type="number"
@@ -279,7 +368,8 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
               const nextValue = Number(e.target.value);
               setEstimatedDuration((prev) => ({
                 ...prev,
-                value: Number.isFinite(nextValue) && nextValue > 0 ? nextValue : 1,
+                value:
+                  Number.isFinite(nextValue) && nextValue > 0 ? nextValue : 1,
               }));
             }}
             fullWidth
@@ -288,14 +378,18 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
             sx={{
               '& .MuiOutlinedInput-root': {
                 color: theme.palette.text.primary,
-                '& fieldset': { borderColor: alpha(theme.palette.primary.main, 0.3) },
+                '& fieldset': {
+                  borderColor: alpha(theme.palette.primary.main, 0.3),
+                },
               },
               '& .MuiInputLabel-root': { color: theme.palette.text.secondary },
             }}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <Schedule sx={{ color: alpha(theme.palette.primary.main, 0.5) }} />
+                  <Schedule
+                    sx={{ color: alpha(theme.palette.primary.main, 0.5) }}
+                  />
                 </InputAdornment>
               ),
             }}
@@ -325,7 +419,11 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
           value={hoursPerWeek}
           onChange={(e) => {
             const nextValue = Number(e.target.value);
-            setHoursPerWeek(Number.isFinite(nextValue) && nextValue > 0 ? Math.min(nextValue, 168) : 40);
+            setHoursPerWeek(
+              Number.isFinite(nextValue) && nextValue > 0
+                ? Math.min(nextValue, 168)
+                : 40,
+            );
           }}
           fullWidth
           size="small"
@@ -335,7 +433,9 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
             mb: 3,
             '& .MuiOutlinedInput-root': {
               color: theme.palette.text.primary,
-              '& fieldset': { borderColor: alpha(theme.palette.primary.main, 0.3) },
+              '& fieldset': {
+                borderColor: alpha(theme.palette.primary.main, 0.3),
+              },
             },
             '& .MuiInputLabel-root': { color: theme.palette.text.secondary },
           }}
@@ -355,14 +455,17 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
             mb: 2,
             '& .MuiOutlinedInput-root': {
               color: theme.palette.text.primary,
-              '& fieldset': { borderColor: alpha(theme.palette.primary.main, 0.3) },
+              '& fieldset': {
+                borderColor: alpha(theme.palette.primary.main, 0.3),
+              },
             },
             '& .MuiInputLabel-root': { color: theme.palette.text.secondary },
           }}
         />
 
         <Typography variant="caption" sx={{ color: 'text.disabled' }}>
-          You can submit up to 5 bids per month. Review your price, timeline, and availability before sending.
+          You can submit up to 5 bids per month. Review your price, timeline,
+          and availability before sending.
         </Typography>
       </DialogContent>
 
@@ -378,7 +481,9 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
             startIcon={loading ? <CircularProgress size={16} /> : <GavelIcon />}
             color="primary"
           >
-            {loading ? 'Submitting...' : `Submit Bid — ${formatGhanaCurrency(bidAmount)}`}
+            {loading
+              ? 'Submitting...'
+              : `Submit Bid — ${formatGhanaCurrency(bidAmount)}`}
           </Button>
         </DialogActions>
       )}

@@ -123,20 +123,34 @@ const timeAgo = (date) => {
   if (hrs < 24) return `${hrs}h ago`;
   const days = Math.floor(hrs / 24);
   if (days < 7) return `${days}d ago`;
-  return new Date(date).toLocaleDateString('en-GH', { month: 'short', day: 'numeric' });
+  return new Date(date).toLocaleDateString('en-GH', {
+    month: 'short',
+    day: 'numeric',
+  });
 };
 
 // ─── Utility: format currency ───────────────────────────────
 const formatBudget = (budget, currency = 'GHS') => {
   if (!budget && budget !== 0) return 'Negotiable';
-  const num = typeof budget === 'object' ? budget.max || budget.min || 0 : budget;
+  const num =
+    typeof budget === 'object' ? budget.max || budget.min || 0 : budget;
   return currency === 'GHS'
-    ? new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' }).format(Number(num))
+    ? new Intl.NumberFormat('en-GH', {
+        style: 'currency',
+        currency: 'GHS',
+      }).format(Number(num))
     : `$${Number(num).toLocaleString()}`;
 };
 
 // ─── Subcomponent: Search Header ────────────────────────────
-const SearchHeader = ({ search, setSearch, onSearch, resultCount, isLoading, hasFilters }) => {
+const SearchHeader = ({
+  search,
+  setSearch,
+  onSearch,
+  resultCount,
+  isLoading,
+  hasFilters,
+}) => {
   const theme = useTheme();
 
   const handleSubmit = (event) => {
@@ -165,7 +179,11 @@ const SearchHeader = ({ search, setSearch, onSearch, resultCount, isLoading, has
           Find Work
         </Typography>
         <Box component="form" onSubmit={handleSubmit} noValidate>
-          <Stack direction="row" spacing={1} sx={{ alignItems: 'stretch', minWidth: 0 }}>
+          <Stack
+            direction="row"
+            spacing={1}
+            sx={{ alignItems: 'stretch', minWidth: 0 }}
+          >
             <TextField
               fullWidth
               placeholder="Search job title, trade, or location"
@@ -224,20 +242,47 @@ const SearchHeader = ({ search, setSearch, onSearch, resultCount, isLoading, has
             </Button>
           </Stack>
         </Box>
-        <Typography variant="caption" color="text.secondary" sx={{ display: { xs: 'none', md: 'block' } }}>
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ display: { xs: 'none', md: 'block' } }}
+        >
           Tip: type a trade and location to get better matches faster.
         </Typography>
         {!isLoading && (
-          <Typography variant="body2" color="text.secondary" sx={{ display: { xs: 'none', md: 'block' } }}>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ display: { xs: 'none', md: 'block' } }}
+          >
             {resultCount} {resultCount === 1 ? 'job' : 'jobs'} available
           </Typography>
         )}
-        <Stack direction="row" spacing={0.75} sx={{ display: { xs: 'flex', md: 'none' }, overflowX: 'auto', pb: 0.25, scrollbarWidth: 'none', '&::-webkit-scrollbar': { display: 'none' } }}>
+        <Stack
+          direction="row"
+          spacing={0.75}
+          sx={{
+            display: { xs: 'flex', md: 'none' },
+            overflowX: 'auto',
+            pb: 0.25,
+            scrollbarWidth: 'none',
+            '&::-webkit-scrollbar': { display: 'none' },
+          }}
+        >
           {!isLoading && (
-            <Chip size="small" label={`${resultCount} results`} sx={{ fontWeight: 700 }} />
+            <Chip
+              size="small"
+              label={`${resultCount} results`}
+              sx={{ fontWeight: 700 }}
+            />
           )}
           {hasFilters && (
-            <Chip size="small" variant="outlined" label="Filters active" sx={{ fontWeight: 700 }} />
+            <Chip
+              size="small"
+              variant="outlined"
+              label="Filters active"
+              sx={{ fontWeight: 700 }}
+            />
           )}
         </Stack>
       </Stack>
@@ -348,7 +393,12 @@ const FilterPanel = ({
           min={0}
           max={50000}
           step={500}
-          valueLabelFormat={(v) => new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' }).format(v)}
+          valueLabelFormat={(v) =>
+            new Intl.NumberFormat('en-GH', {
+              style: 'currency',
+              currency: 'GHS',
+            }).format(v)
+          }
           sx={{
             color: theme.palette.primary.main,
             '& .MuiSlider-thumb': { width: 24, height: 24 },
@@ -356,10 +406,16 @@ const FilterPanel = ({
         />
         <Stack direction="row" justifyContent="space-between">
           <Typography variant="caption" color="text.secondary">
-            {new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' }).format(budgetRange[0])}
+            {new Intl.NumberFormat('en-GH', {
+              style: 'currency',
+              currency: 'GHS',
+            }).format(budgetRange[0])}
           </Typography>
           <Typography variant="caption" color="text.secondary">
-            {new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' }).format(budgetRange[1])}
+            {new Intl.NumberFormat('en-GH', {
+              style: 'currency',
+              currency: 'GHS',
+            }).format(budgetRange[1])}
           </Typography>
         </Stack>
       </Box>
@@ -385,7 +441,11 @@ const FilterPanel = ({
         variant="text"
         size="small"
         onClick={onReset}
-        sx={{ alignSelf: 'flex-start', textTransform: 'none', color: 'text.secondary' }}
+        sx={{
+          alignSelf: 'flex-start',
+          textTransform: 'none',
+          color: 'text.secondary',
+        }}
       >
         Reset Filters
       </Button>
@@ -452,7 +512,10 @@ const FindWorkJobCard = ({ job, isSaved, onSave, onUnsave }) => {
           />
         )}
         <CardContent
-          sx={{ p: { xs: 1.5, md: 2.5 }, '&:last-child': { pb: { xs: 1.5, md: 2.5 } } }}
+          sx={{
+            p: { xs: 1.5, md: 2.5 },
+            '&:last-child': { pb: { xs: 1.5, md: 2.5 } },
+          }}
         >
           {/* Top row: title + save */}
           <Stack
@@ -478,12 +541,19 @@ const FindWorkJobCard = ({ job, isSaved, onSave, onUnsave }) => {
               >
                 {job.title}
               </Typography>
-              <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
+              <Stack
+                direction="row"
+                spacing={1}
+                alignItems="center"
+                flexWrap="wrap"
+              >
                 <Typography variant="caption" color="text.secondary">
                   {job.hirerName || job.employer?.name || 'Employer'}
                 </Typography>
                 {(job.hirerVerified || job.employer?.verified) && (
-                  <VerifiedIcon sx={{ fontSize: 14, color: theme.palette.info.main }} />
+                  <VerifiedIcon
+                    sx={{ fontSize: 14, color: theme.palette.info.main }}
+                  />
                 )}
                 <Typography variant="caption" color="text.secondary">
                   · {timeAgo(job.postedDate || job.createdAt)}
@@ -496,11 +566,18 @@ const FindWorkJobCard = ({ job, isSaved, onSave, onUnsave }) => {
                 onClick={handleSaveToggle}
                 aria-label={isSaved ? 'Unsave job' : 'Save job'}
                 sx={{
-                  color: isSaved ? theme.palette.primary.main : 'text.secondary',
+                  color: isSaved
+                    ? theme.palette.primary.main
+                    : 'text.secondary',
                   minWidth: 44,
                   minHeight: 44,
                   '&:hover': { color: theme.palette.primary.main },
-                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
+                  '&:focus-visible': {
+                    outline: '3px solid',
+                    outlineColor: 'primary.main',
+                    outlineOffset: '2px',
+                  },
+                }}
               >
                 {isSaved ? (
                   <BookmarkIcon fontSize="small" />
@@ -559,7 +636,9 @@ const FindWorkJobCard = ({ job, isSaved, onSave, onUnsave }) => {
           )}
 
           {/* Meta row: budget, location, category, urgency */}
-          <Divider sx={{ my: 1.5, borderColor: alpha(theme.palette.divider, 0.4) }} />
+          <Divider
+            sx={{ my: 1.5, borderColor: alpha(theme.palette.divider, 0.4) }}
+          />
           <Stack
             direction="row"
             spacing={2}
@@ -568,14 +647,18 @@ const FindWorkJobCard = ({ job, isSaved, onSave, onUnsave }) => {
             sx={{ gap: 1 }}
           >
             <Stack direction="row" spacing={0.5} alignItems="center">
-              <MoneyIcon sx={{ fontSize: 16, color: theme.palette.primary.main }} />
+              <MoneyIcon
+                sx={{ fontSize: 16, color: theme.palette.primary.main }}
+              />
               <Typography variant="body2" fontWeight={600} color="primary.main">
                 {formatBudget(job.budget, job.currency)}
               </Typography>
             </Stack>
             {job.location && (
               <Stack direction="row" spacing={0.5} alignItems="center">
-                <LocationOnIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                <LocationOnIcon
+                  sx={{ fontSize: 16, color: 'text.secondary' }}
+                />
                 <Typography variant="body2" color="text.secondary">
                   {job.location}
                 </Typography>
@@ -716,8 +799,12 @@ const JobSearchPage = () => {
   const { user } = useSelector((state) => state.auth || {});
 
   // ─── Filter state (synced with URL params) ────────────────
-  const [searchText, setSearchText] = useState(searchParams.get('search') || '');
-  const [activeSearch, setActiveSearch] = useState(searchParams.get('search') || '');
+  const [searchText, setSearchText] = useState(
+    searchParams.get('search') || '',
+  );
+  const [activeSearch, setActiveSearch] = useState(
+    searchParams.get('search') || '',
+  );
   const [category, setCategory] = useState(searchParams.get('category') || '');
   const [location, setLocation] = useState(searchParams.get('location') || '');
   const [budgetRange, setBudgetRange] = useState([0, 50000]);
@@ -752,14 +839,20 @@ const JobSearchPage = () => {
     isFetching,
     error,
   } = useJobsQuery(queryFilters);
-  const { data: savedData } = useSavedJobsQuery(EMPTY_QUERY_PARAMS, { enabled: Boolean(user) });
+  const { data: savedData } = useSavedJobsQuery(EMPTY_QUERY_PARAMS, {
+    enabled: Boolean(user),
+  });
   const savedIds = useSavedJobIds(savedData);
 
   const saveMutation = useSaveJobMutation({
     onSuccess: () =>
       setSnackbar({ open: true, message: 'Job saved!', severity: 'success' }),
     onError: () =>
-      setSnackbar({ open: true, message: 'Could not save job', severity: 'error' }),
+      setSnackbar({
+        open: true,
+        message: 'Could not save job',
+        severity: 'error',
+      }),
   });
   const unsaveMutation = useUnsaveJobMutation({
     onSuccess: () =>
@@ -780,27 +873,35 @@ const JobSearchPage = () => {
   // Prevents double-click from firing two mutations for the same job.
   const togglingBookmarksRef = useRef(new Set());
 
-  const handleSaveJob = useCallback(async (payload) => {
-    if (togglingBookmarksRef.current.has(payload.jobId)) return;
-    togglingBookmarksRef.current.add(payload.jobId);
-    try {
-      await saveMutation.mutateAsync(payload);
-    } catch (_) { /* error handled by mutation callbacks */ }
-    finally {
-      togglingBookmarksRef.current.delete(payload.jobId);
-    }
-  }, [saveMutation]);
+  const handleSaveJob = useCallback(
+    async (payload) => {
+      if (togglingBookmarksRef.current.has(payload.jobId)) return;
+      togglingBookmarksRef.current.add(payload.jobId);
+      try {
+        await saveMutation.mutateAsync(payload);
+      } catch (_) {
+        /* error handled by mutation callbacks */
+      } finally {
+        togglingBookmarksRef.current.delete(payload.jobId);
+      }
+    },
+    [saveMutation],
+  );
 
-  const handleUnsaveJob = useCallback(async (payload) => {
-    if (togglingBookmarksRef.current.has(payload.jobId)) return;
-    togglingBookmarksRef.current.add(payload.jobId);
-    try {
-      await unsaveMutation.mutateAsync(payload);
-    } catch (_) { /* error handled by mutation callbacks */ }
-    finally {
-      togglingBookmarksRef.current.delete(payload.jobId);
-    }
-  }, [unsaveMutation]);
+  const handleUnsaveJob = useCallback(
+    async (payload) => {
+      if (togglingBookmarksRef.current.has(payload.jobId)) return;
+      togglingBookmarksRef.current.add(payload.jobId);
+      try {
+        await unsaveMutation.mutateAsync(payload);
+      } catch (_) {
+        /* error handled by mutation callbacks */
+      } finally {
+        togglingBookmarksRef.current.delete(payload.jobId);
+      }
+    },
+    [unsaveMutation],
+  );
 
   // ─── Derived data ────────────────────────────────────────
   const jobs = useMemo(() => {
@@ -814,10 +915,18 @@ const JobSearchPage = () => {
         sorted.sort((a, b) => (a.budget || 0) - (b.budget || 0));
         break;
       case 'deadline':
-        sorted.sort((a, b) => new Date(a.deadline || a.expiresAt || '9999') - new Date(b.deadline || b.expiresAt || '9999'));
+        sorted.sort(
+          (a, b) =>
+            new Date(a.deadline || a.expiresAt || '9999') -
+            new Date(b.deadline || b.expiresAt || '9999'),
+        );
         break;
       default:
-        sorted.sort((a, b) => new Date(b.postedDate || b.createdAt) - new Date(a.postedDate || a.createdAt));
+        sorted.sort(
+          (a, b) =>
+            new Date(b.postedDate || b.createdAt) -
+            new Date(a.postedDate || a.createdAt),
+        );
     }
     // Client-side budget filter
     return sorted.filter((j) => {
@@ -825,7 +934,9 @@ const JobSearchPage = () => {
         typeof j.budget === 'object'
           ? j.budget.max || j.budget.min || 0
           : j.budget || 0;
-      return b >= budgetRange[0] && (budgetRange[1] >= 50000 || b <= budgetRange[1]);
+      return (
+        b >= budgetRange[0] && (budgetRange[1] >= 50000 || b <= budgetRange[1])
+      );
     });
   }, [jobsData, sortBy, budgetRange]);
 
@@ -914,7 +1025,10 @@ const JobSearchPage = () => {
 
   // ─── Render ───────────────────────────────────────────────
   return (
-    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
+    <PageCanvas
+      disableContainer
+      sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}
+    >
       <Helmet>
         <title>Find Work | Kelmah</title>
         <meta
@@ -942,7 +1056,10 @@ const JobSearchPage = () => {
 
           {/* ─── Category Chips ────────────────────────── */}
           <Box sx={{ mt: 2 }}>
-            <CategoryChips selected={category} onChange={handleCategoryChange} />
+            <CategoryChips
+              selected={category}
+              onChange={handleCategoryChange}
+            />
           </Box>
 
           {/* ─── Stats Bar ─────────────────────────────── */}
@@ -976,7 +1093,9 @@ const JobSearchPage = () => {
                   sx={{ textTransform: 'none', borderRadius: 2, minHeight: 44 }}
                 >
                   Filters
-                  {hasFilters && <Badge color="primary" variant="dot" sx={{ ml: 1 }} />}
+                  {hasFilters && (
+                    <Badge color="primary" variant="dot" sx={{ ml: 1 }} />
+                  )}
                 </Button>
               )}
               <FormControl
@@ -1008,11 +1127,20 @@ const JobSearchPage = () => {
               exclusive
               onChange={(_, v) => v && setViewMode(v)}
               size="small"
-             aria-label="Select view mode">
-              <ToggleButton value="grid" aria-label="Grid view" sx={{ px: 1.5 }}>
+              aria-label="Select view mode"
+            >
+              <ToggleButton
+                value="grid"
+                aria-label="Grid view"
+                sx={{ px: 1.5 }}
+              >
                 <GridViewIcon fontSize="small" />
               </ToggleButton>
-              <ToggleButton value="list" aria-label="List view" sx={{ px: 1.5 }}>
+              <ToggleButton
+                value="list"
+                aria-label="List view"
+                sx={{ px: 1.5 }}
+              >
                 <ListViewIcon fontSize="small" />
               </ToggleButton>
             </ToggleButtonGroup>
@@ -1033,7 +1161,11 @@ const JobSearchPage = () => {
                     top: 80,
                   }}
                 >
-                  <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 2 }}>
+                  <Typography
+                    variant="subtitle2"
+                    fontWeight={700}
+                    sx={{ mb: 2 }}
+                  >
                     <FilterListIcon
                       sx={{ fontSize: 18, mr: 0.5, verticalAlign: 'middle' }}
                     />
@@ -1082,7 +1214,10 @@ const JobSearchPage = () => {
 
               {/* Empty state */}
               {!isLoading && !error && jobs.length === 0 && (
-                <EmptyState hasFilters={hasFilters} onReset={handleResetFilters} />
+                <EmptyState
+                  hasFilters={hasFilters}
+                  onReset={handleResetFilters}
+                />
               )}
 
               {/* Job Cards */}
@@ -1094,21 +1229,21 @@ const JobSearchPage = () => {
                         const jobId = job?.id || job?._id;
                         if (!jobId) return null;
                         return (
-                        <Grid
-                          item
-                          aria-label="View job details"
-                          xs={12}
-                          sm={viewMode === 'grid' ? 6 : 12}
-                          lg={viewMode === 'grid' ? 6 : 12}
-                          key={jobId}
-                        >
-                          <FindWorkJobCard
-                            job={job}
-                            isSaved={savedIds.has(jobId)}
-                            onSave={handleSaveJob}
-                            onUnsave={handleUnsaveJob}
-                          />
-                        </Grid>
+                          <Grid
+                            item
+                            aria-label="View job details"
+                            xs={12}
+                            sm={viewMode === 'grid' ? 6 : 12}
+                            lg={viewMode === 'grid' ? 6 : 12}
+                            key={jobId}
+                          >
+                            <FindWorkJobCard
+                              job={job}
+                              isSaved={savedIds.has(jobId)}
+                              onSave={handleSaveJob}
+                              onUnsave={handleUnsaveJob}
+                            />
+                          </Grid>
                         );
                       })}
                     </Grid>
@@ -1189,7 +1324,12 @@ const JobSearchPage = () => {
         <Button
           variant="contained"
           fullWidth
-          sx={{ mt: 3, borderRadius: 2, textTransform: 'none', fontWeight: 600 }}
+          sx={{
+            mt: 3,
+            borderRadius: 2,
+            textTransform: 'none',
+            fontWeight: 600,
+          }}
           onClick={() => setFilterDrawerOpen(false)}
         >
           Apply Filters
@@ -1216,5 +1356,3 @@ const JobSearchPage = () => {
 };
 
 export default JobSearchPage;
-
-

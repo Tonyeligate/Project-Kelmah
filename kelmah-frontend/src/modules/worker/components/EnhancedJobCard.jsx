@@ -4,39 +4,6 @@
  * Displays job information with bidding system and performance tiers
  */
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 const EnhancedJobCard = ({
   job,
   onApply,
@@ -82,12 +49,15 @@ const EnhancedJobCard = ({
   // Load user bid stats
   React.useEffect(() => {
     if (user?.id) {
-      bidApi.getWorkerBidStats(user.id)
-        .then(response => {
+      bidApi
+        .getWorkerBidStats(user.id)
+        .then((response) => {
           const stats = response?.data || response;
           setBidStats(stats);
         })
-        .catch(err => { devWarn('Bid stats unavailable:', err.message); });
+        .catch((err) => {
+          devWarn('Bid stats unavailable:', err.message);
+        });
     }
   }, [user?.id]);
 
@@ -109,7 +79,9 @@ const EnhancedJobCard = ({
       if (onApply) onApply(job);
     } catch (error) {
       devError('Failed to submit bid:', error);
-      enqueueSnackbar('Failed to submit bid. Please try again.', { variant: 'error' });
+      enqueueSnackbar('Failed to submit bid. Please try again.', {
+        variant: 'error',
+      });
     } finally {
       setBidLoading(false);
     }
@@ -208,7 +180,11 @@ const EnhancedJobCard = ({
                 image={coverImage}
                 alt={job?.title || 'Job image'}
                 sx={{ objectFit: 'cover' }}
-                onError={(e) => { e.target.onerror = null; e.target.src = ''; e.target.style.display = 'none'; }}
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = '';
+                  e.target.style.display = 'none';
+                }}
               />
             ) : (
               <Box
@@ -274,13 +250,20 @@ const EnhancedJobCard = ({
             <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
               <Avatar
                 src={employerAvatar}
-                alt={job.employer?.name || job.hirer?.firstName || 'Employer avatar'}
+                alt={
+                  job.employer?.name ||
+                  job.hirer?.firstName ||
+                  'Employer avatar'
+                }
                 sx={{ width: 24, height: 24, mr: 1 }}
               >
                 {(job.employer?.name || job.hirer?.firstName || '?').charAt(0)}
               </Avatar>
               <Typography variant="body2" color="text.secondary">
-                {job.employer?.name || (job.hirer ? `${job.hirer.firstName || ''} ${job.hirer.lastName || ''}`.trim() : 'Employer')}
+                {job.employer?.name ||
+                  (job.hirer
+                    ? `${job.hirer.firstName || ''} ${job.hirer.lastName || ''}`.trim()
+                    : 'Employer')}
               </Typography>
             </Box>
           </Box>
@@ -322,16 +305,32 @@ const EnhancedJobCard = ({
                   }}
                 >
                   <Typography variant="body2" color="text.secondary">
-                    Min: {new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' }).format(job.bidding.minBidAmount)}
+                    Min:{' '}
+                    {new Intl.NumberFormat('en-GH', {
+                      style: 'currency',
+                      currency: 'GHS',
+                    }).format(job.bidding.minBidAmount)}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Max: {new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' }).format(job.bidding.maxBidAmount)}
+                    Max:{' '}
+                    {new Intl.NumberFormat('en-GH', {
+                      style: 'currency',
+                      currency: 'GHS',
+                    }).format(job.bidding.maxBidAmount)}
                   </Typography>
                 </Box>
 
                 <LinearProgress
                   variant="determinate"
-                  value={Math.min(100, Math.max(0, (job.bidding.currentBidders / (job.bidding.maxBidders || 1)) * 100))}
+                  value={Math.min(
+                    100,
+                    Math.max(
+                      0,
+                      (job.bidding.currentBidders /
+                        (job.bidding.maxBidders || 1)) *
+                        100,
+                    ),
+                  )}
                   sx={{
                     height: 6,
                     borderRadius: 3,
@@ -353,7 +352,10 @@ const EnhancedJobCard = ({
                 {job?.budget
                   ? typeof job.budget === 'object'
                     ? `GH₵${job.budget.min || 0} - ${job.budget.max || 0} ${job.budget.type || 'fixed'}`
-                      : new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' }).format(job.budget)
+                    : new Intl.NumberFormat('en-GH', {
+                        style: 'currency',
+                        currency: 'GHS',
+                      }).format(job.budget)
                   : 'Salary not specified'}
               </Typography>
             </Box>
@@ -413,7 +415,9 @@ const EnhancedJobCard = ({
                 {(() => {
                   const dateStr = job.postedDate || job.createdAt;
                   const d = dateStr ? new Date(dateStr) : null;
-                  return d && !isNaN(d.getTime()) ? formatDistanceToNow(d, { addSuffix: true }) : 'Recently';
+                  return d && !isNaN(d.getTime())
+                    ? formatDistanceToNow(d, { addSuffix: true })
+                    : 'Recently';
                 })()}
               </Typography>
             </Box>
@@ -429,10 +433,13 @@ const EnhancedJobCard = ({
                   }}
                 />
                 <Typography variant="caption" color="text.secondary">
-                  Apply by {(() => {
-                  const d = job.applyBy ? new Date(job.applyBy) : null;
-                  return d && !isNaN(d.getTime()) ? format(d, 'MMM dd') : 'N/A';
-                })()}
+                  Apply by{' '}
+                  {(() => {
+                    const d = job.applyBy ? new Date(job.applyBy) : null;
+                    return d && !isNaN(d.getTime())
+                      ? format(d, 'MMM dd')
+                      : 'N/A';
+                  })()}
                 </Typography>
               </Box>
             )}
@@ -490,8 +497,13 @@ const EnhancedJobCard = ({
                 '&:hover': {
                   background: `linear-gradient(135deg, ${theme.palette.primary.dark}, ${theme.palette.secondary.dark})`,
                 },
-              }}>
-              {!bidStats ? 'Loading...' : canBid() ? 'Bid Now' : 'Bidding Closed'}
+              }}
+            >
+              {!bidStats
+                ? 'Loading...'
+                : canBid()
+                  ? 'Bid Now'
+                  : 'Bidding Closed'}
             </Button>
           </CardActions>
         </Card>
@@ -534,7 +546,14 @@ const EnhancedJobCard = ({
               min: job?.bidding?.minBidAmount || 0,
               max: job?.bidding?.maxBidAmount || 10000,
             }}
-            InputProps={{ startAdornment: <InputAdornment position="start"><AttachMoneyIcon color="action" />GH₵</InputAdornment> }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <AttachMoneyIcon color="action" />
+                  GH₵
+                </InputAdornment>
+              ),
+            }}
             helperText={`Min: ${new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' }).format(job?.bidding?.minBidAmount || 0)}, Max: ${new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' }).format(job?.bidding?.maxBidAmount || 10000)}`}
             sx={{ mb: 2 }}
           />
@@ -590,7 +609,13 @@ const EnhancedJobCard = ({
               })
             }
             placeholder="Explain why you're the best fit for this job..."
-            InputProps={{ startAdornment: <InputAdornment position="start"><DescriptionIcon color="action" /></InputAdornment> }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <DescriptionIcon color="action" />
+                </InputAdornment>
+              ),
+            }}
             sx={{ mb: 2 }}
           />
 
@@ -617,7 +642,8 @@ const EnhancedJobCard = ({
           <Button
             onClick={handleBidSubmit}
             variant="contained"
-            disabled={bidLoading || !bidData.bidAmount || !bidData.coverLetter}>
+            disabled={bidLoading || !bidData.bidAmount || !bidData.coverLetter}
+          >
             {bidLoading ? 'Submitting...' : 'Submit Bid'}
           </Button>
         </DialogActions>
@@ -627,5 +653,3 @@ const EnhancedJobCard = ({
 };
 
 export default EnhancedJobCard;
-
-

@@ -154,7 +154,12 @@ const buildSummaryFromProposalsFallback = (payload, params = {}) => {
 
     const normalizedStatus = String(proposal?.status || '').toLowerCase();
     targetJob.applicationCounts.total += 1;
-    if (Object.prototype.hasOwnProperty.call(targetJob.applicationCounts, normalizedStatus)) {
+    if (
+      Object.prototype.hasOwnProperty.call(
+        targetJob.applicationCounts,
+        normalizedStatus,
+      )
+    ) {
       targetJob.applicationCounts[normalizedStatus] += 1;
     }
   });
@@ -168,9 +173,7 @@ const buildSummaryFromProposalsFallback = (payload, params = {}) => {
     withdrawn: Number(aggregates?.statusCounts?.withdrawn || 0),
   };
 
-  const totalApplications = Number(
-    aggregates?.total ?? proposalItems.length,
-  );
+  const totalApplications = Number(aggregates?.total ?? proposalItems.length);
   statusCounts.total = totalApplications;
 
   return {
@@ -213,7 +216,9 @@ const buildEmptyApplicationsSummary = (params = {}) => ({
 
 const normalizeApplicationsSummaryPayload = (payload, params = {}) => {
   const data = unwrapPayload(payload) || {};
-  const applications = Array.isArray(data?.applications) ? data.applications : [];
+  const applications = Array.isArray(data?.applications)
+    ? data.applications
+    : [];
 
   return {
     jobs: Array.isArray(data?.jobs) ? data.jobs : [],
@@ -232,7 +237,13 @@ const normalizeApplicationsSummaryPayload = (payload, params = {}) => {
   };
 };
 
-const buildMyJobsParams = ({ status, limit, includeApplications, page, search } = {}) => {
+const buildMyJobsParams = ({
+  status,
+  limit,
+  includeApplications,
+  page,
+  search,
+} = {}) => {
   const params = { role: 'hirer' };
   const canonicalStatus = getCanonicalJobStatus(status);
 
@@ -279,10 +290,7 @@ export const hirerService = {
       const response = await api.get(USER.ME_CREDENTIALS);
       return unwrapPayload(response?.data) || {};
     } catch (error) {
-        hirerWarn(
-        'User service unavailable for hirer profile:',
-        error.message,
-      );
+      hirerWarn('User service unavailable for hirer profile:', error.message);
       // Fallback: try /users/profile as secondary endpoint
       try {
         const fallback = await api.get('/users/profile');
@@ -298,7 +306,7 @@ export const hirerService = {
       const response = await api.put(USER.UPDATE, profileData);
       return unwrapPayload(response?.data) ?? response?.data ?? {};
     } catch (error) {
-        hirerWarn('Service unavailable:', error.message);
+      hirerWarn('Service unavailable:', error.message);
       throw error;
     }
   },
@@ -311,7 +319,7 @@ export const hirerService = {
       });
       return extractCollectionItems(response?.data);
     } catch (error) {
-        hirerWarn(
+      hirerWarn(
         `Job service unavailable for hirer jobs (${status}):`,
         error.message,
       );
@@ -343,10 +351,14 @@ export const hirerService = {
         countsByStatus: data?.meta?.countsByStatus || {},
       };
     } catch (error) {
-        hirerWarn('Paged hirer jobs unavailable:', error.message);
+      hirerWarn('Paged hirer jobs unavailable:', error.message);
       return {
         jobs: [],
-        pagination: { page: Number(options.page) || 1, totalPages: 1, total: 0 },
+        pagination: {
+          page: Number(options.page) || 1,
+          totalPages: 1,
+          total: 0,
+        },
         countsByStatus: {},
       };
     }
@@ -365,7 +377,9 @@ export const hirerService = {
         limit: pageSize,
       });
 
-      aggregatedJobs.push(...(Array.isArray(pageResult.jobs) ? pageResult.jobs : []));
+      aggregatedJobs.push(
+        ...(Array.isArray(pageResult.jobs) ? pageResult.jobs : []),
+      );
       totalPages = Number(pageResult.pagination?.totalPages) || 1;
       currentPage += 1;
     } while (currentPage <= totalPages);
@@ -377,7 +391,11 @@ export const hirerService = {
   async getDashboardData(options = {}) {
     const forceRefresh = Boolean(options?.forceRefresh);
 
-    if (!forceRefresh && dashboardDataCache.data && dashboardDataCache.expiresAt > Date.now()) {
+    if (
+      !forceRefresh &&
+      dashboardDataCache.data &&
+      dashboardDataCache.expiresAt > Date.now()
+    ) {
       return dashboardDataCache.data;
     }
 
@@ -396,7 +414,7 @@ export const hirerService = {
       ]).then(([metricsResult, workersResult, analyticsResult, jobsResult]) => {
         const metrics =
           metricsResult.status === 'fulfilled'
-            ? (unwrapPayload(metricsResult.value?.data) || {})
+            ? unwrapPayload(metricsResult.value?.data) || {}
             : {};
         const workers =
           workersResult.status === 'fulfilled'
@@ -404,7 +422,7 @@ export const hirerService = {
             : [];
         const analytics =
           analyticsResult.status === 'fulfilled'
-            ? (unwrapPayload(analyticsResult.value?.data) || {})
+            ? unwrapPayload(analyticsResult.value?.data) || {}
             : {};
         const activeJobs =
           jobsResult.status === 'fulfilled'
@@ -425,10 +443,7 @@ export const hirerService = {
 
       return await dashboardDataCache.promise;
     } catch (error) {
-        hirerWarn(
-        'Dashboard data unavailable, using fallback:',
-        error.message,
-      );
+      hirerWarn('Dashboard data unavailable, using fallback:', error.message);
       // FIX H4: Return fallback dashboard data matching the success path shape
       return {
         metrics: {
@@ -453,7 +468,7 @@ export const hirerService = {
       });
       return unwrapPayload(response?.data) || {};
     } catch (error) {
-        hirerWarn('Metrics unavailable, using fallback:', error.message);
+      hirerWarn('Metrics unavailable, using fallback:', error.message);
       return {
         activeJobs: 0,
         totalJobs: 0,
@@ -474,7 +489,7 @@ export const hirerService = {
       });
       return extractCollectionItems(response?.data);
     } catch (error) {
-        hirerWarn('Recent jobs unavailable:', error.message);
+      hirerWarn('Recent jobs unavailable:', error.message);
       return [];
     }
   },
@@ -490,15 +505,21 @@ export const hirerService = {
       const jobs = extractCollectionItems(response?.data);
       // Flatten applications from all jobs
       const applications = [];
-      for (const job of (Array.isArray(jobs) ? jobs : [])) {
-        const jobApps = Array.isArray(job?.applications) ? job.applications : [];
+      for (const job of Array.isArray(jobs) ? jobs : []) {
+        const jobApps = Array.isArray(job?.applications)
+          ? job.applications
+          : [];
         for (const app of jobApps) {
-          applications.push({ ...app, jobTitle: job.title, jobId: job._id || job.id });
+          applications.push({
+            ...app,
+            jobTitle: job.title,
+            jobId: job._id || job.id,
+          });
         }
       }
       return applications.slice(0, limit);
     } catch (error) {
-        hirerWarn('Applications unavailable:', error.message);
+      hirerWarn('Applications unavailable:', error.message);
       return [];
     }
   },
@@ -529,9 +550,11 @@ export const hirerService = {
       const orderedSummaryPaths = applicationsSummaryEndpointUnavailable
         ? []
         : [
-          preferredApplicationsSummaryPath,
-          ...APPLICATIONS_SUMMARY_PATHS.filter((path) => path !== preferredApplicationsSummaryPath),
-        ];
+            preferredApplicationsSummaryPath,
+            ...APPLICATIONS_SUMMARY_PATHS.filter(
+              (path) => path !== preferredApplicationsSummaryPath,
+            ),
+          ];
 
       let lastSummaryError = null;
       for (const summaryPath of orderedSummaryPaths) {
@@ -553,16 +576,25 @@ export const hirerService = {
       }
 
       if (orderedSummaryPaths.length === 0) {
-        const unavailableError = new Error('Applications summary endpoint unavailable');
+        const unavailableError = new Error(
+          'Applications summary endpoint unavailable',
+        );
         unavailableError.response = { status: 404 };
         throw unavailableError;
       }
 
-      if (lastSummaryError && lastSummaryError?.response?.status && lastSummaryError.response.status !== 404) {
+      if (
+        lastSummaryError &&
+        lastSummaryError?.response?.status &&
+        lastSummaryError.response.status !== 404
+      ) {
         throw lastSummaryError;
       }
     } catch (error) {
-      if (error?.response?.status === 404 || applicationsSummaryEndpointUnavailable) {
+      if (
+        error?.response?.status === 404 ||
+        applicationsSummaryEndpointUnavailable
+      ) {
         try {
           const fallbackParams = {
             ...params,
@@ -573,10 +605,19 @@ export const hirerService = {
             params: fallbackParams,
           });
 
-          return buildSummaryFromProposalsFallback(fallbackResponse?.data, params);
+          return buildSummaryFromProposalsFallback(
+            fallbackResponse?.data,
+            params,
+          );
         } catch (fallbackError) {
-          hirerWarn('Applications summary fallback unavailable:', fallbackError.message);
-          if (fallbackError?.response?.status === 404 || applicationsSummaryEndpointUnavailable) {
+          hirerWarn(
+            'Applications summary fallback unavailable:',
+            fallbackError.message,
+          );
+          if (
+            fallbackError?.response?.status === 404 ||
+            applicationsSummaryEndpointUnavailable
+          ) {
             return buildEmptyApplicationsSummary(params);
           }
         }
@@ -596,7 +637,7 @@ export const hirerService = {
       const response = await api.get(`/jobs/${jobId}/applications`, { params });
       return extractCollectionItems(response?.data);
     } catch (error) {
-        hirerWarn('Failed to fetch job applications:', error.message);
+      hirerWarn('Failed to fetch job applications:', error.message);
       return [];
     }
   },
@@ -616,7 +657,7 @@ export const hirerService = {
       );
       return unwrapPayload(response?.data) ?? response?.data ?? {};
     } catch (error) {
-        hirerWarn('Failed to update application status:', error.message);
+      hirerWarn('Failed to update application status:', error.message);
       throw error;
     }
   },
@@ -660,7 +701,10 @@ export const hirerService = {
 
       if (Array.isArray(payload.bookmarks)) {
         return payload.bookmarks
-          .map((entry) => entry?.workerId || entry?.worker?._id || entry?.worker?.id)
+          .map(
+            (entry) =>
+              entry?.workerId || entry?.worker?._id || entry?.worker?.id,
+          )
           .filter(Boolean)
           .map((id) => String(id));
       }
@@ -674,7 +718,7 @@ export const hirerService = {
 
       return [];
     } catch (error) {
-        hirerWarn('Saved workers unavailable:', error.message);
+      hirerWarn('Saved workers unavailable:', error.message);
       return [];
     }
   },
@@ -684,7 +728,7 @@ export const hirerService = {
       const response = await api.get('/reviews/hirer/review-candidates');
       return extractWorkerItems(response?.data);
     } catch (error) {
-        hirerWarn('Completed workers unavailable for reviews:', error.message);
+      hirerWarn('Completed workers unavailable for reviews:', error.message);
       return [];
     }
   },
@@ -694,7 +738,7 @@ export const hirerService = {
       const response = await api.post(workerBookmarkPath(workerId), {});
       return unwrapPayload(response?.data) ?? response?.data ?? {};
     } catch (error) {
-        hirerWarn('Service unavailable:', error.message);
+      hirerWarn('Service unavailable:', error.message);
       throw error;
     }
   },
@@ -704,7 +748,7 @@ export const hirerService = {
       const response = await api.delete(workerBookmarkPath(workerId));
       return unwrapPayload(response?.data) ?? response?.data ?? {};
     } catch (error) {
-        hirerWarn('Service unavailable:', error.message);
+      hirerWarn('Service unavailable:', error.message);
       throw error;
     }
   },
@@ -715,7 +759,7 @@ export const hirerService = {
       const response = await api.post(
         `/payments/jobs/${jobId}/milestones/${milestoneId}/release`,
         {
-        amount,
+          amount,
         },
       );
       return unwrapPayload(response?.data) ?? response?.data ?? {};
@@ -748,4 +792,3 @@ export const hirerService = {
     }
   },
 };
-

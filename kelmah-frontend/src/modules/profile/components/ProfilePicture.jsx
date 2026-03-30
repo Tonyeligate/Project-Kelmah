@@ -21,7 +21,11 @@ import { selectProfile } from '../../../store/slices/profileSlice.js';
 import { useSnackbar } from 'notistack';
 import { devError } from '@/modules/common/utils/devLogger';
 
-const ProfilePicture = ({ size = 120, editable = true, altText = 'Profile picture' }) => {
+const ProfilePicture = ({
+  size = 120,
+  editable = true,
+  altText = 'Profile picture',
+}) => {
   const { uploadProfilePicture } = useProfile({ autoInitialize: false });
   const profile = useSelector(selectProfile);
   const { enqueueSnackbar } = useSnackbar();
@@ -150,8 +154,14 @@ const ProfilePicture = ({ size = 120, editable = true, altText = 'Profile pictur
         </>
       )}
 
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)} aria-labelledby="profile-picture-dialog-title">
-        <DialogTitle id="profile-picture-dialog-title">Update Profile Picture</DialogTitle>
+      <Dialog
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
+        aria-labelledby="profile-picture-dialog-title"
+      >
+        <DialogTitle id="profile-picture-dialog-title">
+          Update Profile Picture
+        </DialogTitle>
         <DialogContent>
           <Box
             sx={{
@@ -162,14 +172,22 @@ const ProfilePicture = ({ size = 120, editable = true, altText = 'Profile pictur
               pt: 2,
             }}
           >
-            <Avatar src={previewUrl} alt="Profile picture preview" sx={{ width: 200, height: 200 }} />
+            <Avatar
+              src={previewUrl}
+              alt="Profile picture preview"
+              sx={{ width: 200, height: 200 }}
+            />
             {loading && (
               <CircularProgress size={24} sx={{ position: 'absolute' }} />
             )}
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenDialog(false)} disabled={loading} sx={{ minHeight: 44 }}>
+          <Button
+            onClick={() => setOpenDialog(false)}
+            disabled={loading}
+            sx={{ minHeight: 44 }}
+          >
             Cancel
           </Button>
           <Button
@@ -181,7 +199,12 @@ const ProfilePicture = ({ size = 120, editable = true, altText = 'Profile pictur
           >
             Remove
           </Button>
-          <Button onClick={handleUpload} variant="contained" disabled={loading} sx={{ minHeight: 44 }}>
+          <Button
+            onClick={handleUpload}
+            variant="contained"
+            disabled={loading}
+            sx={{ minHeight: 44 }}
+          >
             Upload
           </Button>
         </DialogActions>
@@ -191,4 +214,3 @@ const ProfilePicture = ({ size = 120, editable = true, altText = 'Profile pictur
 };
 
 export default ProfilePicture;
-

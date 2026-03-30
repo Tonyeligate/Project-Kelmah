@@ -47,7 +47,11 @@ const RateCalculator = () => {
           </Grid>
           <Grid item xs={12}>
             <Typography variant="subtitle1">
-              Estimated Weekly Earnings: {new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' }).format(weekly)}
+              Estimated Weekly Earnings:{' '}
+              {new Intl.NumberFormat('en-GH', {
+                style: 'currency',
+                currency: 'GHS',
+              }).format(weekly)}
             </Typography>
           </Grid>
         </Grid>

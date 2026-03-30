@@ -12,10 +12,18 @@ const DEFAULT_QUICK_FILTERS = {
 const JOBS_PER_PAGE = 12;
 
 export function useJobsFiltersState(initialState = {}) {
-  const [searchQuery, setSearchQuery] = useState(initialState.searchQuery || '');
-  const [submittedSearch, setSubmittedSearch] = useState(initialState.submittedSearch ?? null);
-  const [selectedCategory, setSelectedCategory] = useState(initialState.selectedCategory || '');
-  const [selectedLocation, setSelectedLocation] = useState(initialState.selectedLocation || '');
+  const [searchQuery, setSearchQuery] = useState(
+    initialState.searchQuery || '',
+  );
+  const [submittedSearch, setSubmittedSearch] = useState(
+    initialState.submittedSearch ?? null,
+  );
+  const [selectedCategory, setSelectedCategory] = useState(
+    initialState.selectedCategory || '',
+  );
+  const [selectedLocation, setSelectedLocation] = useState(
+    initialState.selectedLocation || '',
+  );
   const [budgetRange, setBudgetRange] = useState(
     Array.isArray(initialState.budgetRange)
       ? initialState.budgetRange
@@ -29,8 +37,12 @@ export function useJobsFiltersState(initialState = {}) {
     ...DEFAULT_QUICK_FILTERS,
     ...(initialState.quickFilters || {}),
   });
-  const [showFilters, setShowFilters] = useState(Boolean(initialState.showFilters));
-  const [mobileFilterOpen, setMobileFilterOpen] = useState(Boolean(initialState.mobileFilterOpen));
+  const [showFilters, setShowFilters] = useState(
+    Boolean(initialState.showFilters),
+  );
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(
+    Boolean(initialState.mobileFilterOpen),
+  );
   const [page, setPage] = useState(initialState.page || 1);
   const [totalPages, setTotalPages] = useState(initialState.totalPages || 1);
   const [totalJobs, setTotalJobs] = useState(initialState.totalJobs || 0);
@@ -49,27 +61,28 @@ export function useJobsFiltersState(initialState = {}) {
       : debouncedSearch;
 
   const hasActiveFilters = Boolean(
-    effectiveSearch
-      || selectedCategory
-      || selectedLocation
-      || budgetFilterActive
-      || quickFilters.urgent
-      || quickFilters.verified
-      || quickFilters.fullTime
-      || quickFilters.contract,
+    effectiveSearch ||
+      selectedCategory ||
+      selectedLocation ||
+      budgetFilterActive ||
+      quickFilters.urgent ||
+      quickFilters.verified ||
+      quickFilters.fullTime ||
+      quickFilters.contract,
   );
 
   const activeFilterCount = useMemo(
-    () => [
-      effectiveSearch,
-      selectedCategory,
-      selectedLocation,
-      budgetFilterActive,
-      quickFilters.urgent,
-      quickFilters.verified,
-      quickFilters.fullTime,
-      quickFilters.contract,
-    ].filter(Boolean).length,
+    () =>
+      [
+        effectiveSearch,
+        selectedCategory,
+        selectedLocation,
+        budgetFilterActive,
+        quickFilters.urgent,
+        quickFilters.verified,
+        quickFilters.fullTime,
+        quickFilters.contract,
+      ].filter(Boolean).length,
     [
       effectiveSearch,
       selectedCategory,

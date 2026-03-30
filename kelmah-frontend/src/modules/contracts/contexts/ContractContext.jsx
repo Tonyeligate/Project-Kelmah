@@ -27,8 +27,10 @@ export const ContractProvider = ({ children }) => {
   const notifications = useNotifications();
   const rawShowToast = notifications?.showToast;
   const showToast = useCallback(
-    (...args) => { if (rawShowToast) rawShowToast(...args); },
-    [rawShowToast]
+    (...args) => {
+      if (rawShowToast) rawShowToast(...args);
+    },
+    [rawShowToast],
   );
 
   const [listLoading, setListLoading] = useState(true);
@@ -133,5 +135,3 @@ export const useContracts = () => {
   }
   return context;
 };
-
-

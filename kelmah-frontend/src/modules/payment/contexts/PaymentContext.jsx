@@ -60,7 +60,7 @@ export const PaymentProvider = ({ children }) => {
       const allDown = results.every(
         (r) =>
           r.status === 'rejected' &&
-          serverErrorCodes.includes(r.reason?.response?.status)
+          serverErrorCodes.includes(r.reason?.response?.status),
       );
       if (allDown) {
         setServiceUnavailable(true);
@@ -74,7 +74,9 @@ export const PaymentProvider = ({ children }) => {
         // Normalize: API may return a number, or {total, available, pending}
         const bal = walletRes.value?.balance ?? walletRes.value ?? 0;
         setWalletMissing(false);
-        setWalletBalance(typeof bal === 'number' ? bal : (bal?.available ?? bal?.total ?? 0));
+        setWalletBalance(
+          typeof bal === 'number' ? bal : (bal?.available ?? bal?.total ?? 0),
+        );
       } else if (walletRes.reason?.response?.status === 404) {
         setWalletMissing(true);
         setWalletBalance(0);
@@ -143,7 +145,13 @@ export const PaymentProvider = ({ children }) => {
           currency: 'GHS',
           paymentMethodId,
         });
-        showToast(new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' }).format(amount) + ' deposited successfully.', 'success');
+        showToast(
+          new Intl.NumberFormat('en-GH', {
+            style: 'currency',
+            currency: 'GHS',
+          }).format(amount) + ' deposited successfully.',
+          'success',
+        );
         // Refresh wallet data
         await fetchData();
         return true;
@@ -313,5 +321,3 @@ export const usePayments = () => {
   }
   return context;
 };
-
-

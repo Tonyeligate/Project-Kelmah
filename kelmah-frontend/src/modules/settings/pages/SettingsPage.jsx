@@ -1,6 +1,23 @@
 import { useState } from 'react';
 import {
-  Container, Box, Typography, Paper, Tabs, Tab, Grid, List, ListItemButton, ListItemIcon, ListItemText, IconButton, alpha, useTheme, Avatar, Stack, Chip } from '@mui/material';
+  Container,
+  Box,
+  Typography,
+  Paper,
+  Tabs,
+  Tab,
+  Grid,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  IconButton,
+  alpha,
+  useTheme,
+  Avatar,
+  Stack,
+  Chip,
+} from '@mui/material';
 import {
   Notifications as NotificationsIcon,
   AccountCircle as AccountCircleIcon,
@@ -29,8 +46,7 @@ const SettingsPage = () => {
     error,
     updateNotificationPreferences,
     updatePrivacySettings,
-  } =
-    useSettings();
+  } = useSettings();
   const settingsPanels = [
     {
       component: (
@@ -48,7 +64,8 @@ const SettingsPage = () => {
     {
       component: <AccountSettings />,
       label: 'Account',
-      description: 'Update your name, contact details, and profile information.',
+      description:
+        'Update your name, contact details, and profile information.',
       icon: <AccountCircleIcon />,
     },
     {
@@ -75,7 +92,9 @@ const SettingsPage = () => {
   const initialTab = (() => {
     if (typeof window !== 'undefined' && window.location.hash) {
       const hash = window.location.hash.replace('#', '');
-      const idx = settingsPanels.findIndex((p) => p.label.toLowerCase() === hash.toLowerCase());
+      const idx = settingsPanels.findIndex(
+        (p) => p.label.toLowerCase() === hash.toLowerCase(),
+      );
       return idx >= 0 ? idx : 0;
     }
     return 0;
@@ -86,8 +105,16 @@ const SettingsPage = () => {
   const { user } = useSelector((state) => state.auth);
   const mobileStickyTop = `calc(${withSafeAreaTop(HEADER_HEIGHT_MOBILE)} + var(--kelmah-network-banner-offset, 0px))`;
 
-  const userDisplayName = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || user?.name || 'Kelmah User';
-  const userInitials = ((user?.firstName?.[0] || '') + (user?.lastName?.[0] || '')).toUpperCase() || user?.email?.[0]?.toUpperCase() || 'K';
+  const userDisplayName =
+    [user?.firstName, user?.lastName].filter(Boolean).join(' ') ||
+    user?.name ||
+    'Kelmah User';
+  const userInitials =
+    (
+      (user?.firstName?.[0] || '') + (user?.lastName?.[0] || '')
+    ).toUpperCase() ||
+    user?.email?.[0]?.toUpperCase() ||
+    'K';
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
@@ -106,10 +133,41 @@ const SettingsPage = () => {
     if (mobileSection >= 0) {
       const panel = settingsPanels[mobileSection];
       return (
-        <PageCanvas disableContainer sx={{ pt: { xs: 1, md: 4 }, pb: { xs: 10, md: 6 }, overflowX: 'clip' }}>
-          <Container maxWidth="lg" sx={{ py: 1, px: 1.25, color: 'text.primary', width: '100%', minWidth: 0 }}>
-            <Helmet><title>Settings | Kelmah</title></Helmet>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5, gap: 0.5, position: 'sticky', top: mobileStickyTop, zIndex: Z_INDEX.sticky, py: 0.5, backgroundColor: 'background.default', minWidth: 0 }}>
+        <PageCanvas
+          disableContainer
+          sx={{
+            pt: { xs: 1, md: 4 },
+            pb: { xs: 10, md: 6 },
+            overflowX: 'clip',
+          }}
+        >
+          <Container
+            maxWidth="lg"
+            sx={{
+              py: 1,
+              px: 1.25,
+              color: 'text.primary',
+              width: '100%',
+              minWidth: 0,
+            }}
+          >
+            <Helmet>
+              <title>Settings | Kelmah</title>
+            </Helmet>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                mb: 1.5,
+                gap: 0.5,
+                position: 'sticky',
+                top: mobileStickyTop,
+                zIndex: Z_INDEX.sticky,
+                py: 0.5,
+                backgroundColor: 'background.default',
+                minWidth: 0,
+              }}
+            >
               <IconButton
                 onClick={() => setMobileSection(-1)}
                 sx={{
@@ -130,12 +188,23 @@ const SettingsPage = () => {
                     {panel.label}
                   </Typography>
                 </Stack>
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mt: 0.5 }}
+                >
                   {panel.description}
                 </Typography>
               </Box>
             </Box>
-            <Paper sx={{ p: { xs: 1, sm: 2 }, borderRadius: 2.5, border: '1px solid', borderColor: 'divider' }}>
+            <Paper
+              sx={{
+                p: { xs: 1, sm: 2 },
+                borderRadius: 2.5,
+                border: '1px solid',
+                borderColor: 'divider',
+              }}
+            >
               {panel.component}
             </Paper>
 
@@ -153,7 +222,12 @@ const SettingsPage = () => {
                 backgroundColor: theme.palette.background.paper,
               })}
             >
-              <Button fullWidth variant="contained" onClick={() => setMobileSection(-1)} sx={{ minHeight: 44 }}>
+              <Button
+                fullWidth
+                variant="contained"
+                onClick={() => setMobileSection(-1)}
+                sx={{ minHeight: 44 }}
+              >
                 Back To All Settings
               </Button>
             </Paper>
@@ -165,15 +239,37 @@ const SettingsPage = () => {
     // Showing the settings list
     return (
       <PageCanvas disableContainer sx={{ pt: 1, pb: { xs: 4, md: 6 } }}>
-        <Container maxWidth="lg" sx={{ py: 1.5, px: 1.25, color: 'text.primary' }}>
-          <Helmet><title>Settings | Kelmah</title></Helmet>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5, position: 'sticky', top: mobileStickyTop, zIndex: Z_INDEX.sticky, py: 0.5, backgroundColor: 'background.default' }}>
-            <SettingsIcon sx={{ fontSize: 28, mr: 1.5, color: 'primary.main' }} />
+        <Container
+          maxWidth="lg"
+          sx={{ py: 1.5, px: 1.25, color: 'text.primary' }}
+        >
+          <Helmet>
+            <title>Settings | Kelmah</title>
+          </Helmet>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              mb: 1.5,
+              position: 'sticky',
+              top: mobileStickyTop,
+              zIndex: Z_INDEX.sticky,
+              py: 0.5,
+              backgroundColor: 'background.default',
+            }}
+          >
+            <SettingsIcon
+              sx={{ fontSize: 28, mr: 1.5, color: 'primary.main' }}
+            />
             <Typography variant="h5" fontWeight="bold">
               Settings
             </Typography>
           </Box>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5, fontSize: '0.8rem' }}>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ mb: 1.5, fontSize: '0.8rem' }}
+          >
             Open one section at a time to update your account quickly.
           </Typography>
           <Paper
@@ -189,7 +285,13 @@ const SettingsPage = () => {
             }}
           >
             <Stack direction="row" spacing={1.5} alignItems="center">
-              <Avatar sx={{ bgcolor: 'primary.main', color: 'primary.contrastText', fontWeight: 700 }}>
+              <Avatar
+                sx={{
+                  bgcolor: 'primary.main',
+                  color: 'primary.contrastText',
+                  fontWeight: 700,
+                }}
+              >
                 {userInitials}
               </Avatar>
               <Box sx={{ minWidth: 0 }}>
@@ -199,7 +301,11 @@ const SettingsPage = () => {
                 <Typography variant="body2" color="text.secondary" noWrap>
                   {user?.email || 'Account settings'}
                 </Typography>
-                <Chip label="Update profile, alerts, privacy, and security" size="small" sx={{ mt: 1, fontWeight: 600 }} />
+                <Chip
+                  label="Update profile, alerts, privacy, and security"
+                  size="small"
+                  sx={{ mt: 1, fontWeight: 600 }}
+                />
               </Box>
             </Stack>
           </Paper>
@@ -211,7 +317,8 @@ const SettingsPage = () => {
                   onClick={() => setMobileSection(index)}
                   sx={{
                     py: 1.25,
-                    borderBottom: index < settingsPanels.length - 1 ? '1px solid' : 'none',
+                    borderBottom:
+                      index < settingsPanels.length - 1 ? '1px solid' : 'none',
                     borderColor: 'divider',
                     '&:focus-visible': {
                       outline: `3px solid ${theme.palette.primary.main}`,
@@ -226,7 +333,10 @@ const SettingsPage = () => {
                     primary={panel.label}
                     secondary={panel.description}
                     primaryTypographyProps={{ fontWeight: 600 }}
-                    secondaryTypographyProps={{ color: 'text.secondary', sx: { mt: 0.25 } }}
+                    secondaryTypographyProps={{
+                      color: 'text.secondary',
+                      sx: { mt: 0.25 },
+                    }}
                   />
                   <ChevronRight sx={{ color: 'text.secondary' }} />
                 </ListItemButton>
@@ -240,111 +350,155 @@ const SettingsPage = () => {
 
   // ── Desktop: Sidebar tabs + content (unchanged) ──
   return (
-    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
-        <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 }, px: { xs: 1.5, sm: 3 }, color: 'text.primary', width: '100%', minWidth: 0 }}>
-        <Helmet><title>Settings | Kelmah</title></Helmet>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 2, md: 4 }, minWidth: 0 }}>
-          <SettingsIcon sx={{ fontSize: { xs: 28, md: 36 }, mr: 1.5, color: 'primary.main' }} />
-          <Typography variant="h4" fontWeight="bold" sx={{ fontSize: { xs: '1.5rem', md: '2.125rem' } }}>
+    <PageCanvas
+      disableContainer
+      sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}
+    >
+      <Container
+        maxWidth="lg"
+        sx={{
+          py: { xs: 2, md: 4 },
+          px: { xs: 1.5, sm: 3 },
+          color: 'text.primary',
+          width: '100%',
+          minWidth: 0,
+        }}
+      >
+        <Helmet>
+          <title>Settings | Kelmah</title>
+        </Helmet>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            mb: { xs: 2, md: 4 },
+            minWidth: 0,
+          }}
+        >
+          <SettingsIcon
+            sx={{
+              fontSize: { xs: 28, md: 36 },
+              mr: 1.5,
+              color: 'primary.main',
+            }}
+          />
+          <Typography
+            variant="h4"
+            fontWeight="bold"
+            sx={{ fontSize: { xs: '1.5rem', md: '2.125rem' } }}
+          >
             Settings
           </Typography>
         </Box>
 
-      <Paper
-        sx={{
-          p: 2.5,
-          mb: 3,
-          borderRadius: 3,
-          border: '1px solid',
-          borderColor: 'divider',
-          background: (currentTheme) =>
-            `linear-gradient(135deg, ${alpha(currentTheme.palette.primary.main, 0.08)} 0%, ${alpha(currentTheme.palette.background.paper, 1)} 100%)`,
-        }}
-      >
-        <Stack direction="row" spacing={2} alignItems="center">
-          <Avatar sx={{ width: 56, height: 56, bgcolor: 'primary.main', color: 'primary.contrastText', fontWeight: 700 }}>
-            {userInitials}
-          </Avatar>
-          <Box>
-            <Typography variant="subtitle1" fontWeight={700}>
-              {userDisplayName}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {user?.email || 'Keep your account secure and up to date.'}
-            </Typography>
-          </Box>
-        </Stack>
-      </Paper>
-
-      <Grid container spacing={{ xs: 2.5, md: 4 }} sx={{ minWidth: 0, width: '100%' }}>
-        <Grid item xs={12} md={3}>
-          <Paper
-            elevation={2}
-            sx={{
-              p: 1,
-              backgroundColor: (theme) =>
-                alpha(theme.palette.background.paper, 0.7),
-              backdropFilter: 'blur(10px)',
-              borderRadius: 2,
-              position: isMdUp ? 'sticky' : 'relative',
-              top: isMdUp ? theme.spacing(2) : 'auto',
-              maxHeight: isMdUp ? 'calc(100dvh - 140px)' : 'none',
-              overflow: isMdUp ? 'auto' : 'visible',
-            }}
-          >
-            <Tabs
-              orientation={isMdUp ? 'vertical' : 'horizontal'}
-              variant="scrollable"
-              scrollButtons="auto"
-              allowScrollButtonsMobile
-              value={tabValue}
-              onChange={handleTabChange}
-              aria-label={
-                isMdUp ? 'Vertical settings tabs' : 'Horizontal settings tabs'
-              }
+        <Paper
+          sx={{
+            p: 2.5,
+            mb: 3,
+            borderRadius: 3,
+            border: '1px solid',
+            borderColor: 'divider',
+            background: (currentTheme) =>
+              `linear-gradient(135deg, ${alpha(currentTheme.palette.primary.main, 0.08)} 0%, ${alpha(currentTheme.palette.background.paper, 1)} 100%)`,
+          }}
+        >
+          <Stack direction="row" spacing={2} alignItems="center">
+            <Avatar
               sx={{
-                borderRight: isMdUp ? 1 : 0,
-                borderBottom: isMdUp ? 0 : 1,
-                borderColor: 'divider',
-                '& .MuiTabs-flexContainer': {
-                  gap: 0.25,
-                },
-                '& .MuiTab-root': {
-                  justifyContent: 'flex-start',
-                  fontWeight: '600',
-                  textTransform: 'none',
-                  minHeight: isMdUp ? 64 : 52,
-                  minWidth: isMdUp ? 'auto' : 44,
-                  '&:focus-visible': {
-                    outline: `3px solid ${theme.palette.primary.main}`,
-                    outlineOffset: -2,
-                  },
-                },
-                '& .Mui-selected': {
-                  color: 'primary.main',
-                },
+                width: 56,
+                height: 56,
+                bgcolor: 'primary.main',
+                color: 'primary.contrastText',
+                fontWeight: 700,
               }}
             >
-              {settingsPanels.map((panel) => (
-                <Tab
-                  key={panel.label}
-                  label={panel.label}
-                  icon={panel.icon}
-                  iconPosition={isMdUp ? 'start' : 'top'}
-                  sx={{ minHeight: 44 }}
-                />
-              ))}
-            </Tabs>
-          </Paper>
+              {userInitials}
+            </Avatar>
+            <Box>
+              <Typography variant="subtitle1" fontWeight={700}>
+                {userDisplayName}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {user?.email || 'Keep your account secure and up to date.'}
+              </Typography>
+            </Box>
+          </Stack>
+        </Paper>
+
+        <Grid
+          container
+          spacing={{ xs: 2.5, md: 4 }}
+          sx={{ minWidth: 0, width: '100%' }}
+        >
+          <Grid item xs={12} md={3}>
+            <Paper
+              elevation={2}
+              sx={{
+                p: 1,
+                backgroundColor: (theme) =>
+                  alpha(theme.palette.background.paper, 0.7),
+                backdropFilter: 'blur(10px)',
+                borderRadius: 2,
+                position: isMdUp ? 'sticky' : 'relative',
+                top: isMdUp ? theme.spacing(2) : 'auto',
+                maxHeight: isMdUp ? 'calc(100dvh - 140px)' : 'none',
+                overflow: isMdUp ? 'auto' : 'visible',
+              }}
+            >
+              <Tabs
+                orientation={isMdUp ? 'vertical' : 'horizontal'}
+                variant="scrollable"
+                scrollButtons="auto"
+                allowScrollButtonsMobile
+                value={tabValue}
+                onChange={handleTabChange}
+                aria-label={
+                  isMdUp ? 'Vertical settings tabs' : 'Horizontal settings tabs'
+                }
+                sx={{
+                  borderRight: isMdUp ? 1 : 0,
+                  borderBottom: isMdUp ? 0 : 1,
+                  borderColor: 'divider',
+                  '& .MuiTabs-flexContainer': {
+                    gap: 0.25,
+                  },
+                  '& .MuiTab-root': {
+                    justifyContent: 'flex-start',
+                    fontWeight: '600',
+                    textTransform: 'none',
+                    minHeight: isMdUp ? 64 : 52,
+                    minWidth: isMdUp ? 'auto' : 44,
+                    '&:focus-visible': {
+                      outline: `3px solid ${theme.palette.primary.main}`,
+                      outlineOffset: -2,
+                    },
+                  },
+                  '& .Mui-selected': {
+                    color: 'primary.main',
+                  },
+                }}
+              >
+                {settingsPanels.map((panel) => (
+                  <Tab
+                    key={panel.label}
+                    label={panel.label}
+                    icon={panel.icon}
+                    iconPosition={isMdUp ? 'start' : 'top'}
+                    sx={{ minHeight: 44 }}
+                  />
+                ))}
+              </Tabs>
+            </Paper>
+          </Grid>
+          <Grid item xs={12} md={9} sx={{ minWidth: 0 }}>
+            <Box sx={{ minWidth: 0, width: '100%' }}>
+              {settingsPanels[tabValue].component}
+            </Box>
+          </Grid>
         </Grid>
-        <Grid item xs={12} md={9} sx={{ minWidth: 0 }}>
-          <Box sx={{ minWidth: 0, width: '100%' }}>{settingsPanels[tabValue].component}</Box>
-        </Grid>
-      </Grid>
       </Container>
     </PageCanvas>
   );
 };
 
 export default SettingsPage;
-

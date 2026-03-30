@@ -18,7 +18,8 @@ const CertificateManager = ({ certificates = [], onAdd, onRemove }) => {
         Certificate Manager
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-        Certificates build trust. Add documents that show your trade training or safety compliance.
+        Certificates build trust. Add documents that show your trade training or
+        safety compliance.
       </Typography>
       <Paper sx={{ p: 2 }}>
         <List dense>
@@ -57,7 +58,8 @@ const CertificateManager = ({ certificates = [], onAdd, onRemove }) => {
               }}
             >
               <Typography variant="body2" color="text.secondary">
-                No certificates uploaded yet. Add at least one certificate so clients can quickly trust your profile.
+                No certificates uploaded yet. Add at least one certificate so
+                clients can quickly trust your profile.
               </Typography>
             </Box>
           )}

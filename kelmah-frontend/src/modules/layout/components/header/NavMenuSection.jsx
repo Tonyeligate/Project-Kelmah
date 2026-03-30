@@ -1,5 +1,11 @@
 import React from 'react';
-import { Box, Typography, MenuItem, ListItemIcon, ListItemText } from '@mui/material';
+import {
+  Box,
+  Typography,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
+} from '@mui/material';
 
 /**
  * NavMenuSection — renders a titled group of menu items inside the user dropdown.

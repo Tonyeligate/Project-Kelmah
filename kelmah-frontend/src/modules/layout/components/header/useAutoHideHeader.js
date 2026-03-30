@@ -35,7 +35,12 @@ export default function useAutoHideHeader(autoShowMode, isMobile) {
       lastScrollY = y;
       ticking = false;
     };
-    const onScroll = () => { if (!ticking) { window.requestAnimationFrame(handleScroll); ticking = true; } };
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(handleScroll);
+        ticking = true;
+      }
+    };
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, [isMobile]);

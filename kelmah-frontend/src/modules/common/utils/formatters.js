@@ -53,7 +53,11 @@ export const safeFormatDate = (dateValue, formatStr, fallback = '—') => {
  * @param {string} fallback
  * @returns {string}
  */
-export const safeFormatRelative = (dateValue, options = { addSuffix: true }, fallback = '—') => {
+export const safeFormatRelative = (
+  dateValue,
+  options = { addSuffix: true },
+  fallback = '—',
+) => {
   if (!dateValue) return fallback;
   try {
     const d = new Date(dateValue);

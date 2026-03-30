@@ -1,7 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import AuthWrapper from '../components/common/AuthWrapper';
-import { Box, Typography, Button, TextField, Alert, CircularProgress } from '@mui/material';
-import { CheckCircleOutline, ErrorOutline, MailOutline } from '@mui/icons-material';
+import {
+  Box,
+  Typography,
+  Button,
+  TextField,
+  Alert,
+  CircularProgress,
+} from '@mui/material';
+import {
+  CheckCircleOutline,
+  ErrorOutline,
+  MailOutline,
+} from '@mui/icons-material';
 import authService from '../services/authService';
 import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
@@ -22,7 +33,9 @@ const VerifyEmailPage = () => {
   useEffect(() => {
     if (!token) {
       setLoading(false);
-      setError('Verification link is missing. Open the latest email from Kelmah and try again.');
+      setError(
+        'Verification link is missing. Open the latest email from Kelmah and try again.',
+      );
       return;
     }
     let cancelled = false;
@@ -36,14 +49,18 @@ const VerifyEmailPage = () => {
         }
       } catch (err) {
         if (!cancelled) {
-          setError('This link is no longer valid. Request a new verification email below.');
+          setError(
+            'This link is no longer valid. Request a new verification email below.',
+          );
         }
       } finally {
         if (!cancelled) setLoading(false);
       }
     };
     verify();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [token]);
 
   const handleResend = async (e) => {
@@ -63,20 +80,32 @@ const VerifyEmailPage = () => {
 
   const content = (
     <Box sx={{ width: '100%', maxWidth: 400, textAlign: 'center', mx: 'auto' }}>
-      <Helmet><title>Verify Email | Kelmah</title></Helmet>
+      <Helmet>
+        <title>Verify Email | Kelmah</title>
+      </Helmet>
       {loading && (
         <Box sx={{ mb: 3 }}>
           <CircularProgress size={48} sx={{ mb: 2 }} />
-          <Typography variant="body1" sx={{ color: 'text.secondary' }}>Verifying your email…</Typography>
+          <Typography variant="body1" sx={{ color: 'text.secondary' }}>
+            Verifying your email…
+          </Typography>
         </Box>
       )}
       {!loading && status && (
         <Box sx={{ mb: 3 }}>
-          <CheckCircleOutline sx={{ fontSize: 56, color: 'success.main', mb: 1 }} />
-          <Alert severity="success" sx={{
-            borderRadius: 2,
-            ...(isMobile && { bgcolor: (t) => `${t.palette.success.main}1F`, color: 'text.primary' }),
-          }}>
+          <CheckCircleOutline
+            sx={{ fontSize: 56, color: 'success.main', mb: 1 }}
+          />
+          <Alert
+            severity="success"
+            sx={{
+              borderRadius: 2,
+              ...(isMobile && {
+                bgcolor: (t) => `${t.palette.success.main}1F`,
+                color: 'text.primary',
+              }),
+            }}
+          >
             {status}
           </Alert>
         </Box>
@@ -85,28 +114,58 @@ const VerifyEmailPage = () => {
         <>
           <Box sx={{ mb: 3 }}>
             <ErrorOutline sx={{ fontSize: 56, color: 'error.main', mb: 1 }} />
-            <Alert severity="error" sx={{
-              borderRadius: 2,
-              ...(isMobile && { bgcolor: (t) => `${t.palette.error.main}1F`, color: 'text.primary' }),
-            }}>
+            <Alert
+              severity="error"
+              sx={{
+                borderRadius: 2,
+                ...(isMobile && {
+                  bgcolor: (t) => `${t.palette.error.main}1F`,
+                  color: 'text.primary',
+                }),
+              }}
+            >
               {error}
             </Alert>
           </Box>
-          <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-            <MailOutline sx={{ color: isMobile ? 'primary.main' : 'text.secondary', fontSize: 20 }} />
-            <Typography variant="body1" sx={{ color: isMobile ? 'text.secondary' : 'text.primary' }}>
+          <Box
+            sx={{
+              mb: 2,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 1,
+            }}
+          >
+            <MailOutline
+              sx={{
+                color: isMobile ? 'primary.main' : 'text.secondary',
+                fontSize: 20,
+              }}
+            />
+            <Typography
+              variant="body1"
+              sx={{ color: isMobile ? 'text.secondary' : 'text.primary' }}
+            >
               Enter your account email. We will send a new verification link.
             </Typography>
           </Box>
-            {resendError && (
-              <Alert severity="error" sx={{
-                mt: 1, mb: 1, borderRadius: 2,
-                ...(isMobile && { bgcolor: (t) => `${t.palette.error.main}1F`, color: 'text.primary' }),
-              }}>
-                {resendError}
-              </Alert>
-            )}
-            <Box component="form" onSubmit={handleResend} sx={{ mt: 1 }}>
+          {resendError && (
+            <Alert
+              severity="error"
+              sx={{
+                mt: 1,
+                mb: 1,
+                borderRadius: 2,
+                ...(isMobile && {
+                  bgcolor: (t) => `${t.palette.error.main}1F`,
+                  color: 'text.primary',
+                }),
+              }}
+            >
+              {resendError}
+            </Alert>
+          )}
+          <Box component="form" onSubmit={handleResend} sx={{ mt: 1 }}>
             <TextField
               label="Account Email"
               type="email"
@@ -116,19 +175,31 @@ const VerifyEmailPage = () => {
               placeholder="Enter the email you used to sign up"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              inputProps={{ inputMode: 'email', autoComplete: 'email', 'aria-label': 'Account email for verification resend' }}
-              sx={isMobile ? {
-                '& .MuiOutlinedInput-root': {
-                  bgcolor: 'action.hover',
-                  borderRadius: 2,
-                  color: 'text.primary',
-                  '& fieldset': { borderColor: 'divider' },
-                  '&:hover fieldset': { borderColor: 'primary.main' },
-                  '&.Mui-focused fieldset': { borderColor: 'primary.main' },
-                },
-                '& .MuiInputLabel-root': { color: 'text.secondary' },
-                '& .MuiInputLabel-root.Mui-focused': { color: 'primary.main' },
-              } : {}}
+              inputProps={{
+                inputMode: 'email',
+                autoComplete: 'email',
+                'aria-label': 'Account email for verification resend',
+              }}
+              sx={
+                isMobile
+                  ? {
+                      '& .MuiOutlinedInput-root': {
+                        bgcolor: 'action.hover',
+                        borderRadius: 2,
+                        color: 'text.primary',
+                        '& fieldset': { borderColor: 'divider' },
+                        '&:hover fieldset': { borderColor: 'primary.main' },
+                        '&.Mui-focused fieldset': {
+                          borderColor: 'primary.main',
+                        },
+                      },
+                      '& .MuiInputLabel-root': { color: 'text.secondary' },
+                      '& .MuiInputLabel-root.Mui-focused': {
+                        color: 'primary.main',
+                      },
+                    }
+                  : {}
+              }
             />
             <Button
               type="submit"
@@ -147,24 +218,44 @@ const VerifyEmailPage = () => {
                 '&:hover': { bgcolor: 'primary.dark' },
               }}
             >
-              {resendLoading ? <CircularProgress size={24} color="inherit" /> : 'Send New Link'}
+              {resendLoading ? (
+                <CircularProgress size={24} color="inherit" />
+              ) : (
+                'Send New Link'
+              )}
             </Button>
           </Box>
           {resendSent && (
-            <Alert severity="success" sx={{
-              mt: 2,
-              borderRadius: 2,
-              ...(isMobile && { bgcolor: (t) => `${t.palette.success.main}1F`, color: 'text.primary' }),
-            }}>
+            <Alert
+              severity="success"
+              sx={{
+                mt: 2,
+                borderRadius: 2,
+                ...(isMobile && {
+                  bgcolor: (t) => `${t.palette.success.main}1F`,
+                  color: 'text.primary',
+                }),
+              }}
+            >
               Verification link sent. Check your inbox and spam folder.
             </Alert>
           )}
         </>
       )}
       <Box sx={{ mt: 3 }}>
-        <Typography variant="body2" sx={{ color: isMobile ? 'text.disabled' : 'text.secondary' }}>
+        <Typography
+          variant="body2"
+          sx={{ color: isMobile ? 'text.disabled' : 'text.secondary' }}
+        >
           Back to{' '}
-          <Link to="/login" style={{ color: 'inherit', fontWeight: 600, textDecoration: 'none' }}>
+          <Link
+            to="/login"
+            style={{
+              color: 'inherit',
+              fontWeight: 600,
+              textDecoration: 'none',
+            }}
+          >
             Login
           </Link>
         </Typography>
@@ -174,27 +265,28 @@ const VerifyEmailPage = () => {
 
   if (isMobile) {
     return (
-      <PageCanvas disableContainer sx={{ pt: { xs: 3, md: 4 }, pb: { xs: 4, md: 6 } }}>
-        <Box sx={{
-          minHeight: '100dvh',
-          bgcolor: 'background.default',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          px: 3,
-          py: 4,
-        }}>
+      <PageCanvas
+        disableContainer
+        sx={{ pt: { xs: 3, md: 4 }, pb: { xs: 4, md: 6 } }}
+      >
+        <Box
+          sx={{
+            minHeight: '100dvh',
+            bgcolor: 'background.default',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            px: 3,
+            py: 4,
+          }}
+        >
           {content}
         </Box>
       </PageCanvas>
     );
   }
 
-  return (
-    <AuthWrapper>
-      {content}
-    </AuthWrapper>
-  );
+  return <AuthWrapper>{content}</AuthWrapper>;
 };
 
 export default VerifyEmailPage;

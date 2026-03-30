@@ -87,7 +87,10 @@ export const checkServiceHealth = async (serviceUrl, timeout = 10000) => {
     try {
       base = await getApiBaseUrl(); // This should point to API Gateway
     } catch (error) {
-      healthWarn('Failed to get API base URL for aggregate check, using fallback:', error);
+      healthWarn(
+        'Failed to get API base URL for aggregate check, using fallback:',
+        error,
+      );
       base = '/api';
     }
   } else {
@@ -149,10 +152,14 @@ export const checkServiceHealth = async (serviceUrl, timeout = 10000) => {
 
     return isHealthy;
   } catch (error) {
-    healthWarn(`🏥 Service Health Check Failed - ${serviceUrl}:`, error.message, {
-      url: fullUrl,
-      timeout: timeout,
-    });
+    healthWarn(
+      `🏥 Service Health Check Failed - ${serviceUrl}:`,
+      error.message,
+      {
+        url: fullUrl,
+        timeout: timeout,
+      },
+    );
 
     // Cache the failed result
     serviceHealthCache.set(serviceUrl, {
@@ -197,7 +204,10 @@ export const warmUpService = async (serviceUrl) => {
     );
     return response.ok;
   } catch (error) {
-    healthWarn(`🔥 Service warmup failed - ${serviceUrl || 'gateway'}:`, error.message);
+    healthWarn(
+      `🔥 Service warmup failed - ${serviceUrl || 'gateway'}:`,
+      error.message,
+    );
     return false;
   }
 };
@@ -334,7 +344,10 @@ export const initializeServiceHealth = () => {
       healthLog('🏥 Page focused - warming up services...');
       warmUpAllServices();
     };
-    document.addEventListener('visibilitychange', healthMonitorState.visibilityHandler);
+    document.addEventListener(
+      'visibilitychange',
+      healthMonitorState.visibilityHandler,
+    );
   }
 
   let cleanedUp = false;
@@ -346,7 +359,10 @@ export const initializeServiceHealth = () => {
     }
     cleanedUp = true;
 
-    healthMonitorState.consumers = Math.max(0, healthMonitorState.consumers - 1);
+    healthMonitorState.consumers = Math.max(
+      0,
+      healthMonitorState.consumers - 1,
+    );
     if (healthMonitorState.consumers > 0) {
       return;
     }
@@ -357,7 +373,10 @@ export const initializeServiceHealth = () => {
     }
 
     if (healthMonitorState.visibilityHandler) {
-      document.removeEventListener('visibilitychange', healthMonitorState.visibilityHandler);
+      document.removeEventListener(
+        'visibilitychange',
+        healthMonitorState.visibilityHandler,
+      );
       healthMonitorState.visibilityHandler = null;
     }
   };
@@ -420,7 +439,9 @@ export const getServiceStartupSummary = () => {
   }
 
   const healthyCount = checks.filter((entry) => entry.isHealthy).length;
-  const timeoutCount = checks.filter((entry) => String(entry.error || '').includes('timeout')).length;
+  const timeoutCount = checks.filter((entry) =>
+    String(entry.error || '').includes('timeout'),
+  ).length;
 
   if (healthyCount === checks.length) {
     return {
@@ -432,13 +453,15 @@ export const getServiceStartupSummary = () => {
   if (timeoutCount > 0) {
     return {
       state: 'waking',
-      message: 'Some services are waking up. Please wait a short moment and retry.',
+      message:
+        'Some services are waking up. Please wait a short moment and retry.',
     };
   }
 
   return {
     state: 'degraded',
-    message: 'Some services are temporarily unavailable. Limited data may be shown.',
+    message:
+      'Some services are temporarily unavailable. Limited data may be shown.',
   };
 };
 
@@ -456,7 +479,10 @@ const isLocalHostname = (hostname = '') => {
 // Initialize on module load only in non-local environments.
 // Store cleanup handle so callers can tear down if needed.
 let _healthCleanup = null;
-if (typeof window !== 'undefined' && !isLocalHostname(window.location.hostname)) {
+if (
+  typeof window !== 'undefined' &&
+  !isLocalHostname(window.location.hostname)
+) {
   _healthCleanup = initializeServiceHealth();
 }
 

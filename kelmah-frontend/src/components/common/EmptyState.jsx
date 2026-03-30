@@ -82,7 +82,13 @@ export default function EmptyState({
           mb: 3,
         }}
       >
-        <Icon sx={{ fontSize: { xs: 44, sm: 48 }, color: 'text.secondary', opacity: 0.88 }} />
+        <Icon
+          sx={{
+            fontSize: { xs: 44, sm: 48 },
+            color: 'text.secondary',
+            opacity: 0.88,
+          }}
+        />
       </Box>
       <Typography
         variant="h6"
@@ -95,7 +101,12 @@ export default function EmptyState({
       {subtitle && (
         <Typography
           variant="body2"
-          sx={{ color: 'text.secondary', maxWidth: 320, mb: actionLabel ? 3 : 0, lineHeight: 1.6 }}
+          sx={{
+            color: 'text.secondary',
+            maxWidth: 320,
+            mb: actionLabel ? 3 : 0,
+            lineHeight: 1.6,
+          }}
         >
           {subtitle}
         </Typography>

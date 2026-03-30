@@ -138,7 +138,10 @@ export const API_ENDPOINTS = {
     BASE: getServicePath('PAYMENT_SERVICE', ''),
     METHODS: getServicePath('PAYMENT_SERVICE', '/payments/methods'),
     PROCESS: getServicePath('PAYMENT_SERVICE', '/payments/transactions'),
-    HISTORY: getServicePath('PAYMENT_SERVICE', '/payments/transactions/history'),
+    HISTORY: getServicePath(
+      'PAYMENT_SERVICE',
+      '/payments/transactions/history',
+    ),
     WEBHOOKS: getServicePath('PAYMENT_SERVICE', '/payments/webhooks'),
   },
 };

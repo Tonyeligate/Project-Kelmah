@@ -1,34 +1,5 @@
 // IconButton focus-visible styling is enforced globally via MuiIconButton theme overrides.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import PageCanvas from '@/modules/common/components/PageCanvas';
 import { HEADER_HEIGHT_MOBILE, Z_INDEX } from '../../../constants/layout';
 
@@ -47,23 +18,46 @@ const VisibilityChip = ({ visibility }) => {
   if (v === 'private') {
     return (
       <Tooltip title="This job is hidden from the public Jobs page">
-        <Chip icon={<PrivateIcon />} label="Private" size="small" color="default"
-          sx={{ fontSize: '0.7rem', height: 20, '& .MuiChip-label': { px: 0.5 } }} />
+        <Chip
+          icon={<PrivateIcon />}
+          label="Private"
+          size="small"
+          color="default"
+          sx={{
+            fontSize: '0.7rem',
+            height: 20,
+            '& .MuiChip-label': { px: 0.5 },
+          }}
+        />
       </Tooltip>
     );
   }
   if (v === 'invite-only') {
     return (
       <Tooltip title="Invite-only — only visible to invited workers">
-        <Chip icon={<InviteIcon />} label="Invite" size="small" color="info"
-          sx={{ fontSize: '0.7rem', height: 20, '& .MuiChip-label': { px: 0.5 } }} />
+        <Chip
+          icon={<InviteIcon />}
+          label="Invite"
+          size="small"
+          color="info"
+          sx={{
+            fontSize: '0.7rem',
+            height: 20,
+            '& .MuiChip-label': { px: 0.5 },
+          }}
+        />
       </Tooltip>
     );
   }
   return (
     <Tooltip title="Visible on the public Jobs page">
-      <Chip icon={<PublicIcon />} label="Public" size="small" color="success"
-        sx={{ fontSize: '0.7rem', height: 20, '& .MuiChip-label': { px: 0.5 } }} />
+      <Chip
+        icon={<PublicIcon />}
+        label="Public"
+        size="small"
+        color="success"
+        sx={{ fontSize: '0.7rem', height: 20, '& .MuiChip-label': { px: 0.5 } }}
+      />
     </Tooltip>
   );
 };
@@ -126,13 +120,16 @@ const JobManagementPage = () => {
   const isMobile = useBreakpointDown('md');
   const isCompactMobile = useBreakpointDown('sm');
 
-  const emptyStatusCounts = useMemo(() => ({
-    open: 0,
-    'in-progress': 0,
-    completed: 0,
-    cancelled: 0,
-    draft: 0,
-  }), []);
+  const emptyStatusCounts = useMemo(
+    () => ({
+      open: 0,
+      'in-progress': 0,
+      completed: 0,
+      cancelled: 0,
+      draft: 0,
+    }),
+    [],
+  );
 
   // Local state
   const [jobs, setJobs] = useState([]);
@@ -184,7 +181,8 @@ const JobManagementPage = () => {
 
       const response = await api.get('/jobs/my-jobs', { params });
       const payload = response.data?.data || {};
-      const pagination = payload.pagination || response.data?.meta?.pagination || {};
+      const pagination =
+        payload.pagination || response.data?.meta?.pagination || {};
       const counts = response.data?.meta?.countsByStatus || {};
 
       setJobs(Array.isArray(payload.items) ? payload.items : []);
@@ -200,7 +198,11 @@ const JobManagementPage = () => {
       setJobs([]);
       setTotalJobs(0);
       setStatusCounts(emptyStatusCounts);
-      setError(loadError?.response?.data?.message || loadError.message || 'Failed to fetch jobs');
+      setError(
+        loadError?.response?.data?.message ||
+          loadError.message ||
+          'Failed to fetch jobs',
+      );
     } finally {
       setLoading(false);
     }
@@ -238,7 +240,10 @@ const JobManagementPage = () => {
     const job = jobs.find((j) => j?.id === jobId || j?._id === jobId);
     const editableStatuses = ['draft', 'open'];
     if (job?.status && !editableStatuses.includes(job.status.toLowerCase())) {
-      setUiMessage({ text: 'Only draft and open jobs can be edited.', severity: 'warning' });
+      setUiMessage({
+        text: 'Only draft and open jobs can be edited.',
+        severity: 'warning',
+      });
       handleMenuClose();
       return;
     }
@@ -254,7 +259,11 @@ const JobManagementPage = () => {
   const isBiddingJob = (job) => Boolean(job?.bidding?.bidStatus);
 
   const getJobResponseCount = (job) =>
-    job?.proposalCount ?? job?.applicantCount ?? job?.applicationsCount ?? job?.applications?.length ?? 0;
+    job?.proposalCount ??
+    job?.applicantCount ??
+    job?.applicationsCount ??
+    job?.applications?.length ??
+    0;
 
   const handleReviewResponses = (job) => {
     const jobId = job?.id || job?._id;
@@ -283,13 +292,23 @@ const JobManagementPage = () => {
 
   const handleStatusChange = (status) => {
     if (selectedJob) {
-      dispatch(updateJobStatus({ jobId: selectedJob.id || selectedJob._id, status }))
+      dispatch(
+        updateJobStatus({ jobId: selectedJob.id || selectedJob._id, status }),
+      )
         .unwrap()
         .then(() => {
-          setUiMessage({ text: `Job status updated to ${status}`, severity: 'success' });
+          setUiMessage({
+            text: `Job status updated to ${status}`,
+            severity: 'success',
+          });
           loadJobs();
         })
-        .catch((err) => setUiMessage({ text: err?.message || 'Failed to update status', severity: 'error' }));
+        .catch((err) =>
+          setUiMessage({
+            text: err?.message || 'Failed to update status',
+            severity: 'error',
+          }),
+        );
     }
     handleMenuClose();
   };
@@ -300,10 +319,18 @@ const JobManagementPage = () => {
       dispatch(deleteHirerJob(selectedJob.id || selectedJob._id))
         .unwrap()
         .then(() => {
-          setUiMessage({ text: 'Job deleted successfully', severity: 'success' });
+          setUiMessage({
+            text: 'Job deleted successfully',
+            severity: 'success',
+          });
           loadJobs();
         })
-        .catch((err) => setUiMessage({ text: err?.message || 'Failed to delete job', severity: 'error' }))
+        .catch((err) =>
+          setUiMessage({
+            text: err?.message || 'Failed to delete job',
+            severity: 'error',
+          }),
+        )
         .finally(() => {
           setIsDeleting(false);
           setDeleteDialogOpen(false);
@@ -348,12 +375,33 @@ const JobManagementPage = () => {
           image={job.coverImage}
           alt={job.title || 'Job image'}
           sx={{ objectFit: 'cover' }}
-          onError={(e) => { e.target.onerror = null; e.target.src = ''; e.target.style.display = 'none'; }}
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = '';
+            e.target.style.display = 'none';
+          }}
         />
       )}
       <CardContent sx={{ pb: '12px !important' }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-          <Typography variant="subtitle1" fontWeight={600} noWrap sx={{ flex: 1, pr: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
+            mb: 1,
+          }}
+        >
+          <Typography
+            variant="subtitle1"
+            fontWeight={600}
+            noWrap
+            sx={{
+              flex: 1,
+              pr: 1,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}
+          >
             {job.title}
           </Typography>
           <Box sx={{ display: 'flex', gap: 0.5, flexShrink: 0 }}>
@@ -361,12 +409,21 @@ const JobManagementPage = () => {
             <VisibilityChip visibility={job.visibility} />
           </Box>
         </Box>
-        
+
         <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-          {formatJobLocation(job.location)} {job.budget != null ? `• ${formatGhanaCurrencyLabel(typeof job.budget === 'object' ? (job.budget.max || job.budget.min || job.budget.amount || 0) : job.budget)}${job.paymentType === 'hourly' ? '/hr' : ''}` : ''}
+          {formatJobLocation(job.location)}{' '}
+          {job.budget != null
+            ? `• ${formatGhanaCurrencyLabel(typeof job.budget === 'object' ? job.budget.max || job.budget.min || job.budget.amount || 0 : job.budget)}${job.paymentType === 'hourly' ? '/hr' : ''}`
+            : ''}
         </Typography>
-        
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             <Badge
               badgeContent={getJobResponseCount(job)}
@@ -385,12 +442,17 @@ const JobManagementPage = () => {
               {isBiddingJob(job) ? 'bids' : 'applicants'}
             </Typography>
           </Box>
-          
+
           <Box sx={{ display: 'flex', gap: 0.5 }}>
             <IconButton
               size="small"
-              onClick={(e) => { e.stopPropagation(); handleReviewResponses(job); }}
-              aria-label={isBiddingJob(job) ? 'Review bids' : 'View applications'}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleReviewResponses(job);
+              }}
+              aria-label={
+                isBiddingJob(job) ? 'Review bids' : 'View applications'
+              }
               sx={{
                 bgcolor: 'action.hover',
                 minWidth: 44,
@@ -402,11 +464,18 @@ const JobManagementPage = () => {
                 },
               }}
             >
-              {isBiddingJob(job) ? <BidIcon fontSize="small" /> : <PersonIcon fontSize="small" />}
+              {isBiddingJob(job) ? (
+                <BidIcon fontSize="small" />
+              ) : (
+                <PersonIcon fontSize="small" />
+              )}
             </IconButton>
             <IconButton
               size="small"
-              onClick={(e) => { e.stopPropagation(); handleEditJob(job.id || job._id); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleEditJob(job.id || job._id);
+              }}
               aria-label="Edit job"
               sx={{
                 bgcolor: 'action.hover',
@@ -423,7 +492,10 @@ const JobManagementPage = () => {
             </IconButton>
             <IconButton
               size="small"
-              onClick={(e) => { e.stopPropagation(); handleMenuOpen(e, job); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleMenuOpen(e, job);
+              }}
               aria-label="Open job actions menu"
               sx={{
                 bgcolor: 'action.hover',
@@ -447,371 +519,424 @@ const JobManagementPage = () => {
   return (
     <PageCanvas disableContainer sx={{ pb: { xs: 10, md: 6 } }}>
       <Box sx={{ pt: { xs: 1, md: 2 } }}>
-      <Helmet>
-        <title>Manage Jobs | Kelmah</title>
-      </Helmet>
+        <Helmet>
+          <title>Manage Jobs | Kelmah</title>
+        </Helmet>
 
-      {uiMessage && (
-        // Inline alert removed — Snackbar below is the canonical feedback channel
-        // (keeping this comment to signal the intentional removal)
-        null
-      )}
+        {uiMessage &&
+          // Inline alert removed — Snackbar below is the canonical feedback channel
+          // (keeping this comment to signal the intentional removal)
+          null}
 
-      {/* Visibility explainer: helps hirers understand why some jobs don't appear on the public page */}
-      {!loading && jobs.length > 0 && (() => {
-        const publicCount = jobs.filter(j => !j.visibility || j.visibility === 'public').length;
-        const privateCount = jobs.length - publicCount;
-        if (privateCount === 0) return null;
-        return (
+        {/* Visibility explainer: helps hirers understand why some jobs don't appear on the public page */}
+        {!loading &&
+          jobs.length > 0 &&
+          (() => {
+            const publicCount = jobs.filter(
+              (j) => !j.visibility || j.visibility === 'public',
+            ).length;
+            const privateCount = jobs.length - publicCount;
+            if (privateCount === 0) return null;
+            return (
+              <Alert
+                severity="warning"
+                sx={{ mb: 2, mx: { xs: 0.5, md: 0 } }}
+                action={
+                  <Button
+                    color="inherit"
+                    size="small"
+                    onClick={() => navigate('/jobs')}
+                    sx={{ whiteSpace: 'nowrap' }}
+                  >
+                    View Public Page
+                  </Button>
+                }
+              >
+                {isMobile
+                  ? `${privateCount} job${privateCount > 1 ? 's' : ''} not visible publicly. Check the 🔒 badge.`
+                  : `${privateCount} of the ${totalJobs} job${totalJobs !== 1 ? 's' : ''} in this view ${privateCount > 1 ? 'are' : 'is'} not visible on the public Jobs page. Jobs marked 🔒 Private won't be found by workers. Look for the visibility badge on each job.`}
+              </Alert>
+            );
+          })()}
+
+        {/* Mobile-optimized header */}
+        <Box sx={{ mb: { xs: 2, md: 4 }, px: { xs: 0.5, md: 0 } }}>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: 1,
+              position: { xs: 'sticky', md: 'static' },
+              top: { xs: HEADER_HEIGHT_MOBILE, md: 'auto' },
+              zIndex: { xs: Z_INDEX.sticky, md: 'auto' },
+              py: { xs: 0.5, md: 0 },
+              backgroundColor: { xs: 'background.default', md: 'transparent' },
+            }}
+          >
+            <Typography
+              variant={isCompactMobile ? 'h5' : isMobile ? 'h5' : 'h4'}
+              fontWeight="bold"
+              sx={{ mb: 0, lineHeight: 1.1 }}
+            >
+              {isMobile ? 'My Jobs' : 'Job Management'}
+            </Typography>
+
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={!isMobile && <AddIcon />}
+              onClick={handleCreateJob}
+              size={isMobile ? 'small' : 'medium'}
+              sx={{
+                display: { xs: 'none', sm: 'inline-flex' },
+                minWidth: isMobile ? 'auto' : undefined,
+                px: isMobile ? 2 : 3,
+              }}
+            >
+              {isMobile ? '+ New Job' : 'Post a New Job'}
+            </Button>
+          </Box>
+          {!isMobile && (
+            <Typography variant="body1" color="text.secondary">
+              Manage your job postings and track bids or applications
+            </Typography>
+          )}
+        </Box>
+
+        {error && (
+          <Alert severity="error" sx={{ mb: 2, mx: { xs: 0.5, md: 0 } }}>
+            {error}
+          </Alert>
+        )}
+
+        {/* Empty-state helper for the current filtered page */}
+        {!loading && jobs.length === 0 && !error && (
           <Alert
-            severity="warning"
+            severity="info"
             sx={{ mb: 2, mx: { xs: 0.5, md: 0 } }}
             action={
-              <Button color="inherit" size="small" onClick={() => navigate('/jobs')} sx={{ whiteSpace: 'nowrap' }}>
-                View Public Page
+              <Button color="inherit" size="small" onClick={handleRefresh}>
+                Refresh
               </Button>
             }
           >
             {isMobile
-              ? `${privateCount} job${privateCount > 1 ? 's' : ''} not visible publicly. Check the 🔒 badge.`
-              : `${privateCount} of the ${totalJobs} job${totalJobs !== 1 ? 's' : ''} in this view ${privateCount > 1 ? 'are' : 'is'} not visible on the public Jobs page. Jobs marked 🔒 Private won't be found by workers. Look for the visibility badge on each job.`}
+              ? 'No jobs yet. Tap + New Job to create one!'
+              : 'No jobs found for this view. Adjust the filters, refresh, or post a new job.'}
           </Alert>
-        );
-      })()}
-
-      {/* Mobile-optimized header */}
-      <Box sx={{ mb: { xs: 2, md: 4 }, px: { xs: 0.5, md: 0 } }}>
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: 1,
-            position: { xs: 'sticky', md: 'static' },
-            top: { xs: HEADER_HEIGHT_MOBILE, md: 'auto' },
-            zIndex: { xs: Z_INDEX.sticky, md: 'auto' },
-            py: { xs: 0.5, md: 0 },
-            backgroundColor: { xs: 'background.default', md: 'transparent' },
-          }}
-        >
-          <Typography 
-            variant={isCompactMobile ? 'h5' : isMobile ? 'h5' : 'h4'} 
-            fontWeight="bold"
-            sx={{ mb: 0, lineHeight: 1.1 }}
-          >
-            {isMobile ? 'My Jobs' : 'Job Management'}
-          </Typography>
-
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={!isMobile && <AddIcon />}
-            onClick={handleCreateJob}
-            size={isMobile ? 'small' : 'medium'}
-            sx={{ 
-              display: { xs: 'none', sm: 'inline-flex' },
-              minWidth: isMobile ? 'auto' : undefined,
-              px: isMobile ? 2 : 3,
-            }}>
-            {isMobile ? '+ New Job' : 'Post a New Job'}
-          </Button>
-        </Box>
-        {!isMobile && (
-          <Typography variant="body1" color="text.secondary">
-            Manage your job postings and track bids or applications
-          </Typography>
         )}
-      </Box>
 
-      {error && (
-        <Alert severity="error" sx={{ mb: 2, mx: { xs: 0.5, md: 0 } }}>
-          {error}
-        </Alert>
-      )}
-
-      {/* Empty-state helper for the current filtered page */}
-      {!loading && jobs.length === 0 && !error && (
-        <Alert
-          severity="info"
-          sx={{ mb: 2, mx: { xs: 0.5, md: 0 } }}
-          action={
-            <Button color="inherit" size="small" onClick={handleRefresh}>
-              Refresh
-            </Button>
-          }
+        <Paper
+          sx={{ mb: 2, borderRadius: 2, mx: { xs: 0, md: 0 } }}
+          elevation={isMobile ? 0 : 1}
         >
-          {isMobile 
-            ? 'No jobs yet. Tap + New Job to create one!' 
-            : 'No jobs found for this view. Adjust the filters, refresh, or post a new job.'}
-        </Alert>
-      )}
-
-      <Paper sx={{ mb: 2, borderRadius: 2, mx: { xs: 0, md: 0 } }} elevation={isMobile ? 0 : 1}>
-        {/* Search and filter bar */}
-        <Box
-          sx={{
-            p: { xs: 1.5, md: 3 },
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: 1,
-          }}
-        >
-          <TextField
-            placeholder="Search jobs..."
-            value={searchText}
-            onChange={handleSearchChange}
-            size="small"
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon fontSize="small" />
-                </InputAdornment>
-              ),
-            }}
+          {/* Search and filter bar */}
+          <Box
             sx={{
-              width: '100%',
-              flex: 1,
-              '& .MuiOutlinedInput-root': {
-                fontSize: '0.875rem',
-              },
+              p: { xs: 1.5, md: 3 },
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: 1,
             }}
-          />
+          >
+            <TextField
+              placeholder="Search jobs..."
+              value={searchText}
+              onChange={handleSearchChange}
+              size="small"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon fontSize="small" />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{
+                width: '100%',
+                flex: 1,
+                '& .MuiOutlinedInput-root': {
+                  fontSize: '0.875rem',
+                },
+              }}
+            />
 
-          <IconButton 
-            onClick={handleRefresh} 
-            disabled={loading}
-            size="small"
-            aria-label="Refresh jobs"
-            sx={{ 
-              bgcolor: 'action.hover',
-              minWidth: 44,
-              minHeight: 44,
-              '&:hover': { bgcolor: 'action.selected' },
-              '&:focus-visible': {
-                outline: '3px solid',
-                outlineColor: 'primary.main',
-                outlineOffset: '2px',
+            <IconButton
+              onClick={handleRefresh}
+              disabled={loading}
+              size="small"
+              aria-label="Refresh jobs"
+              sx={{
+                bgcolor: 'action.hover',
+                minWidth: 44,
+                minHeight: 44,
+                '&:hover': { bgcolor: 'action.selected' },
+                '&:focus-visible': {
+                  outline: '3px solid',
+                  outlineColor: 'primary.main',
+                  outlineOffset: '2px',
+                },
+              }}
+            >
+              <RefreshIcon fontSize="small" />
+            </IconButton>
+          </Box>
+
+          {/* Simplified tabs for mobile */}
+          <Tabs
+            value={tabValue}
+            onChange={handleTabChange}
+            indicatorColor="primary"
+            textColor="primary"
+            variant="scrollable"
+            scrollButtons="auto"
+            allowScrollButtonsMobile
+            sx={{
+              borderBottom: 1,
+              borderColor: 'divider',
+              minHeight: { xs: 40, md: 48 },
+              '& .MuiTab-root': {
+                textTransform: 'none',
+                fontWeight: 500,
+                fontSize: { xs: '0.8rem', md: '0.9rem' },
+                minHeight: { xs: 40, md: 48 },
+                minWidth: { xs: 'auto', md: 100 },
+                px: { xs: 1.5, md: 2 },
+              },
+              '& .MuiTabs-scrollButtons': {
+                width: 28,
               },
             }}
           >
-            <RefreshIcon fontSize="small" />
-          </IconButton>
-        </Box>
-
-        {/* Simplified tabs for mobile */}
-        <Tabs
-          value={tabValue}
-          onChange={handleTabChange}
-          indicatorColor="primary"
-          textColor="primary"
-          variant="scrollable"
-          scrollButtons="auto"
-          allowScrollButtonsMobile
-          sx={{
-            borderBottom: 1,
-            borderColor: 'divider',
-            minHeight: { xs: 40, md: 48 },
-            '& .MuiTab-root': {
-              textTransform: 'none',
-              fontWeight: 500,
-              fontSize: { xs: '0.8rem', md: '0.9rem' },
-              minHeight: { xs: 40, md: 48 },
-              minWidth: { xs: 'auto', md: 100 },
-              px: { xs: 1.5, md: 2 },
-            },
-            '& .MuiTabs-scrollButtons': {
-              width: 28,
-            },
-          }}
-        >
-          <Tab
-            label={
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <span>All</span>
-                {allJobsCount > 0 && (
-                  <Chip
-                    label={allJobsCount}
-                    size="small"
-                    sx={{ height: 18, fontSize: '0.7rem', '& .MuiChip-label': { px: 0.75 } }}
-                  />
-                )}
-              </Box>
-            }
-          />
-          <Tab
-            label={
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <span>Open</span>
-                {statusCounts.open > 0 && (
-                  <Chip
-                    label={statusCounts.open}
-                    size="small"
-                    color="success"
-                    sx={{ height: 18, fontSize: '0.7rem', '& .MuiChip-label': { px: 0.75 } }}
-                  />
-                )}
-              </Box>
-            }
-          />
-          <Tab
-            label={
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <span>{isMobile ? 'Active' : 'In Progress'}</span>
-                {statusCounts['in-progress'] > 0 && (
+            <Tab
+              label={
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <span>All</span>
+                  {allJobsCount > 0 && (
+                    <Chip
+                      label={allJobsCount}
+                      size="small"
+                      sx={{
+                        height: 18,
+                        fontSize: '0.7rem',
+                        '& .MuiChip-label': { px: 0.75 },
+                      }}
+                    />
+                  )}
+                </Box>
+              }
+            />
+            <Tab
+              label={
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <span>Open</span>
+                  {statusCounts.open > 0 && (
+                    <Chip
+                      label={statusCounts.open}
+                      size="small"
+                      color="success"
+                      sx={{
+                        height: 18,
+                        fontSize: '0.7rem',
+                        '& .MuiChip-label': { px: 0.75 },
+                      }}
+                    />
+                  )}
+                </Box>
+              }
+            />
+            <Tab
+              label={
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <span>{isMobile ? 'Active' : 'In Progress'}</span>
+                  {statusCounts['in-progress'] > 0 && (
                     <Chip
                       label={statusCounts['in-progress']}
                       size="small"
                       color="warning"
-                      sx={{ height: 18, fontSize: '0.7rem', '& .MuiChip-label': { px: 0.75 } }}
+                      sx={{
+                        height: 18,
+                        fontSize: '0.7rem',
+                        '& .MuiChip-label': { px: 0.75 },
+                      }}
                     />
                   )}
-              </Box>
-            }
-          />
-          <Tab
-            label={
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <span>Done</span>
-                {statusCounts.completed > 0 && (
+                </Box>
+              }
+            />
+            <Tab
+              label={
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <span>Done</span>
+                  {statusCounts.completed > 0 && (
                     <Chip
                       label={statusCounts.completed}
                       size="small"
                       color="success"
-                      sx={{ height: 18, fontSize: '0.7rem', '& .MuiChip-label': { px: 0.75 } }}
+                      sx={{
+                        height: 18,
+                        fontSize: '0.7rem',
+                        '& .MuiChip-label': { px: 0.75 },
+                      }}
                     />
                   )}
-              </Box>
-            }
-          />
-          <Tab
-            label={
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <span>{isMobile ? 'Closed' : 'Cancelled'}</span>
-                {statusCounts.cancelled > 0 && (
+                </Box>
+              }
+            />
+            <Tab
+              label={
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <span>{isMobile ? 'Closed' : 'Cancelled'}</span>
+                  {statusCounts.cancelled > 0 && (
                     <Chip
                       label={statusCounts.cancelled}
                       size="small"
                       color="error"
-                      sx={{ height: 18, fontSize: '0.7rem', '& .MuiChip-label': { px: 0.75 } }}
+                      sx={{
+                        height: 18,
+                        fontSize: '0.7rem',
+                        '& .MuiChip-label': { px: 0.75 },
+                      }}
                     />
                   )}
-              </Box>
-            }
-          />
-          <Tab
-            label={
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <span>Drafts</span>
-                {statusCounts.draft > 0 && (
-                  <Chip
-                    label={statusCounts.draft}
-                    size="small"
-                    sx={{ height: 18, fontSize: '0.7rem', '& .MuiChip-label': { px: 0.75 } }}
-                  />
-                )}
-              </Box>
-            }
-          />
-        </Tabs>
+                </Box>
+              }
+            />
+            <Tab
+              label={
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <span>Drafts</span>
+                  {statusCounts.draft > 0 && (
+                    <Chip
+                      label={statusCounts.draft}
+                      size="small"
+                      sx={{
+                        height: 18,
+                        fontSize: '0.7rem',
+                        '& .MuiChip-label': { px: 0.75 },
+                      }}
+                    />
+                  )}
+                </Box>
+              }
+            />
+          </Tabs>
 
-        {/* Content area - Mobile cards vs Desktop table */}
-        <Box sx={{ p: { xs: 1.5, md: 3 } }}>
-          {loading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-              <CircularProgress size={32} />
-            </Box>
-          ) : jobs.length === 0 ? (
-            <Box
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                py: { xs: 4, md: 6 },
-              }}
-            >
-              <WarningIcon
-                sx={{ fontSize: { xs: 40, md: 48 }, color: allJobsCount > 0 ? 'warning.main' : 'text.secondary', mb: 2 }}
-              />
-              <Typography variant={isMobile ? 'body1' : 'h6'} fontWeight={500} gutterBottom textAlign="center">
-                {allJobsCount > 0
-                  ? 'No jobs match current filter'
-                  : 'No jobs yet'}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" gutterBottom sx={{ textAlign: 'center', maxWidth: 300, px: 2 }}>
-                {searchText
-                  ? 'Try different search terms.'
-                  : allJobsCount > 0 && tabValue !== 0
-                    ? `${allJobsCount} job${allJobsCount !== 1 ? 's' : ''} in other tabs.`
-                    : 'Create your first job posting!'}
-              </Typography>
-              {allJobsCount > 0 && tabValue !== 0 && (
+          {/* Content area - Mobile cards vs Desktop table */}
+          <Box sx={{ p: { xs: 1.5, md: 3 } }}>
+            {loading ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+                <CircularProgress size={32} />
+              </Box>
+            ) : jobs.length === 0 ? (
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  py: { xs: 4, md: 6 },
+                }}
+              >
+                <WarningIcon
+                  sx={{
+                    fontSize: { xs: 40, md: 48 },
+                    color: allJobsCount > 0 ? 'warning.main' : 'text.secondary',
+                    mb: 2,
+                  }}
+                />
+                <Typography
+                  variant={isMobile ? 'body1' : 'h6'}
+                  fontWeight={500}
+                  gutterBottom
+                  textAlign="center"
+                >
+                  {allJobsCount > 0
+                    ? 'No jobs match current filter'
+                    : 'No jobs yet'}
+                </Typography>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  gutterBottom
+                  sx={{ textAlign: 'center', maxWidth: 300, px: 2 }}
+                >
+                  {searchText
+                    ? 'Try different search terms.'
+                    : allJobsCount > 0 && tabValue !== 0
+                      ? `${allJobsCount} job${allJobsCount !== 1 ? 's' : ''} in other tabs.`
+                      : 'Create your first job posting!'}
+                </Typography>
+                {allJobsCount > 0 && tabValue !== 0 && (
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => setTabValue(0)}
+                    sx={{ mt: 2 }}
+                  >
+                    View All ({allJobsCount})
+                  </Button>
+                )}
                 <Button
-                  variant="outlined"
-                  size="small"
-                  onClick={() => setTabValue(0)}
+                  variant="contained"
+                  size={isMobile ? 'small' : 'medium'}
+                  startIcon={<AddIcon />}
+                  onClick={handleCreateJob}
                   sx={{ mt: 2 }}
                 >
-                  View All ({allJobsCount})
+                  {isMobile ? 'Post Job' : 'Post a New Job'}
                 </Button>
-              )}
-              <Button
-                variant="contained"
-                size={isMobile ? 'small' : 'medium'}
-                startIcon={<AddIcon />}
-                onClick={handleCreateJob}
-                sx={{ mt: 2 }}>
-                {isMobile ? 'Post Job' : 'Post a New Job'}
-              </Button>
-            </Box>
-          ) : isMobile ? (
-            /* Mobile: Card-based layout */
-            <>
-              {jobs.map((job) => (
-                <MobileJobCard key={job.id || job._id} job={job} />
-              ))}
-              {totalJobs > rowsPerPage && (
-                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    onClick={() => setPage((prev) => Math.max(0, prev - 1))}
-                    disabled={page === 0}
-                    sx={{ mr: 1 }}
+              </Box>
+            ) : isMobile ? (
+              /* Mobile: Card-based layout */
+              <>
+                {jobs.map((job) => (
+                  <MobileJobCard key={job.id || job._id} job={job} />
+                ))}
+                {totalJobs > rowsPerPage && (
+                  <Box
+                    sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}
                   >
-                    Previous
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    onClick={() => setPage((prev) => prev + 1)}
-                    disabled={(page + 1) * rowsPerPage >= totalJobs}
-                  >
-                    Next
-                  </Button>
-                </Box>
-              )}
-            </>
-          ) : (
-            /* Desktop: Table layout */
-            <>
-              <TableContainer sx={{ overflowX: 'auto' }}>
-                <Table sx={{ minWidth: 650 }}>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Job Title</TableCell>
-                      <TableCell>Status</TableCell>
-                      <TableCell>Responses</TableCell>
-                      <TableCell>Posted</TableCell>
-                      <TableCell>Expiry</TableCell>
-                      <TableCell align="right">Actions</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {jobs.map((job) => (
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={() => setPage((prev) => Math.max(0, prev - 1))}
+                      disabled={page === 0}
+                      sx={{ mr: 1 }}
+                    >
+                      Previous
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={() => setPage((prev) => prev + 1)}
+                      disabled={(page + 1) * rowsPerPage >= totalJobs}
+                    >
+                      Next
+                    </Button>
+                  </Box>
+                )}
+              </>
+            ) : (
+              /* Desktop: Table layout */
+              <>
+                <TableContainer sx={{ overflowX: 'auto' }}>
+                  <Table sx={{ minWidth: 650 }}>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Job Title</TableCell>
+                        <TableCell>Status</TableCell>
+                        <TableCell>Responses</TableCell>
+                        <TableCell>Posted</TableCell>
+                        <TableCell>Expiry</TableCell>
+                        <TableCell align="right">Actions</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {jobs.map((job) => (
                         <TableRow
                           key={job.id || job._id}
                           sx={{
@@ -836,12 +961,20 @@ const JobManagementPage = () => {
                                 variant="caption"
                                 color="text.secondary"
                               >
-                                {job.budget != null ? `${formatGhanaCurrencyLabel(typeof job.budget === 'object' ? (job.budget.max || job.budget.min || job.budget.amount || 0) : job.budget)}${job.paymentType === 'hourly' ? '/hr' : ''}` : ''}
+                                {job.budget != null
+                                  ? `${formatGhanaCurrencyLabel(typeof job.budget === 'object' ? job.budget.max || job.budget.min || job.budget.amount || 0 : job.budget)}${job.paymentType === 'hourly' ? '/hr' : ''}`
+                                  : ''}
                               </Typography>
                             </Box>
                           </TableCell>
-                      <TableCell>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <TableCell>
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1,
+                              }}
+                            >
                               <StatusChip status={job.status} />
                               <VisibilityChip visibility={job.visibility} />
                             </Box>
@@ -853,11 +986,23 @@ const JobManagementPage = () => {
                               max={999}
                               showZero
                             >
-                              {isBiddingJob(job) ? <BidIcon color="action" /> : <ApplicationIcon color="action" />}
+                              {isBiddingJob(job) ? (
+                                <BidIcon color="action" />
+                              ) : (
+                                <ApplicationIcon color="action" />
+                              )}
                             </Badge>
                           </TableCell>
-                          <TableCell>{job.createdAt ? new Date(job.createdAt).toLocaleDateString() : '—'}</TableCell>
-                          <TableCell>{job.endDate ? new Date(job.endDate).toLocaleDateString() : '—'}</TableCell>
+                          <TableCell>
+                            {job.createdAt
+                              ? new Date(job.createdAt).toLocaleDateString()
+                              : '—'}
+                          </TableCell>
+                          <TableCell>
+                            {job.endDate
+                              ? new Date(job.endDate).toLocaleDateString()
+                              : '—'}
+                          </TableCell>
                           <TableCell align="right">
                             <Box
                               sx={{
@@ -865,10 +1010,20 @@ const JobManagementPage = () => {
                                 justifyContent: 'flex-end',
                               }}
                             >
-                              <Tooltip title={isBiddingJob(job) ? 'Review Bids' : 'View Applications'}>
+                              <Tooltip
+                                title={
+                                  isBiddingJob(job)
+                                    ? 'Review Bids'
+                                    : 'View Applications'
+                                }
+                              >
                                 <IconButton
                                   size="small"
-                                  aria-label={isBiddingJob(job) ? 'Review bids' : 'View applications'}
+                                  aria-label={
+                                    isBiddingJob(job)
+                                      ? 'Review bids'
+                                      : 'View applications'
+                                  }
                                   onClick={() => handleReviewResponses(job)}
                                   sx={{
                                     mr: 1,
@@ -879,14 +1034,20 @@ const JobManagementPage = () => {
                                     },
                                   }}
                                 >
-                                  {isBiddingJob(job) ? <BidIcon /> : <PersonIcon />}
+                                  {isBiddingJob(job) ? (
+                                    <BidIcon />
+                                  ) : (
+                                    <PersonIcon />
+                                  )}
                                 </IconButton>
                               </Tooltip>
                               <Tooltip title="View Job">
                                 <IconButton
                                   size="small"
                                   aria-label="View job"
-                                  onClick={() => handleViewJob(job.id || job._id)}
+                                  onClick={() =>
+                                    handleViewJob(job.id || job._id)
+                                  }
                                   sx={{
                                     mr: 1,
                                     '&:focus-visible': {
@@ -903,7 +1064,9 @@ const JobManagementPage = () => {
                                 <IconButton
                                   size="small"
                                   aria-label="Edit job"
-                                  onClick={() => handleEditJob(job.id || job._id)}
+                                  onClick={() =>
+                                    handleEditJob(job.id || job._id)
+                                  }
                                   sx={{
                                     mr: 1,
                                     '&:focus-visible': {
@@ -936,176 +1099,190 @@ const JobManagementPage = () => {
                           </TableCell>
                         </TableRow>
                       ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+                    </TableBody>
+                  </Table>
+                </TableContainer>
 
-              <TablePagination
-                rowsPerPageOptions={[5, 10, 25]}
-                component="div"
-                count={totalJobs}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                onPageChange={handleChangePage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
-              />
-            </>
-          )}
-        </Box>
-      </Paper>
+                <TablePagination
+                  rowsPerPageOptions={[5, 10, 25]}
+                  component="div"
+                  count={totalJobs}
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  onPageChange={handleChangePage}
+                  onRowsPerPageChange={handleChangeRowsPerPage}
+                />
+              </>
+            )}
+          </Box>
+        </Paper>
 
-      {/* Action Menu */}
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleMenuClose}
-      >
-        <MenuItem onClick={() => handleEditJob(selectedJob?.id || selectedJob?._id)}>
-          <EditIcon fontSize="small" sx={{ mr: 1 }} />
-          Edit Job
-        </MenuItem>
-
-        <MenuItem onClick={() => handleViewJob(selectedJob?.id || selectedJob?._id)}>
-          <ViewIcon fontSize="small" sx={{ mr: 1 }} />
-          View Job
-        </MenuItem>
-
-        <MenuItem onClick={() => handleReviewResponses(selectedJob)}>
-          {isBiddingJob(selectedJob) ? (
-            <BidIcon fontSize="small" sx={{ mr: 1 }} />
-          ) : (
-            <PersonIcon fontSize="small" sx={{ mr: 1 }} />
-          )}
-          {isBiddingJob(selectedJob) ? 'Review Bids' : 'View Applications'}
-        </MenuItem>
-
-        <Divider />
-
-        {selectedJob?.status !== 'open' && (
-          <MenuItem onClick={() => handleStatusChange('open')}>
-            <ActiveIcon
-              fontSize="small"
-              sx={{ mr: 1, color: 'success.main' }}
-            />
-            Set as Open
-          </MenuItem>
-        )}
-        {selectedJob?.status !== 'in-progress' && (
-          <MenuItem onClick={() => handleStatusChange('in-progress')}>
-            <ExpiredIcon
-              fontSize="small"
-              sx={{ mr: 1, color: 'warning.main' }}
-            />
-            Mark In Progress
-          </MenuItem>
-        )}
-        {selectedJob?.status !== 'completed' && (
-          <MenuItem onClick={() => handleStatusChange('completed')}>
-            <ActiveIcon
-              fontSize="small"
-              sx={{ mr: 1, color: 'success.main' }}
-            />
-            Mark Completed
-          </MenuItem>
-        )}
-        {selectedJob?.status !== 'cancelled' && (
-          <MenuItem onClick={() => handleStatusChange('cancelled')}>
-            <ClosedIcon fontSize="small" sx={{ mr: 1, color: 'error.main' }} />
-            Cancel Job
-          </MenuItem>
-        )}
-
-        <Divider />
-
-        <MenuItem onClick={openDeleteDialog} sx={{ color: 'error.main' }}>
-          <DeleteIcon fontSize="small" sx={{ mr: 1 }} />
-          Delete Job
-        </MenuItem>
-      </Menu>
-
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialogOpen} onClose={handleCloseDeleteDialog} fullScreen={isMobile} aria-labelledby="delete-job-dialog-title">
-        <DialogTitle id="delete-job-dialog-title">Delete Job</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Are you sure you want to delete "{selectedJob?.title}"? This action
-            cannot be undone.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDeleteDialog} sx={{ minHeight: 44 }}>Cancel</Button>
-          <Button
-            onClick={handleDeleteConfirm}
-            color="error"
-            variant="contained"
-            sx={{ minHeight: 44 }}
-            disabled={isDeleting}
-           aria-label="Delete item">
-            {isDeleting ? 'Deleting…' : 'Delete'}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Feedback Snackbar */}
-      {uiMessage && typeof uiMessage === 'object' && uiMessage.severity && (
-        <Snackbar
-          open={Boolean(uiMessage?.severity)}
-          autoHideDuration={4000}
-          onClose={() => setUiMessage(null)}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        {/* Action Menu */}
+        <Menu
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={handleMenuClose}
         >
-          <Alert
-            onClose={() => setUiMessage(null)}
-            severity={uiMessage.severity}
-            sx={{ width: '100%' }}
+          <MenuItem
+            onClick={() => handleEditJob(selectedJob?.id || selectedJob?._id)}
           >
-            {uiMessage.text}
-          </Alert>
-        </Snackbar>
-      )}
+            <EditIcon fontSize="small" sx={{ mr: 1 }} />
+            Edit Job
+          </MenuItem>
 
-      <Paper
-        elevation={8}
-        sx={(theme) => ({
-          display: { xs: 'flex', sm: 'none' },
-          position: 'fixed',
-          left: 0,
-          right: 0,
-          bottom: 0,
-          zIndex: theme.zIndex.appBar + 2,
-          px: 1,
-          py: 1,
-          gap: 1,
-          borderTop: `1px solid ${theme.palette.divider}`,
-          backgroundColor: theme.palette.background.paper,
-        })}
-      >
-        <Button
-          fullWidth
-          variant="outlined"
-          color="secondary"
-          sx={{ minHeight: 42 }}
-          startIcon={<RefreshIcon />}
-          onClick={handleRefresh}
-          disabled={loading}
+          <MenuItem
+            onClick={() => handleViewJob(selectedJob?.id || selectedJob?._id)}
+          >
+            <ViewIcon fontSize="small" sx={{ mr: 1 }} />
+            View Job
+          </MenuItem>
+
+          <MenuItem onClick={() => handleReviewResponses(selectedJob)}>
+            {isBiddingJob(selectedJob) ? (
+              <BidIcon fontSize="small" sx={{ mr: 1 }} />
+            ) : (
+              <PersonIcon fontSize="small" sx={{ mr: 1 }} />
+            )}
+            {isBiddingJob(selectedJob) ? 'Review Bids' : 'View Applications'}
+          </MenuItem>
+
+          <Divider />
+
+          {selectedJob?.status !== 'open' && (
+            <MenuItem onClick={() => handleStatusChange('open')}>
+              <ActiveIcon
+                fontSize="small"
+                sx={{ mr: 1, color: 'success.main' }}
+              />
+              Set as Open
+            </MenuItem>
+          )}
+          {selectedJob?.status !== 'in-progress' && (
+            <MenuItem onClick={() => handleStatusChange('in-progress')}>
+              <ExpiredIcon
+                fontSize="small"
+                sx={{ mr: 1, color: 'warning.main' }}
+              />
+              Mark In Progress
+            </MenuItem>
+          )}
+          {selectedJob?.status !== 'completed' && (
+            <MenuItem onClick={() => handleStatusChange('completed')}>
+              <ActiveIcon
+                fontSize="small"
+                sx={{ mr: 1, color: 'success.main' }}
+              />
+              Mark Completed
+            </MenuItem>
+          )}
+          {selectedJob?.status !== 'cancelled' && (
+            <MenuItem onClick={() => handleStatusChange('cancelled')}>
+              <ClosedIcon
+                fontSize="small"
+                sx={{ mr: 1, color: 'error.main' }}
+              />
+              Cancel Job
+            </MenuItem>
+          )}
+
+          <Divider />
+
+          <MenuItem onClick={openDeleteDialog} sx={{ color: 'error.main' }}>
+            <DeleteIcon fontSize="small" sx={{ mr: 1 }} />
+            Delete Job
+          </MenuItem>
+        </Menu>
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog
+          open={deleteDialogOpen}
+          onClose={handleCloseDeleteDialog}
+          fullScreen={isMobile}
+          aria-labelledby="delete-job-dialog-title"
         >
-          Refresh
-        </Button>
-        <Button
-          fullWidth
-          variant="contained"
-          color="secondary"
-          sx={{ minHeight: 42, boxShadow: '0 2px 8px rgba(255,215,0,0.35)' }}
-          startIcon={<AddIcon />}
-          onClick={handleCreateJob}
+          <DialogTitle id="delete-job-dialog-title">Delete Job</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Are you sure you want to delete "{selectedJob?.title}"? This
+              action cannot be undone.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseDeleteDialog} sx={{ minHeight: 44 }}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleDeleteConfirm}
+              color="error"
+              variant="contained"
+              sx={{ minHeight: 44 }}
+              disabled={isDeleting}
+              aria-label="Delete item"
+            >
+              {isDeleting ? 'Deleting…' : 'Delete'}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Feedback Snackbar */}
+        {uiMessage && typeof uiMessage === 'object' && uiMessage.severity && (
+          <Snackbar
+            open={Boolean(uiMessage?.severity)}
+            autoHideDuration={4000}
+            onClose={() => setUiMessage(null)}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+          >
+            <Alert
+              onClose={() => setUiMessage(null)}
+              severity={uiMessage.severity}
+              sx={{ width: '100%' }}
+            >
+              {uiMessage.text}
+            </Alert>
+          </Snackbar>
+        )}
+
+        <Paper
+          elevation={8}
+          sx={(theme) => ({
+            display: { xs: 'flex', sm: 'none' },
+            position: 'fixed',
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: theme.zIndex.appBar + 2,
+            px: 1,
+            py: 1,
+            gap: 1,
+            borderTop: `1px solid ${theme.palette.divider}`,
+            backgroundColor: theme.palette.background.paper,
+          })}
         >
-          New Job
-        </Button>
-      </Paper>
+          <Button
+            fullWidth
+            variant="outlined"
+            color="secondary"
+            sx={{ minHeight: 42 }}
+            startIcon={<RefreshIcon />}
+            onClick={handleRefresh}
+            disabled={loading}
+          >
+            Refresh
+          </Button>
+          <Button
+            fullWidth
+            variant="contained"
+            color="secondary"
+            sx={{ minHeight: 42, boxShadow: '0 2px 8px rgba(255,215,0,0.35)' }}
+            startIcon={<AddIcon />}
+            onClick={handleCreateJob}
+          >
+            New Job
+          </Button>
+        </Paper>
       </Box>
     </PageCanvas>
   );
 };
 
 export default JobManagementPage;
-

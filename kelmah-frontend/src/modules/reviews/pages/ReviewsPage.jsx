@@ -62,7 +62,10 @@ import {
 } from '@mui/icons-material';
 // ✅ MOBILE-AUDIT P3: framer-motion import removed — all motion.div wrappers replaced with plain divs
 import { formatDistanceToNow, format } from 'date-fns';
-import { safeFormatDate, safeFormatRelative } from '@/modules/common/utils/formatters';
+import {
+  safeFormatDate,
+  safeFormatRelative,
+} from '@/modules/common/utils/formatters';
 import {
   resolveMediaAssetUrl,
   resolveProfileImageUrl,
@@ -157,8 +160,10 @@ const EnhancedReviewsPage = () => {
           reviewService.getReviewStats(user.id),
           reviewService.getUserReviews(user.id, 1, 20),
         ]);
-        const stats = statsResult.status === 'fulfilled' ? statsResult.value : {};
-        const workerReviews = reviewsResult.status === 'fulfilled' ? reviewsResult.value : null;
+        const stats =
+          statsResult.status === 'fulfilled' ? statsResult.value : {};
+        const workerReviews =
+          reviewsResult.status === 'fulfilled' ? reviewsResult.value : null;
         setReviewStats({
           overall: {
             averageRating: stats.averageRating,
@@ -254,15 +259,20 @@ const EnhancedReviewsPage = () => {
   const reviewCredibilitySummary = useMemo(() => {
     const now = Date.now();
     const recentWindowMs = 30 * 24 * 60 * 60 * 1000;
-    const verifiedCount = filteredReviews.filter((review) => review?.reviewer?.isVerified).length;
+    const verifiedCount = filteredReviews.filter(
+      (review) => review?.reviewer?.isVerified,
+    ).length;
     const recentCount = filteredReviews.filter((review) => {
-      const createdAt = review?.createdAt ? new Date(review.createdAt).getTime() : 0;
+      const createdAt = review?.createdAt
+        ? new Date(review.createdAt).getTime()
+        : 0;
       return createdAt && now - createdAt <= recentWindowMs;
     }).length;
     return {
       verifiedCount,
       recentCount,
-      withReplyCount: filteredReviews.filter((review) => review?.hasReply).length,
+      withReplyCount: filteredReviews.filter((review) => review?.hasReply)
+        .length,
     };
   }, [filteredReviews]);
 
@@ -270,12 +280,16 @@ const EnhancedReviewsPage = () => {
     if (!replyText.trim() || !selectedReview || replySubmitting) return;
     setReplySubmitting(true);
     try {
-      await reviewService.addWorkerResponse(selectedReview.id || selectedReview._id, replyText.trim());
+      await reviewService.addWorkerResponse(
+        selectedReview.id || selectedReview._id,
+        replyText.trim(),
+      );
 
       // Update review with reply
       setReviews((prev) =>
         prev.map((review) =>
-          (review.id || review._id) === (selectedReview.id || selectedReview._id)
+          (review.id || review._id) ===
+          (selectedReview.id || selectedReview._id)
             ? {
                 ...review,
                 hasReply: true,
@@ -455,10 +469,7 @@ const EnhancedReviewsPage = () => {
                   alignItems="center"
                   justifyContent="space-between"
                 >
-                  <Typography
-                    variant="body2"
-                    sx={{ color: 'text.primary' }}
-                  >
+                  <Typography variant="body2" sx={{ color: 'text.primary' }}>
                     {category}
                   </Typography>
                   <Stack direction="row" alignItems="center" spacing={1}>
@@ -492,7 +503,9 @@ const EnhancedReviewsPage = () => {
       </Grid>
 
       {/* Recent Trends — computed from actual review data */}
-      <Box sx={{ mt: 3, pt: 3, borderTop: '1px solid', borderColor: 'divider' }}>
+      <Box
+        sx={{ mt: 3, pt: 3, borderTop: '1px solid', borderColor: 'divider' }}
+      >
         <Stack direction="row" alignItems="center" spacing={3}>
           <Box>
             <Typography variant="body2" sx={{ color: 'text.secondary' }}>
@@ -503,11 +516,16 @@ const EnhancedReviewsPage = () => {
                 variant="h6"
                 sx={{ color: 'success.main', fontWeight: 700 }}
               >
-                {reviews.filter(r => {
-                  const d = new Date(r.createdAt);
-                  const now = new Date();
-                  return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-                }).length}
+                {
+                  reviews.filter((r) => {
+                    const d = new Date(r.createdAt);
+                    const now = new Date();
+                    return (
+                      d.getMonth() === now.getMonth() &&
+                      d.getFullYear() === now.getFullYear()
+                    );
+                  }).length
+                }
               </Typography>
               <TrendingUpIcon sx={{ color: 'success.main', fontSize: 20 }} />
             </Stack>
@@ -520,22 +538,34 @@ const EnhancedReviewsPage = () => {
               variant="h6"
               sx={{ color: 'text.primary', fontWeight: 600 }}
             >
-              {reviews.filter(r => {
-                const d = new Date(r.createdAt);
-                const now = new Date();
-                const lastMonth = now.getMonth() === 0 ? 11 : now.getMonth() - 1;
-                const lastMonthYear = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
-                return d.getMonth() === lastMonth && d.getFullYear() === lastMonthYear;
-              }).length}
+              {
+                reviews.filter((r) => {
+                  const d = new Date(r.createdAt);
+                  const now = new Date();
+                  const lastMonth =
+                    now.getMonth() === 0 ? 11 : now.getMonth() - 1;
+                  const lastMonthYear =
+                    now.getMonth() === 0
+                      ? now.getFullYear() - 1
+                      : now.getFullYear();
+                  return (
+                    d.getMonth() === lastMonth &&
+                    d.getFullYear() === lastMonthYear
+                  );
+                }).length
+              }
             </Typography>
           </Box>
           <Box sx={{ flex: 1 }}>
             <Typography variant="body2" sx={{ color: 'text.secondary' }}>
               Response Rate
             </Typography>
-            <Typography variant="h6" sx={{ color: 'secondary.main', fontWeight: 700 }}>
+            <Typography
+              variant="h6"
+              sx={{ color: 'secondary.main', fontWeight: 700 }}
+            >
               {reviews.length > 0
-                ? `${Math.round((reviews.filter(r => r.hasReply).length / reviews.length) * 100)}%`
+                ? `${Math.round((reviews.filter((r) => r.hasReply).length / reviews.length) * 100)}%`
                 : '—'}
             </Typography>
           </Box>
@@ -549,7 +579,9 @@ const EnhancedReviewsPage = () => {
   const ReviewCard = ({ review }) => {
     const reviewerAvatar = resolveMediaAssetUrl(review.reviewer?.avatar);
     const replyAvatar = resolveProfileImageUrl(user || {});
-    const jobVisual = resolveMediaAssetUrl(review.job?.image || review.job?.gallery);
+    const jobVisual = resolveMediaAssetUrl(
+      review.job?.image || review.job?.gallery,
+    );
 
     return (
       <Card
@@ -613,12 +645,22 @@ const EnhancedReviewsPage = () => {
                     </Tooltip>
                   )}
                 </Stack>
-                <Stack direction="row" spacing={0.75} sx={{ mb: 0.75, flexWrap: 'wrap' }}>
+                <Stack
+                  direction="row"
+                  spacing={0.75}
+                  sx={{ mb: 0.75, flexWrap: 'wrap' }}
+                >
                   <Chip
                     size="small"
-                    label={review.reviewer?.isVerified ? 'Identity verified' : 'Unverified reviewer'}
+                    label={
+                      review.reviewer?.isVerified
+                        ? 'Identity verified'
+                        : 'Unverified reviewer'
+                    }
                     color={review.reviewer?.isVerified ? 'info' : 'default'}
-                    variant={review.reviewer?.isVerified ? 'filled' : 'outlined'}
+                    variant={
+                      review.reviewer?.isVerified ? 'filled' : 'outlined'
+                    }
                     sx={{ height: 22, fontWeight: 600 }}
                   />
                   <Chip
@@ -639,10 +681,7 @@ const EnhancedReviewsPage = () => {
                       },
                     }}
                   />
-                  <Typography
-                    variant="caption"
-                    sx={{ color: 'text.disabled' }}
-                  >
+                  <Typography variant="caption" sx={{ color: 'text.disabled' }}>
                     {safeFormatRelative(review.createdAt)}
                   </Typography>
                 </Stack>
@@ -660,7 +699,12 @@ const EnhancedReviewsPage = () => {
                 '&:hover': {
                   color: 'secondary.main',
                 },
-                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
+                '&:focus-visible': {
+                  outline: '3px solid',
+                  outlineColor: 'primary.main',
+                  outlineOffset: '2px',
+                },
+              }}
             >
               <MoreVertIcon />
             </IconButton>
@@ -828,17 +872,11 @@ const EnhancedReviewsPage = () => {
                 >
                   Your Reply
                 </Typography>
-                <Typography
-                  variant="caption"
-                  sx={{ color: 'text.disabled' }}
-                >
+                <Typography variant="caption" sx={{ color: 'text.disabled' }}>
                   {safeFormatRelative(review.reply.createdAt)}
                 </Typography>
               </Stack>
-              <Typography
-                variant="body2"
-                sx={{ color: 'text.primary' }}
-              >
+              <Typography variant="body2" sx={{ color: 'text.primary' }}>
                 {review.reply.text}
               </Typography>
             </Paper>
@@ -863,7 +901,8 @@ const EnhancedReviewsPage = () => {
                     color: 'success.main',
                     backgroundColor: alpha(theme.palette.success.main, 0.1),
                   },
-                }}>
+                }}
+              >
                 {review.helpfulVotes}
               </Button>
               <Button
@@ -876,7 +915,8 @@ const EnhancedReviewsPage = () => {
                     color: 'error.main',
                     backgroundColor: alpha(theme.palette.error.main, 0.1),
                   },
-                }}>
+                }}
+              >
                 {review.unhelpfulVotes}
               </Button>
             </Stack>
@@ -903,7 +943,8 @@ const EnhancedReviewsPage = () => {
         </CardActions>
         <Box sx={{ px: 3, pb: 2.25 }}>
           <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-            Helpful votes come from signed-in users. Use the menu to report a review when details look suspicious.
+            Helpful votes come from signed-in users. Use the menu to report a
+            review when details look suspicious.
           </Typography>
         </Box>
       </Card>
@@ -937,563 +978,609 @@ const EnhancedReviewsPage = () => {
   }
 
   return (
-    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
-    <Box
-      sx={{
-        minHeight: '100dvh',
-        bgcolor: 'background.default',
-        p: { xs: 2, md: 3 },
-        pb: 'calc(env(safe-area-inset-bottom, 0px) + 16px)',
-      }}
+    <PageCanvas
+      disableContainer
+      sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}
     >
-      <Helmet><title>Reviews | Kelmah</title></Helmet>
-      {/* Header */}
-      <Box sx={{ mb: 4 }}>
-        <Stack
-          direction="row"
-          alignItems="center"
-          justifyContent="space-between"
-          flexWrap="wrap"
-          spacing={2}
-        >
-          <Box>
-            <Typography
-              variant="h4"
-              sx={{
-                color: 'secondary.main',
-                fontWeight: 800,
-                fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' },
-                mb: 0.5,
-              }}
-            >
-              Reviews & Feedback
-            </Typography>
-            <Typography
-              variant="body1"
-              sx={{
-                color: 'text.secondary',
-                fontSize: { xs: '0.9rem', sm: '1rem' },
-              }}
-            >
-              Read client feedback and post clear, respectful replies.
-            </Typography>
-          </Box>
-
-          <IconButton
-            onClick={() => loadReviews()}
-            aria-label="Refresh reviews"
-            sx={{
-              background: alpha(theme.palette.secondary.main, 0.1),
-              border: '1px solid rgba(255,215,0,0.3)',
-              minWidth: 44,
-              minHeight: 44,
-              '&:hover': {
-                background: alpha(theme.palette.secondary.main, 0.2),
-              },
-                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
-          >
-            <RefreshIcon sx={{ color: 'secondary.main' }} />
-          </IconButton>
-        </Stack>
-      </Box>
-
-      {/* Tabs */}
-      <Paper
+      <Box
         sx={{
-          // ✅ MOBILE-AUDIT P5: replaced hardcoded dark gradient with theme surface
-          bgcolor: 'background.paper',
-          border: '1px solid',
-          borderColor: 'divider',
-          borderRadius: 3,
-          mb: 3,
+          minHeight: '100dvh',
+          bgcolor: 'background.default',
+          p: { xs: 2, md: 3 },
+          pb: 'calc(env(safe-area-inset-bottom, 0px) + 16px)',
         }}
       >
-        <Tabs
-          value={activeTab}
-          onChange={(e, newValue) => {
-            setActiveTab(newValue);
-            // Sync filter state with tab selection
-            if (newValue === 0) setSelectedFilter('all');
-            else if (newValue === 1) setSelectedFilter('recent');
-            else if (newValue === 2) setSelectedFilter('needs-reply');
-          }}
-          variant={isMobile ? 'scrollable' : 'standard'}
-          scrollButtons="auto"
-          allowScrollButtonsMobile
-          sx={{
-            '& .MuiTab-root': {
-              color: 'text.secondary',
-              fontWeight: 600,
-              minWidth: { xs: 'auto', md: 120 },
-              '&.Mui-selected': {
-                color: 'secondary.main',
-              },
-            },
-            '& .MuiTabs-indicator': {
-              backgroundColor: 'secondary.main',
-            },
-          }}
-        >
-          {tabPanels.map((panel) => (
-            <Tab key={panel.value} label={panel.label} />
-          ))}
-        </Tabs>
-      </Paper>
-
-      {/* Tab Content */}
-      {activeTab === 3 ? (
-        <ReviewStatistics />
-      ) : (
-        <>
-          {/* Search and Filters */}
-          <Paper
-            sx={{
-              p: { xs: 2, md: 3 },
-              mb: 3,
-              // ✅ MOBILE-AUDIT P4: solid bg instead of gradient
-              bgcolor: 'background.paper',
-              border: '1px solid',
-              borderColor: 'divider',
-              borderRadius: 2,
-            }}
+        <Helmet>
+          <title>Reviews | Kelmah</title>
+        </Helmet>
+        {/* Header */}
+        <Box sx={{ mb: 4 }}>
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+            flexWrap="wrap"
+            spacing={2}
           >
-            <Stack
-              direction={{ xs: 'column', sm: 'row' }}
-              spacing={2}
-              alignItems={{ xs: 'stretch', sm: 'center' }}
-              sx={{ mb: 2 }}
-            >
-              <TextField
-                placeholder="Search by client name, job title, or review words"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                size="small"
+            <Box>
+              <Typography
+                variant="h4"
                 sx={{
-                  flex: 1,
-                  '& .MuiOutlinedInput-root': {
-                    backgroundColor: (t) => alpha(t.palette.text.primary, 0.05),
-                    borderRadius: 2,
-                    '& fieldset': {
-                      borderColor: 'rgba(255,215,0,0.3)',
-                    },
-                    '&:hover fieldset': {
-                      borderColor: 'rgba(255,215,0,0.5)',
-                    },
-                    '&.Mui-focused fieldset': {
-                      borderColor: 'secondary.main',
-                    },
-                  },
-                  '& .MuiInputBase-input': {
-                    color: 'text.primary',
-                    '&::placeholder': {
-                      color: 'text.disabled',
-                    },
-                  },
+                  color: 'secondary.main',
+                  fontWeight: 800,
+                  fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' },
+                  mb: 0.5,
                 }}
-                InputProps={{
-                  startAdornment: (
-                    <SearchIcon
-                      sx={{ color: 'text.disabled', mr: 1 }}
-                    />
-                  ),
-                }}
-              />
-
-              <MobileFilterSheet
-                title="Filter & Sort"
-                activeCount={(selectedFilter !== 'all' ? 1 : 0) + (selectedSort !== 'newest' ? 1 : 0)}
-                onReset={() => { setSelectedFilter('all'); setSelectedSort('newest'); }}
               >
-                <Stack spacing={2}>
-                  <Typography variant="subtitle2" sx={{ color: 'text.secondary' }}>Filter</Typography>
-                  {[
-                    { value: 'all', label: 'All Reviews' },
-                    { value: '5-star', label: '5 Star Reviews' },
-                    { value: '4-star', label: '4 Star Reviews' },
-                    { value: 'recent', label: 'Recent (Last 7 days)' },
-                    { value: 'verified', label: 'Verified Reviewers' },
-                    { value: 'with-reply', label: 'With Reply' },
-                    { value: 'needs-reply', label: 'Needs Reply' },
-                  ].map((filter) => (
-                    <Chip
-                      key={filter.value}
-                      label={filter.label}
-                      variant={selectedFilter === filter.value ? 'filled' : 'outlined'}
-                      color={selectedFilter === filter.value ? 'primary' : 'default'}
-                      onClick={() => setSelectedFilter(filter.value)}
-                      sx={{ justifyContent: 'flex-start' }}
-                    />
-                  ))}
-                  <Divider sx={{ my: 1 }} />
-                  <Typography variant="subtitle2" sx={{ color: 'text.secondary' }}>Sort</Typography>
-                  {[
-                    { value: 'newest', label: 'Newest First' },
-                    { value: 'oldest', label: 'Oldest First' },
-                    { value: 'highest-rated', label: 'Highest Rated' },
-                    { value: 'lowest-rated', label: 'Lowest Rated' },
-                    { value: 'most-helpful', label: 'Most Helpful' },
-                  ].map((sort) => (
-                    <Chip
-                      key={sort.value}
-                      label={sort.label}
-                      variant={selectedSort === sort.value ? 'filled' : 'outlined'}
-                      color={selectedSort === sort.value ? 'primary' : 'default'}
-                      onClick={() => setSelectedSort(sort.value)}
-                      sx={{ justifyContent: 'flex-start' }}
-                    />
-                  ))}
-                </Stack>
-              </MobileFilterSheet>
-            </Stack>
+                Reviews & Feedback
+              </Typography>
+              <Typography
+                variant="body1"
+                sx={{
+                  color: 'text.secondary',
+                  fontSize: { xs: '0.9rem', sm: '1rem' },
+                }}
+              >
+                Read client feedback and post clear, respectful replies.
+              </Typography>
+            </Box>
 
-            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-              {filteredReviews.length} review
-              {filteredReviews.length !== 1 ? 's' : ''} found
-            </Typography>
-            <Stack direction="row" spacing={1} sx={{ mt: 1.25, flexWrap: 'wrap', gap: 1 }}>
-              <Chip
-                size="small"
-                variant="outlined"
-                label={`Filter: ${REVIEW_FILTER_LABELS[selectedFilter] || 'All Reviews'}`}
-              />
-              <Chip
-                size="small"
-                variant="outlined"
-                label={`Sort: ${REVIEW_SORT_LABELS[selectedSort] || 'Newest First'}`}
-              />
-              <Chip
-                size="small"
-                color="info"
-                variant="outlined"
-                label={`${reviewCredibilitySummary.verifiedCount} verified reviewer${reviewCredibilitySummary.verifiedCount === 1 ? '' : 's'}`}
-              />
-              <Chip
-                size="small"
-                color="success"
-                variant="outlined"
-                label={`${reviewCredibilitySummary.recentCount} recent in 30 days`}
-              />
-            </Stack>
-            <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 1 }}>
-              Moderation note: report suspicious reviews from the card menu so support can investigate.
-            </Typography>
-          </Paper>
-
-          {/* Reviews List */}
-          {filteredReviews.length === 0 ? (
-            <Paper
+            <IconButton
+              onClick={() => loadReviews()}
+              aria-label="Refresh reviews"
               sx={{
-                p: 6,
-                textAlign: 'center',
-                // ✅ MOBILE-AUDIT P5: replaced hardcoded dark gradient with theme surface
-                bgcolor: 'background.paper',
-                border: '1px solid',
-                borderColor: 'divider',
-                borderRadius: 3,
+                background: alpha(theme.palette.secondary.main, 0.1),
+                border: '1px solid rgba(255,215,0,0.3)',
+                minWidth: 44,
+                minHeight: 44,
+                '&:hover': {
+                  background: alpha(theme.palette.secondary.main, 0.2),
+                },
+                '&:focus-visible': {
+                  outline: '3px solid',
+                  outlineColor: 'primary.main',
+                  outlineOffset: '2px',
+                },
               }}
             >
-              <StarIcon
-                sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }}
-              />
-              <Typography
-                variant="h6"
-                sx={{ color: 'text.secondary', mb: 1 }}
-              >
-                No reviews found
-              </Typography>
-              <Typography
-                variant="body2"
-                sx={{ color: 'text.disabled', mb: 2 }}
-              >
-                Try changing your search words or filters.
-              </Typography>
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={() => {
-                  setSearchQuery('');
-                  setSelectedFilter('all');
-                }}
-                sx={{ color: 'text.secondary', borderColor: 'divider', minHeight: 44, '&:hover': { borderColor: 'text.disabled' } }}
-              >
-                Clear search and filters
-              </Button>
-            </Paper>
-          ) : (
-            <Stack spacing={3}>
-                {filteredReviews.map((review) => (
-                  <ReviewCard key={review.id} review={review} />
-                ))}
-            </Stack>
-          )}
-        </>
-      )}
+              <RefreshIcon sx={{ color: 'secondary.main' }} />
+            </IconButton>
+          </Stack>
+        </Box>
 
-      {/* Filter Menu */}
-      <Menu
-        anchorEl={filterMenuAnchor}
-        open={Boolean(filterMenuAnchor)}
-        onClose={() => setFilterMenuAnchor(null)}
-      >
-        {[
-          { value: 'all', label: 'All Reviews' },
-          { value: '5-star', label: '5 Star Reviews' },
-          { value: '4-star', label: '4 Star Reviews' },
-          { value: 'recent', label: 'Recent (Last 7 days)' },
-          { value: 'verified', label: 'Verified Reviewers' },
-          { value: 'with-reply', label: 'With Reply' },
-          { value: 'needs-reply', label: 'Needs Reply' },
-        ].map((filter) => (
-          <MenuItem
-            key={filter.value}
-            selected={selectedFilter === filter.value}
-            onClick={() => {
-              setSelectedFilter(filter.value);
-              setFilterMenuAnchor(null);
-            }}
-          >
-            {filter.label}
-          </MenuItem>
-        ))}
-      </Menu>
-
-      {/* Sort Menu */}
-      <Menu
-        anchorEl={sortMenuAnchor}
-        open={Boolean(sortMenuAnchor)}
-        onClose={() => setSortMenuAnchor(null)}
-      >
-        {[
-          { value: 'newest', label: 'Newest First' },
-          { value: 'oldest', label: 'Oldest First' },
-          { value: 'highest-rated', label: 'Highest Rated' },
-          { value: 'lowest-rated', label: 'Lowest Rated' },
-          { value: 'most-helpful', label: 'Most Helpful' },
-        ].map((sort) => (
-          <MenuItem
-            key={sort.value}
-            selected={selectedSort === sort.value}
-            onClick={() => {
-              setSelectedSort(sort.value);
-              setSortMenuAnchor(null);
-            }}
-          >
-            {sort.label}
-          </MenuItem>
-        ))}
-      </Menu>
-
-      {/* More Menu */}
-      <Menu
-        anchorEl={moreMenuAnchor}
-        open={Boolean(moreMenuAnchor)}
-        onClose={() => setMoreMenuAnchor(null)}
-      >
-        <MenuItem
-          onClick={() => {
-            setReplyDialog(true);
-            setMoreMenuAnchor(null);
-          }}
-        >
-          <ListItemIcon>
-            <ReplyIcon />
-          </ListItemIcon>
-          <ListItemText>Reply</ListItemText>
-        </MenuItem>
-        <MenuItem
-          onClick={() => {
-            // Use Web Share API if available, otherwise copy to clipboard
-            const reviewUrl = `${window.location.origin}/reviews/${selectedReview?._id || selectedReview?.id || ''}`;
-            if (navigator.share) {
-              navigator.share({ title: 'Kelmah Review', url: reviewUrl }).catch(() => {});
-            } else if (navigator.clipboard) {
-              navigator.clipboard.writeText(reviewUrl);
-            }
-            setMoreMenuAnchor(null);
-          }}
-        >
-          <ListItemIcon>
-            <ShareIcon />
-          </ListItemIcon>
-          <ListItemText>Share</ListItemText>
-        </MenuItem>
-        <Divider />
-        <MenuItem
-          onClick={() => {
-            const reviewId = selectedReview?._id || selectedReview?.id;
-            setMoreMenuAnchor(null);
-            navigate('/support', {
-              state: {
-                reportContext: 'review',
-                reportReviewId: reviewId || null,
-                reportedUserId: selectedReview?.reviewer?.id || null,
-              },
-            });
-          }}
-        >
-          <ListItemIcon>
-            <ReportIcon />
-          </ListItemIcon>
-          <ListItemText>Report Review</ListItemText>
-        </MenuItem>
-      </Menu>
-
-      {/* Reply Dialog */}
-      <Dialog
-        open={replyDialog}
-        onClose={() => {
-          setReplyDialog(false);
-          setReplyText('');
-          setSelectedReview(null);
-        }}
-        maxWidth="md"
-        fullWidth
-        fullScreen={isMobile}
-        aria-labelledby="reply-dialog-title"
-        PaperProps={{
-          sx: {
+        {/* Tabs */}
+        <Paper
+          sx={{
             // ✅ MOBILE-AUDIT P5: replaced hardcoded dark gradient with theme surface
             bgcolor: 'background.paper',
             border: '1px solid',
             borderColor: 'divider',
-          },
-        }}
-      >
-        <DialogTitle id="reply-dialog-title" sx={{ color: 'secondary.main' }}>
-          Reply to {selectedReview?.reviewer?.name || 'reviewer'}
-        </DialogTitle>
-        <DialogContent>
-          {selectedReview && (
+            borderRadius: 3,
+            mb: 3,
+          }}
+        >
+          <Tabs
+            value={activeTab}
+            onChange={(e, newValue) => {
+              setActiveTab(newValue);
+              // Sync filter state with tab selection
+              if (newValue === 0) setSelectedFilter('all');
+              else if (newValue === 1) setSelectedFilter('recent');
+              else if (newValue === 2) setSelectedFilter('needs-reply');
+            }}
+            variant={isMobile ? 'scrollable' : 'standard'}
+            scrollButtons="auto"
+            allowScrollButtonsMobile
+            sx={{
+              '& .MuiTab-root': {
+                color: 'text.secondary',
+                fontWeight: 600,
+                minWidth: { xs: 'auto', md: 120 },
+                '&.Mui-selected': {
+                  color: 'secondary.main',
+                },
+              },
+              '& .MuiTabs-indicator': {
+                backgroundColor: 'secondary.main',
+              },
+            }}
+          >
+            {tabPanels.map((panel) => (
+              <Tab key={panel.value} label={panel.label} />
+            ))}
+          </Tabs>
+        </Paper>
+
+        {/* Tab Content */}
+        {activeTab === 3 ? (
+          <ReviewStatistics />
+        ) : (
+          <>
+            {/* Search and Filters */}
             <Paper
               sx={{
-                p: 2,
+                p: { xs: 2, md: 3 },
                 mb: 3,
-                background: (theme) => theme.palette.action.hover,
+                // ✅ MOBILE-AUDIT P4: solid bg instead of gradient
+                bgcolor: 'background.paper',
                 border: '1px solid',
                 borderColor: 'divider',
                 borderRadius: 2,
               }}
             >
               <Stack
-                direction="row"
-                alignItems="center"
-                spacing={1}
-                sx={{ mb: 1 }}
+                direction={{ xs: 'column', sm: 'row' }}
+                spacing={2}
+                alignItems={{ xs: 'stretch', sm: 'center' }}
+                sx={{ mb: 2 }}
               >
-                <Rating
-                  value={selectedReview.rating}
-                  readOnly
+                <TextField
+                  placeholder="Search by client name, job title, or review words"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   size="small"
                   sx={{
-                    '& .MuiRating-iconFilled': {
-                      color: 'secondary.main',
+                    flex: 1,
+                    '& .MuiOutlinedInput-root': {
+                      backgroundColor: (t) =>
+                        alpha(t.palette.text.primary, 0.05),
+                      borderRadius: 2,
+                      '& fieldset': {
+                        borderColor: 'rgba(255,215,0,0.3)',
+                      },
+                      '&:hover fieldset': {
+                        borderColor: 'rgba(255,215,0,0.5)',
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: 'secondary.main',
+                      },
+                    },
+                    '& .MuiInputBase-input': {
+                      color: 'text.primary',
+                      '&::placeholder': {
+                        color: 'text.disabled',
+                      },
                     },
                   }}
+                  InputProps={{
+                    startAdornment: (
+                      <SearchIcon sx={{ color: 'text.disabled', mr: 1 }} />
+                    ),
+                  }}
                 />
-                <Typography
-                  variant="body2"
-                  sx={{ color: 'text.secondary' }}
+
+                <MobileFilterSheet
+                  title="Filter & Sort"
+                  activeCount={
+                    (selectedFilter !== 'all' ? 1 : 0) +
+                    (selectedSort !== 'newest' ? 1 : 0)
+                  }
+                  onReset={() => {
+                    setSelectedFilter('all');
+                    setSelectedSort('newest');
+                  }}
                 >
-                  {selectedReview.title}
-                </Typography>
+                  <Stack spacing={2}>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ color: 'text.secondary' }}
+                    >
+                      Filter
+                    </Typography>
+                    {[
+                      { value: 'all', label: 'All Reviews' },
+                      { value: '5-star', label: '5 Star Reviews' },
+                      { value: '4-star', label: '4 Star Reviews' },
+                      { value: 'recent', label: 'Recent (Last 7 days)' },
+                      { value: 'verified', label: 'Verified Reviewers' },
+                      { value: 'with-reply', label: 'With Reply' },
+                      { value: 'needs-reply', label: 'Needs Reply' },
+                    ].map((filter) => (
+                      <Chip
+                        key={filter.value}
+                        label={filter.label}
+                        variant={
+                          selectedFilter === filter.value
+                            ? 'filled'
+                            : 'outlined'
+                        }
+                        color={
+                          selectedFilter === filter.value
+                            ? 'primary'
+                            : 'default'
+                        }
+                        onClick={() => setSelectedFilter(filter.value)}
+                        sx={{ justifyContent: 'flex-start' }}
+                      />
+                    ))}
+                    <Divider sx={{ my: 1 }} />
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ color: 'text.secondary' }}
+                    >
+                      Sort
+                    </Typography>
+                    {[
+                      { value: 'newest', label: 'Newest First' },
+                      { value: 'oldest', label: 'Oldest First' },
+                      { value: 'highest-rated', label: 'Highest Rated' },
+                      { value: 'lowest-rated', label: 'Lowest Rated' },
+                      { value: 'most-helpful', label: 'Most Helpful' },
+                    ].map((sort) => (
+                      <Chip
+                        key={sort.value}
+                        label={sort.label}
+                        variant={
+                          selectedSort === sort.value ? 'filled' : 'outlined'
+                        }
+                        color={
+                          selectedSort === sort.value ? 'primary' : 'default'
+                        }
+                        onClick={() => setSelectedSort(sort.value)}
+                        sx={{ justifyContent: 'flex-start' }}
+                      />
+                    ))}
+                  </Stack>
+                </MobileFilterSheet>
+              </Stack>
+
+              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                {filteredReviews.length} review
+                {filteredReviews.length !== 1 ? 's' : ''} found
+              </Typography>
+              <Stack
+                direction="row"
+                spacing={1}
+                sx={{ mt: 1.25, flexWrap: 'wrap', gap: 1 }}
+              >
+                <Chip
+                  size="small"
+                  variant="outlined"
+                  label={`Filter: ${REVIEW_FILTER_LABELS[selectedFilter] || 'All Reviews'}`}
+                />
+                <Chip
+                  size="small"
+                  variant="outlined"
+                  label={`Sort: ${REVIEW_SORT_LABELS[selectedSort] || 'Newest First'}`}
+                />
+                <Chip
+                  size="small"
+                  color="info"
+                  variant="outlined"
+                  label={`${reviewCredibilitySummary.verifiedCount} verified reviewer${reviewCredibilitySummary.verifiedCount === 1 ? '' : 's'}`}
+                />
+                <Chip
+                  size="small"
+                  color="success"
+                  variant="outlined"
+                  label={`${reviewCredibilitySummary.recentCount} recent in 30 days`}
+                />
               </Stack>
               <Typography
-                variant="body2"
-                sx={{
-                  color: 'text.primary',
-                  fontStyle: 'italic',
-                }}
+                variant="caption"
+                sx={{ color: 'text.secondary', display: 'block', mt: 1 }}
               >
-                "{selectedReview.comment}"
+                Moderation note: report suspicious reviews from the card menu so
+                support can investigate.
               </Typography>
             </Paper>
-          )}
 
-          <TextField
-            autoFocus
-            fullWidth
-            multiline
-            rows={4}
-            placeholder="Write a short, polite reply"
-            value={replyText}
-            onChange={(e) => setReplyText(e.target.value)}
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                backgroundColor: (t) => alpha(t.palette.text.primary, 0.05),
-                '& fieldset': {
-                  borderColor: 'rgba(255,215,0,0.3)',
-                },
-                '&:hover fieldset': {
-                  borderColor: 'rgba(255,215,0,0.5)',
-                },
-                '&.Mui-focused fieldset': {
-                  borderColor: 'secondary.main',
-                },
-              },
-              '& .MuiInputBase-input': {
-                color: 'text.primary',
-                '&::placeholder': {
-                  color: 'text.disabled',
-                },
-              },
-            }}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => {
-              setReplyDialog(false);
-              setReplyText('');
-              setSelectedReview(null);
-            }}
-            sx={{ color: 'text.secondary', minHeight: 44 }}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleReply}
-            disabled={!replyText.trim() || replySubmitting}
-            sx={{
-              background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
-              color: '#000',
-              fontWeight: 700,
-              minHeight: 44,
-              '&:hover': {
-                background: 'linear-gradient(135deg, #FFC000 0%, #FFB300 100%)',
-              },
-              '&:disabled': {
-                background: 'rgba(255,255,255,0.1)',
-                color: 'rgba(255,255,255,0.3)',
-              },
-            }}
-          >
-            Post reply
-          </Button>
-        </DialogActions>
-      </Dialog>
+            {/* Reviews List */}
+            {filteredReviews.length === 0 ? (
+              <Paper
+                sx={{
+                  p: 6,
+                  textAlign: 'center',
+                  // ✅ MOBILE-AUDIT P5: replaced hardcoded dark gradient with theme surface
+                  bgcolor: 'background.paper',
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  borderRadius: 3,
+                }}
+              >
+                <StarIcon
+                  sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }}
+                />
+                <Typography
+                  variant="h6"
+                  sx={{ color: 'text.secondary', mb: 1 }}
+                >
+                  No reviews found
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{ color: 'text.disabled', mb: 2 }}
+                >
+                  Try changing your search words or filters.
+                </Typography>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => {
+                    setSearchQuery('');
+                    setSelectedFilter('all');
+                  }}
+                  sx={{
+                    color: 'text.secondary',
+                    borderColor: 'divider',
+                    minHeight: 44,
+                    '&:hover': { borderColor: 'text.disabled' },
+                  }}
+                >
+                  Clear search and filters
+                </Button>
+              </Paper>
+            ) : (
+              <Stack spacing={3}>
+                {filteredReviews.map((review) => (
+                  <ReviewCard key={review.id} review={review} />
+                ))}
+              </Stack>
+            )}
+          </>
+        )}
 
-      {/* Feedback Snackbar */}
-      <Snackbar
-        open={feedback.open}
-        autoHideDuration={4000}
-        onClose={() => setFeedback((prev) => ({ ...prev, open: false }))}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-      >
-        <Alert
-          onClose={() => setFeedback((prev) => ({ ...prev, open: false }))}
-          severity={feedback.severity}
-          sx={{ width: '100%' }}
+        {/* Filter Menu */}
+        <Menu
+          anchorEl={filterMenuAnchor}
+          open={Boolean(filterMenuAnchor)}
+          onClose={() => setFilterMenuAnchor(null)}
         >
-          {feedback.message}
-        </Alert>
-      </Snackbar>
-    </Box>
+          {[
+            { value: 'all', label: 'All Reviews' },
+            { value: '5-star', label: '5 Star Reviews' },
+            { value: '4-star', label: '4 Star Reviews' },
+            { value: 'recent', label: 'Recent (Last 7 days)' },
+            { value: 'verified', label: 'Verified Reviewers' },
+            { value: 'with-reply', label: 'With Reply' },
+            { value: 'needs-reply', label: 'Needs Reply' },
+          ].map((filter) => (
+            <MenuItem
+              key={filter.value}
+              selected={selectedFilter === filter.value}
+              onClick={() => {
+                setSelectedFilter(filter.value);
+                setFilterMenuAnchor(null);
+              }}
+            >
+              {filter.label}
+            </MenuItem>
+          ))}
+        </Menu>
+
+        {/* Sort Menu */}
+        <Menu
+          anchorEl={sortMenuAnchor}
+          open={Boolean(sortMenuAnchor)}
+          onClose={() => setSortMenuAnchor(null)}
+        >
+          {[
+            { value: 'newest', label: 'Newest First' },
+            { value: 'oldest', label: 'Oldest First' },
+            { value: 'highest-rated', label: 'Highest Rated' },
+            { value: 'lowest-rated', label: 'Lowest Rated' },
+            { value: 'most-helpful', label: 'Most Helpful' },
+          ].map((sort) => (
+            <MenuItem
+              key={sort.value}
+              selected={selectedSort === sort.value}
+              onClick={() => {
+                setSelectedSort(sort.value);
+                setSortMenuAnchor(null);
+              }}
+            >
+              {sort.label}
+            </MenuItem>
+          ))}
+        </Menu>
+
+        {/* More Menu */}
+        <Menu
+          anchorEl={moreMenuAnchor}
+          open={Boolean(moreMenuAnchor)}
+          onClose={() => setMoreMenuAnchor(null)}
+        >
+          <MenuItem
+            onClick={() => {
+              setReplyDialog(true);
+              setMoreMenuAnchor(null);
+            }}
+          >
+            <ListItemIcon>
+              <ReplyIcon />
+            </ListItemIcon>
+            <ListItemText>Reply</ListItemText>
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
+              // Use Web Share API if available, otherwise copy to clipboard
+              const reviewUrl = `${window.location.origin}/reviews/${selectedReview?._id || selectedReview?.id || ''}`;
+              if (navigator.share) {
+                navigator
+                  .share({ title: 'Kelmah Review', url: reviewUrl })
+                  .catch(() => {});
+              } else if (navigator.clipboard) {
+                navigator.clipboard.writeText(reviewUrl);
+              }
+              setMoreMenuAnchor(null);
+            }}
+          >
+            <ListItemIcon>
+              <ShareIcon />
+            </ListItemIcon>
+            <ListItemText>Share</ListItemText>
+          </MenuItem>
+          <Divider />
+          <MenuItem
+            onClick={() => {
+              const reviewId = selectedReview?._id || selectedReview?.id;
+              setMoreMenuAnchor(null);
+              navigate('/support', {
+                state: {
+                  reportContext: 'review',
+                  reportReviewId: reviewId || null,
+                  reportedUserId: selectedReview?.reviewer?.id || null,
+                },
+              });
+            }}
+          >
+            <ListItemIcon>
+              <ReportIcon />
+            </ListItemIcon>
+            <ListItemText>Report Review</ListItemText>
+          </MenuItem>
+        </Menu>
+
+        {/* Reply Dialog */}
+        <Dialog
+          open={replyDialog}
+          onClose={() => {
+            setReplyDialog(false);
+            setReplyText('');
+            setSelectedReview(null);
+          }}
+          maxWidth="md"
+          fullWidth
+          fullScreen={isMobile}
+          aria-labelledby="reply-dialog-title"
+          PaperProps={{
+            sx: {
+              // ✅ MOBILE-AUDIT P5: replaced hardcoded dark gradient with theme surface
+              bgcolor: 'background.paper',
+              border: '1px solid',
+              borderColor: 'divider',
+            },
+          }}
+        >
+          <DialogTitle id="reply-dialog-title" sx={{ color: 'secondary.main' }}>
+            Reply to {selectedReview?.reviewer?.name || 'reviewer'}
+          </DialogTitle>
+          <DialogContent>
+            {selectedReview && (
+              <Paper
+                sx={{
+                  p: 2,
+                  mb: 3,
+                  background: (theme) => theme.palette.action.hover,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  borderRadius: 2,
+                }}
+              >
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  spacing={1}
+                  sx={{ mb: 1 }}
+                >
+                  <Rating
+                    value={selectedReview.rating}
+                    readOnly
+                    size="small"
+                    sx={{
+                      '& .MuiRating-iconFilled': {
+                        color: 'secondary.main',
+                      },
+                    }}
+                  />
+                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                    {selectedReview.title}
+                  </Typography>
+                </Stack>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: 'text.primary',
+                    fontStyle: 'italic',
+                  }}
+                >
+                  "{selectedReview.comment}"
+                </Typography>
+              </Paper>
+            )}
+
+            <TextField
+              autoFocus
+              fullWidth
+              multiline
+              rows={4}
+              placeholder="Write a short, polite reply"
+              value={replyText}
+              onChange={(e) => setReplyText(e.target.value)}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  backgroundColor: (t) => alpha(t.palette.text.primary, 0.05),
+                  '& fieldset': {
+                    borderColor: 'rgba(255,215,0,0.3)',
+                  },
+                  '&:hover fieldset': {
+                    borderColor: 'rgba(255,215,0,0.5)',
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: 'secondary.main',
+                  },
+                },
+                '& .MuiInputBase-input': {
+                  color: 'text.primary',
+                  '&::placeholder': {
+                    color: 'text.disabled',
+                  },
+                },
+              }}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={() => {
+                setReplyDialog(false);
+                setReplyText('');
+                setSelectedReview(null);
+              }}
+              sx={{ color: 'text.secondary', minHeight: 44 }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleReply}
+              disabled={!replyText.trim() || replySubmitting}
+              sx={{
+                background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
+                color: '#000',
+                fontWeight: 700,
+                minHeight: 44,
+                '&:hover': {
+                  background:
+                    'linear-gradient(135deg, #FFC000 0%, #FFB300 100%)',
+                },
+                '&:disabled': {
+                  background: 'rgba(255,255,255,0.1)',
+                  color: 'rgba(255,255,255,0.3)',
+                },
+              }}
+            >
+              Post reply
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Feedback Snackbar */}
+        <Snackbar
+          open={feedback.open}
+          autoHideDuration={4000}
+          onClose={() => setFeedback((prev) => ({ ...prev, open: false }))}
+          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        >
+          <Alert
+            onClose={() => setFeedback((prev) => ({ ...prev, open: false }))}
+            severity={feedback.severity}
+            sx={{ width: '100%' }}
+          >
+            {feedback.message}
+          </Alert>
+        </Snackbar>
+      </Box>
     </PageCanvas>
   );
 };
 
 export default EnhancedReviewsPage;
-
-
-
-

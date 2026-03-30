@@ -8,11 +8,36 @@ import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 
 const actions = [
-  { label: 'Find Work', caption: 'Browse open jobs', icon: SearchIcon, path: '/worker/find-work' },
-  { label: 'Applications', caption: 'Track submissions', icon: AssignmentIcon, path: '/worker/applications' },
-  { label: 'Contracts', caption: 'Review active work', icon: ReceiptIcon, path: '/worker/contracts' },
-  { label: 'Earnings', caption: 'See payment progress', icon: AttachMoneyIcon, path: '/worker/earnings' },
-  { label: 'Schedule', caption: 'Update availability', icon: EventAvailableIcon, path: '/worker/schedule' },
+  {
+    label: 'Find Work',
+    caption: 'Browse open jobs',
+    icon: SearchIcon,
+    path: '/worker/find-work',
+  },
+  {
+    label: 'Applications',
+    caption: 'Track submissions',
+    icon: AssignmentIcon,
+    path: '/worker/applications',
+  },
+  {
+    label: 'Contracts',
+    caption: 'Review active work',
+    icon: ReceiptIcon,
+    path: '/worker/contracts',
+  },
+  {
+    label: 'Earnings',
+    caption: 'See payment progress',
+    icon: AttachMoneyIcon,
+    path: '/worker/earnings',
+  },
+  {
+    label: 'Schedule',
+    caption: 'Update availability',
+    icon: EventAvailableIcon,
+    path: '/worker/schedule',
+  },
 ];
 
 /**
@@ -27,7 +52,10 @@ const QuickActionsRow = () => {
       aria-label="Worker quick actions"
       sx={{
         display: 'grid',
-        gridTemplateColumns: { xs: 'repeat(2, minmax(0, 1fr))', sm: 'repeat(5, minmax(0, 1fr))' },
+        gridTemplateColumns: {
+          xs: 'repeat(2, minmax(0, 1fr))',
+          sm: 'repeat(5, minmax(0, 1fr))',
+        },
         gap: 1.5,
       }}
     >

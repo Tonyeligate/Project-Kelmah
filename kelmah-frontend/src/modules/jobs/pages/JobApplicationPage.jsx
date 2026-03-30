@@ -37,7 +37,9 @@ const JobApplicationPage = () => {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const isAuthenticated = !!user;
-  const { currentJob, loading: jobLoading } = useSelector((state) => state.jobs);
+  const { currentJob, loading: jobLoading } = useSelector(
+    (state) => state.jobs,
+  );
   const isMobile = useBreakpointDown('sm');
 
   const [coverLetter, setCoverLetter] = useState('');
@@ -48,7 +50,8 @@ const JobApplicationPage = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
 
-  const getFileSignature = (file) => `${file.name}-${file.size}-${typeof file.lastModified === 'number' ? file.lastModified : 'na'}`;
+  const getFileSignature = (file) =>
+    `${file.name}-${file.size}-${typeof file.lastModified === 'number' ? file.lastModified : 'na'}`;
 
   const isBiddingJob = currentJob?.bidding?.bidStatus === 'open';
 
@@ -93,7 +96,9 @@ const JobApplicationPage = () => {
   };
 
   const handleRemoveAttachment = (name) => {
-    setAttachments((prev) => prev.filter((file, index) => `${file.name}-${index}` !== name));
+    setAttachments((prev) =>
+      prev.filter((file, index) => `${file.name}-${index}` !== name),
+    );
   };
 
   const handleSubmit = async (e) => {
@@ -106,7 +111,9 @@ const JobApplicationPage = () => {
     setError(null);
 
     if (!coverLetter.trim()) {
-      setError('Please write a short cover letter explaining why you are the right person for this job.');
+      setError(
+        'Please write a short cover letter explaining why you are the right person for this job.',
+      );
       return;
     }
 
@@ -143,7 +150,9 @@ const JobApplicationPage = () => {
           );
           const failedUpload = results.find((item) => item?.error);
           if (failedUpload) {
-            throw new Error(failedUpload.error || 'Failed to upload an attachment');
+            throw new Error(
+              failedUpload.error || 'Failed to upload an attachment',
+            );
           }
           uploadedAttachments = results.map((item, index) => ({
             name: attachments[index]?.name || item.name,
@@ -161,14 +170,16 @@ const JobApplicationPage = () => {
           }));
         }
 
-        await dispatch(applyForJob({
-          jobId,
-          applicationData: {
-            coverLetter: coverLetter.trim(),
-            proposedRate: proposedRate ? parseFloat(proposedRate) : undefined,
-            attachments: uploadedAttachments,
-          },
-        })).unwrap();
+        await dispatch(
+          applyForJob({
+            jobId,
+            applicationData: {
+              coverLetter: coverLetter.trim(),
+              proposedRate: proposedRate ? parseFloat(proposedRate) : undefined,
+              attachments: uploadedAttachments,
+            },
+          }),
+        ).unwrap();
       }
 
       setSuccess(true);
@@ -202,7 +213,10 @@ const JobApplicationPage = () => {
   return (
     <PageCanvas disableContainer sx={{ pb: { xs: success ? 2 : 10, md: 6 } }}>
       <Helmet>
-        <title>{currentJob?.title ? `Apply — ${currentJob.title}` : 'Apply for Job'} | Kelmah</title>
+        <title>
+          {currentJob?.title ? `Apply — ${currentJob.title}` : 'Apply for Job'}{' '}
+          | Kelmah
+        </title>
       </Helmet>
 
       <Container maxWidth="md" sx={{ py: { xs: 1.25, md: 4 } }}>
@@ -218,25 +232,61 @@ const JobApplicationPage = () => {
         {/* Job summary header */}
         {currentJob && (
           <Box sx={{ mb: { xs: 1.5, md: 3 } }}>
-            <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.75, flexWrap: 'wrap' }}>
+            <Stack
+              direction="row"
+              spacing={1}
+              alignItems="center"
+              sx={{ mb: 0.75, flexWrap: 'wrap' }}
+            >
               <WorkIcon color="primary" />
-              <Typography variant="h5" fontWeight={700} sx={{ fontSize: { xs: '1.1rem', md: '1.5rem' } }}>
+              <Typography
+                variant="h5"
+                fontWeight={700}
+                sx={{ fontSize: { xs: '1.1rem', md: '1.5rem' } }}
+              >
                 {currentJob.title}
               </Typography>
               {isBiddingJob && (
-                <Chip label="Bidding" color="warning" size="small" icon={<BidIcon />} />
+                <Chip
+                  label="Bidding"
+                  color="warning"
+                  size="small"
+                  icon={<BidIcon />}
+                />
               )}
             </Stack>
             {currentJob.budget && (
               <Typography variant="body2" color="text.secondary">
-                Budget: {formatGhanaCurrency(currentJob.budget?.min)} - {formatGhanaCurrency(currentJob.budget?.max)}
+                Budget: {formatGhanaCurrency(currentJob.budget?.min)} -{' '}
+                {formatGhanaCurrency(currentJob.budget?.max)}
               </Typography>
             )}
             {isMobile && (
-              <Stack direction="row" spacing={0.75} sx={{ mt: 1, overflowX: 'auto', pb: 0.25, scrollbarWidth: 'none', '&::-webkit-scrollbar': { display: 'none' } }}>
-                <Chip size="small" label={isBiddingJob ? 'Bidding flow' : 'Application flow'} />
-                <Chip size="small" variant="outlined" label={currentJob?.category || 'Trade job'} />
-                <Chip size="small" variant="outlined" label={currentJob?.location?.city || 'Ghana'} />
+              <Stack
+                direction="row"
+                spacing={0.75}
+                sx={{
+                  mt: 1,
+                  overflowX: 'auto',
+                  pb: 0.25,
+                  scrollbarWidth: 'none',
+                  '&::-webkit-scrollbar': { display: 'none' },
+                }}
+              >
+                <Chip
+                  size="small"
+                  label={isBiddingJob ? 'Bidding flow' : 'Application flow'}
+                />
+                <Chip
+                  size="small"
+                  variant="outlined"
+                  label={currentJob?.category || 'Trade job'}
+                />
+                <Chip
+                  size="small"
+                  variant="outlined"
+                  label={currentJob?.location?.city || 'Ghana'}
+                />
               </Stack>
             )}
           </Box>
@@ -259,7 +309,11 @@ const JobApplicationPage = () => {
           <Divider sx={{ mb: { xs: 1.5, md: 3 } }} />
 
           {error && (
-            <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
+            <Alert
+              severity="error"
+              sx={{ mb: 3 }}
+              onClose={() => setError(null)}
+            >
               {error}
             </Alert>
           )}
@@ -282,7 +336,11 @@ const JobApplicationPage = () => {
                   : 'If the hirer responds, the update will appear in your applications dashboard.'}
               </Typography>
 
-              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} justifyContent="flex-end">
+              <Stack
+                direction={{ xs: 'column', sm: 'row' }}
+                spacing={1.5}
+                justifyContent="flex-end"
+              >
                 <Button
                   variant="outlined"
                   onClick={() => navigate(`/jobs/${jobId}`)}
@@ -292,15 +350,19 @@ const JobApplicationPage = () => {
                 <Button
                   variant="contained"
                   color="secondary"
-                  onClick={() => navigate(isBiddingJob ? '/worker/bids' : '/worker/applications')}
-                  startIcon={isBiddingJob ? <BidIcon /> : <WorkIcon />}>
+                  onClick={() =>
+                    navigate(
+                      isBiddingJob ? '/worker/bids' : '/worker/applications',
+                    )
+                  }
+                  startIcon={isBiddingJob ? <BidIcon /> : <WorkIcon />}
+                >
                   {isBiddingJob ? 'Go to My Bids' : 'View My Applications'}
                 </Button>
               </Stack>
             </Box>
           ) : (
             <>
-
               {/* Cover letter */}
               <TextField
                 label="Why are you the right person for this job?"
@@ -327,7 +389,9 @@ const JobApplicationPage = () => {
                   value={bidAmount}
                   onChange={(e) => setBidAmount(e.target.value)}
                   InputProps={{
-                    startAdornment: <InputAdornment position="start">GH₵</InputAdornment>,
+                    startAdornment: (
+                      <InputAdornment position="start">GH₵</InputAdornment>
+                    ),
                   }}
                   inputProps={{ min: 1, step: 0.01 }}
                   disabled={submitting || success}
@@ -349,7 +413,9 @@ const JobApplicationPage = () => {
                   value={proposedRate}
                   onChange={(e) => setProposedRate(e.target.value)}
                   InputProps={{
-                    startAdornment: <InputAdornment position="start">GH₵</InputAdornment>,
+                    startAdornment: (
+                      <InputAdornment position="start">GH₵</InputAdornment>
+                    ),
                   }}
                   inputProps={{ min: 0, step: 0.01 }}
                   disabled={submitting || success}
@@ -360,20 +426,43 @@ const JobApplicationPage = () => {
 
               {!isBiddingJob && (
                 <Box sx={{ mb: { xs: 2, md: 3 } }}>
-                  <Button component="label" variant="outlined" startIcon={<AttachFileIcon />}>
+                  <Button
+                    component="label"
+                    variant="outlined"
+                    startIcon={<AttachFileIcon />}
+                  >
                     Attach work samples or proof
-                    <input hidden multiple type="file" aria-label="Attach work samples or proof" accept="image/*,video/*,.pdf,.doc,.docx,.txt" onChange={handleAttachmentChange} />
+                    <input
+                      hidden
+                      multiple
+                      type="file"
+                      aria-label="Attach work samples or proof"
+                      accept="image/*,video/*,.pdf,.doc,.docx,.txt"
+                      onChange={handleAttachmentChange}
+                    />
                   </Button>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.75 }}>
-                    Optional: add photos, certificates, or past work that help the hirer trust your application.
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: 'block', mt: 0.75 }}
+                  >
+                    Optional: add photos, certificates, or past work that help
+                    the hirer trust your application.
                   </Typography>
                   {attachments.length > 0 && (
-                    <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mt: 1.5 }}>
+                    <Stack
+                      direction="row"
+                      spacing={1}
+                      flexWrap="wrap"
+                      sx={{ mt: 1.5 }}
+                    >
                       {attachments.map((file, index) => (
                         <Chip
                           key={`${file.name}-${index}`}
                           label={file.name}
-                          onDelete={() => handleRemoveAttachment(`${file.name}-${index}`)}
+                          onDelete={() =>
+                            handleRemoveAttachment(`${file.name}-${index}`)
+                          }
                           sx={{ mb: 1 }}
                         />
                       ))}
@@ -382,7 +471,13 @@ const JobApplicationPage = () => {
                 </Box>
               )}
 
-              <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 2, justifyContent: 'flex-end' }}>
+              <Box
+                sx={{
+                  display: { xs: 'none', md: 'flex' },
+                  gap: 2,
+                  justifyContent: 'flex-end',
+                }}
+              >
                 <Button
                   variant="outlined"
                   onClick={() => navigate(`/jobs/${jobId}`)}
@@ -394,9 +489,16 @@ const JobApplicationPage = () => {
                   type="submit"
                   variant="contained"
                   color="secondary"
-                  startIcon={submitting ? <CircularProgress size={18} color="inherit" /> : <SendIcon />}
+                  startIcon={
+                    submitting ? (
+                      <CircularProgress size={18} color="inherit" />
+                    ) : (
+                      <SendIcon />
+                    )
+                  }
                   disabled={submitting || success}
-                  sx={{ minWidth: 180 }}>
+                  sx={{ minWidth: 180 }}
+                >
                   {submitting
                     ? isBiddingJob
                       ? 'Sending Bid…'
@@ -441,7 +543,13 @@ const JobApplicationPage = () => {
               form="job-application-form"
               variant="contained"
               color="secondary"
-              startIcon={submitting ? <CircularProgress size={18} color="inherit" /> : <SendIcon />}
+              startIcon={
+                submitting ? (
+                  <CircularProgress size={18} color="inherit" />
+                ) : (
+                  <SendIcon />
+                )
+              }
               disabled={submitting || success}
               sx={{ minHeight: 44, fontWeight: 700 }}
             >

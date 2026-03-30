@@ -27,7 +27,7 @@ export async function checkStorageQuota() {
     if (usagePercent >= QUOTA_WARNING_THRESHOLD) {
       quotaWarn(
         `⚠️ Browser storage ${(usagePercent * 100).toFixed(0)}% full (${usageMB} MB / ${quotaMB} MB). ` +
-          'Consider clearing site data to avoid FILE_ERROR_NO_SPACE errors.'
+          'Consider clearing site data to avoid FILE_ERROR_NO_SPACE errors.',
       );
     }
   } catch {

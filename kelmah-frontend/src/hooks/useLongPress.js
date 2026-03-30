@@ -58,15 +58,12 @@ export default function useLongPress(onLongPress, options = {}) {
   }, [clear]);
 
   // Prevent native context menu when long-press fires
-  const onContextMenu = useCallback(
-    (e) => {
-      if (firedRef.current) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
-    },
-    [],
-  );
+  const onContextMenu = useCallback((e) => {
+    if (firedRef.current) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }, []);
 
   return { onTouchStart, onTouchMove, onTouchEnd, onContextMenu };
 }

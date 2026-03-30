@@ -185,9 +185,7 @@ const MessageInput = ({
     );
 
     if (files.length > availableAttachmentSlots) {
-      errors.push(
-        `You can attach up to ${MAX_ATTACHMENTS} files per message.`,
-      );
+      errors.push(`You can attach up to ${MAX_ATTACHMENTS} files per message.`);
     }
 
     files.slice(0, availableAttachmentSlots).forEach((file) => {
@@ -272,9 +270,12 @@ const MessageInput = ({
           </List>
         </DialogContent>
         <DialogActions>
-            <Button onClick={() => setShowAttachmentDialog(false)} sx={{ minHeight: 44 }}>
-              Close
-            </Button>
+          <Button
+            onClick={() => setShowAttachmentDialog(false)}
+            sx={{ minHeight: 44 }}
+          >
+            Close
+          </Button>
         </DialogActions>
       </Dialog>
 
@@ -358,7 +359,11 @@ const MessageInput = ({
         </IconButton>
       </Paper>
 
-      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.75 }}>
+      <Typography
+        variant="caption"
+        color="text.secondary"
+        sx={{ display: 'block', mt: 0.75 }}
+      >
         Tip: include the job title or request details for faster replies.
       </Typography>
       <Typography
@@ -373,14 +378,16 @@ const MessageInput = ({
         color="text.secondary"
         sx={{ display: 'block', mt: 0.25 }}
       >
-        Up to {MAX_ATTACHMENTS} files per message, {Math.round(MAX_FILE_SIZE / 1024 / 1024)}MB each.
+        Up to {MAX_ATTACHMENTS} files per message,{' '}
+        {Math.round(MAX_FILE_SIZE / 1024 / 1024)}MB each.
       </Typography>
 
       {/* Attachment Preview */}
       {attachments.length > 0 && (
         <Box sx={{ mt: 1 }}>
           <Typography variant="caption" color="text.secondary">
-            {attachments.length} attachment{attachments.length !== 1 ? 's' : ''} selected
+            {attachments.length} attachment{attachments.length !== 1 ? 's' : ''}{' '}
+            selected
           </Typography>
           <Button
             onClick={() => setShowAttachmentDialog(true)}
@@ -402,4 +409,3 @@ const MessageInput = ({
 };
 
 export default MessageInput;
-

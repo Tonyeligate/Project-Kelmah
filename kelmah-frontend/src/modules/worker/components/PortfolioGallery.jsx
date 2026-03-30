@@ -52,16 +52,31 @@ const PortfolioGallery = ({ items = [] }) => {
                 height="160"
                 image={resolvePreviewImage(item)}
                 alt={item.title}
-                onError={(e) => { e.target.onerror = null; e.target.src = ''; e.target.style.display = 'none'; }}
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = '';
+                  e.target.style.display = 'none';
+                }}
               />
               <CardContent>
-                <Typography variant="subtitle1" fontWeight={600} noWrap sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <Typography
+                  variant="subtitle1"
+                  fontWeight={600}
+                  noWrap
+                  sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}
+                >
                   {item.title}
                 </Typography>
                 <Typography
                   variant="body2"
                   color="text.secondary"
-                  sx={{ mt: 0.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
+                  sx={{
+                    mt: 0.5,
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                  }}
                 >
                   {item.description}
                 </Typography>

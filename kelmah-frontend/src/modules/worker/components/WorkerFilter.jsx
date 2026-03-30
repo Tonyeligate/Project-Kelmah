@@ -1,33 +1,3 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 const FilterPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
   marginBottom: theme.spacing(3),
@@ -114,7 +84,9 @@ const WorkerFilter = ({ onFilterChange }) => {
             placeholder="Search worker name, skill, or title"
             value={filters.searchTerm}
             onChange={(e) => handleFilterChange('searchTerm', e.target.value)}
-            inputProps={{ 'aria-label': 'Search workers by name, skill, or title' }}
+            inputProps={{
+              'aria-label': 'Search workers by name, skill, or title',
+            }}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -143,7 +115,11 @@ const WorkerFilter = ({ onFilterChange }) => {
             sx={{ '& .MuiInputBase-root': { minHeight: 44 } }}
           />
 
-          <FormControl fullWidth size="small" sx={{ '& .MuiInputBase-root': { minHeight: 44 } }}>
+          <FormControl
+            fullWidth
+            size="small"
+            sx={{ '& .MuiInputBase-root': { minHeight: 44 } }}
+          >
             <InputLabel id="category-select-label">Category</InputLabel>
             <Select
               labelId="category-select-label"
@@ -166,7 +142,11 @@ const WorkerFilter = ({ onFilterChange }) => {
             </Select>
           </FormControl>
         </Box>
-        <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.4 }}>
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ lineHeight: 1.4 }}
+        >
           Start with role and location. Open advanced filters only if you need
           to narrow the list further.
         </Typography>
@@ -182,7 +162,11 @@ const WorkerFilter = ({ onFilterChange }) => {
           <Button
             onClick={toggleAdvanced}
             startIcon={showAdvanced ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-            aria-label={showAdvanced ? 'Hide advanced worker filters' : 'Show advanced worker filters'}
+            aria-label={
+              showAdvanced
+                ? 'Hide advanced worker filters'
+                : 'Show advanced worker filters'
+            }
             sx={{ color: theme.palette.secondary.main }}
           >
             {showAdvanced ? 'Hide Advanced Filters' : 'Show Advanced Filters'}
@@ -213,7 +197,17 @@ const WorkerFilter = ({ onFilterChange }) => {
             <Divider sx={{ mb: 2 }} />
 
             <Typography gutterBottom variant="subtitle2">
-              Hourly Rate Range ({new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' }).format(filters.hourlyRateRange[0])} - {new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' }).format(filters.hourlyRateRange[1])})
+              Hourly Rate Range (
+              {new Intl.NumberFormat('en-GH', {
+                style: 'currency',
+                currency: 'GHS',
+              }).format(filters.hourlyRateRange[0])}{' '}
+              -{' '}
+              {new Intl.NumberFormat('en-GH', {
+                style: 'currency',
+                currency: 'GHS',
+              }).format(filters.hourlyRateRange[1])}
+              )
             </Typography>
             <Slider
               value={filters.hourlyRateRange}

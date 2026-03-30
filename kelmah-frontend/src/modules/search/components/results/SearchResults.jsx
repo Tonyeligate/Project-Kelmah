@@ -194,7 +194,9 @@ const SearchResults = ({
               startIcon={<MapIcon />}
               onClick={onToggleView}
               size={isMobile ? 'small' : 'medium'}
-              aria-label={showMap ? 'Switch to list view' : 'Switch to map view'}
+              aria-label={
+                showMap ? 'Switch to list view' : 'Switch to map view'
+              }
               sx={{ minHeight: 44, whiteSpace: 'nowrap' }}
             >
               {showMap ? 'List View' : 'Map View'}
@@ -269,7 +271,9 @@ const SearchResults = ({
             page={pagination.page}
             onChange={handlePageChange}
             getItemAriaLabel={(type, pageNumber) =>
-              type === 'page' ? `Go to search results page ${pageNumber}` : `Go to ${type} page`
+              type === 'page'
+                ? `Go to search results page ${pageNumber}`
+                : `Go to ${type} page`
             }
             color="primary"
             disabled={loading}

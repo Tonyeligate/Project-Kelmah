@@ -20,7 +20,12 @@ const PAGE_MAP = [
   { match: '/contracts', name: 'Contracts', icon: BusinessIcon, back: true },
   { match: '/messages', name: 'Messages', icon: MessageIcon, back: true },
   { match: '/chat', name: 'Messages', icon: MessageIcon, back: true },
-  { match: '/notifications', name: 'Notifications', icon: NotificationsIcon, back: true },
+  {
+    match: '/notifications',
+    name: 'Notifications',
+    icon: NotificationsIcon,
+    back: true,
+  },
   { match: '/profile', name: 'Profile', icon: PersonIcon, back: true },
   { match: '/wallet', name: 'Wallet', icon: WalletIcon, back: true },
   { match: '/settings', name: 'Settings', icon: SettingsIcon, back: true },
@@ -28,7 +33,11 @@ const PAGE_MAP = [
   { match: '/register', name: 'Get Started', icon: PersonIcon, back: false },
 ];
 
-const FALLBACK = { name: 'Kelmah', icon: EngineeringIcon, showBackButton: false };
+const FALLBACK = {
+  name: 'Kelmah',
+  icon: EngineeringIcon,
+  showBackButton: false,
+};
 
 export default function getCurrentPageInfo(pathname) {
   const entry = PAGE_MAP.find((p) => pathname.includes(p.match));

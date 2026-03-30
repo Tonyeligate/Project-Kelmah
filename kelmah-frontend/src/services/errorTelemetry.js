@@ -1,4 +1,7 @@
-import { isContractMismatchError, normalizeApiError } from './responseNormalizer';
+import {
+  isContractMismatchError,
+  normalizeApiError,
+} from './responseNormalizer';
 import { devWarn } from '../modules/common/utils/devLogger';
 
 const MAX_BUFFER_SIZE = 50;
@@ -21,7 +24,10 @@ const appendToWindowBuffer = (key, entry) => {
 };
 
 const emitWindowEvent = (name, detail) => {
-  if (typeof window === 'undefined' || typeof window.dispatchEvent !== 'function') {
+  if (
+    typeof window === 'undefined' ||
+    typeof window.dispatchEvent !== 'function'
+  ) {
     return;
   }
 

@@ -139,7 +139,9 @@ export const verifyAuth = createAsyncThunk(
       let verify = await authService.verifyAuth();
       devLog('Auth verify response:', verify);
 
-      const hasSessionHint = Boolean(token || storedUserSnapshot || storedRefreshToken);
+      const hasSessionHint = Boolean(
+        token || storedUserSnapshot || storedRefreshToken,
+      );
       const shouldAttemptCookieRefresh = AUTH_CONFIG.httpOnlyCookieAuth;
 
       if (verify?.success === false && !verify?.user && !token) {
@@ -353,10 +355,7 @@ const authSlice = createSlice({
         state.token = action.payload.token || state.token;
         state.loading = false;
         state.error = null;
-        devLog(
-          'Auth verification fulfilled with user:',
-          state.user?.email,
-        );
+        devLog('Auth verification fulfilled with user:', state.user?.email);
       })
       .addCase(verifyAuth.rejected, (state, action) => {
         state.loading = false;
@@ -404,4 +403,3 @@ export const { logout, clearError, setError, setOAuthLogin } =
 
 // Export reducer
 export default authSlice.reducer;
-

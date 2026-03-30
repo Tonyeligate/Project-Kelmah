@@ -29,4 +29,3 @@ export const logError = (error, context = 'general') => {
   devError(`[${context}]`, error);
   // In production, would send to error monitoring service
 };
-

@@ -141,9 +141,10 @@ function JobDetails() {
                 <Person color="action" />
                 <Typography color="text.secondary">
                   Posted by{' '}
-                  {job.hirer_name || (job.hirer?.firstName
-                    ? `${job.hirer?.firstName} ${job.hirer?.lastName || ''}`
-                    : 'Unknown')}
+                  {job.hirer_name ||
+                    (job.hirer?.firstName
+                      ? `${job.hirer?.firstName} ${job.hirer?.lastName || ''}`
+                      : 'Unknown')}
                 </Typography>
               </Box>
 
@@ -183,7 +184,8 @@ function JobDetails() {
                 <Typography color="text.secondary">
                   Posted{' '}
                   {(() => {
-                    const postedAt = job.createdAt || job.created_at || job.postedDate;
+                    const postedAt =
+                      job.createdAt || job.created_at || job.postedDate;
                     if (!postedAt) return 'Unknown';
                     const date = new Date(postedAt);
                     if (Number.isNaN(date.getTime())) return 'Unknown';
@@ -231,7 +233,10 @@ function JobDetails() {
               <Box display="flex" alignItems="center" gap={1}>
                 <CalendarToday color="action" />
                 <Typography color="text.secondary">
-                  Application Deadline: {isValid(new Date(job.deadline)) ? format(new Date(job.deadline), 'PPP') : 'N/A'}
+                  Application Deadline:{' '}
+                  {isValid(new Date(job.deadline))
+                    ? format(new Date(job.deadline), 'PPP')
+                    : 'N/A'}
                 </Typography>
               </Box>
             </Grid>
@@ -307,7 +312,8 @@ function JobDetails() {
             onClick={handleApply}
             variant="contained"
             color="secondary"
-            disabled={submitting}>
+            disabled={submitting}
+          >
             {submitting ? 'Submitting...' : 'Submit Application'}
           </Button>
         </DialogActions>

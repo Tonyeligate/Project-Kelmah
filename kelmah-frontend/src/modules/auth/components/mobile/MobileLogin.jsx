@@ -116,8 +116,13 @@ const MobileLogin = ({ registrationSuccess = false }) => {
       backgroundColor: alpha(theme.palette.text.primary, 0.06),
       borderRadius: 2,
       '& fieldset': { borderColor: alpha(theme.palette.text.primary, 0.15) },
-      '&:hover fieldset': { borderColor: alpha(theme.palette.primary.main, 0.4) },
-      '&.Mui-focused fieldset': { borderColor: theme.palette.primary.main, borderWidth: 2 },
+      '&:hover fieldset': {
+        borderColor: alpha(theme.palette.primary.main, 0.4),
+      },
+      '&.Mui-focused fieldset': {
+        borderColor: theme.palette.primary.main,
+        borderWidth: 2,
+      },
     },
     '& .MuiInputLabel-root': {
       color: theme.palette.text.secondary,
@@ -208,7 +213,12 @@ const MobileLogin = ({ registrationSuccess = false }) => {
                 minWidth: 44,
                 minHeight: 44,
                 '&:hover': { color: 'primary.main' },
-                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
+                '&:focus-visible': {
+                  outline: '3px solid',
+                  outlineColor: 'primary.main',
+                  outlineOffset: '2px',
+                },
+              }}
               aria-label="Go back to home"
             >
               <ArrowBackIcon />
@@ -216,7 +226,11 @@ const MobileLogin = ({ registrationSuccess = false }) => {
             <Box>
               <Typography
                 variant="h6"
-                sx={{ color: 'text.primary', fontWeight: 700, fontSize: '18px' }}
+                sx={{
+                  color: 'text.primary',
+                  fontWeight: 700,
+                  fontSize: '18px',
+                }}
               >
                 Welcome back
               </Typography>
@@ -226,7 +240,13 @@ const MobileLogin = ({ registrationSuccess = false }) => {
             </Box>
           </Box>
 
-          <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ mb: 2 }}>
+          <Stack
+            direction="row"
+            spacing={1}
+            useFlexGap
+            flexWrap="wrap"
+            sx={{ mb: 2 }}
+          >
             <Chip label="Find work faster" size="small" variant="outlined" />
             <Chip label="Track applications" size="small" variant="outlined" />
             <Chip label="Reply to hirers" size="small" variant="outlined" />
@@ -252,7 +272,9 @@ const MobileLogin = ({ registrationSuccess = false }) => {
                     '& .MuiAlert-message': { fontSize: '14px' },
                   }}
                 >
-                  {showSuccess ? 'Login successful!' : 'Account created! Please sign in.'}
+                  {showSuccess
+                    ? 'Login successful!'
+                    : 'Account created! Please sign in.'}
                 </Alert>
               </motion.div>
             )}
@@ -314,7 +336,9 @@ const MobileLogin = ({ registrationSuccess = false }) => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <EmailIcon sx={{ color: 'text.disabled', fontSize: 20 }} />
+                      <EmailIcon
+                        sx={{ color: 'text.disabled', fontSize: 20 }}
+                      />
                     </InputAdornment>
                   ),
                 }}
@@ -329,7 +353,8 @@ const MobileLogin = ({ registrationSuccess = false }) => {
                 value={password}
                 onChange={(e) => {
                   setPassword(e.target.value);
-                  if (errors.password) setErrors((p) => ({ ...p, password: '' }));
+                  if (errors.password)
+                    setErrors((p) => ({ ...p, password: '' }));
                 }}
                 error={Boolean(errors.password)}
                 helperText={errors.password}
@@ -345,8 +370,19 @@ const MobileLogin = ({ registrationSuccess = false }) => {
                       <IconButton
                         onClick={() => setShowPassword(!showPassword)}
                         edge="end"
-                        aria-label={showPassword ? 'Hide password' : 'Show password'}
-                        sx={{ color: 'text.disabled', minWidth: 44, minHeight: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
+                        aria-label={
+                          showPassword ? 'Hide password' : 'Show password'
+                        }
+                        sx={{
+                          color: 'text.disabled',
+                          minWidth: 44,
+                          minHeight: 44,
+                          '&:focus-visible': {
+                            outline: '3px solid',
+                            outlineColor: 'primary.main',
+                            outlineOffset: '2px',
+                          },
+                        }}
                       >
                         {showPassword ? <VisibilityOff /> : <Visibility />}
                       </IconButton>
@@ -357,7 +393,15 @@ const MobileLogin = ({ registrationSuccess = false }) => {
               />
 
               {/* Remember & Forgot */}
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, flexDirection: { xs: 'column', sm: 'row' }, gap: 1 }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: { xs: 'flex-start', sm: 'center' },
+                  flexDirection: { xs: 'column', sm: 'row' },
+                  gap: 1,
+                }}
+              >
                 <FormControlLabel
                   control={
                     <Checkbox
@@ -371,7 +415,9 @@ const MobileLogin = ({ registrationSuccess = false }) => {
                     />
                   }
                   label={
-                    <Typography sx={{ color: 'text.secondary', fontSize: '14px' }}>
+                    <Typography
+                      sx={{ color: 'text.secondary', fontSize: '14px' }}
+                    >
                       Remember me
                     </Typography>
                   }
@@ -387,7 +433,10 @@ const MobileLogin = ({ registrationSuccess = false }) => {
                     px: 1,
                     minHeight: 44,
                     minWidth: 'auto',
-                    '&:hover': { textDecoration: 'underline', backgroundColor: 'transparent' },
+                    '&:hover': {
+                      textDecoration: 'underline',
+                      backgroundColor: 'transparent',
+                    },
                   }}
                 >
                   Forgot Password?
@@ -406,11 +455,13 @@ const MobileLogin = ({ registrationSuccess = false }) => {
                   fontSize: '15px',
                   fontWeight: 700,
                   textTransform: 'none',
-                  background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
+                  background:
+                    'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
                   color: '#000',
                   boxShadow: '0 4px 15px rgba(255, 215, 0, 0.3)',
                   '&:hover': {
-                    background: 'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
+                    background:
+                      'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
                     boxShadow: '0 6px 20px rgba(255, 215, 0, 0.4)',
                   },
                   '&:disabled': {
@@ -456,7 +507,10 @@ const MobileLogin = ({ registrationSuccess = false }) => {
                 px: 1,
                 minHeight: 44,
                 minWidth: { xs: '100%', sm: 'auto' },
-                '&:hover': { textDecoration: 'underline', backgroundColor: 'transparent' },
+                '&:hover': {
+                  textDecoration: 'underline',
+                  backgroundColor: 'transparent',
+                },
               }}
             >
               Sign Up
@@ -472,5 +526,3 @@ const MobileLogin = ({ registrationSuccess = false }) => {
 };
 
 export default MobileLogin;
-
-

@@ -12,12 +12,21 @@ import { useState, useEffect } from 'react';
  */
 export default function useNetworkSpeed() {
   const getConnectionInfo = () => {
-    const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-    if (!conn) return { effectiveType: 'unknown', downlink: null, rtt: null, saveData: false };
+    const conn =
+      navigator.connection ||
+      navigator.mozConnection ||
+      navigator.webkitConnection;
+    if (!conn)
+      return {
+        effectiveType: 'unknown',
+        downlink: null,
+        rtt: null,
+        saveData: false,
+      };
     return {
       effectiveType: conn.effectiveType || 'unknown', // '2g' | '3g' | '4g' | 'slow-2g'
-      downlink: conn.downlink ?? null,                 // Mbps
-      rtt: conn.rtt ?? null,                           // ms
+      downlink: conn.downlink ?? null, // Mbps
+      rtt: conn.rtt ?? null, // ms
       saveData: conn.saveData || false,
     };
   };
@@ -39,10 +48,15 @@ export default function useNetworkSpeed() {
 
   const initial = getConnectionInfo();
   const [info, setInfo] = useState(initial);
-  const [tier, setTier] = useState(tierFromType(initial.effectiveType, initial.saveData));
+  const [tier, setTier] = useState(
+    tierFromType(initial.effectiveType, initial.saveData),
+  );
 
   useEffect(() => {
-    const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    const conn =
+      navigator.connection ||
+      navigator.mozConnection ||
+      navigator.webkitConnection;
     if (!conn) return;
 
     const handleChange = () => {

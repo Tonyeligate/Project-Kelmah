@@ -1,6 +1,6 @@
 /**
  * Service Warm-Up Utility
- * 
+ *
  * Wakes up backend services that may have gone to sleep on Render free tier.
  * Called when the app initializes to reduce cold start delays.
  */
@@ -12,9 +12,7 @@ import {
   devWarn as warmupWarn,
 } from '../modules/common/utils/devLogger';
 
-const WARMUP_ENDPOINTS = [
-  '/health/aggregate'
-];
+const WARMUP_ENDPOINTS = ['/health/aggregate'];
 
 const WARMUP_TIMEOUT = 30000; // 30 seconds for cold starts
 const MAX_WARMUP_RETRIES = 1;
@@ -116,22 +114,25 @@ const pingEndpoint = async (baseUrl, endpoint) => {
       method: 'GET',
       signal: controller.signal,
       headers: {
-        'Accept': 'application/json',
-      }
+        Accept: 'application/json',
+      },
     });
     clearTimeout(timeoutId);
     return {
       endpoint,
       success: response.ok,
       status: response.status,
-      isWakingUp: response.status === 503 // Service starting up
+      isWakingUp: response.status === 503, // Service starting up
     };
   } catch (error) {
     clearTimeout(timeoutId);
     return {
       endpoint,
       success: false,
-      error: error.name === 'AbortError' ? 'Timeout (service may be waking up)' : error.message
+      error:
+        error.name === 'AbortError'
+          ? 'Timeout (service may be waking up)'
+          : error.message,
     };
   }
 };
@@ -187,7 +188,8 @@ export const warmUpServices = async (options = {}) => {
   if (typeof navigator !== 'undefined' && navigator.onLine === false) {
     setWarmupStatus({
       state: 'offline',
-      message: 'You are offline. Service warm-up will run when connection returns.',
+      message:
+        'You are offline. Service warm-up will run when connection returns.',
     });
     clearScheduledWarmUpRetry(retryState);
     retryState.retryCount = 0;
@@ -222,27 +224,36 @@ export const warmUpServices = async (options = {}) => {
     warmupLog('🔥 Warming up backend services...');
     setWarmupStatus({
       state: 'starting',
-      message: 'Checking backend availability. This can take up to a minute after idle time.',
+      message:
+        'Checking backend availability. This can take up to a minute after idle time.',
     });
     const startTime = Date.now();
     setLastWarmupAt(startTime);
 
     // Ping health endpoints in parallel
     const results = await Promise.allSettled(
-      WARMUP_ENDPOINTS.map(endpoint => pingEndpoint(baseUrl, endpoint))
+      WARMUP_ENDPOINTS.map((endpoint) => pingEndpoint(baseUrl, endpoint)),
     );
 
     const elapsed = Date.now() - startTime;
-    const successful = results.filter(r => r.status === 'fulfilled' && r.value?.success).length;
-    const wakingUp = results.filter(r => r.status === 'fulfilled' && r.value?.isWakingUp).length;
+    const successful = results.filter(
+      (r) => r.status === 'fulfilled' && r.value?.success,
+    ).length;
+    const wakingUp = results.filter(
+      (r) => r.status === 'fulfilled' && r.value?.isWakingUp,
+    ).length;
 
-    warmupLog(`🔥 Service warm-up complete: ${successful}/${results.length} healthy, ${wakingUp} waking up (${elapsed}ms)`);
+    warmupLog(
+      `🔥 Service warm-up complete: ${successful}/${results.length} healthy, ${wakingUp} waking up (${elapsed}ms)`,
+    );
 
     // If services are waking up, schedule a limited retry.
     if (wakingUp > 0) {
       if (retryState.retryCount < maxRetries) {
         retryState.retryCount += 1;
-        warmupLog(`⏳ Services waking up, retry ${retryState.retryCount}/${maxRetries} in ${RETRY_DELAY_MS / 1000} seconds...`);
+        warmupLog(
+          `⏳ Services waking up, retry ${retryState.retryCount}/${maxRetries} in ${RETRY_DELAY_MS / 1000} seconds...`,
+        );
         if (!retryState.retryTimer) {
           retryState.retryTimer = setTimeout(() => {
             retryState.retryTimer = null;
@@ -250,7 +261,9 @@ export const warmUpServices = async (options = {}) => {
           }, RETRY_DELAY_MS);
         }
       } else {
-        warmupWarn('⚠️ Max warm-up retries reached. Some services may still be waking up.');
+        warmupWarn(
+          '⚠️ Max warm-up retries reached. Some services may still be waking up.',
+        );
         clearScheduledWarmUpRetry(retryState);
         retryState.retryCount = 0;
       }
@@ -272,7 +285,9 @@ export const warmUpServices = async (options = {}) => {
       total: results.length,
       wakingUp,
       elapsed,
-      results: results.map(r => r.status === 'fulfilled' ? r.value : { error: r.reason }),
+      results: results.map((r) =>
+        r.status === 'fulfilled' ? r.value : { error: r.reason },
+      ),
     };
   } catch (error) {
     setWarmupStatus({
@@ -299,7 +314,7 @@ export const checkServicesReady = async () => {
  */
 export const waitForServices = async (maxWaitMs = 60000) => {
   const startTime = Date.now();
-  
+
   while (Date.now() - startTime < maxWaitMs) {
     const ready = await checkServicesReady();
     if (ready) {
@@ -307,10 +322,12 @@ export const waitForServices = async (maxWaitMs = 60000) => {
       return true;
     }
     // Wait 5 seconds before retry
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    await new Promise((resolve) => setTimeout(resolve, 5000));
   }
-  
-  warmupWarn('⚠️ Services warm-up timeout - some services may still be starting');
+
+  warmupWarn(
+    '⚠️ Services warm-up timeout - some services may still be starting',
+  );
   return false;
 };
 

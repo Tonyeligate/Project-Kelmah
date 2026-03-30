@@ -13,6 +13,7 @@ export const BOTTOM_NAV_HEIGHT = 56; // px — MobileBottomNav
 export const STICKY_CTA_HEIGHT = 64; // px — sticky bottom action bars
 export const TOUCH_TARGET_MIN = 44; // px — WCAG-friendly touch area
 
+export const COMPACT_MOBILE_BREAKPOINT = 390;
 // 8/12/16/24 spacing rhythm for mobile sections
 export const MOBILE_SPACE = {
   xs: 8,
@@ -53,6 +54,7 @@ export const Z_INDEX = {
 };
 
 export default {
+  COMPACT_MOBILE_BREAKPOINT,
   HEADER_HEIGHT,
   HEADER_HEIGHT_MOBILE,
   BOTTOM_NAV_HEIGHT,

@@ -32,8 +32,23 @@ const DashboardPage = () => {
 
   if (!user) {
     return (
-      <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
-        <Box sx={{ p: 3, textAlign: 'center', minHeight: '50vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minWidth: 0, overflowX: 'hidden' }}>
+      <PageCanvas
+        disableContainer
+        sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}
+      >
+        <Box
+          sx={{
+            p: 3,
+            textAlign: 'center',
+            minHeight: '50vh',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minWidth: 0,
+            overflowX: 'hidden',
+          }}
+        >
           <LockIcon sx={{ fontSize: 56, color: 'secondary.main', mb: 2 }} />
           <Typography variant="h6" gutterBottom>
             Please sign in to continue
@@ -77,10 +92,19 @@ const DashboardPage = () => {
       break;
     case 'admin':
       dashboard = (
-        <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
-          <Box sx={{ p: 3, textAlign: 'center', minWidth: 0, overflowX: 'hidden' }}>
-            <Typography variant="h5" gutterBottom>Admin Dashboard</Typography>
-            <Typography variant="body1">Admin tools are available in the admin section.</Typography>
+        <PageCanvas
+          disableContainer
+          sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}
+        >
+          <Box
+            sx={{ p: 3, textAlign: 'center', minWidth: 0, overflowX: 'hidden' }}
+          >
+            <Typography variant="h5" gutterBottom>
+              Admin Dashboard
+            </Typography>
+            <Typography variant="body1">
+              Admin tools are available in the admin section.
+            </Typography>
             <Button
               variant="outlined"
               onClick={() => navigate(getRoleHomePath(user))}
@@ -112,11 +136,12 @@ const DashboardPage = () => {
 
   return (
     <>
-      <Helmet><title>Dashboard | Kelmah</title></Helmet>
+      <Helmet>
+        <title>Dashboard | Kelmah</title>
+      </Helmet>
       {dashboard}
     </>
   );
 };
 
 export default DashboardPage;
-

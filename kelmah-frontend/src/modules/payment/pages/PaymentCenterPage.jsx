@@ -62,7 +62,11 @@ import { currencyFormatter } from '@/modules/common/utils/formatters';
 import { hasRole } from '../../../utils/userUtils';
 import { useBreakpointDown } from '../../../hooks/useResponsive';
 import PageCanvas from '../../common/components/PageCanvas';
-import { BOTTOM_NAV_HEIGHT, HEADER_HEIGHT_MOBILE, Z_INDEX } from '../../../constants/layout';
+import {
+  BOTTOM_NAV_HEIGHT,
+  HEADER_HEIGHT_MOBILE,
+  Z_INDEX,
+} from '../../../constants/layout';
 
 const WalletSummary = ({ balance, onDepositClick, onWithdrawClick }) => (
   <Paper
@@ -85,13 +89,22 @@ const WalletSummary = ({ balance, onDepositClick, onWithdrawClick }) => (
         Wallet Balance
       </Typography>
     </Box>
-      <Typography variant="body2" sx={{ opacity: 0.85, mb: 1.5 }}>
-        Available funds can be added or withdrawn. Escrow amounts are released after work is confirmed.
-      </Typography>
-      <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary', mb: 1.25 }}>
-        Confidence note: every wallet action creates a transaction record you can review below.
-      </Typography>
-    <Typography variant="h3" fontWeight="bold" sx={{ my: 1, fontSize: { xs: '1.75rem', md: '3rem' } }}>
+    <Typography variant="body2" sx={{ opacity: 0.85, mb: 1.5 }}>
+      Available funds can be added or withdrawn. Escrow amounts are released
+      after work is confirmed.
+    </Typography>
+    <Typography
+      variant="caption"
+      sx={{ display: 'block', color: 'text.secondary', mb: 1.25 }}
+    >
+      Confidence note: every wallet action creates a transaction record you can
+      review below.
+    </Typography>
+    <Typography
+      variant="h3"
+      fontWeight="bold"
+      sx={{ my: 1, fontSize: { xs: '1.75rem', md: '3rem' } }}
+    >
       {currencyFormatter.format(balance)}
     </Typography>
     <Box sx={{ mt: 3, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
@@ -132,84 +145,116 @@ const TransactionHistory = ({ transactions }) => {
         <Typography variant="h6" fontWeight="bold" sx={{ mb: 1 }}>
           No transactions yet
         </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 360, mx: 'auto' }}>
-          Deposits, withdrawals, and escrow releases will appear here once you start using your wallet.
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ maxWidth: 360, mx: 'auto' }}
+        >
+          Deposits, withdrawals, and escrow releases will appear here once you
+          start using your wallet.
         </Typography>
       </Paper>
     );
   }
 
   return (
-  <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 2 }}>
-    <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
-      Recent Transactions
-    </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        Transaction history helps you track deposits, payouts, and escrow releases in one place.
+    <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 2 }}>
+      <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
+        Recent Transactions
       </Typography>
-    <List>
-      {(transactions || []).slice(0, 5).map((tx, idx) => (
-        <React.Fragment key={tx.id || tx._id}>
-          <ListItem
-            sx={{
-              alignItems: isNarrowMobile ? 'flex-start' : 'center',
-              flexDirection: isNarrowMobile ? 'column' : 'row',
-              gap: isNarrowMobile ? 1 : 0,
-            }}
-          >
-            <ListItemIcon sx={{ minWidth: isNarrowMobile ? 40 : 56 }}>
-              <Avatar
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+        Transaction history helps you track deposits, payouts, and escrow
+        releases in one place.
+      </Typography>
+      <List>
+        {(transactions || []).slice(0, 5).map((tx, idx) => (
+          <React.Fragment key={tx.id || tx._id}>
+            <ListItem
+              sx={{
+                alignItems: isNarrowMobile ? 'flex-start' : 'center',
+                flexDirection: isNarrowMobile ? 'column' : 'row',
+                gap: isNarrowMobile ? 1 : 0,
+              }}
+            >
+              <ListItemIcon sx={{ minWidth: isNarrowMobile ? 40 : 56 }}>
+                <Avatar
+                  sx={{
+                    bgcolor:
+                      tx.type === 'deposit' ? 'success.light' : 'error.light',
+                  }}
+                >
+                  {tx.type === 'deposit' ? (
+                    <ArrowUpwardIcon />
+                  ) : (
+                    <ArrowDownwardIcon />
+                  )}
+                </Avatar>
+              </ListItemIcon>
+              <ListItemText
+                primary={tx.title}
+                secondary={(() => {
+                  try {
+                    return tx.date
+                      ? format(new Date(tx.date), 'dd/MM/yyyy, hh:mm a')
+                      : 'Date unavailable';
+                  } catch {
+                    return 'Date unavailable';
+                  }
+                })()}
+                sx={{ mb: isNarrowMobile ? 0.5 : 0 }}
+              />
+              <Box
                 sx={{
-                  bgcolor:
-                    tx.type === 'deposit' ? 'success.light' : 'error.light',
+                  minWidth: isNarrowMobile ? 0 : 140,
+                  ml: isNarrowMobile ? 0 : 1.5,
                 }}
               >
-                {tx.type === 'deposit' ? (
-                  <ArrowUpwardIcon />
-                ) : (
-                  <ArrowDownwardIcon />
-                )}
-              </Avatar>
-            </ListItemIcon>
-            <ListItemText
-              primary={tx.title}
-              secondary={(() => {
-                try {
-                  return tx.date ? format(new Date(tx.date), 'dd/MM/yyyy, hh:mm a') : 'Date unavailable';
-                } catch { return 'Date unavailable'; }
-              })()}
-              sx={{ mb: isNarrowMobile ? 0.5 : 0 }}
-            />
-            <Box sx={{ minWidth: isNarrowMobile ? 0 : 140, ml: isNarrowMobile ? 0 : 1.5 }}>
-              <Typography
-                color={tx.type === 'deposit' ? 'success.main' : 'error.main'}
-                fontWeight="bold"
-                sx={{ textAlign: isNarrowMobile ? 'left' : 'right', fontSize: isNarrowMobile ? '0.95rem' : '1rem' }}
-              >
-                {(tx.type === 'deposit' ? '+' : '-') + currencyFormatter.format(tx.amount)}
-              </Typography>
-              {isNarrowMobile && (
-                <Typography variant="caption" color="text.secondary">
-                  {tx.type === 'deposit' ? 'Money in' : 'Money out'}
+                <Typography
+                  color={tx.type === 'deposit' ? 'success.main' : 'error.main'}
+                  fontWeight="bold"
+                  sx={{
+                    textAlign: isNarrowMobile ? 'left' : 'right',
+                    fontSize: isNarrowMobile ? '0.95rem' : '1rem',
+                  }}
+                >
+                  {(tx.type === 'deposit' ? '+' : '-') +
+                    currencyFormatter.format(tx.amount)}
                 </Typography>
-              )}
-            </Box>
-          </ListItem>
-          {idx < transactions.slice(0, 4).length && (
-            <Divider variant="inset" component="li" />
-          )}
-        </React.Fragment>
-      ))}
-    </List>
-  </Paper>
+                {isNarrowMobile && (
+                  <Typography variant="caption" color="text.secondary">
+                    {tx.type === 'deposit' ? 'Money in' : 'Money out'}
+                  </Typography>
+                )}
+              </Box>
+            </ListItem>
+            {idx < transactions.slice(0, 4).length && (
+              <Divider variant="inset" component="li" />
+            )}
+          </React.Fragment>
+        ))}
+      </List>
+    </Paper>
   );
 };
 
-const PaymentMethodsView = ({ methods, onEditMethod, onRequestDelete, paymentMethodsPath }) => {
+const PaymentMethodsView = ({
+  methods,
+  onEditMethod,
+  onRequestDelete,
+  paymentMethodsPath,
+}) => {
   // Empty state
   if (!methods || methods.length === 0) {
     return (
-      <Paper sx={{ p: { xs: 3, md: 4 }, borderRadius: 2, textAlign: 'center', border: '1px dashed', borderColor: 'divider' }}>
+      <Paper
+        sx={{
+          p: { xs: 3, md: 4 },
+          borderRadius: 2,
+          textAlign: 'center',
+          border: '1px dashed',
+          borderColor: 'divider',
+        }}
+      >
         <CreditCardIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }} />
         <Typography variant="h6" fontWeight="bold" sx={{ mb: 1 }}>
           No Payment Methods
@@ -217,8 +262,13 @@ const PaymentMethodsView = ({ methods, onEditMethod, onRequestDelete, paymentMet
         <Typography color="text.secondary" sx={{ mb: 2 }}>
           Add a payment method to send and receive payments securely.
         </Typography>
-        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
-          Setup path: choose provider, add account details, then set one method as default for faster checkout.
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ display: 'block', mb: 2 }}
+        >
+          Setup path: choose provider, add account details, then set one method
+          as default for faster checkout.
         </Typography>
         <Button
           variant="contained"
@@ -411,13 +461,24 @@ const ActiveEscrows = ({ escrows }) => {
   // Empty state when no active escrows
   if (!escrows || escrows.length === 0) {
     return (
-      <Paper sx={{ p: { xs: 3, md: 4 }, borderRadius: 2, textAlign: 'center', border: '1px dashed', borderColor: 'divider' }}>
-        <AccountBalanceWalletIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }} />
+      <Paper
+        sx={{
+          p: { xs: 3, md: 4 },
+          borderRadius: 2,
+          textAlign: 'center',
+          border: '1px dashed',
+          borderColor: 'divider',
+        }}
+      >
+        <AccountBalanceWalletIcon
+          sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }}
+        />
         <Typography variant="h6" fontWeight="bold" sx={{ mb: 1 }}>
           No Active Escrows
         </Typography>
         <Typography color="text.secondary" sx={{ mb: 2 }}>
-          Escrow protects both parties during a job. Start a contract to use escrow.
+          Escrow protects both parties during a job. Start a contract to use
+          escrow.
         </Typography>
         <Button
           variant="contained"
@@ -601,7 +662,17 @@ const BillsView = ({ bills, actionLoading, onPayBill }) => {
               </ListItemIcon>
               <ListItemText
                 primary={bill.title}
-                secondary={`Due: ${bill.dueDate ? (() => { try { return format(new Date(bill.dueDate), 'd MMMM yyyy'); } catch { return 'Unknown'; } })() : 'Unknown'}`}
+                secondary={`Due: ${
+                  bill.dueDate
+                    ? (() => {
+                        try {
+                          return format(new Date(bill.dueDate), 'd MMMM yyyy');
+                        } catch {
+                          return 'Unknown';
+                        }
+                      })()
+                    : 'Unknown'
+                }`}
               />
               <Typography
                 fontWeight="bold"
@@ -671,7 +742,9 @@ const PaymentCenterPage = () => {
   const [methodId, setMethodId] = useState('');
   const [dialogSubmitting, setDialogSubmitting] = useState(false);
   const canManagePaymentMethods = hasRole(user, ['worker', 'admin']);
-  const paymentMethodsPath = canManagePaymentMethods ? '/payment/methods' : '/payments';
+  const paymentMethodsPath = canManagePaymentMethods
+    ? '/payment/methods'
+    : '/payments';
   const escrowManagerPath = hasRole(user, ['worker', 'admin'])
     ? '/worker/payment/escrows'
     : '/payments';
@@ -750,15 +823,20 @@ const PaymentCenterPage = () => {
     setAppliedBillStatus('all');
     setBillPage(1);
   };
-  const filteredBills = useMemo(() => (bills || []).filter((b) => {
-    let ok = true;
-    if (appliedBillStartDate)
-      ok = ok && new Date(b.dueDate) >= new Date(appliedBillStartDate);
-    if (appliedBillEndDate)
-      ok = ok && new Date(b.dueDate) <= new Date(appliedBillEndDate);
-    if (appliedBillStatus !== 'all') ok = ok && b.status === appliedBillStatus;
-    return ok;
-  }), [bills, appliedBillStartDate, appliedBillEndDate, appliedBillStatus]);
+  const filteredBills = useMemo(
+    () =>
+      (bills || []).filter((b) => {
+        let ok = true;
+        if (appliedBillStartDate)
+          ok = ok && new Date(b.dueDate) >= new Date(appliedBillStartDate);
+        if (appliedBillEndDate)
+          ok = ok && new Date(b.dueDate) <= new Date(appliedBillEndDate);
+        if (appliedBillStatus !== 'all')
+          ok = ok && b.status === appliedBillStatus;
+        return ok;
+      }),
+    [bills, appliedBillStartDate, appliedBillEndDate, appliedBillStatus],
+  );
   const billPageCount = Math.ceil(filteredBills.length / billPerPage);
   const pagedBills = filteredBills.slice(
     (billPage - 1) * billPerPage,
@@ -785,9 +863,14 @@ const PaymentCenterPage = () => {
     setAppliedEscrowStatus(escrowStatusFilter);
     setEscrowPage(1);
   };
-  const filteredEscrows = useMemo(() => (escrows || []).filter(
-    (e) => appliedEscrowStatus === 'all' || e.status === appliedEscrowStatus,
-  ), [escrows, appliedEscrowStatus]);
+  const filteredEscrows = useMemo(
+    () =>
+      (escrows || []).filter(
+        (e) =>
+          appliedEscrowStatus === 'all' || e.status === appliedEscrowStatus,
+      ),
+    [escrows, appliedEscrowStatus],
+  );
   const escrowPageCount = Math.ceil(filteredEscrows.length / escrowPerPage);
   const pagedEscrows = filteredEscrows.slice(
     (escrowPage - 1) * escrowPerPage,
@@ -840,7 +923,10 @@ const PaymentCenterPage = () => {
 
   if (loading)
     return (
-      <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
+      <PageCanvas
+        disableContainer
+        sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}
+      >
         <Container sx={{ py: { xs: 2, md: 4 } }}>
           <Skeleton variant="rectangular" height={300} />
         </Container>
@@ -848,7 +934,10 @@ const PaymentCenterPage = () => {
     );
   if (error)
     return (
-      <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
+      <PageCanvas
+        disableContainer
+        sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}
+      >
         <Container sx={{ py: { xs: 2, md: 4 } }}>
           <Alert
             severity="error"
@@ -865,652 +954,835 @@ const PaymentCenterPage = () => {
     );
 
   return (
-    <PageCanvas disableContainer sx={{ pt: { xs: 1, md: 4 }, pb: { xs: 10, md: 6 }, overflowX: 'clip' }}>
-      <Container maxWidth="xl" sx={{ py: { xs: 1, md: 4 }, px: { xs: 0.75, sm: 2 }, width: '100%', minWidth: 0 }}>
-      <Helmet><title>Payment Center | Kelmah</title></Helmet>
-      <Box
+    <PageCanvas
+      disableContainer
+      sx={{ pt: { xs: 1, md: 4 }, pb: { xs: 10, md: 6 }, overflowX: 'clip' }}
+    >
+      <Container
+        maxWidth="xl"
         sx={{
-          position: { xs: 'sticky', md: 'static' },
-          top: { xs: HEADER_HEIGHT_MOBILE, md: 'auto' },
-          zIndex: { xs: Z_INDEX.sticky, md: 'auto' },
-          py: { xs: 0.5, md: 0 },
-          mb: { xs: 1.5, md: 0 },
-          backgroundColor: { xs: 'background.default', md: 'transparent' },
+          py: { xs: 1, md: 4 },
+          px: { xs: 0.75, sm: 2 },
+          width: '100%',
+          minWidth: 0,
         }}
       >
-        <Typography
-          variant={isCompactMobile ? 'h5' : 'h4'}
-          fontWeight="bold"
-          sx={{ mb: 0.5, color: 'secondary.main', fontSize: { xs: '1.3rem', md: '2.125rem' }, lineHeight: 1.1 }}
+        <Helmet>
+          <title>Payment Center | Kelmah</title>
+        </Helmet>
+        <Box
+          sx={{
+            position: { xs: 'sticky', md: 'static' },
+            top: { xs: HEADER_HEIGHT_MOBILE, md: 'auto' },
+            zIndex: { xs: Z_INDEX.sticky, md: 'auto' },
+            py: { xs: 0.5, md: 0 },
+            mb: { xs: 1.5, md: 0 },
+            backgroundColor: { xs: 'background.default', md: 'transparent' },
+          }}
         >
-          Payments
-        </Typography>
-        <Typography color="text.secondary" sx={{ mb: { xs: 1.25, md: 4 }, fontSize: { xs: '0.8rem', sm: '0.9rem' } }}>
-          Manage your wallet, transactions, and payment methods.
-        </Typography>
-      </Box>
-      {walletMissing && !error && (
-        <Alert severity="info" sx={{ mb: 2 }}>
-          Your wallet will be provisioned automatically on your first deposit or payout. Until then, a {currencyFormatter.format(0)} balance means no wallet exists yet, not that funds were cleared.
-        </Alert>
-      )}
+          <Typography
+            variant={isCompactMobile ? 'h5' : 'h4'}
+            fontWeight="bold"
+            sx={{
+              mb: 0.5,
+              color: 'secondary.main',
+              fontSize: { xs: '1.3rem', md: '2.125rem' },
+              lineHeight: 1.1,
+            }}
+          >
+            Payments
+          </Typography>
+          <Typography
+            color="text.secondary"
+            sx={{
+              mb: { xs: 1.25, md: 4 },
+              fontSize: { xs: '0.8rem', sm: '0.9rem' },
+            }}
+          >
+            Manage your wallet, transactions, and payment methods.
+          </Typography>
+        </Box>
+        {walletMissing && !error && (
+          <Alert severity="info" sx={{ mb: 2 }}>
+            Your wallet will be provisioned automatically on your first deposit
+            or payout. Until then, a {currencyFormatter.format(0)} balance means
+            no wallet exists yet, not that funds were cleared.
+          </Alert>
+        )}
 
-      <Grid container spacing={{ xs: 1.5, md: 4 }}>
-        <Grid item xs={12} lg={4}>
-          <WalletSummary
-            balance={walletBalance}
-            onDepositClick={openDepositDialog}
-            onWithdrawClick={openWithdrawDialog}
-          />
-        </Grid>
-
-        <Grid item xs={12} lg={8}>
-          {/* Summary row for illiterate-friendly icon counts */}
-          <Grid container spacing={{ xs: 1, sm: 2 }} sx={{ mb: 2 }}>
-            <Grid item xs={6} sm={3}>
-              <SummaryCard
-                icon={ReceiptIcon}
-                count={(transactions || []).length}
-                label="Transactions"
-              />
-            </Grid>
-            <Grid item xs={6} sm={3}>
-              <SummaryCard
-                icon={CreditCardIcon}
-                count={(paymentMethods || []).length}
-                label="Methods"
-              />
-            </Grid>
-            <Grid item xs={6} sm={3}>
-              <SummaryCard
-                icon={GavelIcon}
-                count={(escrows || []).length}
-                label="Escrows"
-              />
-              <Box sx={{ mt: 1 }}>
-                <Button
-                  component={RouterLink}
-                  to={escrowManagerPath}
-                  size="small"
-                  variant="outlined"
-                  sx={{ minHeight: 44 }}
-                >
-                  Open Escrow Manager
-                </Button>
-              </Box>
-            </Grid>
-            <Grid item xs={6} sm={3}>
-              <SummaryCard
-                icon={ReceiptLongIcon}
-                count={(bills || []).length}
-                label="Bills"
-              />
-            </Grid>
+        <Grid container spacing={{ xs: 1.5, md: 4 }}>
+          <Grid item xs={12} lg={4}>
+            <WalletSummary
+              balance={walletBalance}
+              onDepositClick={openDepositDialog}
+              onWithdrawClick={openWithdrawDialog}
+            />
           </Grid>
 
-          <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2, position: { xs: 'sticky', md: 'static' }, top: { xs: HEADER_HEIGHT_MOBILE + BOTTOM_NAV_HEIGHT - 4, md: 'auto' }, zIndex: { xs: Z_INDEX.sticky, md: 'auto' }, backgroundColor: { xs: 'background.default', md: 'transparent' } }}>
-            <Tabs
-              value={tabIndex}
-              onChange={handleTabChange}
-              aria-label="Payment center tabs"
-              variant={isMobile ? 'scrollable' : 'standard'}
-              scrollButtons="auto"
-              allowScrollButtonsMobile
-              indicatorColor="secondary"
-              textColor="inherit"
+          <Grid item xs={12} lg={8}>
+            {/* Summary row for illiterate-friendly icon counts */}
+            <Grid container spacing={{ xs: 1, sm: 2 }} sx={{ mb: 2 }}>
+              <Grid item xs={6} sm={3}>
+                <SummaryCard
+                  icon={ReceiptIcon}
+                  count={(transactions || []).length}
+                  label="Transactions"
+                />
+              </Grid>
+              <Grid item xs={6} sm={3}>
+                <SummaryCard
+                  icon={CreditCardIcon}
+                  count={(paymentMethods || []).length}
+                  label="Methods"
+                />
+              </Grid>
+              <Grid item xs={6} sm={3}>
+                <SummaryCard
+                  icon={GavelIcon}
+                  count={(escrows || []).length}
+                  label="Escrows"
+                />
+                <Box sx={{ mt: 1 }}>
+                  <Button
+                    component={RouterLink}
+                    to={escrowManagerPath}
+                    size="small"
+                    variant="outlined"
+                    sx={{ minHeight: 44 }}
+                  >
+                    Open Escrow Manager
+                  </Button>
+                </Box>
+              </Grid>
+              <Grid item xs={6} sm={3}>
+                <SummaryCard
+                  icon={ReceiptLongIcon}
+                  count={(bills || []).length}
+                  label="Bills"
+                />
+              </Grid>
+            </Grid>
+
+            <Box
               sx={{
-                '& .MuiTab-root': { color: 'text.secondary', minWidth: { xs: 'auto', md: 120 }, minHeight: { xs: 40, md: 48 }, px: { xs: 1, md: 2 }, py: { xs: 0.5, md: 1.25 } },
-                '& .Mui-selected': { color: 'secondary.main' },
+                borderBottom: 1,
+                borderColor: 'divider',
+                mb: 2,
+                position: { xs: 'sticky', md: 'static' },
+                top: {
+                  xs: HEADER_HEIGHT_MOBILE + BOTTOM_NAV_HEIGHT - 4,
+                  md: 'auto',
+                },
+                zIndex: { xs: Z_INDEX.sticky, md: 'auto' },
+                backgroundColor: {
+                  xs: 'background.default',
+                  md: 'transparent',
+                },
               }}
             >
-              <Tab
-                icon={<ReceiptIcon />}
-                iconPosition="start"
-                label="Transactions"
-              />
-              <Tab
-                icon={<CreditCardIcon />}
-                iconPosition="start"
-                label="Payment Methods"
-              />
-              <Tab
-                icon={<GavelIcon />}
-                iconPosition="start"
-                label="Active Escrows"
-              />
-              <Tab
-                icon={<ReceiptLongIcon />}
-                iconPosition="start"
-                label="Bills"
-              />
-            </Tabs>
-          </Box>
+              <Tabs
+                value={tabIndex}
+                onChange={handleTabChange}
+                aria-label="Payment center tabs"
+                variant={isMobile ? 'scrollable' : 'standard'}
+                scrollButtons="auto"
+                allowScrollButtonsMobile
+                indicatorColor="secondary"
+                textColor="inherit"
+                sx={{
+                  '& .MuiTab-root': {
+                    color: 'text.secondary',
+                    minWidth: { xs: 'auto', md: 120 },
+                    minHeight: { xs: 40, md: 48 },
+                    px: { xs: 1, md: 2 },
+                    py: { xs: 0.5, md: 1.25 },
+                  },
+                  '& .Mui-selected': { color: 'secondary.main' },
+                }}
+              >
+                <Tab
+                  icon={<ReceiptIcon />}
+                  iconPosition="start"
+                  label="Transactions"
+                />
+                <Tab
+                  icon={<CreditCardIcon />}
+                  iconPosition="start"
+                  label="Payment Methods"
+                />
+                <Tab
+                  icon={<GavelIcon />}
+                  iconPosition="start"
+                  label="Active Escrows"
+                />
+                <Tab
+                  icon={<ReceiptLongIcon />}
+                  iconPosition="start"
+                  label="Bills"
+                />
+              </Tabs>
+            </Box>
 
-          {tabIndex === 0 && (
-            <>
-              {/* Filters bar */}
-              <Box
-                sx={{ mb: 2, display: 'flex', gap: { xs: 0.75, md: 2 }, alignItems: 'center', flexWrap: 'wrap' }}
-              >
-                <Tooltip title="Transactions from this date">
-                  <TextField
-                    size={isCompactMobile ? 'small' : 'medium'}
-                    label="From"
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    InputLabelProps={{ shrink: true }}
-                    sx={focusVisibleFieldSx}
-                  />
-                </Tooltip>
-                <Tooltip title="Transactions up to this date">
-                  <TextField
-                    size={isCompactMobile ? 'small' : 'medium'}
-                    label="To"
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    InputLabelProps={{ shrink: true }}
-                    sx={focusVisibleFieldSx}
-                  />
-                </Tooltip>
-                <Tooltip title="Filter by type">
-                  <FormControl size={isCompactMobile ? 'small' : 'medium'} sx={{ minWidth: 140, ...focusVisibleFieldSx }}>
-                    <InputLabel>Type</InputLabel>
-                    <Select
-                      value={filterType}
-                      label="Type"
-                      onChange={(e) => setFilterType(e.target.value)}
+            {tabIndex === 0 && (
+              <>
+                {/* Filters bar */}
+                <Box
+                  sx={{
+                    mb: 2,
+                    display: 'flex',
+                    gap: { xs: 0.75, md: 2 },
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  <Tooltip title="Transactions from this date">
+                    <TextField
+                      size={isCompactMobile ? 'small' : 'medium'}
+                      label="From"
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                      InputLabelProps={{ shrink: true }}
+                      sx={focusVisibleFieldSx}
+                    />
+                  </Tooltip>
+                  <Tooltip title="Transactions up to this date">
+                    <TextField
+                      size={isCompactMobile ? 'small' : 'medium'}
+                      label="To"
+                      type="date"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      InputLabelProps={{ shrink: true }}
+                      sx={focusVisibleFieldSx}
+                    />
+                  </Tooltip>
+                  <Tooltip title="Filter by type">
+                    <FormControl
+                      size={isCompactMobile ? 'small' : 'medium'}
+                      sx={{ minWidth: 140, ...focusVisibleFieldSx }}
                     >
-                      <MenuItem value="all">All</MenuItem>
-                      <MenuItem value="deposit">Deposit</MenuItem>
-                      <MenuItem value="withdrawal">Withdrawal</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Tooltip>
-                <Tooltip title="Filter">
-                  <Button variant="outlined" onClick={applyFilters} sx={{ ...focusVisibleButtonSx, display: { xs: 'none', sm: 'inline-flex' } }}>
-                    Filter
-                  </Button>
-                </Tooltip>
-              </Box>
-              <TransactionsList
-                transactions={pagedTransactions}
-                loading={loading}
-              />
-              {pageCount > 1 && (
-                <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
-                  <Pagination
-                    count={pageCount}
-                    page={page}
-                    onChange={(e, val) => setPage(val)}
-                    color="primary"
-                  />
+                      <InputLabel>Type</InputLabel>
+                      <Select
+                        value={filterType}
+                        label="Type"
+                        onChange={(e) => setFilterType(e.target.value)}
+                      >
+                        <MenuItem value="all">All</MenuItem>
+                        <MenuItem value="deposit">Deposit</MenuItem>
+                        <MenuItem value="withdrawal">Withdrawal</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Tooltip>
+                  <Tooltip title="Filter">
+                    <Button
+                      variant="outlined"
+                      onClick={applyFilters}
+                      sx={{
+                        ...focusVisibleButtonSx,
+                        display: { xs: 'none', sm: 'inline-flex' },
+                      }}
+                    >
+                      Filter
+                    </Button>
+                  </Tooltip>
                 </Box>
-              )}
-            </>
-          )}
-          {tabIndex === 1 && (
-            <>
-              <PaymentMethodsView
-                methods={paymentMethods}
-                paymentMethodsPath={paymentMethodsPath}
-                onEditMethod={() => navigate(paymentMethodsPath)}
-                onRequestDelete={requestDeleteMethod}
-              />
+                <TransactionsList
+                  transactions={pagedTransactions}
+                  loading={loading}
+                />
+                {pageCount > 1 && (
+                  <Box
+                    sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}
+                  >
+                    <Pagination
+                      count={pageCount}
+                      page={page}
+                      onChange={(e, val) => setPage(val)}
+                      color="primary"
+                    />
+                  </Box>
+                )}
+              </>
+            )}
+            {tabIndex === 1 && (
+              <>
+                <PaymentMethodsView
+                  methods={paymentMethods}
+                  paymentMethodsPath={paymentMethodsPath}
+                  onEditMethod={() => navigate(paymentMethodsPath)}
+                  onRequestDelete={requestDeleteMethod}
+                />
 
-              <Dialog
-                open={deleteMethodOpen}
-                onClose={() => setDeleteMethodOpen(false)}
-                maxWidth="xs"
-                fullWidth
-                aria-labelledby="delete-method-dialog-title"
-              >
-                <DialogTitle id="delete-method-dialog-title">Remove payment method?</DialogTitle>
-                <DialogContent>
-                  <Typography color="text.secondary">
-                    This will remove the selected payment method from your
-                    account.
-                  </Typography>
-                </DialogContent>
-                <DialogActions>
-                  <Button
-                    onClick={() => setDeleteMethodOpen(false)}
-                    disabled={loading}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={confirmDeleteMethod}
-                    color="error"
-                    variant="contained"
-                    disabled={loading}
-                  >
-                    Remove
-                  </Button>
-                </DialogActions>
-              </Dialog>
-            </>
-          )}
-          {tabIndex === 2 && (
-            <>
-              {/* Escrows filters */}
-              <Box
-                sx={{ mb: 2, display: 'flex', gap: { xs: 0.75, md: 2 }, alignItems: 'center', flexWrap: 'wrap' }}
-              >
-                <Tooltip title="Filter by status">
-                  <FormControl size={isCompactMobile ? 'small' : 'medium'} sx={{ minWidth: 140, ...focusVisibleFieldSx }}>
-                    <InputLabel>Status</InputLabel>
-                    <Select
-                      value={escrowStatusFilter}
-                      label="Status"
-                      onChange={(e) => setEscrowStatusFilter(e.target.value)}
+                <Dialog
+                  open={deleteMethodOpen}
+                  onClose={() => setDeleteMethodOpen(false)}
+                  maxWidth="xs"
+                  fullWidth
+                  aria-labelledby="delete-method-dialog-title"
+                >
+                  <DialogTitle id="delete-method-dialog-title">
+                    Remove payment method?
+                  </DialogTitle>
+                  <DialogContent>
+                    <Typography color="text.secondary">
+                      This will remove the selected payment method from your
+                      account.
+                    </Typography>
+                  </DialogContent>
+                  <DialogActions>
+                    <Button
+                      onClick={() => setDeleteMethodOpen(false)}
+                      disabled={loading}
                     >
-                      <MenuItem value="all">All</MenuItem>
-                      <MenuItem value="Funded">Funded</MenuItem>
-                      <MenuItem value="Pending Release">
-                        Pending Release
-                      </MenuItem>
-                    </Select>
-                  </FormControl>
-                </Tooltip>
-                <Tooltip title="Filter">
-                  <Button variant="outlined" onClick={applyEscrowFilters} sx={{ ...focusVisibleButtonSx, display: { xs: 'none', sm: 'inline-flex' } }}>
-                    Filter
-                  </Button>
-                </Tooltip>
-              </Box>
-              <ActiveEscrows escrows={pagedEscrows} />
-              {escrowPageCount > 1 && (
-                <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
-                  <Pagination
-                    count={escrowPageCount}
-                    page={escrowPage}
-                    onChange={(e, val) => setEscrowPage(val)}
-                    color="primary"
-                  />
-                </Box>
-              )}
-            </>
-          )}
-          {tabIndex === 3 && (
-            <>
-              {/* Bills filters */}
-              <Box
-                sx={{ mb: 2, display: 'flex', gap: { xs: 0.75, md: 2 }, alignItems: 'center', flexWrap: 'wrap' }}
-              >
-                <Tooltip title="Bills from this date">
-                  <TextField
-                    size={isCompactMobile ? 'small' : 'medium'}
-                    label="From"
-                    type="date"
-                    value={billStartDate}
-                    onChange={(e) => setBillStartDate(e.target.value)}
-                    InputLabelProps={{ shrink: true }}
-                    sx={focusVisibleFieldSx}
-                  />
-                </Tooltip>
-                <Tooltip title="Bills up to this date">
-                  <TextField
-                    size={isCompactMobile ? 'small' : 'medium'}
-                    label="To"
-                    type="date"
-                    value={billEndDate}
-                    onChange={(e) => setBillEndDate(e.target.value)}
-                    InputLabelProps={{ shrink: true }}
-                    sx={focusVisibleFieldSx}
-                  />
-                </Tooltip>
-                <Tooltip title="Filter by status">
-                  <FormControl size={isCompactMobile ? 'small' : 'medium'} sx={{ minWidth: 140, ...focusVisibleFieldSx }}>
-                    <InputLabel>Status</InputLabel>
-                    <Select
-                      value={billStatusFilter}
-                      label="Status"
-                      onChange={(e) => setBillStatusFilter(e.target.value)}
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={confirmDeleteMethod}
+                      color="error"
+                      variant="contained"
+                      disabled={loading}
                     >
-                      <MenuItem value="all">All</MenuItem>
-                      <MenuItem value="paid">Paid</MenuItem>
-                      <MenuItem value="unpaid">Unpaid</MenuItem>
-                      <MenuItem value="overdue">Overdue</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Tooltip>
-                <Tooltip title="Filter">
-                  <Button variant="outlined" onClick={applyBillFilters} sx={{ ...focusVisibleButtonSx, display: { xs: 'none', sm: 'inline-flex' } }}>
-                    Filter
-                  </Button>
-                </Tooltip>
-                <Tooltip title="Clear filters">
-                  <Button
-                    variant="outlined"
-                    color="secondary"
-                    onClick={clearBillFilters}
-                    sx={{ ...focusVisibleButtonSx, display: { xs: 'none', sm: 'inline-flex' } }}
+                      Remove
+                    </Button>
+                  </DialogActions>
+                </Dialog>
+              </>
+            )}
+            {tabIndex === 2 && (
+              <>
+                {/* Escrows filters */}
+                <Box
+                  sx={{
+                    mb: 2,
+                    display: 'flex',
+                    gap: { xs: 0.75, md: 2 },
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  <Tooltip title="Filter by status">
+                    <FormControl
+                      size={isCompactMobile ? 'small' : 'medium'}
+                      sx={{ minWidth: 140, ...focusVisibleFieldSx }}
+                    >
+                      <InputLabel>Status</InputLabel>
+                      <Select
+                        value={escrowStatusFilter}
+                        label="Status"
+                        onChange={(e) => setEscrowStatusFilter(e.target.value)}
+                      >
+                        <MenuItem value="all">All</MenuItem>
+                        <MenuItem value="Funded">Funded</MenuItem>
+                        <MenuItem value="Pending Release">
+                          Pending Release
+                        </MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Tooltip>
+                  <Tooltip title="Filter">
+                    <Button
+                      variant="outlined"
+                      onClick={applyEscrowFilters}
+                      sx={{
+                        ...focusVisibleButtonSx,
+                        display: { xs: 'none', sm: 'inline-flex' },
+                      }}
+                    >
+                      Filter
+                    </Button>
+                  </Tooltip>
+                </Box>
+                <ActiveEscrows escrows={pagedEscrows} />
+                {escrowPageCount > 1 && (
+                  <Box
+                    sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}
                   >
-                    Clear
-                  </Button>
-                </Tooltip>
-              </Box>
-              {filteredBills.length > 0 && (
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="body2" color="text.secondary">
-                    Showing {(billPage - 1) * billPerPage + 1} -{' '}
-                    {Math.min(filteredBills.length, billPage * billPerPage)} of{' '}
-                    {filteredBills.length} bills
-                  </Typography>
+                    <Pagination
+                      count={escrowPageCount}
+                      page={escrowPage}
+                      onChange={(e, val) => setEscrowPage(val)}
+                      color="primary"
+                    />
+                  </Box>
+                )}
+              </>
+            )}
+            {tabIndex === 3 && (
+              <>
+                {/* Bills filters */}
+                <Box
+                  sx={{
+                    mb: 2,
+                    display: 'flex',
+                    gap: { xs: 0.75, md: 2 },
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  <Tooltip title="Bills from this date">
+                    <TextField
+                      size={isCompactMobile ? 'small' : 'medium'}
+                      label="From"
+                      type="date"
+                      value={billStartDate}
+                      onChange={(e) => setBillStartDate(e.target.value)}
+                      InputLabelProps={{ shrink: true }}
+                      sx={focusVisibleFieldSx}
+                    />
+                  </Tooltip>
+                  <Tooltip title="Bills up to this date">
+                    <TextField
+                      size={isCompactMobile ? 'small' : 'medium'}
+                      label="To"
+                      type="date"
+                      value={billEndDate}
+                      onChange={(e) => setBillEndDate(e.target.value)}
+                      InputLabelProps={{ shrink: true }}
+                      sx={focusVisibleFieldSx}
+                    />
+                  </Tooltip>
+                  <Tooltip title="Filter by status">
+                    <FormControl
+                      size={isCompactMobile ? 'small' : 'medium'}
+                      sx={{ minWidth: 140, ...focusVisibleFieldSx }}
+                    >
+                      <InputLabel>Status</InputLabel>
+                      <Select
+                        value={billStatusFilter}
+                        label="Status"
+                        onChange={(e) => setBillStatusFilter(e.target.value)}
+                      >
+                        <MenuItem value="all">All</MenuItem>
+                        <MenuItem value="paid">Paid</MenuItem>
+                        <MenuItem value="unpaid">Unpaid</MenuItem>
+                        <MenuItem value="overdue">Overdue</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Tooltip>
+                  <Tooltip title="Filter">
+                    <Button
+                      variant="outlined"
+                      onClick={applyBillFilters}
+                      sx={{
+                        ...focusVisibleButtonSx,
+                        display: { xs: 'none', sm: 'inline-flex' },
+                      }}
+                    >
+                      Filter
+                    </Button>
+                  </Tooltip>
+                  <Tooltip title="Clear filters">
+                    <Button
+                      variant="outlined"
+                      color="secondary"
+                      onClick={clearBillFilters}
+                      sx={{
+                        ...focusVisibleButtonSx,
+                        display: { xs: 'none', sm: 'inline-flex' },
+                      }}
+                    >
+                      Clear
+                    </Button>
+                  </Tooltip>
                 </Box>
-              )}
-              <BillsView
-                bills={pagedBills}
-                actionLoading={actionLoading}
-                onPayBill={payBill}
-              />
-              {billPageCount > 1 && (
-                <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
-                  <Pagination
-                    count={billPageCount}
-                    page={billPage}
-                    onChange={(e, val) => setBillPage(val)}
-                    color="primary"
-                  />
-                </Box>
-              )}
-            </>
-          )}
+                {filteredBills.length > 0 && (
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      Showing {(billPage - 1) * billPerPage + 1} -{' '}
+                      {Math.min(filteredBills.length, billPage * billPerPage)}{' '}
+                      of {filteredBills.length} bills
+                    </Typography>
+                  </Box>
+                )}
+                <BillsView
+                  bills={pagedBills}
+                  actionLoading={actionLoading}
+                  onPayBill={payBill}
+                />
+                {billPageCount > 1 && (
+                  <Box
+                    sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}
+                  >
+                    <Pagination
+                      count={billPageCount}
+                      page={billPage}
+                      onChange={(e, val) => setBillPage(val)}
+                      color="primary"
+                    />
+                  </Box>
+                )}
+              </>
+            )}
+          </Grid>
         </Grid>
-      </Grid>
 
-      <Paper
-        elevation={8}
-        sx={(theme) => ({
-          display: { xs: 'flex', sm: 'none' },
-          position: 'fixed',
-          left: 0,
-          right: 0,
-          bottom: 0,
-          zIndex: theme.zIndex.appBar + 2,
-          px: 1,
-          py: 1,
-          gap: 1,
-          borderTop: `1px solid ${theme.palette.divider}`,
-          backgroundColor: theme.palette.background.paper,
-        })}
-      >
-        {tabIndex === 3 ? (
-          <>
-            <Button fullWidth variant="outlined" color="secondary" sx={{ minHeight: 42 }} onClick={clearBillFilters}>
-              Clear
-            </Button>
-            <Button fullWidth variant="contained" color="secondary" sx={{ minHeight: 42, boxShadow: '0 2px 8px rgba(255,215,0,0.35)' }} onClick={applyBillFilters}>
-              Apply
-            </Button>
-          </>
-        ) : tabIndex === 2 ? (
-          <Button fullWidth variant="contained" color="secondary" sx={{ minHeight: 42, boxShadow: '0 2px 8px rgba(255,215,0,0.35)' }} onClick={applyEscrowFilters}>
-            Filter Escrows
-          </Button>
-        ) : tabIndex === 0 ? (
-          <Button fullWidth variant="contained" color="secondary" sx={{ minHeight: 42, boxShadow: '0 2px 8px rgba(255,215,0,0.35)' }} onClick={applyFilters}>
-            Filter Transactions
-          </Button>
-        ) : (
-          <Button fullWidth variant="contained" color="secondary" sx={{ minHeight: 42, boxShadow: '0 2px 8px rgba(255,215,0,0.35)' }} onClick={() => navigate(paymentMethodsPath)}>
-            Manage Methods
-          </Button>
-        )}
-      </Paper>
-
-      {/* Deposit & Withdraw Dialogs */}
-      <Dialog
-        open={depositOpen}
-        onClose={closeDepositDialog}
-        fullWidth
-        maxWidth="xs"
-        fullScreen={isMobile}
-        aria-labelledby="deposit-dialog-title"
-        // ✅ MOBILE-AUDIT P4: removed backdrop blur + glow
-        PaperProps={{
-          sx: {
-            bgcolor: theme.palette.grey[900],
-            color: theme.palette.text.primary,
-            borderRadius: 2,
-            p: 3,
-            border: `1px solid ${theme.palette.secondary.main}`,
-          },
-        }}
-      >
-        <DialogTitle
-          id="deposit-dialog-title"
-          sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}
+        <Paper
+          elevation={8}
+          sx={(theme) => ({
+            display: { xs: 'flex', sm: 'none' },
+            position: 'fixed',
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: theme.zIndex.appBar + 2,
+            px: 1,
+            py: 1,
+            gap: 1,
+            borderTop: `1px solid ${theme.palette.divider}`,
+            backgroundColor: theme.palette.background.paper,
+          })}
         >
-          <ArrowUpwardIcon
-            sx={{ color: theme.palette.secondary.main, fontSize: 28 }}
-          />
-          <Typography
-            component="div"
-            variant="h6"
-            sx={{ color: theme.palette.secondary.main, fontWeight: 'bold' }}
-          >
-            Add Money
-          </Typography>
-        </DialogTitle>
-        <Divider
-          sx={{ borderColor: theme.palette.secondary.main, my: 1, height: 2 }}
-        />
-        <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
-            <Tooltip title="Enter amount in Ghana Cedi">
-              <TextField
-                variant="filled"
-                label="Amount"
-                placeholder="e.g. 100"
-                type="number"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+          {tabIndex === 3 ? (
+            <>
+              <Button
                 fullWidth
-                inputProps={{ inputMode: 'decimal', min: '0.01', step: '0.01' }}
-                InputProps={{ disableUnderline: true }}
-                InputLabelProps={{
-                  sx: { color: theme.palette.secondary.main },
-                }}
+                variant="outlined"
+                color="secondary"
+                sx={{ minHeight: 42 }}
+                onClick={clearBillFilters}
+              >
+                Clear
+              </Button>
+              <Button
+                fullWidth
+                variant="contained"
+                color="secondary"
                 sx={{
-                  bgcolor: theme.palette.grey[800],
-                  borderRadius: 1,
-                  p: 1,
-                  color: theme.palette.text.primary,
-                  border: `1px solid ${theme.palette.secondary.main}`,
+                  minHeight: 42,
+                  boxShadow: '0 2px 8px rgba(255,215,0,0.35)',
                 }}
-              />
-            </Tooltip>
-            <Tooltip title="Choose a payment method">
-              <FormControl fullWidth>
-                <InputLabel sx={{ color: theme.palette.secondary.main }}>
-                  Method
-                </InputLabel>
-                <Select
+                onClick={applyBillFilters}
+              >
+                Apply
+              </Button>
+            </>
+          ) : tabIndex === 2 ? (
+            <Button
+              fullWidth
+              variant="contained"
+              color="secondary"
+              sx={{
+                minHeight: 42,
+                boxShadow: '0 2px 8px rgba(255,215,0,0.35)',
+              }}
+              onClick={applyEscrowFilters}
+            >
+              Filter Escrows
+            </Button>
+          ) : tabIndex === 0 ? (
+            <Button
+              fullWidth
+              variant="contained"
+              color="secondary"
+              sx={{
+                minHeight: 42,
+                boxShadow: '0 2px 8px rgba(255,215,0,0.35)',
+              }}
+              onClick={applyFilters}
+            >
+              Filter Transactions
+            </Button>
+          ) : (
+            <Button
+              fullWidth
+              variant="contained"
+              color="secondary"
+              sx={{
+                minHeight: 42,
+                boxShadow: '0 2px 8px rgba(255,215,0,0.35)',
+              }}
+              onClick={() => navigate(paymentMethodsPath)}
+            >
+              Manage Methods
+            </Button>
+          )}
+        </Paper>
+
+        {/* Deposit & Withdraw Dialogs */}
+        <Dialog
+          open={depositOpen}
+          onClose={closeDepositDialog}
+          fullWidth
+          maxWidth="xs"
+          fullScreen={isMobile}
+          aria-labelledby="deposit-dialog-title"
+          // ✅ MOBILE-AUDIT P4: removed backdrop blur + glow
+          PaperProps={{
+            sx: {
+              bgcolor: theme.palette.grey[900],
+              color: theme.palette.text.primary,
+              borderRadius: 2,
+              p: 3,
+              border: `1px solid ${theme.palette.secondary.main}`,
+            },
+          }}
+        >
+          <DialogTitle
+            id="deposit-dialog-title"
+            sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}
+          >
+            <ArrowUpwardIcon
+              sx={{ color: theme.palette.secondary.main, fontSize: 28 }}
+            />
+            <Typography
+              component="div"
+              variant="h6"
+              sx={{ color: theme.palette.secondary.main, fontWeight: 'bold' }}
+            >
+              Add Money
+            </Typography>
+          </DialogTitle>
+          <Divider
+            sx={{ borderColor: theme.palette.secondary.main, my: 1, height: 2 }}
+          />
+          <DialogContent>
+            <Box
+              sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}
+            >
+              <Tooltip title="Enter amount in Ghana Cedi">
+                <TextField
                   variant="filled"
-                  label="Method"
-                  value={methodId}
-                  onChange={(e) => setMethodId(e.target.value)}
-                  inputProps={{ disableUnderline: true }}
+                  label="Amount"
+                  placeholder="e.g. 100"
+                  type="number"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  fullWidth
+                  inputProps={{
+                    inputMode: 'decimal',
+                    min: '0.01',
+                    step: '0.01',
+                  }}
+                  InputProps={{ disableUnderline: true }}
+                  InputLabelProps={{
+                    sx: { color: theme.palette.secondary.main },
+                  }}
                   sx={{
                     bgcolor: theme.palette.grey[800],
                     borderRadius: 1,
-                    p: '8px 12px',
+                    p: 1,
                     color: theme.palette.text.primary,
                     border: `1px solid ${theme.palette.secondary.main}`,
                   }}
-                >
-                  {(paymentMethods || []).map((m) => {
-                    const resolvedId = m?.id || m?._id;
-                    if (!resolvedId) return null;
-                    return (
-                      <MenuItem key={resolvedId} value={resolvedId}>
-                        {m.name}
-                      </MenuItem>
-                    );
-                  })}
-                </Select>
-              </FormControl>
-            </Tooltip>
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={closeDepositDialog}
-            variant="outlined"
-            color="secondary"
-            sx={{ borderWidth: 2 }}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={async () => {
-              setDialogSubmitting(true);
-              try {
-                const operationSucceeded = await addFunds(Number(amount), methodId);
-                if (operationSucceeded) {
-                  closeDepositDialog();
+                />
+              </Tooltip>
+              <Tooltip title="Choose a payment method">
+                <FormControl fullWidth>
+                  <InputLabel sx={{ color: theme.palette.secondary.main }}>
+                    Method
+                  </InputLabel>
+                  <Select
+                    variant="filled"
+                    label="Method"
+                    value={methodId}
+                    onChange={(e) => setMethodId(e.target.value)}
+                    inputProps={{ disableUnderline: true }}
+                    sx={{
+                      bgcolor: theme.palette.grey[800],
+                      borderRadius: 1,
+                      p: '8px 12px',
+                      color: theme.palette.text.primary,
+                      border: `1px solid ${theme.palette.secondary.main}`,
+                    }}
+                  >
+                    {(paymentMethods || []).map((m) => {
+                      const resolvedId = m?.id || m?._id;
+                      if (!resolvedId) return null;
+                      return (
+                        <MenuItem key={resolvedId} value={resolvedId}>
+                          {m.name}
+                        </MenuItem>
+                      );
+                    })}
+                  </Select>
+                </FormControl>
+              </Tooltip>
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={closeDepositDialog}
+              variant="outlined"
+              color="secondary"
+              sx={{ borderWidth: 2 }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={async () => {
+                setDialogSubmitting(true);
+                try {
+                  const operationSucceeded = await addFunds(
+                    Number(amount),
+                    methodId,
+                  );
+                  if (operationSucceeded) {
+                    closeDepositDialog();
+                  }
+                } finally {
+                  setDialogSubmitting(false);
                 }
-              } finally {
-                setDialogSubmitting(false);
+              }}
+              variant="contained"
+              color="secondary"
+              startIcon={
+                dialogSubmitting ? (
+                  <CircularProgress size={20} color="inherit" />
+                ) : (
+                  <AddIcon />
+                )
               }
-            }}
-            variant="contained"
-            color="secondary"
-            startIcon={dialogSubmitting ? <CircularProgress size={20} color="inherit" /> : <AddIcon />}
-            disabled={dialogSubmitting || !amount || Number(amount) <= 0 || !methodId}
-            sx={{ boxShadow: '0 2px 8px rgba(255, 215, 0, 0.4)' }}
-          >
-            Add
-          </Button>
-        </DialogActions>
-      </Dialog>
-      <Dialog
-        open={withdrawOpen}
-        onClose={closeWithdrawDialog}
-        fullWidth
-        maxWidth="xs"
-        fullScreen={isMobile}
-        aria-labelledby="withdraw-dialog-title"
-        PaperProps={{
-          sx: {
-            bgcolor: theme.palette.grey[900],
-            color: theme.palette.text.primary,
-            borderRadius: 2,
-            p: 3,
-            border: `1px solid ${theme.palette.secondary.main}`,
-          },
-        }}
-      >
-        <DialogTitle
-          id="withdraw-dialog-title"
-          sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}
+              disabled={
+                dialogSubmitting || !amount || Number(amount) <= 0 || !methodId
+              }
+              sx={{ boxShadow: '0 2px 8px rgba(255, 215, 0, 0.4)' }}
+            >
+              Add
+            </Button>
+          </DialogActions>
+        </Dialog>
+        <Dialog
+          open={withdrawOpen}
+          onClose={closeWithdrawDialog}
+          fullWidth
+          maxWidth="xs"
+          fullScreen={isMobile}
+          aria-labelledby="withdraw-dialog-title"
+          PaperProps={{
+            sx: {
+              bgcolor: theme.palette.grey[900],
+              color: theme.palette.text.primary,
+              borderRadius: 2,
+              p: 3,
+              border: `1px solid ${theme.palette.secondary.main}`,
+            },
+          }}
         >
-          <ArrowDownwardIcon
-            sx={{ color: theme.palette.secondary.main, fontSize: 28 }}
-          />
-          <Typography
-            component="div"
-            variant="h6"
-            sx={{ color: theme.palette.secondary.main, fontWeight: 'bold' }}
+          <DialogTitle
+            id="withdraw-dialog-title"
+            sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}
           >
-            Withdraw
-          </Typography>
-        </DialogTitle>
-        <Divider
-          sx={{ borderColor: theme.palette.secondary.main, my: 1, height: 2 }}
-        />
-        <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
-            <Tooltip title="Enter amount to withdraw">
-              <TextField
-                variant="filled"
-                label="Amount"
-                placeholder="e.g. 50"
-                type="number"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                fullWidth
-                inputProps={{ inputMode: 'decimal', min: '0.01', step: '0.01' }}
-                InputProps={{ disableUnderline: true }}
-                InputLabelProps={{
-                  sx: { color: theme.palette.secondary.main },
-                }}
-                sx={{
-                  bgcolor: theme.palette.grey[800],
-                  borderRadius: 1,
-                  p: 1,
-                  color: theme.palette.text.primary,
-                  border: `1px solid ${theme.palette.secondary.main}`,
-                }}
-              />
-            </Tooltip>
-            <Tooltip title="Choose a withdrawal method">
-              <FormControl fullWidth>
-                <InputLabel sx={{ color: theme.palette.secondary.main }}>
-                  Method
-                </InputLabel>
-                <Select
+            <ArrowDownwardIcon
+              sx={{ color: theme.palette.secondary.main, fontSize: 28 }}
+            />
+            <Typography
+              component="div"
+              variant="h6"
+              sx={{ color: theme.palette.secondary.main, fontWeight: 'bold' }}
+            >
+              Withdraw
+            </Typography>
+          </DialogTitle>
+          <Divider
+            sx={{ borderColor: theme.palette.secondary.main, my: 1, height: 2 }}
+          />
+          <DialogContent>
+            <Box
+              sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}
+            >
+              <Tooltip title="Enter amount to withdraw">
+                <TextField
                   variant="filled"
-                  label="Method"
-                  value={methodId}
-                  onChange={(e) => setMethodId(e.target.value)}
-                  inputProps={{ disableUnderline: true }}
+                  label="Amount"
+                  placeholder="e.g. 50"
+                  type="number"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  fullWidth
+                  inputProps={{
+                    inputMode: 'decimal',
+                    min: '0.01',
+                    step: '0.01',
+                  }}
+                  InputProps={{ disableUnderline: true }}
+                  InputLabelProps={{
+                    sx: { color: theme.palette.secondary.main },
+                  }}
                   sx={{
                     bgcolor: theme.palette.grey[800],
                     borderRadius: 1,
-                    p: '8px 12px',
+                    p: 1,
                     color: theme.palette.text.primary,
                     border: `1px solid ${theme.palette.secondary.main}`,
                   }}
-                >
-                  {(paymentMethods || []).map((m) => {
-                    const resolvedId = m?.id || m?._id;
-                    if (!resolvedId) return null;
-                    return (
-                      <MenuItem key={resolvedId} value={resolvedId}>
-                        {m.name}
-                      </MenuItem>
-                    );
-                  })}
-                </Select>
-              </FormControl>
-            </Tooltip>
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={closeWithdrawDialog}
-            variant="outlined"
-            color="secondary"
-            sx={{ borderWidth: 2, minHeight: 44 }}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={async () => {
-              setDialogSubmitting(true);
-              try {
-                const operationSucceeded = await withdrawFunds(Number(amount), methodId);
-                if (operationSucceeded) {
-                  closeWithdrawDialog();
+                />
+              </Tooltip>
+              <Tooltip title="Choose a withdrawal method">
+                <FormControl fullWidth>
+                  <InputLabel sx={{ color: theme.palette.secondary.main }}>
+                    Method
+                  </InputLabel>
+                  <Select
+                    variant="filled"
+                    label="Method"
+                    value={methodId}
+                    onChange={(e) => setMethodId(e.target.value)}
+                    inputProps={{ disableUnderline: true }}
+                    sx={{
+                      bgcolor: theme.palette.grey[800],
+                      borderRadius: 1,
+                      p: '8px 12px',
+                      color: theme.palette.text.primary,
+                      border: `1px solid ${theme.palette.secondary.main}`,
+                    }}
+                  >
+                    {(paymentMethods || []).map((m) => {
+                      const resolvedId = m?.id || m?._id;
+                      if (!resolvedId) return null;
+                      return (
+                        <MenuItem key={resolvedId} value={resolvedId}>
+                          {m.name}
+                        </MenuItem>
+                      );
+                    })}
+                  </Select>
+                </FormControl>
+              </Tooltip>
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={closeWithdrawDialog}
+              variant="outlined"
+              color="secondary"
+              sx={{ borderWidth: 2, minHeight: 44 }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={async () => {
+                setDialogSubmitting(true);
+                try {
+                  const operationSucceeded = await withdrawFunds(
+                    Number(amount),
+                    methodId,
+                  );
+                  if (operationSucceeded) {
+                    closeWithdrawDialog();
+                  }
+                } finally {
+                  setDialogSubmitting(false);
                 }
-              } finally {
-                setDialogSubmitting(false);
+              }}
+              variant="contained"
+              color="secondary"
+              startIcon={
+                dialogSubmitting ? (
+                  <CircularProgress size={20} color="inherit" />
+                ) : (
+                  <ArrowDownwardIcon />
+                )
               }
-            }}
-            variant="contained"
-            color="secondary"
-            startIcon={dialogSubmitting ? <CircularProgress size={20} color="inherit" /> : <ArrowDownwardIcon />}
-            disabled={dialogSubmitting || !amount || Number(amount) <= 0 || !methodId}
-            sx={{ minHeight: 44 }}
-          >
-            Withdraw
-          </Button>
-        </DialogActions>
-      </Dialog>
+              disabled={
+                dialogSubmitting || !amount || Number(amount) <= 0 || !methodId
+              }
+              sx={{ minHeight: 44 }}
+            >
+              Withdraw
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Container>
     </PageCanvas>
   );

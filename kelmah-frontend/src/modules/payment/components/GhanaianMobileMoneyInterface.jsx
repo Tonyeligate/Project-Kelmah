@@ -1,24 +1,3 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 const GhanaianMobileMoneyInterface = ({
   amount,
   currency = 'GHS',
@@ -195,9 +174,12 @@ const GhanaianMobileMoneyInterface = ({
       }
     } catch (error) {
       setPaymentStatus('failed');
-      enqueueSnackbar('Could not start payment. Please check your details and try again.', {
-        variant: 'error',
-      });
+      enqueueSnackbar(
+        'Could not start payment. Please check your details and try again.',
+        {
+          variant: 'error',
+        },
+      );
       if (onPaymentError) {
         onPaymentError(error);
       }
@@ -262,7 +244,10 @@ const GhanaianMobileMoneyInterface = ({
       }
     } catch (error) {
       setPaymentStatus('failed');
-      enqueueSnackbar('Payment could not be completed. Please try again or use a different method.', { variant: 'error' });
+      enqueueSnackbar(
+        'Payment could not be completed. Please try again or use a different method.',
+        { variant: 'error' },
+      );
       if (onPaymentError) {
         onPaymentError(error);
       }
@@ -463,7 +448,8 @@ const GhanaianMobileMoneyInterface = ({
             disabled={processing}
             startIcon={
               processing ? <CircularProgress size={20} /> : <SendIcon />
-            }>
+            }
+          >
             {processing ? 'Initiating...' : 'Initiate Payment'}
           </Button>
         </Box>
@@ -562,7 +548,11 @@ const GhanaianMobileMoneyInterface = ({
 
       {/* Stepper */}
       <Paper sx={{ p: 2, mb: 3 }}>
-        <Stepper activeStep={activeStep} orientation={isMobile ? 'vertical' : 'horizontal'} {...(!isMobile && { alternativeLabel: true })}>
+        <Stepper
+          activeStep={activeStep}
+          orientation={isMobile ? 'vertical' : 'horizontal'}
+          {...(!isMobile && { alternativeLabel: true })}
+        >
           {steps.map((label) => (
             <Step key={label}>
               <StepLabel>{label}</StepLabel>
@@ -591,7 +581,11 @@ const GhanaianMobileMoneyInterface = ({
                   );
                   return (
                     <ListItem
-                      key={savedNumber.id || savedNumber._id || `${savedNumber.provider || 'provider'}-${savedNumber.phoneNumber || 'number'}-${index}`}
+                      key={
+                        savedNumber.id ||
+                        savedNumber._id ||
+                        `${savedNumber.provider || 'provider'}-${savedNumber.phoneNumber || 'number'}-${index}`
+                      }
                       button
                       onClick={() => handleSavedNumberSelect(savedNumber)}
                     >
@@ -690,7 +684,12 @@ const GhanaianMobileMoneyInterface = ({
         fullWidth
         aria-labelledby="pin-entry-dialog-title"
       >
-        <DialogTitle id="pin-entry-dialog-title" display="flex" alignItems="center" gap={1}>
+        <DialogTitle
+          id="pin-entry-dialog-title"
+          display="flex"
+          alignItems="center"
+          gap={1}
+        >
           <SecurityIcon color="primary" />
           Enter Your PIN
         </DialogTitle>
@@ -727,7 +726,8 @@ const GhanaianMobileMoneyInterface = ({
             disabled={pin.length !== 4 || processing}
             startIcon={
               processing ? <CircularProgress size={20} /> : <SecurityIcon />
-            }>
+            }
+          >
             {processing ? 'Confirming...' : 'Confirm Payment'}
           </Button>
         </DialogActions>

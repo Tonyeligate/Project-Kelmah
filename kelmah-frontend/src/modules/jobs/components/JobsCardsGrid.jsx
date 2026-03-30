@@ -77,7 +77,15 @@ function JobsCardsGrid({
         const isUrgentJob = Boolean(job.urgent || job.proposalCount > 10);
 
         return (
-          <Grid item xs={12} sm={6} md={6} lg={4} xl={3} key={job.id || job._id}>
+          <Grid
+            item
+            xs={12}
+            sm={6}
+            md={6}
+            lg={4}
+            xl={3}
+            key={job.id || job._id}
+          >
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -206,7 +214,11 @@ function JobsCardsGrid({
                     })}
                     <Typography
                       variant="caption"
-                      sx={{ fontWeight: 700, letterSpacing: 0.15, fontSize: { xs: '0.64rem', sm: '0.74rem' } }}
+                      sx={{
+                        fontWeight: 700,
+                        letterSpacing: 0.15,
+                        fontSize: { xs: '0.64rem', sm: '0.74rem' },
+                      }}
                     >
                       {jobHeroImage
                         ? 'Image-backed job brief ready for quick review'
@@ -376,24 +388,42 @@ function JobsCardsGrid({
                       borderLeft: '2px solid var(--k-gold)',
                     }}
                   >
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                      <MonetizationOn fontSize="small" sx={{ color: 'var(--k-gold)', width: 18, height: 18 }} />
+                    <Box
+                      sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}
+                    >
+                      <MonetizationOn
+                        fontSize="small"
+                        sx={{ color: 'var(--k-gold)', width: 18, height: 18 }}
+                      />
                       <Typography
                         variant="body2"
-                        sx={{ color: 'var(--k-gold)', fontWeight: 800, fontSize: '0.92rem' }}
+                        sx={{
+                          color: 'var(--k-gold)',
+                          fontWeight: 800,
+                          fontSize: '0.92rem',
+                        }}
                       >
                         {job?.budget
                           ? typeof job?.budget === 'object'
-                            ? job.budget.min === job.budget.max || !job.budget.max
+                            ? job.budget.min === job.budget.max ||
+                              !job.budget.max
                               ? `GHc ${(job.budget.amount || job.budget.min)?.toLocaleString()}`
                               : `GHc ${job.budget.min?.toLocaleString()} - ${job.budget.max?.toLocaleString()}`
                             : `GHc ${job?.budget?.toLocaleString()}`
                           : 'Negotiable pay'}
                       </Typography>
                     </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                      <LocationOn fontSize="small" sx={{ color: 'text.secondary', width: 18, height: 18 }} />
-                      <Typography variant="body2" sx={{ color: 'text.primary', fontSize: '0.84rem' }}>
+                    <Box
+                      sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}
+                    >
+                      <LocationOn
+                        fontSize="small"
+                        sx={{ color: 'text.secondary', width: 18, height: 18 }}
+                      />
+                      <Typography
+                        variant="body2"
+                        sx={{ color: 'text.primary', fontSize: '0.84rem' }}
+                      >
                         {job.location?.city
                           ? `${job.location.city}${job.location.country ? ', ' + job.location.country : ''}`
                           : typeof job.location === 'string'
@@ -401,10 +431,28 @@ function JobsCardsGrid({
                             : 'Remote/Flexible'}
                       </Typography>
                     </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                      <FireIcon fontSize="small" sx={{ color: isUrgentJob ? '#ff6b6b' : 'text.disabled', width: 18, height: 18 }} />
-                      <Typography variant="body2" sx={{ color: isUrgentJob ? '#ff6b6b' : 'text.secondary', fontSize: '0.82rem', fontWeight: isUrgentJob ? 700 : 500 }}>
-                        {isUrgentJob ? 'Urgency: High demand now' : 'Urgency: Standard timeline'}
+                    <Box
+                      sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}
+                    >
+                      <FireIcon
+                        fontSize="small"
+                        sx={{
+                          color: isUrgentJob ? '#ff6b6b' : 'text.disabled',
+                          width: 18,
+                          height: 18,
+                        }}
+                      />
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: isUrgentJob ? '#ff6b6b' : 'text.secondary',
+                          fontSize: '0.82rem',
+                          fontWeight: isUrgentJob ? 700 : 500,
+                        }}
+                      >
+                        {isUrgentJob
+                          ? 'Urgency: High demand now'
+                          : 'Urgency: Standard timeline'}
                       </Typography>
                     </Box>
                   </Box>
@@ -445,7 +493,8 @@ function JobsCardsGrid({
                       >
                         {job?.budget
                           ? typeof job?.budget === 'object'
-                            ? job.budget.min === job.budget.max || !job.budget.max
+                            ? job.budget.min === job.budget.max ||
+                              !job.budget.max
                               ? `GHc ${(job.budget.amount || job.budget.min)?.toLocaleString()}`
                               : `GHc ${job.budget.min?.toLocaleString()} - ${job.budget.max?.toLocaleString()}`
                             : `GHc ${job?.budget?.toLocaleString()}`
@@ -467,7 +516,10 @@ function JobsCardsGrid({
                         fontSize="small"
                         sx={{ mr: 1, color: 'var(--k-gold)' }}
                       />
-                      <Typography variant="body2" sx={{ color: 'text.primary' }}>
+                      <Typography
+                        variant="body2"
+                        sx={{ color: 'text.primary' }}
+                      >
                         {job.rating ? `${job.rating} Rating` : 'New Listing'} .{' '}
                         {job.proposalCount || 0} Applicants
                       </Typography>
@@ -533,13 +585,36 @@ function JobsCardsGrid({
                   <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                     <Chip
                       size="small"
-                      label={job.postedDate ? (() => { try { return `Posted ${formatDistanceToNow(new Date(job.postedDate), { addSuffix: true })}`; } catch { return 'Recently posted'; } })() : 'Recently posted'}
+                      label={
+                        job.postedDate
+                          ? (() => {
+                              try {
+                                return `Posted ${formatDistanceToNow(new Date(job.postedDate), { addSuffix: true })}`;
+                              } catch {
+                                return 'Recently posted';
+                              }
+                            })()
+                          : 'Recently posted'
+                      }
                       sx={{ bgcolor: 'action.hover', color: 'text.secondary' }}
                     />
                     <Chip
                       size="small"
-                      label={job.deadline ? (() => { try { return `Apply by ${format(new Date(job.deadline), 'MMM dd')}`; } catch { return 'Applications open'; } })() : 'Applications open'}
-                      sx={{ bgcolor: 'rgba(244,67,54,0.08)', color: 'var(--k-danger-text)' }}
+                      label={
+                        job.deadline
+                          ? (() => {
+                              try {
+                                return `Apply by ${format(new Date(job.deadline), 'MMM dd')}`;
+                              } catch {
+                                return 'Applications open';
+                              }
+                            })()
+                          : 'Applications open'
+                      }
+                      sx={{
+                        bgcolor: 'rgba(244,67,54,0.08)',
+                        color: 'var(--k-danger-text)',
+                      }}
                     />
                   </Box>
                 </CardContent>
@@ -573,7 +648,8 @@ function JobsCardsGrid({
                       '&:active': {
                         transform: 'scale(0.98)',
                       },
-                    }}>
+                    }}
+                  >
                     {isHirerUser ? 'Find Talent' : 'Apply Now'}
                   </Button>
                   <Box
@@ -593,7 +669,11 @@ function JobsCardsGrid({
                       }}
                       startIcon={<Visibility />}
                       aria-label={`View details for ${job.title || 'job'}`}
-                      sx={{ flex: 1, minHeight: 44, minWidth: { xs: '100%', md: 0 } }}
+                      sx={{
+                        flex: 1,
+                        minHeight: 44,
+                        minWidth: { xs: '100%', md: 0 },
+                      }}
                     >
                       Details
                     </Button>
@@ -630,7 +710,9 @@ function JobsCardsGrid({
                             .catch(() => {});
                         } else {
                           navigator.clipboard
-                            .writeText(`${window.location.origin}/jobs/${jobId}`)
+                            .writeText(
+                              `${window.location.origin}/jobs/${jobId}`,
+                            )
                             .catch(() => {});
                         }
                       }}

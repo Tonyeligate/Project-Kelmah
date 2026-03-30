@@ -44,7 +44,10 @@ const ConfirmDialog = ({
     >
       <DialogTitle id={titleId}>{title}</DialogTitle>
       <DialogContent>
-        <DialogContentText id={descriptionId} sx={{ lineHeight: 1.6, fontSize: '0.96rem' }}>
+        <DialogContentText
+          id={descriptionId}
+          sx={{ lineHeight: 1.6, fontSize: '0.96rem' }}
+        >
           {message}
         </DialogContentText>
       </DialogContent>

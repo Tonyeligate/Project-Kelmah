@@ -84,14 +84,22 @@ export const NotificationProvider = ({ children }) => {
   const MIN_FETCH_INTERVAL = 30000; // 30 seconds minimum between fetches
 
   const fetchNotifications = useCallback(
-    async ({ page = 1, limit = 20, unreadOnly = false, type, force = false } = {}) => {
+    async ({
+      page = 1,
+      limit = 20,
+      unreadOnly = false,
+      type,
+      force = false,
+    } = {}) => {
       const fetchKey = `${userId || 'anon'}|${page}|${limit}|${String(unreadOnly)}|${type || 'all'}`;
 
       // Rate limiting check - prevent rapid re-fetches
       const now = Date.now();
       const withinInterval = now - lastFetchRef.current < MIN_FETCH_INTERVAL;
       if (!force && withinInterval && fetchKey === lastFetchKeyRef.current) {
-        notificationsLog('Skipping notification fetch - too soon since last fetch');
+        notificationsLog(
+          'Skipping notification fetch - too soon since last fetch',
+        );
         return;
       }
 
@@ -211,10 +219,7 @@ export const NotificationProvider = ({ children }) => {
       try {
         notificationService.disconnect();
       } catch (disconnectError) {
-        devWarn(
-          'Notifications: Socket disconnect failed',
-          disconnectError,
-        );
+        devWarn('Notifications: Socket disconnect failed', disconnectError);
       }
     };
   }, [fetchNotifications, userId]); // CRITICAL: Depend on userId, not user object
@@ -266,9 +271,7 @@ export const NotificationProvider = ({ children }) => {
   const deleteNotification = useCallback(async (id) => {
     try {
       await notificationServiceUser.deleteNotification(id);
-      setNotifications((prev) =>
-        prev.filter((n) => (n.id || n._id) !== id),
-      );
+      setNotifications((prev) => prev.filter((n) => (n.id || n._id) !== id));
     } catch (err) {
       devError('Failed to delete notification:', err);
       setError('Failed to delete notification.');
@@ -360,4 +363,3 @@ export const useNotifications = () => {
 };
 
 export default NotificationContext;
-

@@ -498,7 +498,10 @@ const contractSlice = createSlice({
         state.contracts = state.contracts.map((c) =>
           c.id === completed.id ? completed : c,
         );
-        if (state.currentContract && state.currentContract.id === completed.id) {
+        if (
+          state.currentContract &&
+          state.currentContract.id === completed.id
+        ) {
           state.currentContract = completed;
         }
       })

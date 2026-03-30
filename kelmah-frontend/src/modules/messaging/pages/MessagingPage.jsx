@@ -31,7 +31,7 @@ import {
   Tooltip,
   Typography,
   alpha,
-          color="text.secondary"
+  useMediaQuery,
   useTheme,
 } from '@mui/material';
 import {
@@ -52,20 +52,28 @@ import {
   Star as StarIcon,
   Videocam as VideocamIcon,
 } from '@mui/icons-material';
-import { format, isToday, isYesterday } from 'date-fns';
+import { format, formatDistanceToNow, isToday, isYesterday } from 'date-fns';
 import SEO from '../../common/components/common/SEO';
 import EmptyState from '../../../components/common/EmptyState';
 import PageCanvas from '../../common/components/PageCanvas';
 import { useMessages } from '../contexts/MessageContext';
 import { messagingService } from '../services/messagingService';
 import useKeyboardVisible from '../../../hooks/useKeyboardVisible';
-import { BOTTOM_NAV_HEIGHT } from '@/constants/layout';
+import {
+  BOTTOM_NAV_HEIGHT,
+  HEADER_HEIGHT_MOBILE,
+  TOUCH_TARGET_MIN,
+  Z_INDEX,
+} from '@/constants/layout';
+import { withBottomNavSafeArea, withSafeAreaBottom } from '@/utils/safeArea';
 
 const CHAT_ACCENT = '#128C7E';
 const CHAT_BG_DARK = '#0B141A';
 const CHAT_BG_LIGHT = '#F3F7F7';
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
 const MAX_ATTACHMENTS = 5;
+const DRAFT_STORAGE_KEY = 'kelmah.messaging.drafts.v1';
+const SCROLL_TO_LATEST_THRESHOLD = 140;
 
 const getCurrentUserId = (user) =>
   user?.id || user?._id || user?.userId || user?.sub || null;
@@ -189,6 +197,63 @@ const getConversationKey = (conversation = {}, currentUserId) => {
   }
 
   return null;
+};
+
+const getDraftEntry = (value) => {
+  if (!value) {
+    return null;
+  }
+
+  if (typeof value === 'string') {
+    return value
+      ? {
+          text: value,
+          updatedAt: null,
+        }
+      : null;
+  }
+
+  const text = String(value.text || '');
+  if (!text) {
+    return null;
+  }
+
+  return {
+    text,
+    updatedAt: value.updatedAt || null,
+  };
+};
+
+const getDraftText = (value) => getDraftEntry(value)?.text || '';
+
+const normalizeDraftMap = (value) => {
+  if (!value || typeof value !== 'object') {
+    return {};
+  }
+
+  return Object.entries(value).reduce((acc, [key, draftValue]) => {
+    const entry = getDraftEntry(draftValue);
+    if (entry?.text?.trim()) {
+      acc[key] = {
+        text: entry.text,
+        updatedAt: entry.updatedAt || Date.now(),
+      };
+    }
+    return acc;
+  }, {});
+};
+
+const formatDraftSavedLabel = (value) => {
+  if (!value) {
+    return 'saved recently';
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return 'saved recently';
+  }
+
+  return `saved ${formatDistanceToNow(date, { addSuffix: true })}`;
 };
 
 const normalizeAttachmentPayload = (file) => ({
@@ -324,7 +389,7 @@ const MessageBubble = ({ message, currentUserId }) => {
             {text}
           </Typography>
         )}
-                                color="text.secondary"
+
         {attachments.length > 0 && (
           <Stack spacing={1} sx={{ mt: text ? 1 : 0 }}>
             {attachments.map((attachment, index) => {
@@ -511,13 +576,33 @@ const MessagingPage = () => {
   const [deepLinkError, setDeepLinkError] = useState('');
   const [sendError, setSendError] = useState('');
   const [isSending, setIsSending] = useState(false);
-  const [draftsByConversation, setDraftsByConversation] = useState({});
+  const [draftRestoreNotice, setDraftRestoreNotice] = useState('');
+  const [showScrollToLatest, setShowScrollToLatest] = useState(false);
+  const [draftsByConversation, setDraftsByConversation] = useState(() => {
+    if (typeof window === 'undefined') {
+      return {};
+    }
+
+    try {
+      const storedDrafts = window.localStorage.getItem(DRAFT_STORAGE_KEY);
+      if (!storedDrafts) {
+        return {};
+      }
+
+      const parsedDrafts = JSON.parse(storedDrafts);
+      return normalizeDraftMap(parsedDrafts);
+    } catch {
+      return {};
+    }
+  });
 
   const fileInputRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const messageEndRef = useRef(null);
+  const messagesScrollRef = useRef(null);
   const deepLinkHandledRef = useRef('');
   const previousConversationKeyRef = useRef(null);
+  const lastDraftNoticeRef = useRef('');
 
   const previewUrls = useMemo(
     () =>
@@ -560,6 +645,49 @@ const MessagingPage = () => {
   );
 
   const messageCharacterCount = messageText.length;
+  const selectedDraftEntry = useMemo(
+    () =>
+      selectedConversationKey
+        ? getDraftEntry(draftsByConversation[selectedConversationKey])
+        : null,
+    [draftsByConversation, selectedConversationKey],
+  );
+  const selectedDraftText = selectedDraftEntry?.text || '';
+  const hasSelectedDraft = selectedDraftText.trim().length > 0;
+  const selectedDraftSavedLabel = hasSelectedDraft
+    ? formatDraftSavedLabel(selectedDraftEntry?.updatedAt)
+    : '';
+  const selectedDraftPreview = hasSelectedDraft
+    ? selectedDraftText.length > 180
+      ? `${selectedDraftText.slice(0, 180).trim()}...`
+      : selectedDraftText
+    : '';
+  const unsentDraftCount = useMemo(
+    () =>
+      Object.values(draftsByConversation).filter((entry) =>
+        getDraftText(entry).trim(),
+      ).length,
+    [draftsByConversation],
+  );
+
+  const handleDiscardSelectedDraft = useCallback(() => {
+    if (!selectedConversationKey) {
+      return;
+    }
+
+    setDraftsByConversation((previous) => {
+      if (!(selectedConversationKey in previous)) {
+        return previous;
+      }
+
+      const nextDrafts = { ...previous };
+      delete nextDrafts[selectedConversationKey];
+      return nextDrafts;
+    });
+
+    setMessageText('');
+    setSendError('');
+  }, [selectedConversationKey]);
 
   useEffect(
     () => () => {
@@ -576,7 +704,9 @@ const MessagingPage = () => {
       return;
     }
 
-    const nextDraft = draftsByConversation[selectedConversationKey] || '';
+    const nextDraft = getDraftText(
+      draftsByConversation[selectedConversationKey],
+    );
     setMessageText((previous) =>
       previous === nextDraft ? previous : nextDraft,
     );
@@ -584,18 +714,108 @@ const MessagingPage = () => {
 
   useEffect(() => {
     const previousKey = previousConversationKeyRef.current;
-    if (previousKey !== null && previousKey !== selectedConversationKey) {
+    const didSwitchConversation =
+      previousKey !== null && previousKey !== selectedConversationKey;
+
+    if (didSwitchConversation) {
       setSelectedFiles([]);
       setSendError('');
+
+      if (selectedConversationKey) {
+        const restoredDraft = getDraftEntry(
+          draftsByConversation[selectedConversationKey],
+        );
+        if (restoredDraft?.text?.trim()) {
+          const noticeKey = `${selectedConversationKey}:${restoredDraft.updatedAt || ''}`;
+          if (lastDraftNoticeRef.current !== noticeKey) {
+            setDraftRestoreNotice(
+              `Draft restored (${formatDraftSavedLabel(restoredDraft.updatedAt)}).`,
+            );
+            lastDraftNoticeRef.current = noticeKey;
+          }
+        } else {
+          setDraftRestoreNotice('');
+        }
+      } else {
+        setDraftRestoreNotice('');
+      }
     }
 
     previousConversationKeyRef.current = selectedConversationKey;
-  }, [selectedConversationKey]);
+  }, [draftsByConversation, selectedConversationKey]);
+
+  useEffect(() => {
+    if (!draftRestoreNotice) {
+      return undefined;
+    }
+
+    const timeoutId = setTimeout(() => {
+      setDraftRestoreNotice('');
+    }, 2600);
+
+    return () => clearTimeout(timeoutId);
+  }, [draftRestoreNotice]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    try {
+      const normalizedDrafts = normalizeDraftMap(draftsByConversation);
+      if (Object.keys(normalizedDrafts).length === 0) {
+        window.localStorage.removeItem(DRAFT_STORAGE_KEY);
+        return;
+      }
+
+      window.localStorage.setItem(
+        DRAFT_STORAGE_KEY,
+        JSON.stringify(normalizedDrafts),
+      );
+    } catch {
+      // Ignore storage write failures silently.
+    }
+  }, [draftsByConversation]);
 
   useEffect(() => {
     if (!messageEndRef.current) return;
     messageEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    setShowScrollToLatest(false);
   }, [messages, selectedConversation?.id]);
+
+  const handleMessagesScroll = useCallback(() => {
+    const node = messagesScrollRef.current;
+    if (!node) {
+      return;
+    }
+
+    const distanceFromBottom =
+      node.scrollHeight - node.scrollTop - node.clientHeight;
+    setShowScrollToLatest(distanceFromBottom > SCROLL_TO_LATEST_THRESHOLD);
+  }, []);
+
+  useEffect(() => {
+    const node = messagesScrollRef.current;
+    if (!node) {
+      return undefined;
+    }
+
+    node.addEventListener('scroll', handleMessagesScroll, { passive: true });
+    handleMessagesScroll();
+
+    return () => {
+      node.removeEventListener('scroll', handleMessagesScroll);
+    };
+  }, [handleMessagesScroll, selectedConversation?.id, messages.length]);
+
+  const handleScrollToLatest = useCallback(() => {
+    if (!messageEndRef.current) {
+      return;
+    }
+
+    messageEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    setShowScrollToLatest(false);
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -870,7 +1090,10 @@ const MessagingPage = () => {
       if (selectedConversationKey) {
         setDraftsByConversation((previous) => ({
           ...previous,
-          [selectedConversationKey]: template,
+          [selectedConversationKey]: {
+            text: template,
+            updatedAt: Date.now(),
+          },
         }));
       }
       setSendError('');
@@ -992,13 +1215,24 @@ const MessagingPage = () => {
                 },
               }}
             />
+            {unsentDraftCount > 0 && (
+              <Chip
+                size="small"
+                label={`${unsentDraftCount} draft${unsentDraftCount === 1 ? '' : 's'}`}
+                sx={{
+                  fontWeight: 700,
+                  bgcolor: alpha(theme.palette.warning.main, 0.16),
+                  color: theme.palette.warning.dark,
+                }}
+              />
+            )}
             <Tooltip title="Start a new chat">
               <IconButton
                 onClick={handleStartNewChat}
                 aria-label="Start a new chat"
                 sx={{
-                  minWidth: 44,
-                  minHeight: 44,
+                  minWidth: TOUCH_TARGET_MIN,
+                  minHeight: TOUCH_TARGET_MIN,
                   bgcolor: alpha(CHAT_ACCENT, 0.12),
                   color: CHAT_ACCENT,
                   '&:hover': { bgcolor: alpha(CHAT_ACCENT, 0.18) },
@@ -1041,7 +1275,10 @@ const MessagingPage = () => {
                   size="small"
                   aria-label="Clear chat search"
                   onClick={() => setSearchQuery('')}
-                  sx={{ minWidth: 36, minHeight: 36 }}
+                  sx={{
+                    minWidth: TOUCH_TARGET_MIN,
+                    minHeight: TOUCH_TARGET_MIN,
+                  }}
                 >
                   <CloseIcon sx={{ fontSize: 18 }} />
                 </IconButton>
@@ -1089,7 +1326,7 @@ const MessagingPage = () => {
         </Typography>
         <Typography
           variant="caption"
-          color="text.disabled"
+          color="text.secondary"
           sx={{ display: 'block', mt: 0.25 }}
         >
           {hasConversationFilters
@@ -1126,10 +1363,14 @@ const MessagingPage = () => {
                 conversation,
                 currentUserId,
               );
-              const draftPreview = conversationKey
-                ? String(draftsByConversation[conversationKey] || '').trim()
-                : '';
+              const draftEntry = conversationKey
+                ? getDraftEntry(draftsByConversation[conversationKey])
+                : null;
+              const draftPreview = String(draftEntry?.text || '').trim();
               const hasDraftPreview = draftPreview.length > 0;
+              const draftSavedLabel = hasDraftPreview
+                ? formatDraftSavedLabel(draftEntry?.updatedAt)
+                : '';
               const conversationPreviewLabel = hasDraftPreview
                 ? `Draft: ${draftPreview}`
                 : preview;
@@ -1143,8 +1384,9 @@ const MessagingPage = () => {
                 String(
                   selectedConversation?.id || selectedConversation?._id || '',
                 ) === String(conversation.id || conversation._id);
-              const isOnline = participant?.id
-                ? isUserOnline(participant.id)
+              const participantId = resolveParticipantId(participant);
+              const isOnline = participantId
+                ? isUserOnline(participantId)
                 : false;
               const jobContextLabel =
                 conversation.jobRelated?.title || conversation.jobTitle || '';
@@ -1245,7 +1487,7 @@ const MessagingPage = () => {
                             {jobContextLabel && (
                               <Typography
                                 variant="caption"
-                                color="text.disabled"
+                                color="text.secondary"
                                 noWrap
                                 sx={{ display: 'block', mt: 0.35 }}
                               >
@@ -1263,7 +1505,9 @@ const MessagingPage = () => {
                               variant="caption"
                               color="text.secondary"
                             >
-                              {formatConversationTime(lastStamp)}
+                              {hasDraftPreview
+                                ? draftSavedLabel
+                                : formatConversationTime(lastStamp)}
                             </Typography>
                             {unread > 0 ? (
                               <Chip
@@ -1275,7 +1519,7 @@ const MessagingPage = () => {
                             ) : hasDraftPreview ? (
                               <Chip
                                 size="small"
-                                label="Draft"
+                                label="Unsent"
                                 sx={{
                                   fontWeight: 800,
                                   height: 20,
@@ -1295,7 +1539,7 @@ const MessagingPage = () => {
                                 variant="caption"
                                 color="text.secondary"
                               >
-                                {isOnline ? 'Online' : 'Seen'}
+                                {isOnline ? 'Online now' : 'Offline'}
                               </Typography>
                             )}
                           </Stack>
@@ -1418,14 +1662,13 @@ const MessagingPage = () => {
       selectedConversation,
       currentUserId,
     );
+    const participantPresenceId = resolveParticipantId(participant);
     const typingText = typingLabel;
     const jobTitle = selectedConversation.jobRelated?.title;
     const sendDisabled =
       isSending || (!messageText.trim() && selectedFiles.length === 0);
     const mobileComposerOffset =
-      mobile && !isKeyboardVisible
-        ? `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px))`
-        : 0;
+      mobile && !isKeyboardVisible ? withBottomNavSafeArea(0) : 0;
 
     return (
       <Paper
@@ -1458,8 +1701,8 @@ const MessagingPage = () => {
                 aria-label="Back to conversations"
                 sx={{
                   mr: 0.5,
-                  minWidth: 44,
-                  minHeight: 44,
+                  minWidth: TOUCH_TARGET_MIN,
+                  minHeight: TOUCH_TARGET_MIN,
                   color: CHAT_ACCENT,
                   bgcolor: alpha(CHAT_ACCENT, 0.08),
                 }}
@@ -1472,7 +1715,7 @@ const MessagingPage = () => {
               overlap="circular"
               anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
               variant={
-                participant?.id && isUserOnline(participant.id)
+                participantPresenceId && isUserOnline(participantPresenceId)
                   ? 'dot'
                   : undefined
               }
@@ -1510,10 +1753,41 @@ const MessagingPage = () => {
                 sx={{ display: 'block' }}
               >
                 {typingText ||
-                  (participant?.id && isUserOnline(participant.id)
-                    ? 'Online'
-                    : 'Last seen recently')}
+                  (participantPresenceId && isUserOnline(participantPresenceId)
+                    ? 'Online now'
+                    : 'Offline')}
               </Typography>
+              {hasSelectedDraft && (
+                <Stack
+                  direction="row"
+                  spacing={0.5}
+                  alignItems="center"
+                  sx={{ mt: 0.2 }}
+                >
+                  <Typography
+                    variant="caption"
+                    color="warning.main"
+                    noWrap
+                    sx={{ display: 'flex', alignItems: 'center', gap: 0.4 }}
+                  >
+                    <ScheduleIcon sx={{ fontSize: 12 }} />
+                    Unsent changes, {selectedDraftSavedLabel}
+                  </Typography>
+                  <Button
+                    size="small"
+                    color="inherit"
+                    onClick={handleDiscardSelectedDraft}
+                    sx={{
+                      minHeight: 20,
+                      px: 0.75,
+                      lineHeight: 1,
+                      color: 'text.secondary',
+                    }}
+                  >
+                    Discard
+                  </Button>
+                </Stack>
+              )}
               {jobTitle && (
                 <Chip
                   size="small"
@@ -1533,8 +1807,8 @@ const MessagingPage = () => {
                 aria-label="Open conversation menu"
                 sx={{
                   ml: 1,
-                  minWidth: 44,
-                  minHeight: 44,
+                  minWidth: TOUCH_TARGET_MIN,
+                  minHeight: TOUCH_TARGET_MIN,
                   color: 'text.secondary',
                 }}
               >
@@ -1545,6 +1819,7 @@ const MessagingPage = () => {
         </AppBar>
 
         <Box
+          ref={messagesScrollRef}
           sx={{
             flex: 1,
             overflowY: 'auto',
@@ -1606,6 +1881,39 @@ const MessagingPage = () => {
             </Box>
           ) : messages.length === 0 ? (
             <Box sx={{ py: 6 }}>
+              {hasSelectedDraft && (
+                <Paper
+                  variant="outlined"
+                  sx={{
+                    p: 1.5,
+                    mb: 2,
+                    borderRadius: 2,
+                    bgcolor: alpha(theme.palette.warning.main, 0.08),
+                    borderColor: alpha(theme.palette.warning.main, 0.4),
+                  }}
+                >
+                  <Stack
+                    direction="row"
+                    spacing={0.75}
+                    alignItems="center"
+                    sx={{ mb: 0.75 }}
+                  >
+                    <ScheduleIcon
+                      sx={{ fontSize: 14, color: theme.palette.warning.main }}
+                    />
+                    <Typography variant="caption" color="warning.main">
+                      Unsent draft {selectedDraftSavedLabel}
+                    </Typography>
+                  </Stack>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}
+                  >
+                    {selectedDraftPreview}
+                  </Typography>
+                </Paper>
+              )}
               <EmptyState
                 variant="messages"
                 title="Start the conversation"
@@ -1628,6 +1936,33 @@ const MessagingPage = () => {
           <div ref={messageEndRef} />
         </Box>
 
+        {showScrollToLatest && (
+          <Box
+            sx={{
+              position: 'absolute',
+              right: { xs: 16, md: 20 },
+              bottom: { xs: withBottomNavSafeArea(104), md: 96 },
+              zIndex: Z_INDEX.stickyCta,
+            }}
+          >
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={handleScrollToLatest}
+              sx={{
+                minHeight: TOUCH_TARGET_MIN,
+                borderRadius: 999,
+                textTransform: 'none',
+                fontWeight: 700,
+                px: 2,
+                boxShadow: '0 8px 20px rgba(0,0,0,0.2)',
+              }}
+            >
+              Jump to latest
+            </Button>
+          </Box>
+        )}
+
         <Box
           component="form"
           onSubmit={handleSendMessage}
@@ -1636,7 +1971,13 @@ const MessagingPage = () => {
             bottom: mobileComposerOffset,
             zIndex: 2,
             px: { xs: 1.25, md: 2 },
-            py: 1.25,
+            py: { xs: 1, md: 1.25 },
+            pb: {
+              xs: isKeyboardVisible
+                ? withSafeAreaBottom(8)
+                : withBottomNavSafeArea(12),
+              md: 1.25,
+            },
             bgcolor:
               theme.palette.mode === 'dark'
                 ? 'rgba(11,20,26,0.98)'
@@ -1644,6 +1985,7 @@ const MessagingPage = () => {
             backdropFilter: 'blur(14px)',
             borderTop: '1px solid',
             borderColor: 'divider',
+            transition: 'padding-bottom 0.22s ease',
           }}
         >
           {selectedFiles.length > 0 && (
@@ -1671,7 +2013,7 @@ const MessagingPage = () => {
                     color="inherit"
                     onClick={handleClearFiles}
                     startIcon={<DeleteSweepIcon sx={{ fontSize: 16 }} />}
-                    sx={{ minHeight: 30, px: 1 }}
+                    sx={{ minHeight: TOUCH_TARGET_MIN, px: 1.25 }}
                   >
                     Clear all
                   </Button>
@@ -1719,8 +2061,8 @@ const MessagingPage = () => {
                           position: 'absolute',
                           top: -8,
                           right: -8,
-                          width: 28,
-                          height: 28,
+                          width: 36,
+                          height: 36,
                           bgcolor: 'error.main',
                           color: 'error.contrastText',
                           '&:hover': { bgcolor: 'error.dark' },
@@ -1791,6 +2133,16 @@ const MessagingPage = () => {
             </Alert>
           )}
 
+          {draftRestoreNotice && (
+            <Alert
+              severity="info"
+              sx={{ mb: 1.25, borderRadius: 2 }}
+              onClose={() => setDraftRestoreNotice('')}
+            >
+              {draftRestoreNotice}
+            </Alert>
+          )}
+
           {messageText.trim().length === 0 && (
             <Stack
               direction="row"
@@ -1832,8 +2184,8 @@ const MessagingPage = () => {
                   aria-label="Attach file"
                   disabled={remainingAttachmentSlots === 0}
                   sx={{
-                    minWidth: 44,
-                    minHeight: 44,
+                    minWidth: TOUCH_TARGET_MIN,
+                    minHeight: TOUCH_TARGET_MIN,
                     color: CHAT_ACCENT,
                     bgcolor: alpha(CHAT_ACCENT, 0.08),
                     '&:hover': { bgcolor: alpha(CHAT_ACCENT, 0.14) },
@@ -1859,13 +2211,31 @@ const MessagingPage = () => {
                 setMessageText(nextValue);
                 if (selectedConversationKey) {
                   setDraftsByConversation((previous) => {
-                    if (previous[selectedConversationKey] === nextValue) {
+                    const trimmedValue = nextValue.trim();
+                    const previousEntry = getDraftEntry(
+                      previous[selectedConversationKey],
+                    );
+
+                    if (!trimmedValue) {
+                      if (!(selectedConversationKey in previous)) {
+                        return previous;
+                      }
+
+                      const nextDrafts = { ...previous };
+                      delete nextDrafts[selectedConversationKey];
+                      return nextDrafts;
+                    }
+
+                    if (previousEntry?.text === nextValue) {
                       return previous;
                     }
 
                     return {
                       ...previous,
-                      [selectedConversationKey]: nextValue,
+                      [selectedConversationKey]: {
+                        text: nextValue,
+                        updatedAt: Date.now(),
+                      },
                     };
                   });
                 }
@@ -1902,8 +2272,8 @@ const MessagingPage = () => {
                 disabled={sendDisabled}
                 aria-label="Send message"
                 sx={{
-                  minWidth: 44,
-                  minHeight: 44,
+                  minWidth: TOUCH_TARGET_MIN,
+                  minHeight: TOUCH_TARGET_MIN,
                   bgcolor: CHAT_ACCENT,
                   color: '#fff',
                   '&:hover': { bgcolor: '#0F7366' },
@@ -1929,8 +2299,19 @@ const MessagingPage = () => {
           >
             {selectedFiles.length > 0
               ? `${selectedFiles.length} attached • ${remainingAttachmentSlots} slot${remainingAttachmentSlots === 1 ? '' : 's'} left • ${messageCharacterCount}/1000 chars • Press Enter to send`
-              : `Press Enter for quick send • Shift+Enter for new line • ${messageCharacterCount}/1000 chars • Max ${MAX_ATTACHMENTS} files (10MB limit)`}
+              : hasSelectedDraft
+                ? `Press Enter for quick send • Shift+Enter for new line • ${messageCharacterCount}/1000 chars • Draft ${selectedDraftSavedLabel}`
+                : `Press Enter for quick send • Shift+Enter for new line • ${messageCharacterCount}/1000 chars • Max ${MAX_ATTACHMENTS} files (10MB limit)`}
           </Typography>
+          {isKeyboardVisible && (
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ display: 'block', mt: 0.25, pl: 0.5 }}
+            >
+              Keyboard open - composer remains pinned for quick replies.
+            </Typography>
+          )}
         </Box>
       </Paper>
     );
@@ -1943,7 +2324,10 @@ const MessagingPage = () => {
     >
       <Box
         sx={{
-          minHeight: { xs: '100dvh', md: 'calc(100dvh - 64px)' },
+          minHeight: {
+            xs: `calc(100dvh - ${HEADER_HEIGHT_MOBILE}px - var(--kelmah-network-banner-offset, 0px))`,
+            md: 'calc(100dvh - 64px)',
+          },
           display: 'flex',
           flexDirection: 'column',
           bgcolor: theme.palette.mode === 'dark' ? CHAT_BG_DARK : CHAT_BG_LIGHT,
@@ -1964,6 +2348,14 @@ const MessagingPage = () => {
           sx={{
             px: { xs: 0, md: 2 },
             py: { xs: 0, md: 2 },
+            pb: {
+              xs: isMobile
+                ? isKeyboardVisible
+                  ? withSafeAreaBottom(0)
+                  : withBottomNavSafeArea(4)
+                : 2,
+              md: 2,
+            },
             flex: 1,
             display: 'flex',
           }}

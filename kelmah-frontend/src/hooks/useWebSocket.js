@@ -11,7 +11,9 @@ const websocketHookLogger = {
 
 // Compatibility hook that now reuses websocketService singleton.
 export const useWebSocket = () => {
-  const [isConnected, setIsConnected] = useState(Boolean(websocketService.isConnected));
+  const [isConnected, setIsConnected] = useState(
+    Boolean(websocketService.isConnected),
+  );
   const [error, setError] = useState(null);
   const onMessageHandler = useRef(null);
 
@@ -35,7 +37,9 @@ export const useWebSocket = () => {
       const userRole = user?.role || 'worker';
 
       if (!token || !userId) {
-        const authError = new Error('Missing authentication context for realtime connection');
+        const authError = new Error(
+          'Missing authentication context for realtime connection',
+        );
         setError(authError);
         return;
       }

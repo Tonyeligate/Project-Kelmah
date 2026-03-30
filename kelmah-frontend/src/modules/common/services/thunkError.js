@@ -1,6 +1,9 @@
 import { normalizeApiError } from '../../../services/responseNormalizer';
 
-export const toThunkErrorPayload = (error, fallbackMessage = 'Request failed') => {
+export const toThunkErrorPayload = (
+  error,
+  fallbackMessage = 'Request failed',
+) => {
   const normalized = normalizeApiError(error || new Error(fallbackMessage));
   return {
     message: normalized.userMessage || normalized.message || fallbackMessage,
@@ -12,7 +15,10 @@ export const toThunkErrorPayload = (error, fallbackMessage = 'Request failed') =
   };
 };
 
-export const getThunkErrorMessage = (errorPayload, fallbackMessage = 'Request failed') => {
+export const getThunkErrorMessage = (
+  errorPayload,
+  fallbackMessage = 'Request failed',
+) => {
   if (!errorPayload) {
     return fallbackMessage;
   }
@@ -21,5 +27,7 @@ export const getThunkErrorMessage = (errorPayload, fallbackMessage = 'Request fa
     return errorPayload;
   }
 
-  return errorPayload.message || errorPayload.technicalMessage || fallbackMessage;
+  return (
+    errorPayload.message || errorPayload.technicalMessage || fallbackMessage
+  );
 };

@@ -24,7 +24,11 @@ const ProtectedRoute = ({
 }) => {
   const location = useLocation();
   // Use ONLY Redux auth state - removed dual AuthContext/Redux conflicts
-  const { user, isAuthenticated, loading: authLoading } = useSelector((state) => state.auth);
+  const {
+    user,
+    isAuthenticated,
+    loading: authLoading,
+  } = useSelector((state) => state.auth);
 
   // Determine if the route is allowed based on roles or directly from prop
   const requiresRoleCheck = Array.isArray(roles) && roles.length > 0;

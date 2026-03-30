@@ -1,4 +1,14 @@
-import { AppBar, Box, Typography, IconButton, Avatar, Badge, Menu, MenuItem, Button } from '@mui/material';
+import {
+  AppBar,
+  Box,
+  Typography,
+  IconButton,
+  Avatar,
+  Badge,
+  Menu,
+  MenuItem,
+  Button,
+} from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { BRAND_COLORS, KELMAH_FOCUS_RING } from '../../../../theme';
 import { Z_INDEX } from '../../../../constants/layout';
@@ -155,11 +165,15 @@ export const ActionButton = styled(IconButton)(({ theme }) => ({
   height: 44,
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   '&:focus-visible': {
-    outline: theme.palette.mode === 'dark' ? KELMAH_FOCUS_RING.dark : KELMAH_FOCUS_RING.light,
+    outline:
+      theme.palette.mode === 'dark'
+        ? KELMAH_FOCUS_RING.dark
+        : KELMAH_FOCUS_RING.light,
     outlineOffset: '3px',
-    boxShadow: theme.palette.mode === 'dark'
-      ? '0 0 0 4px rgba(255, 215, 0, 0.18)'
-      : '0 0 0 4px rgba(0, 0, 0, 0.12)',
+    boxShadow:
+      theme.palette.mode === 'dark'
+        ? '0 0 0 4px rgba(255, 215, 0, 0.18)'
+        : '0 0 0 4px rgba(0, 0, 0, 0.12)',
   },
   [theme.breakpoints.down('sm')]: {
     margin: theme.spacing(0, 0.5),
@@ -227,26 +241,29 @@ export const UserAvatar = styled(Avatar)(({ theme }) => ({
         : `0 4px 15px rgba(0, 0, 0, 0.3)`,
   },
   '&:focus-visible': {
-    outline: theme.palette.mode === 'dark' ? KELMAH_FOCUS_RING.dark : KELMAH_FOCUS_RING.light,
+    outline:
+      theme.palette.mode === 'dark'
+        ? KELMAH_FOCUS_RING.dark
+        : KELMAH_FOCUS_RING.light,
     outlineOffset: 3,
-    boxShadow: theme.palette.mode === 'dark'
-      ? '0 0 0 4px rgba(255, 215, 0, 0.18)'
-      : '0 0 0 4px rgba(0, 0, 0, 0.12)',
+    boxShadow:
+      theme.palette.mode === 'dark'
+        ? '0 0 0 4px rgba(255, 215, 0, 0.18)'
+        : '0 0 0 4px rgba(0, 0, 0, 0.12)',
   },
 }));
 
 export const StyledBadge = styled(Badge)(({ theme }) => ({
   '& .MuiBadge-badge': {
-    backgroundColor:
-      theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
-    color:
-      theme.palette.mode === 'dark' ? BRAND_COLORS.black : BRAND_COLORS.gold,
+    backgroundColor: theme.palette.mode === 'dark' ? '#FACC15' : '#111111',
+    color: theme.palette.mode === 'dark' ? '#101010' : '#FFFFFF',
     fontWeight: 600,
-    fontSize: '0.75rem',
-    minWidth: '18px',
-    height: '18px',
+    fontSize: '0.72rem',
+    minWidth: 20,
+    height: 20,
     border: `2px solid ${theme.palette.background.paper}`,
     boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+    letterSpacing: '0.01em',
   },
 }));
 
@@ -303,9 +320,10 @@ export const AuthButton = styled(Button)(({ theme, variant }) => ({
   '&:focus-visible': {
     outline: `3px solid ${theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black}`,
     outlineOffset: 3,
-    boxShadow: theme.palette.mode === 'dark'
-      ? '0 0 0 4px rgba(255, 215, 0, 0.18)'
-      : '0 0 0 4px rgba(0, 0, 0, 0.12)',
+    boxShadow:
+      theme.palette.mode === 'dark'
+        ? '0 0 0 4px rgba(255, 215, 0, 0.18)'
+        : '0 0 0 4px rgba(0, 0, 0, 0.12)',
   },
   [theme.breakpoints.down('sm')]: {
     padding: '6px 12px',

@@ -9,7 +9,11 @@ import PageCanvas from '@/modules/common/components/PageCanvas';
 const RegisterPage = () => {
   const isMobile = useBreakpointDown('md');
 
-  const pageTitle = <Helmet><title>Sign Up | Kelmah</title></Helmet>;
+  const pageTitle = (
+    <Helmet>
+      <title>Sign Up | Kelmah</title>
+    </Helmet>
+  );
   const helperCopy = (
     <Box sx={{ mb: 2 }}>
       <Typography
@@ -17,7 +21,8 @@ const RegisterPage = () => {
         color="text.secondary"
         sx={{ mb: 1.25, lineHeight: 1.5 }}
       >
-        Create your account to post jobs, apply quickly, and chat safely on Kelmah.
+        Create your account to post jobs, apply quickly, and chat safely on
+        Kelmah.
       </Typography>
       <Stack direction="row" spacing={0.75} useFlexGap flexWrap="wrap">
         <Chip size="small" label="Hirer: Post jobs and review proposals" />
@@ -28,18 +33,22 @@ const RegisterPage = () => {
 
   if (isMobile) {
     return (
-      <PageCanvas disableContainer sx={{ pt: { xs: 3, md: 4 }, pb: { xs: 4, md: 6 } }}>
+      <PageCanvas
+        disableContainer
+        sx={{ pt: { xs: 3, md: 4 }, pb: { xs: 4, md: 6 } }}
+      >
         {pageTitle}
-        <Box sx={{ px: 2, pt: 2 }}>
-          {helperCopy}
-        </Box>
+        <Box sx={{ px: 2, pt: 2 }}>{helperCopy}</Box>
         <MobileRegister />
       </PageCanvas>
     );
   }
 
   return (
-    <PageCanvas disableContainer sx={{ pt: { xs: 3, md: 4 }, pb: { xs: 4, md: 6 } }}>
+    <PageCanvas
+      disableContainer
+      sx={{ pt: { xs: 3, md: 4 }, pb: { xs: 4, md: 6 } }}
+    >
       {pageTitle}
       <Box sx={{ maxWidth: 960, mx: 'auto', px: { xs: 2, md: 0 }, pt: 2 }}>
         {helperCopy}

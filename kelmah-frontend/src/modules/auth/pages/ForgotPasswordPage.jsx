@@ -38,7 +38,9 @@ const ForgotPasswordPage = () => {
       // AUD2-M07 FIX: Use generic error message to prevent email enumeration attacks.
       // Server-specific messages (e.g. "User not found") would let attackers confirm
       // which email addresses exist in the system.
-      setError('We could not send reset instructions now. Please try again shortly.');
+      setError(
+        'We could not send reset instructions now. Please try again shortly.',
+      );
     } finally {
       setLoading(false);
     }
@@ -47,200 +49,219 @@ const ForgotPasswordPage = () => {
   // Mobile-first forgot password view
   if (isActualMobile) {
     return (
-      <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
-      <Box
-        sx={{
-          minHeight: '100vh',
-          bgcolor: 'background.default',
-          color: 'text.primary',
-          fontFamily: 'Manrope, "Noto Sans", sans-serif',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-        }}
+      <PageCanvas
+        disableContainer
+        sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}
       >
-        {/* Header */}
-        <Box sx={{ p: 2, pb: 1 }}>
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-            }}
-          >
-            <IconButton
-              onClick={() => navigate('/login')}
-              sx={{ color: 'text.primary', mr: 2, minWidth: 44, minHeight: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
-              aria-label="Back to login"
+        <Box
+          sx={{
+            minHeight: '100vh',
+            bgcolor: 'background.default',
+            color: 'text.primary',
+            fontFamily: 'Manrope, "Noto Sans", sans-serif',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+          }}
+        >
+          {/* Header */}
+          <Box sx={{ p: 2, pb: 1 }}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
             >
-              <ArrowBack />
-            </IconButton>
+              <IconButton
+                onClick={() => navigate('/login')}
+                sx={{
+                  color: 'text.primary',
+                  mr: 2,
+                  minWidth: 44,
+                  minHeight: 44,
+                  '&:focus-visible': {
+                    outline: '3px solid',
+                    outlineColor: 'primary.main',
+                    outlineOffset: '2px',
+                  },
+                }}
+                aria-label="Back to login"
+              >
+                <ArrowBack />
+              </IconButton>
+              <Typography
+                variant="h6"
+                sx={{
+                  color: 'text.primary',
+                  fontWeight: 'bold',
+                  fontSize: '18px',
+                  textAlign: 'center',
+                  flex: 1,
+                  pr: 6,
+                }}
+              >
+                Reset Password
+              </Typography>
+            </Box>
+          </Box>
+
+          {/* Main Content */}
+          <Box sx={{ flex: 1, px: 2 }}>
             <Typography
-              variant="h6"
+              variant="h5"
               sx={{
                 color: 'text.primary',
                 fontWeight: 'bold',
-                fontSize: '18px',
-                textAlign: 'center',
-                flex: 1,
-                pr: 6,
+                fontSize: '24px',
+                mb: 2,
+                mt: 5,
               }}
             >
-              Reset Password
+              Forgot your password?
             </Typography>
-          </Box>
-        </Box>
 
-        {/* Main Content */}
-        <Box sx={{ flex: 1, px: 2 }}>
-          <Typography
-            variant="h5"
-            sx={{
-              color: 'text.primary',
-              fontWeight: 'bold',
-              fontSize: '24px',
-              mb: 2,
-              mt: 5,
-            }}
-          >
-            Forgot your password?
-          </Typography>
-
-          <Typography
-            sx={{
-              color: 'text.secondary',
-              fontSize: '16px',
-              mb: 3,
-              lineHeight: 1.5,
-            }}
-          >
-            Enter the email you used to sign up. If it matches an account, we
-            will send password reset steps.
-          </Typography>
-
-          {/* Status Alert */}
-          {status && (
-            <Alert
-              severity="success"
+            <Typography
               sx={{
-                mb: 2,
-                bgcolor: (t) => `${t.palette.success.main}14`,
-                color: 'success.main',
-                border: (t) => `1px solid ${t.palette.success.main}4D`,
-                borderRadius: '12px',
-                '& .MuiAlert-icon': { color: 'success.main' },
-              }}
-            >
-              {status}
-            </Alert>
-          )}
-
-          {/* Error Alert */}
-          {error && (
-            <Alert
-              severity="error"
-              sx={{
-                mb: 2,
-                bgcolor: (t) => `${t.palette.error.main}14`,
-                color: 'error.main',
-                border: (t) => `1px solid ${t.palette.error.main}4D`,
-                borderRadius: '12px',
-                '& .MuiAlert-icon': { color: 'error.main' },
-              }}
-            >
-              {error}
-            </Alert>
-          )}
-
-          <Box component="form" onSubmit={handleSubmit}>
-            {/* Email Field */}
-            <Box sx={{ mb: 3 }}>
-              <TextField
-                fullWidth
-                type="email"
-                placeholder="Email used for your Kelmah account"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                inputProps={{
-                  'aria-label': 'Email used for your Kelmah account',
-                }}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    bgcolor: 'background.paper',
-                    borderRadius: '12px',
-                    height: '56px',
-                    border: 'none',
-                    '& fieldset': { border: 'none' },
-                    '&:hover fieldset': { border: 'none' },
-                    '&.Mui-focused fieldset': { border: 'none' },
-                  },
-                  '& .MuiOutlinedInput-input': {
-                    color: 'text.primary',
-                    fontSize: '16px',
-                    padding: '16px',
-                    '&::placeholder': {
-                      color: 'text.secondary',
-                      opacity: 1,
-                    },
-                  },
-                }}
-              />
-            </Box>
-
-            {/* Submit Button */}
-            <Button
-              type="submit"
-              fullWidth
-              disabled={loading}
-              aria-label="Send reset link to email"
-              sx={{
-                bgcolor: 'primary.main',
-                color: 'primary.contrastText',
-                height: '48px',
-                borderRadius: '24px',
+                color: 'text.secondary',
                 fontSize: '16px',
-                fontWeight: 'bold',
-                textTransform: 'none',
                 mb: 3,
+                lineHeight: 1.5,
+              }}
+            >
+              Enter the email you used to sign up. If it matches an account, we
+              will send password reset steps.
+            </Typography>
+
+            {/* Status Alert */}
+            {status && (
+              <Alert
+                severity="success"
+                sx={{
+                  mb: 2,
+                  bgcolor: (t) => `${t.palette.success.main}14`,
+                  color: 'success.main',
+                  border: (t) => `1px solid ${t.palette.success.main}4D`,
+                  borderRadius: '12px',
+                  '& .MuiAlert-icon': { color: 'success.main' },
+                }}
+              >
+                {status}
+              </Alert>
+            )}
+
+            {/* Error Alert */}
+            {error && (
+              <Alert
+                severity="error"
+                sx={{
+                  mb: 2,
+                  bgcolor: (t) => `${t.palette.error.main}14`,
+                  color: 'error.main',
+                  border: (t) => `1px solid ${t.palette.error.main}4D`,
+                  borderRadius: '12px',
+                  '& .MuiAlert-icon': { color: 'error.main' },
+                }}
+              >
+                {error}
+              </Alert>
+            )}
+
+            <Box component="form" onSubmit={handleSubmit}>
+              {/* Email Field */}
+              <Box sx={{ mb: 3 }}>
+                <TextField
+                  fullWidth
+                  type="email"
+                  placeholder="Email used for your Kelmah account"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  inputProps={{
+                    'aria-label': 'Email used for your Kelmah account',
+                  }}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      bgcolor: 'background.paper',
+                      borderRadius: '12px',
+                      height: '56px',
+                      border: 'none',
+                      '& fieldset': { border: 'none' },
+                      '&:hover fieldset': { border: 'none' },
+                      '&.Mui-focused fieldset': { border: 'none' },
+                    },
+                    '& .MuiOutlinedInput-input': {
+                      color: 'text.primary',
+                      fontSize: '16px',
+                      padding: '16px',
+                      '&::placeholder': {
+                        color: 'text.secondary',
+                        opacity: 1,
+                      },
+                    },
+                  }}
+                />
+              </Box>
+
+              {/* Submit Button */}
+              <Button
+                type="submit"
+                fullWidth
+                disabled={loading}
+                aria-label="Send reset link to email"
+                sx={{
+                  bgcolor: 'primary.main',
+                  color: 'primary.contrastText',
+                  height: '48px',
+                  borderRadius: '24px',
+                  fontSize: '16px',
+                  fontWeight: 'bold',
+                  textTransform: 'none',
+                  mb: 3,
+                  '&:hover': {
+                    bgcolor: 'primary.dark',
+                  },
+                }}
+              >
+                {loading ? (
+                  <CircularProgress size={24} color="inherit" />
+                ) : (
+                  'Send Reset Link'
+                )}
+              </Button>
+            </Box>
+          </Box>
+
+          {/* Bottom Section */}
+          <Box sx={{ p: 2 }}>
+            <Typography
+              component={Link}
+              to="/login"
+              sx={{
+                color: 'text.secondary',
+                fontSize: '14px',
+                textAlign: 'center',
+                display: 'block',
+                textDecoration: 'underline',
                 '&:hover': {
-                  bgcolor: 'primary.dark',
+                  color: 'primary.main',
                 },
               }}
             >
-              {loading ? <CircularProgress size={24} color="inherit" /> : 'Send Reset Link'}
-            </Button>
+              Back to Login
+            </Typography>
+            <Box sx={{ height: '20px', bgcolor: 'background.default' }} />
           </Box>
         </Box>
-
-        {/* Bottom Section */}
-        <Box sx={{ p: 2 }}>
-          <Typography
-            component={Link}
-            to="/login"
-            sx={{
-              color: 'text.secondary',
-              fontSize: '14px',
-              textAlign: 'center',
-              display: 'block',
-              textDecoration: 'underline',
-              '&:hover': {
-                color: 'primary.main',
-              },
-            }}
-          >
-            Back to Login
-          </Typography>
-          <Box sx={{ height: '20px', bgcolor: 'background.default' }} />
-        </Box>
-      </Box>
       </PageCanvas>
     );
   }
 
   return (
     <AuthWrapper>
-      <Helmet><title>Forgot Password | Kelmah</title></Helmet>
+      <Helmet>
+        <title>Forgot Password | Kelmah</title>
+      </Helmet>
       <Box
         component="form"
         onSubmit={handleSubmit}
@@ -270,8 +291,18 @@ const ForgotPasswordPage = () => {
           onChange={(e) => setEmail(e.target.value)}
           helperText="Use the email you used when creating your account"
         />
-        <Button type="submit" variant="contained" fullWidth disabled={loading} sx={{ mt: 2, minHeight: 44 }}>
-          {loading ? <CircularProgress size={24} color="inherit" /> : 'Send Reset Link'}
+        <Button
+          type="submit"
+          variant="contained"
+          fullWidth
+          disabled={loading}
+          sx={{ mt: 2, minHeight: 44 }}
+        >
+          {loading ? (
+            <CircularProgress size={24} color="inherit" />
+          ) : (
+            'Send Reset Link'
+          )}
         </Button>
         <Box sx={{ mt: 2 }}>
           <Typography variant="body2">
@@ -284,4 +315,3 @@ const ForgotPasswordPage = () => {
 };
 
 export default ForgotPasswordPage;
-

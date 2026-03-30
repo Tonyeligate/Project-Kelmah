@@ -25,7 +25,13 @@ const resolveMessagingConversationId = (folder) => {
 };
 
 const MAX_FILE_SIZE =
-  Number(import.meta.env.VITE_MEDIA_MAX_SIZE_MB || import.meta.env.VITE_S3_MAX_SIZE_MB || 25) * 1024 * 1024;
+  Number(
+    import.meta.env.VITE_MEDIA_MAX_SIZE_MB ||
+      import.meta.env.VITE_S3_MAX_SIZE_MB ||
+      25,
+  ) *
+  1024 *
+  1024;
 const ALLOWED_FILE_TYPES = {
   images: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
   documents: [
@@ -93,7 +99,9 @@ const fileUploadService = {
       if (service === 'messaging') {
         const conversationId = resolveMessagingConversationId(folder);
         if (!conversationId) {
-          throw new Error('A valid conversation ID is required for messaging uploads');
+          throw new Error(
+            'A valid conversation ID is required for messaging uploads',
+          );
         }
         uploadPath = `/messages/${conversationId}/attachments`;
       }
@@ -117,7 +125,8 @@ const fileUploadService = {
       return {
         ...uploaded,
         url: uploaded?.url || uploaded?.secureUrl || uploaded?.fileUrl || null,
-        fileUrl: uploaded?.fileUrl || uploaded?.secureUrl || uploaded?.url || null,
+        fileUrl:
+          uploaded?.fileUrl || uploaded?.secureUrl || uploaded?.url || null,
         name: uploaded?.name || file.name,
         size: uploaded?.bytes || uploaded?.size || file.size,
         type: uploaded?.fileType || uploaded?.resourceType || file.type,
@@ -176,4 +185,3 @@ const fileUploadService = {
 };
 
 export default fileUploadService;
-

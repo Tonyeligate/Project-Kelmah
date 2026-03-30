@@ -262,7 +262,12 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [groupName, setGroupName] = useState('');
   const [filterAnchorEl, setFilterAnchorEl] = useState(null);
-  const { messagingService, isUserOnline, conversations: contextConversations, loadingConversations: contextLoading } = useMessages();
+  const {
+    messagingService,
+    isUserOnline,
+    conversations: contextConversations,
+    loadingConversations: contextLoading,
+  } = useMessages();
   // Use current user from Redux (single source of truth)
   const { user: currentUser } = useSelector((state) => state.auth);
   const [localConversations, setLocalConversations] = useState([]);
@@ -270,7 +275,9 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
 
   // Sync from MessageContext conversations (single source of truth - avoids duplicate fetches)
   useEffect(() => {
-    setLocalConversations(Array.isArray(contextConversations) ? contextConversations : []);
+    setLocalConversations(
+      Array.isArray(contextConversations) ? contextConversations : [],
+    );
     setLocalLoading(contextLoading);
   }, [contextConversations, contextLoading]);
 
@@ -358,7 +365,9 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
   };
 
   const isFilteredView =
-    searchQuery.trim() !== '' || tabValue !== 'all' || dateFilter !== 'allDates';
+    searchQuery.trim() !== '' ||
+    tabValue !== 'all' ||
+    dateFilter !== 'allDates';
 
   const conversationCountLabel = isFilteredView
     ? `Showing ${filteredConversations.length} of ${localConversations.length} conversation${localConversations.length === 1 ? '' : 's'}`
@@ -376,7 +385,11 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
       return 'No activity';
     }
 
-    const relativeLabel = safeFormatRelative(timestamp, { addSuffix: true }, '');
+    const relativeLabel = safeFormatRelative(
+      timestamp,
+      { addSuffix: true },
+      '',
+    );
     if (relativeLabel) {
       return relativeLabel;
     }
@@ -434,7 +447,9 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
   const handleArchiveConversation = async () => {
     const target = selectedConversation;
     handleMenuClose();
-    setFilteredConversations((prev) => prev.filter((c) => c.id !== target?.id && c._id !== target?._id));
+    setFilteredConversations((prev) =>
+      prev.filter((c) => c.id !== target?.id && c._id !== target?._id),
+    );
     try {
       if (messagingService?.archiveConversation) {
         await messagingService.archiveConversation(target?.id || target?._id);
@@ -447,7 +462,9 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
   const handleDeleteConversation = async () => {
     const target = selectedConversation;
     handleMenuClose();
-    setFilteredConversations((prev) => prev.filter((c) => c.id !== target?.id && c._id !== target?._id));
+    setFilteredConversations((prev) =>
+      prev.filter((c) => c.id !== target?.id && c._id !== target?._id),
+    );
     try {
       if (messagingService?.deleteConversation) {
         await messagingService.deleteConversation(target?.id || target?._id);
@@ -666,10 +683,15 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
                         {/* Show online status of the other participant for direct chats */}
                         {!conversation.isGroup &&
                           (() => {
-                            const other = (conversation.participants || []).find(
+                            const other = (
+                              conversation.participants || []
+                            ).find(
                               (p) => String(p.id) !== String(currentUser?.id),
                             );
-                            const status = other && isUserOnline(String(other.id)) ? 'online' : 'offline';
+                            const status =
+                              other && isUserOnline(String(other.id))
+                                ? 'online'
+                                : 'offline';
                             return <StatusDot status={status} />;
                           })()}
                         {conversation.isGroup && <StatusDot status="offline" />}
@@ -703,8 +725,7 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
                                   ml: 0.5,
                                   fontSize: '0.875rem',
                                   verticalAlign: 'middle',
-                                  color:
-                                    alpha(theme.palette.primary.main, 0.7),
+                                  color: alpha(theme.palette.primary.main, 0.7),
                                 }}
                               />
                             )}
@@ -766,27 +787,49 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
                                 </Typography>
                               )}
                             {(() => {
-                              const msg = conversation.latestMessage || conversation.lastMessage;
+                              const msg =
+                                conversation.latestMessage ||
+                                conversation.lastMessage;
                               if (!msg) return 'No messages yet';
                               const mType = msg.messageType || '';
                               // Show human-readable label for media - never show raw URLs
                               if (mType === 'image') return 'Photo';
                               if (mType === 'video') return 'Video';
                               if (mType === 'audio') return 'Audio';
-                              if (mType === 'file' || mType === 'document') return 'File';
+                              if (mType === 'file' || mType === 'document')
+                                return 'File';
                               // Fallback: if content looks like a URL and there are attachments, label it
                               const content = msg.content || msg.text || '';
-                                const isImageUrl = content.match(/\\.(jpeg|jpg|gif|png|webp|bmp)($|\\?)/i) || content.includes('/image/upload/') || content.includes('cloudinary.com/');
-                                const isVideoUrl = content.match(/\\.(mp4|webm|avi|mov)($|\\?)/i) || content.includes('/video/upload/');
-                                
-                                if (isImageUrl) return 'Photo';
-                                if (isVideoUrl) return 'Video';
+                              const isImageUrl =
+                                content.match(
+                                  /\\.(jpeg|jpg|gif|png|webp|bmp)($|\\?)/i,
+                                ) ||
+                                content.includes('/image/upload/') ||
+                                content.includes('cloudinary.com/');
+                              const isVideoUrl =
+                                content.match(
+                                  /\\.(mp4|webm|avi|mov)($|\\?)/i,
+                                ) || content.includes('/video/upload/');
 
-                                if (msg.hasAttachment || (Array.isArray(msg.attachments) && msg.attachments.length > 0)) {
-                                  if (!content.trim() || content.startsWith('http')) return 'Attachment';
-                                }
-                                if (content.startsWith('http')) return 'Attachment';
-                                return content ? truncateText(content) : 'No messages yet';
+                              if (isImageUrl) return 'Photo';
+                              if (isVideoUrl) return 'Video';
+
+                              if (
+                                msg.hasAttachment ||
+                                (Array.isArray(msg.attachments) &&
+                                  msg.attachments.length > 0)
+                              ) {
+                                if (
+                                  !content.trim() ||
+                                  content.startsWith('http')
+                                )
+                                  return 'Attachment';
+                              }
+                              if (content.startsWith('http'))
+                                return 'Attachment';
+                              return content
+                                ? truncateText(content)
+                                : 'No messages yet';
                             })()}
                           </Typography>
                           {hasUnread && (
@@ -947,11 +990,17 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
           },
         }}
       >
-        <DialogTitle id="new-conversation-dialog-title" sx={{ color: 'primary.main' }}>New Conversation</DialogTitle>
+        <DialogTitle
+          id="new-conversation-dialog-title"
+          sx={{ color: 'primary.main' }}
+        >
+          New Conversation
+        </DialogTitle>
         <DialogContent>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-              Pick one person for a direct chat, or select at least two members for a group.
-            </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+            Pick one person for a direct chat, or select at least two members
+            for a group.
+          </Typography>
           <Box sx={{ mt: 1, mb: 2 }}>
             <Typography
               variant="subtitle2"
@@ -1109,7 +1158,9 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
                     '&:hover fieldset': {
                       borderColor: alpha(theme.palette.primary.main, 0.5),
                     },
-                    '&.Mui-focused fieldset': { borderColor: theme.palette.primary.main },
+                    '&.Mui-focused fieldset': {
+                      borderColor: theme.palette.primary.main,
+                    },
                     '& input': { color: theme.palette.text.primary },
                   },
                 }}
@@ -1151,4 +1202,3 @@ ConversationList.propTypes = {
 };
 
 export default ConversationList;
-

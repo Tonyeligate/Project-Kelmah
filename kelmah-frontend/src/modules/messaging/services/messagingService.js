@@ -111,12 +111,21 @@ const normalizeAttachment = (attachment = {}) => {
   return {
     ...attachment,
     id: attachment.id || attachment._id,
-    url: attachment.url || attachment.fileUrl || attachment.path || attachment.getUrl || null,
+    url:
+      attachment.url ||
+      attachment.fileUrl ||
+      attachment.path ||
+      attachment.getUrl ||
+      null,
     fileUrl: attachment.fileUrl || attachment.url || null,
     type: normalizedType,
     mimeType,
     fileType: attachment.fileType || mimeType || attachment.type,
-    name: attachment.name || attachment.fileName || attachment.filename || 'Attachment',
+    name:
+      attachment.name ||
+      attachment.fileName ||
+      attachment.filename ||
+      'Attachment',
     size: attachment.size || attachment.fileSize || 0,
   };
 };
@@ -168,16 +177,18 @@ const normalizeConversation = (conversation = {}) => {
     ...conversation,
     id: conversation.id || conversation._id,
     participants: Array.isArray(conversation.participants)
-      ? conversation.participants.map((participant) => normalizeParticipant(participant))
+      ? conversation.participants.map((participant) =>
+          normalizeParticipant(participant),
+        )
       : [],
     unread:
       typeof conversation.unread === 'number'
         ? conversation.unread
-        : (conversation.unreadCount || 0),
+        : conversation.unreadCount || 0,
     unreadCount:
       typeof conversation.unreadCount === 'number'
         ? conversation.unreadCount
-        : (conversation.unread || 0),
+        : conversation.unread || 0,
     latestMessage: conversation.latestMessage
       ? normalizeMessage(conversation.latestMessage)
       : conversation.latestMessage,
@@ -188,7 +199,9 @@ const normalizeConversation = (conversation = {}) => {
 };
 
 const normalizeConversationList = (list = []) =>
-  Array.isArray(list) ? list.map((conversation) => normalizeConversation(conversation)) : [];
+  Array.isArray(list)
+    ? list.map((conversation) => normalizeConversation(conversation))
+    : [];
 
 const normalizeMessageList = (list = []) =>
   Array.isArray(list) ? list.map((message) => normalizeMessage(message)) : [];
@@ -203,8 +216,10 @@ export const messagingService = {
       // Normalize response shape
       const payload = response.data;
       if (Array.isArray(payload)) return normalizeConversationList(payload);
-      if (payload?.data?.conversations) return normalizeConversationList(payload.data.conversations);
-      if (payload?.conversations) return normalizeConversationList(payload.conversations);
+      if (payload?.data?.conversations)
+        return normalizeConversationList(payload.data.conversations);
+      if (payload?.conversations)
+        return normalizeConversationList(payload.conversations);
       return [];
     } catch (error) {
       devWarn('Messaging service unavailable:', error.message);
@@ -216,10 +231,14 @@ export const messagingService = {
   // Get a single conversation by ID for direct deep-link recovery
   async getConversationById(conversationId) {
     try {
-      const response = await api.get(`/messages/conversations/${conversationId}`);
+      const response = await api.get(
+        `/messages/conversations/${conversationId}`,
+      );
       const payload = response.data;
-      if (payload?.data?.conversation) return normalizeConversation(payload.data.conversation);
-      if (payload?.conversation) return normalizeConversation(payload.conversation);
+      if (payload?.data?.conversation)
+        return normalizeConversation(payload.data.conversation);
+      if (payload?.conversation)
+        return normalizeConversation(payload.conversation);
       if (payload?.data) return normalizeConversation(payload.data);
       return normalizeConversation(payload);
     } catch (error) {
@@ -243,7 +262,13 @@ export const messagingService = {
         const response = await bridgePost('/api/create-conversation', payload);
         const data = response.data;
         if (data?.data?.conversation) {
-          return { ...data, data: { ...data.data, conversation: normalizeConversation(data.data.conversation) } };
+          return {
+            ...data,
+            data: {
+              ...data.data,
+              conversation: normalizeConversation(data.data.conversation),
+            },
+          };
         }
         return normalizeConversation(data);
       } catch (_) {
@@ -256,7 +281,13 @@ export const messagingService = {
       const response = await api.post('/messages/conversations', payload);
       const data = response.data;
       if (data?.data?.conversation) {
-        return { ...data, data: { ...data.data, conversation: normalizeConversation(data.data.conversation) } };
+        return {
+          ...data,
+          data: {
+            ...data.data,
+            conversation: normalizeConversation(data.data.conversation),
+          },
+        };
       }
       return normalizeConversation(data);
     } catch (error) {
@@ -281,8 +312,10 @@ export const messagingService = {
       );
       const payload = response.data;
       // Support shapes: { success, data: { messages, pagination } } or raw array
-      if (payload?.data?.messages) return normalizeMessageList(payload.data.messages);
-      if (Array.isArray(payload?.messages)) return normalizeMessageList(payload.messages);
+      if (payload?.data?.messages)
+        return normalizeMessageList(payload.data.messages);
+      if (Array.isArray(payload?.messages))
+        return normalizeMessageList(payload.messages);
       if (Array.isArray(payload)) return normalizeMessageList(payload);
       return [];
     } catch (error) {
@@ -308,13 +341,13 @@ export const messagingService = {
     const normalizedMessageType =
       messageType === 'mixed'
         ? safeAttachments.some((attachment) => {
-          const mimeType =
-            attachment?.mimeType ||
-            attachment?.fileType ||
-            attachment?.type ||
-            '';
-          return String(mimeType).startsWith('image/');
-        })
+            const mimeType =
+              attachment?.mimeType ||
+              attachment?.fileType ||
+              attachment?.type ||
+              '';
+            return String(mimeType).startsWith('image/');
+          })
           ? 'image'
           : 'file'
         : messageType;
@@ -336,9 +369,15 @@ export const messagingService = {
         const msg = response.data?.data || response.data;
         if (msg && !msg.error) return normalizeMessage(msg);
         // Bridge returned an error body - fall through to gateway
-        devWarn('[sendMessage] Bridge returned error, trying gateway:', response.data);
+        devWarn(
+          '[sendMessage] Bridge returned error, trying gateway:',
+          response.data,
+        );
       } catch (bridgeErr) {
-        devWarn('[sendMessage] Bridge threw, trying gateway:', bridgeErr.message);
+        devWarn(
+          '[sendMessage] Bridge threw, trying gateway:',
+          bridgeErr.message,
+        );
         // Fall through to gateway
       }
     }
@@ -366,7 +405,9 @@ export const messagingService = {
     if (shouldUseBridge() && !bridgeUnavailable) {
       try {
         const response = await bridgePost('/api/create-conversation', payload);
-        return normalizeConversation(response.data?.data?.conversation || response.data);
+        return normalizeConversation(
+          response.data?.data?.conversation || response.data,
+        );
       } catch (bridgeErr) {
         devWarn('Bridge failed, trying gateway:', bridgeErr.message);
         // Fall through to gateway
@@ -376,7 +417,9 @@ export const messagingService = {
     // 2. Fallback: standard gateway proxy
     try {
       const response = await api.post('/messages/conversations', payload);
-      return normalizeConversation(response.data?.data?.conversation || response.data);
+      return normalizeConversation(
+        response.data?.data?.conversation || response.data,
+      );
     } catch (error) {
       devWarn(
         'Messaging service unavailable for creating direct conversation:',
@@ -413,4 +456,3 @@ export const messagingService = {
 
 // ADDED: Default export for compatibility
 export default messagingService;
-

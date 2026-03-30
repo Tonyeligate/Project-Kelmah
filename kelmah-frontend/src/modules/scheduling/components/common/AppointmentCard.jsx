@@ -157,4 +157,3 @@ AppointmentCard.propTypes = {
 };
 
 export default AppointmentCard;
-

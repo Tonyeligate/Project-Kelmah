@@ -23,7 +23,8 @@ const requestWithFallback = async (requestFactory) => {
       return extractPayload(response);
     } catch (error) {
       lastError = error;
-      const canRetryWithFallback = index < CALENDAR_ENDPOINTS.length - 1 && shouldTryFallback(error);
+      const canRetryWithFallback =
+        index < CALENDAR_ENDPOINTS.length - 1 && shouldTryFallback(error);
       if (!canRetryWithFallback) {
         break;
       }
@@ -60,7 +61,9 @@ const eventsService = {
    */
   createEvent: async (eventData) => {
     try {
-      return await requestWithFallback((endpoint) => api.post(endpoint, eventData));
+      return await requestWithFallback((endpoint) =>
+        api.post(endpoint, eventData),
+      );
     } catch (error) {
       devError('Error creating event:', error);
       captureRecoverableApiError(error, {
@@ -97,7 +100,9 @@ const eventsService = {
    */
   deleteEvent: async (eventId) => {
     try {
-      return await requestWithFallback((endpoint) => api.delete(`${endpoint}/${eventId}`));
+      return await requestWithFallback((endpoint) =>
+        api.delete(`${endpoint}/${eventId}`),
+      );
     } catch (error) {
       devError('Error deleting event:', error);
       captureRecoverableApiError(error, {
@@ -109,4 +114,3 @@ const eventsService = {
 };
 
 export default eventsService;
-

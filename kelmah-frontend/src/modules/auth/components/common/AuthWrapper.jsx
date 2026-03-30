@@ -42,7 +42,9 @@ const AuthWrapper = ({ children }) => {
   const theme = useTheme();
   const isMobile = useBreakpointDown('sm');
   const isTablet = useBreakpointBetween('sm', 'md');
-  const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
+  const prefersReducedMotion = useMediaQuery(
+    '(prefers-reduced-motion: reduce)',
+  );
   const [currentImage, setCurrentImage] = useState(0);
   const [isCarouselAutoPlay, setIsCarouselAutoPlay] = useState(true);
   const isDarkMode = theme.palette.mode === 'dark';
@@ -61,14 +63,30 @@ const AuthWrapper = ({ children }) => {
     ? alpha(accentColor, 0.2)
     : alpha('#101113', 0.12);
   const leftPanelText = isDarkMode ? '#FFFFFF' : '#171A1F';
-  const leftPanelMuted = isDarkMode ? alpha('#FFFFFF', 0.82) : alpha('#171A1F', 0.76);
-  const leftPanelSoft = isDarkMode ? alpha('#FFFFFF', 0.76) : alpha('#171A1F', 0.68);
-  const featureSurface = isDarkMode ? alpha(accentColor, 0.05) : alpha('#FFFFFF', 0.82);
-  const featureSurfaceHover = isDarkMode ? alpha(accentColor, 0.1) : alpha('#FFFFFF', 0.96);
-  const featureBorder = isDarkMode ? alpha(accentColor, 0.1) : alpha('#101113', 0.08);
-  const overlaySurface = isDarkMode ? alpha('#000000', 0.65) : alpha('#FFFFFF', 0.94);
-  const overlayBorder = isDarkMode ? alpha(accentColor, 0.4) : alpha('#101113', 0.12);
-  const overlayChipBg = isDarkMode ? alpha(accentColor, 0.2) : alpha(accentColor, 0.14);
+  const leftPanelMuted = isDarkMode
+    ? alpha('#FFFFFF', 0.82)
+    : alpha('#171A1F', 0.76);
+  const leftPanelSoft = isDarkMode
+    ? alpha('#FFFFFF', 0.76)
+    : alpha('#171A1F', 0.68);
+  const featureSurface = isDarkMode
+    ? alpha(accentColor, 0.05)
+    : alpha('#FFFFFF', 0.82);
+  const featureSurfaceHover = isDarkMode
+    ? alpha(accentColor, 0.1)
+    : alpha('#FFFFFF', 0.96);
+  const featureBorder = isDarkMode
+    ? alpha(accentColor, 0.1)
+    : alpha('#101113', 0.08);
+  const overlaySurface = isDarkMode
+    ? alpha('#000000', 0.65)
+    : alpha('#FFFFFF', 0.94);
+  const overlayBorder = isDarkMode
+    ? alpha(accentColor, 0.4)
+    : alpha('#101113', 0.12);
+  const overlayChipBg = isDarkMode
+    ? alpha(accentColor, 0.2)
+    : alpha(accentColor, 0.14);
   const pageBackground = isDarkMode
     ? '#000000'
     : 'linear-gradient(180deg, #FCFCFA 0%, #F4F2EB 100%)';
@@ -229,7 +247,10 @@ const AuthWrapper = ({ children }) => {
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: prefersReducedMotion ? 0 : 0.8, ease: 'easeOut' }}
+          transition={{
+            duration: prefersReducedMotion ? 0 : 0.8,
+            ease: 'easeOut',
+          }}
         >
           <Paper
             elevation={12}
@@ -253,8 +274,7 @@ const AuthWrapper = ({ children }) => {
                 left: 0,
                 right: 0,
                 height: { xs: '3px', sm: '4px' },
-                background:
-                  `linear-gradient(90deg, ${accentColor} 0%, #FFC000 50%, ${accentColor} 100%)`,
+                background: `linear-gradient(90deg, ${accentColor} 0%, #FFC000 50%, ${accentColor} 100%)`,
                 zIndex: 3,
                 borderRadius: '5px 5px 0 0',
               },
@@ -408,7 +428,11 @@ const AuthWrapper = ({ children }) => {
                     >
                       <IconButton
                         onClick={() => setIsCarouselAutoPlay((prev) => !prev)}
-                        aria-label={isCarouselAutoPlay ? 'Pause slideshow' : 'Play slideshow'}
+                        aria-label={
+                          isCarouselAutoPlay
+                            ? 'Pause slideshow'
+                            : 'Play slideshow'
+                        }
                         sx={{
                           position: 'absolute',
                           top: 10,
@@ -418,11 +442,22 @@ const AuthWrapper = ({ children }) => {
                           backgroundColor: overlaySurface,
                           border: `1px solid ${overlayBorder}`,
                           '&:hover': {
-                            backgroundColor: isDarkMode ? alpha('#000000', 0.78) : alpha('#FFFFFF', 0.98),
+                            backgroundColor: isDarkMode
+                              ? alpha('#000000', 0.78)
+                              : alpha('#FFFFFF', 0.98),
                           },
-                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
+                          '&:focus-visible': {
+                            outline: '3px solid',
+                            outlineColor: 'primary.main',
+                            outlineOffset: '2px',
+                          },
+                        }}
                       >
-                        {isCarouselAutoPlay ? <PauseIcon fontSize="small" /> : <PlayIcon fontSize="small" />}
+                        {isCarouselAutoPlay ? (
+                          <PauseIcon fontSize="small" />
+                        ) : (
+                          <PlayIcon fontSize="small" />
+                        )}
                       </IconButton>
 
                       {/* Golden glow effect */}
@@ -630,7 +665,9 @@ const AuthWrapper = ({ children }) => {
                             label={trade}
                             size="small"
                             sx={{
-                              backgroundColor: isDarkMode ? alpha(accentColor, 0.15) : alpha('#FFFFFF', 0.6),
+                              backgroundColor: isDarkMode
+                                ? alpha(accentColor, 0.15)
+                                : alpha('#FFFFFF', 0.6),
                               color: accentColor,
                               fontSize: {
                                 xs: '0.65rem',
@@ -641,7 +678,9 @@ const AuthWrapper = ({ children }) => {
                               border: `1px solid ${alpha(accentStrong, isDarkMode ? 0.3 : 0.18)}`,
                               height: { xs: '24px', sm: '28px' },
                               '&:hover': {
-                                backgroundColor: isDarkMode ? alpha(accentColor, 0.25) : alpha('#FFFFFF', 0.82),
+                                backgroundColor: isDarkMode
+                                  ? alpha(accentColor, 0.25)
+                                  : alpha('#FFFFFF', 0.82),
                                 transform: 'scale(1.05)',
                               },
                               transition: 'all 0.2s ease',
@@ -744,7 +783,9 @@ const AuthWrapper = ({ children }) => {
                         label={tag}
                         size="small"
                         sx={{
-                          backgroundColor: isDarkMode ? alpha(accentColor, 0.15) : alpha('#FFFFFF', 0.6),
+                          backgroundColor: isDarkMode
+                            ? alpha(accentColor, 0.15)
+                            : alpha('#FFFFFF', 0.6),
                           color: accentColor,
                           fontSize: '0.65rem',
                           fontWeight: 600,
@@ -771,7 +812,9 @@ const AuthWrapper = ({ children }) => {
                 overflow: 'visible',
               }}
             >
-              <Box sx={{ width: '100%', maxWidth: { xs: '100%', sm: '520px' } }}>
+              <Box
+                sx={{ width: '100%', maxWidth: { xs: '100%', sm: '520px' } }}
+              >
                 {children}
               </Box>
             </Box>
@@ -787,5 +830,3 @@ AuthWrapper.propTypes = {
 };
 
 export default AuthWrapper;
-
-

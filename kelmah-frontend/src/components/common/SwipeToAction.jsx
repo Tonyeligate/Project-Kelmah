@@ -18,24 +18,35 @@ const SWIPE_THRESHOLD = 80; // px to commit action
  * @param {boolean}   [disabled]    - disable swipe
  * @param {string}    [deleteLabel] - accessible label for delete action
  */
-export default function SwipeToAction({ onDelete, children, disabled = false, deleteLabel = 'Delete' }) {
+export default function SwipeToAction({
+  onDelete,
+  children,
+  disabled = false,
+  deleteLabel = 'Delete',
+}) {
   const theme = useTheme();
   const isMobile = useBreakpointDown('md');
   const [offset, setOffset] = useState(0);
   const startX = useRef(0);
   const swiping = useRef(false);
 
-  const onTouchStart = useCallback((e) => {
-    if (disabled || !isMobile) return;
-    startX.current = e.touches[0].clientX;
-    swiping.current = true;
-  }, [disabled, isMobile]);
+  const onTouchStart = useCallback(
+    (e) => {
+      if (disabled || !isMobile) return;
+      startX.current = e.touches[0].clientX;
+      swiping.current = true;
+    },
+    [disabled, isMobile],
+  );
 
   const onTouchMove = useCallback((e) => {
     if (!swiping.current) return;
     const dx = e.touches[0].clientX - startX.current;
     // Only allow left swipe (negative dx)
-    if (dx > 0) { setOffset(0); return; }
+    if (dx > 0) {
+      setOffset(0);
+      return;
+    }
     setOffset(Math.max(dx, -140)); // clamp
   }, []);
 
@@ -54,7 +65,7 @@ export default function SwipeToAction({ onDelete, children, disabled = false, de
     }
   }, [offset, onDelete]);
 
-  const renderDeleteButton = () => (
+  const renderDeleteButton = () =>
     onDelete && !disabled ? (
       <IconButton
         onClick={onDelete}
@@ -77,8 +88,7 @@ export default function SwipeToAction({ onDelete, children, disabled = false, de
       >
         <DeleteIcon fontSize="small" />
       </IconButton>
-    ) : null
-  );
+    ) : null;
 
   // Desktop: render children with an accessible delete button fallback
   if (!isMobile) {

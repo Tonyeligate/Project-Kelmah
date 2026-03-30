@@ -38,7 +38,7 @@ const sanitizeEnvUrl = (raw) => {
   const clean = raw
     .replace(/^(https?:\/\/){2,}/, 'https://')
     .replace(/^(wss?:\/\/)(https?:\/\/)+/, 'wss://')
-    .replace(/\/+$/, '');  // strip trailing slashes
+    .replace(/\/+$/, ''); // strip trailing slashes
   return clean || null;
 };
 
@@ -81,9 +81,15 @@ const getRuntimeConfiguredApiBaseUrl = () => {
     return normalizeApiBaseUrl(window.RUNTIME_CONFIG.apiUrl);
   }
 
-  if (runtimeConfig?.API_URL || runtimeConfig?.ngrokUrl || runtimeConfig?.apiGatewayUrl) {
+  if (
+    runtimeConfig?.API_URL ||
+    runtimeConfig?.ngrokUrl ||
+    runtimeConfig?.apiGatewayUrl
+  ) {
     return normalizeApiBaseUrl(
-      runtimeConfig.API_URL || runtimeConfig.ngrokUrl || runtimeConfig.apiGatewayUrl,
+      runtimeConfig.API_URL ||
+        runtimeConfig.ngrokUrl ||
+        runtimeConfig.apiGatewayUrl,
     );
   }
 
@@ -167,11 +173,17 @@ const loadRuntimeConfig = async () => {
       runtimeConfig = await response.json();
       const envConfiguredUrl = getEnvConfiguredApiBaseUrl();
       const runtimeConfiguredUrl = normalizeApiBaseUrl(
-        runtimeConfig.API_URL || runtimeConfig.ngrokUrl || runtimeConfig.apiGatewayUrl,
+        runtimeConfig.API_URL ||
+          runtimeConfig.ngrokUrl ||
+          runtimeConfig.apiGatewayUrl,
       );
       // Store in window for synchronous access
       window.RUNTIME_CONFIG = {
-        apiUrl: envConfiguredUrl || runtimeConfiguredUrl || PRODUCTION_API_URL || '/api',
+        apiUrl:
+          envConfiguredUrl ||
+          runtimeConfiguredUrl ||
+          PRODUCTION_API_URL ||
+          '/api',
       };
       if (CONFIG_DEBUG) configLog('Runtime config loaded:', runtimeConfig);
     } catch (error) {
@@ -215,7 +227,9 @@ export const getTrustedApiBaseUrl = () => {
     '/api',
   ].filter(Boolean);
 
-  const trustedCandidate = candidates.find((candidate) => isTrustedApiBaseUrl(candidate));
+  const trustedCandidate = candidates.find((candidate) =>
+    isTrustedApiBaseUrl(candidate),
+  );
   return trustedCandidate || '/api';
 };
 
@@ -527,7 +541,10 @@ export const API_ENDPOINTS = {
     BASE: buildEndpoint(SERVICES.PAYMENT_SERVICE, ''),
     METHODS: buildEndpoint(SERVICES.PAYMENT_SERVICE, '/payments/methods'),
     PROCESS: buildEndpoint(SERVICES.PAYMENT_SERVICE, '/payments/transactions'),
-    HISTORY: buildEndpoint(SERVICES.PAYMENT_SERVICE, '/payments/transactions/history'),
+    HISTORY: buildEndpoint(
+      SERVICES.PAYMENT_SERVICE,
+      '/payments/transactions/history',
+    ),
     WALLET: buildEndpoint(SERVICES.PAYMENT_SERVICE, '/payments/wallet'),
     ESCROW: buildEndpoint(SERVICES.PAYMENT_SERVICE, '/payments/escrows'),
   },

@@ -1,20 +1,5 @@
 // IconButton focus-visible styling is enforced globally via MuiIconButton theme overrides.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 const unwrap = (response) => response?.data?.data ?? response?.data ?? {};
 
 const toDocumentView = (certificate = {}) => ({
@@ -169,7 +154,10 @@ const DocumentVerification = () => {
       };
 
       if (editingDocument?.id) {
-        await api.put(`/workers/${userId}/certificates/${editingDocument.id}`, payload);
+        await api.put(
+          `/workers/${userId}/certificates/${editingDocument.id}`,
+          payload,
+        );
       } else {
         await api.post(`/workers/${userId}/certificates`, payload);
       }
@@ -293,7 +281,10 @@ const DocumentVerification = () => {
         </Typography>
         {document.expiryDate && (
           <Typography variant="body2" color="text.secondary">
-            Expires: {document.expiryDate ? new Date(document.expiryDate).toLocaleDateString() : 'N/A'}
+            Expires:{' '}
+            {document.expiryDate
+              ? new Date(document.expiryDate).toLocaleDateString()
+              : 'N/A'}
           </Typography>
         )}
         {document.notes && (
@@ -381,7 +372,15 @@ const DocumentVerification = () => {
                       <ListItemIcon>{getStatusIcon(doc.status)}</ListItemIcon>
                       <ListItemText primary={doc.title} secondary={doc.type} />
                       <ListItemSecondaryAction>
-                        <IconButton sx={{ ...iconButtonA11ySx, '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' } }}
+                        <IconButton
+                          sx={{
+                            ...iconButtonA11ySx,
+                            '&:focus-visible': {
+                              outline: '3px solid',
+                              outlineColor: 'primary.main',
+                              outlineOffset: '2px',
+                            },
+                          }}
                           edge="end"
                           onClick={() => handleDownload(doc.id)}
                           aria-label={`Download ${doc.title}`}
@@ -407,7 +406,15 @@ const DocumentVerification = () => {
                       <ListItemIcon>{getStatusIcon(doc.status)}</ListItemIcon>
                       <ListItemText primary={doc.title} secondary={doc.type} />
                       <ListItemSecondaryAction>
-                        <IconButton sx={{ ...iconButtonA11ySx, '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' } }}
+                        <IconButton
+                          sx={{
+                            ...iconButtonA11ySx,
+                            '&:focus-visible': {
+                              outline: '3px solid',
+                              outlineColor: 'primary.main',
+                              outlineOffset: '2px',
+                            },
+                          }}
                           edge="end"
                           onClick={() => handleDownload(doc.id)}
                           aria-label={`Download ${doc.title}`}
@@ -548,5 +555,3 @@ const DocumentVerification = () => {
 };
 
 export default DocumentVerification;
-
-

@@ -57,10 +57,13 @@ export const ApplicationCard = ({
   const isAccepted = application.status === 'accepted';
   const isRejected = application.status === 'rejected';
   const canMessage = Boolean(application.workerId);
-  const appliedDate = application.createdAt ? new Date(application.createdAt) : null;
-  const appliedAgo = appliedDate && !Number.isNaN(appliedDate.getTime())
-    ? formatDistanceToNow(appliedDate, { addSuffix: true })
+  const appliedDate = application.createdAt
+    ? new Date(application.createdAt)
     : null;
+  const appliedAgo =
+    appliedDate && !Number.isNaN(appliedDate.getTime())
+      ? formatDistanceToNow(appliedDate, { addSuffix: true })
+      : null;
 
   return (
     <Card
@@ -99,7 +102,12 @@ export const ApplicationCard = ({
                 {application.workerName}
               </Typography>
               {application.workerRating !== null ? (
-                <Rating value={application.workerRating} precision={0.5} readOnly size="small" />
+                <Rating
+                  value={application.workerRating}
+                  precision={0.5}
+                  readOnly
+                  size="small"
+                />
               ) : (
                 <Typography variant="caption" color="text.disabled">
                   No reviews yet
@@ -210,7 +218,9 @@ export const ApplicationCard = ({
                     </IconButton>
                   </span>
                 </Tooltip>
-                <Tooltip title={isAccepted ? 'Already accepted' : 'Accept application'}>
+                <Tooltip
+                  title={isAccepted ? 'Already accepted' : 'Accept application'}
+                >
                   <span>
                     <IconButton
                       size="small"
@@ -227,7 +237,9 @@ export const ApplicationCard = ({
                     </IconButton>
                   </span>
                 </Tooltip>
-                <Tooltip title={isRejected ? 'Already rejected' : 'Reject application'}>
+                <Tooltip
+                  title={isRejected ? 'Already rejected' : 'Reject application'}
+                >
                   <span>
                     <IconButton
                       size="small"
@@ -292,10 +304,10 @@ export const JobListItem = ({ job, isSelected, onClick, appCount }) => {
         secondary={
           job.status
             ? `${formatStatusLabel(job.status, 'Open')} • ${
-              Number.isFinite(Number(job.budget || job.budgetRange?.min))
-                ? formatGhanaCurrencyLabel(job.budget || job.budgetRange?.min)
-                : 'Budget pending'
-            }`
+                Number.isFinite(Number(job.budget || job.budgetRange?.min))
+                  ? formatGhanaCurrencyLabel(job.budget || job.budgetRange?.min)
+                  : 'Budget pending'
+              }`
             : undefined
         }
         secondaryTypographyProps={{ variant: 'caption', noWrap: true }}

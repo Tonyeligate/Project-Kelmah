@@ -34,23 +34,6 @@ import {
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuthCheck } from '../../../hooks/useAuthCheck';
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 const WorkerCard = ({ worker, onSave, isPublicView }) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -116,13 +99,13 @@ const WorkerCard = ({ worker, onSave, isPublicView }) => {
     const badgeList = Array.isArray(worker.badges) ? worker.badges : [];
     return Boolean(
       worker.isVerified ||
-      worker.verified ||
-      worker.verificationStatus === 'verified' ||
-      worker.status === 'verified' ||
-      worker.trustLevel === 'verified' ||
-      badgeList.some((badge) =>
-        badge?.toString()?.toLowerCase().includes('verified'),
-      ),
+        worker.verified ||
+        worker.verificationStatus === 'verified' ||
+        worker.status === 'verified' ||
+        worker.trustLevel === 'verified' ||
+        badgeList.some((badge) =>
+          badge?.toString()?.toLowerCase().includes('verified'),
+        ),
     );
   }, [
     worker.badges,
@@ -201,9 +184,9 @@ const WorkerCard = ({ worker, onSave, isPublicView }) => {
 
   const completedJobs = Number(
     worker.totalJobsCompleted ??
-    worker.completedJobs ??
-    worker.projectsCompleted ??
-    0,
+      worker.completedJobs ??
+      worker.projectsCompleted ??
+      0,
   );
 
   const jobSuccessValue = useMemo(() => {
@@ -304,17 +287,20 @@ const WorkerCard = ({ worker, onSave, isPublicView }) => {
   ]);
 
   // Handle view profile - used for card click navigation
-  const handleViewProfile = useCallback((e) => {
-    if (e) {
-      e.stopPropagation();
-    }
+  const handleViewProfile = useCallback(
+    (e) => {
+      if (e) {
+        e.stopPropagation();
+      }
 
-    const targetId = resolvedWorkerId;
+      const targetId = resolvedWorkerId;
 
-    if (targetId) {
-      navigate(`/workers/${targetId}`);
-    }
-  }, [navigate, resolvedWorkerId]);
+      if (targetId) {
+        navigate(`/workers/${targetId}`);
+      }
+    },
+    [navigate, resolvedWorkerId],
+  );
 
   // Handle message worker
   const handleMessage = useCallback(
@@ -338,8 +324,13 @@ const WorkerCard = ({ worker, onSave, isPublicView }) => {
           state: {
             recipientProfile: {
               id: String(targetUserId),
-              name: worker.name || worker.fullName || worker.displayName || 'New conversation',
-              profilePicture: worker.profilePicture || worker.avatar || worker.photo || null,
+              name:
+                worker.name ||
+                worker.fullName ||
+                worker.displayName ||
+                'New conversation',
+              profilePicture:
+                worker.profilePicture || worker.avatar || worker.photo || null,
             },
           },
         });
@@ -392,9 +383,7 @@ const WorkerCard = ({ worker, onSave, isPublicView }) => {
     };
   }, [handleMessage, isAuthenticated, isHirer, isViewingSelf]);
 
-  const profileUrl = resolvedWorkerId
-    ? `/workers/${resolvedWorkerId}`
-    : null;
+  const profileUrl = resolvedWorkerId ? `/workers/${resolvedWorkerId}` : null;
 
   return (
     <Card
@@ -421,7 +410,9 @@ const WorkerCard = ({ worker, onSave, isPublicView }) => {
           handleViewProfile(e);
         }}
         aria-label={
-          profileUrl ? `View worker profile ${worker.name || ''}` : 'Worker profile'
+          profileUrl
+            ? `View worker profile ${worker.name || ''}`
+            : 'Worker profile'
         }
         sx={{
           flexGrow: 1,
@@ -451,8 +442,17 @@ const WorkerCard = ({ worker, onSave, isPublicView }) => {
                 worker.photo ||
                 null
               }
-              alt={worker.name || worker.fullName || worker.displayName || 'Worker profile photo'}
-              sx={{ width: { xs: 48, md: 56 }, height: { xs: 48, md: 56 }, mr: 2 }}
+              alt={
+                worker.name ||
+                worker.fullName ||
+                worker.displayName ||
+                'Worker profile photo'
+              }
+              sx={{
+                width: { xs: 48, md: 56 },
+                height: { xs: 48, md: 56 },
+                mr: 2,
+              }}
             />
             <Box sx={{ flex: 1, minWidth: 0 }}>
               <Typography
@@ -532,7 +532,9 @@ const WorkerCard = ({ worker, onSave, isPublicView }) => {
             {isAuthenticated && onSave && (
               <Tooltip title={isSaved ? 'Saved' : 'Save worker'} arrow>
                 <IconButton
-                  aria-label={isSaved ? 'Remove from saved workers' : 'Save worker'}
+                  aria-label={
+                    isSaved ? 'Remove from saved workers' : 'Save worker'
+                  }
                   onClick={(e) => {
                     e.stopPropagation();
                     e.preventDefault();
@@ -550,7 +552,12 @@ const WorkerCard = ({ worker, onSave, isPublicView }) => {
                       color: '#B8860B',
                       bgcolor: 'rgba(184, 134, 11, 0.08)',
                     },
-                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
+                    '&:focus-visible': {
+                      outline: '3px solid',
+                      outlineColor: 'primary.main',
+                      outlineOffset: '2px',
+                    },
+                  }}
                 >
                   {isSaved ? <BookmarkIcon /> : <BookmarkBorderIcon />}
                 </IconButton>
@@ -592,12 +599,12 @@ const WorkerCard = ({ worker, onSave, isPublicView }) => {
               ))}
             {worker.skills?.filter((skill) => skill && (skill.name || skill))
               .length > 3 && (
-                <Chip
-                  label={`+${worker.skills.filter((skill) => skill && (skill.name || skill)).length - 3}`}
-                  size="small"
-                  variant="outlined"
-                />
-              )}
+              <Chip
+                label={`+${worker.skills.filter((skill) => skill && (skill.name || skill)).length - 3}`}
+                size="small"
+                variant="outlined"
+              />
+            )}
           </Stack>
 
           <Divider sx={{ my: 1 }} />
@@ -605,8 +612,16 @@ const WorkerCard = ({ worker, onSave, isPublicView }) => {
           <Grid container spacing={1}>
             <Grid item xs={6}>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <Typography variant="body2" color="text.primary" sx={{ fontWeight: 700 }}>
-                  {new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' }).format(worker.hourlyRate || 0)}/hr
+                <Typography
+                  variant="body2"
+                  color="text.primary"
+                  sx={{ fontWeight: 700 }}
+                >
+                  {new Intl.NumberFormat('en-GH', {
+                    style: 'currency',
+                    currency: 'GHS',
+                  }).format(worker.hourlyRate || 0)}
+                  /hr
                 </Typography>
               </Box>
             </Grid>
@@ -651,7 +666,7 @@ const WorkerCard = ({ worker, onSave, isPublicView }) => {
         </CardContent>
       </CardActionArea>
 
-        {/* Contact Action Buttons */}
+      {/* Contact Action Buttons */}
       <CardActions
         sx={{ justifyContent: 'space-between', px: 2, pb: 2, pt: 0 }}
       >
@@ -660,24 +675,24 @@ const WorkerCard = ({ worker, onSave, isPublicView }) => {
             e.stopPropagation();
             handleViewProfile(e);
           }}
-            variant="outlined"
-            startIcon={<VisibilityIcon />}
-            size="small"
-            sx={{
-              minHeight: '44px',
-              flex: 1,
-              mr: 1,
-              borderColor: 'rgba(255, 215, 0, 0.5)',
-              color: 'text.primary',
-              textDecoration: 'none',
-              '&:hover': {
-                borderColor: '#FFD700',
-                bgcolor: 'rgba(255, 215, 0, 0.08)',
-              },
-            }}
-          >
-            View Profile
-          </Button>
+          variant="outlined"
+          startIcon={<VisibilityIcon />}
+          size="small"
+          sx={{
+            minHeight: '44px',
+            flex: 1,
+            mr: 1,
+            borderColor: 'rgba(255, 215, 0, 0.5)',
+            color: 'text.primary',
+            textDecoration: 'none',
+            '&:hover': {
+              borderColor: '#FFD700',
+              bgcolor: 'rgba(255, 215, 0, 0.08)',
+            },
+          }}
+        >
+          View Profile
+        </Button>
         <Tooltip title={messageCta.tooltip} arrow>
           <span style={{ flex: 1 }}>
             <Button
@@ -704,7 +719,8 @@ const WorkerCard = ({ worker, onSave, isPublicView }) => {
                   color: 'text.disabled',
                 },
               }}
-             aria-label="Send message">
+              aria-label="Send message"
+            >
               {messageCta.label}
             </Button>
           </span>
@@ -773,4 +789,3 @@ WorkerCard.propTypes = {
 };
 
 export default WorkerCard;
-

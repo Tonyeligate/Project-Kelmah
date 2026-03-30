@@ -66,10 +66,25 @@ const checkPasswordStrength = (password) => {
 
 // Common trades
 const COMMON_TRADES = [
-  'Electrician', 'Plumber', 'Carpenter', 'Mason', 'Painter',
-  'Mechanic', 'Welder', 'Tailor', 'Barber', 'Hairdresser',
-  'Cook', 'Cleaner', 'Driver', 'Gardener', 'HVAC Technician',
-  'Tiler', 'Roofer', 'Blacksmith', 'Electronics Repair',
+  'Electrician',
+  'Plumber',
+  'Carpenter',
+  'Mason',
+  'Painter',
+  'Mechanic',
+  'Welder',
+  'Tailor',
+  'Barber',
+  'Hairdresser',
+  'Cook',
+  'Cleaner',
+  'Driver',
+  'Gardener',
+  'HVAC Technician',
+  'Tiler',
+  'Roofer',
+  'Blacksmith',
+  'Electronics Repair',
 ];
 
 const MobileRegister = () => {
@@ -135,8 +150,10 @@ const MobileRegister = () => {
     }
 
     if (step === 2) {
-      if (!formData.firstName.trim()) newErrors.firstName = 'Enter your first name';
-      if (!formData.lastName.trim()) newErrors.lastName = 'Enter your last name';
+      if (!formData.firstName.trim())
+        newErrors.firstName = 'Enter your first name';
+      if (!formData.lastName.trim())
+        newErrors.lastName = 'Enter your last name';
       if (!formData.email.trim()) {
         newErrors.email = 'Enter your email';
       } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
@@ -161,7 +178,8 @@ const MobileRegister = () => {
       } else if (formData.password.length < 8) {
         newErrors.password = 'Password must be at least 8 characters';
       } else if (passwordStrength < 3) {
-        newErrors.password = 'Password is too easy to guess — add numbers or symbols';
+        newErrors.password =
+          'Password is too easy to guess — add numbers or symbols';
       }
       if (!formData.confirmPassword) {
         newErrors.confirmPassword = 'Type your password again';
@@ -222,7 +240,9 @@ const MobileRegister = () => {
         phone: normalizeGhanaPhone(formData.phone),
         password: formData.password,
         role: formData.role,
-        ...(formData.role === 'hirer' && { companyName: formData.companyName.trim() }),
+        ...(formData.role === 'hirer' && {
+          companyName: formData.companyName.trim(),
+        }),
         ...(formData.role === 'worker' && { trades: formData.trades }),
         acceptTerms: formData.acceptTerms,
       };
@@ -256,12 +276,23 @@ const MobileRegister = () => {
       borderRadius: 2,
       minHeight: 44,
       '& fieldset': { borderColor: alpha(theme.palette.text.primary, 0.15) },
-      '&:hover fieldset': { borderColor: alpha(theme.palette.primary.main, 0.4) },
-      '&.Mui-focused fieldset': { borderColor: theme.palette.primary.main, borderWidth: 2 },
+      '&:hover fieldset': {
+        borderColor: alpha(theme.palette.primary.main, 0.4),
+      },
+      '&.Mui-focused fieldset': {
+        borderColor: theme.palette.primary.main,
+        borderWidth: 2,
+      },
     },
-    '& .MuiInputLabel-root': { color: theme.palette.text.secondary, fontSize: '14px' },
+    '& .MuiInputLabel-root': {
+      color: theme.palette.text.secondary,
+      fontSize: '14px',
+    },
     '& .MuiInputLabel-root.Mui-focused': { color: theme.palette.primary.main },
-    '& .MuiOutlinedInput-input': { color: theme.palette.text.primary, fontSize: '16px' },
+    '& .MuiOutlinedInput-input': {
+      color: theme.palette.text.primary,
+      fontSize: '16px',
+    },
   };
 
   // Render step content
@@ -270,17 +301,40 @@ const MobileRegister = () => {
       case 1:
         return (
           <Box>
-            <Typography sx={{ color: 'text.primary', fontWeight: 600, mb: 2, textAlign: 'center' }}>
+            <Typography
+              sx={{
+                color: 'text.primary',
+                fontWeight: 600,
+                mb: 2,
+                textAlign: 'center',
+              }}
+            >
               I want to...
             </Typography>
-            <Stack spacing={2} role="radiogroup" aria-label="Choose account type">
+            <Stack
+              spacing={2}
+              role="radiogroup"
+              aria-label="Choose account type"
+            >
               {[
-                { value: 'worker', icon: <WorkIcon />, label: 'Find Work', desc: 'I\'m a skilled tradesperson' },
-                { value: 'hirer', icon: <BusinessIcon />, label: 'Hire Workers', desc: 'I need skilled professionals' },
+                {
+                  value: 'worker',
+                  icon: <WorkIcon />,
+                  label: 'Find Work',
+                  desc: "I'm a skilled tradesperson",
+                },
+                {
+                  value: 'hirer',
+                  icon: <BusinessIcon />,
+                  label: 'Hire Workers',
+                  desc: 'I need skilled professionals',
+                },
               ].map((option) => (
                 <ButtonBase
                   key={option.value}
-                  onClick={() => setFormData((p) => ({ ...p, role: option.value }))}
+                  onClick={() =>
+                    setFormData((p) => ({ ...p, role: option.value }))
+                  }
                   role="radio"
                   aria-checked={formData.role === option.value}
                   aria-label={option.label}
@@ -291,14 +345,18 @@ const MobileRegister = () => {
                       width: '100%',
                       p: 2.5,
                       borderRadius: 2,
-                      border: formData.role === option.value
-                        ? `2px solid ${theme.palette.primary.main}`
-                        : `2px solid ${alpha(theme.palette.text.primary, 0.15)}`,
-                      backgroundColor: formData.role === option.value
-                        ? alpha(theme.palette.primary.main, 0.1)
-                        : alpha(theme.palette.text.primary, 0.03),
+                      border:
+                        formData.role === option.value
+                          ? `2px solid ${theme.palette.primary.main}`
+                          : `2px solid ${alpha(theme.palette.text.primary, 0.15)}`,
+                      backgroundColor:
+                        formData.role === option.value
+                          ? alpha(theme.palette.primary.main, 0.1)
+                          : alpha(theme.palette.text.primary, 0.03),
                       transition: 'all 0.2s',
-                      '&:hover': { borderColor: alpha(theme.palette.primary.main, 0.5) },
+                      '&:hover': {
+                        borderColor: alpha(theme.palette.primary.main, 0.5),
+                      },
                       '&:focus-visible': {
                         outline: `3px solid ${alpha(theme.palette.primary.main, 0.3)}`,
                         outlineOffset: 2,
@@ -311,18 +369,32 @@ const MobileRegister = () => {
                           width: 45,
                           height: 45,
                           borderRadius: '50%',
-                          backgroundColor: formData.role === option.value ? theme.palette.primary.main : alpha(theme.palette.text.primary, 0.1),
+                          backgroundColor:
+                            formData.role === option.value
+                              ? theme.palette.primary.main
+                              : alpha(theme.palette.text.primary, 0.1),
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          color: formData.role === option.value ? theme.palette.primary.contrastText : theme.palette.text.secondary,
+                          color:
+                            formData.role === option.value
+                              ? theme.palette.primary.contrastText
+                              : theme.palette.text.secondary,
                         }}
                       >
                         {option.icon}
                       </Box>
                       <Box>
-                        <Typography sx={{ color: 'text.primary', fontWeight: 600 }}>{option.label}</Typography>
-                        <Typography sx={{ color: 'text.secondary', fontSize: '14px' }}>{option.desc}</Typography>
+                        <Typography
+                          sx={{ color: 'text.primary', fontWeight: 600 }}
+                        >
+                          {option.label}
+                        </Typography>
+                        <Typography
+                          sx={{ color: 'text.secondary', fontSize: '14px' }}
+                        >
+                          {option.desc}
+                        </Typography>
                       </Box>
                     </Box>
                   </Box>
@@ -330,7 +402,14 @@ const MobileRegister = () => {
               ))}
             </Stack>
             {errors.role && (
-              <Typography sx={{ color: 'error.main', fontSize: '14px', mt: 1, textAlign: 'center' }}>
+              <Typography
+                sx={{
+                  color: 'error.main',
+                  fontSize: '14px',
+                  mt: 1,
+                  textAlign: 'center',
+                }}
+              >
                 {errors.role}
               </Typography>
             )}
@@ -340,7 +419,14 @@ const MobileRegister = () => {
       case 2:
         return (
           <Stack spacing={1.5}>
-            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', '@media (max-width: 360px)': { flexDirection: 'column' } }}>
+            <Box
+              sx={{
+                display: 'flex',
+                gap: 1,
+                flexWrap: 'wrap',
+                '@media (max-width: 360px)': { flexDirection: 'column' },
+              }}
+            >
               <TextField
                 fullWidth
                 label="First Name"
@@ -414,7 +500,9 @@ const MobileRegister = () => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <BusinessIcon sx={{ color: 'text.disabled', fontSize: 18 }} />
+                      <BusinessIcon
+                        sx={{ color: 'text.disabled', fontSize: 18 }}
+                      />
                     </InputAdornment>
                   ),
                 }}
@@ -426,14 +514,19 @@ const MobileRegister = () => {
                 multiple
                 options={COMMON_TRADES}
                 value={formData.trades}
-                onChange={(_, newValue) => setFormData((p) => ({ ...p, trades: newValue }))}
+                onChange={(_, newValue) =>
+                  setFormData((p) => ({ ...p, trades: newValue }))
+                }
                 renderTags={(value, getTagProps) =>
                   value.map((option, index) => (
                     <Chip
                       label={option}
                       size="small"
                       {...getTagProps({ index })}
-                      sx={{ backgroundColor: alpha(theme.palette.primary.main, 0.2), color: 'primary.main' }}
+                      sx={{
+                        backgroundColor: alpha(theme.palette.primary.main, 0.2),
+                        color: 'primary.main',
+                      }}
                     />
                   ))
                 }
@@ -448,9 +541,15 @@ const MobileRegister = () => {
                   />
                 )}
                 sx={{
-                  '& .MuiAutocomplete-tag': { color: theme.palette.primary.main },
-                  '& .MuiAutocomplete-popupIndicator': { color: theme.palette.text.disabled },
-                  '& .MuiAutocomplete-clearIndicator': { color: theme.palette.text.disabled },
+                  '& .MuiAutocomplete-tag': {
+                    color: theme.palette.primary.main,
+                  },
+                  '& .MuiAutocomplete-popupIndicator': {
+                    color: theme.palette.text.disabled,
+                  },
+                  '& .MuiAutocomplete-clearIndicator': {
+                    color: theme.palette.text.disabled,
+                  },
                 }}
               />
             )}
@@ -473,17 +572,34 @@ const MobileRegister = () => {
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <LockIcon sx={{ color: 'rgba(255,255,255,0.4)', fontSize: 18 }} />
+                    <LockIcon
+                      sx={{ color: 'rgba(255,255,255,0.4)', fontSize: 18 }}
+                    />
                   </InputAdornment>
                 ),
                 endAdornment: (
                   <InputAdornment position="end">
                     <IconButton
                       onClick={() => setShowPassword(!showPassword)}
-                      aria-label={showPassword ? 'Hide password' : 'Show password'}
-                      sx={{ color: 'text.secondary', minWidth: 44, minHeight: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
+                      aria-label={
+                        showPassword ? 'Hide password' : 'Show password'
+                      }
+                      sx={{
+                        color: 'text.secondary',
+                        minWidth: 44,
+                        minHeight: 44,
+                        '&:focus-visible': {
+                          outline: '3px solid',
+                          outlineColor: 'primary.main',
+                          outlineOffset: '2px',
+                        },
+                      }}
                     >
-                      {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                      {showPassword ? (
+                        <VisibilityOff fontSize="small" />
+                      ) : (
+                        <Visibility fontSize="small" />
+                      )}
                     </IconButton>
                   </InputAdornment>
                 ),
@@ -500,12 +616,28 @@ const MobileRegister = () => {
                     borderRadius: 3,
                     backgroundColor: 'rgba(255,255,255,0.1)',
                     '& .MuiLinearProgress-bar': {
-                      backgroundColor: passwordStrength <= 2 ? '#f44336' : passwordStrength <= 3 ? '#ff9800' : '#4caf50',
+                      backgroundColor:
+                        passwordStrength <= 2
+                          ? '#f44336'
+                          : passwordStrength <= 3
+                            ? '#ff9800'
+                            : '#4caf50',
                     },
                   }}
                 />
-                <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px', mt: 0.5 }}>
-                  Strength: {passwordStrength <= 2 ? 'Weak' : passwordStrength <= 3 ? 'Medium' : 'Strong'}
+                <Typography
+                  sx={{
+                    color: 'rgba(255,255,255,0.6)',
+                    fontSize: '13px',
+                    mt: 0.5,
+                  }}
+                >
+                  Strength:{' '}
+                  {passwordStrength <= 2
+                    ? 'Weak'
+                    : passwordStrength <= 3
+                      ? 'Medium'
+                      : 'Strong'}
                 </Typography>
               </Box>
             )}
@@ -522,17 +654,38 @@ const MobileRegister = () => {
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <LockIcon sx={{ color: 'rgba(255,255,255,0.4)', fontSize: 18 }} />
+                    <LockIcon
+                      sx={{ color: 'rgba(255,255,255,0.4)', fontSize: 18 }}
+                    />
                   </InputAdornment>
                 ),
                 endAdornment: (
                   <InputAdornment position="end">
                     <IconButton
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
-                      sx={{ color: 'text.secondary', minWidth: 44, minHeight: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
+                      aria-label={
+                        showConfirmPassword
+                          ? 'Hide confirm password'
+                          : 'Show confirm password'
+                      }
+                      sx={{
+                        color: 'text.secondary',
+                        minWidth: 44,
+                        minHeight: 44,
+                        '&:focus-visible': {
+                          outline: '3px solid',
+                          outlineColor: 'primary.main',
+                          outlineOffset: '2px',
+                        },
+                      }}
                     >
-                      {showConfirmPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                      {showConfirmPassword ? (
+                        <VisibilityOff fontSize="small" />
+                      ) : (
+                        <Visibility fontSize="small" />
+                      )}
                     </IconButton>
                   </InputAdornment>
                 ),
@@ -545,24 +698,53 @@ const MobileRegister = () => {
                   checked={formData.acceptTerms}
                   onChange={handleChange('acceptTerms')}
                   size="small"
-                  sx={{ color: theme.palette.text.disabled, '&.Mui-checked': { color: theme.palette.primary.main } }}
+                  sx={{
+                    color: theme.palette.text.disabled,
+                    '&.Mui-checked': { color: theme.palette.primary.main },
+                  }}
                 />
               }
               label={
                 <Typography sx={{ color: 'text.secondary', fontSize: '14px' }}>
                   I accept the{' '}
-                  <Button component={RouterLink} to="/terms" sx={{ color: 'primary.main', fontSize: '14px', py: 0.5, px: 0.5, minWidth: 'auto', textTransform: 'none', verticalAlign: 'baseline' }}>
+                  <Button
+                    component={RouterLink}
+                    to="/terms"
+                    sx={{
+                      color: 'primary.main',
+                      fontSize: '14px',
+                      py: 0.5,
+                      px: 0.5,
+                      minWidth: 'auto',
+                      textTransform: 'none',
+                      verticalAlign: 'baseline',
+                    }}
+                  >
                     Terms
                   </Button>{' '}
                   &{' '}
-                  <Button component={RouterLink} to="/privacy" sx={{ color: 'primary.main', fontSize: '14px', py: 0.5, px: 0.5, minWidth: 'auto', textTransform: 'none', verticalAlign: 'baseline' }}>
+                  <Button
+                    component={RouterLink}
+                    to="/privacy"
+                    sx={{
+                      color: 'primary.main',
+                      fontSize: '14px',
+                      py: 0.5,
+                      px: 0.5,
+                      minWidth: 'auto',
+                      textTransform: 'none',
+                      verticalAlign: 'baseline',
+                    }}
+                  >
                     Privacy Policy
                   </Button>
                 </Typography>
               }
             />
             {errors.acceptTerms && (
-              <Typography sx={{ color: 'error.main', fontSize: '14px' }}>{errors.acceptTerms}</Typography>
+              <Typography sx={{ color: 'error.main', fontSize: '14px' }}>
+                {errors.acceptTerms}
+              </Typography>
             )}
           </Stack>
         );
@@ -573,11 +755,29 @@ const MobileRegister = () => {
   };
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', display: 'flex', flexDirection: 'column', px: 3, py: 3 }}>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        bgcolor: 'background.default',
+        display: 'flex',
+        flexDirection: 'column',
+        px: 3,
+        py: 3,
+      }}
+    >
       {/* Header */}
       <Box sx={{ textAlign: 'center', mb: 3 }}>
-        <Box component="img" src={logoIcon} alt="Kelmah" sx={{ width: 50, height: 50, mb: 1, borderRadius: '50%' }} />
-        <Typography sx={{ color: 'primary.main', fontWeight: 700, fontSize: '18px' }}>Join Kelmah</Typography>
+        <Box
+          component="img"
+          src={logoIcon}
+          alt="Kelmah"
+          sx={{ width: 50, height: 50, mb: 1, borderRadius: '50%' }}
+        />
+        <Typography
+          sx={{ color: 'primary.main', fontWeight: 700, fontSize: '18px' }}
+        >
+          Join Kelmah
+        </Typography>
       </Box>
 
       {/* Progress */}
@@ -587,7 +787,11 @@ const MobileRegister = () => {
             Step {step} of {totalSteps}
           </Typography>
           <Typography sx={{ color: 'text.secondary', fontSize: '13px' }}>
-            {step === 1 ? 'Account Type' : step === 2 ? 'Your Info' : 'Security'}
+            {step === 1
+              ? 'Account Type'
+              : step === 2
+                ? 'Your Info'
+                : 'Security'}
           </Typography>
         </Box>
         <LinearProgress
@@ -597,7 +801,9 @@ const MobileRegister = () => {
             height: 4,
             borderRadius: 2,
             backgroundColor: alpha(theme.palette.text.primary, 0.1),
-            '& .MuiLinearProgress-bar': { backgroundColor: theme.palette.primary.main },
+            '& .MuiLinearProgress-bar': {
+              backgroundColor: theme.palette.primary.main,
+            },
           }}
         />
 
@@ -612,7 +818,7 @@ const MobileRegister = () => {
             },
           }}
         >
-          1) Pick role  2) Add your real details  3) Create password.
+          1) Pick role 2) Add your real details 3) Create password.
         </Alert>
       </Box>
 
@@ -631,8 +837,21 @@ const MobileRegister = () => {
         {/* Success */}
         <AnimatePresence>
           {showSuccess && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <Alert severity="success" icon={<CheckCircleIcon />} sx={{ mb: 2, backgroundColor: alpha(theme.palette.success.main, 0.1), color: 'success.main', borderRadius: 2 }}>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <Alert
+                severity="success"
+                icon={<CheckCircleIcon />}
+                sx={{
+                  mb: 2,
+                  backgroundColor: alpha(theme.palette.success.main, 0.1),
+                  color: 'success.main',
+                  borderRadius: 2,
+                }}
+              >
                 Account created! Redirecting...
               </Alert>
             </motion.div>
@@ -643,7 +862,15 @@ const MobileRegister = () => {
         <Fade in={Boolean(submitError)}>
           <Box>
             {submitError && (
-              <Alert severity="error" sx={{ mb: 2, backgroundColor: alpha(theme.palette.error.main, 0.1), color: 'error.main', borderRadius: 2 }}>
+              <Alert
+                severity="error"
+                sx={{
+                  mb: 2,
+                  backgroundColor: alpha(theme.palette.error.main, 0.1),
+                  color: 'error.main',
+                  borderRadius: 2,
+                }}
+              >
                 {submitError}
               </Alert>
             )}
@@ -676,7 +903,9 @@ const MobileRegister = () => {
               minHeight: 44,
               borderColor: alpha(theme.palette.text.primary, 0.2),
               color: theme.palette.text.secondary,
-              '&:hover': { borderColor: alpha(theme.palette.text.primary, 0.4) },
+              '&:hover': {
+                borderColor: alpha(theme.palette.text.primary, 0.4),
+              },
             }}
           >
             Back
@@ -692,12 +921,20 @@ const MobileRegister = () => {
               background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark || '#FFC000'} 100%)`,
               color: theme.palette.primary.contrastText,
               fontWeight: 700,
-              '&:hover': { background: `linear-gradient(135deg, ${theme.palette.primary.dark || '#FFC000'} 0%, #FFB000 100%)` },
-              '&:disabled': { background: alpha(theme.palette.primary.main, 0.3), color: alpha(theme.palette.primary.contrastText, 0.5) },
+              '&:hover': {
+                background: `linear-gradient(135deg, ${theme.palette.primary.dark || '#FFC000'} 0%, #FFB000 100%)`,
+              },
+              '&:disabled': {
+                background: alpha(theme.palette.primary.main, 0.3),
+                color: alpha(theme.palette.primary.contrastText, 0.5),
+              },
             }}
           >
             {isSubmitting || authLoading ? (
-              <CircularProgress size={20} sx={{ color: theme.palette.primary.contrastText }} />
+              <CircularProgress
+                size={20}
+                sx={{ color: theme.palette.primary.contrastText }}
+              />
             ) : step === totalSteps ? (
               'Create Account'
             ) : (
@@ -707,11 +944,34 @@ const MobileRegister = () => {
         </Box>
 
         {/* Login Link */}
-        <Box sx={{ textAlign: 'center', mt: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5, minHeight: 44 }}>
+        <Box
+          sx={{
+            textAlign: 'center',
+            mt: 2,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 0.5,
+            minHeight: 44,
+          }}
+        >
           <Typography sx={{ color: 'text.secondary', fontSize: '14px' }}>
             Already have an account?
           </Typography>
-          <Button component={RouterLink} to="/login" sx={{ color: 'primary.main', fontWeight: 700, fontSize: '14px', py: 1, px: 1, minHeight: 44, minWidth: 'auto', textTransform: 'none' }}>
+          <Button
+            component={RouterLink}
+            to="/login"
+            sx={{
+              color: 'primary.main',
+              fontWeight: 700,
+              fontSize: '14px',
+              py: 1,
+              px: 1,
+              minHeight: 44,
+              minWidth: 'auto',
+              textTransform: 'none',
+            }}
+          >
             Sign In
           </Button>
         </Box>
@@ -721,4 +981,3 @@ const MobileRegister = () => {
 };
 
 export default MobileRegister;
-

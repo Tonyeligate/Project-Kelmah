@@ -2,18 +2,31 @@
  * ServiceCategorySelector Component
  * Simplified homepage component for quick service selection
  * Part of Kelmah's Protected Quick-Hire system
- * 
+ *
  * Design Philosophy: "40-year-old homeowner with leaking pipe shouldn't have to write a job description"
  */
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Box, Container, Typography, Grid, Card, CardContent, CardActionArea, Button, TextField, InputAdornment, useTheme, Chip, Avatar } from '@mui/material';
+  Box,
+  Container,
+  Typography,
+  Grid,
+  Card,
+  CardContent,
+  CardActionArea,
+  Button,
+  TextField,
+  InputAdornment,
+  useTheme,
+  Chip,
+  Avatar,
+} from '@mui/material';
 import {
   Search as SearchIcon,
   LocationOn as LocationIcon,
-  ArrowForward as ArrowForwardIcon
+  ArrowForward as ArrowForwardIcon,
 } from '@mui/icons-material';
 import { useSelector } from 'react-redux';
 import { SERVICE_CATEGORIES } from '../services/quickJobService';
@@ -34,7 +47,7 @@ const categoryIcons = {
   roofing: { emoji: '🏠', color: '#795548' },
   tiling: { emoji: '🔲', color: '#607D8B' },
   general_repair: { emoji: '🔨', color: '#FF9800' },
-  other: { emoji: '📋', color: '#9E9E9E' }
+  other: { emoji: '📋', color: '#9E9E9E' },
 };
 
 const ServiceCategorySelector = () => {
@@ -45,9 +58,10 @@ const ServiceCategorySelector = () => {
   const user = useSelector((state) => state.auth.user);
 
   // Filter categories based on search
-  const filteredCategories = SERVICE_CATEGORIES.filter(cat =>
-    cat.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    cat.nameGh.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredCategories = SERVICE_CATEGORIES.filter(
+    (cat) =>
+      cat.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      cat.nameGh.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   // Handle category selection
@@ -70,7 +84,7 @@ const ServiceCategorySelector = () => {
       sx={{
         py: { xs: 4, md: 8 },
         background: `linear-gradient(135deg, ${theme.palette.primary.main}15 0%, ${theme.palette.secondary.main}15 100%)`,
-        minHeight: '60vh'
+        minHeight: '60vh',
       }}
     >
       <Container maxWidth="lg">
@@ -99,7 +113,7 @@ const ServiceCategorySelector = () => {
           sx={{
             maxWidth: 500,
             mx: 'auto',
-            mb: 4
+            mb: 4,
           }}
         >
           <TextField
@@ -117,8 +131,8 @@ const ServiceCategorySelector = () => {
                 borderRadius: 3,
                 bgcolor: 'background.paper',
                 boxShadow: 1,
-                '& fieldset': { border: 'none' }
-              }
+                '& fieldset': { border: 'none' },
+              },
             }}
           />
         </Box>
@@ -138,8 +152,8 @@ const ServiceCategorySelector = () => {
                     '&:hover': {
                       transform: 'translateY(-4px)',
                       border: `2px solid ${iconData.color}`,
-                      boxShadow: `0 8px 24px ${iconData.color}30`
-                    }
+                      boxShadow: `0 8px 24px ${iconData.color}30`,
+                    },
                   }}
                 >
                   <CardActionArea
@@ -155,29 +169,26 @@ const ServiceCategorySelector = () => {
                           bgcolor: `${iconData.color}20`,
                           mx: 'auto',
                           mb: 1.5,
-                          fontSize: { xs: '2rem', md: '2.5rem' }
+                          fontSize: { xs: '2rem', md: '2.5rem' },
                         }}
                       >
                         {iconData.emoji}
                       </Avatar>
-                      
+
                       {/* Category Name */}
                       <Typography
                         variant="subtitle1"
                         fontWeight="600"
-                        sx={{ 
+                        sx={{
                           color: theme.palette.text.primary,
-                          lineHeight: 1.2
+                          lineHeight: 1.2,
                         }}
                       >
                         {category.name}
                       </Typography>
-                      
+
                       {/* Ghana-style name */}
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                      >
+                      <Typography variant="caption" color="text.secondary">
                         {category.nameGh}
                       </Typography>
                     </CardContent>
@@ -203,7 +214,7 @@ const ServiceCategorySelector = () => {
               px: 4,
               py: 1.5,
               textTransform: 'none',
-              fontWeight: 600
+              fontWeight: 600,
             }}
           >
             Find a Worker
@@ -217,7 +228,7 @@ const ServiceCategorySelector = () => {
             justifyContent: 'center',
             gap: { xs: 2, md: 4 },
             flexWrap: 'wrap',
-            mt: 6
+            mt: 6,
           }}
         >
           <Chip

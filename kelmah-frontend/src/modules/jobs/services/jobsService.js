@@ -47,9 +47,7 @@ const normalizeLocationValue = (location) => {
 
 const normalizeSkills = (skills) => {
   if (!Array.isArray(skills)) return [];
-  return skills
-    .map((skill) => normalizeTextValue(skill))
-    .filter(Boolean);
+  return skills.map((skill) => normalizeTextValue(skill)).filter(Boolean);
 };
 
 const normalizeJobMedia = (job) => {
@@ -136,8 +134,13 @@ const transformJobListItem = (job) => {
 
   const employer = getEmployerInfo();
   const imageGallery = normalizeJobMedia(job);
-  const coverImageMetadata = normalizeCoverImageMetadata(job.coverImageMetadata);
-  const rawCoverImage = resolveMediaAssetUrl([job.coverImage, coverImageMetadata]);
+  const coverImageMetadata = normalizeCoverImageMetadata(
+    job.coverImageMetadata,
+  );
+  const rawCoverImage = resolveMediaAssetUrl([
+    job.coverImage,
+    coverImageMetadata,
+  ]);
   const resolvedCoverImage = resolveJobVisualUrl({
     ...job,
     coverImage: rawCoverImage || job.coverImage,
@@ -167,7 +170,9 @@ const transformJobListItem = (job) => {
     // U-05 FIX: Use actual bid deadline or null - never fabricate a deadline
     deadline: job.endDate
       ? new Date(job.endDate)
-      : (job.bidding?.bidDeadline ? new Date(job.bidding.bidDeadline) : null),
+      : job.bidding?.bidDeadline
+        ? new Date(job.bidding.bidDeadline)
+        : null,
     startDate: job.startDate ? new Date(job.startDate) : new Date(),
     // Employer information
     employer,
@@ -218,14 +223,27 @@ const jobsApi = {
           totalPages = response.data.pagination?.totalPages || 1;
           totalJobs = response.data.pagination?.totalItems || jobs.length;
           currentPage = response.data.pagination?.currentPage || 1;
-        } else if (response.data.data && response.data.data.items && Array.isArray(response.data.data.items)) {
+        } else if (
+          response.data.data &&
+          response.data.data.items &&
+          Array.isArray(response.data.data.items)
+        ) {
           // Format: { data: { items: [...jobs], pagination: {...} }, meta: {...} }
           // This is the paginatedResponse format from the job service
           const paginated = response.data.data;
           jobs = paginated.items;
-          totalPages = paginated.pagination?.totalPages || response.data.meta?.pagination?.totalPages || 1;
-          totalJobs = paginated.pagination?.total || response.data.meta?.pagination?.total || jobs.length;
-          currentPage = paginated.pagination?.page || response.data.meta?.pagination?.page || 1;
+          totalPages =
+            paginated.pagination?.totalPages ||
+            response.data.meta?.pagination?.totalPages ||
+            1;
+          totalJobs =
+            paginated.pagination?.total ||
+            response.data.meta?.pagination?.total ||
+            jobs.length;
+          currentPage =
+            paginated.pagination?.page ||
+            response.data.meta?.pagination?.page ||
+            1;
         } else if (response.data.items && Array.isArray(response.data.items)) {
           // Format: { items: [...jobs], page: 1, total: 12 }
           jobs = response.data.items;
@@ -288,9 +306,9 @@ const jobsApi = {
   /**
    * Normalize raw form data to match the canonical Job model shape.
    * Maps flat UI fields to the nested objects the backend expects:
-    *   budget -> Number
-    *   duration -> { value: Number, unit: String }
-    *   location -> { type: String, country?: String, city?: String }
+   *   budget -> Number
+   *   duration -> { value: Number, unit: String }
+   *   location -> { type: String, country?: String, city?: String }
    */
   normalizeJobPayload(raw) {
     const payload = { ...raw };
@@ -308,15 +326,27 @@ const jobsApi = {
     // duration: convert flat string/number into { value, unit } object
     if (payload.duration && typeof payload.duration !== 'object') {
       // Try to parse strings like "2 weeks" or plain numbers
-      const match = String(payload.duration).match(/(\d+)\s*(hour|day|week|month)?s?/i);
+      const match = String(payload.duration).match(
+        /(\d+)\s*(hour|day|week|month)?s?/i,
+      );
       if (match) {
-        payload.duration = { value: Number(match[1]), unit: (match[2] || 'week').toLowerCase() };
+        payload.duration = {
+          value: Number(match[1]),
+          unit: (match[2] || 'week').toLowerCase(),
+        };
       } else {
-        payload.duration = { value: Number(payload.duration) || 1, unit: 'week' };
+        payload.duration = {
+          value: Number(payload.duration) || 1,
+          unit: 'week',
+        };
       }
     }
     // Ensure value is a number if already an object
-    if (payload.duration && typeof payload.duration === 'object' && payload.duration.value != null) {
+    if (
+      payload.duration &&
+      typeof payload.duration === 'object' &&
+      payload.duration.value != null
+    ) {
       payload.duration.value = Number(payload.duration.value);
     }
 
@@ -324,12 +354,18 @@ const jobsApi = {
     if (payload.location && typeof payload.location === 'string') {
       const locationType = payload.locationType || payload.jobType || 'onsite';
       payload.location = {
-        type: ['remote', 'onsite', 'hybrid'].includes(locationType) ? locationType : 'onsite',
+        type: ['remote', 'onsite', 'hybrid'].includes(locationType)
+          ? locationType
+          : 'onsite',
         city: payload.location,
       };
     }
     // If locationType was a separate field, fold it in and clean up
-    if (payload.locationType && payload.location && typeof payload.location === 'object') {
+    if (
+      payload.locationType &&
+      payload.location &&
+      typeof payload.location === 'object'
+    ) {
       payload.location.type = payload.locationType;
     }
     delete payload.locationType;
@@ -406,69 +442,82 @@ const jobsApi = {
       // Backend GET /api/jobs/:id returns { success, data: { ...job } }
       const raw = response.data?.data || response.data;
       const normalizedImages = normalizeJobMedia(raw);
-      const coverImageMetadata = normalizeCoverImageMetadata(raw?.coverImageMetadata);
-      const rawCoverImage = resolveMediaAssetUrl([raw?.coverImage, coverImageMetadata]);
+      const coverImageMetadata = normalizeCoverImageMetadata(
+        raw?.coverImageMetadata,
+      );
+      const rawCoverImage = resolveMediaAssetUrl([
+        raw?.coverImage,
+        coverImageMetadata,
+      ]);
       const normalizedHirer =
         raw?.hirer && typeof raw.hirer === 'object'
           ? {
-            ...raw.hirer,
-            id: raw.hirer.id || raw.hirer._id || null,
-            name:
-              normalizeTextValue(raw.hirer.name) ||
-              normalizeTextValue(raw.hirer.fullName) ||
-              [normalizeTextValue(raw.hirer.firstName), normalizeTextValue(raw.hirer.lastName)]
-                .filter(Boolean)
-                .join(' ') ||
-              normalizeTextValue(raw.hirer.email, 'Client'),
-            avatar: resolveProfileImageUrl(raw.hirer) || null,
-            companyName:
-              normalizeTextValue(raw.hirer.companyName) ||
-              normalizeTextValue(raw.hirer.company) ||
-              null,
-          }
+              ...raw.hirer,
+              id: raw.hirer.id || raw.hirer._id || null,
+              name:
+                normalizeTextValue(raw.hirer.name) ||
+                normalizeTextValue(raw.hirer.fullName) ||
+                [
+                  normalizeTextValue(raw.hirer.firstName),
+                  normalizeTextValue(raw.hirer.lastName),
+                ]
+                  .filter(Boolean)
+                  .join(' ') ||
+                normalizeTextValue(raw.hirer.email, 'Client'),
+              avatar: resolveProfileImageUrl(raw.hirer) || null,
+              companyName:
+                normalizeTextValue(raw.hirer.companyName) ||
+                normalizeTextValue(raw.hirer.company) ||
+                null,
+            }
           : raw?.hirer;
       const normalized =
         raw && typeof raw === 'object'
           ? {
-            ...raw,
-            hirer: normalizedHirer,
-            coverImage: rawCoverImage || '',
-            coverImageMetadata,
-            resolvedCoverImage: resolveJobVisualUrl({
               ...raw,
-              coverImage: rawCoverImage || raw?.coverImage,
+              hirer: normalizedHirer,
+              coverImage: rawCoverImage || '',
               coverImageMetadata,
+              resolvedCoverImage:
+                resolveJobVisualUrl({
+                  ...raw,
+                  coverImage: rawCoverImage || raw?.coverImage,
+                  coverImageMetadata,
+                  images: normalizedImages,
+                }) ||
+                rawCoverImage ||
+                '',
+              created_at: raw.created_at || raw.createdAt || raw.postedDate,
+              hirer_name: raw.hirer_name || normalizedHirer?.name,
+              postedDate:
+                raw.postedDate ||
+                (raw.createdAt ? new Date(raw.createdAt) : undefined),
+              deadline:
+                raw.deadline ||
+                (raw.endDate ? new Date(raw.endDate) : undefined),
+              skills: Array.isArray(raw.skills)
+                ? raw.skills
+                : typeof raw.skills_required === 'string'
+                  ? raw.skills_required
+                      .split(',')
+                      .map((s) => s.trim())
+                      .filter(Boolean)
+                  : [],
               images: normalizedImages,
-            }) || rawCoverImage || '',
-            created_at: raw.created_at || raw.createdAt || raw.postedDate,
-            hirer_name: raw.hirer_name || normalizedHirer?.name,
-            postedDate:
-              raw.postedDate ||
-              (raw.createdAt ? new Date(raw.createdAt) : undefined),
-            deadline:
-              raw.deadline ||
-              (raw.endDate ? new Date(raw.endDate) : undefined),
-            skills: Array.isArray(raw.skills)
-              ? raw.skills
-              : typeof raw.skills_required === 'string'
-                ? raw.skills_required
-                  .split(',')
-                  .map((s) => s.trim())
-                  .filter(Boolean)
-                : [],
-            images: normalizedImages,
-            imageGallery: normalizedImages,
-            clientProfile: normalizedHirer
-              ? {
-                id: normalizedHirer.id,
-                name: normalizedHirer.name,
-                avatar: normalizedHirer.avatar,
-                companyName: normalizedHirer.companyName,
-                email: normalizeTextValue(normalizedHirer.email),
-                verified: Boolean(normalizedHirer.verified || normalizedHirer.isVerified),
-              }
-              : null,
-          }
+              imageGallery: normalizedImages,
+              clientProfile: normalizedHirer
+                ? {
+                    id: normalizedHirer.id,
+                    name: normalizedHirer.name,
+                    avatar: normalizedHirer.avatar,
+                    companyName: normalizedHirer.companyName,
+                    email: normalizeTextValue(normalizedHirer.email),
+                    verified: Boolean(
+                      normalizedHirer.verified || normalizedHirer.isVerified,
+                    ),
+                  }
+                : null,
+            }
           : raw;
       return normalized;
     } catch (error) {
@@ -494,7 +543,11 @@ const jobsApi = {
       let currentPage = 1;
 
       if (response.data) {
-        if (response.data.data && response.data.data.items && Array.isArray(response.data.data.items)) {
+        if (
+          response.data.data &&
+          response.data.data.items &&
+          Array.isArray(response.data.data.items)
+        ) {
           const paginated = response.data.data;
           jobs = paginated.items;
           totalPages = paginated.pagination?.totalPages || 1;
@@ -577,10 +630,7 @@ const jobsApi = {
    */
   async applyToJob(jobId, applicationData) {
     try {
-      const response = await api.post(
-        `/jobs/${jobId}/apply`,
-        applicationData,
-      );
+      const response = await api.post(`/jobs/${jobId}/apply`, applicationData);
       return response.data;
     } catch (error) {
       jobsWarn(
@@ -599,10 +649,7 @@ const jobsApi = {
       const response = await api.get('/jobs/categories');
       return response.data.data || response.data;
     } catch (error) {
-      jobsWarn(
-        'Job service unavailable for job categories:',
-        error.message,
-      );
+      jobsWarn('Job service unavailable for job categories:', error.message);
       return [];
     }
   },
@@ -651,4 +698,3 @@ const jobsApi = {
 };
 
 export default jobsApi;
-

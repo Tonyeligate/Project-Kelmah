@@ -54,9 +54,7 @@ export const useDashboard = () => {
         // Dispatch plain object - setDashboardData merges into state.data
         dispatch(
           setDashboardData({
-            quickActions: [
-              { label: `New Job: ${job.title}`, ...job },
-            ],
+            quickActions: [{ label: `New Job: ${job.title}`, ...job }],
           }),
         );
       };
@@ -112,10 +110,7 @@ export const useDashboard = () => {
           const existingActivities = dashboardData?.recentActivity || [];
           dispatch(
             setDashboardData({
-              recentActivity: [
-                ...existingActivities,
-                ...response.activities,
-              ],
+              recentActivity: [...existingActivities, ...response.activities],
             }),
           );
           setPage(currentPage + 1);
@@ -291,4 +286,3 @@ export const useDashboard = () => {
     loadRealTimeStats,
   };
 };
-

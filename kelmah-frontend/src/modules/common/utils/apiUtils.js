@@ -94,4 +94,3 @@ export const apiService = {
     return gatewayClient.delete(url, options).then((response) => response.data);
   },
 };
-

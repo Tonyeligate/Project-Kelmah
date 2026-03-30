@@ -64,7 +64,8 @@ const STEP_META = [
   {
     label: 'Account',
     title: 'Choose your path',
-    description: 'Tell Kelmah whether you are here to find work or hire talent.',
+    description:
+      'Tell Kelmah whether you are here to find work or hire talent.',
   },
   {
     label: 'Profile',
@@ -109,7 +110,8 @@ const ROLE_OPTIONS = [
   {
     value: 'worker',
     title: 'I am a skilled worker',
-    description: 'Create a profile, show your trade skills, and get matched to work.',
+    description:
+      'Create a profile, show your trade skills, and get matched to work.',
     eyebrow: 'For artisans and professionals',
     icon: HandymanIcon,
     tags: ['Plumbing', 'Electrical', 'Carpentry', 'Masonry'],
@@ -117,14 +119,19 @@ const ROLE_OPTIONS = [
   {
     value: 'hirer',
     title: 'I need skilled workers',
-    description: 'Find trusted professionals for repairs, projects, and ongoing work.',
+    description:
+      'Find trusted professionals for repairs, projects, and ongoing work.',
     eyebrow: 'For homes and businesses',
     icon: SearchIcon,
     tags: ['Renovation', 'Maintenance', 'Construction', 'Repairs'],
   },
 ];
 
-const TRUST_PILLS = ['4-step onboarding', 'Draft save enabled', 'Email verification'];
+const TRUST_PILLS = [
+  '4-step onboarding',
+  'Draft save enabled',
+  'Email verification',
+];
 
 const LOW_LITERACY_GUIDE_STEPS = [
   'Pick Worker or Hirer first.',
@@ -135,17 +142,20 @@ const LOW_LITERACY_GUIDE_STEPS = [
 const PLATFORM_BENEFITS = [
   {
     title: 'Focused onboarding',
-    description: 'One clear path from account type to review, without marketing clutter.',
+    description:
+      'One clear path from account type to review, without marketing clutter.',
     icon: BoltRoundedIcon,
   },
   {
     title: 'Trust-first setup',
-    description: 'Structured contact and trade details help improve matching and hiring confidence.',
+    description:
+      'Structured contact and trade details help improve matching and hiring confidence.',
     icon: ShieldRoundedIcon,
   },
   {
     title: 'Progress you can resume',
-    description: 'Kelmah keeps a draft locally so users can pause and return later.',
+    description:
+      'Kelmah keeps a draft locally so users can pause and return later.',
     icon: ScheduleRoundedIcon,
   },
 ];
@@ -205,11 +215,21 @@ const Register = () => {
     ? `linear-gradient(160deg, ${alpha('#121720', 0.96)} 0%, ${alpha('#0A0E14', 0.98)} 100%)`
     : `linear-gradient(160deg, ${alpha('#FFFFFF', 0.99)} 0%, ${alpha('#F7F5EE', 0.99)} 100%)`;
   const supportingPanelText = isDarkMode ? '#F7F7F3' : '#171A1F';
-  const supportingPanelMuted = isDarkMode ? alpha('#FFFFFF', 0.76) : alpha('#171A1F', 0.76);
-  const supportingPanelSoft = isDarkMode ? alpha('#FFFFFF', 0.6) : alpha('#171A1F', 0.6);
-  const supportingPanelBorder = isDarkMode ? alpha('#FFFFFF', 0.08) : alpha(brandInk, 0.1);
-  const supportingPanelSurface = isDarkMode ? alpha('#FFFFFF', 0.04) : alpha('#FFFFFF', 0.88);
-  const supportingPanelSurfaceBorder = isDarkMode ? alpha('#FFFFFF', 0.08) : alpha(brandInk, 0.08);
+  const supportingPanelMuted = isDarkMode
+    ? alpha('#FFFFFF', 0.76)
+    : alpha('#171A1F', 0.76);
+  const supportingPanelSoft = isDarkMode
+    ? alpha('#FFFFFF', 0.6)
+    : alpha('#171A1F', 0.6);
+  const supportingPanelBorder = isDarkMode
+    ? alpha('#FFFFFF', 0.08)
+    : alpha(brandInk, 0.1);
+  const supportingPanelSurface = isDarkMode
+    ? alpha('#FFFFFF', 0.04)
+    : alpha('#FFFFFF', 0.88);
+  const supportingPanelSurfaceBorder = isDarkMode
+    ? alpha('#FFFFFF', 0.08)
+    : alpha(brandInk, 0.08);
   const supportingPanelShadow = isDarkMode
     ? '0 24px 80px rgba(0, 0, 0, 0.28)'
     : '0 24px 56px rgba(16, 17, 19, 0.12)';
@@ -217,11 +237,21 @@ const Register = () => {
     ? `linear-gradient(180deg, ${alpha('#121720', 0.98)} 0%, ${alpha('#0B1016', 0.98)} 100%)`
     : `linear-gradient(180deg, ${alpha('#FFFFFF', 0.99)} 0%, ${alpha('#F8F7F2', 0.99)} 100%)`;
   const formPanelText = isDarkMode ? '#F7F7F3' : '#171A1F';
-  const formPanelMuted = isDarkMode ? alpha('#FFFFFF', 0.72) : alpha('#171A1F', 0.74);
-  const formPanelSoft = isDarkMode ? alpha('#FFFFFF', 0.56) : alpha('#171A1F', 0.58);
-  const formPanelBorder = isDarkMode ? alpha('#FFFFFF', 0.08) : alpha(brandInk, 0.1);
-  const formPanelDivider = isDarkMode ? alpha('#FFFFFF', 0.08) : alpha(brandInk, 0.08);
-  const formPanelSurface = isDarkMode ? alpha('#FFFFFF', 0.04) : alpha('#FFFFFF', 0.94);
+  const formPanelMuted = isDarkMode
+    ? alpha('#FFFFFF', 0.72)
+    : alpha('#171A1F', 0.74);
+  const formPanelSoft = isDarkMode
+    ? alpha('#FFFFFF', 0.56)
+    : alpha('#171A1F', 0.58);
+  const formPanelBorder = isDarkMode
+    ? alpha('#FFFFFF', 0.08)
+    : alpha(brandInk, 0.1);
+  const formPanelDivider = isDarkMode
+    ? alpha('#FFFFFF', 0.08)
+    : alpha(brandInk, 0.08);
+  const formPanelSurface = isDarkMode
+    ? alpha('#FFFFFF', 0.04)
+    : alpha('#FFFFFF', 0.94);
   const formPanelSurfaceAlt = isDarkMode
     ? `linear-gradient(145deg, ${alpha('#11161D', 0.95)} 0%, ${alpha('#0D1117', 0.96)} 100%)`
     : `linear-gradient(145deg, ${alpha('#FFFFFF', 0.99)} 0%, ${alpha('#F7F6F0', 0.99)} 100%)`;
@@ -240,10 +270,15 @@ const Register = () => {
       '& .MuiOutlinedInput-root': {
         minHeight: 56,
         borderRadius: 3,
-        backgroundColor: isDarkMode ? alpha('#0B1016', 0.72) : alpha('#FFFFFF', 0.9),
-        transition: 'border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease',
+        backgroundColor: isDarkMode
+          ? alpha('#0B1016', 0.72)
+          : alpha('#FFFFFF', 0.9),
+        transition:
+          'border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease',
         '& fieldset': {
-          borderColor: isDarkMode ? alpha('#FFFFFF', 0.1) : alpha('#171A1F', 0.12),
+          borderColor: isDarkMode
+            ? alpha('#FFFFFF', 0.1)
+            : alpha('#171A1F', 0.12),
         },
         '&:hover fieldset': {
           borderColor: alpha(brandColor, 0.45),
@@ -357,22 +392,23 @@ const Register = () => {
     return 'error';
   }, [passwordStrength.score]);
   const socialProviders = useMemo(
-    () => [
-      {
-        key: 'google',
-        label: 'Continue with Google',
-        authPath: '/auth/google',
-        enabled: Boolean(AUTH_CONFIG.googleClientId),
-        icon: GoogleIcon,
-      },
-      {
-        key: 'linkedin',
-        label: 'Continue with LinkedIn',
-        authPath: '/auth/linkedin',
-        enabled: Boolean(AUTH_CONFIG.linkedinClientId),
-        icon: LinkedInIcon,
-      },
-    ].filter((provider) => provider.enabled),
+    () =>
+      [
+        {
+          key: 'google',
+          label: 'Continue with Google',
+          authPath: '/auth/google',
+          enabled: Boolean(AUTH_CONFIG.googleClientId),
+          icon: GoogleIcon,
+        },
+        {
+          key: 'linkedin',
+          label: 'Continue with LinkedIn',
+          authPath: '/auth/linkedin',
+          enabled: Boolean(AUTH_CONFIG.linkedinClientId),
+          icon: LinkedInIcon,
+        },
+      ].filter((provider) => provider.enabled),
     [],
   );
 
@@ -415,9 +451,12 @@ const Register = () => {
     [resolveRequestedPath],
   );
 
-  const handleSocialLogin = useCallback((authPath) => {
-    window.location.assign(buildSocialAuthUrl(authPath));
-  }, [buildSocialAuthUrl]);
+  const handleSocialLogin = useCallback(
+    (authPath) => {
+      window.location.assign(buildSocialAuthUrl(authPath));
+    },
+    [buildSocialAuthUrl],
+  );
 
   const handleManualDraftSave = useCallback(() => {
     const payload = { ...getValues(), step: activeStep };
@@ -484,7 +523,14 @@ const Register = () => {
     setActiveStep((prev) => prev + 1);
   };
 
-  const renderRoleCard = ({ value, title, description, eyebrow, icon: Icon, tags }) => {
+  const renderRoleCard = ({
+    value,
+    title,
+    description,
+    eyebrow,
+    icon: Icon,
+    tags,
+  }) => {
     const isSelected = role === value;
 
     return (
@@ -505,9 +551,10 @@ const Register = () => {
             boxShadow: isSelected
               ? `0 18px 50px ${alpha(brandColor, 0.16)}`
               : isDarkMode
-              ? '0 10px 28px rgba(0, 0, 0, 0.22)'
-              : '0 10px 28px rgba(23, 26, 31, 0.08)',
-            transition: 'transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease',
+                ? '0 10px 28px rgba(0, 0, 0, 0.22)'
+                : '0 10px 28px rgba(23, 26, 31, 0.08)',
+            transition:
+              'transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease',
             '&:hover': {
               transform: 'translateY(-3px)',
               borderColor: alpha(brandColor, 0.65),
@@ -518,7 +565,12 @@ const Register = () => {
           }}
         >
           <Stack spacing={2}>
-            <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={2}>
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              alignItems="flex-start"
+              spacing={2}
+            >
               <Stack spacing={1.5} sx={{ flex: 1 }}>
                 <Typography
                   variant="overline"
@@ -549,10 +601,16 @@ const Register = () => {
                     <Icon sx={{ fontSize: 28 }} />
                   </Box>
                   <Box>
-                    <Typography variant="h6" sx={{ color: formPanelText, fontWeight: 800 }}>
+                    <Typography
+                      variant="h6"
+                      sx={{ color: formPanelText, fontWeight: 800 }}
+                    >
                       {title}
                     </Typography>
-                    <Typography variant="body2" sx={{ color: formPanelMuted, lineHeight: 1.6 }}>
+                    <Typography
+                      variant="body2"
+                      sx={{ color: formPanelMuted, lineHeight: 1.6 }}
+                    >
                       {description}
                     </Typography>
                   </Box>
@@ -588,8 +646,12 @@ const Register = () => {
 
   const renderProfileStep = () => (
     <Stack spacing={2.5}>
-      <Typography variant="body2" sx={{ color: formPanelMuted, lineHeight: 1.7 }}>
-        These details help Kelmah set up your account correctly and improve matching quality after sign-up.
+      <Typography
+        variant="body2"
+        sx={{ color: formPanelMuted, lineHeight: 1.7 }}
+      >
+        These details help Kelmah set up your account correctly and improve
+        matching quality after sign-up.
       </Typography>
 
       <Grid container spacing={2}>
@@ -783,10 +845,16 @@ const Register = () => {
             <ShieldRoundedIcon />
           </Box>
           <Box>
-            <Typography variant="subtitle1" sx={{ color: formPanelText, fontWeight: 700 }}>
+            <Typography
+              variant="subtitle1"
+              sx={{ color: formPanelText, fontWeight: 700 }}
+            >
               Keep the account secure
             </Typography>
-            <Typography variant="body2" sx={{ color: formPanelMuted, lineHeight: 1.6 }}>
+            <Typography
+              variant="body2"
+              sx={{ color: formPanelMuted, lineHeight: 1.6 }}
+            >
               Use a strong password with a mix of letters, numbers, and symbols.
             </Typography>
           </Box>
@@ -814,7 +882,14 @@ const Register = () => {
                 onClick={() => setShowPassword((prev) => !prev)}
                 edge="end"
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
-                sx={{ color: formPanelSoft , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
+                sx={{
+                  color: formPanelSoft,
+                  '&:focus-visible': {
+                    outline: '3px solid',
+                    outlineColor: 'primary.main',
+                    outlineOffset: '2px',
+                  },
+                }}
               >
                 {showPassword ? <VisibilityOff /> : <Visibility />}
               </IconButton>
@@ -826,11 +901,23 @@ const Register = () => {
 
       {password && (
         <Box>
-          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
-            <Typography variant="caption" sx={{ color: formPanelSoft, letterSpacing: '0.06em' }}>
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+            sx={{ mb: 1 }}
+          >
+            <Typography
+              variant="caption"
+              sx={{ color: formPanelSoft, letterSpacing: '0.06em' }}
+            >
               PASSWORD STRENGTH
             </Typography>
-            <Chip label={passwordStrength.label} size="small" color={passwordChipColor} />
+            <Chip
+              label={passwordStrength.label}
+              size="small"
+              color={passwordChipColor}
+            />
           </Stack>
           <LinearProgress
             variant="determinate"
@@ -839,7 +926,9 @@ const Register = () => {
             sx={{
               height: 8,
               borderRadius: 999,
-              backgroundColor: isDarkMode ? alpha('#FFFFFF', 0.08) : alpha('#171A1F', 0.08),
+              backgroundColor: isDarkMode
+                ? alpha('#FFFFFF', 0.08)
+                : alpha('#171A1F', 0.08),
             }}
           />
         </Box>
@@ -865,8 +954,19 @@ const Register = () => {
               <IconButton
                 onClick={() => setShowConfirmPassword((prev) => !prev)}
                 edge="end"
-                aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
-                sx={{ color: formPanelSoft , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
+                aria-label={
+                  showConfirmPassword
+                    ? 'Hide confirm password'
+                    : 'Show confirm password'
+                }
+                sx={{
+                  color: formPanelSoft,
+                  '&:focus-visible': {
+                    outline: '3px solid',
+                    outlineColor: 'primary.main',
+                    outlineOffset: '2px',
+                  },
+                }}
               >
                 {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
               </IconButton>
@@ -893,13 +993,26 @@ const Register = () => {
           />
         }
         label={
-          <Typography variant="body2" sx={{ color: formPanelMuted, lineHeight: 1.7 }}>
+          <Typography
+            variant="body2"
+            sx={{ color: formPanelMuted, lineHeight: 1.7 }}
+          >
             I agree to the{' '}
-            <Link component={RouterLink} to="/terms" underline="hover" sx={{ color: brandColor, fontWeight: 700 }}>
+            <Link
+              component={RouterLink}
+              to="/terms"
+              underline="hover"
+              sx={{ color: brandColor, fontWeight: 700 }}
+            >
               Terms of Service
             </Link>{' '}
             and{' '}
-            <Link component={RouterLink} to="/privacy" underline="hover" sx={{ color: brandColor, fontWeight: 700 }}>
+            <Link
+              component={RouterLink}
+              to="/privacy"
+              underline="hover"
+              sx={{ color: brandColor, fontWeight: 700 }}
+            >
               Privacy Policy
             </Link>
           </Typography>
@@ -911,10 +1024,16 @@ const Register = () => {
 
   const renderSummaryField = (label, value) => (
     <Box>
-      <Typography variant="caption" sx={{ color: formPanelSoft, letterSpacing: '0.08em' }}>
+      <Typography
+        variant="caption"
+        sx={{ color: formPanelSoft, letterSpacing: '0.08em' }}
+      >
         {label}
       </Typography>
-      <Typography variant="body1" sx={{ color: formPanelText, fontWeight: 600, mt: 0.5 }}>
+      <Typography
+        variant="body1"
+        sx={{ color: formPanelText, fontWeight: 600, mt: 0.5 }}
+      >
         {value || '-'}
       </Typography>
     </Box>
@@ -948,21 +1067,34 @@ const Register = () => {
               <CheckCircleIcon />
             </Box>
             <Box>
-              <Typography variant="h6" sx={{ color: formPanelText, fontWeight: 800 }}>
+              <Typography
+                variant="h6"
+                sx={{ color: formPanelText, fontWeight: 800 }}
+              >
                 Review your account details
               </Typography>
-              <Typography variant="body2" sx={{ color: formPanelMuted, lineHeight: 1.6 }}>
-                Everything looks ready. Confirm the details below before you create the account.
+              <Typography
+                variant="body2"
+                sx={{ color: formPanelMuted, lineHeight: 1.6 }}
+              >
+                Everything looks ready. Confirm the details below before you
+                create the account.
               </Typography>
             </Box>
           </Stack>
 
           <Grid container spacing={2.5}>
             <Grid item xs={12} md={6}>
-              {renderSummaryField('Account type', role === 'worker' ? 'Skilled worker' : 'Hirer')}
+              {renderSummaryField(
+                'Account type',
+                role === 'worker' ? 'Skilled worker' : 'Hirer',
+              )}
             </Grid>
             <Grid item xs={12} md={6}>
-              {renderSummaryField('Full name', `${firstName || ''} ${lastName || ''}`.trim())}
+              {renderSummaryField(
+                'Full name',
+                `${firstName || ''} ${lastName || ''}`.trim(),
+              )}
             </Grid>
             <Grid item xs={12} md={6}>
               {renderSummaryField('Email', email)}
@@ -978,10 +1110,19 @@ const Register = () => {
             {role === 'worker' && (
               <>
                 <Grid item xs={12}>
-                  <Typography variant="caption" sx={{ color: formPanelSoft, letterSpacing: '0.08em' }}>
+                  <Typography
+                    variant="caption"
+                    sx={{ color: formPanelSoft, letterSpacing: '0.08em' }}
+                  >
                     Trades or skills
                   </Typography>
-                  <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mt: 1 }}>
+                  <Stack
+                    direction="row"
+                    spacing={1}
+                    flexWrap="wrap"
+                    useFlexGap
+                    sx={{ mt: 1 }}
+                  >
                     {(trades || []).length > 0 ? (
                       (trades || []).map((trade) => (
                         <Chip
@@ -996,7 +1137,10 @@ const Register = () => {
                         />
                       ))
                     ) : (
-                      <Typography variant="body2" sx={{ color: formPanelText, fontWeight: 600 }}>
+                      <Typography
+                        variant="body2"
+                        sx={{ color: formPanelText, fontWeight: 600 }}
+                      >
                         -
                       </Typography>
                     )}
@@ -1025,8 +1169,13 @@ const Register = () => {
           backgroundColor: alpha(brandColor, 0.06),
         }}
       >
-        <Typography variant="body2" sx={{ color: formPanelMuted, lineHeight: 1.7 }}>
-          After sign-up, we will send a verification email and take you to sign in. Completing your profile well improves trust and matching quality across the platform.
+        <Typography
+          variant="body2"
+          sx={{ color: formPanelMuted, lineHeight: 1.7 }}
+        >
+          After sign-up, we will send a verification email and take you to sign
+          in. Completing your profile well improves trust and matching quality
+          across the platform.
         </Typography>
       </Paper>
     </Stack>
@@ -1109,9 +1258,21 @@ const Register = () => {
             Kelmah
           </Button>
 
-          <Typography variant="body2" sx={{ color: isDarkMode ? alpha('#FFFFFF', 0.74) : alpha('#171A1F', 0.68) }}>
+          <Typography
+            variant="body2"
+            sx={{
+              color: isDarkMode
+                ? alpha('#FFFFFF', 0.74)
+                : alpha('#171A1F', 0.68),
+            }}
+          >
             Already have an account?{' '}
-            <Link component={RouterLink} to="/login" underline="hover" sx={{ color: brandColor, fontWeight: 800 }}>
+            <Link
+              component={RouterLink}
+              to="/login"
+              underline="hover"
+              sx={{ color: brandColor, fontWeight: 800 }}
+            >
               Sign in
             </Link>
           </Typography>
@@ -1173,7 +1334,9 @@ const Register = () => {
                       fontSize: '1rem',
                     }}
                   >
-                    This desktop flow is designed to feel focused, trustworthy, and easy to complete. No crowded hero blocks. No mixed navigation. Just a clear onboarding path.
+                    This desktop flow is designed to feel focused, trustworthy,
+                    and easy to complete. No crowded hero blocks. No mixed
+                    navigation. Just a clear onboarding path.
                   </Typography>
                 </Box>
 
@@ -1182,7 +1345,11 @@ const Register = () => {
                     <Chip
                       key={pill}
                       label={pill}
-                      icon={<CheckCircleIcon sx={{ color: `${brandColor} !important` }} />}
+                      icon={
+                        <CheckCircleIcon
+                          sx={{ color: `${brandColor} !important` }}
+                        />
+                      }
                       sx={{
                         backgroundColor: supportingPanelSurface,
                         color: supportingPanelText,
@@ -1206,13 +1373,33 @@ const Register = () => {
                         border: `1px solid ${supportingPanelSurfaceBorder}`,
                       }}
                     >
-                      <Typography variant="overline" sx={{ color: supportingPanelSoft, letterSpacing: '0.1em' }}>
+                      <Typography
+                        variant="overline"
+                        sx={{
+                          color: supportingPanelSoft,
+                          letterSpacing: '0.1em',
+                        }}
+                      >
                         BUILT FOR
                       </Typography>
-                      <Typography variant="h6" sx={{ mt: 0.75, fontWeight: 800, color: supportingPanelText }}>
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          mt: 0.75,
+                          fontWeight: 800,
+                          color: supportingPanelText,
+                        }}
+                      >
                         Ghana
                       </Typography>
-                      <Typography variant="body2" sx={{ mt: 0.75, color: supportingPanelMuted, lineHeight: 1.6 }}>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          mt: 0.75,
+                          color: supportingPanelMuted,
+                          lineHeight: 1.6,
+                        }}
+                      >
                         Local trades, local work, clearer trust signals.
                       </Typography>
                     </Paper>
@@ -1228,13 +1415,33 @@ const Register = () => {
                         border: `1px solid ${supportingPanelSurfaceBorder}`,
                       }}
                     >
-                      <Typography variant="overline" sx={{ color: supportingPanelSoft, letterSpacing: '0.1em' }}>
+                      <Typography
+                        variant="overline"
+                        sx={{
+                          color: supportingPanelSoft,
+                          letterSpacing: '0.1em',
+                        }}
+                      >
                         FLOW
                       </Typography>
-                      <Typography variant="h6" sx={{ mt: 0.75, fontWeight: 800, color: supportingPanelText }}>
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          mt: 0.75,
+                          fontWeight: 800,
+                          color: supportingPanelText,
+                        }}
+                      >
                         4 steps
                       </Typography>
-                      <Typography variant="body2" sx={{ mt: 0.75, color: supportingPanelMuted, lineHeight: 1.6 }}>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          mt: 0.75,
+                          color: supportingPanelMuted,
+                          lineHeight: 1.6,
+                        }}
+                      >
                         Account, profile, security, then review.
                       </Typography>
                     </Paper>
@@ -1250,13 +1457,33 @@ const Register = () => {
                         border: `1px solid ${supportingPanelSurfaceBorder}`,
                       }}
                     >
-                      <Typography variant="overline" sx={{ color: supportingPanelSoft, letterSpacing: '0.1em' }}>
+                      <Typography
+                        variant="overline"
+                        sx={{
+                          color: supportingPanelSoft,
+                          letterSpacing: '0.1em',
+                        }}
+                      >
                         RESUME
                       </Typography>
-                      <Typography variant="h6" sx={{ mt: 0.75, fontWeight: 800, color: supportingPanelText }}>
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          mt: 0.75,
+                          fontWeight: 800,
+                          color: supportingPanelText,
+                        }}
+                      >
                         Draft save
                       </Typography>
-                      <Typography variant="body2" sx={{ mt: 0.75, color: supportingPanelMuted, lineHeight: 1.6 }}>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          mt: 0.75,
+                          color: supportingPanelMuted,
+                          lineHeight: 1.6,
+                        }}
+                      >
                         Users can pause without losing progress.
                       </Typography>
                     </Paper>
@@ -1293,10 +1520,20 @@ const Register = () => {
                       <Icon />
                     </Box>
                     <Box>
-                      <Typography variant="subtitle1" sx={{ fontWeight: 800, color: supportingPanelText }}>
+                      <Typography
+                        variant="subtitle1"
+                        sx={{ fontWeight: 800, color: supportingPanelText }}
+                      >
                         {title}
                       </Typography>
-                      <Typography variant="body2" sx={{ mt: 0.5, color: supportingPanelMuted, lineHeight: 1.65 }}>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          mt: 0.5,
+                          color: supportingPanelMuted,
+                          lineHeight: 1.65,
+                        }}
+                      >
                         {description}
                       </Typography>
                     </Box>
@@ -1322,15 +1559,42 @@ const Register = () => {
               }}
             >
               <Stack spacing={2.5}>
-                <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={2}>
+                <Stack
+                  direction="row"
+                  justifyContent="space-between"
+                  alignItems="flex-start"
+                  spacing={2}
+                >
                   <Box>
-                    <Typography variant="overline" sx={{ color: formPanelSoft, letterSpacing: '0.12em', fontWeight: 800 }}>
+                    <Typography
+                      variant="overline"
+                      sx={{
+                        color: formPanelSoft,
+                        letterSpacing: '0.12em',
+                        fontWeight: 800,
+                      }}
+                    >
                       REGISTER
                     </Typography>
-                    <Typography variant="h4" sx={{ fontWeight: 900, mt: 0.5, letterSpacing: '-0.03em' }}>
+                    <Typography
+                      variant="h4"
+                      sx={{
+                        fontWeight: 900,
+                        mt: 0.5,
+                        letterSpacing: '-0.03em',
+                      }}
+                    >
                       {currentStep.title}
                     </Typography>
-                    <Typography variant="body1" sx={{ mt: 1, maxWidth: 560, color: formPanelMuted, lineHeight: 1.7 }}>
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        mt: 1,
+                        maxWidth: 560,
+                        color: formPanelMuted,
+                        lineHeight: 1.7,
+                      }}
+                    >
                       {currentStep.description}
                     </Typography>
                   </Box>
@@ -1353,12 +1617,19 @@ const Register = () => {
                     },
                   }}
                 >
-                  <Typography variant="subtitle2" sx={{ fontWeight: 800, mb: 0.75 }}>
+                  <Typography
+                    variant="subtitle2"
+                    sx={{ fontWeight: 800, mb: 0.75 }}
+                  >
                     Simple guide
                   </Typography>
                   <Stack spacing={0.25}>
                     {LOW_LITERACY_GUIDE_STEPS.map((stepText, index) => (
-                      <Typography key={stepText} variant="body2" sx={{ color: formPanelMuted }}>
+                      <Typography
+                        key={stepText}
+                        variant="body2"
+                        sx={{ color: formPanelMuted }}
+                      >
                         {index + 1}. {stepText}
                       </Typography>
                     ))}
@@ -1372,7 +1643,9 @@ const Register = () => {
                     sx={{
                       height: 8,
                       borderRadius: 999,
-                      backgroundColor: isDarkMode ? alpha('#FFFFFF', 0.08) : alpha('#171A1F', 0.08),
+                      backgroundColor: isDarkMode
+                        ? alpha('#FFFFFF', 0.08)
+                        : alpha('#171A1F', 0.08),
                       '& .MuiLinearProgress-bar': {
                         background: `linear-gradient(90deg, ${brandColor} 0%, ${brandStrong} 100%)`,
                         borderRadius: 999,
@@ -1398,11 +1671,12 @@ const Register = () => {
                               backgroundColor: isCurrent
                                 ? alpha(brandColor, 0.12)
                                 : isComplete
-                                ? alpha(brandColor, 0.08)
-                                : formPanelSurface,
-                              boxShadow: !isDarkMode && !isCurrent && !isComplete
-                                ? 'inset 0 0 0 1px rgba(23, 26, 31, 0.02)'
-                                : 'none',
+                                  ? alpha(brandColor, 0.08)
+                                  : formPanelSurface,
+                              boxShadow:
+                                !isDarkMode && !isCurrent && !isComplete
+                                  ? 'inset 0 0 0 1px rgba(23, 26, 31, 0.02)'
+                                  : 'none',
                               minHeight: 88,
                             }}
                           >
@@ -1412,8 +1686,16 @@ const Register = () => {
                                   width: 30,
                                   height: 30,
                                   borderRadius: '50%',
-                                  backgroundColor: isCurrent || isComplete ? brandColor : (isDarkMode ? alpha('#FFFFFF', 0.08) : alpha('#171A1F', 0.08)),
-                                  color: isCurrent || isComplete ? brandInk : formPanelSoft,
+                                  backgroundColor:
+                                    isCurrent || isComplete
+                                      ? brandColor
+                                      : isDarkMode
+                                        ? alpha('#FFFFFF', 0.08)
+                                        : alpha('#171A1F', 0.08),
+                                  color:
+                                    isCurrent || isComplete
+                                      ? brandInk
+                                      : formPanelSoft,
                                   display: 'flex',
                                   alignItems: 'center',
                                   justifyContent: 'center',
@@ -1423,7 +1705,10 @@ const Register = () => {
                               >
                                 {index + 1}
                               </Box>
-                              <Typography variant="subtitle2" sx={{ fontWeight: 800, lineHeight: 1.35 }}>
+                              <Typography
+                                variant="subtitle2"
+                                sx={{ fontWeight: 800, lineHeight: 1.35 }}
+                              >
                                 {step.label}
                               </Typography>
                             </Stack>
@@ -1462,7 +1747,12 @@ const Register = () => {
 
                 <Divider sx={{ borderColor: formPanelDivider }} />
 
-                <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2}>
+                <Stack
+                  direction="row"
+                  justifyContent="space-between"
+                  alignItems="center"
+                  spacing={2}
+                >
                   <Button
                     variant="text"
                     onClick={handleManualDraftSave}
@@ -1484,9 +1774,12 @@ const Register = () => {
                         borderRadius: 999,
                         textTransform: 'none',
                         fontWeight: 800,
-                        borderColor: isDarkMode ? alpha('#FFFFFF', 0.16) : alpha('#171A1F', 0.16),
+                        borderColor: isDarkMode
+                          ? alpha('#FFFFFF', 0.16)
+                          : alpha('#171A1F', 0.16),
                         color: formPanelText,
-                      }}>
+                      }}
+                    >
                       {activeStep === 0 ? 'Back home' : 'Back'}
                     </Button>
                     <Button
@@ -1513,8 +1806,13 @@ const Register = () => {
                     >
                       {authLoading ? (
                         <Stack direction="row" spacing={1} alignItems="center">
-                          <CircularProgress size={16} sx={{ color: brandInk }} />
-                          <Typography sx={{ fontSize: 'inherit', fontWeight: 'inherit' }}>
+                          <CircularProgress
+                            size={16}
+                            sx={{ color: brandInk }}
+                          />
+                          <Typography
+                            sx={{ fontSize: 'inherit', fontWeight: 'inherit' }}
+                          >
                             Creating...
                           </Typography>
                         </Stack>
@@ -1532,7 +1830,8 @@ const Register = () => {
                 {socialProviders.length > 0 && (
                   <Stack spacing={2.25}>
                     <Typography variant="body2" sx={{ color: formPanelMuted }}>
-                      Prefer a social sign-up? Choose a configured provider below.
+                      Prefer a social sign-up? Choose a configured provider
+                      below.
                     </Typography>
                     <Stack direction="row" spacing={1.5}>
                       {socialProviders.map((provider) => {
@@ -1549,14 +1848,21 @@ const Register = () => {
                               borderRadius: 999,
                               textTransform: 'none',
                               fontWeight: 800,
-                              backgroundColor: !isDarkMode ? alpha('#FFFFFF', 0.52) : 'transparent',
-                              borderColor: isDarkMode ? alpha('#FFFFFF', 0.14) : alpha('#171A1F', 0.14),
+                              backgroundColor: !isDarkMode
+                                ? alpha('#FFFFFF', 0.52)
+                                : 'transparent',
+                              borderColor: isDarkMode
+                                ? alpha('#FFFFFF', 0.14)
+                                : alpha('#171A1F', 0.14),
                               color: formPanelText,
                               '&:hover': {
                                 borderColor: alpha(brandColor, 0.45),
-                                backgroundColor: !isDarkMode ? alpha('#FFFFFF', 0.74) : alpha('#FFFFFF', 0.04),
+                                backgroundColor: !isDarkMode
+                                  ? alpha('#FFFFFF', 0.74)
+                                  : alpha('#FFFFFF', 0.04),
                               },
-                            }}>
+                            }}
+                          >
                             {provider.label}
                           </Button>
                         );

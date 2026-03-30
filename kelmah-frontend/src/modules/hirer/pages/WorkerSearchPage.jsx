@@ -5,7 +5,10 @@ import PageCanvas from '../../common/components/PageCanvas';
 
 const WorkerSearchPage = () => {
   return (
-    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
+    <PageCanvas
+      disableContainer
+      sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}
+    >
       <WorkerDirectoryExperience
         variant="hirer"
         basePath="/hirer/find-talents"
@@ -18,4 +21,3 @@ const WorkerSearchPage = () => {
 };
 
 export default WorkerSearchPage;
-

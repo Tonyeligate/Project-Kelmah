@@ -69,22 +69,26 @@ const NotificationSettings = ({
     {
       name: 'email',
       label: 'Email notifications',
-      helper: 'Application decisions, contract updates, and important account alerts.',
+      helper:
+        'Application decisions, contract updates, and important account alerts.',
     },
     {
       name: 'push',
       label: 'Push notifications',
-      helper: 'Instant mobile alerts when a hirer messages you or updates a job.',
+      helper:
+        'Instant mobile alerts when a hirer messages you or updates a job.',
     },
     {
       name: 'inApp',
       label: 'In-app notifications',
-      helper: 'Alerts inside Kelmah for messages, jobs, and workflow reminders.',
+      helper:
+        'Alerts inside Kelmah for messages, jobs, and workflow reminders.',
     },
     {
       name: 'sms',
       label: 'SMS notifications',
-      helper: 'Only use for urgent reminders. SMS delivery may depend on your network.',
+      helper:
+        'Only use for urgent reminders. SMS delivery may depend on your network.',
     },
   ];
 
@@ -108,8 +112,13 @@ const NotificationSettings = ({
               }}
             >
               <FormControlLabel
-                sx={{ alignItems: 'flex-start', m: 0, width: '100%', justifyContent: 'space-between' }}
-                control={(
+                sx={{
+                  alignItems: 'flex-start',
+                  m: 0,
+                  width: '100%',
+                  justifyContent: 'space-between',
+                }}
+                control={
                   <Switch
                     checked={Boolean(localSettings[row.name])}
                     onChange={handleChange}
@@ -118,27 +127,37 @@ const NotificationSettings = ({
                       'aria-label': `${row.label} toggle`,
                     }}
                   />
-                )}
-                label={(
+                }
+                label={
                   <Box sx={{ pr: 2 }}>
                     <Typography variant="subtitle2" fontWeight={700}>
                       {row.label}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ mt: 0.25 }}
+                    >
                       {row.helper}
                     </Typography>
                   </Box>
-                )}
+                }
                 labelPlacement="start"
               />
             </Box>
           ))}
         </Stack>
         <Alert severity="info" sx={{ mt: 2 }}>
-          Notification categories such as jobs, messages, and promotions will use these channel preferences.
+          Notification categories such as jobs, messages, and promotions will
+          use these channel preferences.
         </Alert>
         <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
-          <Button variant="contained" onClick={handleSave} disabled={loading} sx={{ minHeight: 44 }}>
+          <Button
+            variant="contained"
+            onClick={handleSave}
+            disabled={loading}
+            sx={{ minHeight: 44 }}
+          >
             {loading ? <CircularProgress size={24} /> : 'Save Changes'}
           </Button>
         </Box>
@@ -165,7 +184,5 @@ NotificationSettings.propTypes = {
   loading: PropTypes.bool,
   updateNotificationPreferences: PropTypes.func.isRequired,
 };
-
-
 
 export default NotificationSettings;

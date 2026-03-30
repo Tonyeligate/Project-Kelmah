@@ -148,7 +148,10 @@ const JobSearchForm = ({
                 setKeyword(nextKeyword);
               }}
               placeholder="e.g., emergency plumber, electrician, tiler"
-              inputProps={{ maxLength: SEARCH_QUERY_MAX_LENGTH, 'aria-label': 'Search by work keyword' }}
+              inputProps={{
+                maxLength: SEARCH_QUERY_MAX_LENGTH,
+                'aria-label': 'Search by work keyword',
+              }}
               helperText="Start with trade first, then include area if known."
             />
           </Grid>
@@ -168,7 +171,10 @@ const JobSearchForm = ({
                 setLocation(nextLocation);
               }}
               placeholder="e.g., Accra, Kumasi, Tamale"
-              inputProps={{ maxLength: SEARCH_LOCATION_MAX_LENGTH, 'aria-label': 'Search by location' }}
+              inputProps={{
+                maxLength: SEARCH_LOCATION_MAX_LENGTH,
+                'aria-label': 'Search by location',
+              }}
               helperText="City, town, or neighborhood helps rank nearby matches first."
             />
           </Grid>
@@ -294,4 +300,3 @@ JobSearchForm.propTypes = {
 };
 
 export default JobSearchForm;
-

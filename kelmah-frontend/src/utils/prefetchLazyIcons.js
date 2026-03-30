@@ -50,7 +50,11 @@ export const prefetchLazyIcons = (lazyIconMap) => {
               const payload = component._payload;
               if (payload && typeof payload._result === 'function') {
                 await payload._result();
-              } else if (payload && typeof payload === 'object' && payload._init) {
+              } else if (
+                payload &&
+                typeof payload === 'object' &&
+                payload._init
+              ) {
                 payload._init(payload);
               }
             } else if (typeof component === 'function') {

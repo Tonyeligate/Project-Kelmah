@@ -145,7 +145,9 @@ const PaymentAnalyticsDashboard = ({
         limit: rowsPerPage,
         ...filters,
       });
-      setTransactions(response?.data?.transactions || response?.transactions || []);
+      setTransactions(
+        response?.data?.transactions || response?.transactions || [],
+      );
     } catch (error) {
       devError('Transaction history error:', error);
     }
@@ -253,7 +255,13 @@ const PaymentAnalyticsDashboard = ({
     return (
       <Grid container spacing={3} mb={3}>
         {cards.map((card, index) => (
-          <Grid item xs={12} sm={6} md={3} key={card.title || `analytics-card-${index}`}>
+          <Grid
+            item
+            xs={12}
+            sm={6}
+            md={3}
+            key={card.title || `analytics-card-${index}`}
+          >
             <Card>
               <CardContent>
                 <Box
@@ -525,7 +533,14 @@ const PaymentAnalyticsDashboard = ({
 
           <List>
             {analyticsData.insights.map((insight, index) => (
-              <ListItem key={insight.id || insight.code || insight.title || `insight-${index}`}>
+              <ListItem
+                key={
+                  insight.id ||
+                  insight.code ||
+                  insight.title ||
+                  `insight-${index}`
+                }
+              >
                 <ListItemIcon>
                   {insight.type === 'positive' && (
                     <TrendingUpIcon color="success" />
@@ -636,5 +651,3 @@ const PaymentAnalyticsDashboard = ({
 };
 
 export default PaymentAnalyticsDashboard;
-
-

@@ -4,9 +4,14 @@ import { Helmet } from 'react-helmet-async';
 import PageCanvas from '../../common/components/PageCanvas';
 
 const ProfilePage = () => (
-  <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 }, overflowX: 'clip' }}>
+  <PageCanvas
+    disableContainer
+    sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 }, overflowX: 'clip' }}
+  >
     <Container maxWidth="md" sx={{ py: 6, width: '100%', minWidth: 0 }}>
-      <Helmet><title>Profile | Kelmah</title></Helmet>
+      <Helmet>
+        <title>Profile | Kelmah</title>
+      </Helmet>
       <Box sx={{ mb: 2 }}>
         <Typography variant="h4" fontWeight={700}>
           Archived Profile Page
@@ -16,7 +21,8 @@ const ProfilePage = () => (
         </Typography>
       </Box>
       <Alert severity="info">
-        Active profile experiences are available at role-specific paths: worker profile and hirer profile.
+        Active profile experiences are available at role-specific paths: worker
+        profile and hirer profile.
       </Alert>
     </Container>
   </PageCanvas>

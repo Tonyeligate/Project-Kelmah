@@ -90,7 +90,10 @@ function JobListing({ job, onApply, onViewDetails }) {
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <AccessTime sx={{ mr: 1, color: 'primary.main' }} />
                 <Typography variant="body2" color="text.secondary">
-                  Posted {postedAt && isValid(new Date(postedAt)) ? `${formatDistanceToNow(new Date(postedAt))} ago` : 'recently'}
+                  Posted{' '}
+                  {postedAt && isValid(new Date(postedAt))
+                    ? `${formatDistanceToNow(new Date(postedAt))} ago`
+                    : 'recently'}
                 </Typography>
               </Box>
 
@@ -139,7 +142,9 @@ function JobListing({ job, onApply, onViewDetails }) {
         fullWidth
         aria-labelledby="apply-job-dialog-title"
       >
-        <DialogTitle id="apply-job-dialog-title">Apply for {job.title}</DialogTitle>
+        <DialogTitle id="apply-job-dialog-title">
+          Apply for {job.title}
+        </DialogTitle>
         <DialogContent>
           {error && (
             <Alert severity="error" sx={{ mb: 2 }}>
@@ -184,4 +189,3 @@ function JobListing({ job, onApply, onViewDetails }) {
 }
 
 export default JobListing;
-

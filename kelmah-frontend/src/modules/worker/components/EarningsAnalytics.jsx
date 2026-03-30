@@ -39,8 +39,18 @@ import { useSnackbar } from 'notistack';
 import { formatCurrency } from '../../../utils/formatters';
 
 const MONTH_NAMES = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
 ];
 
 const EarningsAnalytics = () => {
@@ -53,12 +63,11 @@ const EarningsAnalytics = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const getErrorMessage = (err) => (
+  const getErrorMessage = (err) =>
     err?.friendlyMessage ||
     err?.response?.data?.error?.message ||
     err?.response?.data?.message ||
-    'Failed to load earnings data'
-  );
+    'Failed to load earnings data';
 
   // Transform backend byMonth array into chart-friendly data
   const buildChartData = (byMonth = []) =>
@@ -117,7 +126,10 @@ const EarningsAnalytics = () => {
       {
         title: 'Total Earnings',
         value: formatCurrency(totals.allTime),
-        subtitle: totals.currency === 'GHS' ? 'Ghana Cedi' : (totals.currency || 'Currency'),
+        subtitle:
+          totals.currency === 'GHS'
+            ? 'Ghana Cedi'
+            : totals.currency || 'Currency',
         icon: MoneyIcon,
         color: 'primary',
       },

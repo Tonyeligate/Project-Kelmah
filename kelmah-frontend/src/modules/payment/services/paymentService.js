@@ -86,7 +86,9 @@ const paymentService = {
   getPaymentMethods: async () => {
     try {
       const response = await api.get('/payments/methods');
-      return normalizePaymentMethodsResponse(unwrapPaymentPayload(response, []));
+      return normalizePaymentMethodsResponse(
+        unwrapPaymentPayload(response, []),
+      );
     } catch (err) {
       devError('getPaymentMethods failed:', err);
       captureRecoverableApiError(err, {
@@ -122,7 +124,9 @@ const paymentService = {
 
   // Transaction operations
   getTransactionHistory: async (params = {}) => {
-    const response = await api.get('/payments/transactions/history', { params });
+    const response = await api.get('/payments/transactions/history', {
+      params,
+    });
     const rd = unwrapPaymentPayload(response, []);
     // New format: { success: true, data: [...], meta: { total, totalPages, currentPage } }
     if (rd?.success && Array.isArray(rd?.data)) {
@@ -140,7 +144,12 @@ const paymentService = {
     if (Array.isArray(rd)) {
       return {
         data: rd,
-        pagination: { page: params.page || 1, limit: params.limit || 20, total: rd.length, pages: 1 },
+        pagination: {
+          page: params.page || 1,
+          limit: params.limit || 20,
+          total: rd.length,
+          pages: 1,
+        },
       };
     }
     return rd;
@@ -408,7 +417,12 @@ const paymentService = {
     return await paymentService.processMobileMoneyPayment(paymentData);
   },
 
-  confirmMobileMoneyPayment: async ({ transactionId, pin, phoneNumber, provider = 'mtn' }) => {
+  confirmMobileMoneyPayment: async ({
+    transactionId,
+    pin,
+    phoneNumber,
+    provider = 'mtn',
+  }) => {
     // Route to the correct provider confirmation endpoint
     const providerEndpoints = {
       mtn: '/payments/mtn-momo/confirm',

@@ -146,9 +146,7 @@ const GhanaSMSVerification = ({
           { variant: 'success', autoHideDuration: 6000 },
         );
       } else {
-        throw new Error(
-          response.message || 'Failed to send verification code',
-        );
+        throw new Error(response.message || 'Failed to send verification code');
       }
     } catch (error) {
       enqueueSnackbar(error.message || 'Failed to send SMS verification', {
@@ -311,7 +309,8 @@ const GhanaSMSVerification = ({
               disabled={isSending}
               startIcon={
                 isSending ? <CircularProgress size={20} /> : <SendIcon />
-              }>
+              }
+            >
               {isSending ? 'Sending...' : 'Send Verification Code'}
             </Button>
           </Box>
@@ -420,7 +419,8 @@ const GhanaSMSVerification = ({
               disabled={isLoading || verificationCode.join('').length !== 6}
               startIcon={
                 isLoading ? <CircularProgress size={20} /> : <CheckIcon />
-              }>
+              }
+            >
               {isLoading ? 'Verifying...' : 'Verify Code'}
             </Button>
           </Box>
@@ -569,7 +569,9 @@ const GhanaSMSVerification = ({
         fullWidth
         aria-labelledby="sms-verification-help-dialog-title"
       >
-        <DialogTitle id="sms-verification-help-dialog-title">SMS Verification Help</DialogTitle>
+        <DialogTitle id="sms-verification-help-dialog-title">
+          SMS Verification Help
+        </DialogTitle>
         <DialogContent>
           <Typography variant="h6" gutterBottom>
             Ghana Network Codes

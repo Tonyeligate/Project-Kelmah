@@ -78,7 +78,10 @@ const calendarSlice = createSlice({
       })
       .addCase(fetchEvents.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload?.message || action.error?.message || 'Failed to fetch events';
+        state.error =
+          action.payload?.message ||
+          action.error?.message ||
+          'Failed to fetch events';
       })
       // Add event
       .addCase(addEvent.pending, (state) => {
@@ -91,7 +94,10 @@ const calendarSlice = createSlice({
       })
       .addCase(addEvent.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload?.message || action.error?.message || 'Failed to create event';
+        state.error =
+          action.payload?.message ||
+          action.error?.message ||
+          'Failed to create event';
       });
   },
 });
@@ -99,4 +105,3 @@ const calendarSlice = createSlice({
 export const { setSelectedDate, clearError } = calendarSlice.actions;
 export const selectCalendarState = (state) => state.calendar;
 export default calendarSlice.reducer;
-

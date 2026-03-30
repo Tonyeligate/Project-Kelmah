@@ -291,4 +291,3 @@ AttachmentPreview.propTypes = {
 };
 
 export default AttachmentPreview;
-

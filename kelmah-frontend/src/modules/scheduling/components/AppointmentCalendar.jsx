@@ -125,7 +125,10 @@ const AppointmentCalendar = ({
   };
 
   const appointmentCount = appointments.length;
-  const upcomingLabel = appointmentCount === 1 ? '1 appointment scheduled' : `${appointmentCount} appointments scheduled`;
+  const upcomingLabel =
+    appointmentCount === 1
+      ? '1 appointment scheduled'
+      : `${appointmentCount} appointments scheduled`;
 
   return (
     <Paper
@@ -137,7 +140,13 @@ const AppointmentCalendar = ({
         backgroundColor: theme.palette.background.paper,
       }}
     >
-      <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={1} sx={{ mb: 2 }}>
+      <Stack
+        direction="row"
+        justifyContent="space-between"
+        alignItems="flex-start"
+        spacing={1}
+        sx={{ mb: 2 }}
+      >
         <Box>
           <Typography variant="h6" fontWeight="bold">
             Appointment Calendar
@@ -165,7 +174,8 @@ const AppointmentCalendar = ({
           }}
         >
           <Typography variant="body2" color="text.secondary">
-            No dates are marked yet. Create your first appointment to see it appear on the calendar.
+            No dates are marked yet. Create your first appointment to see it
+            appear on the calendar.
           </Typography>
         </Box>
       )}
@@ -213,4 +223,3 @@ AppointmentCalendar.propTypes = {
 };
 
 export default AppointmentCalendar;
-

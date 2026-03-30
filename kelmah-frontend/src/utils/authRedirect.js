@@ -1,4 +1,9 @@
-const AUTH_BLOCKED_PREFIXES = ['/login', '/register', '/forgot-password', '/reset-password'];
+const AUTH_BLOCKED_PREFIXES = [
+  '/login',
+  '/register',
+  '/forgot-password',
+  '/reset-password',
+];
 
 export const getDefaultRouteByRole = (role) => {
   if (role === 'worker') return '/worker/dashboard';

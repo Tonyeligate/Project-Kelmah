@@ -1,34 +1,5 @@
 // IconButton focus-visible styling is enforced globally via MuiIconButton theme overrides.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 const CertificateUploader = ({ onCertificatesChange }) => {
   // FIXED: Use standardized user normalization for consistent user data access
   const { user: rawUser } = useSelector((state) => state.auth);
@@ -505,7 +476,14 @@ const CertificateUploader = ({ onCertificatesChange }) => {
             onClick={() => handleDelete(certificate.id || certificate._id)}
             aria-label={`Delete certificate ${certificate.name}`}
             title="Delete"
-            sx={{ color: 'error.main' , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
+            sx={{
+              color: 'error.main',
+              '&:focus-visible': {
+                outline: '3px solid',
+                outlineColor: 'primary.main',
+                outlineOffset: '2px',
+              },
+            }}
           >
             <DeleteIcon />
           </IconButton>
@@ -586,7 +564,13 @@ const CertificateUploader = ({ onCertificatesChange }) => {
       {loading ? (
         <Grid container spacing={3}>
           {[...Array(3)].map((_, index) => (
-            <Grid item xs={12} sm={6} md={4} key={`certificate-skeleton-${index}`}>
+            <Grid
+              item
+              xs={12}
+              sm={6}
+              md={4}
+              key={`certificate-skeleton-${index}`}
+            >
               <Card>
                 <CardContent>
                   <Box display="flex" alignItems="center" gap={1} mb={2}>
@@ -621,7 +605,13 @@ const CertificateUploader = ({ onCertificatesChange }) => {
       ) : (
         <Grid container spacing={3}>
           {certificates.map((certificate) => (
-            <Grid item xs={12} sm={6} md={4} key={certificate.id || certificate._id}>
+            <Grid
+              item
+              xs={12}
+              sm={6}
+              md={4}
+              key={certificate.id || certificate._id}
+            >
               {renderCertificateCard(certificate)}
             </Grid>
           ))}
@@ -811,10 +801,14 @@ const CertificateUploader = ({ onCertificatesChange }) => {
             variant="contained"
             disabled={
               isSubmitting ||
-              !formData.name || !formData.type || !formData.issuingOrganization
+              !formData.name ||
+              !formData.type ||
+              !formData.issuingOrganization
             }
           >
-            {isSubmitting ? 'Saving...' : `${isEditing ? 'Update' : 'Add'} Certificate`}
+            {isSubmitting
+              ? 'Saving...'
+              : `${isEditing ? 'Update' : 'Add'} Certificate`}
           </Button>
         </DialogActions>
       </Dialog>
@@ -831,4 +825,3 @@ const CertificateUploader = ({ onCertificatesChange }) => {
 };
 
 export default CertificateUploader;
-

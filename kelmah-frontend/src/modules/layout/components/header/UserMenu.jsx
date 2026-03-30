@@ -45,7 +45,10 @@ const UserMenu = ({
   // Close the menu synchronously. Blur the active element first so MUI
   // does not apply aria-hidden on the Menu while a descendant retains focus.
   const requestClose = (event, { afterClose } = {}) => {
-    if (document.activeElement && typeof document.activeElement.blur === 'function') {
+    if (
+      document.activeElement &&
+      typeof document.activeElement.blur === 'function'
+    ) {
       document.activeElement.blur();
     }
     onClose();
@@ -63,7 +66,7 @@ const UserMenu = ({
     );
   };
 
-  const getUserRole = () => (user?.role || 'user');
+  const getUserRole = () => user?.role || 'user';
 
   return (
     <Menu
@@ -95,7 +98,13 @@ const UserMenu = ({
       }}
     >
       {/* User Info Header */}
-      <Box sx={{ px: 3, py: 2, borderBottom: `1px solid ${theme.palette.divider}` }}>
+      <Box
+        sx={{
+          px: 3,
+          py: 2,
+          borderBottom: `1px solid ${theme.palette.divider}`,
+        }}
+      >
         <Stack direction="row" spacing={2} alignItems="center">
           <Box sx={{ position: 'relative' }}>
             <UserAvatar>{getUserInitials()}</UserAvatar>
@@ -112,7 +121,9 @@ const UserMenu = ({
             </Typography>
             <Box sx={{ display: 'flex', gap: 0.5, mt: 0.75, flexWrap: 'wrap' }}>
               <Chip
-                label={getUserRole().charAt(0).toUpperCase() + getUserRole().slice(1)}
+                label={
+                  getUserRole().charAt(0).toUpperCase() + getUserRole().slice(1)
+                }
                 size="small"
                 sx={{
                   backgroundColor:
@@ -120,7 +131,9 @@ const UserMenu = ({
                       ? 'rgba(255, 215, 0, 0.15)'
                       : 'rgba(0, 0, 0, 0.1)',
                   color:
-                    theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
+                    theme.palette.mode === 'dark'
+                      ? BRAND_COLORS.gold
+                      : BRAND_COLORS.black,
                   fontSize: '0.7rem',
                   fontWeight: 600,
                 }}
@@ -138,7 +151,11 @@ const UserMenu = ({
                 }}
               />
             </Box>
-            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ display: 'block', mt: 1 }}
+            >
               Quick account actions for {currentPage?.name || 'your workspace'}.
             </Typography>
           </Box>

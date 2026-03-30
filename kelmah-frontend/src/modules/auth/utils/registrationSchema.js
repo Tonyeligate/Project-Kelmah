@@ -5,7 +5,8 @@ export const GHANA_PHONE_REGEX = /^(\+233|0)[0-9]{9}$/;
 export const normalizeGhanaPhone = (value) =>
   typeof value === 'string' ? value.replace(/\s+/g, '').trim() : value;
 export const isValidGhanaPhone = (value) =>
-  typeof value === 'string' && GHANA_PHONE_REGEX.test(normalizeGhanaPhone(value));
+  typeof value === 'string' &&
+  GHANA_PHONE_REGEX.test(normalizeGhanaPhone(value));
 
 export const calculatePasswordStrength = (password = '') => {
   let score = 0;

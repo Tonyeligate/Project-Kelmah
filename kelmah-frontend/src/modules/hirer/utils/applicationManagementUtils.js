@@ -26,8 +26,11 @@ export const normalizeApplicationsTab = (value) =>
   APPLICATION_STATUS_TABS.includes(value) ? value : 'pending';
 
 export const normalizeApplicationsSort = (value) => {
-  const normalizedValue = typeof value === 'string' ? value.trim().toLowerCase() : '';
-  return APPLICATION_SORT_OPTIONS.some((option) => option.value === normalizedValue)
+  const normalizedValue =
+    typeof value === 'string' ? value.trim().toLowerCase() : '';
+  return APPLICATION_SORT_OPTIONS.some(
+    (option) => option.value === normalizedValue,
+  )
     ? normalizedValue
     : 'newest';
 };
@@ -67,7 +70,9 @@ export const formatEstimatedDuration = (value) => {
   }
 
   if (typeof value === 'object') {
-    const numericValue = Number(value.value ?? value.amount ?? value.days ?? value.weeks ?? value.months);
+    const numericValue = Number(
+      value.value ?? value.amount ?? value.days ?? value.weeks ?? value.months,
+    );
     const inferredUnit =
       value.unit ||
       (value.days != null ? 'day' : null) ||
@@ -116,13 +121,18 @@ export const normalizeApplication = (raw, jobIdFallback, jobTitleFallback) => {
       raw?.job?.id ||
       (typeof raw?.job === 'string' ? raw?.job : undefined) ||
       jobIdFallback,
-    jobTitle: raw?.jobTitle || raw?.job?.title || jobTitleFallback || 'Unknown Job',
+    jobTitle:
+      raw?.jobTitle || raw?.job?.title || jobTitleFallback || 'Unknown Job',
     workerId: raw?.workerId || worker?.id || worker?._id,
     workerName,
     workerAvatar: raw?.workerAvatar || worker?.avatar || worker?.profileImage,
-    workerRating: Number.isFinite(parsedWorkerRating) ? parsedWorkerRating : null,
+    workerRating: Number.isFinite(parsedWorkerRating)
+      ? parsedWorkerRating
+      : null,
     coverLetter: raw?.coverLetter || raw?.coverLetterPreview || '',
-    proposedRate: Number.isFinite(parsedProposedRate) ? parsedProposedRate : null,
+    proposedRate: Number.isFinite(parsedProposedRate)
+      ? parsedProposedRate
+      : null,
     estimatedDuration: formatEstimatedDuration(raw?.estimatedDuration),
   };
 };

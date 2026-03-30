@@ -64,11 +64,27 @@ const isAbortError = (error) =>
   error?.code === 'ERR_CANCELED';
 
 const STATUS_CONFIG = {
-  pending: { label: 'Pending', color: 'warning', icon: <PendingIcon fontSize="small" /> },
-  accepted: { label: 'Accepted', color: 'success', icon: <AcceptIcon fontSize="small" /> },
-  rejected: { label: 'Rejected', color: 'error', icon: <RejectIcon fontSize="small" /> },
+  pending: {
+    label: 'Pending',
+    color: 'warning',
+    icon: <PendingIcon fontSize="small" />,
+  },
+  accepted: {
+    label: 'Accepted',
+    color: 'success',
+    icon: <AcceptIcon fontSize="small" />,
+  },
+  rejected: {
+    label: 'Rejected',
+    color: 'error',
+    icon: <RejectIcon fontSize="small" />,
+  },
   withdrawn: { label: 'Withdrawn', color: 'default', icon: null },
-  expired: { label: 'Expired', color: 'default', icon: <ExpiredIcon fontSize="small" /> },
+  expired: {
+    label: 'Expired',
+    color: 'default',
+    icon: <ExpiredIcon fontSize="small" />,
+  },
 };
 
 const BidReviewCard = ({ bid, onAccept, onReject, isProcessing }) => {
@@ -111,13 +127,26 @@ const BidReviewCard = ({ bid, onAccept, onReject, isProcessing }) => {
     >
       <CardContent sx={{ p: { xs: 2, md: 3 } }}>
         {/* Worker info + status */}
-        <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={2}>
-          <Stack direction="row" spacing={1.5} alignItems="center" sx={{ flex: 1, minWidth: 0 }}>
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="flex-start"
+          spacing={2}
+        >
+          <Stack
+            direction="row"
+            spacing={1.5}
+            alignItems="center"
+            sx={{ flex: 1, minWidth: 0 }}
+          >
             <Avatar
               src={worker.avatar || worker.profileImage}
               alt={worker.name}
               sx={{ width: 44, height: 44, cursor: 'pointer' }}
-              onClick={() => { const wId = worker._id || worker.id; wId && navigate(`/workers/${wId}`); }}
+              onClick={() => {
+                const wId = worker._id || worker.id;
+                wId && navigate(`/workers/${wId}`);
+              }}
             >
               {(worker.name || 'W').charAt(0)}
             </Avatar>
@@ -127,13 +156,19 @@ const BidReviewCard = ({ bid, onAccept, onReject, isProcessing }) => {
                 fontWeight={700}
                 noWrap
                 sx={{ cursor: 'pointer' }}
-                onClick={() => { const wId = worker._id || worker.id; wId && navigate(`/workers/${wId}`); }}>
+                onClick={() => {
+                  const wId = worker._id || worker.id;
+                  wId && navigate(`/workers/${wId}`);
+                }}
+              >
                 {worker.name || 'Worker'}
               </Typography>
               <Stack direction="row" spacing={1} alignItems="center">
                 {worker.rating != null && (
                   <Stack direction="row" spacing={0.25} alignItems="center">
-                    <StarIcon sx={{ fontSize: 14, color: theme.palette.warning.main }} />
+                    <StarIcon
+                      sx={{ fontSize: 14, color: theme.palette.warning.main }}
+                    />
                     <Typography variant="caption" fontWeight={600}>
                       {Number(worker.rating).toFixed(1)}
                     </Typography>
@@ -157,16 +192,26 @@ const BidReviewCard = ({ bid, onAccept, onReject, isProcessing }) => {
         <Divider sx={{ my: 2 }} />
 
         {/* Bid details */}
-        <Stack direction="row" spacing={4} flexWrap="wrap" useFlexGap sx={{ mb: 2 }}>
+        <Stack
+          direction="row"
+          spacing={4}
+          flexWrap="wrap"
+          useFlexGap
+          sx={{ mb: 2 }}
+        >
           <Box>
-            <Typography variant="caption" color="text.secondary">Bid Amount</Typography>
+            <Typography variant="caption" color="text.secondary">
+              Bid Amount
+            </Typography>
             <Typography variant="h6" fontWeight={700} color="primary.main">
               {formatAmount(bid.bidAmount)}
             </Typography>
           </Box>
           {bid.estimatedDuration && (
             <Box>
-              <Typography variant="caption" color="text.secondary">Est. Duration</Typography>
+              <Typography variant="caption" color="text.secondary">
+                Est. Duration
+              </Typography>
               <Typography variant="body1" fontWeight={600}>
                 {bid.estimatedDuration.value} {bid.estimatedDuration.unit}
                 {bid.estimatedDuration.value !== 1 ? 's' : ''}
@@ -175,7 +220,9 @@ const BidReviewCard = ({ bid, onAccept, onReject, isProcessing }) => {
           )}
           {bid.score != null && (
             <Box>
-              <Typography variant="caption" color="text.secondary">Match Score</Typography>
+              <Typography variant="caption" color="text.secondary">
+                Match Score
+              </Typography>
               <Stack direction="row" spacing={0.5} alignItems="center">
                 <ScoreIcon fontSize="small" color="primary" />
                 <Typography variant="body1" fontWeight={600}>
@@ -198,9 +245,18 @@ const BidReviewCard = ({ bid, onAccept, onReject, isProcessing }) => {
               border: `1px solid ${theme.palette.divider}`,
             }}
           >
-            <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mb: 0.5 }}>
+            <Stack
+              direction="row"
+              spacing={0.5}
+              alignItems="center"
+              sx={{ mb: 0.5 }}
+            >
               <LetterIcon fontSize="small" color="action" />
-              <Typography variant="caption" fontWeight={600} color="text.secondary">
+              <Typography
+                variant="caption"
+                fontWeight={600}
+                color="text.secondary"
+              >
                 Cover Letter
               </Typography>
             </Stack>
@@ -212,10 +268,19 @@ const BidReviewCard = ({ bid, onAccept, onReject, isProcessing }) => {
 
         {/* Availability info */}
         {bid.availability && (
-          <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap sx={{ mb: 2 }}>
+          <Stack
+            direction="row"
+            spacing={2}
+            flexWrap="wrap"
+            useFlexGap
+            sx={{ mb: 2 }}
+          >
             {bid.availability.startDate && (
               <Typography variant="caption" color="text.secondary">
-                Available from: {new Date(bid.availability.startDate).toLocaleDateString('en-GH')}
+                Available from:{' '}
+                {new Date(bid.availability.startDate).toLocaleDateString(
+                  'en-GH',
+                )}
               </Typography>
             )}
             {bid.availability.hoursPerWeek && (
@@ -224,7 +289,12 @@ const BidReviewCard = ({ bid, onAccept, onReject, isProcessing }) => {
               </Typography>
             )}
             {bid.availability.flexible && (
-              <Chip label="Flexible" size="small" color="info" variant="outlined" />
+              <Chip
+                label="Flexible"
+                size="small"
+                color="info"
+                variant="outlined"
+              />
             )}
           </Stack>
         )}
@@ -293,51 +363,62 @@ const JobBidsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [processing, setProcessing] = useState(false);
-  const [toast, setToast] = useState({ open: false, message: '', severity: 'info', title: null });
+  const [toast, setToast] = useState({
+    open: false,
+    message: '',
+    severity: 'info',
+    title: null,
+  });
 
   // Action dialogs
   const [acceptDialog, setAcceptDialog] = useState({ open: false, bid: null });
   const [rejectDialog, setRejectDialog] = useState({ open: false, bid: null });
   const [rejectReason, setRejectReason] = useState('');
 
-  const fetchBids = useCallback(async (signal) => {
-    if (!jobId) return;
-    if (signal?.aborted) return;
+  const fetchBids = useCallback(
+    async (signal) => {
+      if (!jobId) return;
+      if (signal?.aborted) return;
 
-    setLoading(true);
-    setError(null);
+      setLoading(true);
+      setError(null);
 
-    try {
-      const result = await bidApi.getJobBids(jobId, {}, { signal });
+      try {
+        const result = await bidApi.getJobBids(jobId, {}, { signal });
 
-      if (signal?.aborted) {
-        return;
+        if (signal?.aborted) {
+          return;
+        }
+
+        const bidsData = Array.isArray(result) ? [...result] : [];
+        // Sort: pending first, then by score desc, then by date desc
+        bidsData.sort((a, b) => {
+          if (a.status === 'pending' && b.status !== 'pending') return -1;
+          if (b.status === 'pending' && a.status !== 'pending') return 1;
+          if (a.status === 'accepted') return -1;
+          if (b.status === 'accepted') return 1;
+          if ((b.score || 0) !== (a.score || 0))
+            return (b.score || 0) - (a.score || 0);
+          return new Date(b.createdAt) - new Date(a.createdAt);
+        });
+        setBids(bidsData);
+      } catch (err) {
+        if (isAbortError(err) || signal?.aborted) {
+          return;
+        }
+
+        setError(
+          'Failed to load bids. The job may not exist or you may not have permission.',
+        );
+        devError('JobBidsPage fetch error:', err);
+      } finally {
+        if (!signal?.aborted) {
+          setLoading(false);
+        }
       }
-
-      const bidsData = Array.isArray(result) ? [...result] : [];
-      // Sort: pending first, then by score desc, then by date desc
-      bidsData.sort((a, b) => {
-        if (a.status === 'pending' && b.status !== 'pending') return -1;
-        if (b.status === 'pending' && a.status !== 'pending') return 1;
-        if (a.status === 'accepted') return -1;
-        if (b.status === 'accepted') return 1;
-        if ((b.score || 0) !== (a.score || 0)) return (b.score || 0) - (a.score || 0);
-        return new Date(b.createdAt) - new Date(a.createdAt);
-      });
-      setBids(bidsData);
-    } catch (err) {
-      if (isAbortError(err) || signal?.aborted) {
-        return;
-      }
-
-      setError('Failed to load bids. The job may not exist or you may not have permission.');
-      devError('JobBidsPage fetch error:', err);
-    } finally {
-      if (!signal?.aborted) {
-        setLoading(false);
-      }
-    }
-  }, [jobId]);
+    },
+    [jobId],
+  );
 
   useEffect(() => {
     const controller = new AbortController();
@@ -364,7 +445,8 @@ const JobBidsPage = () => {
         open: true,
         severity: 'success',
         title: 'Bid accepted',
-        message: 'The worker has been notified, and the remaining pending bids have been closed for this job.',
+        message:
+          'The worker has been notified, and the remaining pending bids have been closed for this job.',
       });
       setAcceptDialog({ open: false, bid: null });
     } catch (err) {
@@ -388,7 +470,9 @@ const JobBidsPage = () => {
       await bidApi.rejectBid(bid._id || bid.id, { hirerNotes: rejectReason });
       setBids((prev) =>
         prev.map((b) =>
-          (b._id || b.id) === (bid._id || bid.id) ? { ...b, status: 'rejected' } : b,
+          (b._id || b.id) === (bid._id || bid.id)
+            ? { ...b, status: 'rejected' }
+            : b,
         ),
       );
       setToast({
@@ -423,7 +507,8 @@ const JobBidsPage = () => {
     }
   }, [isAuthenticated, user?.role, navigate, location.pathname]);
 
-  if (!isAuthenticated || (user?.role !== 'hirer' && user?.role !== 'admin')) return null;
+  if (!isAuthenticated || (user?.role !== 'hirer' && user?.role !== 'admin'))
+    return null;
 
   const pendingCount = bids.filter((b) => b.status === 'pending').length;
   const acceptedBid = bids.find((b) => b.status === 'accepted');
@@ -431,48 +516,16 @@ const JobBidsPage = () => {
   return (
     <PageCanvas disableContainer sx={{ pb: { xs: 10, md: 6 } }}>
       <Container maxWidth="md" sx={{ py: { xs: 2, md: 4 } }}>
-      <Helmet>
-        <title>Review Bids | Kelmah</title>
-      </Helmet>
+        <Helmet>
+          <title>Review Bids | Kelmah</title>
+        </Helmet>
 
-      {/* Navigation back + header */}
-      <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
-        <IconButton
-          onClick={() => navigate(-1)}
-          size="small"
-          aria-label="Go back"
-          sx={{
-            minWidth: 44,
-            minHeight: 44,
-            '&:focus-visible': {
-              outline: '3px solid',
-              outlineColor: 'primary.main',
-              outlineOffset: '2px',
-            },
-          }}
-        >
-          <BackIcon />
-        </IconButton>
-        <Typography variant="body2" color="text.secondary">
-          Back to job
-        </Typography>
-      </Stack>
-
-      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
-        <Box>
-          <Typography variant="h5" fontWeight={700}>
-            Review Bids
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {bids.length} bid{bids.length !== 1 ? 's' : ''} received
-            {pendingCount > 0 && ` - ${pendingCount} pending review`}
-          </Typography>
-        </Box>
-        <Tooltip title="Refresh">
+        {/* Navigation back + header */}
+        <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
           <IconButton
-            onClick={fetchBids}
-            disabled={loading}
-            aria-label="Refresh bids"
+            onClick={() => navigate(-1)}
+            size="small"
+            aria-label="Go back"
             sx={{
               minWidth: 44,
               minHeight: 44,
@@ -483,157 +536,220 @@ const JobBidsPage = () => {
               },
             }}
           >
-            <RefreshIcon />
+            <BackIcon />
           </IconButton>
-        </Tooltip>
-      </Stack>
+          <Typography variant="body2" color="text.secondary">
+            Back to job
+          </Typography>
+        </Stack>
 
-      {/* Accepted bid highlight */}
-      {acceptedBid && (
-        <Alert severity="success" icon={<AcceptIcon />} sx={{ mb: 2 }}>
-          You accepted <strong>{acceptedBid.worker?.name || 'a worker'}</strong>'s bid of{' '}
-          <strong>{formatGhanaCurrency(acceptedBid.bidAmount ?? 0)}</strong>.
-        </Alert>
-      )}
-
-      {/* Alerts */}
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
-          {error}
-        </Alert>
-      )}
-
-      {processing && <LinearProgress sx={{ mb: 2, borderRadius: 999 }} />}
-
-      {/* Loading */}
-      {loading && (
-        <Box>
-          {[1, 2, 3].map((i) => (<BidCardSkeleton key={`job-bid-skeleton-${i}`} />))}
-        </Box>
-      )}
-
-      {/* Empty state */}
-      {!loading && bids.length === 0 && (
-        <Paper
-          elevation={0}
-          sx={{
-            p: 4,
-            textAlign: 'center',
-            borderRadius: 2.5,
-            border: `1px dashed ${theme.palette.divider}`,
-          }}
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+          sx={{ mb: 3 }}
         >
-          <BidIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }} />
-          <Typography variant="h6" color="text.secondary" gutterBottom>
-            No bids yet
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Workers haven't placed any bids on this job yet. Check back soon.
-          </Typography>
-          <Button
-            variant="outlined"
-            color="secondary"
-            onClick={() => navigate(-1)}
-            sx={{ minHeight: 44 }}
+          <Box>
+            <Typography variant="h5" fontWeight={700}>
+              Review Bids
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {bids.length} bid{bids.length !== 1 ? 's' : ''} received
+              {pendingCount > 0 && ` - ${pendingCount} pending review`}
+            </Typography>
+          </Box>
+          <Tooltip title="Refresh">
+            <IconButton
+              onClick={fetchBids}
+              disabled={loading}
+              aria-label="Refresh bids"
+              sx={{
+                minWidth: 44,
+                minHeight: 44,
+                '&:focus-visible': {
+                  outline: '3px solid',
+                  outlineColor: 'primary.main',
+                  outlineOffset: '2px',
+                },
+              }}
+            >
+              <RefreshIcon />
+            </IconButton>
+          </Tooltip>
+        </Stack>
+
+        {/* Accepted bid highlight */}
+        {acceptedBid && (
+          <Alert severity="success" icon={<AcceptIcon />} sx={{ mb: 2 }}>
+            You accepted{' '}
+            <strong>{acceptedBid.worker?.name || 'a worker'}</strong>'s bid of{' '}
+            <strong>{formatGhanaCurrency(acceptedBid.bidAmount ?? 0)}</strong>.
+          </Alert>
+        )}
+
+        {/* Alerts */}
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+            {error}
+          </Alert>
+        )}
+
+        {processing && <LinearProgress sx={{ mb: 2, borderRadius: 999 }} />}
+
+        {/* Loading */}
+        {loading && (
+          <Box>
+            {[1, 2, 3].map((i) => (
+              <BidCardSkeleton key={`job-bid-skeleton-${i}`} />
+            ))}
+          </Box>
+        )}
+
+        {/* Empty state */}
+        {!loading && bids.length === 0 && (
+          <Paper
+            elevation={0}
+            sx={{
+              p: 4,
+              textAlign: 'center',
+              borderRadius: 2.5,
+              border: `1px dashed ${theme.palette.divider}`,
+            }}
           >
-            Back to Job Details
-          </Button>
-        </Paper>
-      )}
+            <BidIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }} />
+            <Typography variant="h6" color="text.secondary" gutterBottom>
+              No bids yet
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              Workers haven't placed any bids on this job yet. Check back soon.
+            </Typography>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={() => navigate(-1)}
+              sx={{ minHeight: 44 }}
+            >
+              Back to Job Details
+            </Button>
+          </Paper>
+        )}
 
-      {/* Bids list */}
-      {!loading &&
-        bids.map((bid) => (
-          <BidReviewCard
-            key={bid._id || bid.id}
-            bid={bid}
-            onAccept={(b) => setAcceptDialog({ open: true, bid: b })}
-            onReject={(b) => setRejectDialog({ open: true, bid: b })}
-            isProcessing={processing}
-          />
-        ))}
+        {/* Bids list */}
+        {!loading &&
+          bids.map((bid) => (
+            <BidReviewCard
+              key={bid._id || bid.id}
+              bid={bid}
+              onAccept={(b) => setAcceptDialog({ open: true, bid: b })}
+              onReject={(b) => setRejectDialog({ open: true, bid: b })}
+              isProcessing={processing}
+            />
+          ))}
 
-      {/* Accept confirmation dialog */}
-      <Dialog
-        open={acceptDialog.open}
-        onClose={() => !processing && setAcceptDialog({ open: false, bid: null })}
-        maxWidth="sm"
-        fullWidth
-        aria-labelledby="accept-bid-dialog-title"
-      >
-        <DialogTitle id="accept-bid-dialog-title">Accept This Bid?</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Accepting <strong>{acceptDialog.bid?.worker?.name || 'this worker'}</strong>'s bid of{' '}
-            <strong>{formatGhanaCurrency(acceptDialog.bid?.bidAmount ?? 0)}</strong> will automatically
-            reject all other pending bids for this job. This action cannot be undone.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setAcceptDialog({ open: false, bid: null })} disabled={processing}>
-            Cancel
-          </Button>
-          <Button
-            variant="contained"
-            color="success"
-            onClick={handleAcceptConfirm}
-            disabled={processing}
-            startIcon={processing ? <CircularProgress size={16} /> : <AcceptIcon />}>
-            {processing ? 'Accepting...' : 'Accept Bid'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        {/* Accept confirmation dialog */}
+        <Dialog
+          open={acceptDialog.open}
+          onClose={() =>
+            !processing && setAcceptDialog({ open: false, bid: null })
+          }
+          maxWidth="sm"
+          fullWidth
+          aria-labelledby="accept-bid-dialog-title"
+        >
+          <DialogTitle id="accept-bid-dialog-title">
+            Accept This Bid?
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Accepting{' '}
+              <strong>{acceptDialog.bid?.worker?.name || 'this worker'}</strong>
+              's bid of{' '}
+              <strong>
+                {formatGhanaCurrency(acceptDialog.bid?.bidAmount ?? 0)}
+              </strong>{' '}
+              will automatically reject all other pending bids for this job.
+              This action cannot be undone.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={() => setAcceptDialog({ open: false, bid: null })}
+              disabled={processing}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="contained"
+              color="success"
+              onClick={handleAcceptConfirm}
+              disabled={processing}
+              startIcon={
+                processing ? <CircularProgress size={16} /> : <AcceptIcon />
+              }
+            >
+              {processing ? 'Accepting...' : 'Accept Bid'}
+            </Button>
+          </DialogActions>
+        </Dialog>
 
-      {/* Reject confirmation dialog */}
-      <Dialog
-        open={rejectDialog.open}
-        onClose={() => !processing && setRejectDialog({ open: false, bid: null })}
-        maxWidth="sm"
-        fullWidth
-        aria-labelledby="reject-bid-dialog-title"
-      >
-        <DialogTitle id="reject-bid-dialog-title">Reject This Bid?</DialogTitle>
-        <DialogContent>
-          <DialogContentText sx={{ mb: 2 }}>
-            The worker will be notified that their bid was not accepted.
-          </DialogContentText>
-          <TextField
-            label="Reason (optional)"
-            value={rejectReason}
-            onChange={(e) => setRejectReason(e.target.value)}
-            multiline
-            rows={2}
-            fullWidth
-            helperText="A brief reason helps workers improve future bids"
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setRejectDialog({ open: false, bid: null })} disabled={processing}>
-            Cancel
-          </Button>
-          <Button
-            variant="contained"
-            color="error"
-            onClick={handleRejectConfirm}
-            disabled={processing}
-            startIcon={processing ? <CircularProgress size={16} /> : <RejectIcon />}>
-            {processing ? 'Rejecting...' : 'Reject Bid'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        {/* Reject confirmation dialog */}
+        <Dialog
+          open={rejectDialog.open}
+          onClose={() =>
+            !processing && setRejectDialog({ open: false, bid: null })
+          }
+          maxWidth="sm"
+          fullWidth
+          aria-labelledby="reject-bid-dialog-title"
+        >
+          <DialogTitle id="reject-bid-dialog-title">
+            Reject This Bid?
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText sx={{ mb: 2 }}>
+              The worker will be notified that their bid was not accepted.
+            </DialogContentText>
+            <TextField
+              label="Reason (optional)"
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              multiline
+              rows={2}
+              fullWidth
+              helperText="A brief reason helps workers improve future bids"
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={() => setRejectDialog({ open: false, bid: null })}
+              disabled={processing}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="contained"
+              color="error"
+              onClick={handleRejectConfirm}
+              disabled={processing}
+              startIcon={
+                processing ? <CircularProgress size={16} /> : <RejectIcon />
+              }
+            >
+              {processing ? 'Rejecting...' : 'Reject Bid'}
+            </Button>
+          </DialogActions>
+        </Dialog>
 
-      <Toast
-        open={toast.open}
-        title={toast.title}
-        message={toast.message}
-        severity={toast.severity}
-        onClose={() => setToast((prev) => ({ ...prev, open: false }))}
-      />
+        <Toast
+          open={toast.open}
+          title={toast.title}
+          message={toast.message}
+          severity={toast.severity}
+          onClose={() => setToast((prev) => ({ ...prev, open: false }))}
+        />
       </Container>
     </PageCanvas>
   );
 };
 
 export default JobBidsPage;
-
-

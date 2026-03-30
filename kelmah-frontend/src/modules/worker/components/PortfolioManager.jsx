@@ -5,7 +5,38 @@ import { useSelector } from 'react-redux';
 import portfolioService from '../services/portfolioService';
 import fileUploadService from '../../common/services/fileUploadService';
 import {
-  Box, Paper, Typography, Button, Grid, Card, CardActionArea, CardContent, CardMedia, ButtonBase, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Chip, Alert, CircularProgress, ImageList, ImageListItem, ImageListItemBar, Fab, Menu, MenuItem, Skeleton, Stack, Divider, Tooltip, useTheme, alpha } from '@mui/material';
+  Box,
+  Paper,
+  Typography,
+  Button,
+  Grid,
+  Card,
+  CardActionArea,
+  CardContent,
+  CardMedia,
+  ButtonBase,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Chip,
+  Alert,
+  CircularProgress,
+  ImageList,
+  ImageListItem,
+  ImageListItemBar,
+  Fab,
+  Menu,
+  MenuItem,
+  Skeleton,
+  Stack,
+  Divider,
+  Tooltip,
+  useTheme,
+  alpha,
+} from '@mui/material';
 import {
   Add as AddIcon,
   Edit as EditIcon,
@@ -195,7 +226,10 @@ const PortfolioManager = () => {
         skills: Array.isArray(item.skills)
           ? item.skills
           : item.skills
-            ? item.skills.split(',').map((skill) => skill.trim()).filter(Boolean)
+            ? item.skills
+                .split(',')
+                .map((skill) => skill.trim())
+                .filter(Boolean)
             : [],
         images:
           (Array.isArray(item.images) && item.images.length
@@ -285,260 +319,332 @@ const PortfolioManager = () => {
 
   // Render portfolio item card
   const renderPortfolioItem = (item) => {
-    const normalizedSkills = (Array.isArray(item.skills)
-      ? item.skills
-      : typeof item.skills === 'string'
-        ? item.skills.split(',')
-        : []
+    const normalizedSkills = (
+      Array.isArray(item.skills)
+        ? item.skills
+        : typeof item.skills === 'string'
+          ? item.skills.split(',')
+          : []
     )
       .map((skill) => skill.trim())
       .filter(Boolean);
 
     return (
-    <Card
-      key={item.id}
-      sx={{
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        minWidth: 0,
-        overflow: 'hidden',
-        transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
-        '&:hover': {
-          transform: { xs: 'none', md: 'translateY(-4px)' },
-          boxShadow: theme.shadows[8],
-        },
-        position: 'relative',
-      }}
-    >
-      {item.featured && (
-        <Chip
-          icon={<FeaturedIcon />}
-          label="Featured"
-          color="primary"
-          size="small"
+      <Card
+        key={item.id}
+        sx={{
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          minWidth: 0,
+          overflow: 'hidden',
+          transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+          '&:hover': {
+            transform: { xs: 'none', md: 'translateY(-4px)' },
+            boxShadow: theme.shadows[8],
+          },
+          position: 'relative',
+        }}
+      >
+        {item.featured && (
+          <Chip
+            icon={<FeaturedIcon />}
+            label="Featured"
+            color="primary"
+            size="small"
+            sx={{
+              position: 'absolute',
+              top: 8,
+              left: 8,
+              zIndex: 1,
+            }}
+          />
+        )}
+
+        <IconButton
           sx={{
             position: 'absolute',
             top: 8,
-            left: 8,
+            right: 8,
+            backgroundColor: alpha(theme.palette.background.paper, 0.8),
+            minWidth: 44,
+            minHeight: 44,
             zIndex: 1,
-          }}
-        />
-      )}
-
-      <IconButton
-        sx={{
-          position: 'absolute',
-          top: 8,
-          right: 8,
-          backgroundColor: alpha(theme.palette.background.paper, 0.8),
-          minWidth: 44,
-          minHeight: 44,
-          zIndex: 1,
-          '&:focus-visible': {
-            outline: `3px solid ${theme.palette.primary.main}`,
-            outlineOffset: 2,
-          },
-        }}
-        aria-label={`Open actions for ${item.title}`}
-        onClick={(e) => {
-          setAnchorEl(e.currentTarget);
-          setSelectedItem(item);
-        }}
-      >
-        <MoreVertIcon />
-      </IconButton>
-
-      {item.imageCount > 0 ? (
-        <CardActionArea
-          onClick={() => handleOpenGallery(item)}
-          aria-label={`Open image gallery for ${item.title}`}
-          sx={{
             '&:focus-visible': {
               outline: `3px solid ${theme.palette.primary.main}`,
-              outlineOffset: -3,
+              outlineOffset: 2,
             },
           }}
-        >
-          <CardMedia
-            component="img"
-            height={isMobile ? 176 : 200}
-            image={item.heroImage}
-            alt={item.title}
-            sx={{ objectFit: 'cover' }}
-            onError={(e) => { e.target.onerror = null; e.target.src = ''; e.target.style.display = 'none'; }}
-          />
-        </CardActionArea>
-      ) : (
-        <Box
-          sx={{
-            height: 200,
-            backgroundColor: theme.palette.grey[200],
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+          aria-label={`Open actions for ${item.title}`}
+          onClick={(e) => {
+            setAnchorEl(e.currentTarget);
+            setSelectedItem(item);
           }}
         >
-          <Typography variant="body2" color="text.secondary" sx={{ px: 2, textAlign: 'center' }}>
-            No project photos yet
-          </Typography>
-        </Box>
-      )}
+          <MoreVertIcon />
+        </IconButton>
 
-      {item.imageCount > 0 && (
-        <Chip
-          label={`${item.imageCount} image${item.imageCount === 1 ? '' : 's'}`}
-          size="small"
-          color="secondary"
-          onClick={() => handleOpenGallery(item)}
-          aria-label={`Open ${item.imageCount} gallery image${item.imageCount === 1 ? '' : 's'} for ${item.title}`}
-          sx={{
-            position: 'absolute',
-            bottom: 12,
-            left: 12,
-            zIndex: 1,
-            fontWeight: 700,
-          }}
-        />
-      )}
-
-      <CardContent
-        sx={{
-          flexGrow: 1,
-          minWidth: 0,
-          p: { xs: 1.5, sm: 2 },
-          '&:last-child': { pb: { xs: 1.5, sm: 2 } },
-        }}
-      >
-        <Typography
-          variant="h6"
-          component="h3"
-          gutterBottom
-          sx={{
-            mb: 0.75,
-          }}
-        >
-          {item.title}
-        </Typography>
-
-        <Typography
-          variant="body2"
-          paragraph
-          sx={{
-            display: '-webkit-box',
-            WebkitLineClamp: 3,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-            overflowWrap: 'anywhere',
-            lineHeight: 1.45,
-            mb: 0,
-          }}
-        >
-          {item.description}
-        </Typography>
-
-        {item.imageCount === 0 && (
-          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.25 }}>
-            Add at least one clear photo so hirers can quickly verify your work.
-          </Typography>
+        {item.imageCount > 0 ? (
+          <CardActionArea
+            onClick={() => handleOpenGallery(item)}
+            aria-label={`Open image gallery for ${item.title}`}
+            sx={{
+              '&:focus-visible': {
+                outline: `3px solid ${theme.palette.primary.main}`,
+                outlineOffset: -3,
+              },
+            }}
+          >
+            <CardMedia
+              component="img"
+              height={isMobile ? 176 : 200}
+              image={item.heroImage}
+              alt={item.title}
+              sx={{ objectFit: 'cover' }}
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = '';
+                e.target.style.display = 'none';
+              }}
+            />
+          </CardActionArea>
+        ) : (
+          <Box
+            sx={{
+              height: 200,
+              backgroundColor: theme.palette.grey[200],
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ px: 2, textAlign: 'center' }}
+            >
+              No project photos yet
+            </Typography>
+          </Box>
         )}
 
         {item.imageCount > 0 && (
-          <Box mt={2} mb={2}>
-            <Typography variant="caption" color="text.secondary" gutterBottom>
-              Visual proof
-            </Typography>
-            <Stack direction="row" spacing={1} sx={{ mt: 0.75, flexWrap: 'wrap', rowGap: 1 }}>
-              {item.previewImages.slice(0, 3).map((imageUrl, index) => (
-                <ButtonBase
-                  key={`${item.id}-preview-${index}`}
-                  sx={{
-                    width: 58,
-                    height: 48,
-                    borderRadius: 1.5,
-                    overflow: 'hidden',
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    cursor: 'pointer',
-                    bgcolor: 'action.hover',
-                    p: 0,
-                  }}
-                  onClick={() => handleOpenGallery(item, index)}
-                  aria-label={`Open ${item.title} image ${index + 1}`}
-                >
-                  <Box
-                    component="img"
-                    src={imageUrl}
-                    alt={`${item.title} preview ${index + 1}`}
-                    sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  />
-                </ButtonBase>
-              ))}
-            </Stack>
-          </Box>
+          <Chip
+            label={`${item.imageCount} image${item.imageCount === 1 ? '' : 's'}`}
+            size="small"
+            color="secondary"
+            onClick={() => handleOpenGallery(item)}
+            aria-label={`Open ${item.imageCount} gallery image${item.imageCount === 1 ? '' : 's'} for ${item.title}`}
+            sx={{
+              position: 'absolute',
+              bottom: 12,
+              left: 12,
+              zIndex: 1,
+              fontWeight: 700,
+            }}
+          />
         )}
 
-        <Stack spacing={{ xs: 0.75, sm: 1 }} sx={{ minWidth: 0, mt: 1 }}>
-          <Box display="flex" alignItems="flex-start" gap={1} sx={{ minWidth: 0 }}>
-            <CategoryIcon fontSize="small" color="action" sx={{ flexShrink: 0, mt: '2px' }} />
-            <Typography variant="body2" sx={{ overflowWrap: 'anywhere', lineHeight: 1.35 }}>
-              {item.category}
+        <CardContent
+          sx={{
+            flexGrow: 1,
+            minWidth: 0,
+            p: { xs: 1.5, sm: 2 },
+            '&:last-child': { pb: { xs: 1.5, sm: 2 } },
+          }}
+        >
+          <Typography
+            variant="h6"
+            component="h3"
+            gutterBottom
+            sx={{
+              mb: 0.75,
+            }}
+          >
+            {item.title}
+          </Typography>
+
+          <Typography
+            variant="body2"
+            paragraph
+            sx={{
+              display: '-webkit-box',
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              overflowWrap: 'anywhere',
+              lineHeight: 1.45,
+              mb: 0,
+            }}
+          >
+            {item.description}
+          </Typography>
+
+          {item.imageCount === 0 && (
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ display: 'block', mt: 0.25 }}
+            >
+              Add at least one clear photo so hirers can quickly verify your
+              work.
             </Typography>
-          </Box>
+          )}
 
-          {item.budget && (
-            <Box display="flex" alignItems="flex-start" gap={1} sx={{ minWidth: 0 }}>
-              <BudgetIcon fontSize="small" color="action" sx={{ flexShrink: 0, mt: '2px' }} />
-              <Typography variant="body2" sx={{ overflowWrap: 'anywhere', lineHeight: 1.35 }}>
-                {formatCurrency(item.budget, 'GHS')}
+          {item.imageCount > 0 && (
+            <Box mt={2} mb={2}>
+              <Typography variant="caption" color="text.secondary" gutterBottom>
+                Visual proof
               </Typography>
+              <Stack
+                direction="row"
+                spacing={1}
+                sx={{ mt: 0.75, flexWrap: 'wrap', rowGap: 1 }}
+              >
+                {item.previewImages.slice(0, 3).map((imageUrl, index) => (
+                  <ButtonBase
+                    key={`${item.id}-preview-${index}`}
+                    sx={{
+                      width: 58,
+                      height: 48,
+                      borderRadius: 1.5,
+                      overflow: 'hidden',
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      cursor: 'pointer',
+                      bgcolor: 'action.hover',
+                      p: 0,
+                    }}
+                    onClick={() => handleOpenGallery(item, index)}
+                    aria-label={`Open ${item.title} image ${index + 1}`}
+                  >
+                    <Box
+                      component="img"
+                      src={imageUrl}
+                      alt={`${item.title} preview ${index + 1}`}
+                      sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                  </ButtonBase>
+                ))}
+              </Stack>
             </Box>
           )}
 
-          {item.location && (
-            <Box display="flex" alignItems="flex-start" gap={1} sx={{ minWidth: 0 }}>
-              <LocationIcon fontSize="small" color="action" sx={{ flexShrink: 0, mt: '2px' }} />
-              <Typography variant="body2" sx={{ overflowWrap: 'anywhere', lineHeight: 1.35 }}>
-                {item.location}
+          <Stack spacing={{ xs: 0.75, sm: 1 }} sx={{ minWidth: 0, mt: 1 }}>
+            <Box
+              display="flex"
+              alignItems="flex-start"
+              gap={1}
+              sx={{ minWidth: 0 }}
+            >
+              <CategoryIcon
+                fontSize="small"
+                color="action"
+                sx={{ flexShrink: 0, mt: '2px' }}
+              />
+              <Typography
+                variant="body2"
+                sx={{ overflowWrap: 'anywhere', lineHeight: 1.35 }}
+              >
+                {item.category}
               </Typography>
             </Box>
-          )}
 
-          {item.completedAt && (
-            <Box display="flex" alignItems="flex-start" gap={1} sx={{ minWidth: 0 }}>
-              <DateIcon fontSize="small" color="action" sx={{ flexShrink: 0, mt: '2px' }} />
-              <Typography variant="body2" sx={{ overflowWrap: 'anywhere', lineHeight: 1.35 }}>
-                {formatDate(item.completedAt)}
-              </Typography>
-            </Box>
-          )}
-        </Stack>
+            {item.budget && (
+              <Box
+                display="flex"
+                alignItems="flex-start"
+                gap={1}
+                sx={{ minWidth: 0 }}
+              >
+                <BudgetIcon
+                  fontSize="small"
+                  color="action"
+                  sx={{ flexShrink: 0, mt: '2px' }}
+                />
+                <Typography
+                  variant="body2"
+                  sx={{ overflowWrap: 'anywhere', lineHeight: 1.35 }}
+                >
+                  {formatCurrency(item.budget, 'GHS')}
+                </Typography>
+              </Box>
+            )}
 
-        {normalizedSkills.length > 0 && (
-          <Box mt={2}>
-            <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
-              {normalizedSkills.slice(0, 3).map((skill, index) => (
+            {item.location && (
+              <Box
+                display="flex"
+                alignItems="flex-start"
+                gap={1}
+                sx={{ minWidth: 0 }}
+              >
+                <LocationIcon
+                  fontSize="small"
+                  color="action"
+                  sx={{ flexShrink: 0, mt: '2px' }}
+                />
+                <Typography
+                  variant="body2"
+                  sx={{ overflowWrap: 'anywhere', lineHeight: 1.35 }}
+                >
+                  {item.location}
+                </Typography>
+              </Box>
+            )}
+
+            {item.completedAt && (
+              <Box
+                display="flex"
+                alignItems="flex-start"
+                gap={1}
+                sx={{ minWidth: 0 }}
+              >
+                <DateIcon
+                  fontSize="small"
+                  color="action"
+                  sx={{ flexShrink: 0, mt: '2px' }}
+                />
+                <Typography
+                  variant="body2"
+                  sx={{ overflowWrap: 'anywhere', lineHeight: 1.35 }}
+                >
+                  {formatDate(item.completedAt)}
+                </Typography>
+              </Box>
+            )}
+          </Stack>
+
+          {normalizedSkills.length > 0 && (
+            <Box mt={2}>
+              <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+                {normalizedSkills.slice(0, 3).map((skill, index) => (
                   <Chip
                     key={`${skill}-${index}`}
                     label={skill}
                     size="small"
                     variant="outlined"
-                    sx={{ maxWidth: '100%', '& .MuiChip-label': { overflow: 'hidden', textOverflow: 'ellipsis' } }}
+                    sx={{
+                      maxWidth: '100%',
+                      '& .MuiChip-label': {
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      },
+                    }}
                   />
                 ))}
-              {normalizedSkills.length > 3 && (
-                <Chip
-                  label={`+${normalizedSkills.length - 3} more`}
-                  size="small"
-                  variant="outlined"
-                  color="primary"
-                />
-              )}
-            </Stack>
-          </Box>
-        )}
-      </CardContent>
-    </Card>
+                {normalizedSkills.length > 3 && (
+                  <Chip
+                    label={`+${normalizedSkills.length - 3} more`}
+                    size="small"
+                    variant="outlined"
+                    color="primary"
+                  />
+                )}
+              </Stack>
+            </Box>
+          )}
+        </CardContent>
+      </Card>
     );
   };
 
@@ -547,7 +653,13 @@ const PortfolioManager = () => {
       <Box p={3}>
         <Grid container spacing={3}>
           {[...Array(6)].map((_, index) => (
-            <Grid item xs={12} sm={6} md={4} key={`portfolio-skeleton-${index}`}>
+            <Grid
+              item
+              xs={12}
+              sm={6}
+              md={4}
+              key={`portfolio-skeleton-${index}`}
+            >
               <Card>
                 <Skeleton variant="rectangular" height={200} />
                 <CardContent>
@@ -590,7 +702,8 @@ const PortfolioManager = () => {
       </Box>
 
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        Clear project details and real photos help hirers trust your experience faster.
+        Clear project details and real photos help hirers trust your experience
+        faster.
       </Typography>
 
       {error && (
@@ -608,8 +721,14 @@ const PortfolioManager = () => {
           <Typography variant="body2" color="text.secondary" paragraph>
             Add completed projects so hirers can quickly understand your work.
           </Typography>
-          <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 2 }}>
-            Best first entry: title, category, short description, location, and clear photos. Only include work you completed yourself.
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            display="block"
+            sx={{ mb: 2 }}
+          >
+            Best first entry: title, category, short description, location, and
+            clear photos. Only include work you completed yourself.
           </Typography>
           <Button
             variant="contained"
@@ -648,7 +767,7 @@ const PortfolioManager = () => {
         </MenuItem>
         <MenuItem
           onClick={() => {
-              handleOpenGallery(selectedItem);
+            handleOpenGallery(selectedItem);
             setAnchorEl(null);
           }}
         >
@@ -817,8 +936,13 @@ const PortfolioManager = () => {
                   Upload Images
                 </Button>
               </label>
-              <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-                Uploaded images appear on your portfolio cards. Use clear photos of finished work.
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ mt: 1, display: 'block' }}
+              >
+                Uploaded images appear on your portfolio cards. Use clear photos
+                of finished work.
               </Typography>
             </Grid>
 
@@ -832,31 +956,38 @@ const PortfolioManager = () => {
                     const previewUrl = resolveMediaAssetUrl(image);
 
                     return (
-                    <ImageListItem key={`${previewUrl || 'image'}-${index}`}>
-                      <img
-                        src={previewUrl}
-                        alt={`Upload ${index + 1}`}
-                        loading="lazy"
-                        style={{ height: 80, objectFit: 'cover' }}
-                      />
-                      <ImageListItemBar
-                        actionIcon={
-                          <IconButton
-                            sx={{ color: 'rgba(255, 255, 255, 0.54)' , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
-                            aria-label={`Remove uploaded image ${index + 1}`}
-                            onClick={() => {
-                              const newImages = [...formData.images];
-                              newImages.splice(index, 1);
-                              handleInputChange('images', newImages);
-                            }}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        }
-                      />
+                      <ImageListItem key={`${previewUrl || 'image'}-${index}`}>
+                        <img
+                          src={previewUrl}
+                          alt={`Upload ${index + 1}`}
+                          loading="lazy"
+                          style={{ height: 80, objectFit: 'cover' }}
+                        />
+                        <ImageListItemBar
+                          actionIcon={
+                            <IconButton
+                              sx={{
+                                color: 'rgba(255, 255, 255, 0.54)',
+                                '&:focus-visible': {
+                                  outline: '3px solid',
+                                  outlineColor: 'primary.main',
+                                  outlineOffset: '2px',
+                                },
+                              }}
+                              aria-label={`Remove uploaded image ${index + 1}`}
+                              onClick={() => {
+                                const newImages = [...formData.images];
+                                newImages.splice(index, 1);
+                                handleInputChange('images', newImages);
+                              }}
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          }
+                        />
                       </ImageListItem>
-                      );
-                    })}
+                    );
+                  })}
                 </ImageList>
               </Grid>
             )}
@@ -907,4 +1038,3 @@ const PortfolioManager = () => {
 };
 
 export default PortfolioManager;
-

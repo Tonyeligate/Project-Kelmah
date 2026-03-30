@@ -144,14 +144,20 @@ const EscrowManager = () => {
         Escrow Manager
       </Typography>
       <Alert severity="info" sx={{ mb: 2 }}>
-        Escrow keeps funds protected until work is confirmed. Use release for completed work and refund for unresolved jobs.
+        Escrow keeps funds protected until work is confirmed. Use release for
+        completed work and refund for unresolved jobs.
       </Alert>
       {message && (
         <Alert severity={message.type} sx={{ mb: 2 }}>
           {message.text}
         </Alert>
       )}
-      <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} useFlexGap sx={{ mb: 2, flexWrap: 'wrap' }}>
+      <Stack
+        direction={{ xs: 'column', md: 'row' }}
+        spacing={2}
+        useFlexGap
+        sx={{ mb: 2, flexWrap: 'wrap' }}
+      >
         <TextField
           label="Amount (GHS)"
           value={form.amount}
@@ -262,7 +268,8 @@ const EscrowManager = () => {
                 No escrows found.
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Start by funding an escrow above to protect both hirer and worker payments.
+                Start by funding an escrow above to protect both hirer and
+                worker payments.
               </Typography>
             </Box>
           )}
@@ -273,4 +280,3 @@ const EscrowManager = () => {
 };
 
 export default EscrowManager;
-

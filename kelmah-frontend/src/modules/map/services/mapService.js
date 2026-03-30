@@ -22,7 +22,8 @@ const requestWithFallback = async (endpoints, requestFactory) => {
       return await requestFactory(endpoint);
     } catch (error) {
       lastError = error;
-      const canRetryWithFallback = index < endpoints.length - 1 && shouldTryFallback(error);
+      const canRetryWithFallback =
+        index < endpoints.length - 1 && shouldTryFallback(error);
       if (!canRetryWithFallback) {
         break;
       }
@@ -36,7 +37,8 @@ const extractPayload = (response) => {
   const payload = response?.data;
 
   if (payload?.success === false) {
-    const message = payload?.error?.message || payload?.message || 'Location search failed';
+    const message =
+      payload?.error?.message || payload?.message || 'Location search failed';
     const normalized = new Error(message);
     normalized.response = response;
     normalized.code = payload?.error?.code;
@@ -244,7 +246,10 @@ class MapService {
       type: 'worker',
       color: '#1a1a1a', // Black for workers
       verified:
-        worker.verified || worker.isVerified || worker.verification?.isVerified || false,
+        worker.verified ||
+        worker.isVerified ||
+        worker.verification?.isVerified ||
+        false,
       online: worker.isOnline || false,
       distance: worker.distance,
       availability: worker.availability || worker.availabilityStatus,
@@ -541,4 +546,3 @@ class MapService {
 }
 
 export default new MapService();
-

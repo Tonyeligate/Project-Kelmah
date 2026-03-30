@@ -1,31 +1,5 @@
 // IconButton focus-visible styling is enforced globally via MuiIconButton theme overrides.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 const JobManagement = () => {
   // FIXED: Use standardized user normalization for consistent user data access
   const { user: rawUser } = useSelector((state) => state.auth);
@@ -55,23 +29,23 @@ const JobManagement = () => {
       const response =
         activeTab === 2
           ? await api.get('/jobs', {
-            params: {
-              status: 'open',
-              page: 1,
-              limit: 20,
-            },
-          })
+              params: {
+                status: 'open',
+                page: 1,
+                limit: 20,
+              },
+            })
           : await api.get('/jobs/assigned', {
-            params: status === 'all' ? {} : { status },
-          });
+              params: status === 'all' ? {} : { status },
+            });
       const payload = response?.data?.data ?? response?.data ?? {};
       const list = Array.isArray(payload?.results)
         ? payload.results
         : Array.isArray(payload?.items)
           ? payload.items
-        : Array.isArray(payload)
-          ? payload
-          : [];
+          : Array.isArray(payload)
+            ? payload
+            : [];
       setJobs(list);
       setError(null);
     } catch (err) {
@@ -159,12 +133,17 @@ const JobManagement = () => {
       createdAt: new Date().toISOString(),
     };
 
-    sessionStorage.setItem('kelmah_message_draft', JSON.stringify(draftPayload));
+    sessionStorage.setItem(
+      'kelmah_message_draft',
+      JSON.stringify(draftPayload),
+    );
     navigate('/messages');
   };
 
   const submitMilestone = async () => {
-    throw new Error('Milestone submission is not available from this screen yet');
+    throw new Error(
+      'Milestone submission is not available from this screen yet',
+    );
   };
 
   const submitReview = async () => {
@@ -203,7 +182,9 @@ const JobManagement = () => {
           <Box>
             <Typography variant="h6">{job.title}</Typography>
             <Typography variant="body2" color="text.secondary">
-              {job?.hirerName || `${job?.hirer?.firstName || ''} ${job?.hirer?.lastName || ''}`.trim() || 'Hirer'}
+              {job?.hirerName ||
+                `${job?.hirer?.firstName || ''} ${job?.hirer?.lastName || ''}`.trim() ||
+                'Hirer'}
             </Typography>
           </Box>
           <Chip
@@ -219,7 +200,10 @@ const JobManagement = () => {
               Budget
             </Typography>
             <Typography variant="body1">
-              {new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' }).format(job?.budget?.amount ?? job?.budget ?? 0)}
+              {new Intl.NumberFormat('en-GH', {
+                style: 'currency',
+                currency: 'GHS',
+              }).format(job?.budget?.amount ?? job?.budget ?? 0)}
             </Typography>
           </Grid>
           <Grid item xs={6}>
@@ -258,7 +242,19 @@ const JobManagement = () => {
             Submit Milestone
           </Button>
         )}
-        <IconButton sx={{ ...iconButtonA11ySx, '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' } }} size="small" onClick={(e) => handleMenuOpen(e, job)} aria-label={`Open actions for ${job.title || 'job'}`}>
+        <IconButton
+          sx={{
+            ...iconButtonA11ySx,
+            '&:focus-visible': {
+              outline: '3px solid',
+              outlineColor: 'primary.main',
+              outlineOffset: '2px',
+            },
+          }}
+          size="small"
+          onClick={(e) => handleMenuOpen(e, job)}
+          aria-label={`Open actions for ${job.title || 'job'}`}
+        >
           <MoreVertIcon />
         </IconButton>
       </CardActions>
@@ -315,7 +311,8 @@ const JobManagement = () => {
         <MenuItem onClick={() => handleDialogOpen('message')}>
           <MessageIcon sx={{ mr: 1 }} /> Send Message
         </MenuItem>
-        {(selectedJob?.status === 'active' || selectedJob?.status === 'in-progress') && (
+        {(selectedJob?.status === 'active' ||
+          selectedJob?.status === 'in-progress') && (
           <MenuItem onClick={() => handleDialogOpen('milestone')}>
             <AssessmentIcon sx={{ mr: 1 }} /> Submit Milestone
           </MenuItem>
@@ -398,5 +395,3 @@ const JobManagement = () => {
 };
 
 export default JobManagement;
-
-

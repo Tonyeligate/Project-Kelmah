@@ -7,7 +7,15 @@ import { useEffect, Suspense, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useLocation } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { Box, Alert, Snackbar, LinearProgress, Button, IconButton, Skeleton } from '@mui/material';
+import {
+  Box,
+  Alert,
+  Snackbar,
+  LinearProgress,
+  Button,
+  IconButton,
+  Skeleton,
+} from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { KelmahThemeProvider, useThemeMode } from './theme/ThemeProvider';
 import { AppRoutes } from './routes/config';
@@ -30,7 +38,10 @@ const PWA_BANNER_DISMISS_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 let noticeSequence = 0;
 
 const createNoticeId = () => {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+  if (
+    typeof crypto !== 'undefined' &&
+    typeof crypto.randomUUID === 'function'
+  ) {
     return crypto.randomUUID();
   }
 
@@ -43,7 +54,9 @@ const shouldShowInstallPrompt = () => {
     return false;
   }
 
-  const dismissedAt = Number(window.localStorage.getItem(PWA_BANNER_DISMISS_KEY) || 0);
+  const dismissedAt = Number(
+    window.localStorage.getItem(PWA_BANNER_DISMISS_KEY) || 0,
+  );
   if (!dismissedAt) {
     return true;
   }
@@ -92,7 +105,10 @@ const App = () => {
 
     return () => {
       window.removeEventListener('sw:updateAvailable', handleSwUpdate);
-      window.removeEventListener('pwa:installAvailable', handleInstallAvailable);
+      window.removeEventListener(
+        'pwa:installAvailable',
+        handleInstallAvailable,
+      );
       window.removeEventListener('pwa:installComplete', handleInstallComplete);
     };
   }, []);
@@ -122,7 +138,10 @@ const App = () => {
   const handleRecoverableNoticeRetry = async () => {
     setApiRecoveryNotice(null);
 
-    if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
+    if (
+      typeof document !== 'undefined' &&
+      document.visibilityState === 'hidden'
+    ) {
       return;
     }
 
@@ -150,7 +169,9 @@ const App = () => {
           'We had trouble completing that request. You can try again.',
         retryable: Boolean(detail.retryable),
         isTimeout: Boolean(detail.isTimeout),
-        retryAfterMs: Number.isFinite(detail.retryAfterMs) ? detail.retryAfterMs : null,
+        retryAfterMs: Number.isFinite(detail.retryAfterMs)
+          ? detail.retryAfterMs
+          : null,
         retryHint: detail.retryHint || null,
       });
     };
@@ -164,7 +185,9 @@ const App = () => {
           'A temporary service mismatch was detected. Please retry in a moment.',
         retryable: true,
         isTimeout: false,
-        retryAfterMs: Number.isFinite(detail.retryAfterMs) ? detail.retryAfterMs : 3000,
+        retryAfterMs: Number.isFinite(detail.retryAfterMs)
+          ? detail.retryAfterMs
+          : 3000,
         retryHint: detail.retryHint || null,
       });
     };
@@ -218,7 +241,10 @@ const App = () => {
     let idleId;
 
     const wakeUpBackend = async () => {
-      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
+      if (
+        typeof document !== 'undefined' &&
+        document.visibilityState === 'hidden'
+      ) {
         return;
       }
 
@@ -267,8 +293,8 @@ const App = () => {
 
       const hasSessionHints = Boolean(
         secureStorage.getAuthToken() ||
-        secureStorage.getRefreshToken() ||
-        secureStorage.getUserData(),
+          secureStorage.getRefreshToken() ||
+          secureStorage.getUserData(),
       );
 
       if (!hasSessionHints) {
@@ -300,7 +326,13 @@ const App = () => {
           <Box sx={{ width: '100%', maxWidth: 1120, mx: 'auto' }}>
             <Skeleton variant="rounded" height={56} sx={{ mb: 2 }} />
             <Skeleton variant="rounded" height={72} sx={{ mb: 2 }} />
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 2 }}>
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' },
+                gap: 2,
+              }}
+            >
               <Skeleton variant="rounded" height={160} />
               <Skeleton variant="rounded" height={160} />
               <Skeleton variant="rounded" height={160} />
@@ -350,24 +382,26 @@ const App = () => {
         <ScrollToTop />
         {/* Service wake-up indicator */}
         {servicesWakingUp && (
-              <Box
-                sx={{
-                  width: '100%',
-                  position: 'fixed',
-                  top: 'env(safe-area-inset-top, 0px)',
-                  left: 0,
-                  zIndex: Z_INDEX.backdrop,
-                }}
-              >
+          <Box
+            sx={{
+              width: '100%',
+              position: 'fixed',
+              top: 'env(safe-area-inset-top, 0px)',
+              left: 0,
+              zIndex: Z_INDEX.backdrop,
+            }}
+          >
             <LinearProgress color="warning" />
             <Alert severity="info" sx={{ borderRadius: 0 }}>
-              Waking up backend services... This may take up to 30 seconds on first load.
+              Waking up backend services... This may take up to 30 seconds on
+              first load.
             </Alert>
           </Box>
         )}
         {!isHealthy && !servicesWakingUp && (
           <Alert severity="warning" sx={{ mb: 2 }}>
-            Backend services are currently unreachable. Some features may be limited.
+            Backend services are currently unreachable. Some features may be
+            limited.
           </Alert>
         )}
         {servicesWakingUp && (
@@ -381,7 +415,12 @@ const App = () => {
             }}
           />
         )}
-        <Box component="main" id="main-content" tabIndex={-1} sx={{ outline: 'none' }}>
+        <Box
+          component="main"
+          id="main-content"
+          tabIndex={-1}
+          sx={{ outline: 'none' }}
+        >
           <AppRoutes />
         </Box>
         <OfflineBanner />
@@ -433,9 +472,13 @@ const App = () => {
             role="complementary"
             aria-label="Install app"
             severity="info"
-            action={(
+            action={
               <>
-                <Button color="inherit" size="small" onClick={handleInstallPrompt}>
+                <Button
+                  color="inherit"
+                  size="small"
+                  onClick={handleInstallPrompt}
+                >
                   Install
                 </Button>
                 <IconButton
@@ -448,7 +491,7 @@ const App = () => {
                   <CloseIcon fontSize="small" />
                 </IconButton>
               </>
-            )}
+            }
             sx={{ width: '100%' }}
           >
             Install Kelmah for faster access and better offline support.
@@ -473,25 +516,24 @@ const App = () => {
             aria-live="polite"
             onClose={() => setApiRecoveryNotice(null)}
             action={
-              apiRecoveryNotice?.retryable
-                ? (
-                  <Button
-                    color="inherit"
-                    size="small"
-                    onClick={handleRecoverableNoticeRetry}
-                    sx={{ minHeight: 44 }}
-                  >
-                    Retry
-                  </Button>
-                )
-                : null
+              apiRecoveryNotice?.retryable ? (
+                <Button
+                  color="inherit"
+                  size="small"
+                  onClick={handleRecoverableNoticeRetry}
+                  sx={{ minHeight: 44 }}
+                >
+                  Retry
+                </Button>
+              ) : null
             }
             sx={{ width: '100%' }}
           >
             {apiRecoveryNotice?.message}
             {apiRecoveryNotice?.isTimeout && (
               <Box component="span" sx={{ display: 'block', mt: 0.5 }}>
-                Timeout detected. Slow connections can take longer on first request.
+                Timeout detected. Slow connections can take longer on first
+                request.
               </Box>
             )}
             {formatRetryDelay(apiRecoveryNotice?.retryAfterMs) && (

@@ -21,7 +21,9 @@ const ForgotPasswordPage = lazy(
 );
 // AUD2-M13 FIX: The module ResetPasswordPage is a clean re-export of pages/ResetPassword.
 // Switched to canonical module path for architectural consistency.
-const ResetPasswordPage = lazy(() => import('../modules/auth/pages/ResetPasswordPage'));
+const ResetPasswordPage = lazy(
+  () => import('../modules/auth/pages/ResetPasswordPage'),
+);
 const VerifyEmailPage = lazy(
   () => import('../modules/auth/pages/VerifyEmailPage'),
 );
@@ -115,12 +117,8 @@ const AvailabilityCalendar = lazy(
 );
 
 // Bid Pages
-const MyBidsPage = lazy(
-  () => import('../modules/worker/pages/MyBidsPage'),
-);
-const JobBidsPage = lazy(
-  () => import('../modules/hirer/pages/JobBidsPage'),
-);
+const MyBidsPage = lazy(() => import('../modules/worker/pages/MyBidsPage'));
+const JobBidsPage = lazy(() => import('../modules/hirer/pages/JobBidsPage'));
 
 // Scheduling, Payment pages
 const SchedulingPage = lazy(
@@ -129,11 +127,11 @@ const SchedulingPage = lazy(
 const PaymentCenterPage = lazy(
   () => import('../modules/payment/pages/PaymentCenterPage'),
 );
-const PaymentsPage = lazy(() => import('../modules/payment/pages/PaymentsPage'));
-const BillPage = lazy(() => import('../modules/payment/pages/BillPage'));
-const WalletPage = lazy(
-  () => import('../modules/payment/pages/WalletPage'),
+const PaymentsPage = lazy(
+  () => import('../modules/payment/pages/PaymentsPage'),
 );
+const BillPage = lazy(() => import('../modules/payment/pages/BillPage'));
+const WalletPage = lazy(() => import('../modules/payment/pages/WalletPage'));
 const PaymentMethodsPage = lazy(
   () => import('../modules/payment/pages/PaymentMethodsPage'),
 );
@@ -169,9 +167,7 @@ const InfoPage = lazy(() => import('../modules/support/pages/InfoPage'));
 const SavedJobs = lazy(
   () => import('../modules/jobs/components/common/SavedJobs'),
 );
-const JobAlertsPage = lazy(
-  () => import('../modules/jobs/pages/JobAlertsPage'),
-);
+const JobAlertsPage = lazy(() => import('../modules/jobs/pages/JobAlertsPage'));
 
 // Job Application (worker apply flow)
 const JobApplicationPage = lazy(
@@ -209,14 +205,10 @@ const ProfessionalMapPage = lazy(
 );
 
 // Premium
-const PremiumPage = lazy(
-  () => import('../modules/premium/pages/PremiumPage'),
-);
+const PremiumPage = lazy(() => import('../modules/premium/pages/PremiumPage'));
 
 // Reviews (Enhanced)
-const ReviewsPage = lazy(
-  () => import('../modules/reviews/pages/ReviewsPage'),
-);
+const ReviewsPage = lazy(() => import('../modules/reviews/pages/ReviewsPage'));
 
 // Payment extra pages
 const PaymentSettingsPage = lazy(
@@ -273,7 +265,9 @@ const QuickJobRequestCategoryRedirect = () => {
   const { category } = useParams();
 
   if (hasRole(user, 'admin') || hasRole(user, 'hirer')) {
-    return <Navigate to={`/hirer/quick-hire/request/${category || ''}`} replace />;
+    return (
+      <Navigate to={`/hirer/quick-hire/request/${category || ''}`} replace />
+    );
   }
 
   if (hasRole(user, 'worker')) {
@@ -314,7 +308,12 @@ const LegacyWorkerProfileRedirect = () => {
   const location = useLocation();
   const search = location.search || '';
 
-  return <Navigate to={workerId ? `/workers/${workerId}${search}` : '/search'} replace />;
+  return (
+    <Navigate
+      to={workerId ? `/workers/${workerId}${search}` : '/search'}
+      replace
+    />
+  );
 };
 
 const LegacyMessageThreadRedirect = () => {
@@ -1270,4 +1269,3 @@ export const AppRoutes = () => {
   const element = useRoutes(routes);
   return <Suspense fallback={<LoadingScreen />}>{element}</Suspense>;
 };
-

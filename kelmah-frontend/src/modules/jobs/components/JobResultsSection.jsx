@@ -728,7 +728,9 @@ const JobResultsSection = ({
                               ? typeof job?.budget === 'object'
                                 ? job.budget.min === job.budget.max ||
                                   !job.budget.max
-                                  ? formatGhanaCurrency(job.budget.amount || job.budget.min)
+                                  ? formatGhanaCurrency(
+                                      job.budget.amount || job.budget.min,
+                                    )
                                   : `${formatGhanaCurrency(job.budget.min)} - ${formatGhanaCurrency(job.budget.max)}`
                                 : formatGhanaCurrency(job?.budget)
                               : 'Negotiable'}
@@ -751,8 +753,10 @@ const JobResultsSection = ({
                             sx={{ mr: 1, color: '#D4AF37' }}
                           />
                           <Typography variant="body2" sx={{ color: 'white' }}>
-                            {job.rating ? `${job.rating} Rating` : 'No ratings yet'} -{' '}
-                            {job.proposalCount || 0} Applicants
+                            {job.rating
+                              ? `${job.rating} Rating`
+                              : 'No ratings yet'}{' '}
+                            - {job.proposalCount || 0} Applicants
                           </Typography>
                         </Box>
                       </Box>
@@ -819,7 +823,9 @@ const JobResultsSection = ({
                         <Typography variant="caption" sx={{ color: '#ff6b6b' }}>
                           Apply by{' '}
                           {job.deadline
-                            ? (isValid(new Date(job.deadline)) ? format(new Date(job.deadline), 'MMM dd') : 'Soon')
+                            ? isValid(new Date(job.deadline))
+                              ? format(new Date(job.deadline), 'MMM dd')
+                              : 'Soon'
                             : 'Soon'}
                         </Typography>
                       </Box>
@@ -942,7 +948,8 @@ const JobResultsSection = ({
               variant="body2"
               sx={{ color: 'rgba(255,255,255,0.6)', mb: 2 }}
             >
-              Showing {safeJobs.length} of {platformStats?.totalJobs || safeJobs.length} total opportunities
+              Showing {safeJobs.length} of{' '}
+              {platformStats?.totalJobs || safeJobs.length} total opportunities
             </Typography>
             {(platformStats?.totalJobs || 0) > safeJobs.length && (
               <Button
@@ -1188,5 +1195,3 @@ JobResultsSection.propTypes = {
 };
 
 export default JobResultsSection;
-
-

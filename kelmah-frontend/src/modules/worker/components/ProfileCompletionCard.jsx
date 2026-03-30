@@ -20,21 +20,67 @@ import PersonIcon from '@mui/icons-material/Person';
 
 // Map raw field names to human-readable labels, icons, and navigation targets
 const FIELD_MAP = {
-  bio: { label: 'Write bio', icon: <EditIcon fontSize="small" />, path: '/worker/profile/edit#bio' },
-  skills: { label: 'Add skills', icon: <BuildIcon fontSize="small" />, path: '/worker/profile/edit#skills' },
-  profilePhoto: { label: 'Upload photo', icon: <PhotoCameraIcon fontSize="small" />, path: '/worker/profile/edit#photo' },
-  photo: { label: 'Upload photo', icon: <PhotoCameraIcon fontSize="small" />, path: '/worker/profile/edit#photo' },
-  avatar: { label: 'Upload photo', icon: <PhotoCameraIcon fontSize="small" />, path: '/worker/profile/edit#photo' },
-  location: { label: 'Set location', icon: <LocationOnIcon fontSize="small" />, path: '/worker/profile/edit#location' },
-  locationDetails: { label: 'Set location', icon: <LocationOnIcon fontSize="small" />, path: '/worker/profile/edit#location' },
-  phone: { label: 'Add phone', icon: <PhoneIcon fontSize="small" />, path: '/worker/profile/edit#contact' },
-  phoneNumber: { label: 'Add phone', icon: <PhoneIcon fontSize="small" />, path: '/worker/profile/edit#contact' },
-  documents: { label: 'Upload documents', icon: <UploadFileIcon fontSize="small" />, path: '/worker/certificates' },
-  certifications: { label: 'Upload documents', icon: <UploadFileIcon fontSize="small" />, path: '/worker/certificates' },
+  bio: {
+    label: 'Write bio',
+    icon: <EditIcon fontSize="small" />,
+    path: '/worker/profile/edit#bio',
+  },
+  skills: {
+    label: 'Add skills',
+    icon: <BuildIcon fontSize="small" />,
+    path: '/worker/profile/edit#skills',
+  },
+  profilePhoto: {
+    label: 'Upload photo',
+    icon: <PhotoCameraIcon fontSize="small" />,
+    path: '/worker/profile/edit#photo',
+  },
+  photo: {
+    label: 'Upload photo',
+    icon: <PhotoCameraIcon fontSize="small" />,
+    path: '/worker/profile/edit#photo',
+  },
+  avatar: {
+    label: 'Upload photo',
+    icon: <PhotoCameraIcon fontSize="small" />,
+    path: '/worker/profile/edit#photo',
+  },
+  location: {
+    label: 'Set location',
+    icon: <LocationOnIcon fontSize="small" />,
+    path: '/worker/profile/edit#location',
+  },
+  locationDetails: {
+    label: 'Set location',
+    icon: <LocationOnIcon fontSize="small" />,
+    path: '/worker/profile/edit#location',
+  },
+  phone: {
+    label: 'Add phone',
+    icon: <PhoneIcon fontSize="small" />,
+    path: '/worker/profile/edit#contact',
+  },
+  phoneNumber: {
+    label: 'Add phone',
+    icon: <PhoneIcon fontSize="small" />,
+    path: '/worker/profile/edit#contact',
+  },
+  documents: {
+    label: 'Upload documents',
+    icon: <UploadFileIcon fontSize="small" />,
+    path: '/worker/certificates',
+  },
+  certifications: {
+    label: 'Upload documents',
+    icon: <UploadFileIcon fontSize="small" />,
+    path: '/worker/certificates',
+  },
 };
 
 const fallbackField = (fieldName) => ({
-  label: fieldName.replace(/([A-Z])/g, ' $1').replace(/^./, (s) => s.toUpperCase()),
+  label: fieldName
+    .replace(/([A-Z])/g, ' $1')
+    .replace(/^./, (s) => s.toUpperCase()),
   icon: <PersonIcon fontSize="small" />,
   path: '/worker/profile/edit',
 });
@@ -46,12 +92,19 @@ const fallbackField = (fieldName) => ({
  *   missingFields (string[]) — raw field names from the API
  *   onStepClick (function)  — called with the navigation path when a chip is clicked
  */
-const ProfileCompletionCard = ({ percentage = 0, missingFields = [], onStepClick }) => {
+const ProfileCompletionCard = ({
+  percentage = 0,
+  missingFields = [],
+  onStepClick,
+}) => {
   const theme = useTheme();
   const isComplete = percentage >= 100;
 
   const visibleFields = (missingFields || []).slice(0, 3);
-  const remainingCount = Math.max((missingFields || []).length - visibleFields.length, 0);
+  const remainingCount = Math.max(
+    (missingFields || []).length - visibleFields.length,
+    0,
+  );
 
   const progressColor =
     percentage >= 80
@@ -75,9 +128,20 @@ const ProfileCompletionCard = ({ percentage = 0, missingFields = [], onStepClick
         }}
       >
         {/* Header row */}
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            mb: 1.5,
+          }}
+        >
           <Box>
-            <Typography variant="subtitle1" fontWeight={700} color="text.primary">
+            <Typography
+              variant="subtitle1"
+              fontWeight={700}
+              color="text.primary"
+            >
               Profile Completion
             </Typography>
             <Typography variant="body2" color="text.secondary">
@@ -112,8 +176,13 @@ const ProfileCompletionCard = ({ percentage = 0, missingFields = [], onStepClick
         />
 
         {/* Helper text */}
-        <Typography variant="body2" color="text.secondary" sx={{ mb: visibleFields.length > 0 ? 1.5 : 0 }}>
-          Complete your profile to improve your chances of getting matched with relevant jobs.
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ mb: visibleFields.length > 0 ? 1.5 : 0 }}
+        >
+          Complete your profile to improve your chances of getting matched with
+          relevant jobs.
         </Typography>
 
         {/* Missing-field chips */}
@@ -142,15 +211,29 @@ const ProfileCompletionCard = ({ percentage = 0, missingFields = [], onStepClick
                 );
               })}
             </Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                gap: 1,
+                flexWrap: 'wrap',
+              }}
+            >
               <Typography variant="caption" color="text.secondary">
-                {remainingCount > 0 ? `Plus ${remainingCount} more step${remainingCount > 1 ? 's' : ''} to finish.` : 'You are close to completing your profile.'}
+                {remainingCount > 0
+                  ? `Plus ${remainingCount} more step${remainingCount > 1 ? 's' : ''} to finish.`
+                  : 'You are close to completing your profile.'}
               </Typography>
               <Button
                 size="small"
                 variant="contained"
                 onClick={() => onStepClick?.('/worker/profile/edit')}
-                sx={{ minHeight: { xs: 44, sm: 36 }, textTransform: 'none', fontWeight: 700 }}
+                sx={{
+                  minHeight: { xs: 44, sm: 36 },
+                  textTransform: 'none',
+                  fontWeight: 700,
+                }}
               >
                 Finish Profile
               </Button>

@@ -37,7 +37,10 @@ const AttachmentItem = styled(Paper)(({ theme }) => ({
   alignItems: 'center',
   gap: theme.spacing(1),
   borderRadius: theme.spacing(1),
-  background: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.04)',
+  background:
+    theme.palette.mode === 'dark'
+      ? 'rgba(255, 255, 255, 0.08)'
+      : 'rgba(0, 0, 0, 0.04)',
   border: `1px solid ${theme.palette.divider}`,
   '&:hover': {
     background: theme.palette.action.hover,
@@ -234,9 +237,7 @@ const MessageAttachments = ({
                       <CardMedia
                         component="img"
                         height="100"
-                        image={
-                          getAttachmentUrl(attachment, index)
-                        }
+                        image={getAttachmentUrl(attachment, index)}
                         alt={displayName}
                       />
                       <ImageOverlay
@@ -345,7 +346,12 @@ const MessageAttachments = ({
       )}
 
       {/* Image preview dialog */}
-      <Dialog open={!!previewUrl} onClose={handleClosePreview} maxWidth="lg" aria-label="Attachment preview">
+      <Dialog
+        open={!!previewUrl}
+        onClose={handleClosePreview}
+        maxWidth="lg"
+        aria-label="Attachment preview"
+      >
         <IconButton
           sx={{
             position: 'absolute',
@@ -407,4 +413,3 @@ MessageAttachments.propTypes = {
 };
 
 export default MessageAttachments;
-

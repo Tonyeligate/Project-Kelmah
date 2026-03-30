@@ -33,7 +33,11 @@ const NotificationSettingsPage = () => {
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
+  const [toast, setToast] = useState({
+    open: false,
+    message: '',
+    severity: 'success',
+  });
 
   useEffect(() => {
     let mounted = true;
@@ -44,9 +48,16 @@ const NotificationSettingsPage = () => {
         if (mounted && data) setPrefs((prev) => ({ ...prev, ...data }));
       })
       .catch(() => {
-        if (mounted) setToast({ open: true, message: 'Failed to load preferences', severity: 'error' });
+        if (mounted)
+          setToast({
+            open: true,
+            message: 'Failed to load preferences',
+            severity: 'error',
+          });
       })
-      .finally(() => { if (mounted) setLoading(false); });
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
     return () => {
       mounted = false;
     };
@@ -56,129 +67,178 @@ const NotificationSettingsPage = () => {
     setSaving(true);
     try {
       await notificationService.updatePreferences(prefs);
-      setToast({ open: true, message: 'Preferences saved successfully', severity: 'success' });
+      setToast({
+        open: true,
+        message: 'Preferences saved successfully',
+        severity: 'success',
+      });
     } catch {
-      setToast({ open: true, message: 'Failed to save preferences', severity: 'error' });
+      setToast({
+        open: true,
+        message: 'Failed to save preferences',
+        severity: 'error',
+      });
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
+    <PageCanvas
+      disableContainer
+      sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}
+    >
       <Container sx={{ py: { xs: 2, sm: 4 }, px: { xs: 0.5, sm: 2 } }}>
-      <Helmet><title>Notification Settings | Kelmah</title></Helmet>
-      <Typography variant="h5" gutterBottom>
-        Notification Preferences
-      </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        Choose where you receive updates and which alerts matter most to you.
-      </Typography>
-      {loading ? (
-        <Paper sx={{ p: { xs: 1.5, sm: 2 } }}>
-          <Box sx={{ mb: 2 }}>
-            <Skeleton variant="text" width={120} height={28} />
-            <Skeleton variant="rectangular" height={44} sx={{ mt: 1, borderRadius: 1 }} />
-            <Skeleton variant="rectangular" height={44} sx={{ mt: 1, borderRadius: 1 }} />
-            <Skeleton variant="rectangular" height={44} sx={{ mt: 1, borderRadius: 1 }} />
-          </Box>
-          <Box>
-            <Skeleton variant="text" width={80} height={28} />
-            {Array.from(new Array(7)).map((_, i) => (
-              <Skeleton key={`notification-settings-skeleton-${i}`} variant="rectangular" height={44} sx={{ mt: 1, borderRadius: 1 }} />
-            ))}
-          </Box>
-        </Paper>
-      ) : (
-      <Paper sx={{ p: { xs: 1.5, sm: 2 } }}>
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
-            <Typography variant="subtitle1">Channels</Typography>
-            <Divider sx={{ my: 1 }} />
-            <FormGroup>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={Boolean(prefs.channels?.inApp)}
-                    onChange={(e) =>
-                      setPrefs((prev) => ({
-                        ...prev,
-                        channels: { ...prev.channels, inApp: e.target.checked },
-                      }))
-                    }
-                    inputProps={{ 'aria-label': 'Toggle in-app notifications' }}
-                  />
-                }
-                label="In-app"
+        <Helmet>
+          <title>Notification Settings | Kelmah</title>
+        </Helmet>
+        <Typography variant="h5" gutterBottom>
+          Notification Preferences
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          Choose where you receive updates and which alerts matter most to you.
+        </Typography>
+        {loading ? (
+          <Paper sx={{ p: { xs: 1.5, sm: 2 } }}>
+            <Box sx={{ mb: 2 }}>
+              <Skeleton variant="text" width={120} height={28} />
+              <Skeleton
+                variant="rectangular"
+                height={44}
+                sx={{ mt: 1, borderRadius: 1 }}
               />
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={Boolean(prefs.channels?.email)}
-                    onChange={(e) =>
-                      setPrefs((prev) => ({
-                        ...prev,
-                        channels: { ...prev.channels, email: e.target.checked },
-                      }))
-                    }
-                    inputProps={{ 'aria-label': 'Toggle email notifications' }}
-                  />
-                }
-                label="Email"
+              <Skeleton
+                variant="rectangular"
+                height={44}
+                sx={{ mt: 1, borderRadius: 1 }}
               />
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={Boolean(prefs.channels?.sms)}
-                    onChange={(e) =>
-                      setPrefs((prev) => ({
-                        ...prev,
-                        channels: { ...prev.channels, sms: e.target.checked },
-                      }))
-                    }
-                    inputProps={{ 'aria-label': 'Toggle SMS notifications' }}
-                  />
-                }
-                label="SMS"
+              <Skeleton
+                variant="rectangular"
+                height={44}
+                sx={{ mt: 1, borderRadius: 1 }}
               />
-            </FormGroup>
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <Typography variant="subtitle1">Types</Typography>
-            <Divider sx={{ my: 1 }} />
-            <FormGroup>
-              {Object.keys(prefs.types).map((key) => (
-                <FormControlLabel
-                  key={key}
-                  control={
-                    <Switch
-                      checked={Boolean(prefs.types[key])}
-                      onChange={(e) =>
-                        setPrefs((prev) => ({
-                          ...prev,
-                          types: { ...prev.types, [key]: e.target.checked },
-                        }))
-                      }
-                      inputProps={{ 'aria-label': `Toggle ${key.replace(/_/g, ' ')} notifications` }}
-                    />
-                  }
-                  label={key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
+            </Box>
+            <Box>
+              <Skeleton variant="text" width={80} height={28} />
+              {Array.from(new Array(7)).map((_, i) => (
+                <Skeleton
+                  key={`notification-settings-skeleton-${i}`}
+                  variant="rectangular"
+                  height={44}
+                  sx={{ mt: 1, borderRadius: 1 }}
                 />
               ))}
-            </FormGroup>
-          </Grid>
-        </Grid>
-        <Button
-          sx={{ mt: 2, minHeight: 44 }}
-          variant="contained"
-          disabled={saving}
-          onClick={save}
-          aria-label="Save notification preferences"
-        >
-          {saving ? 'Saving...' : 'Save Preferences'}
-        </Button>
-      </Paper>
-      )}
+            </Box>
+          </Paper>
+        ) : (
+          <Paper sx={{ p: { xs: 1.5, sm: 2 } }}>
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={6}>
+                <Typography variant="subtitle1">Channels</Typography>
+                <Divider sx={{ my: 1 }} />
+                <FormGroup>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={Boolean(prefs.channels?.inApp)}
+                        onChange={(e) =>
+                          setPrefs((prev) => ({
+                            ...prev,
+                            channels: {
+                              ...prev.channels,
+                              inApp: e.target.checked,
+                            },
+                          }))
+                        }
+                        inputProps={{
+                          'aria-label': 'Toggle in-app notifications',
+                        }}
+                      />
+                    }
+                    label="In-app"
+                  />
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={Boolean(prefs.channels?.email)}
+                        onChange={(e) =>
+                          setPrefs((prev) => ({
+                            ...prev,
+                            channels: {
+                              ...prev.channels,
+                              email: e.target.checked,
+                            },
+                          }))
+                        }
+                        inputProps={{
+                          'aria-label': 'Toggle email notifications',
+                        }}
+                      />
+                    }
+                    label="Email"
+                  />
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={Boolean(prefs.channels?.sms)}
+                        onChange={(e) =>
+                          setPrefs((prev) => ({
+                            ...prev,
+                            channels: {
+                              ...prev.channels,
+                              sms: e.target.checked,
+                            },
+                          }))
+                        }
+                        inputProps={{
+                          'aria-label': 'Toggle SMS notifications',
+                        }}
+                      />
+                    }
+                    label="SMS"
+                  />
+                </FormGroup>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Typography variant="subtitle1">Types</Typography>
+                <Divider sx={{ my: 1 }} />
+                <FormGroup>
+                  {Object.keys(prefs.types).map((key) => (
+                    <FormControlLabel
+                      key={key}
+                      control={
+                        <Switch
+                          checked={Boolean(prefs.types[key])}
+                          onChange={(e) =>
+                            setPrefs((prev) => ({
+                              ...prev,
+                              types: { ...prev.types, [key]: e.target.checked },
+                            }))
+                          }
+                          inputProps={{
+                            'aria-label': `Toggle ${key.replace(/_/g, ' ')} notifications`,
+                          }}
+                        />
+                      }
+                      label={key
+                        .replace(/_/g, ' ')
+                        .replace(/\b\w/g, (c) => c.toUpperCase())}
+                    />
+                  ))}
+                </FormGroup>
+              </Grid>
+            </Grid>
+            <Button
+              sx={{ mt: 2, minHeight: 44 }}
+              variant="contained"
+              disabled={saving}
+              onClick={save}
+              aria-label="Save notification preferences"
+            >
+              {saving ? 'Saving...' : 'Save Preferences'}
+            </Button>
+          </Paper>
+        )}
         <Snackbar
           open={toast.open}
           autoHideDuration={4000}

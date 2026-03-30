@@ -59,7 +59,13 @@
  *
  */
 
-import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
+import React, {
+  useEffect,
+  useState,
+  useRef,
+  useCallback,
+  useMemo,
+} from 'react';
 import { hasRole } from '../../../utils/userUtils';
 // JobResultsSection removed — cards are rendered inline below
 import JobsCardsGrid from '../components/JobsCardsGrid';
@@ -183,9 +189,7 @@ import { useInView } from 'react-intersection-observer';
 import { useSelector } from 'react-redux';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthCheck } from '../../../hooks/useAuthCheck';
-import {
-  useBreakpointDown,
-} from '../../../hooks/useResponsive';
+import { useBreakpointDown } from '../../../hooks/useResponsive';
 import { useJobsFiltersState } from '../hooks/useJobsFiltersState';
 import {
   createFeatureLogger,
@@ -421,7 +425,6 @@ const tradeCategories = tradeCategoriesData.map((category) => ({
   icon: CATEGORY_ICON_MAP[category.value] || WorkIcon,
 }));
 
-
 function JobsPaginationControls({
   loading,
   error,
@@ -451,7 +454,11 @@ function JobsPaginationControls({
           ref={loadMoreRef}
           role="status"
           aria-live="polite"
-          sx={{ display: { xs: 'flex', md: 'none' }, justifyContent: 'center', py: 3 }}
+          sx={{
+            display: { xs: 'flex', md: 'none' },
+            justifyContent: 'center',
+            py: 3,
+          }}
         >
           {isJobsFetching ? (
             <Box sx={{ width: '100%', display: 'grid', gap: 1.25 }}>
@@ -466,8 +473,18 @@ function JobsPaginationControls({
                     bgcolor: 'background.paper',
                   }}
                 >
-                  <Skeleton variant="text" width="70%" height={24} sx={{ mb: 0.5 }} />
-                  <Skeleton variant="text" width="45%" height={18} sx={{ mb: 1 }} />
+                  <Skeleton
+                    variant="text"
+                    width="70%"
+                    height={24}
+                    sx={{ mb: 0.5 }}
+                  />
+                  <Skeleton
+                    variant="text"
+                    width="45%"
+                    height={18}
+                    sx={{ mb: 1 }}
+                  />
                   <Skeleton variant="rounded" width="100%" height={56} />
                 </Box>
               ))}
@@ -478,7 +495,11 @@ function JobsPaginationControls({
               size="medium"
               onClick={onLoadMore}
               disabled={isJobsFetching}
-              aria-label={isJobsFetching ? 'Loading more opportunities' : 'Load more opportunities'}
+              aria-label={
+                isJobsFetching
+                  ? 'Loading more opportunities'
+                  : 'Load more opportunities'
+              }
               sx={{
                 borderColor: 'var(--k-gold)',
                 color: 'var(--k-gold)',
@@ -502,7 +523,13 @@ function JobsPaginationControls({
 
       {/* Desktop: page numbers */}
       {totalPages > 1 && (
-        <Box sx={{ display: { xs: 'none', md: 'flex' }, justifyContent: 'center', mt: 2 }}>
+        <Box
+          sx={{
+            display: { xs: 'none', md: 'flex' },
+            justifyContent: 'center',
+            mt: 2,
+          }}
+        >
           <Pagination
             count={totalPages}
             page={page}
@@ -559,19 +586,48 @@ function JobsResultsHeader({
       }}
     >
       <Box>
-        <Typography variant="h5" sx={{ color: 'var(--k-gold)', fontWeight: 'bold', mb: 1 }}>
-          {selectedCategory ? `${selectedCategory} Jobs` : 'Featured Opportunities'}
+        <Typography
+          variant="h5"
+          sx={{ color: 'var(--k-gold)', fontWeight: 'bold', mb: 1 }}
+        >
+          {selectedCategory
+            ? `${selectedCategory} Jobs`
+            : 'Featured Opportunities'}
         </Typography>
-        <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1.25, display: { xs: 'none', md: 'block' } }}>
-          Sorted by {SORT_LABELS[sortBy] || SORT_LABELS.relevance}. Compare jobs quickly using budget, payment type, and applicant count on each card.
+        <Typography
+          variant="body2"
+          sx={{
+            color: 'text.secondary',
+            mb: 1.25,
+            display: { xs: 'none', md: 'block' },
+          }}
+        >
+          Sorted by {SORT_LABELS[sortBy] || SORT_LABELS.relevance}. Compare jobs
+          quickly using budget, payment type, and applicant count on each card.
         </Typography>
         {hasActiveFilters && (
-          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              gap: 1,
+              flexWrap: 'wrap',
+              alignItems: 'center',
+            }}
+          >
             <Typography variant="body2" sx={{ color: 'text.secondary' }}>
               Active filters:
             </Typography>
-            <Typography variant="caption" sx={{ color: 'text.secondary', width: '100%', lineHeight: 1.4, display: { xs: 'none', md: 'block' } }}>
-              Remove a chip to widen results, or clear everything if the list feels too narrow.
+            <Typography
+              variant="caption"
+              sx={{
+                color: 'text.secondary',
+                width: '100%',
+                lineHeight: 1.4,
+                display: { xs: 'none', md: 'block' },
+              }}
+            >
+              Remove a chip to widen results, or clear everything if the list
+              feels too narrow.
             </Typography>
             {effectiveSearch && (
               <Chip
@@ -621,19 +677,27 @@ function JobsResultsHeader({
                 }}
               />
             )}
-            {Object.entries(quickFilters).filter(([, v]) => v).map(([key]) => (
-              <Chip
-                key={key}
-                label={key === 'fullTime' ? 'Hourly' : key === 'contract' ? 'Fixed Price' : key.charAt(0).toUpperCase() + key.slice(1)}
-                size="small"
-                onDelete={() => onToggleQuickFilter(key)}
-                sx={{
-                  bgcolor: 'var(--k-accent-soft-strong)',
-                  color: 'var(--k-gold)',
-                  '& .MuiChip-deleteIcon': { color: 'var(--k-gold)' },
-                }}
-              />
-            ))}
+            {Object.entries(quickFilters)
+              .filter(([, v]) => v)
+              .map(([key]) => (
+                <Chip
+                  key={key}
+                  label={
+                    key === 'fullTime'
+                      ? 'Hourly'
+                      : key === 'contract'
+                        ? 'Fixed Price'
+                        : key.charAt(0).toUpperCase() + key.slice(1)
+                  }
+                  size="small"
+                  onDelete={() => onToggleQuickFilter(key)}
+                  sx={{
+                    bgcolor: 'var(--k-accent-soft-strong)',
+                    color: 'var(--k-gold)',
+                    '& .MuiChip-deleteIcon': { color: 'var(--k-gold)' },
+                  }}
+                />
+              ))}
             <Button
               size="small"
               onClick={onClearAllFilters}
@@ -733,26 +797,39 @@ function JobsGridStatePanels({
                         variant="rectangular"
                         width={70}
                         height={24}
-                        sx={{ bgcolor: 'var(--k-surface-muted)', borderRadius: 1 }}
+                        sx={{
+                          bgcolor: 'var(--k-surface-muted)',
+                          borderRadius: 1,
+                        }}
                       />
                       <Skeleton
                         variant="rectangular"
                         width={70}
                         height={24}
-                        sx={{ bgcolor: 'var(--k-surface-muted)', borderRadius: 1 }}
+                        sx={{
+                          bgcolor: 'var(--k-surface-muted)',
+                          borderRadius: 1,
+                        }}
                       />
                       <Skeleton
                         variant="rectangular"
                         width={70}
                         height={24}
-                        sx={{ bgcolor: 'var(--k-surface-muted)', borderRadius: 1 }}
+                        sx={{
+                          bgcolor: 'var(--k-surface-muted)',
+                          borderRadius: 1,
+                        }}
                       />
                     </Box>
                     <Skeleton
                       variant="rectangular"
                       width="100%"
                       height={40}
-                      sx={{ bgcolor: 'var(--k-surface-muted)', borderRadius: 1, mt: 2 }}
+                      sx={{
+                        bgcolor: 'var(--k-surface-muted)',
+                        borderRadius: 1,
+                        mt: 2,
+                      }}
                     />
                   </CardContent>
                 </Card>
@@ -795,7 +872,8 @@ function JobsGridStatePanels({
               We Could Not Load Jobs Yet
             </Typography>
             <Typography variant="body1" sx={{ color: 'text.secondary', mb: 3 }}>
-              {error || 'Your internet may be slow, or the service may still be starting. Please try again in a few seconds.'}
+              {error ||
+                'Your internet may be slow, or the service may still be starting. Please try again in a few seconds.'}
             </Typography>
             <Button
               variant="contained"
@@ -825,8 +903,13 @@ function JobsGridStatePanels({
               mx: 'auto',
             }}
           >
-            <SearchIcon sx={{ fontSize: 80, color: 'var(--k-gold)', mb: 2, opacity: 0.5 }} />
-            <Typography variant="h5" sx={{ color: 'var(--k-gold)', mb: 2, fontWeight: 'bold' }}>
+            <SearchIcon
+              sx={{ fontSize: 80, color: 'var(--k-gold)', mb: 2, opacity: 0.5 }}
+            />
+            <Typography
+              variant="h5"
+              sx={{ color: 'var(--k-gold)', mb: 2, fontWeight: 'bold' }}
+            >
               No jobs found
             </Typography>
             <Typography variant="body1" sx={{ color: 'text.secondary', mb: 3 }}>
@@ -834,34 +917,55 @@ function JobsGridStatePanels({
                 ? 'Try removing one filter or changing your search words.'
                 : 'No jobs are available right now. Check back soon for new work.'}
             </Typography>
-            {(effectiveSearch || selectedCategory || selectedLocation || budgetFilterActive) && (
-              <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ mb: 2, justifyContent: 'center' }}>
+            {(effectiveSearch ||
+              selectedCategory ||
+              selectedLocation ||
+              budgetFilterActive) && (
+              <Stack
+                direction="row"
+                spacing={1}
+                useFlexGap
+                flexWrap="wrap"
+                sx={{ mb: 2, justifyContent: 'center' }}
+              >
                 {effectiveSearch && (
                   <Chip
                     label={`Remove search: "${effectiveSearch}"`}
                     onDelete={onClearSearch}
-                    sx={{ bgcolor: 'var(--k-accent-soft-strong)', color: 'var(--k-gold)' }}
+                    sx={{
+                      bgcolor: 'var(--k-accent-soft-strong)',
+                      color: 'var(--k-gold)',
+                    }}
                   />
                 )}
                 {selectedCategory && (
                   <Chip
                     label={`Remove category: ${selectedCategory}`}
                     onDelete={onClearCategory}
-                    sx={{ bgcolor: 'var(--k-accent-soft-strong)', color: 'var(--k-gold)' }}
+                    sx={{
+                      bgcolor: 'var(--k-accent-soft-strong)',
+                      color: 'var(--k-gold)',
+                    }}
                   />
                 )}
                 {selectedLocation && (
                   <Chip
                     label={`Remove location: ${selectedLocation}`}
                     onDelete={onClearLocation}
-                    sx={{ bgcolor: 'var(--k-accent-soft-strong)', color: 'var(--k-gold)' }}
+                    sx={{
+                      bgcolor: 'var(--k-accent-soft-strong)',
+                      color: 'var(--k-gold)',
+                    }}
                   />
                 )}
                 {budgetFilterActive && (
                   <Chip
                     label="Remove budget filter"
                     onDelete={onClearBudget}
-                    sx={{ bgcolor: 'var(--k-accent-soft-strong)', color: 'var(--k-gold)' }}
+                    sx={{
+                      bgcolor: 'var(--k-accent-soft-strong)',
+                      color: 'var(--k-gold)',
+                    }}
                   />
                 )}
               </Stack>
@@ -958,7 +1062,9 @@ function JobsFiltersPanel({
           onFilterClick={onOpenMobileFilters}
           activeFilterCount={activeFilterCount}
           sortLabel={SORT_LABELS[sortBy] || SORT_LABELS.relevance}
-          placeholder={isSmallMobile ? 'Search jobs...' : 'Search jobs, skills...'}
+          placeholder={
+            isSmallMobile ? 'Search jobs...' : 'Search jobs, skills...'
+          }
         />
         <JobsMobileFilterDrawer
           open={mobileFilterOpen}
@@ -1189,7 +1295,13 @@ function JobsFiltersPanel({
               fullWidth
               variant="contained"
               size="medium"
-              startIcon={isJobsFetching ? <CircularProgress size={16} sx={{ color: 'black' }} /> : <SearchIcon />}
+              startIcon={
+                isJobsFetching ? (
+                  <CircularProgress size={16} sx={{ color: 'black' }} />
+                ) : (
+                  <SearchIcon />
+                )
+              }
               disabled={isJobsFetching}
               onClick={onSearchSubmit}
               sx={{
@@ -1280,8 +1392,18 @@ function JobsFiltersPanel({
         >
           <Grid container spacing={2}>
             <Grid item xs={12} md={6}>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                <Typography variant="body2" sx={{ color: 'var(--k-gold)', fontWeight: 'bold' }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  mb: 1,
+                }}
+              >
+                <Typography
+                  variant="body2"
+                  sx={{ color: 'var(--k-gold)', fontWeight: 'bold' }}
+                >
                   Budget Range
                 </Typography>
                 <FormControlLabel
@@ -1291,12 +1413,22 @@ function JobsFiltersPanel({
                       onChange={(e) => onBudgetFilterToggle(e.target.checked)}
                       size="small"
                       sx={{
-                        '& .MuiSwitch-switchBase.Mui-checked': { color: 'var(--k-gold)' },
-                        '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { bgcolor: 'var(--k-gold)' },
+                        '& .MuiSwitch-switchBase.Mui-checked': {
+                          color: 'var(--k-gold)',
+                        },
+                        '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track':
+                          { bgcolor: 'var(--k-gold)' },
                       }}
                     />
                   }
-                  label={<Typography variant="caption" sx={{ color: 'var(--k-text-muted)' }}>{budgetFilterActive ? 'On' : 'Off'}</Typography>}
+                  label={
+                    <Typography
+                      variant="caption"
+                      sx={{ color: 'var(--k-text-muted)' }}
+                    >
+                      {budgetFilterActive ? 'On' : 'Off'}
+                    </Typography>
+                  }
                   sx={{ m: 0 }}
                 />
               </Box>
@@ -1332,17 +1464,32 @@ function JobsFiltersPanel({
                   },
                 }}
               />
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.5 }}>
-                <Typography variant="caption" sx={{ color: 'var(--k-text-secondary)' }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  mt: 0.5,
+                }}
+              >
+                <Typography
+                  variant="caption"
+                  sx={{ color: 'var(--k-text-secondary)' }}
+                >
                   {formatGhanaCurrency(budgetRange[0])}
                 </Typography>
-                <Typography variant="caption" sx={{ color: 'var(--k-text-secondary)' }}>
+                <Typography
+                  variant="caption"
+                  sx={{ color: 'var(--k-text-secondary)' }}
+                >
                   {formatGhanaCurrency(budgetRange[1])}+
                 </Typography>
               </Box>
             </Grid>
             <Grid item xs={12} md={3}>
-              <Typography variant="body2" sx={{ mb: 1, color: 'var(--k-gold)', fontWeight: 'bold' }}>
+              <Typography
+                variant="body2"
+                sx={{ mb: 1, color: 'var(--k-gold)', fontWeight: 'bold' }}
+              >
                 Quick Filters
               </Typography>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
@@ -1360,13 +1507,19 @@ function JobsFiltersPanel({
                     onClick={() => onToggleQuickFilter(key)}
                     sx={{
                       borderColor: 'var(--k-gold)',
-                      color: quickFilters[key] ? 'var(--k-text-on-accent)' : 'var(--k-gold)',
-                      bgcolor: quickFilters[key] ? 'var(--k-gold)' : 'transparent',
+                      color: quickFilters[key]
+                        ? 'var(--k-text-on-accent)'
+                        : 'var(--k-gold)',
+                      bgcolor: quickFilters[key]
+                        ? 'var(--k-gold)'
+                        : 'transparent',
                       fontSize: '0.8rem',
                       cursor: 'pointer',
                       fontWeight: quickFilters[key] ? 'bold' : 'normal',
                       '&:hover': {
-                        bgcolor: quickFilters[key] ? 'var(--k-gold-dark)' : 'var(--k-accent-soft)',
+                        bgcolor: quickFilters[key]
+                          ? 'var(--k-gold-dark)'
+                          : 'var(--k-accent-soft)',
                       },
                       transition: 'all 0.2s ease',
                     }}
@@ -1375,7 +1528,10 @@ function JobsFiltersPanel({
               </Box>
             </Grid>
             <Grid item xs={12} md={3}>
-              <Typography variant="body2" sx={{ mb: 1, color: 'var(--k-gold)', fontWeight: 'bold' }}>
+              <Typography
+                variant="body2"
+                sx={{ mb: 1, color: 'var(--k-gold)', fontWeight: 'bold' }}
+              >
                 Sort By
               </Typography>
               <FormControl fullWidth size="small">
@@ -1386,9 +1542,15 @@ function JobsFiltersPanel({
                     color: 'var(--k-text-primary)',
                     fontSize: '0.875rem',
                     height: '36px',
-                    '& .MuiOutlinedInput-notchedOutline': { borderColor: 'var(--k-accent-border)' },
-                    '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'var(--k-gold)' },
-                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'var(--k-gold)' },
+                    '& .MuiOutlinedInput-notchedOutline': {
+                      borderColor: 'var(--k-accent-border)',
+                    },
+                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                      borderColor: 'var(--k-gold)',
+                    },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                      borderColor: 'var(--k-gold)',
+                    },
                     '& .MuiSvgIcon-root': { color: 'var(--k-gold)' },
                   }}
                 >
@@ -1453,8 +1615,12 @@ function JobsCategoryBrowseGrid({
               label={cat.name}
               sx={{
                 borderRadius: 999,
-                border: isActive ? '1px solid var(--k-gold)' : '1px solid var(--k-accent-border)',
-                bgcolor: isActive ? 'var(--k-accent-soft)' : 'var(--k-bg-surface)',
+                border: isActive
+                  ? '1px solid var(--k-gold)'
+                  : '1px solid var(--k-accent-border)',
+                bgcolor: isActive
+                  ? 'var(--k-accent-soft)'
+                  : 'var(--k-bg-surface)',
                 color: isActive ? 'var(--k-gold)' : 'var(--k-text-secondary)',
                 height: 34,
                 whiteSpace: 'nowrap',
@@ -1481,7 +1647,7 @@ function JobsCategoryBrowseGrid({
         return (
           <Grid item xs={3} sm={3} md={1.5} key={cat.name}>
             <Paper
-                component={ButtonBase}
+              component={ButtonBase}
               onClick={() => onSelectCategory(isActive ? '' : cat.name)}
               aria-label={`Browse ${cat.name} jobs`}
               aria-pressed={isActive}
@@ -1489,8 +1655,12 @@ function JobsCategoryBrowseGrid({
                 p: { xs: 1.5, sm: 2 },
                 textAlign: 'center',
                 cursor: 'pointer',
-                bgcolor: isActive ? 'var(--k-accent-soft)' : 'var(--k-bg-surface)',
-                border: isActive ? '2px solid var(--k-gold)' : '1px solid var(--k-accent-border)',
+                bgcolor: isActive
+                  ? 'var(--k-accent-soft)'
+                  : 'var(--k-bg-surface)',
+                border: isActive
+                  ? '2px solid var(--k-gold)'
+                  : '1px solid var(--k-accent-border)',
                 borderRadius: 2,
                 transition: 'all 0.2s ease',
                 '&:hover': {
@@ -1523,7 +1693,9 @@ function JobsCategoryBrowseGrid({
               <Typography
                 variant="caption"
                 sx={{
-                  color: isActive ? 'secondary.main' : 'var(--k-text-secondary)',
+                  color: isActive
+                    ? 'secondary.main'
+                    : 'var(--k-text-secondary)',
                   fontWeight: isActive ? 700 : 500,
                   fontSize: { xs: '0.65rem', sm: '0.75rem' },
                   lineHeight: 1.2,
@@ -1572,16 +1744,26 @@ class ErrorBoundary extends React.Component {
       return (
         this.props.fallback || (
           <Box sx={{ textAlign: 'center', py: 8 }}>
-            <Typography variant="h5" sx={{ color: 'var(--k-text-primary)', mb: 2 }}>
+            <Typography
+              variant="h5"
+              sx={{ color: 'var(--k-text-primary)', mb: 2 }}
+            >
               Something went wrong
             </Typography>
-            <Typography variant="body1" sx={{ color: 'var(--k-text-secondary)', mb: 3 }}>
-              We&apos;re having trouble loading jobs. Please try refreshing the page.
+            <Typography
+              variant="body1"
+              sx={{ color: 'var(--k-text-secondary)', mb: 3 }}
+            >
+              We&apos;re having trouble loading jobs. Please try refreshing the
+              page.
             </Typography>
             <Button
               variant="contained"
               onClick={this.handleRetry}
-              sx={{ bgcolor: 'var(--k-gold)', color: 'var(--k-text-on-accent)' }}
+              sx={{
+                bgcolor: 'var(--k-gold)',
+                color: 'var(--k-text-on-accent)',
+              }}
             >
               Try Again
             </Button>
@@ -1605,9 +1787,10 @@ const JobsPage = () => {
   const prefersReducedMotion = usePrefersReducedMotion();
   const { isSlow: isSlowNetwork } = useNetworkSpeed();
   // When reduced motion is preferred OR network is slow, disable framer-motion transitions
-  const motionProps = (prefersReducedMotion || isSlowNetwork)
-    ? { initial: false, animate: false, transition: { duration: 0 } }
-    : {};
+  const motionProps =
+    prefersReducedMotion || isSlowNetwork
+      ? { initial: false, animate: false, transition: { duration: 0 } }
+      : {};
 
   // Category browse grid expects objects with { name, icon, color }.
   // Keep a stable reference to avoid unnecessary rerenders.
@@ -1632,8 +1815,12 @@ const JobsPage = () => {
       selectedLocation: searchParams.get('location') || '',
       sortBy: searchParams.get('sort') || 'relevance',
       page: Math.max(1, parseNumber(searchParams.get('page'), 1)),
-      budgetRange: [Math.min(minBudget, maxBudget), Math.max(minBudget, maxBudget)],
-      budgetFilterActive: hasBudgetParams || parseBoolean(searchParams.get('budget')),
+      budgetRange: [
+        Math.min(minBudget, maxBudget),
+        Math.max(minBudget, maxBudget),
+      ],
+      budgetFilterActive:
+        hasBudgetParams || parseBoolean(searchParams.get('budget')),
       quickFilters: {
         urgent: parseBoolean(searchParams.get('urgent')),
         verified: parseBoolean(searchParams.get('verified')),
@@ -1698,49 +1885,69 @@ const JobsPage = () => {
   useEffect(() => {
     let cancelled = false;
     if (isAuthenticated) {
-      jobsApi.getSavedJobs().then(res => {
-        if (cancelled) return;
-        const ids = (res?.jobs || []).map(j => j.id || j._id).filter(Boolean);
-        setSavedJobIds(new Set(ids));
-      }).catch(() => {});
+      jobsApi
+        .getSavedJobs()
+        .then((res) => {
+          if (cancelled) return;
+          const ids = (res?.jobs || [])
+            .map((j) => j.id || j._id)
+            .filter(Boolean);
+          setSavedJobIds(new Set(ids));
+        })
+        .catch(() => {});
     }
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [isAuthenticated]);
 
-  const handleToggleBookmark = useCallback(async (jobId) => {
-    if (!authState.isAuthenticated) {
-      navigate('/login', { state: { from: `/jobs/${jobId}`, message: 'Please sign in to save jobs' } });
-      return;
-    }
-    const isSaved = savedJobIds.has(jobId);
-    // Optimistic update
-    setSavedJobIds(prev => {
-      const next = new Set(prev);
-      isSaved ? next.delete(jobId) : next.add(jobId);
-      return next;
-    });
-    try {
-      if (isSaved) {
-        await jobsApi.unsaveJob(jobId);
-        setSnackbar({ open: true, message: 'Job removed from saved' });
-      } else {
-        await jobsApi.saveJob(jobId);
-        setSnackbar({ open: true, message: 'Job saved successfully!' });
+  const handleToggleBookmark = useCallback(
+    async (jobId) => {
+      if (!authState.isAuthenticated) {
+        navigate('/login', {
+          state: {
+            from: `/jobs/${jobId}`,
+            message: 'Please sign in to save jobs',
+          },
+        });
+        return;
       }
-    } catch (err) {
-      // Rollback on failure
-      setSavedJobIds(prev => {
+      const isSaved = savedJobIds.has(jobId);
+      // Optimistic update
+      setSavedJobIds((prev) => {
         const next = new Set(prev);
-        isSaved ? next.add(jobId) : next.delete(jobId);
+        isSaved ? next.delete(jobId) : next.add(jobId);
         return next;
       });
-      setSnackbar({ open: true, message: 'Failed to update saved jobs. Try again.' });
-    }
-  }, [authState.isAuthenticated, savedJobIds, navigate]);
+      try {
+        if (isSaved) {
+          await jobsApi.unsaveJob(jobId);
+          setSnackbar({ open: true, message: 'Job removed from saved' });
+        } else {
+          await jobsApi.saveJob(jobId);
+          setSnackbar({ open: true, message: 'Job saved successfully!' });
+        }
+      } catch (err) {
+        // Rollback on failure
+        setSavedJobIds((prev) => {
+          const next = new Set(prev);
+          isSaved ? next.add(jobId) : next.delete(jobId);
+          return next;
+        });
+        setSnackbar({
+          open: true,
+          message: 'Failed to update saved jobs. Try again.',
+        });
+      }
+    },
+    [authState.isAuthenticated, savedJobIds, navigate],
+  );
 
   const handleCreateJobAlert = useCallback(() => {
     if (!authState.isAuthenticated) {
-      navigate('/login', { state: { from: '/jobs', message: 'Sign in to manage job alerts' } });
+      navigate('/login', {
+        state: { from: '/jobs', message: 'Sign in to manage job alerts' },
+      });
       return;
     }
     // Build alert preferences from current filters
@@ -1753,44 +1960,59 @@ const JobsPage = () => {
       open: true,
       message: `Review and save these ${alertFilters.category} filters${alertFilters.location !== 'All locations' ? ` for ${alertFilters.location}` : ''} in notification settings.`,
     });
-    navigate('/notifications/settings', { state: { draftAlert: true, filters: alertFilters } });
-  }, [authState.isAuthenticated, selectedCategory, selectedLocation, searchQuery, navigate]);
+    navigate('/notifications/settings', {
+      state: { draftAlert: true, filters: alertFilters },
+    });
+  }, [
+    authState.isAuthenticated,
+    selectedCategory,
+    selectedLocation,
+    searchQuery,
+    navigate,
+  ]);
 
-  const handlePrimaryJobAction = useCallback((jobId) => {
-    if (!jobId) {
-      return;
-    }
+  const handlePrimaryJobAction = useCallback(
+    (jobId) => {
+      if (!jobId) {
+        return;
+      }
 
-    if (!authState.isAuthenticated) {
-      navigate('/login', {
-        state: {
-          from: isHirerUser ? '/hirer/find-talents' : `/jobs/${jobId}/apply`,
-          message: isHirerUser
-            ? 'Sign in to find talent'
-            : 'Please sign in to apply for this job',
-        },
-      });
-      return;
-    }
+      if (!authState.isAuthenticated) {
+        navigate('/login', {
+          state: {
+            from: isHirerUser ? '/hirer/find-talents' : `/jobs/${jobId}/apply`,
+            message: isHirerUser
+              ? 'Sign in to find talent'
+              : 'Please sign in to apply for this job',
+          },
+        });
+        return;
+      }
 
-    if (isHirerUser) {
-      navigate('/hirer/find-talents');
-      return;
-    }
+      if (isHirerUser) {
+        navigate('/hirer/find-talents');
+        return;
+      }
 
-    if (!isWorkerUser) {
-      setSnackbar({
-        open: true,
-        message: 'Only worker accounts can apply for jobs. Switch to a worker account to continue.',
-      });
-      return;
-    }
+      if (!isWorkerUser) {
+        setSnackbar({
+          open: true,
+          message:
+            'Only worker accounts can apply for jobs. Switch to a worker account to continue.',
+        });
+        return;
+      }
 
-    navigate(`/jobs/${jobId}/apply`);
-  }, [authState.isAuthenticated, isHirerUser, isWorkerUser, navigate]);
+      navigate(`/jobs/${jobId}/apply`);
+    },
+    [authState.isAuthenticated, isHirerUser, isWorkerUser, navigate],
+  );
 
   // Infinite scroll sentinel (mobile): ref is placed on the sentinel element
-  const { ref: loadMoreRef, inView: loadMoreInView } = useInView({ threshold: 0, rootMargin: '200px' });
+  const { ref: loadMoreRef, inView: loadMoreInView } = useInView({
+    threshold: 0,
+    rootMargin: '200px',
+  });
   const mobileAutoLoadLockRef = useRef(false);
 
   const [platformStats, setPlatformStats] = useState({
@@ -1885,9 +2107,7 @@ const JobsPage = () => {
 
   useEffect(() => {
     const hasDataArray = (payload) =>
-      Array.isArray(payload)
-        ? payload
-        : payload?.jobs || payload?.data || [];
+      Array.isArray(payload) ? payload : payload?.jobs || payload?.data || [];
 
     if (jobsResponse) {
       const normalizedJobs = hasDataArray(jobsResponse);
@@ -1902,11 +2122,16 @@ const JobsPage = () => {
         // Subsequent pages: append new jobs
         setJobs((prev) => {
           const existingIds = new Set(prev.map((j) => j.id || j._id));
-          const newJobs = normalizedJobs.filter((j) => !existingIds.has(j.id || j._id));
+          const newJobs = normalizedJobs.filter(
+            (j) => !existingIds.has(j.id || j._id),
+          );
           return [...prev, ...newJobs];
         });
       }
-      jobsDebugLog(`Jobs loaded via React Query (page ${page}):`, normalizedJobs.length);
+      jobsDebugLog(
+        `Jobs loaded via React Query (page ${page}):`,
+        normalizedJobs.length,
+      );
       return;
     }
 
@@ -1975,7 +2200,10 @@ const JobsPage = () => {
   }, []); // Fetch once on mount, refresh via interval
 
   // Deduplicate jobs by ID (server handles filtering; no redundant client-side filter)
-  const uniqueJobs = useMemo(() => getSortedUniqueJobs(jobs, sortBy), [jobs, sortBy]);
+  const uniqueJobs = useMemo(
+    () => getSortedUniqueJobs(jobs, sortBy),
+    [jobs, sortBy],
+  );
 
   useEffect(() => {
     const nextSearchParams = new URLSearchParams();
@@ -2033,477 +2261,505 @@ const JobsPage = () => {
 
   return (
     <ErrorBoundary>
-      <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
-      <PullToRefresh onRefresh={retryJobsFetch}>
-      <Box
-        sx={{
-          minHeight: '100vh',
-          color: 'text.primary',
-          backgroundColor: 'background.default',
-          backgroundImage:
-            theme.palette.mode === 'dark'
-              ? 'radial-gradient(circle at 10% 0%, rgba(255,215,0,0.12) 0%, transparent 28%), radial-gradient(circle at 88% 8%, rgba(255,215,0,0.06) 0%, transparent 22%)'
-              : 'linear-gradient(180deg, rgba(249,247,237,0.98) 0%, rgba(255,255,255,0.96) 100%)',
-        }}
+      <PageCanvas
+        disableContainer
+        sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}
       >
-        {/* Breadcrumb Navigation */}
-        <BreadcrumbNavigation />
-
-        <Container maxWidth="xl" sx={{ py: 0, pt: 1 }}>
-          <Helmet>
-            <title>
-              Find Skilled Trade Jobs - Kelmah | Ghana's Premier Job Platform
-            </title>
-            <meta
-              name="description"
-              content="Discover high-paying skilled trade opportunities across Ghana. Connect with top employers in electrical, plumbing, carpentry, HVAC, and construction."
-            />
-          </Helmet>
-
-          {/* Hero Section & Filter System - Directly Below Header */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            {...motionProps}
+        <PullToRefresh onRefresh={retryJobsFetch}>
+          <Box
+            sx={{
+              minHeight: '100vh',
+              color: 'text.primary',
+              backgroundColor: 'background.default',
+              backgroundImage:
+                theme.palette.mode === 'dark'
+                  ? 'radial-gradient(circle at 10% 0%, rgba(255,215,0,0.12) 0%, transparent 28%), radial-gradient(circle at 88% 8%, rgba(255,215,0,0.06) 0%, transparent 22%)'
+                  : 'linear-gradient(180deg, rgba(249,247,237,0.98) 0%, rgba(255,255,255,0.96) 100%)',
+            }}
           >
-            <Box
-              sx={{
-                mb: { xs: 2, md: 4 },
-                mt: { xs: 1, md: 0 },
-                px: { xs: 1, sm: 0 },
-              }}
-            >
-              {/* Mobile-optimized hero section */}
-              <Grid container spacing={{ xs: 1.25, md: 3 }} alignItems="center">
-                {/* Left Side - Hero Text */}
-                <Grid item xs={12} md={4} sx={{ display: { xs: 'none', md: 'block' } }}>
-                  <Box
+            {/* Breadcrumb Navigation */}
+            <BreadcrumbNavigation />
+
+            <Container maxWidth="xl" sx={{ py: 0, pt: 1 }}>
+              <Helmet>
+                <title>
+                  Find Skilled Trade Jobs - Kelmah | Ghana's Premier Job
+                  Platform
+                </title>
+                <meta
+                  name="description"
+                  content="Discover high-paying skilled trade opportunities across Ghana. Connect with top employers in electrical, plumbing, carpentry, HVAC, and construction."
+                />
+              </Helmet>
+
+              {/* Hero Section & Filter System - Directly Below Header */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                {...motionProps}
+              >
+                <Box
+                  sx={{
+                    mb: { xs: 2, md: 4 },
+                    mt: { xs: 1, md: 0 },
+                    px: { xs: 1, sm: 0 },
+                  }}
+                >
+                  {/* Mobile-optimized hero section */}
+                  <Grid
+                    container
+                    spacing={{ xs: 1.25, md: 3 }}
+                    alignItems="center"
+                  >
+                    {/* Left Side - Hero Text */}
+                    <Grid
+                      item
+                      xs={12}
+                      md={4}
+                      sx={{ display: { xs: 'none', md: 'block' } }}
+                    >
+                      <Box
+                        sx={{
+                          textAlign: { xs: 'center', md: 'left' },
+                          px: { xs: 1, sm: 0 },
+                        }}
+                      >
+                        <Typography
+                          variant="h4"
+                          component="h1"
+                          sx={{
+                            fontWeight: 'bold',
+                            background:
+                              'linear-gradient(45deg, var(--k-gold-dark) 30%, var(--k-gold) 90%)',
+                            backgroundClip: 'text',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            mb: { xs: 0.5, md: 1 },
+                            fontSize: {
+                              xs: '1.35rem', // ✓ Increased from 1.25rem for better mobile readability
+                              sm: '1.65rem', // ✓ Increased from 1.5rem
+                              md: '2rem',
+                              lg: '2.25rem',
+                            },
+                            lineHeight: { xs: 1.3, md: 1.3 }, // ✓ Better line spacing on mobile
+                            wordWrap: 'break-word', // ✓ Prevent text overflow
+                          }}
+                        >
+                          Find Your Next Trade Opportunity
+                        </Typography>
+                        <Typography
+                          variant="h6"
+                          sx={{
+                            color: 'text.secondary',
+                            fontSize: {
+                              xs: '0.85rem',
+                              sm: '0.95rem',
+                              md: '1rem',
+                            }, // ✓ Improved readability
+                            lineHeight: { xs: 1.5, md: 1.5 }, // ✓ Better line spacing
+                            maxWidth: { xs: '100%', md: '90%' },
+                            wordWrap: 'break-word', // ✓ Prevent overflow
+                          }}
+                        >
+                          {
+                            "Connect with Ghana's top employers and advance your skilled trades career"
+                          }
+                        </Typography>
+                      </Box>
+                    </Grid>
+
+                    {/* Right Side - Filter System: Compact on mobile, expanded on desktop */}
+                    <Grid item xs={12} md={8}>
+                      <JobsFiltersPanel
+                        isMobile={isMobile}
+                        isSmallMobile={isSmallMobile}
+                        searchQuery={searchQuery}
+                        onSearchInputChange={setSearchQuery}
+                        onSearchSubmit={handleSearchSubmit}
+                        mobileFilterOpen={mobileFilterOpen}
+                        onOpenMobileFilters={handleOpenMobileFilters}
+                        onCloseMobileFilters={handleCloseMobileFilters}
+                        onApplyMobileFilters={handleApplyMobileFilters}
+                        selectedCategory={selectedCategory}
+                        onCategoryChange={setSelectedCategory}
+                        selectedLocation={selectedLocation}
+                        onLocationChange={setSelectedLocation}
+                        budgetRange={budgetRange}
+                        showFilters={showFilters}
+                        onToggleFilters={handleToggleFilters}
+                        hasActiveFilters={hasActiveFilters}
+                        activeFilterCount={activeFilterCount}
+                        isJobsFetching={isJobsFetching}
+                        budgetFilterActive={budgetFilterActive}
+                        onBudgetFilterToggle={handleBudgetFilterToggle}
+                        onBudgetRangeChange={handleBudgetRangeChange}
+                        quickFilters={quickFilters}
+                        onToggleQuickFilter={toggleQuickFilter}
+                        sortBy={sortBy}
+                        onSortChange={setSortBy}
+                        onClearAllFilters={clearAllFilters}
+                      />
+                    </Grid>
+                  </Grid>
+                </Box>
+              </motion.div>
+
+              {/* Browse by Trade Category - Large visual icons for easy browsing */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.3 }}
+                {...motionProps}
+              >
+                <Box sx={{ mb: { xs: 3, md: 4 }, px: { xs: 0.5, sm: 0 } }}>
+                  <Typography
+                    variant="h5"
                     sx={{
+                      color: 'var(--k-gold)',
+                      fontWeight: 'bold',
+                      mb: { xs: 1.5, md: 2 },
+                      fontSize: { xs: '1.15rem', sm: '1.35rem', md: '1.5rem' },
                       textAlign: { xs: 'center', md: 'left' },
-                      px: { xs: 1, sm: 0 },
                     }}
                   >
-                    <Typography
-                      variant="h4"
-                      component="h1"
-                      sx={{
-                        fontWeight: 'bold',
-                        background:
-                          'linear-gradient(45deg, var(--k-gold-dark) 30%, var(--k-gold) 90%)',
-                        backgroundClip: 'text',
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                        mb: { xs: 0.5, md: 1 },
-                        fontSize: {
-                          xs: '1.35rem', // ✓ Increased from 1.25rem for better mobile readability
-                          sm: '1.65rem', // ✓ Increased from 1.5rem
-                          md: '2rem',
-                          lg: '2.25rem',
-                        },
-                        lineHeight: { xs: 1.3, md: 1.3 }, // ✓ Better line spacing on mobile
-                        wordWrap: 'break-word', // ✓ Prevent text overflow
-                      }}
-                    >
-                      Find Your Next Trade Opportunity
-                    </Typography>
-                    <Typography
-                      variant="h6"
-                      sx={{
-                        color: 'text.secondary',
-                        fontSize: { xs: '0.85rem', sm: '0.95rem', md: '1rem' }, // ✓ Improved readability
-                        lineHeight: { xs: 1.5, md: 1.5 }, // ✓ Better line spacing
-                        maxWidth: { xs: '100%', md: '90%' },
-                        wordWrap: 'break-word', // ✓ Prevent overflow
-                      }}
-                    >
-                      {"Connect with Ghana's top employers and advance your skilled trades career"}
-                    </Typography>
-                  </Box>
-                </Grid>
-
-                {/* Right Side - Filter System: Compact on mobile, expanded on desktop */}
-                <Grid item xs={12} md={8}>
-                  <JobsFiltersPanel
-                    isMobile={isMobile}
-                    isSmallMobile={isSmallMobile}
-                    searchQuery={searchQuery}
-                    onSearchInputChange={setSearchQuery}
-                    onSearchSubmit={handleSearchSubmit}
-                    mobileFilterOpen={mobileFilterOpen}
-                    onOpenMobileFilters={handleOpenMobileFilters}
-                    onCloseMobileFilters={handleCloseMobileFilters}
-                    onApplyMobileFilters={handleApplyMobileFilters}
+                    Browse by Trade
+                  </Typography>
+                  <JobsCategoryBrowseGrid
+                    categoryData={categoryData}
                     selectedCategory={selectedCategory}
-                    onCategoryChange={setSelectedCategory}
-                    selectedLocation={selectedLocation}
-                    onLocationChange={setSelectedLocation}
-                    budgetRange={budgetRange}
-                    showFilters={showFilters}
-                    onToggleFilters={handleToggleFilters}
-                    hasActiveFilters={hasActiveFilters}
-                    activeFilterCount={activeFilterCount}
-                    isJobsFetching={isJobsFetching}
-                    budgetFilterActive={budgetFilterActive}
-                    onBudgetFilterToggle={handleBudgetFilterToggle}
-                    onBudgetRangeChange={handleBudgetRangeChange}
-                    quickFilters={quickFilters}
-                    onToggleQuickFilter={toggleQuickFilter}
-                    sortBy={sortBy}
-                    onSortChange={setSortBy}
-                    onClearAllFilters={clearAllFilters}
+                    onSelectCategory={handleBrowseCategorySelect}
+                    isMobile={isMobile}
                   />
-                </Grid>
-              </Grid>
-            </Box>
-          </motion.div>
+                </Box>
+              </motion.div>
 
-          {/* Browse by Trade Category - Large visual icons for easy browsing */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.3 }}
-            {...motionProps}
-          >
-            <Box sx={{ mb: { xs: 3, md: 4 }, px: { xs: 0.5, sm: 0 } }}>
-              <Typography
-                variant="h5"
-                sx={{
-                  color: 'var(--k-gold)',
-                  fontWeight: 'bold',
-                  mb: { xs: 1.5, md: 2 },
-                  fontSize: { xs: '1.15rem', sm: '1.35rem', md: '1.5rem' },
-                  textAlign: { xs: 'center', md: 'left' },
-                }}
+              {/* Enhanced Jobs Grid */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+                {...motionProps}
               >
-                Browse by Trade
-              </Typography>
-              <JobsCategoryBrowseGrid
-                categoryData={categoryData}
-                selectedCategory={selectedCategory}
-                onSelectCategory={handleBrowseCategorySelect}
-                isMobile={isMobile}
-              />
-            </Box>
-          </motion.div>
+                <JobsResultsHeader
+                  selectedCategory={selectedCategory}
+                  hasActiveFilters={hasActiveFilters}
+                  effectiveSearch={effectiveSearch}
+                  selectedLocation={selectedLocation}
+                  budgetFilterActive={budgetFilterActive}
+                  budgetRange={budgetRange}
+                  quickFilters={quickFilters}
+                  sortBy={sortBy}
+                  onClearSearch={() => {
+                    setSearchQuery('');
+                    setSubmittedSearch(null);
+                  }}
+                  onClearCategory={() => setSelectedCategory('')}
+                  onClearLocation={() => setSelectedLocation('')}
+                  onClearBudget={() => {
+                    setBudgetFilterActive(false);
+                    setBudgetRange([0, 100000]);
+                  }}
+                  onToggleQuickFilter={toggleQuickFilter}
+                  onClearAllFilters={clearAllFilters}
+                  totalJobs={totalJobs}
+                  uniqueJobsLength={uniqueJobs.length}
+                />
 
-          {/* Enhanced Jobs Grid */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            {...motionProps}
-          >
-            <JobsResultsHeader
-              selectedCategory={selectedCategory}
-              hasActiveFilters={hasActiveFilters}
-              effectiveSearch={effectiveSearch}
-              selectedLocation={selectedLocation}
-              budgetFilterActive={budgetFilterActive}
-              budgetRange={budgetRange}
-              quickFilters={quickFilters}
-              sortBy={sortBy}
-              onClearSearch={() => {
-                setSearchQuery('');
-                setSubmittedSearch(null);
-              }}
-              onClearCategory={() => setSelectedCategory('')}
-              onClearLocation={() => setSelectedLocation('')}
-              onClearBudget={() => {
-                setBudgetFilterActive(false);
-                setBudgetRange([0, 100000]);
-              }}
-              onToggleQuickFilter={toggleQuickFilter}
-              onClearAllFilters={clearAllFilters}
-              totalJobs={totalJobs}
-              uniqueJobsLength={uniqueJobs.length}
-            />
+                <JobsGridStatePanels
+                  loading={loading}
+                  error={error}
+                  retryJobsFetch={retryJobsFetch}
+                  uniqueJobs={uniqueJobs}
+                  effectiveSearch={effectiveSearch}
+                  selectedCategory={selectedCategory}
+                  selectedLocation={selectedLocation}
+                  budgetFilterActive={budgetFilterActive}
+                  onClearSearch={() => {
+                    setSearchQuery('');
+                    setSubmittedSearch(null);
+                  }}
+                  onClearCategory={() => setSelectedCategory('')}
+                  onClearLocation={() => setSelectedLocation('')}
+                  onClearBudget={() => {
+                    setBudgetFilterActive(false);
+                    setBudgetRange([0, 100000]);
+                  }}
+                  clearAllFilters={clearAllFilters}
+                />
 
-            <JobsGridStatePanels
-              loading={loading}
-              error={error}
-              retryJobsFetch={retryJobsFetch}
-              uniqueJobs={uniqueJobs}
-              effectiveSearch={effectiveSearch}
-              selectedCategory={selectedCategory}
-              selectedLocation={selectedLocation}
-              budgetFilterActive={budgetFilterActive}
-              onClearSearch={() => {
-                setSearchQuery('');
-                setSubmittedSearch(null);
-              }}
-              onClearCategory={() => setSelectedCategory('')}
-              onClearLocation={() => setSelectedLocation('')}
-              onClearBudget={() => {
-                setBudgetFilterActive(false);
-                setBudgetRange([0, 100000]);
-              }}
-              clearAllFilters={clearAllFilters}
-            />
+                {!loading && !error && (
+                  <JobsCardsGrid
+                    uniqueJobs={uniqueJobs}
+                    isSmallMobile={isSmallMobile}
+                    motionProps={motionProps}
+                    navigate={navigate}
+                    handlePrimaryJobAction={handlePrimaryJobAction}
+                    isHirerUser={isHirerUser}
+                    handleToggleBookmark={handleToggleBookmark}
+                    savedJobIds={savedJobIds}
+                    theme={theme}
+                    getCategoryIcon={getCategoryIcon}
+                  />
+                )}
+              </motion.div>
 
-            {!loading && !error && (
-              <JobsCardsGrid
+              <JobsPaginationControls
+                loading={loading}
+                error={error}
                 uniqueJobs={uniqueJobs}
-                isSmallMobile={isSmallMobile}
-                motionProps={motionProps}
-                navigate={navigate}
-                handlePrimaryJobAction={handlePrimaryJobAction}
-                isHirerUser={isHirerUser}
-                handleToggleBookmark={handleToggleBookmark}
-                savedJobIds={savedJobIds}
-                theme={theme}
-                getCategoryIcon={getCategoryIcon}
+                totalJobs={totalJobs}
+                hasMore={hasMore}
+                loadMoreRef={loadMoreRef}
+                isJobsFetching={isJobsFetching}
+                onLoadMore={() => setPage((p) => p + 1)}
+                totalPages={totalPages}
+                page={page}
+                onPageChange={(newPage) => {
+                  setPage(newPage);
+                  // On desktop pagination, replace jobs instead of append
+                  setJobs([]);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
               />
-            )}
-          </motion.div>
 
-          <JobsPaginationControls
-            loading={loading}
-            error={error}
-            uniqueJobs={uniqueJobs}
-            totalJobs={totalJobs}
-            hasMore={hasMore}
-            loadMoreRef={loadMoreRef}
-            isJobsFetching={isJobsFetching}
-            onLoadMore={() => setPage((p) => p + 1)}
-            totalPages={totalPages}
-            page={page}
-            onPageChange={(newPage) => {
-              setPage(newPage);
-              // On desktop pagination, replace jobs instead of append
-              setJobs([]);
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
+              {/* Stats Section - Moved to Bottom */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.6 }}
+                {...motionProps}
+              >
+                <Box
+                  sx={{
+                    mt: { xs: 6, md: 8 }, // ✓ Reduced top margin on mobile
+                    mb: { xs: 4, md: 6 }, // ✓ Reduced bottom margin on mobile
+                    px: { xs: 1, sm: 0 }, // ✓ Add horizontal padding on mobile
+                    display: { xs: 'none', md: 'block' },
+                  }}
+                >
+                  <Typography
+                    variant="h4"
+                    sx={{
+                      color: 'var(--k-gold)',
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                      mb: { xs: 3, md: 4 }, // ✓ Responsive margin
+                      fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' }, // ✓ Responsive font size
+                    }}
+                  >
+                    Platform Statistics
+                  </Typography>
+                  <Grid container spacing={{ xs: 2, sm: 3 }}>
+                    {' '}
+                    {/* ✓ Responsive spacing */}
+                    {/* Available Jobs Stat */}
+                    <Grid item xs={6} sm={6} md={3}>
+                      {' '}
+                      {/* ✓ 2 columns on mobile, 4 on desktop */}
+                      <AnimatedStatCard
+                        value={
+                          platformStats.loading
+                            ? uniqueJobs.length
+                            : platformStats.availableJobs
+                        }
+                        label="Available Jobs"
+                        isLive={true}
+                      />
+                    </Grid>
+                    {/* Active Employers Stat */}
+                    <Grid item xs={6} sm={6} md={3}>
+                      {' '}
+                      {/* ✓ 2 columns on mobile, 4 on desktop */}
+                      <AnimatedStatCard
+                        value={
+                          platformStats.loading
+                            ? 0
+                            : platformStats.activeEmployers
+                        }
+                        suffix="+"
+                        label="Active Employers"
+                      />
+                    </Grid>
+                    {/* Skilled Workers Stat */}
+                    <Grid item xs={6} sm={6} md={3}>
+                      {' '}
+                      {/* ✓ 2 columns on mobile, 4 on desktop */}
+                      <AnimatedStatCard
+                        value={
+                          platformStats.loading
+                            ? 0
+                            : platformStats.skilledWorkers
+                        }
+                        suffix="+"
+                        label="Skilled Workers"
+                      />
+                    </Grid>
+                    {/* Success Rate Stat */}
+                    <Grid item xs={6} sm={6} md={3}>
+                      {' '}
+                      {/* ✓ 2 columns on mobile, 4 on desktop */}
+                      <AnimatedStatCard
+                        value={
+                          platformStats.loading ? 0 : platformStats.successRate
+                        }
+                        suffix="%"
+                        label="Success Rate"
+                      />
+                    </Grid>
+                  </Grid>
+                </Box>
+              </motion.div>
+
+              {/* CTA Section */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.8 }}
+                {...motionProps}
+              >
+                <Paper
+                  sx={{
+                    mt: { xs: 3, md: 4 }, // ✓ Reduced mobile margin
+                    p: { xs: 2.5, sm: 3, md: 4 }, // ✓ Responsive padding
+                    mx: { xs: 1, sm: 0 }, // ✓ Mobile horizontal spacing
+                    display: { xs: 'none', md: 'block' },
+                    textAlign: 'center',
+                    bgcolor: 'var(--k-accent-soft)',
+                    border: '1px solid var(--k-accent-border-strong)',
+                  }}
+                >
+                  <Typography
+                    variant="h4"
+                    sx={{
+                      color: 'var(--k-gold)',
+                      fontWeight: 'bold',
+                      mb: { xs: 1.5, md: 2 }, // ✓ Responsive margin
+                      fontSize: { xs: '1.35rem', sm: '1.75rem', md: '2rem' }, // ✓ Responsive font
+                      px: { xs: 1, sm: 0 }, // ✓ Mobile padding
+                    }}
+                  >
+                    Ready to Take Your Career to the Next Level?
+                  </Typography>
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      color: 'text.secondary',
+                      mb: { xs: 2.5, md: 3 }, // ✓ Responsive margin
+                      fontSize: { xs: '0.9rem', sm: '0.95rem', md: '1rem' }, // ✓ Responsive font
+                      lineHeight: { xs: 1.5, md: 1.6 }, // ✓ Better readability
+                      maxWidth: 600,
+                      mx: 'auto',
+                      px: { xs: 1, sm: 0 }, // ✓ Mobile padding
+                    }}
+                  >
+                    Join thousands of skilled professionals who've found their
+                    dream jobs through Kelmah. Get personalized job
+                    recommendations and connect directly with employers.
+                  </Typography>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      gap: { xs: 1.5, sm: 2 }, // ✓ Responsive gap
+                      justifyContent: 'center',
+                      flexWrap: 'wrap',
+                      px: { xs: 1, sm: 0 }, // ✓ Mobile padding
+                    }}
+                  >
+                    <Button
+                      variant="contained"
+                      size="large"
+                      onClick={() => {
+                        if (!authState.isAuthenticated) {
+                          navigate('/login', {
+                            state: {
+                              from: '/jobs',
+                              message: isHirerUser
+                                ? 'Sign in to post a job'
+                                : 'Sign in to manage job alerts',
+                            },
+                          });
+                          return;
+                        }
+                        if (isHirerUser) {
+                          navigate('/hirer/jobs/post');
+                          return;
+                        }
+                        handleCreateJobAlert();
+                      }}
+                      sx={{
+                        bgcolor: 'var(--k-gold)',
+                        color: 'var(--k-text-on-accent)',
+                        fontWeight: 'bold',
+                        fontSize: { xs: '0.9rem', sm: '0.95rem', md: '1rem' }, // ✓ Responsive font
+                        px: { xs: 3, sm: 3.5, md: 4 }, // ✓ Responsive padding
+                        minHeight: { xs: '44px', sm: '48px' }, // ✓ Touch target
+                        '&:hover': {
+                          bgcolor: 'var(--k-gold-dark)',
+                        },
+                        '&:active': {
+                          transform: 'scale(0.98)', // ✓ Touch feedback
+                        },
+                      }}
+                    >
+                      {isHirerUser ? 'Post a Job' : 'Manage Job Alerts'}
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      size="large"
+                      onClick={() => {
+                        if (!authState.isAuthenticated) {
+                          navigate('/login', {
+                            state: {
+                              from: isHirerUser
+                                ? '/hirer/find-talents'
+                                : '/profile/upload-cv',
+                              message: isHirerUser
+                                ? 'Sign in to find talent'
+                                : 'Sign in to upload your CV',
+                            },
+                          });
+                          return;
+                        }
+                        navigate(
+                          isHirerUser
+                            ? '/hirer/find-talents'
+                            : '/profile/upload-cv',
+                        );
+                      }}
+                      sx={{
+                        borderColor: 'var(--k-gold)',
+                        color: 'var(--k-gold)',
+                        fontSize: { xs: '0.9rem', sm: '0.95rem', md: '1rem' }, // ✓ Responsive font
+                        px: { xs: 3, sm: 3.5, md: 4 }, // ✓ Responsive padding
+                        minHeight: { xs: '44px', sm: '48px' }, // ✓ Touch target
+                        '&:hover': {
+                          borderColor: 'var(--k-gold-dark)',
+                          bgcolor: 'var(--k-accent-soft)',
+                        },
+                        '&:active': {
+                          transform: 'scale(0.98)', // ✓ Touch feedback
+                        },
+                      }}
+                    >
+                      {isHirerUser ? 'Find Talent' : 'Upload CV'}
+                    </Button>
+                  </Box>
+                </Paper>
+              </motion.div>
+            </Container>
+          </Box>
+          <Snackbar
+            open={snackbar.open}
+            autoHideDuration={4000}
+            onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
+            message={snackbar.message}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
           />
-
-          {/* Stats Section - Moved to Bottom */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
-            {...motionProps}
-          >
-            <Box
-              sx={{
-                mt: { xs: 6, md: 8 }, // ✓ Reduced top margin on mobile
-                mb: { xs: 4, md: 6 }, // ✓ Reduced bottom margin on mobile
-                px: { xs: 1, sm: 0 }, // ✓ Add horizontal padding on mobile
-                display: { xs: 'none', md: 'block' },
-              }}
-            >
-              <Typography
-                variant="h4"
-                sx={{
-                  color: 'var(--k-gold)',
-                  fontWeight: 'bold',
-                  textAlign: 'center',
-                  mb: { xs: 3, md: 4 }, // ✓ Responsive margin
-                  fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' }, // ✓ Responsive font size
-                }}
-              >
-                Platform Statistics
-              </Typography>
-              <Grid container spacing={{ xs: 2, sm: 3 }}>
-                {' '}
-                {/* ✓ Responsive spacing */}
-                {/* Available Jobs Stat */}
-                <Grid item xs={6} sm={6} md={3}>
-                  {' '}
-                  {/* ✓ 2 columns on mobile, 4 on desktop */}
-                  <AnimatedStatCard
-                    value={
-                      platformStats.loading
-                        ? uniqueJobs.length
-                        : platformStats.availableJobs
-                    }
-                    label="Available Jobs"
-                    isLive={true}
-                  />
-                </Grid>
-                {/* Active Employers Stat */}
-                <Grid item xs={6} sm={6} md={3}>
-                  {' '}
-                  {/* ✓ 2 columns on mobile, 4 on desktop */}
-                  <AnimatedStatCard
-                    value={
-                      platformStats.loading ? 0 : platformStats.activeEmployers
-                    }
-                    suffix="+"
-                    label="Active Employers"
-                  />
-                </Grid>
-                {/* Skilled Workers Stat */}
-                <Grid item xs={6} sm={6} md={3}>
-                  {' '}
-                  {/* ✓ 2 columns on mobile, 4 on desktop */}
-                  <AnimatedStatCard
-                    value={
-                      platformStats.loading ? 0 : platformStats.skilledWorkers
-                    }
-                    suffix="+"
-                    label="Skilled Workers"
-                  />
-                </Grid>
-                {/* Success Rate Stat */}
-                <Grid item xs={6} sm={6} md={3}>
-                  {' '}
-                  {/* ✓ 2 columns on mobile, 4 on desktop */}
-                  <AnimatedStatCard
-                    value={
-                      platformStats.loading ? 0 : platformStats.successRate
-                    }
-                    suffix="%"
-                    label="Success Rate"
-                  />
-                </Grid>
-              </Grid>
-            </Box>
-          </motion.div>
-
-          {/* CTA Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.8 }}
-            {...motionProps}
-          >
-            <Paper
-              sx={{
-                mt: { xs: 3, md: 4 }, // ✓ Reduced mobile margin
-                p: { xs: 2.5, sm: 3, md: 4 }, // ✓ Responsive padding
-                mx: { xs: 1, sm: 0 }, // ✓ Mobile horizontal spacing
-                display: { xs: 'none', md: 'block' },
-                textAlign: 'center',
-                bgcolor: 'var(--k-accent-soft)',
-                border: '1px solid var(--k-accent-border-strong)',
-              }}
-            >
-              <Typography
-                variant="h4"
-                sx={{
-                  color: 'var(--k-gold)',
-                  fontWeight: 'bold',
-                  mb: { xs: 1.5, md: 2 }, // ✓ Responsive margin
-                  fontSize: { xs: '1.35rem', sm: '1.75rem', md: '2rem' }, // ✓ Responsive font
-                  px: { xs: 1, sm: 0 }, // ✓ Mobile padding
-                }}
-              >
-                Ready to Take Your Career to the Next Level?
-              </Typography>
-              <Typography
-                variant="body1"
-                sx={{
-                  color: 'text.secondary',
-                  mb: { xs: 2.5, md: 3 }, // ✓ Responsive margin
-                  fontSize: { xs: '0.9rem', sm: '0.95rem', md: '1rem' }, // ✓ Responsive font
-                  lineHeight: { xs: 1.5, md: 1.6 }, // ✓ Better readability
-                  maxWidth: 600,
-                  mx: 'auto',
-                  px: { xs: 1, sm: 0 }, // ✓ Mobile padding
-                }}
-              >
-                Join thousands of skilled professionals who've found their dream
-                jobs through Kelmah. Get personalized job recommendations and
-                connect directly with employers.
-              </Typography>
-              <Box
-                sx={{
-                  display: 'flex',
-                  gap: { xs: 1.5, sm: 2 }, // ✓ Responsive gap
-                  justifyContent: 'center',
-                  flexWrap: 'wrap',
-                  px: { xs: 1, sm: 0 }, // ✓ Mobile padding
-                }}
-              >
-                <Button
-                  variant="contained"
-                  size="large"
-                  onClick={() => {
-                    if (!authState.isAuthenticated) {
-                      navigate('/login', {
-                        state: {
-                          from: '/jobs',
-                          message: isHirerUser
-                            ? 'Sign in to post a job'
-                            : 'Sign in to manage job alerts',
-                        },
-                      });
-                      return;
-                    }
-                    if (isHirerUser) {
-                      navigate('/hirer/jobs/post');
-                      return;
-                    }
-                    handleCreateJobAlert();
-                  }}
-                  sx={{
-                    bgcolor: 'var(--k-gold)',
-                    color: 'var(--k-text-on-accent)',
-                    fontWeight: 'bold',
-                    fontSize: { xs: '0.9rem', sm: '0.95rem', md: '1rem' }, // ✓ Responsive font
-                    px: { xs: 3, sm: 3.5, md: 4 }, // ✓ Responsive padding
-                    minHeight: { xs: '44px', sm: '48px' }, // ✓ Touch target
-                    '&:hover': {
-                      bgcolor: 'var(--k-gold-dark)',
-                    },
-                    '&:active': {
-                      transform: 'scale(0.98)', // ✓ Touch feedback
-                    },
-                  }}>
-                  {isHirerUser ? 'Post a Job' : 'Manage Job Alerts'}
-                </Button>
-                <Button
-                  variant="outlined"
-                  size="large"
-                  onClick={() => {
-                    if (!authState.isAuthenticated) {
-                      navigate('/login', {
-                        state: {
-                          from: isHirerUser ? '/hirer/find-talents' : '/profile/upload-cv',
-                          message: isHirerUser
-                            ? 'Sign in to find talent'
-                            : 'Sign in to upload your CV',
-                        },
-                      });
-                      return;
-                    }
-                    navigate(isHirerUser ? '/hirer/find-talents' : '/profile/upload-cv');
-                  }}
-                  sx={{
-                    borderColor: 'var(--k-gold)',
-                    color: 'var(--k-gold)',
-                    fontSize: { xs: '0.9rem', sm: '0.95rem', md: '1rem' }, // ✓ Responsive font
-                    px: { xs: 3, sm: 3.5, md: 4 }, // ✓ Responsive padding
-                    minHeight: { xs: '44px', sm: '48px' }, // ✓ Touch target
-                    '&:hover': {
-                      borderColor: 'var(--k-gold-dark)',
-                      bgcolor: 'var(--k-accent-soft)',
-                    },
-                    '&:active': {
-                      transform: 'scale(0.98)', // ✓ Touch feedback
-                    },
-                  }}>
-                  {isHirerUser ? 'Find Talent' : 'Upload CV'}
-                </Button>
-              </Box>
-            </Paper>
-          </motion.div>
-        </Container>
-      </Box>
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={4000}
-        onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
-        message={snackbar.message}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      />
-      </PullToRefresh>
+        </PullToRefresh>
       </PageCanvas>
     </ErrorBoundary>
   );
 };
 
 export default JobsPage;
-
-
-

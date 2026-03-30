@@ -32,7 +32,10 @@ export const useVisibilityPolling = ({
       };
     }
 
-    const safeMaxIntervalMs = Math.max(maxIntervalMs || intervalMs * 8, intervalMs);
+    const safeMaxIntervalMs = Math.max(
+      maxIntervalMs || intervalMs * 8,
+      intervalMs,
+    );
 
     const clearScheduledPoll = () => {
       if (timerRef.current) {
@@ -66,12 +69,19 @@ export const useVisibilityPolling = ({
         return;
       }
 
-      if (pauseWhenHidden && typeof document !== 'undefined' && document.hidden) {
+      if (
+        pauseWhenHidden &&
+        typeof document !== 'undefined' &&
+        document.hidden
+      ) {
         clearScheduledPoll();
         return;
       }
 
-      if (typeof shouldPauseRef.current === 'function' && shouldPauseRef.current()) {
+      if (
+        typeof shouldPauseRef.current === 'function' &&
+        shouldPauseRef.current()
+      ) {
         scheduleNextPoll(intervalMs);
         return;
       }
@@ -131,7 +141,10 @@ export const useVisibilityPolling = ({
       disposedRef.current = true;
       clearScheduledPoll();
       if (pauseWhenHidden && typeof document !== 'undefined') {
-        document.removeEventListener('visibilitychange', handleVisibilityChange);
+        document.removeEventListener(
+          'visibilitychange',
+          handleVisibilityChange,
+        );
       }
     };
   }, [

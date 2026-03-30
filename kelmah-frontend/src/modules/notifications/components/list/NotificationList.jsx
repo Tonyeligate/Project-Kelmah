@@ -81,11 +81,11 @@ const NotificationList = () => {
           {notifications.map((notification) => (
             <SwipeToAction
               key={notification.id || notification._id}
-              onDelete={() => deleteNotification(notification.id || notification._id)}
+              onDelete={() =>
+                deleteNotification(notification.id || notification._id)
+              }
             >
-              <NotificationItem
-                notification={notification}
-              />
+              <NotificationItem notification={notification} />
             </SwipeToAction>
           ))}
         </List>

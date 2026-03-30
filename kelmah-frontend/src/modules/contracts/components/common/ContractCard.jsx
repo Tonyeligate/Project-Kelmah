@@ -70,12 +70,21 @@ const ContractCard = ({ contract }) => {
         mb={2}
       >
         <Stack direction="row" alignItems="center" spacing={1.5}>
-          <Avatar src={hirer.avatar} alt={hirer.name || 'Hirer avatar'} sx={{ width: 40, height: 40 }} />
+          <Avatar
+            src={hirer.avatar}
+            alt={hirer.name || 'Hirer avatar'}
+            sx={{ width: 40, height: 40 }}
+          />
           <Box>
             <Typography variant="body2" color="text.secondary">
               Contract with
             </Typography>
-            <Typography variant="subtitle2" fontWeight="bold" noWrap sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <Typography
+              variant="subtitle2"
+              fontWeight="bold"
+              noWrap
+              sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}
+            >
               {hirer.name}
             </Typography>
           </Box>
@@ -149,7 +158,10 @@ const ContractCard = ({ contract }) => {
         mt={1}
       >
         <Typography variant="caption" color="text.secondary">
-          Ends: {endDate && isValid(new Date(endDate)) ? formatDistanceToNow(new Date(endDate), { addSuffix: true }) : 'unknown'}
+          Ends:{' '}
+          {endDate && isValid(new Date(endDate))
+            ? formatDistanceToNow(new Date(endDate), { addSuffix: true })
+            : 'unknown'}
         </Typography>
         <Button
           component={Link}

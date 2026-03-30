@@ -39,7 +39,12 @@ const ReviewCard = ({ review }) => {
   return (
     <StyledReviewPaper>
       <Stack spacing={2} height="100%">
-        <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
+        <Stack
+          direction="row"
+          spacing={2}
+          alignItems="center"
+          justifyContent="space-between"
+        >
           <Stack direction="row" spacing={2} alignItems="center">
             <Avatar
               src={authorAvatar}

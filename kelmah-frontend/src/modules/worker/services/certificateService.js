@@ -76,7 +76,11 @@ const certificateService = {
    * @returns {Promise<Object>} - Upload response with URL
    */
   uploadCertificateFile: async (file, onProgress) => {
-    const uploaded = await fileUploadService.uploadFile(file, 'certificates', 'user');
+    const uploaded = await fileUploadService.uploadFile(
+      file,
+      'certificates',
+      'user',
+    );
     if (onProgress) onProgress(100);
     return {
       url: uploaded.url,
@@ -95,9 +99,7 @@ const certificateService = {
    */
   requestVerification: async (certificateId) => {
     // FIXED: Removed /api prefix - apiClient.baseURL already includes '/api'
-    const res = await api.post(
-      `/profile/certificates/${certificateId}/verify`,
-    );
+    const res = await api.post(`/profile/certificates/${certificateId}/verify`);
     const unwrapped = unwrap(res);
     return unwrapped?.certificate ?? unwrapped;
   },
@@ -133,9 +135,7 @@ const certificateService = {
    */
   shareCertificate: async (certificateId) => {
     // FIXED: Removed /api prefix - apiClient.baseURL already includes '/api'
-    const res = await api.post(
-      `/profile/certificates/${certificateId}/share`,
-    );
+    const res = await api.post(`/profile/certificates/${certificateId}/share`);
     return unwrap(res);
   },
 
@@ -162,10 +162,9 @@ const certificateService = {
    */
   getExpiringCertificates: async (workerId, daysAhead = 30) => {
     // FIXED: Removed /api prefix - apiClient.baseURL already includes '/api'
-    const res = await api.get(
-      `/profile/${workerId}/certificates/expiring`,
-      { params: { daysAhead } },
-    );
+    const res = await api.get(`/profile/${workerId}/certificates/expiring`, {
+      params: { daysAhead },
+    });
     const unwrapped = unwrap(res);
     return Array.isArray(unwrapped?.certificates)
       ? unwrapped.certificates

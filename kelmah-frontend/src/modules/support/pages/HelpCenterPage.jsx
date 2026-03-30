@@ -63,32 +63,31 @@ const contactChannels = [
 
 const quickActions = (navigate, mode) =>
   [
-  {
-    key: 'support',
-    title: 'Open Support Ticket',
-    description: 'Submit detailed requests and track responses in one place.',
-    icon: SupportAgentIcon,
-    onClick: () => navigate('/messages'),
-    chip: 'SLA 8h',
-  },
-  {
-    key: 'docs',
-    title: 'Live Knowledge Base',
-    description: 'Browse deployment, payments, and verification guides.',
-    icon: LiveHelpIcon,
-    onClick: () => navigate('/docs'),
-    chip: 'Updated hourly',
-  },
-  {
-    key: 'community',
-    title: 'Community Forum',
-    description: 'Learn from 4,000+ hirers and technicians across Ghana.',
-    icon: ForumIcon,
-    onClick: () => navigate('/community'),
-    chip: 'Beta',
-  },
-]
-  .filter((action) => action.key !== mode);
+    {
+      key: 'support',
+      title: 'Open Support Ticket',
+      description: 'Submit detailed requests and track responses in one place.',
+      icon: SupportAgentIcon,
+      onClick: () => navigate('/messages'),
+      chip: 'SLA 8h',
+    },
+    {
+      key: 'docs',
+      title: 'Live Knowledge Base',
+      description: 'Browse deployment, payments, and verification guides.',
+      icon: LiveHelpIcon,
+      onClick: () => navigate('/docs'),
+      chip: 'Updated hourly',
+    },
+    {
+      key: 'community',
+      title: 'Community Forum',
+      description: 'Learn from 4,000+ hirers and technicians across Ghana.',
+      icon: ForumIcon,
+      onClick: () => navigate('/community'),
+      chip: 'Beta',
+    },
+  ].filter((action) => action.key !== mode);
 
 const faqs = [
   {
@@ -216,7 +215,10 @@ const HelpCenterPage = () => {
   }, [healthStatus.status, theme.palette.mode, theme.palette.text.primary]);
 
   return (
-    <PageCanvas disableContainer sx={{ pt: { xs: 1, md: 4 }, pb: { xs: 10, md: 6 }, overflowX: 'clip' }}>
+    <PageCanvas
+      disableContainer
+      sx={{ pt: { xs: 1, md: 4 }, pb: { xs: 10, md: 6 }, overflowX: 'clip' }}
+    >
       <Box
         sx={{
           minHeight: '100vh',
@@ -226,248 +228,285 @@ const HelpCenterPage = () => {
           overflowX: 'clip',
         }}
       >
-      <Helmet><title>Help Center | Kelmah</title></Helmet>
-      <Container maxWidth="lg" sx={{ px: { xs: 0.75, sm: 3 }, width: '100%', minWidth: 0 }}>
-        <Box
-          sx={{
-            background:
-              theme.palette.mode === 'dark'
-                ? `linear-gradient(135deg, ${BRAND_COLORS.black} 0%, ${BRAND_COLORS.blackMedium} 100%)`
-                : `linear-gradient(135deg, ${BRAND_COLORS.goldLight} 0%, ${BRAND_COLORS.gold} 100%)`,
-            borderRadius: 4,
-            p: { xs: 2, md: 6 },
-            color:
-              theme.palette.mode === 'dark'
-                ? theme.palette.common.white
-                : BRAND_COLORS.black,
-            boxShadow:
-              theme.palette.mode === 'dark'
-                ? '0 20px 45px rgba(0,0,0,0.65)'
-                : '0 25px 55px rgba(0,0,0,0.15)',
-            mb: { xs: 2, md: 6 },
-          }}
+        <Helmet>
+          <title>Help Center | Kelmah</title>
+        </Helmet>
+        <Container
+          maxWidth="lg"
+          sx={{ px: { xs: 0.75, sm: 3 }, width: '100%', minWidth: 0 }}
         >
-          <Stack spacing={{ xs: 1.5, md: 3 }}>
-            <Stack
-              direction={{ xs: 'column', md: 'row' }}
-              spacing={2}
-              alignItems="center"
-            >
-              <Chip
-                icon={<SupportAgentIcon />}
-                label="Kelmah Support"
-                sx={{
-                  mr: { md: 'auto' },
-                  fontWeight: 600,
-                  backgroundColor: 'rgba(0,0,0,0.15)',
-                  color:
-                    theme.palette.mode === 'dark'
-                      ? BRAND_COLORS.gold
-                      : theme.palette.common.white,
-                  '& .MuiSvgIcon-root': { color: 'inherit !important' },
-                }}
-              />
-              <Chip
-                icon={<CheckCircleIcon />}
-                label={statusChip.label}
-                sx={{
-                  fontWeight: 600,
-                  backgroundColor: statusChip.bg,
-                  color:
-                    statusChip.textColor ||
-                    (theme.palette.mode === 'dark'
-                      ? BRAND_COLORS.gold
-                      : theme.palette.text.primary),
-                }}
-              />
-            </Stack>
-            <Box>
-              <Typography variant={isMobile ? 'h5' : 'h3'} fontWeight={800} gutterBottom>
-                {pageCopy.title}
-              </Typography>
-              <Typography variant={isMobile ? 'body1' : 'h6'} maxWidth="720px">
-                {pageCopy.subtitle}
-              </Typography>
-              <Typography
-                variant="body2"
-                sx={{ mt: 1.5, opacity: 0.9, maxWidth: '720px' }}
+          <Box
+            sx={{
+              background:
+                theme.palette.mode === 'dark'
+                  ? `linear-gradient(135deg, ${BRAND_COLORS.black} 0%, ${BRAND_COLORS.blackMedium} 100%)`
+                  : `linear-gradient(135deg, ${BRAND_COLORS.goldLight} 0%, ${BRAND_COLORS.gold} 100%)`,
+              borderRadius: 4,
+              p: { xs: 2, md: 6 },
+              color:
+                theme.palette.mode === 'dark'
+                  ? theme.palette.common.white
+                  : BRAND_COLORS.black,
+              boxShadow:
+                theme.palette.mode === 'dark'
+                  ? '0 20px 45px rgba(0,0,0,0.65)'
+                  : '0 25px 55px rgba(0,0,0,0.15)',
+              mb: { xs: 2, md: 6 },
+            }}
+          >
+            <Stack spacing={{ xs: 1.5, md: 3 }}>
+              <Stack
+                direction={{ xs: 'column', md: 'row' }}
+                spacing={2}
+                alignItems="center"
               >
-                Quick steps: choose a channel, share your job or account
-                details, then watch for the reply time shown in-app.
-              </Typography>
-            </Box>
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.25} sx={{ display: { xs: 'none', sm: 'flex' } }}>
-              <Button
-                variant="contained"
-                size="large"
-                onClick={pageCopy.primaryAction}
-                aria-label={pageCopy.primaryLabel}
-                endIcon={<ArrowForwardIcon />}
-                sx={{ minHeight: 44 }}
-              >
-                {pageCopy.primaryLabel}
-              </Button>
-              <Button
-                variant="outlined"
-                size="large"
-                onClick={pageCopy.secondaryAction}
-                aria-label={pageCopy.secondaryLabel}
-                sx={{ minHeight: 44 }}
-              >
-                {pageCopy.secondaryLabel}
-              </Button>
-            </Stack>
-            <Typography variant="body2">
-              {healthStatus.message} · {healthStatus.action}
-            </Typography>
-            <Typography variant="caption" sx={{ opacity: 0.9 }}>
-              For urgent fraud or account safety issues, use Trust and Safety for priority handling.
-            </Typography>
-          </Stack>
-        </Box>
-
-        <Grid container spacing={{ xs: 1.25, md: 3 }} mb={{ xs: 2, md: 4 }}>
-          {quickActions(navigate, supportMode).map((action) => (
-            <Grid item xs={12} md={4} key={action.title}>
-              <Card
-                sx={{
-                  height: '100%',
-                  borderRadius: 2.5,
-                  border: `1px solid ${theme.palette.divider}`,
-                  boxShadow: '0 10px 35px rgba(0,0,0,0.07)',
-                }}
-              >
-                <CardContent sx={{ p: { xs: 1.5, md: 2 } }}>
-                  <Stack spacing={{ xs: 1.25, md: 2 }}>
-                    <action.icon
-                      sx={{
-                        fontSize: 34,
-                        color:
-                          theme.palette.mode === 'dark'
-                            ? BRAND_COLORS.gold
-                            : BRAND_COLORS.black,
-                      }}
-                    />
-                    <Box>
-                      <Typography variant="h6" fontWeight={700} gutterBottom>
-                        {action.title}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {action.description}
-                      </Typography>
-                    </Box>
-                    <Chip
-                      label={action.chip}
-                      size="small"
-                      sx={{ alignSelf: 'flex-start', fontWeight: 600 }}
-                    />
-                  </Stack>
-                </CardContent>
-                <CardActions>
-                  <Button
-                    onClick={action.onClick}
-                    endIcon={<ArrowForwardIcon />}
-                    sx={{ minHeight: 44 }}
-                  >
-                    Open
-                  </Button>
-                </CardActions>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-
-        <Grid container spacing={3} alignItems="stretch">
-          <Grid item xs={12} md={7}>
-            <Card sx={{ borderRadius: 3, height: '100%' }}>
-              <CardContent>
-                <Typography variant="h5" fontWeight={700} gutterBottom>
-                  Popular Questions
+                <Chip
+                  icon={<SupportAgentIcon />}
+                  label="Kelmah Support"
+                  sx={{
+                    mr: { md: 'auto' },
+                    fontWeight: 600,
+                    backgroundColor: 'rgba(0,0,0,0.15)',
+                    color:
+                      theme.palette.mode === 'dark'
+                        ? BRAND_COLORS.gold
+                        : theme.palette.common.white,
+                    '& .MuiSvgIcon-root': { color: 'inherit !important' },
+                  }}
+                />
+                <Chip
+                  icon={<CheckCircleIcon />}
+                  label={statusChip.label}
+                  sx={{
+                    fontWeight: 600,
+                    backgroundColor: statusChip.bg,
+                    color:
+                      statusChip.textColor ||
+                      (theme.palette.mode === 'dark'
+                        ? BRAND_COLORS.gold
+                        : theme.palette.text.primary),
+                  }}
+                />
+              </Stack>
+              <Box>
+                <Typography
+                  variant={isMobile ? 'h5' : 'h3'}
+                  fontWeight={800}
+                  gutterBottom
+                >
+                  {pageCopy.title}
                 </Typography>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Tap each topic to reveal the recommended fix or workflow.
+                <Typography
+                  variant={isMobile ? 'body1' : 'h6'}
+                  maxWidth="720px"
+                >
+                  {pageCopy.subtitle}
                 </Typography>
-                <Divider sx={{ my: 2 }} />
-                {faqs.map((faq) => (
-                  <Accordion key={faq.question} disableGutters>
-                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                      <Typography fontWeight={600}>{faq.question}</Typography>
-                    </AccordionSummary>
-                    <AccordionDetails>
-                      <Typography variant="body2" color="text.secondary">
-                        {faq.answer}
-                      </Typography>
-                    </AccordionDetails>
-                  </Accordion>
-                ))}
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} md={5}>
-            <Stack spacing={3} height="100%">
-              {contactChannels.map((channel) => (
-                <Card key={channel.title} sx={{ borderRadius: 3 }}>
-                  <CardContent>
-                    <Stack spacing={2}>
-                      <Stack direction="row" spacing={2} alignItems="center">
-                        <channel.icon
-                          sx={{
-                            fontSize: 32,
-                            color:
-                              theme.palette.mode === 'dark'
-                                ? BRAND_COLORS.gold
-                                : BRAND_COLORS.black,
-                          }}
-                        />
-                        <Box>
-                          <Typography variant="subtitle1" fontWeight={700}>
-                            {channel.title}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            {channel.description}
-                          </Typography>
-                        </Box>
-                      </Stack>
-                      <Button
-                        variant="outlined"
-                        onClick={channel.action}
-                        aria-label={`Open ${channel.title}`}
-                        sx={{ alignSelf: 'flex-start', minHeight: 44 }}
-                      >
-                        {channel.ctaLabel}
-                      </Button>
+                <Typography
+                  variant="body2"
+                  sx={{ mt: 1.5, opacity: 0.9, maxWidth: '720px' }}
+                >
+                  Quick steps: choose a channel, share your job or account
+                  details, then watch for the reply time shown in-app.
+                </Typography>
+              </Box>
+              <Stack
+                direction={{ xs: 'column', sm: 'row' }}
+                spacing={1.25}
+                sx={{ display: { xs: 'none', sm: 'flex' } }}
+              >
+                <Button
+                  variant="contained"
+                  size="large"
+                  onClick={pageCopy.primaryAction}
+                  aria-label={pageCopy.primaryLabel}
+                  endIcon={<ArrowForwardIcon />}
+                  sx={{ minHeight: 44 }}
+                >
+                  {pageCopy.primaryLabel}
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="large"
+                  onClick={pageCopy.secondaryAction}
+                  aria-label={pageCopy.secondaryLabel}
+                  sx={{ minHeight: 44 }}
+                >
+                  {pageCopy.secondaryLabel}
+                </Button>
+              </Stack>
+              <Typography variant="body2">
+                {healthStatus.message} · {healthStatus.action}
+              </Typography>
+              <Typography variant="caption" sx={{ opacity: 0.9 }}>
+                For urgent fraud or account safety issues, use Trust and Safety
+                for priority handling.
+              </Typography>
+            </Stack>
+          </Box>
+
+          <Grid container spacing={{ xs: 1.25, md: 3 }} mb={{ xs: 2, md: 4 }}>
+            {quickActions(navigate, supportMode).map((action) => (
+              <Grid item xs={12} md={4} key={action.title}>
+                <Card
+                  sx={{
+                    height: '100%',
+                    borderRadius: 2.5,
+                    border: `1px solid ${theme.palette.divider}`,
+                    boxShadow: '0 10px 35px rgba(0,0,0,0.07)',
+                  }}
+                >
+                  <CardContent sx={{ p: { xs: 1.5, md: 2 } }}>
+                    <Stack spacing={{ xs: 1.25, md: 2 }}>
+                      <action.icon
+                        sx={{
+                          fontSize: 34,
+                          color:
+                            theme.palette.mode === 'dark'
+                              ? BRAND_COLORS.gold
+                              : BRAND_COLORS.black,
+                        }}
+                      />
+                      <Box>
+                        <Typography variant="h6" fontWeight={700} gutterBottom>
+                          {action.title}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {action.description}
+                        </Typography>
+                      </Box>
+                      <Chip
+                        label={action.chip}
+                        size="small"
+                        sx={{ alignSelf: 'flex-start', fontWeight: 600 }}
+                      />
                     </Stack>
                   </CardContent>
+                  <CardActions>
+                    <Button
+                      onClick={action.onClick}
+                      endIcon={<ArrowForwardIcon />}
+                      sx={{ minHeight: 44 }}
+                    >
+                      Open
+                    </Button>
+                  </CardActions>
                 </Card>
-              ))}
-            </Stack>
+              </Grid>
+            ))}
           </Grid>
-        </Grid>
 
-        <Paper
-          elevation={8}
-          sx={(theme) => ({
-            display: { xs: 'flex', sm: 'none' },
-            position: 'fixed',
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: theme.zIndex.appBar + 2,
-            px: 1,
-            py: 1,
-            gap: 1,
-            borderTop: `1px solid ${theme.palette.divider}`,
-            backgroundColor: theme.palette.background.paper,
-          })}
-        >
-          <Button fullWidth variant="outlined" color="secondary" sx={{ minHeight: 42 }} onClick={pageCopy.secondaryAction}>
-            {pageCopy.secondaryLabel}
-          </Button>
-          <Button fullWidth variant="contained" color="secondary" sx={{ minHeight: 42, boxShadow: '0 2px 8px rgba(255,215,0,0.35)' }} onClick={pageCopy.primaryAction} endIcon={<ArrowForwardIcon />}>
-            {pageCopy.primaryLabel}
-          </Button>
-        </Paper>
-      </Container>
+          <Grid container spacing={3} alignItems="stretch">
+            <Grid item xs={12} md={7}>
+              <Card sx={{ borderRadius: 3, height: '100%' }}>
+                <CardContent>
+                  <Typography variant="h5" fontWeight={700} gutterBottom>
+                    Popular Questions
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    gutterBottom
+                  >
+                    Tap each topic to reveal the recommended fix or workflow.
+                  </Typography>
+                  <Divider sx={{ my: 2 }} />
+                  {faqs.map((faq) => (
+                    <Accordion key={faq.question} disableGutters>
+                      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                        <Typography fontWeight={600}>{faq.question}</Typography>
+                      </AccordionSummary>
+                      <AccordionDetails>
+                        <Typography variant="body2" color="text.secondary">
+                          {faq.answer}
+                        </Typography>
+                      </AccordionDetails>
+                    </Accordion>
+                  ))}
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid item xs={12} md={5}>
+              <Stack spacing={3} height="100%">
+                {contactChannels.map((channel) => (
+                  <Card key={channel.title} sx={{ borderRadius: 3 }}>
+                    <CardContent>
+                      <Stack spacing={2}>
+                        <Stack direction="row" spacing={2} alignItems="center">
+                          <channel.icon
+                            sx={{
+                              fontSize: 32,
+                              color:
+                                theme.palette.mode === 'dark'
+                                  ? BRAND_COLORS.gold
+                                  : BRAND_COLORS.black,
+                            }}
+                          />
+                          <Box>
+                            <Typography variant="subtitle1" fontWeight={700}>
+                              {channel.title}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              {channel.description}
+                            </Typography>
+                          </Box>
+                        </Stack>
+                        <Button
+                          variant="outlined"
+                          onClick={channel.action}
+                          aria-label={`Open ${channel.title}`}
+                          sx={{ alignSelf: 'flex-start', minHeight: 44 }}
+                        >
+                          {channel.ctaLabel}
+                        </Button>
+                      </Stack>
+                    </CardContent>
+                  </Card>
+                ))}
+              </Stack>
+            </Grid>
+          </Grid>
+
+          <Paper
+            elevation={8}
+            sx={(theme) => ({
+              display: { xs: 'flex', sm: 'none' },
+              position: 'fixed',
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: theme.zIndex.appBar + 2,
+              px: 1,
+              py: 1,
+              gap: 1,
+              borderTop: `1px solid ${theme.palette.divider}`,
+              backgroundColor: theme.palette.background.paper,
+            })}
+          >
+            <Button
+              fullWidth
+              variant="outlined"
+              color="secondary"
+              sx={{ minHeight: 42 }}
+              onClick={pageCopy.secondaryAction}
+            >
+              {pageCopy.secondaryLabel}
+            </Button>
+            <Button
+              fullWidth
+              variant="contained"
+              color="secondary"
+              sx={{
+                minHeight: 42,
+                boxShadow: '0 2px 8px rgba(255,215,0,0.35)',
+              }}
+              onClick={pageCopy.primaryAction}
+              endIcon={<ArrowForwardIcon />}
+            >
+              {pageCopy.primaryLabel}
+            </Button>
+          </Paper>
+        </Container>
       </Box>
     </PageCanvas>
   );

@@ -32,25 +32,23 @@ const deriveEvents = (jobs = [], applications = {}) => {
     if (Array.isArray(record.applications)) return record.applications;
 
     if (record.buckets && typeof record.buckets === 'object') {
-      return Object.values(record.buckets)
-        .filter(Array.isArray)
-        .flat();
+      return Object.values(record.buckets).filter(Array.isArray).flat();
     }
 
     return [];
   };
 
-  const appendApplicationEvents = (apps = [], record = {}, jobIdFallback = null) => {
+  const appendApplicationEvents = (
+    apps = [],
+    record = {},
+    jobIdFallback = null,
+  ) => {
     if (!Array.isArray(apps)) return;
 
     apps.forEach((app, appIdx) => {
       const jobTitle =
-        app?.jobTitle ||
-        app?.job?.title ||
-        record?.jobTitle ||
-        'a job';
-      const applicantName =
-        app?.applicantName || app?.workerName || 'A worker';
+        app?.jobTitle || app?.job?.title || record?.jobTitle || 'a job';
+      const applicantName = app?.applicantName || app?.workerName || 'A worker';
       const createdAt = app?.createdAt || app?.appliedAt;
       events.push({
         id: `app-${app?._id || app?.id || jobIdFallback || 'activity'}-${appIdx}`,
@@ -117,13 +115,17 @@ const mapBackendActivities = (activities = []) =>
   (Array.isArray(activities) ? activities : [])
     .map((activity, index) => {
       const display = mapActivityTypeToDisplay(activity?.type);
-      const timestamp = activity?.timestamp ? new Date(activity.timestamp).getTime() : 0;
+      const timestamp = activity?.timestamp
+        ? new Date(activity.timestamp).getTime()
+        : 0;
       return {
         id: activity?.id || `activity-${index}`,
         icon: display.icon,
         iconColor: display.iconColor,
         primary: activity?.summary || 'Recent activity',
-        secondary: activity?.timestamp ? formatRelativeTime(activity.timestamp) : '',
+        secondary: activity?.timestamp
+          ? formatRelativeTime(activity.timestamp)
+          : '',
         _timestamp: timestamp,
       };
     })
@@ -137,14 +139,19 @@ const mapBackendActivities = (activities = []) =>
  *   jobs          (array)  — active/recent jobs
  *   applications  (object|array) — application records keyed by jobId or a flat application list
  */
-const RecentActivityFeed = ({ jobs = [], applications = {}, activities = null }) => {
+const RecentActivityFeed = ({
+  jobs = [],
+  applications = {},
+  activities = null,
+}) => {
   const theme = useTheme();
   const navigate = useNavigate();
   // FIX L1: Memoize event derivation to avoid recalculating on every render
   const events = useMemo(
-    () => Array.isArray(activities)
-      ? mapBackendActivities(activities)
-      : deriveEvents(jobs, applications),
+    () =>
+      Array.isArray(activities)
+        ? mapBackendActivities(activities)
+        : deriveEvents(jobs, applications),
     [activities, jobs, applications],
   );
 
@@ -161,7 +168,11 @@ const RecentActivityFeed = ({ jobs = [], applications = {}, activities = null })
       }}
     >
       <Box sx={{ px: { xs: 2, sm: 3 }, pt: { xs: 2, sm: 2.5 } }}>
-        <Typography variant="h6" fontWeight={600} sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
+        <Typography
+          variant="h6"
+          fontWeight={600}
+          sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}
+        >
           Recent Activity
         </Typography>
       </Box>
@@ -177,12 +188,21 @@ const RecentActivityFeed = ({ jobs = [], applications = {}, activities = null })
         <List disablePadding>
           {events.map((evt, idx) => (
             <React.Fragment key={evt.id}>
-              <ListItem alignItems="flex-start" sx={{ px: { xs: 2, sm: 3 }, py: 1.25 }}>
+              <ListItem
+                alignItems="flex-start"
+                sx={{ px: { xs: 2, sm: 3 }, py: 1.25 }}
+              >
                 <ListItemAvatar>
                   <Avatar
                     sx={{
-                      bgcolor: alpha(theme.palette[evt.iconColor]?.main || theme.palette.primary.main, 0.12),
-                      color: theme.palette[evt.iconColor]?.main || theme.palette.primary.main,
+                      bgcolor: alpha(
+                        theme.palette[evt.iconColor]?.main ||
+                          theme.palette.primary.main,
+                        0.12,
+                      ),
+                      color:
+                        theme.palette[evt.iconColor]?.main ||
+                        theme.palette.primary.main,
                       width: 40,
                       height: 40,
                     }}
@@ -203,16 +223,28 @@ const RecentActivityFeed = ({ jobs = [], applications = {}, activities = null })
                       overflow: 'hidden',
                     },
                   }}
-                  secondaryTypographyProps={{ variant: 'caption', color: 'text.secondary' }}
+                  secondaryTypographyProps={{
+                    variant: 'caption',
+                    color: 'text.secondary',
+                  }}
                 />
               </ListItem>
-              {idx < events.length - 1 && <Divider component="li" variant="inset" />}
+              {idx < events.length - 1 && (
+                <Divider component="li" variant="inset" />
+              )}
             </React.Fragment>
           ))}
         </List>
       )}
 
-      <Box sx={{ px: { xs: 2, sm: 3 }, py: 1.5, borderTop: '1px solid', borderColor: 'divider' }}>
+      <Box
+        sx={{
+          px: { xs: 2, sm: 3 },
+          py: 1.5,
+          borderTop: '1px solid',
+          borderColor: 'divider',
+        }}
+      >
         <Button
           size="medium"
           onClick={() => navigate('/notifications')}

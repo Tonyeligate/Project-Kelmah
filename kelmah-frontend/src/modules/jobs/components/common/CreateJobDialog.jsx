@@ -1,7 +1,28 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import {
-  Dialog, DialogTitle, DialogContent, DialogActions, AppBar, Toolbar, IconButton, TextField, Button, Grid, FormControl, InputLabel, Select, MenuItem, Box, Alert, InputAdornment, FormHelperText, Chip, Typography, useTheme } from '@mui/material';
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  AppBar,
+  Toolbar,
+  IconButton,
+  TextField,
+  Button,
+  Grid,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Box,
+  Alert,
+  InputAdornment,
+  FormHelperText,
+  Chip,
+  Typography,
+  useTheme,
+} from '@mui/material';
 import { AttachMoney, Close as CloseIcon } from '@mui/icons-material';
 import { createJob } from '../../../jobs/services/jobSlice';
 import PropTypes from 'prop-types';
@@ -146,9 +167,22 @@ function CreateJobDialog({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth fullScreen={isMobile}>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="md"
+      fullWidth
+      fullScreen={isMobile}
+    >
       {isMobile ? (
-        <AppBar sx={{ position: 'relative', bgcolor: 'background.paper', color: 'text.primary', boxShadow: 1 }}>
+        <AppBar
+          sx={{
+            position: 'relative',
+            bgcolor: 'background.paper',
+            color: 'text.primary',
+            boxShadow: 1,
+          }}
+        >
           <Toolbar>
             <IconButton
               edge="start"
@@ -167,7 +201,10 @@ function CreateJobDialog({
             >
               <CloseIcon />
             </IconButton>
-            <Typography sx={{ ml: 1, flex: 1, fontWeight: 600 }} variant="subtitle1">
+            <Typography
+              sx={{ ml: 1, flex: 1, fontWeight: 600 }}
+              variant="subtitle1"
+            >
               Create New Job
             </Typography>
             <Button
@@ -175,7 +212,8 @@ function CreateJobDialog({
               variant="contained"
               size="small"
               onClick={handleSubmit}
-              disabled={loading}>
+              disabled={loading}
+            >
               {loading ? 'Creating…' : 'Post Job'}
             </Button>
           </Toolbar>
@@ -403,7 +441,8 @@ function CreateJobDialog({
             variant="contained"
             onClick={handleSubmit}
             disabled={loading}
-            color="primary">
+            color="primary"
+          >
             {loading ? 'Creating...' : 'Create Job'}
           </Button>
         </DialogActions>

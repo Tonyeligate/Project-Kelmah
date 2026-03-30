@@ -2,7 +2,32 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
-  Box, Button, Container, Grid, Paper, Typography, TextField, FormControl, InputLabel, Select, MenuItem, FormHelperText, Divider, CircularProgress, Alert, Stepper, Step, StepLabel, IconButton, InputAdornment, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
+  Box,
+  Button,
+  Container,
+  Grid,
+  Paper,
+  Typography,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  FormHelperText,
+  Divider,
+  CircularProgress,
+  Alert,
+  Stepper,
+  Step,
+  StepLabel,
+  IconButton,
+  InputAdornment,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+} from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -15,7 +40,11 @@ import {
 } from '@mui/icons-material';
 import { alpha } from '@mui/material/styles';
 import { Helmet } from 'react-helmet-async';
-import { Z_INDEX, STICKY_CTA_HEIGHT, BOTTOM_NAV_HEIGHT } from '../../../constants/layout';
+import {
+  Z_INDEX,
+  STICKY_CTA_HEIGHT,
+  BOTTOM_NAV_HEIGHT,
+} from '../../../constants/layout';
 import Toast from '../../common/components/common/Toast';
 import workerService from '../../worker/services/workerService';
 import PageCanvas from '@/modules/common/components/PageCanvas';
@@ -83,7 +112,10 @@ const CreateContractPage = () => {
   useEffect(() => {
     if (!user) return;
 
-    const clientName = [user.firstName, user.lastName].filter(Boolean).join(' ') || user.name || '';
+    const clientName =
+      [user.firstName, user.lastName].filter(Boolean).join(' ') ||
+      user.name ||
+      '';
     if (!clientName) return;
 
     setContract((prev) => (prev.clientName ? prev : { ...prev, clientName }));
@@ -97,13 +129,19 @@ const CreateContractPage = () => {
     // Auto-populate worker info from URL param
     if (workerId && !contract.workerName) {
       setWorkerLoading(true);
-      workerService.getWorkerById(workerId)
+      workerService
+        .getWorkerById(workerId)
         .then((response) => {
           if (cancelled) return;
           const data = response?.data?.data || response?.data || response;
           const workerUser = data?.user || data;
-          const workerName = [workerUser?.firstName, workerUser?.lastName].filter(Boolean).join(' ')
-            || workerUser?.name || data?.name || '';
+          const workerName =
+            [workerUser?.firstName, workerUser?.lastName]
+              .filter(Boolean)
+              .join(' ') ||
+            workerUser?.name ||
+            data?.name ||
+            '';
           if (workerName) {
             setContract((prev) => ({
               ...prev,
@@ -116,9 +154,13 @@ const CreateContractPage = () => {
           if (cancelled) return;
           devError('Failed to fetch worker details:', err);
         })
-        .finally(() => { if (!cancelled) setWorkerLoading(false); });
+        .finally(() => {
+          if (!cancelled) setWorkerLoading(false);
+        });
     }
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [searchParams, contract.workerName]);
 
   // Warn if the user tries to close/reload with unsaved changes
@@ -259,7 +301,8 @@ const CreateContractPage = () => {
           errors.value = 'Enter how much you will pay (must be more than 0)';
         }
         break;
-      case 3: { // Milestones
+      case 3: {
+        // Milestones
         const milestoneErrors = {};
         let totalAmount = 0;
 
@@ -324,20 +367,25 @@ const CreateContractPage = () => {
         .unwrap()
         .then((response) => {
           const newContractId = response?.id || response?._id;
-          navigate(newContractId ? `/contracts/${newContractId}` : '/contracts', {
-            state: {
-              toast: {
-                open: true,
-                message: 'Contract created successfully',
-                severity: 'success',
+          navigate(
+            newContractId ? `/contracts/${newContractId}` : '/contracts',
+            {
+              state: {
+                toast: {
+                  open: true,
+                  message: 'Contract created successfully',
+                  severity: 'success',
+                },
               },
             },
-          });
+          );
         })
         .catch((err) => {
           setToast({
             open: true,
-            message: err?.message || (typeof err === 'string' ? err : 'Failed to create contract'),
+            message:
+              err?.message ||
+              (typeof err === 'string' ? err : 'Failed to create contract'),
             severity: 'error',
           });
         });
@@ -406,8 +454,7 @@ const CreateContractPage = () => {
                 onChange={handleChange}
                 error={!!validationErrors.title}
                 helperText={
-                  validationErrors.title ||
-                  'Enter a short name for this job'
+                  validationErrors.title || 'Enter a short name for this job'
                 }
               />
             </Grid>
@@ -465,7 +512,11 @@ const CreateContractPage = () => {
                 error={!!validationErrors.workerName}
                 helperText={
                   validationErrors.workerName ||
-                  (workerLoading ? 'Loading worker details...' : (contract.workerId ? 'Auto-filled from selected worker' : 'Enter the worker name'))
+                  (workerLoading
+                    ? 'Loading worker details...'
+                    : contract.workerId
+                      ? 'Auto-filled from selected worker'
+                      : 'Enter the worker name')
                 }
                 InputProps={{
                   readOnly: !!contract.workerId,
@@ -492,7 +543,9 @@ const CreateContractPage = () => {
                     textField: {
                       fullWidth: true,
                       error: !!validationErrors.startDate,
-                      helperText: validationErrors.startDate || 'Select contract start date',
+                      helperText:
+                        validationErrors.startDate ||
+                        'Select contract start date',
                     },
                   }}
                 />
@@ -506,7 +559,8 @@ const CreateContractPage = () => {
                     textField: {
                       fullWidth: true,
                       error: !!validationErrors.endDate,
-                      helperText: validationErrors.endDate || 'Select contract end date',
+                      helperText:
+                        validationErrors.endDate || 'Select contract end date',
                     },
                   }}
                   minDate={contract.startDate}
@@ -558,7 +612,14 @@ const CreateContractPage = () => {
                 </Alert>
               )}
               {contract.milestones.map((milestone, index) => (
-                <Paper key={milestone.id || milestone._id || `${milestone.title || 'milestone'}-${milestone.dueDate || 'due'}-${index}`} sx={{ p: 2, mb: 2 }}>
+                <Paper
+                  key={
+                    milestone.id ||
+                    milestone._id ||
+                    `${milestone.title || 'milestone'}-${milestone.dueDate || 'due'}-${index}`
+                  }
+                  sx={{ p: 2, mb: 2 }}
+                >
                   <Box
                     sx={{
                       display: 'flex',
@@ -575,7 +636,15 @@ const CreateContractPage = () => {
                         onClick={() => handleRemoveMilestone(index)}
                         size="medium"
                         aria-label={`Remove step ${index + 1}`}
-                        sx={{ minWidth: 44, minHeight: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
+                        sx={{
+                          minWidth: 44,
+                          minHeight: 44,
+                          '&:focus-visible': {
+                            outline: '3px solid',
+                            outlineColor: 'primary.main',
+                            outlineOffset: '2px',
+                          },
+                        }}
                       >
                         <DeleteIcon />
                       </IconButton>
@@ -625,7 +694,8 @@ const CreateContractPage = () => {
                           slotProps={{
                             textField: {
                               fullWidth: true,
-                              error: !!validationErrors.milestones?.[index]?.dueDate,
+                              error:
+                                !!validationErrors.milestones?.[index]?.dueDate,
                               helperText:
                                 validationErrors.milestones?.[index]?.dueDate ||
                                 'Select milestone due date',
@@ -648,7 +718,9 @@ const CreateContractPage = () => {
                         type="number"
                         InputProps={{
                           startAdornment: (
-                            <InputAdornment position="start">GHS</InputAdornment>
+                            <InputAdornment position="start">
+                              GHS
+                            </InputAdornment>
                           ),
                         }}
                         error={validationErrors.milestones?.[index]?.amount}
@@ -748,7 +820,11 @@ const CreateContractPage = () => {
                 <Divider sx={{ mb: 2 }} />
                 {contract.milestones.map((milestone, index) => (
                   <Box
-                    key={milestone.id || milestone._id || `${milestone.title || 'milestone'}-${milestone.dueDate || 'due'}-${index}`}
+                    key={
+                      milestone.id ||
+                      milestone._id ||
+                      `${milestone.title || 'milestone'}-${milestone.dueDate || 'due'}-${index}`
+                    }
                     sx={{
                       mb: 2,
                       pb: 2,
@@ -769,7 +845,10 @@ const CreateContractPage = () => {
                         {milestone.title}
                       </Typography>
                       <Typography variant="subtitle1">
-                        GHS {isNaN(parseFloat(milestone.amount)) ? '-' : parseFloat(milestone.amount).toFixed(2)}
+                        GHS{' '}
+                        {isNaN(parseFloat(milestone.amount))
+                          ? '-'
+                          : parseFloat(milestone.amount).toFixed(2)}
                       </Typography>
                     </Box>
                     <Typography
@@ -794,208 +873,144 @@ const CreateContractPage = () => {
   };
 
   return (
-    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
-    <Container maxWidth="lg" sx={{ mt: { xs: 2, sm: 4 }, mb: { xs: 4, sm: 8 }, px: { xs: 0.5, sm: 2 }, pb: isMobile ? `${STICKY_CTA_HEIGHT + 16}px` : undefined }}>
-      <Helmet><title>Create Contract | Kelmah</title></Helmet>
-      {/* Error alert */}
-      {error.createContract && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          Error creating contract: {error.createContract}
-        </Alert>
-      )}
-
-      {/* Back button and header */}
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
-        <Button
-          startIcon={<BackIcon />}
-          onClick={handleBackToList}
-          variant="outlined"
-          color="secondary"
-          sx={{ mr: 2, borderWidth: 2 }}
-        >
-          Back to Contracts
-        </Button>
-        <Typography variant="h4" sx={{ color: 'secondary.main' }}>
-          Create New Contract
-        </Typography>
-      </Box>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        Fill each step with clear job details so both sides agree before work starts.
-      </Typography>
-
-      {/* Stepper */}
-      <Paper
-        elevation={0}
-        sx={(theme) => ({
-          p: { xs: 1.5, sm: 3 },
-          mb: { xs: 2, sm: 4 },
-          backgroundColor: alpha(theme.palette.primary.main, 0.7),
-          backdropFilter: 'blur(10px)',
-          borderRadius: theme.spacing(2),
-          border: `2px solid ${theme.palette.secondary.main}`,
-          boxShadow: `inset 0 0 8px rgba(255, 215, 0, 0.5)`,
-          transition:
-            'box-shadow 0.3s ease-in-out, border-color 0.3s ease-in-out',
-          '&:hover': {
-            boxShadow: `0 0 12px rgba(255, 215, 0, 0.3), inset 0 0 8px rgba(255, 215, 0, 0.5)`,
-            borderColor: theme.palette.secondary.light,
-          },
-          overflowX: 'auto',
-        })}
+    <PageCanvas
+      disableContainer
+      sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}
+    >
+      <Container
+        maxWidth="lg"
+        sx={{
+          mt: { xs: 2, sm: 4 },
+          mb: { xs: 4, sm: 8 },
+          px: { xs: 0.5, sm: 2 },
+          pb: isMobile ? `${STICKY_CTA_HEIGHT + 16}px` : undefined,
+        }}
       >
-        <Stepper activeStep={activeStep} orientation={isMobile ? 'vertical' : 'horizontal'} {...(!isMobile && { alternativeLabel: true })} sx={{ minWidth: { xs: 'max-content', sm: 'auto' }, '& .MuiStepLabel-label': { fontSize: { xs: '0.7rem', sm: '0.875rem' } } }}>
-          {steps.map((label) => (
-            <Step key={label}>
-              <StepLabel>{label}</StepLabel>
-            </Step>
-          ))}
-        </Stepper>
-      </Paper>
-
-      {/* Step content */}
-      <Paper
-        elevation={0}
-        sx={(theme) => ({
-          p: { xs: 1.5, sm: 3 },
-          mb: { xs: 2, sm: 4 },
-          backgroundColor: alpha(theme.palette.primary.main, 0.7),
-          backdropFilter: 'blur(10px)',
-          borderRadius: theme.spacing(2),
-          border: `2px solid ${theme.palette.secondary.main}`,
-          boxShadow: `inset 0 0 8px rgba(255, 215, 0, 0.5)`,
-          transition:
-            'box-shadow 0.3s ease-in-out, border-color 0.3s ease-in-out',
-          '&:hover': {
-            boxShadow: `0 0 12px rgba(255, 215, 0, 0.3), inset 0 0 8px rgba(255, 215, 0, 0.5)`,
-            borderColor: theme.palette.secondary.light,
-          },
-        })}
-      >
-        {loading.createContract ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 5 }}>
-            <CircularProgress />
-          </Box>
-        ) : (
-          <>{getStepContent(activeStep)}</>
+        <Helmet>
+          <title>Create Contract | Kelmah</title>
+        </Helmet>
+        {/* Error alert */}
+        {error.createContract && (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            Error creating contract: {error.createContract}
+          </Alert>
         )}
-      </Paper>
 
-      {/* Navigation buttons */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-        <Button
-          variant="outlined"
-          color="secondary"
-          startIcon={<BackIcon />}
-          onClick={handleBack}
-          disabled={activeStep === 0}
-          sx={{ minHeight: 44 }}
-        >
-          Back
-        </Button>
-        <Button
-          variant="contained"
-          color="secondary"
-          endIcon={activeStep === steps.length - 1 ? <CheckCircleIcon /> : <ForwardIcon />}
-          sx={{ minHeight: 44 }}
-          aria-label={activeStep === steps.length - 1 ? 'Create contract now' : 'Go to next contract step'}
-          onClick={() => {
-            if (activeStep === steps.length - 1) {
-              if (validateStep()) setConfirmDialogOpen(true);
-            } else {
-              handleNext();
-            }
-          }}
-        >
-          {activeStep === steps.length - 1 ? 'Create Contract' : 'Next'}
-        </Button>
-      </Box>
-
-      {/* Discard changes confirmation dialog */}
-      <Dialog
-        open={discardDialogOpen}
-        onClose={() => setDiscardDialogOpen(false)}
-        aria-labelledby="discard-changes-dialog-title"
-      >
-        <DialogTitle id="discard-changes-dialog-title">Discard changes?</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            You have unsaved changes. Are you sure you want to leave and discard
-            them?
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDiscardDialogOpen(false)}>Cancel</Button>
+        {/* Back button and header */}
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
           <Button
-            color="error"
-            onClick={() => {
-              setDiscardDialogOpen(false);
-              navigate('/contracts');
+            startIcon={<BackIcon />}
+            onClick={handleBackToList}
+            variant="outlined"
+            color="secondary"
+            sx={{ mr: 2, borderWidth: 2 }}
+          >
+            Back to Contracts
+          </Button>
+          <Typography variant="h4" sx={{ color: 'secondary.main' }}>
+            Create New Contract
+          </Typography>
+        </Box>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          Fill each step with clear job details so both sides agree before work
+          starts.
+        </Typography>
+
+        {/* Stepper */}
+        <Paper
+          elevation={0}
+          sx={(theme) => ({
+            p: { xs: 1.5, sm: 3 },
+            mb: { xs: 2, sm: 4 },
+            backgroundColor: alpha(theme.palette.primary.main, 0.7),
+            backdropFilter: 'blur(10px)',
+            borderRadius: theme.spacing(2),
+            border: `2px solid ${theme.palette.secondary.main}`,
+            boxShadow: `inset 0 0 8px rgba(255, 215, 0, 0.5)`,
+            transition:
+              'box-shadow 0.3s ease-in-out, border-color 0.3s ease-in-out',
+            '&:hover': {
+              boxShadow: `0 0 12px rgba(255, 215, 0, 0.3), inset 0 0 8px rgba(255, 215, 0, 0.5)`,
+              borderColor: theme.palette.secondary.light,
+            },
+            overflowX: 'auto',
+          })}
+        >
+          <Stepper
+            activeStep={activeStep}
+            orientation={isMobile ? 'vertical' : 'horizontal'}
+            {...(!isMobile && { alternativeLabel: true })}
+            sx={{
+              minWidth: { xs: 'max-content', sm: 'auto' },
+              '& .MuiStepLabel-label': {
+                fontSize: { xs: '0.7rem', sm: '0.875rem' },
+              },
             }}
           >
-            Discard and Leave
-          </Button>
-        </DialogActions>
-      </Dialog>
+            {steps.map((label) => (
+              <Step key={label}>
+                <StepLabel>{label}</StepLabel>
+              </Step>
+            ))}
+          </Stepper>
+        </Paper>
 
-      {/* Confirm create contract dialog */}
-      <Dialog
-        open={confirmDialogOpen}
-        onClose={() => setConfirmDialogOpen(false)}
-        aria-labelledby="confirm-contract-dialog-title"
-      >
-        <DialogTitle id="confirm-contract-dialog-title">Confirm Contract Creation</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Are you sure you want to create this contract? This action cannot be
-            undone.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setConfirmDialogOpen(false)}>Cancel</Button>
-          <Button
-            color="primary"
-            onClick={() => {
-              setConfirmDialogOpen(false);
-              handleCreateContract();
-            }}
-          >
-            Confirm
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Sticky bottom action bar for mobile */}
-      {isMobile && (
-        <Box
-          sx={{
-            position: 'fixed',
-            bottom: { xs: `${BOTTOM_NAV_HEIGHT}px`, md: 0 },
-            left: 0,
-            right: 0,
-            zIndex: Z_INDEX.stickyCta,
-            bgcolor: 'background.paper',
-            borderTop: 1,
-            borderColor: 'divider',
-            px: 2,
-            py: 1.5,
-            display: 'flex',
-            justifyContent: 'space-between',
-            gap: 1,
-            boxShadow: '0 -2px 8px rgba(0,0,0,0.1)',
-          }}
+        {/* Step content */}
+        <Paper
+          elevation={0}
+          sx={(theme) => ({
+            p: { xs: 1.5, sm: 3 },
+            mb: { xs: 2, sm: 4 },
+            backgroundColor: alpha(theme.palette.primary.main, 0.7),
+            backdropFilter: 'blur(10px)',
+            borderRadius: theme.spacing(2),
+            border: `2px solid ${theme.palette.secondary.main}`,
+            boxShadow: `inset 0 0 8px rgba(255, 215, 0, 0.5)`,
+            transition:
+              'box-shadow 0.3s ease-in-out, border-color 0.3s ease-in-out',
+            '&:hover': {
+              boxShadow: `0 0 12px rgba(255, 215, 0, 0.3), inset 0 0 8px rgba(255, 215, 0, 0.5)`,
+              borderColor: theme.palette.secondary.light,
+            },
+          })}
         >
+          {loading.createContract ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 5 }}>
+              <CircularProgress />
+            </Box>
+          ) : (
+            <>{getStepContent(activeStep)}</>
+          )}
+        </Paper>
+
+        {/* Navigation buttons */}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
           <Button
             variant="outlined"
             color="secondary"
+            startIcon={<BackIcon />}
             onClick={handleBack}
             disabled={activeStep === 0}
-            sx={{ minHeight: 44, flex: 1 }}
+            sx={{ minHeight: 44 }}
           >
             Back
           </Button>
           <Button
             variant="contained"
             color="secondary"
+            endIcon={
+              activeStep === steps.length - 1 ? (
+                <CheckCircleIcon />
+              ) : (
+                <ForwardIcon />
+              )
+            }
+            sx={{ minHeight: 44 }}
+            aria-label={
+              activeStep === steps.length - 1
+                ? 'Create contract now'
+                : 'Go to next contract step'
+            }
             onClick={() => {
               if (activeStep === steps.length - 1) {
                 if (validateStep()) setConfirmDialogOpen(true);
@@ -1003,28 +1018,138 @@ const CreateContractPage = () => {
                 handleNext();
               }
             }}
-            disabled={loading || workerLoading}
-            aria-label={activeStep === steps.length - 1 ? 'Create contract now' : 'Go to next contract step'}
-            sx={{ minHeight: 44, flex: 1 }}
           >
-            {loading ? <CircularProgress size={18} color="inherit" /> : activeStep === steps.length - 1 ? 'Create Contract' : 'Next'}
+            {activeStep === steps.length - 1 ? 'Create Contract' : 'Next'}
           </Button>
         </Box>
-      )}
 
-      {/* Toast notifications */}
-      <Toast
-        open={toast.open}
-        message={toast.message}
-        severity={toast.severity}
-        onClose={() => setToast({ ...toast, open: false })}
-        fullWidth
-      />
-    </Container>
+        {/* Discard changes confirmation dialog */}
+        <Dialog
+          open={discardDialogOpen}
+          onClose={() => setDiscardDialogOpen(false)}
+          aria-labelledby="discard-changes-dialog-title"
+        >
+          <DialogTitle id="discard-changes-dialog-title">
+            Discard changes?
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              You have unsaved changes. Are you sure you want to leave and
+              discard them?
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setDiscardDialogOpen(false)}>Cancel</Button>
+            <Button
+              color="error"
+              onClick={() => {
+                setDiscardDialogOpen(false);
+                navigate('/contracts');
+              }}
+            >
+              Discard and Leave
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Confirm create contract dialog */}
+        <Dialog
+          open={confirmDialogOpen}
+          onClose={() => setConfirmDialogOpen(false)}
+          aria-labelledby="confirm-contract-dialog-title"
+        >
+          <DialogTitle id="confirm-contract-dialog-title">
+            Confirm Contract Creation
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Are you sure you want to create this contract? This action cannot
+              be undone.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setConfirmDialogOpen(false)}>Cancel</Button>
+            <Button
+              color="primary"
+              onClick={() => {
+                setConfirmDialogOpen(false);
+                handleCreateContract();
+              }}
+            >
+              Confirm
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Sticky bottom action bar for mobile */}
+        {isMobile && (
+          <Box
+            sx={{
+              position: 'fixed',
+              bottom: { xs: `${BOTTOM_NAV_HEIGHT}px`, md: 0 },
+              left: 0,
+              right: 0,
+              zIndex: Z_INDEX.stickyCta,
+              bgcolor: 'background.paper',
+              borderTop: 1,
+              borderColor: 'divider',
+              px: 2,
+              py: 1.5,
+              display: 'flex',
+              justifyContent: 'space-between',
+              gap: 1,
+              boxShadow: '0 -2px 8px rgba(0,0,0,0.1)',
+            }}
+          >
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={handleBack}
+              disabled={activeStep === 0}
+              sx={{ minHeight: 44, flex: 1 }}
+            >
+              Back
+            </Button>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={() => {
+                if (activeStep === steps.length - 1) {
+                  if (validateStep()) setConfirmDialogOpen(true);
+                } else {
+                  handleNext();
+                }
+              }}
+              disabled={loading || workerLoading}
+              aria-label={
+                activeStep === steps.length - 1
+                  ? 'Create contract now'
+                  : 'Go to next contract step'
+              }
+              sx={{ minHeight: 44, flex: 1 }}
+            >
+              {loading ? (
+                <CircularProgress size={18} color="inherit" />
+              ) : activeStep === steps.length - 1 ? (
+                'Create Contract'
+              ) : (
+                'Next'
+              )}
+            </Button>
+          </Box>
+        )}
+
+        {/* Toast notifications */}
+        <Toast
+          open={toast.open}
+          message={toast.message}
+          severity={toast.severity}
+          onClose={() => setToast({ ...toast, open: false })}
+          fullWidth
+        />
+      </Container>
     </PageCanvas>
   );
 };
 
 export default CreateContractPage;
-
-

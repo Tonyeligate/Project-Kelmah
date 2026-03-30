@@ -1,52 +1,5 @@
 // IconButton focus-visible styling is enforced globally via MuiIconButton theme overrides.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 const STATUS_FILTERS = [
   { label: 'All', value: 'all' },
   { label: 'Pending', value: 'pending' },
@@ -185,9 +138,9 @@ const ProposalReview = () => {
       aggregates.averageRate ??
       (proposals.length
         ? proposals.reduce(
-          (sum, proposal) => sum + Number(proposal.proposedRate || 0),
-          0,
-        ) / proposals.length
+            (sum, proposal) => sum + Number(proposal.proposedRate || 0),
+            0,
+          ) / proposals.length
         : 0);
 
     return {
@@ -363,7 +316,11 @@ const ProposalReview = () => {
     return (
       <Box>
         <Box display="flex" alignItems="center" gap={2} mb={3}>
-          <Avatar src={worker.avatar} alt={worker.name || 'Worker avatar'} sx={{ width: 64, height: 64 }}>
+          <Avatar
+            src={worker.avatar}
+            alt={worker.name || 'Worker avatar'}
+            sx={{ width: 64, height: 64 }}
+          >
             {(worker.name ?? 'U').charAt(0)}
           </Avatar>
           <Box>
@@ -407,8 +364,8 @@ const ProposalReview = () => {
               Location:{' '}
               {formatLocationBadge(
                 job.location ??
-                job.locationDetails ??
-                selectedProposal.jobLocation,
+                  job.locationDetails ??
+                  selectedProposal.jobLocation,
               )}
             </Typography>
           </Grid>
@@ -519,7 +476,13 @@ const ProposalReview = () => {
     <Box>
       <Grid container spacing={{ xs: 1.5, sm: 3 }} sx={{ mb: 4 }}>
         {Array.from({ length: 4 }).map((_, index) => (
-          <Grid item xs={6} sm={6} md={3} key={`proposal-card-skeleton-${index}`}>
+          <Grid
+            item
+            xs={6}
+            sm={6}
+            md={3}
+            key={`proposal-card-skeleton-${index}`}
+          >
             <Skeleton variant="rounded" height={120} animation="wave" />
           </Grid>
         ))}
@@ -528,7 +491,12 @@ const ProposalReview = () => {
         <CardContent>
           <Skeleton variant="text" height={40} width="40%" sx={{ mb: 2 }} />
           {Array.from({ length: 3 }).map((_, index) => (
-            <Skeleton key={`proposal-row-skeleton-${index}`} variant="text" height={60} sx={{ mb: 1 }} />
+            <Skeleton
+              key={`proposal-row-skeleton-${index}`}
+              variant="text"
+              height={60}
+              sx={{ mb: 1 }}
+            />
           ))}
         </CardContent>
       </Card>
@@ -615,14 +583,26 @@ const ProposalReview = () => {
           <Box>
             {loading
               ? Array.from({ length: skeletonRowCount }).map((_, i) => (
-                  <Box key={`proposal-mobile-skeleton-${i}`} sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
+                  <Box
+                    key={`proposal-mobile-skeleton-${i}`}
+                    sx={{
+                      p: 2,
+                      borderBottom: '1px solid',
+                      borderColor: 'divider',
+                    }}
+                  >
                     <Skeleton height={48} />
                   </Box>
                 ))
               : proposals.map((proposal, index) => {
-                  const proposalId = proposal.id ?? proposal._id ?? `proposal-${index}`;
-                  const workerName = proposal.worker?.name ?? proposal.workerName ?? 'Unknown worker';
-                  const jobTitle = proposal.job?.title ?? proposal.jobTitle ?? 'Untitled job';
+                  const proposalId =
+                    proposal.id ?? proposal._id ?? `proposal-${index}`;
+                  const workerName =
+                    proposal.worker?.name ??
+                    proposal.workerName ??
+                    'Unknown worker';
+                  const jobTitle =
+                    proposal.job?.title ?? proposal.jobTitle ?? 'Untitled job';
                   const statusLabel = proposal.status ?? 'pending';
                   return (
                     <Box
@@ -677,11 +657,15 @@ const ProposalReview = () => {
                             label={formatStatusLabel(statusLabel)}
                             color={getStatusColor(statusLabel)}
                             size="small"
-                            variant={statusLabel === 'accepted' ? 'filled' : 'outlined'}
+                            variant={
+                              statusLabel === 'accepted' ? 'filled' : 'outlined'
+                            }
                             sx={{ height: 20, fontSize: '0.65rem' }}
                           />
                           <Typography variant="caption" color="text.secondary">
-                            {formatCurrency(proposal.proposedRate ?? proposal.rate)}
+                            {formatCurrency(
+                              proposal.proposedRate ?? proposal.rate,
+                            )}
                           </Typography>
                         </Box>
                       </Box>
@@ -695,10 +679,24 @@ const ProposalReview = () => {
                           minWidth: 92,
                         }}
                       >
-                        <Typography variant="caption" color="text.disabled" noWrap>
-                          {formatDate(proposal.submittedAt ?? proposal.createdAt)}
+                        <Typography
+                          variant="caption"
+                          color="text.disabled"
+                          noWrap
+                        >
+                          {formatDate(
+                            proposal.submittedAt ?? proposal.createdAt,
+                          )}
                         </Typography>
-                        <IconButton sx={{ ...iconButtonA11ySx, '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' } }}
+                        <IconButton
+                          sx={{
+                            ...iconButtonA11ySx,
+                            '&:focus-visible': {
+                              outline: '3px solid',
+                              outlineColor: 'primary.main',
+                              outlineOffset: '2px',
+                            },
+                          }}
                           size="small"
                           onClick={(e) => handleMenuOpen(e, proposal)}
                           aria-label="Proposal actions"
@@ -754,100 +752,108 @@ const ProposalReview = () => {
             <TableBody>
               {loading
                 ? Array.from({ length: skeletonRowCount }).map((_, index) => (
-                  <TableRow key={`loading-${index}`}>
-                    <TableCell colSpan={6}>
-                      <Skeleton height={48} />
-                    </TableCell>
-                  </TableRow>
-                ))
-                : proposals.map((proposal, index) => {
-                  const proposalId =
-                    proposal.id ??
-                    proposal._id ??
-                    proposal.proposalId ??
-                    proposal.proposalID ??
-                    `proposal-${index}`;
-                  const workerName =
-                    proposal.worker?.name ??
-                    proposal.workerName ??
-                    'Unknown worker';
-                  const locationLabel = formatLocationBadge(
-                    proposal.worker?.location ?? proposal.workerLocation,
-                  );
-                  const jobTitle =
-                    proposal.job?.title ??
-                    proposal.jobTitle ??
-                    'Untitled job';
-                  const jobCategory =
-                    proposal.job?.category ??
-                    proposal.jobCategory ??
-                    'General';
-                  const statusLabel = proposal.status ?? 'pending';
-
-                  return (
-                    <TableRow hover key={proposalId}>
-                      <TableCell>
-                        <Typography variant="subtitle2">
-                          {workerName}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {locationLabel}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="subtitle2">
-                          {jobTitle}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {jobCategory}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="subtitle2">
-                          {formatCurrency(
-                            proposal.proposedRate ?? proposal.rate,
-                          )}
-                        </Typography>
-                        {proposal.availability?.duration && (
-                          <Typography
-                            variant="caption"
-                            color="text.secondary"
-                          >
-                            {formatDurationLabel(
-                              proposal.availability.duration,
-                            )}
-                          </Typography>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2">
-                          {formatDate(
-                            proposal.submittedAt ?? proposal.createdAt,
-                          )}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={formatStatusLabel(statusLabel)}
-                          color={getStatusColor(statusLabel)}
-                          size="small"
-                          variant={
-                            statusLabel === 'accepted' ? 'filled' : 'outlined'
-                          }
-                        />
-                      </TableCell>
-                      <TableCell align="right">
-                        <IconButton sx={{ ...iconButtonA11ySx, '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' } }}
-                          size="small"
-                          onClick={(event) => handleMenuOpen(event, proposal)}
-                          aria-label="Proposal actions"
-                        >
-                          <MoreVertIcon />
-                        </IconButton>
+                    <TableRow key={`loading-${index}`}>
+                      <TableCell colSpan={6}>
+                        <Skeleton height={48} />
                       </TableCell>
                     </TableRow>
-                  );
-                })}
+                  ))
+                : proposals.map((proposal, index) => {
+                    const proposalId =
+                      proposal.id ??
+                      proposal._id ??
+                      proposal.proposalId ??
+                      proposal.proposalID ??
+                      `proposal-${index}`;
+                    const workerName =
+                      proposal.worker?.name ??
+                      proposal.workerName ??
+                      'Unknown worker';
+                    const locationLabel = formatLocationBadge(
+                      proposal.worker?.location ?? proposal.workerLocation,
+                    );
+                    const jobTitle =
+                      proposal.job?.title ??
+                      proposal.jobTitle ??
+                      'Untitled job';
+                    const jobCategory =
+                      proposal.job?.category ??
+                      proposal.jobCategory ??
+                      'General';
+                    const statusLabel = proposal.status ?? 'pending';
+
+                    return (
+                      <TableRow hover key={proposalId}>
+                        <TableCell>
+                          <Typography variant="subtitle2">
+                            {workerName}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {locationLabel}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="subtitle2">
+                            {jobTitle}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {jobCategory}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="subtitle2">
+                            {formatCurrency(
+                              proposal.proposedRate ?? proposal.rate,
+                            )}
+                          </Typography>
+                          {proposal.availability?.duration && (
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
+                              {formatDurationLabel(
+                                proposal.availability.duration,
+                              )}
+                            </Typography>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2">
+                            {formatDate(
+                              proposal.submittedAt ?? proposal.createdAt,
+                            )}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Chip
+                            label={formatStatusLabel(statusLabel)}
+                            color={getStatusColor(statusLabel)}
+                            size="small"
+                            variant={
+                              statusLabel === 'accepted' ? 'filled' : 'outlined'
+                            }
+                          />
+                        </TableCell>
+                        <TableCell align="right">
+                          <IconButton
+                            sx={{
+                              ...iconButtonA11ySx,
+                              '&:focus-visible': {
+                                outline: '3px solid',
+                                outlineColor: 'primary.main',
+                                outlineOffset: '2px',
+                              },
+                            }}
+                            size="small"
+                            onClick={(event) => handleMenuOpen(event, proposal)}
+                            aria-label="Proposal actions"
+                          >
+                            <MoreVertIcon />
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
             </TableBody>
           </Table>
         </TableContainer>
@@ -986,7 +992,9 @@ const ProposalReview = () => {
       </Stack>
 
       <Alert severity="info" sx={{ mb: 2 }}>
-        Review tip: Compare scope fit, proposed rate, start date, and location before deciding. Use View details to check cover letter, timeline, and attachments.
+        Review tip: Compare scope fit, proposed rate, start date, and location
+        before deciding. Use View details to check cover letter, timeline, and
+        attachments.
       </Alert>
 
       {isRefreshing && <LinearProgress sx={{ mb: 2 }} />}
@@ -1007,14 +1015,26 @@ const ProposalReview = () => {
                 justifyContent="space-between"
               >
                 <Box>
-                  <Typography variant="h4" fontWeight="bold" sx={{ fontSize: { xs: '1.3rem', sm: '2.125rem' } }}>
+                  <Typography
+                    variant="h4"
+                    fontWeight="bold"
+                    sx={{ fontSize: { xs: '1.3rem', sm: '2.125rem' } }}
+                  >
                     {proposalStats.total}
                   </Typography>
-                  <Typography variant="body2" sx={{ opacity: 0.9, fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      opacity: 0.9,
+                      fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                    }}
+                  >
                     Total Proposals
                   </Typography>
                 </Box>
-                <PersonOutlinedIcon sx={{ fontSize: { xs: 26, sm: 40 }, opacity: 0.8 }} />
+                <PersonOutlinedIcon
+                  sx={{ fontSize: { xs: 26, sm: 40 }, opacity: 0.8 }}
+                />
               </Box>
             </CardContent>
           </Card>
@@ -1035,14 +1055,26 @@ const ProposalReview = () => {
                 justifyContent="space-between"
               >
                 <Box>
-                  <Typography variant="h4" fontWeight="bold" sx={{ fontSize: { xs: '1.3rem', sm: '2.125rem' } }}>
+                  <Typography
+                    variant="h4"
+                    fontWeight="bold"
+                    sx={{ fontSize: { xs: '1.3rem', sm: '2.125rem' } }}
+                  >
                     {proposalStats.pending}
                   </Typography>
-                  <Typography variant="body2" sx={{ opacity: 0.9, fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      opacity: 0.9,
+                      fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                    }}
+                  >
                     Pending Review
                   </Typography>
                 </Box>
-                <ScheduleOutlinedIcon sx={{ fontSize: { xs: 26, sm: 40 }, opacity: 0.8 }} />
+                <ScheduleOutlinedIcon
+                  sx={{ fontSize: { xs: 26, sm: 40 }, opacity: 0.8 }}
+                />
               </Box>
             </CardContent>
           </Card>
@@ -1063,10 +1095,20 @@ const ProposalReview = () => {
                 justifyContent="space-between"
               >
                 <Box>
-                  <Typography variant="h4" fontWeight="bold" sx={{ fontSize: { xs: '1.1rem', sm: '2.125rem' } }}>
+                  <Typography
+                    variant="h4"
+                    fontWeight="bold"
+                    sx={{ fontSize: { xs: '1.1rem', sm: '2.125rem' } }}
+                  >
                     {formatCurrency(proposalStats.averageRate)}
                   </Typography>
-                  <Typography variant="body2" sx={{ opacity: 0.9, fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      opacity: 0.9,
+                      fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                    }}
+                  >
                     Average Rate
                   </Typography>
                 </Box>
@@ -1093,14 +1135,26 @@ const ProposalReview = () => {
                 justifyContent="space-between"
               >
                 <Box>
-                  <Typography variant="h4" fontWeight="bold" sx={{ fontSize: { xs: '1.3rem', sm: '2.125rem' } }}>
+                  <Typography
+                    variant="h4"
+                    fontWeight="bold"
+                    sx={{ fontSize: { xs: '1.3rem', sm: '2.125rem' } }}
+                  >
                     {proposalStats.accepted}
                   </Typography>
-                  <Typography variant="body2" sx={{ opacity: 0.9, fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      opacity: 0.9,
+                      fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                    }}
+                  >
                     Accepted
                   </Typography>
                 </Box>
-                <CheckCircleOutlineIcon sx={{ fontSize: { xs: 26, sm: 40 }, opacity: 0.8 }} />
+                <CheckCircleOutlineIcon
+                  sx={{ fontSize: { xs: 26, sm: 40 }, opacity: 0.8 }}
+                />
               </Box>
             </CardContent>
           </Card>
@@ -1173,7 +1227,11 @@ const ProposalReview = () => {
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleDialogClose} disabled={actionInProgress} aria-label="Close proposal dialog">
+          <Button
+            onClick={handleDialogClose}
+            disabled={actionInProgress}
+            aria-label="Close proposal dialog"
+          >
             {dialogType === 'view' ? 'Close' : 'Cancel'}
           </Button>
           {dialogType === 'accept' && (
@@ -1181,7 +1239,8 @@ const ProposalReview = () => {
               onClick={() => handleProposalAction('accepted')}
               variant="contained"
               color="primary"
-              disabled={actionInProgress}>
+              disabled={actionInProgress}
+            >
               {actionInProgress ? 'Processing...' : 'Accept proposal'}
             </Button>
           )}
@@ -1194,7 +1253,8 @@ const ProposalReview = () => {
               }
               variant="contained"
               color="error"
-              disabled={actionInProgress}>
+              disabled={actionInProgress}
+            >
               {actionInProgress ? 'Processing...' : 'Reject proposal'}
             </Button>
           )}
@@ -1205,5 +1265,3 @@ const ProposalReview = () => {
 };
 
 export default ProposalReview;
-
-

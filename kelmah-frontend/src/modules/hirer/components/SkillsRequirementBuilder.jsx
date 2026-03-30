@@ -47,11 +47,19 @@ const SkillsRequirementBuilder = ({ value = [], onChange }) => {
           ))}
         </Stack>
         {value.length >= MAX_SKILLS && (
-          <Typography variant="caption" color="warning.main" sx={{ mt: 1, display: 'block' }}>
+          <Typography
+            variant="caption"
+            color="warning.main"
+            sx={{ mt: 1, display: 'block' }}
+          >
             Maximum of {MAX_SKILLS} skills reached.
           </Typography>
         )}
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ mt: 2 }}>
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          spacing={1}
+          sx={{ mt: 2 }}
+        >
           <TextField
             fullWidth
             label="Add skills (comma-separated)"

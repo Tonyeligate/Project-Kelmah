@@ -37,7 +37,9 @@ export const createJob = createAsyncThunk(
     try {
       return await jobsApi.createJob(jobData);
     } catch (error) {
-      return rejectWithValue(toThunkErrorPayload(error, 'Failed to create job'));
+      return rejectWithValue(
+        toThunkErrorPayload(error, 'Failed to create job'),
+      );
     }
   },
 );
@@ -141,7 +143,10 @@ const jobSlice = createSlice({
       })
       .addCase(fetchJobs.rejected, (state, action) => {
         state.loading = false;
-        state.error = getThunkErrorMessage(action.payload, action.error?.message);
+        state.error = getThunkErrorMessage(
+          action.payload,
+          action.error?.message,
+        );
       })
       // Fetch Single Job
       .addCase(fetchJobById.pending, (state) => {
@@ -154,7 +159,10 @@ const jobSlice = createSlice({
       })
       .addCase(fetchJobById.rejected, (state, action) => {
         state.loading = false;
-        state.error = getThunkErrorMessage(action.payload, action.error?.message);
+        state.error = getThunkErrorMessage(
+          action.payload,
+          action.error?.message,
+        );
       })
       // Create Job
       .addCase(createJob.pending, (state) => {
@@ -167,7 +175,10 @@ const jobSlice = createSlice({
       })
       .addCase(createJob.rejected, (state, action) => {
         state.loading = false;
-        state.error = getThunkErrorMessage(action.payload, action.error?.message);
+        state.error = getThunkErrorMessage(
+          action.payload,
+          action.error?.message,
+        );
       })
       // Apply for Job
       .addCase(applyForJob.pending, (state) => {
@@ -179,7 +190,10 @@ const jobSlice = createSlice({
       })
       .addCase(applyForJob.rejected, (state, action) => {
         state.loading = false;
-        state.error = getThunkErrorMessage(action.payload, action.error?.message);
+        state.error = getThunkErrorMessage(
+          action.payload,
+          action.error?.message,
+        );
       });
   },
 });

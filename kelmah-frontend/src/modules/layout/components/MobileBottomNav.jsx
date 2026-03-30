@@ -37,16 +37,18 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
   left: 0,
   right: 0,
   zIndex: Z_INDEX.bottomNav,
-  borderTop: theme.palette.mode === 'dark' 
-    ? '1px solid rgba(255, 215, 0, 0.2)' 
-    : '1px solid rgba(0, 0, 0, 0.1)',
-  backgroundColor: theme.palette.mode === 'dark' 
-    ? 'rgba(24, 23, 18, 0.98)' 
-    : 'rgba(255, 255, 255, 0.98)',
+  borderTop:
+    theme.palette.mode === 'dark'
+      ? '1px solid rgba(255, 215, 0, 0.2)'
+      : '1px solid rgba(0, 0, 0, 0.1)',
+  backgroundColor:
+    theme.palette.mode === 'dark'
+      ? 'rgba(24, 23, 18, 0.98)'
+      : 'rgba(255, 255, 255, 0.98)',
   backdropFilter: 'blur(20px)',
   boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.15)',
   // Safe area for iOS devices
-  paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+  paddingBottom: withSafeAreaBottom(0),
 }));
 
 const StyledBottomNavigation = styled(BottomNavigation)(({ theme }) => ({
@@ -60,20 +62,23 @@ const StyledBottomNavigationAction = styled(BottomNavigationAction)(
     color: theme.palette.mode === 'dark' ? '#888' : '#666',
     flex: 1,
     maxWidth: 120,
-    minHeight: 56,
-    minWidth: 44,
-    padding: '6px 4px 8px',
+    minHeight: BOTTOM_NAV_HEIGHT,
+    minWidth: TOUCH_TARGET_MIN,
+    padding: '6px 6px 8px',
     borderTop: '3px solid transparent',
     borderRadius: 10,
     transition: 'all 0.2s ease',
+    gap: 2,
     '&:focus-visible': {
       outline: `3px solid ${theme.palette.mode === 'dark' ? BRAND_COLORS.gold : theme.palette.primary.main}`,
       outlineOffset: '2px',
       borderRadius: 10,
     },
     '&.Mui-selected': {
-      color: theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
-      borderTopColor: theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
+      color:
+        theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
+      borderTopColor:
+        theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
       backgroundColor:
         theme.palette.mode === 'dark'
           ? 'rgba(255, 215, 0, 0.12)'
@@ -90,7 +95,7 @@ const StyledBottomNavigationAction = styled(BottomNavigationAction)(
     '& .MuiBottomNavigationAction-label': {
       fontSize: '0.68rem',
       fontWeight: 500,
-      marginTop: 2,
+      marginTop: 3,
       opacity: 0.9,
       maxWidth: '100%',
       whiteSpace: 'nowrap',
@@ -104,9 +109,10 @@ const StyledBottomNavigationAction = styled(BottomNavigationAction)(
     },
     // Better touch targets
     '&:active': {
-      backgroundColor: theme.palette.mode === 'dark' 
-        ? 'rgba(255, 215, 0, 0.1)' 
-        : 'rgba(0, 0, 0, 0.05)',
+      backgroundColor:
+        theme.palette.mode === 'dark'
+          ? 'rgba(255, 215, 0, 0.1)'
+          : 'rgba(0, 0, 0, 0.05)',
     },
     '@media (max-width:360px)': {
       padding: '6px 2px 8px',
@@ -129,7 +135,8 @@ const MobileBottomNav = () => {
   const isMobile = useBreakpointDown('sm');
   const { unreadCount = 0 } = useNotifications();
   const { isKeyboardVisible } = useKeyboardVisible();
-  
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
   // Get user role from Redux auth state (not path-based)
   const { user, isAuthenticated } = useSelector((state) => state.auth);
 
@@ -272,22 +279,61 @@ const MobileBottomNav = () => {
   }, [isHirer, isMobile, unreadCount]);
 
   const handleNavigation = (event, newValue) => {
-    const item = navigationItems.find(i => i.value === newValue);
+    const item = navigationItems.find((i) => i.value === newValue);
     if (item?.path) {
+      setIsTransitioning(true);
       navigate(item.path);
     }
   };
+
+  useEffect(() => {
+    if (!isTransitioning) {
+      return undefined;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setIsTransitioning(false);
+    }, 260);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [isTransitioning]);
 
   // Hide bottom nav when virtual keyboard is open
   if (isKeyboardVisible) return null;
 
   return (
     <StyledPaper elevation={0} component="nav" aria-label="Main navigation">
-      <StyledBottomNavigation 
-        value={currentValue} 
-        onChange={handleNavigation} 
+      <Typography
+        component="span"
+        role="status"
+        aria-live="polite"
+        sx={{
+          position: 'absolute',
+          width: 1,
+          height: 1,
+          p: 0,
+          m: -1,
+          overflow: 'hidden',
+          clip: 'rect(0 0 0 0)',
+          whiteSpace: 'nowrap',
+          border: 0,
+        }}
+      >
+        {unreadCount > 0
+          ? `${unreadCount} unread ${unreadCount === 1 ? 'message' : 'messages'}`
+          : 'No unread messages'}
+      </Typography>
+      <StyledBottomNavigation
+        value={currentValue}
+        onChange={handleNavigation}
         aria-label="Primary mobile navigation"
         showLabels
+        sx={{
+          transition: 'transform 0.22s ease',
+          transform: isTransitioning ? 'scale(0.996)' : 'scale(1)',
+        }}
       >
         {navigationItems.map((item) => (
           <StyledBottomNavigationAction
@@ -296,20 +342,22 @@ const MobileBottomNav = () => {
             value={item.value}
             aria-label={getActionAriaLabel(item)}
             icon={
-              item.badge ? (
-                <Badge 
-                  badgeContent={item.badge} 
+              item.value === 'messages' ? (
+                <Badge
+                  badgeContent={item.badge || 0}
+                  showZero
                   color="error"
-                  aria-label={`${item.badge} unread ${item.badge === 1 ? 'message' : 'messages'}`}
-                  sx={{ 
-                    '& .MuiBadge-badge': { 
+                  aria-label={`${item.badge || 0} unread ${(item.badge || 0) === 1 ? 'message' : 'messages'}`}
+                  sx={{
+                    '& .MuiBadge-badge': {
                       fontSize: '0.74rem',
                       fontWeight: 800,
                       minWidth: 20,
                       height: 20,
                       border: '2px solid',
                       borderColor: theme.palette.background.paper,
-                    }
+                      visibility: item.badge ? 'visible' : 'hidden',
+                    },
                   }}
                 >
                   {item.icon}

@@ -105,8 +105,17 @@ const PricingTier = ({ plan, price, isYearly, onUpgrade, yearlySavings }) => (
     </Box>
 
     {isYearly && (
-      <Stack direction="row" spacing={1} sx={{ mb: 1.5, flexWrap: 'wrap', gap: 1 }}>
-        <Chip label="Billed yearly" size="small" color="primary" variant="outlined" />
+      <Stack
+        direction="row"
+        spacing={1}
+        sx={{ mb: 1.5, flexWrap: 'wrap', gap: 1 }}
+      >
+        <Chip
+          label="Billed yearly"
+          size="small"
+          color="primary"
+          variant="outlined"
+        />
         <Chip
           label={`Save GH₵${yearlySavings.toLocaleString()} vs monthly`}
           size="small"
@@ -138,8 +147,13 @@ const PricingTier = ({ plan, price, isYearly, onUpgrade, yearlySavings }) => (
     >
       Upgrade to {plan.name}
     </Button>
-    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1.25 }}>
-      Secure checkout via Kelmah Payments. You will review charge details before final confirmation.
+    <Typography
+      variant="caption"
+      color="text.secondary"
+      sx={{ display: 'block', mt: 1.25 }}
+    >
+      Secure checkout via Kelmah Payments. You will review charge details before
+      final confirmation.
     </Typography>
   </Paper>
 );
@@ -223,12 +237,16 @@ const PremiumPage = () => {
       if (loginRedirectTimerRef.current) {
         clearTimeout(loginRedirectTimerRef.current);
       }
-      loginRedirectTimerRef.current = setTimeout(() => navigate('/login', {
-        state: {
-          from: '/pricing',
-          message: 'Please sign in to upgrade your plan.',
-        },
-      }), 1500);
+      loginRedirectTimerRef.current = setTimeout(
+        () =>
+          navigate('/login', {
+            state: {
+              from: '/pricing',
+              message: 'Please sign in to upgrade your plan.',
+            },
+          }),
+        1500,
+      );
       return;
     }
     setIsUpgrading(true);
@@ -252,7 +270,9 @@ const PremiumPage = () => {
       const message =
         status === 501
           ? 'Premium checkout is temporarily unavailable. Please contact support@kelmah.com for assisted upgrade.'
-          : err?.response?.data?.message || err?.message || 'Failed to process upgrade. Please try again.';
+          : err?.response?.data?.message ||
+            err?.message ||
+            'Failed to process upgrade. Please try again.';
       setUpgradeError(message);
       setOpenDialog(false);
     } finally {
@@ -310,218 +330,255 @@ const PremiumPage = () => {
   ];
 
   return (
-    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 }, overflowX: 'clip' }}>
-      <Box sx={{ color: 'text.primary', width: '100%', minWidth: 0, overflowX: 'clip' }}>
-        <Helmet><title>Premium | Kelmah</title></Helmet>
+    <PageCanvas
+      disableContainer
+      sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 }, overflowX: 'clip' }}
+    >
+      <Box
+        sx={{
+          color: 'text.primary',
+          width: '100%',
+          minWidth: 0,
+          overflowX: 'clip',
+        }}
+      >
+        <Helmet>
+          <title>Premium | Kelmah</title>
+        </Helmet>
         <Container maxWidth="lg" sx={{ width: '100%', minWidth: 0 }}>
-        {/* Header Section */}
-        <Box sx={{ textAlign: 'center', mb: 6 }}>
-          <Chip
-            icon={<StarIcon />}
-            label="Premium Access"
-            color="primary"
-            sx={{ mb: 2 }}
-          />
-          <Typography variant="h2" fontWeight="bold" gutterBottom>
-            Unlock Your Full Potential
-          </Typography>
-          <Typography
-            variant="h6"
-            color="text.secondary"
-            maxWidth="md"
-            mx="auto"
-          >
-            Upgrade to Kelmah Premium for tools that help you get hired faster
-            and run your work with less stress.
-          </Typography>
-        </Box>
+          {/* Header Section */}
+          <Box sx={{ textAlign: 'center', mb: 6 }}>
+            <Chip
+              icon={<StarIcon />}
+              label="Premium Access"
+              color="primary"
+              sx={{ mb: 2 }}
+            />
+            <Typography variant="h2" fontWeight="bold" gutterBottom>
+              Unlock Your Full Potential
+            </Typography>
+            <Typography
+              variant="h6"
+              color="text.secondary"
+              maxWidth="md"
+              mx="auto"
+            >
+              Upgrade to Kelmah Premium for tools that help you get hired faster
+              and run your work with less stress.
+            </Typography>
+          </Box>
 
-        {/* Features Grid */}
-        <Grid container spacing={4} sx={{ mb: 8 }}>
-          {features.map((feature, index) => (
-            <Grid item key={feature.title} xs={12} sm={6} md={3}>
-              <FeatureCard {...feature} />
+          {/* Features Grid */}
+          <Grid container spacing={4} sx={{ mb: 8 }}>
+            {features.map((feature, index) => (
+              <Grid item key={feature.title} xs={12} sm={6} md={3}>
+                <FeatureCard {...feature} />
+              </Grid>
+            ))}
+          </Grid>
+
+          {/* Pricing Section */}
+          <Box sx={{ textAlign: 'center', mb: 4 }}>
+            <Typography variant="h4" fontWeight="bold" gutterBottom>
+              Choose Your Plan
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+              Compare plans side-by-side and choose monthly or yearly billing
+              before checkout.
+            </Typography>
+            <Tooltip title="Switch to annual billing to save ~17%">
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={isYearly}
+                    onChange={(e) => setIsYearly(e.target.checked)}
+                    inputProps={{ 'aria-label': 'Switch to annual billing' }}
+                  />
+                }
+                label={
+                  <Typography component="span">
+                    Pay Yearly{' '}
+                    <Chip
+                      component="span"
+                      label="Save ~17%"
+                      color="success"
+                      size="small"
+                      sx={{ ml: 1 }}
+                    />
+                  </Typography>
+                }
+              />
+            </Tooltip>
+          </Box>
+          <Grid container spacing={4} justifyContent="center">
+            <Grid item xs={12} md={5}>
+              <PricingTier
+                plan={planDetails[0]}
+                price={isYearly ? plans.yearly.pro : plans.monthly.pro}
+                isYearly={isYearly}
+                yearlySavings={yearlySavings.pro}
+                onUpgrade={handleUpgradeClick}
+              />
             </Grid>
-          ))}
-        </Grid>
-
-        {/* Pricing Section */}
-        <Box sx={{ textAlign: 'center', mb: 4 }}>
-          <Typography variant="h4" fontWeight="bold" gutterBottom>
-            Choose Your Plan
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-            Compare plans side-by-side and choose monthly or yearly billing before checkout.
-          </Typography>
-          <Tooltip title="Switch to annual billing to save ~17%">
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={isYearly}
-                  onChange={(e) => setIsYearly(e.target.checked)}
-                  inputProps={{ 'aria-label': 'Switch to annual billing' }}
-                />
-              }
-            label={
-              <Typography component="span">
-                Pay Yearly{' '}
-                <Chip
-                  component="span"
-                  label="Save ~17%"
-                  color="success"
-                  size="small"
-                  sx={{ ml: 1 }}
-                />
+            <Grid item xs={12} md={5}>
+              <PricingTier
+                plan={planDetails[1]}
+                price={
+                  isYearly ? plans.yearly.business : plans.monthly.business
+                }
+                isYearly={isYearly}
+                yearlySavings={yearlySavings.business}
+                onUpgrade={handleUpgradeClick}
+              />
+            </Grid>
+          </Grid>
+          <Paper
+            elevation={0}
+            sx={{
+              mt: 3,
+              px: 3,
+              py: 2,
+              borderRadius: 2,
+              border: '1px solid',
+              borderColor: 'divider',
+              bgcolor: 'background.paper',
+            }}
+          >
+            <Stack
+              direction={{ xs: 'column', md: 'row' }}
+              spacing={1.5}
+              alignItems={{ xs: 'flex-start', md: 'center' }}
+            >
+              <Chip
+                size="small"
+                color="primary"
+                variant="outlined"
+                label="Transparent pricing"
+              />
+              <Typography variant="body2" color="text.secondary">
+                Pro monthly equivalent: GH₵{Math.round(plans.yearly.pro / 12)}
+                /month.
               </Typography>
-            }
-          />
-          </Tooltip>
-        </Box>
-        <Grid container spacing={4} justifyContent="center">
-          <Grid item xs={12} md={5}>
-            <PricingTier
-              plan={planDetails[0]}
-              price={isYearly ? plans.yearly.pro : plans.monthly.pro}
-              isYearly={isYearly}
-              yearlySavings={yearlySavings.pro}
-              onUpgrade={handleUpgradeClick}
-            />
-          </Grid>
-          <Grid item xs={12} md={5}>
-            <PricingTier
-              plan={planDetails[1]}
-              price={isYearly ? plans.yearly.business : plans.monthly.business}
-              isYearly={isYearly}
-              yearlySavings={yearlySavings.business}
-              onUpgrade={handleUpgradeClick}
-            />
-          </Grid>
-        </Grid>
-        <Paper
-          elevation={0}
-          sx={{
-            mt: 3,
-            px: 3,
-            py: 2,
-            borderRadius: 2,
-            border: '1px solid',
-            borderColor: 'divider',
-            bgcolor: 'background.paper',
-          }}
-        >
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.5} alignItems={{ xs: 'flex-start', md: 'center' }}>
-            <Chip size="small" color="primary" variant="outlined" label="Transparent pricing" />
-            <Typography variant="body2" color="text.secondary">
-              Pro monthly equivalent: GH₵{Math.round(plans.yearly.pro / 12)}/month.
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Business monthly equivalent: GH₵{Math.round(plans.yearly.business / 12)}/month.
-            </Typography>
-          </Stack>
-        </Paper>
+              <Typography variant="body2" color="text.secondary">
+                Business monthly equivalent: GH₵
+                {Math.round(plans.yearly.business / 12)}/month.
+              </Typography>
+            </Stack>
+          </Paper>
         </Container>
 
         {/* Confirmation Dialog */}
         <Dialog
-        open={openDialog}
-        onClose={() => setOpenDialog(false)}
-        TransitionComponent={Transition}
-        PaperProps={{ sx: { borderRadius: 3, bgcolor: 'background.paper' } }}
-        aria-labelledby="confirm-upgrade-dialog-title"
-      >
-        <DialogTitle
-          id="confirm-upgrade-dialog-title"
-          sx={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
+          open={openDialog}
+          onClose={() => setOpenDialog(false)}
+          TransitionComponent={Transition}
+          PaperProps={{ sx: { borderRadius: 3, bgcolor: 'background.paper' } }}
+          aria-labelledby="confirm-upgrade-dialog-title"
         >
-          <Typography variant="h6" fontWeight="bold">
-            Confirm Upgrade
-          </Typography>
-          <IconButton
-            aria-label="Close upgrade dialog"
-            onClick={() => setOpenDialog(false)}
-            disabled={isUpgrading}
+          <DialogTitle
+            id="confirm-upgrade-dialog-title"
             sx={{
-              '&:focus-visible': {
-                outline: '3px solid',
-                outlineColor: 'primary.main',
-                outlineOffset: '2px',
-              },
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
             }}
           >
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent>
-          <Typography>
-            You are about to upgrade to the{' '}
-            <Typography component="span" fontWeight="bold">
-              {selectedPlan}
-            </Typography>{' '}
-            plan. Your payment method will be charged{' '}
-            <Typography component="span" fontWeight="bold">
-              GH₵
-              {(isYearly
-                ? plans.yearly[selectedPlan.toLowerCase()]
-                : plans.monthly[selectedPlan.toLowerCase()]
-              )?.toLocaleString()}
+            <Typography variant="h6" fontWeight="bold">
+              Confirm Upgrade
             </Typography>
-            .
-          </Typography>
-          <Stack spacing={0.5} sx={{ mt: 2 }}>
-            <Typography variant="body2" color="text.secondary">
-              Billing cycle: {isYearly ? 'Yearly' : 'Monthly'}
+            <IconButton
+              aria-label="Close upgrade dialog"
+              onClick={() => setOpenDialog(false)}
+              disabled={isUpgrading}
+              sx={{
+                '&:focus-visible': {
+                  outline: '3px solid',
+                  outlineColor: 'primary.main',
+                  outlineOffset: '2px',
+                },
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </DialogTitle>
+          <DialogContent>
+            <Typography>
+              You are about to upgrade to the{' '}
+              <Typography component="span" fontWeight="bold">
+                {selectedPlan}
+              </Typography>{' '}
+              plan. Your payment method will be charged{' '}
+              <Typography component="span" fontWeight="bold">
+                GH₵
+                {(isYearly
+                  ? plans.yearly[selectedPlan.toLowerCase()]
+                  : plans.monthly[selectedPlan.toLowerCase()]
+                )?.toLocaleString()}
+              </Typography>
+              .
             </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Checkout confidence: no charge is submitted until you click Confirm & Pay.
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Need help before paying? Contact support@kelmah.com for assisted checkout.
-            </Typography>
-          </Stack>
-        </DialogContent>
-        <DialogActions sx={{ p: '16px 24px' }}>
-          <Button
-            onClick={() => setOpenDialog(false)}
-            color="secondary"
-            disabled={isUpgrading}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleConfirmUpgrade}
-            variant="contained"
-            color="primary"
-            disabled={isUpgrading}
-            aria-label="Confirm premium plan payment"
-          >
-            {isUpgrading ? <CircularProgress size={24} /> : 'Confirm & Pay'}
-          </Button>
-        </DialogActions>
+            <Stack spacing={0.5} sx={{ mt: 2 }}>
+              <Typography variant="body2" color="text.secondary">
+                Billing cycle: {isYearly ? 'Yearly' : 'Monthly'}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Checkout confidence: no charge is submitted until you click
+                Confirm & Pay.
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Need help before paying? Contact support@kelmah.com for assisted
+                checkout.
+              </Typography>
+            </Stack>
+          </DialogContent>
+          <DialogActions sx={{ p: '16px 24px' }}>
+            <Button
+              onClick={() => setOpenDialog(false)}
+              color="secondary"
+              disabled={isUpgrading}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleConfirmUpgrade}
+              variant="contained"
+              color="primary"
+              disabled={isUpgrading}
+              aria-label="Confirm premium plan payment"
+            >
+              {isUpgrading ? <CircularProgress size={24} /> : 'Confirm & Pay'}
+            </Button>
+          </DialogActions>
         </Dialog>
 
         <Snackbar
-        open={upgradeSuccess}
-        autoHideDuration={6000}
-        onClose={() => setUpgradeSuccess(false)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert severity="success" variant="filled" onClose={() => setUpgradeSuccess(false)}>
-          {selectedPlan} plan upgrade request submitted. You will receive a confirmation shortly.
-        </Alert>
+          open={upgradeSuccess}
+          autoHideDuration={6000}
+          onClose={() => setUpgradeSuccess(false)}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <Alert
+            severity="success"
+            variant="filled"
+            onClose={() => setUpgradeSuccess(false)}
+          >
+            {selectedPlan} plan upgrade request submitted. You will receive a
+            confirmation shortly.
+          </Alert>
         </Snackbar>
         <Snackbar
-        open={!!upgradeError}
-        autoHideDuration={6000}
-        onClose={() => setUpgradeError('')}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert severity="error" variant="filled" onClose={() => setUpgradeError('')}>
-          {upgradeError || 'Upgrade failed. Please try again.'}
-        </Alert>
+          open={!!upgradeError}
+          autoHideDuration={6000}
+          onClose={() => setUpgradeError('')}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <Alert
+            severity="error"
+            variant="filled"
+            onClose={() => setUpgradeError('')}
+          >
+            {upgradeError || 'Upgrade failed. Please try again.'}
+          </Alert>
         </Snackbar>
       </Box>
     </PageCanvas>

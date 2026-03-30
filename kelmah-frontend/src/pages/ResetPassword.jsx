@@ -1,7 +1,21 @@
 import React, { useMemo, useState } from 'react';
-import { Alert, Box, Button, IconButton, InputAdornment, TextField, Typography, useTheme } from '@mui/material';
+import {
+  Alert,
+  Box,
+  Button,
+  IconButton,
+  InputAdornment,
+  TextField,
+  Typography,
+  useTheme,
+} from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import {
+  Link,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from 'react-router-dom';
 import authService from '../modules/auth/services/authService';
 import { Helmet } from 'react-helmet-async';
 import { useBreakpointDown } from '@/hooks/useResponsive';
@@ -15,7 +29,10 @@ const ResetPassword = () => {
   const { token: paramToken } = useParams();
   const [searchParams] = useSearchParams();
 
-  const token = useMemo(() => paramToken || searchParams.get('token'), [paramToken, searchParams]);
+  const token = useMemo(
+    () => paramToken || searchParams.get('token'),
+    [paramToken, searchParams],
+  );
 
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -53,7 +70,9 @@ const ResetPassword = () => {
     try {
       setLoading(true);
       const res = await authService.resetPassword(token, password);
-      setStatus(res?.message || 'Password reset successful. You can now sign in.');
+      setStatus(
+        res?.message || 'Password reset successful. You can now sign in.',
+      );
       setPassword('');
       setConfirmPassword('');
     } catch (err) {
@@ -64,8 +83,14 @@ const ResetPassword = () => {
   };
 
   const content = (
-    <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%', maxWidth: 420 }}>
-      <Helmet><title>Reset Password | Kelmah</title></Helmet>
+    <Box
+      component="form"
+      onSubmit={handleSubmit}
+      sx={{ width: '100%', maxWidth: 420 }}
+    >
+      <Helmet>
+        <title>Reset Password | Kelmah</title>
+      </Helmet>
       <Typography
         variant="h5"
         gutterBottom
@@ -74,7 +99,8 @@ const ResetPassword = () => {
         Reset Password
       </Typography>
       <Typography variant="body2" sx={{ mb: 1.5, color: 'text.secondary' }}>
-        Choose a new password you can remember. You can sign in right after saving.
+        Choose a new password you can remember. You can sign in right after
+        saving.
       </Typography>
 
       {status && (
@@ -99,7 +125,11 @@ const ResetPassword = () => {
         helperText="Use at least 8 characters."
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        inputProps={{ autoComplete: 'new-password', style: { fontSize: 16 }, 'aria-label': 'New password' }}
+        inputProps={{
+          autoComplete: 'new-password',
+          style: { fontSize: 16 },
+          'aria-label': 'New password',
+        }}
         InputProps={{
           endAdornment: (
             <InputAdornment position="end">
@@ -126,7 +156,11 @@ const ResetPassword = () => {
         helperText="Type the same password again."
         value={confirmPassword}
         onChange={(e) => setConfirmPassword(e.target.value)}
-        inputProps={{ autoComplete: 'new-password', style: { fontSize: 16 }, 'aria-label': 'Confirm new password' }}
+        inputProps={{
+          autoComplete: 'new-password',
+          style: { fontSize: 16 },
+          'aria-label': 'Confirm new password',
+        }}
         InputProps={{
           endAdornment: (
             <InputAdornment position="end">
@@ -134,7 +168,11 @@ const ResetPassword = () => {
                 onClick={() => setShowConfirm((prev) => !prev)}
                 edge="end"
                 sx={{ minWidth: 44, minHeight: 44 }}
-                aria-label={showConfirm ? 'Hide password confirmation' : 'Show password confirmation'}
+                aria-label={
+                  showConfirm
+                    ? 'Hide password confirmation'
+                    : 'Show password confirmation'
+                }
               >
                 {showConfirm ? <VisibilityOff /> : <Visibility />}
               </IconButton>
@@ -168,7 +206,14 @@ const ResetPassword = () => {
       <Box sx={{ mt: 2 }}>
         <Typography variant="body2" color="text.secondary">
           Remember your password now?{' '}
-          <Link to="/login" style={{ color: 'inherit', fontWeight: 600, textDecoration: 'none' }}>
+          <Link
+            to="/login"
+            style={{
+              color: 'inherit',
+              fontWeight: 600,
+              textDecoration: 'none',
+            }}
+          >
             Sign in
           </Link>
         </Typography>
@@ -178,7 +223,10 @@ const ResetPassword = () => {
 
   if (isMobile) {
     return (
-      <PageCanvas disableContainer sx={{ pt: { xs: 3, md: 4 }, pb: { xs: 4, md: 6 } }}>
+      <PageCanvas
+        disableContainer
+        sx={{ pt: { xs: 3, md: 4 }, pb: { xs: 4, md: 6 } }}
+      >
         <Box
           sx={{
             minHeight: '100dvh',
@@ -197,8 +245,13 @@ const ResetPassword = () => {
   }
 
   return (
-    <PageCanvas disableContainer sx={{ pt: { xs: 3, md: 4 }, pb: { xs: 4, md: 6 } }}>
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 6, px: 3 }}>{content}</Box>
+    <PageCanvas
+      disableContainer
+      sx={{ pt: { xs: 3, md: 4 }, pb: { xs: 4, md: 6 } }}
+    >
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 6, px: 3 }}>
+        {content}
+      </Box>
     </PageCanvas>
   );
 };

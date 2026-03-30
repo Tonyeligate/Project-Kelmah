@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/hooks/useAuth';
 import smartSearchService from '../services/smartSearchService';
@@ -85,18 +91,17 @@ const SavedSearches = ({
   const isMountedRef = useRef(true);
   const activeLoadRequestIdRef = useRef(0);
 
-  const canUpdateState = useCallback(
-    (requestId = null) => {
-      if (!isMountedRef.current) return false;
-      if (requestId === null) return true;
-      return requestId === activeLoadRequestIdRef.current;
-    },
-    [],
-  );
+  const canUpdateState = useCallback((requestId = null) => {
+    if (!isMountedRef.current) return false;
+    if (requestId === null) return true;
+    return requestId === activeLoadRequestIdRef.current;
+  }, []);
 
   const demandInsights = useMemo(() => {
     const total = savedSearches.length;
-    const alertsOn = savedSearches.filter((search) => search.alertsEnabled).length;
+    const alertsOn = savedSearches.filter(
+      (search) => search.alertsEnabled,
+    ).length;
     const trending = savedSearches.filter((search) => search.trending).length;
 
     const locationCount = {};
@@ -105,12 +110,16 @@ const SavedSearches = ({
     savedSearches.forEach((search) => {
       const location = search?.filters?.location;
       const category = search?.filters?.category;
-      if (location) locationCount[location] = (locationCount[location] || 0) + 1;
-      if (category) categoryCount[category] = (categoryCount[category] || 0) + 1;
+      if (location)
+        locationCount[location] = (locationCount[location] || 0) + 1;
+      if (category)
+        categoryCount[category] = (categoryCount[category] || 0) + 1;
     });
 
-    const topLocation = Object.entries(locationCount).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
-    const topCategory = Object.entries(categoryCount).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
+    const topLocation =
+      Object.entries(locationCount).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
+    const topCategory =
+      Object.entries(categoryCount).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
 
     return { total, alertsOn, trending, topLocation, topCategory };
   }, [savedSearches]);
@@ -383,7 +392,12 @@ const SavedSearches = ({
           top: 8,
           right: 8,
           zIndex: 1,
-                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
+          '&:focus-visible': {
+            outline: '3px solid',
+            outlineColor: 'primary.main',
+            outlineOffset: '2px',
+          },
+        }}
         aria-label={`Open actions for saved search ${search.name || 'item'}`}
         onClick={(e) => {
           setAnchorEl(e.currentTarget);
@@ -489,7 +503,15 @@ const SavedSearches = ({
                   : 'Enable alerts for this search'
               }
               color={search.alertsEnabled ? 'primary' : 'default'}
-              sx={{ width: 44, height: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
+              sx={{
+                width: 44,
+                height: 44,
+                '&:focus-visible': {
+                  outline: '3px solid',
+                  outlineColor: 'primary.main',
+                  outlineOffset: '2px',
+                },
+              }}
             >
               {search.alertsEnabled ? (
                 <NotificationsIcon />
@@ -504,7 +526,15 @@ const SavedSearches = ({
               size="small"
               aria-label="Edit saved search"
               onClick={() => handleOpenDialog(search)}
-              sx={{ width: 44, height: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
+              sx={{
+                width: 44,
+                height: 44,
+                '&:focus-visible': {
+                  outline: '3px solid',
+                  outlineColor: 'primary.main',
+                  outlineOffset: '2px',
+                },
+              }}
             >
               <EditIcon />
             </IconButton>
@@ -643,10 +673,29 @@ const SavedSearches = ({
       )}
 
       {savedSearches.length > 0 && (
-        <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap', gap: 1 }}>
-          <Chip size="small" color="primary" variant="outlined" label={`${demandInsights.total} saved`} />
-          <Chip size="small" color="success" variant="outlined" label={`${demandInsights.alertsOn} with alerts`} />
-          <Chip size="small" color="secondary" variant="outlined" label={`${demandInsights.trending} trending`} />
+        <Stack
+          direction="row"
+          spacing={1}
+          sx={{ mb: 2, flexWrap: 'wrap', gap: 1 }}
+        >
+          <Chip
+            size="small"
+            color="primary"
+            variant="outlined"
+            label={`${demandInsights.total} saved`}
+          />
+          <Chip
+            size="small"
+            color="success"
+            variant="outlined"
+            label={`${demandInsights.alertsOn} with alerts`}
+          />
+          <Chip
+            size="small"
+            color="secondary"
+            variant="outlined"
+            label={`${demandInsights.trending} trending`}
+          />
           {demandInsights.topCategory && (
             <Chip
               size="small"
@@ -853,5 +902,3 @@ const SavedSearches = ({
 };
 
 export default SavedSearches;
-
-

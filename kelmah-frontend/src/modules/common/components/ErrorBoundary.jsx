@@ -43,11 +43,7 @@ class ErrorBoundary extends React.Component {
           <Typography variant="body1" sx={{ color: 'text.secondary', mb: 3 }}>
             An unexpected error occurred. Please try again.
           </Typography>
-          <Button
-            variant="contained"
-            onClick={this.handleReset}
-            sx={{ mr: 1 }}
-          >
+          <Button variant="contained" onClick={this.handleReset} sx={{ mr: 1 }}>
             Try Again
           </Button>
           <Button variant="outlined" onClick={this.handleReset}>
@@ -62,4 +58,3 @@ class ErrorBoundary extends React.Component {
 }
 
 export default ErrorBoundary;
-

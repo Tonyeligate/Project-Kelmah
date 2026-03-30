@@ -1,8 +1,6 @@
 import io from 'socket.io-client';
 import store from '../store';
-import {
-  addNotification,
-} from '../modules/notifications/services/notificationSlice';
+import { addNotification } from '../modules/notifications/services/notificationSlice';
 import { WS_CONFIG } from '../config/environment';
 import { getWebSocketUrl } from './socketUrl';
 import { isTokenValid } from '../modules/auth/utils/tokenUtils';
@@ -802,12 +800,17 @@ class WebSocketService {
           ...options,
         };
 
-        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-          navigator.serviceWorker.ready.then((registration) => {
-            registration.showNotification(title, notifOptions);
-          }).catch(() => {
-            this._fallbackNotification(title, notifOptions);
-          });
+        if (
+          'serviceWorker' in navigator &&
+          navigator.serviceWorker.controller
+        ) {
+          navigator.serviceWorker.ready
+            .then((registration) => {
+              registration.showNotification(title, notifOptions);
+            })
+            .catch(() => {
+              this._fallbackNotification(title, notifOptions);
+            });
         } else {
           this._fallbackNotification(title, notifOptions);
         }
@@ -850,7 +853,10 @@ class WebSocketService {
    */
   handleConnectionError(error) {
     this.reconnectAttempts++;
-    const baseDelay = Math.min(RECONNECT_DELAY * 2 ** this.reconnectAttempts, RECONNECT_DELAY_MAX);
+    const baseDelay = Math.min(
+      RECONNECT_DELAY * 2 ** this.reconnectAttempts,
+      RECONNECT_DELAY_MAX,
+    );
     this.reconnectCooldownUntil = Date.now() + baseDelay;
     devError(
       `WebSocket connection error (attempt ${this.reconnectAttempts}):`,

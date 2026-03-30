@@ -152,292 +152,383 @@ const BillPage = () => {
   };
 
   return (
-    <PageCanvas disableContainer sx={{ pt: { xs: 1, sm: 4 }, pb: { xs: 10, md: 6 } }}>
-    <Container maxWidth="lg" sx={{ py: { xs: 1, sm: 4 }, px: { xs: 0.75, sm: 2 } }}>
-      <Helmet><title>Bills | Kelmah</title></Helmet>
-      <Paper
-        sx={{
-          p: { xs: 1.5, sm: 4 },
-          borderRadius: 2,
-          background: (theme) => `linear-gradient(135deg, ${theme.palette.background.paper}, ${theme.palette.action.hover})`,
-          color: 'text.primary',
-          border: '2px solid',
-          borderColor: 'secondary.main',
-        }}
+    <PageCanvas
+      disableContainer
+      sx={{ pt: { xs: 1, sm: 4 }, pb: { xs: 10, md: 6 } }}
+    >
+      <Container
+        maxWidth="lg"
+        sx={{ py: { xs: 1, sm: 4 }, px: { xs: 0.75, sm: 2 } }}
       >
-        <Typography
-          variant={isMobile ? 'h5' : 'h4'}
-          fontWeight="bold"
-          sx={{ mb: 1.25, color: 'secondary.main', lineHeight: 1.1 }}
+        <Helmet>
+          <title>Bills | Kelmah</title>
+        </Helmet>
+        <Paper
+          sx={{
+            p: { xs: 1.5, sm: 4 },
+            borderRadius: 2,
+            background: (theme) =>
+              `linear-gradient(135deg, ${theme.palette.background.paper}, ${theme.palette.action.hover})`,
+            color: 'text.primary',
+            border: '2px solid',
+            borderColor: 'secondary.main',
+          }}
         >
-          Your Bills
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2, fontSize: { xs: '0.8rem', sm: '0.9rem' } }}>
-          Review upcoming bills, filter by date or status, and pay pending bills.
-        </Typography>
-        {/* Filters */}
-        <Box sx={{ mb: 2, display: 'flex', flexWrap: 'wrap', gap: { xs: 0.75, sm: 2, md: 2, lg: 1.5 }, alignItems: 'center' }}>
-          <Tooltip title="Filter bills due on or after this date">
-            <TextField
-              size={isMobile ? 'small' : 'medium'}
-              label="Due From"
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              InputLabelProps={{ shrink: true }}
-              inputProps={{ 'aria-label': 'Filter bills due from date' }}
-              sx={{ flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' } }}
-            />
-          </Tooltip>
-          <Tooltip title="Filter bills due on or before this date">
-            <TextField
-              size={isMobile ? 'small' : 'medium'}
-              label="Due To"
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              InputLabelProps={{ shrink: true }}
-              inputProps={{ 'aria-label': 'Filter bills due to date' }}
-              sx={{ flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' } }}
-            />
-          </Tooltip>
-          <Tooltip title="Filter by bill status">
-            <FormControl size={isMobile ? 'small' : 'medium'} sx={{ minWidth: { xs: 0, sm: 140 }, flex: { xs: '1 1 100%', sm: '0 1 auto' } }}>
-              <InputLabel>Status</InputLabel>
-              <Select
-                value={statusFilter}
-                label="Status"
-                onChange={(e) => setStatusFilter(e.target.value)}
-                inputProps={{ 'aria-label': 'Filter bills by status' }}
+          <Typography
+            variant={isMobile ? 'h5' : 'h4'}
+            fontWeight="bold"
+            sx={{ mb: 1.25, color: 'secondary.main', lineHeight: 1.1 }}
+          >
+            Your Bills
+          </Typography>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ mb: 2, fontSize: { xs: '0.8rem', sm: '0.9rem' } }}
+          >
+            Review upcoming bills, filter by date or status, and pay pending
+            bills.
+          </Typography>
+          {/* Filters */}
+          <Box
+            sx={{
+              mb: 2,
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: { xs: 0.75, sm: 2, md: 2, lg: 1.5 },
+              alignItems: 'center',
+            }}
+          >
+            <Tooltip title="Filter bills due on or after this date">
+              <TextField
+                size={isMobile ? 'small' : 'medium'}
+                label="Due From"
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                InputLabelProps={{ shrink: true }}
+                inputProps={{ 'aria-label': 'Filter bills due from date' }}
+                sx={{ flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' } }}
+              />
+            </Tooltip>
+            <Tooltip title="Filter bills due on or before this date">
+              <TextField
+                size={isMobile ? 'small' : 'medium'}
+                label="Due To"
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                InputLabelProps={{ shrink: true }}
+                inputProps={{ 'aria-label': 'Filter bills due to date' }}
+                sx={{ flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' } }}
+              />
+            </Tooltip>
+            <Tooltip title="Filter by bill status">
+              <FormControl
+                size={isMobile ? 'small' : 'medium'}
+                sx={{
+                  minWidth: { xs: 0, sm: 140 },
+                  flex: { xs: '1 1 100%', sm: '0 1 auto' },
+                }}
               >
-                <MenuItem value="all">All</MenuItem>
-                <MenuItem value="paid">Paid</MenuItem>
-                <MenuItem value="unpaid">Unpaid</MenuItem>
-                <MenuItem value="overdue">Overdue</MenuItem>
-              </Select>
-            </FormControl>
-          </Tooltip>
-          <Tooltip title="Apply filters">
+                <InputLabel>Status</InputLabel>
+                <Select
+                  value={statusFilter}
+                  label="Status"
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  inputProps={{ 'aria-label': 'Filter bills by status' }}
+                >
+                  <MenuItem value="all">All</MenuItem>
+                  <MenuItem value="paid">Paid</MenuItem>
+                  <MenuItem value="unpaid">Unpaid</MenuItem>
+                  <MenuItem value="overdue">Overdue</MenuItem>
+                </Select>
+              </FormControl>
+            </Tooltip>
+            <Tooltip title="Apply filters">
+              <Button
+                variant="outlined"
+                color="secondary"
+                sx={{
+                  borderWidth: 2,
+                  minHeight: 42,
+                  flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' },
+                  display: { xs: 'none', sm: 'inline-flex' },
+                }}
+                onClick={applyFilters}
+              >
+                Apply
+              </Button>
+            </Tooltip>
+            <Tooltip title="Clear filters">
+              <Button
+                variant="outlined"
+                color="secondary"
+                sx={{
+                  borderWidth: 2,
+                  minHeight: 42,
+                  flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' },
+                  display: { xs: 'none', sm: 'inline-flex' },
+                }}
+                onClick={clearFilters}
+              >
+                Clear Filters
+              </Button>
+            </Tooltip>
+          </Box>
+          {/* Show error if fetch failed */}
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
+          {loading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+              <CircularProgress color="secondary" />
+            </Box>
+          ) : filteredBills.length === 0 ? (
+            <Box
+              sx={{
+                textAlign: 'center',
+                py: 5,
+                border: '1px dashed',
+                borderColor: 'divider',
+                borderRadius: 2,
+              }}
+            >
+              <ReceiptLongOutlinedIcon
+                sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }}
+              />
+              <Typography variant="h6" color="text.secondary" gutterBottom>
+                No bills match your filters
+              </Typography>
+              <Typography variant="body2" color="text.disabled" sx={{ mb: 2 }}>
+                Change your date or status filters to find the bills you need.
+              </Typography>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={clearFilters}
+                sx={{ minHeight: 44 }}
+              >
+                Clear Filters
+              </Button>
+            </Box>
+          ) : (
+            <>
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="body2" color="text.secondary">
+                  Showing {(page - 1) * perPage + 1} -{' '}
+                  {Math.min(filteredBills.length, page * perPage)} of{' '}
+                  {filteredBills.length} bills
+                </Typography>
+              </Box>
+              <List>
+                {pagedBills.map((bill, index) => (
+                  <React.Fragment key={bill.id || bill._id}>
+                    <ListItem
+                      sx={{
+                        flexDirection: { xs: 'column', sm: 'row' },
+                        alignItems: { xs: 'flex-start', sm: 'center' },
+                        gap: { xs: 1, sm: 0 },
+                        py: { xs: 1.5, sm: 1 },
+                      }}
+                    >
+                      <ListItemText
+                        primary={
+                          <Typography variant="subtitle1" fontWeight="medium">
+                            {bill.title}
+                          </Typography>
+                        }
+                        secondary={
+                          bill.dueDate
+                            ? `Due: ${new Date(bill.dueDate).toLocaleDateString('en-GH', { day: 'numeric', month: 'long', year: 'numeric' })}`
+                            : 'No due date'
+                        }
+                      />
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: { xs: 1, sm: 2, md: 2, lg: 1.5 },
+                          flexWrap: 'wrap',
+                          width: { xs: '100%', sm: 'auto' },
+                          justifyContent: {
+                            xs: 'space-between',
+                            sm: 'flex-end',
+                          },
+                        }}
+                      >
+                        {getStatusChip(bill.status)}
+                        <Typography variant="h6" fontWeight="medium">
+                          {currencyFormatter.format(bill.amount)}
+                        </Typography>
+                        {(bill.status === 'unpaid' ||
+                          bill.status === 'overdue') && (
+                          <Box>
+                            <Tooltip title="Pay this bill">
+                              <Button
+                                variant="contained"
+                                color="secondary"
+                                size="small"
+                                sx={{
+                                  boxShadow: '0 2px 8px rgba(255,215,0,0.4)',
+                                  minHeight: 44,
+                                }}
+                                startIcon={
+                                  <PaymentIcon sx={{ color: 'common.white' }} />
+                                }
+                                disabled={actionLoading === bill.id}
+                                onClick={() => handleOpenConfirm(bill)}
+                              >
+                                {actionLoading === bill.id ? (
+                                  <CircularProgress size={16} color="inherit" />
+                                ) : (
+                                  'Pay'
+                                )}
+                              </Button>
+                            </Tooltip>
+                          </Box>
+                        )}
+                      </Box>
+                    </ListItem>
+                    {index < pagedBills.length - 1 && (
+                      <Divider component="li" />
+                    )}
+                  </React.Fragment>
+                ))}
+              </List>
+            </>
+          )}
+          {/* Pagination */}
+          {pageCount > 1 && (
+            <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
+              <Pagination
+                count={pageCount}
+                page={page}
+                onChange={(e, val) => setPage(val)}
+                color="secondary"
+              />
+            </Box>
+          )}
+          <Dialog
+            open={confirmDialogOpen}
+            onClose={handleCloseConfirm}
+            maxWidth="xs"
+            fullWidth
+            aria-labelledby="confirm-payment-dialog-title"
+            BackdropProps={{
+              sx: {
+                backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                backdropFilter: 'blur(4px)',
+              },
+            }}
+            PaperProps={{
+              sx: {
+                bgcolor: 'background.paper',
+                color: 'text.primary',
+                borderRadius: 2,
+                border: '2px solid',
+                borderColor: 'secondary.main',
+                boxShadow: '0 0 16px rgba(255,215,0,0.5)',
+              },
+            }}
+          >
+            <DialogTitle
+              id="confirm-payment-dialog-title"
+              sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+            >
+              <PaymentIcon sx={{ color: 'secondary.main', fontSize: 28 }} />{' '}
+              Confirm Payment
+            </DialogTitle>
+            <DialogContent dividers>
+              {selectedBill && (
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Typography>
+                    You are about to pay{' '}
+                    <strong>
+                      {currencyFormatter.format(selectedBill.amount)}
+                    </strong>{' '}
+                    for:
+                  </Typography>
+                  <Typography variant="subtitle1" fontWeight="medium">
+                    "{selectedBill.title}"
+                  </Typography>
+                </Box>
+              )}
+            </DialogContent>
+            <DialogActions>
+              <Button
+                onClick={handleCloseConfirm}
+                variant="outlined"
+                color="secondary"
+                sx={{ borderWidth: 2, minHeight: 44 }}
+                disabled={dialogStep === 1}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={handleConfirmPayment}
+                disabled={dialogStep === 1}
+                startIcon={
+                  dialogStep === 1 ? (
+                    <CircularProgress size={16} color="inherit" />
+                  ) : (
+                    <PaymentIcon sx={{ color: 'common.white' }} />
+                  )
+                }
+                sx={{
+                  boxShadow: '0 2px 8px rgba(255,215,0,0.4)',
+                  minHeight: 44,
+                }}
+              >
+                {dialogStep === 1 ? 'Processing...' : 'Pay Bill'}
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          <Paper
+            elevation={8}
+            sx={(theme) => ({
+              display: { xs: 'flex', sm: 'none' },
+              position: 'fixed',
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: theme.zIndex.appBar + 2,
+              px: 1,
+              py: 1,
+              gap: 1,
+              borderTop: `1px solid ${theme.palette.divider}`,
+              backgroundColor: theme.palette.background.paper,
+            })}
+          >
             <Button
+              fullWidth
               variant="outlined"
               color="secondary"
-              sx={{ borderWidth: 2, minHeight: 42, flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' }, display: { xs: 'none', sm: 'inline-flex' } }}
+              sx={{ minHeight: 42, borderWidth: 2 }}
+              onClick={clearFilters}
+            >
+              Clear
+            </Button>
+            <Button
+              fullWidth
+              variant="contained"
+              color="secondary"
+              sx={{
+                minHeight: 42,
+                boxShadow: '0 2px 8px rgba(255,215,0,0.35)',
+              }}
               onClick={applyFilters}
             >
               Apply
             </Button>
-          </Tooltip>
-          <Tooltip title="Clear filters">
-            <Button
-              variant="outlined"
-              color="secondary"
-              sx={{ borderWidth: 2, minHeight: 42, flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' }, display: { xs: 'none', sm: 'inline-flex' } }}
-              onClick={clearFilters}
-            >
-              Clear Filters
-            </Button>
-          </Tooltip>
-        </Box>
-        {/* Show error if fetch failed */}
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-        )}
-        {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-            <CircularProgress color="secondary" />
-          </Box>
-        ) : filteredBills.length === 0 ? (
-          <Box sx={{ textAlign: 'center', py: 5, border: '1px dashed', borderColor: 'divider', borderRadius: 2 }}>
-            <ReceiptLongOutlinedIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }} />
-            <Typography variant="h6" color="text.secondary" gutterBottom>
-              No bills match your filters
-            </Typography>
-            <Typography variant="body2" color="text.disabled" sx={{ mb: 2 }}>
-              Change your date or status filters to find the bills you need.
-            </Typography>
-            <Button variant="contained" color="secondary" onClick={clearFilters} sx={{ minHeight: 44 }}>
-              Clear Filters
-            </Button>
-          </Box>
-        ) : (
-          <>
-            <Box sx={{ mb: 2 }}>
-              <Typography variant="body2" color="text.secondary">
-                Showing {(page - 1) * perPage + 1} -{' '}
-                {Math.min(filteredBills.length, page * perPage)} of{' '}
-                {filteredBills.length} bills
-              </Typography>
-            </Box>
-          <List>
-            {pagedBills.map((bill, index) => (
-              <React.Fragment key={bill.id || bill._id}>
-                <ListItem sx={{ flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' }, gap: { xs: 1, sm: 0 }, py: { xs: 1.5, sm: 1 } }}>
-                  <ListItemText
-                    primary={
-                      <Typography variant="subtitle1" fontWeight="medium">
-                        {bill.title}
-                      </Typography>
-                    }
-                    secondary={bill.dueDate ? `Due: ${new Date(bill.dueDate).toLocaleDateString('en-GH', { day: 'numeric', month: 'long', year: 'numeric' })}` : 'No due date'}
-                  />
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 2, md: 2, lg: 1.5 }, flexWrap: 'wrap', width: { xs: '100%', sm: 'auto' }, justifyContent: { xs: 'space-between', sm: 'flex-end' } }}>
-                    {getStatusChip(bill.status)}
-                    <Typography variant="h6" fontWeight="medium">
-                      {currencyFormatter.format(bill.amount)}
-                    </Typography>
-                    {(bill.status === 'unpaid' ||
-                      bill.status === 'overdue') && (
-                      <Box>
-                        <Tooltip title="Pay this bill">
-                          <Button
-                            variant="contained"
-                            color="secondary"
-                            size="small"
-                            sx={{ boxShadow: '0 2px 8px rgba(255,215,0,0.4)', minHeight: 44 }}
-                            startIcon={
-                              <PaymentIcon sx={{ color: 'common.white' }} />
-                            }
-                            disabled={actionLoading === bill.id}
-                            onClick={() => handleOpenConfirm(bill)}
-                          >
-                            {actionLoading === bill.id ? (
-                              <CircularProgress size={16} color="inherit" />
-                            ) : (
-                              'Pay'
-                            )}
-                          </Button>
-                        </Tooltip>
-                      </Box>
-                    )}
-                  </Box>
-                </ListItem>
-                {index < pagedBills.length - 1 && <Divider component="li" />}
-              </React.Fragment>
-            ))}
-          </List>
-          </>
-        )}
-        {/* Pagination */}
-        {pageCount > 1 && (
-          <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
-            <Pagination
-              count={pageCount}
-              page={page}
-              onChange={(e, val) => setPage(val)}
-              color="secondary"
-            />
-          </Box>
-        )}
-        <Dialog
-          open={confirmDialogOpen}
-          onClose={handleCloseConfirm}
-          maxWidth="xs"
-          fullWidth
-          aria-labelledby="confirm-payment-dialog-title"
-          BackdropProps={{
-            sx: {
-              backgroundColor: 'rgba(0, 0, 0, 0.7)',
-              backdropFilter: 'blur(4px)',
-            },
-          }}
-          PaperProps={{
-            sx: {
-              bgcolor: 'background.paper',
-              color: 'text.primary',
-              borderRadius: 2,
-              border: '2px solid',
-              borderColor: 'secondary.main',
-              boxShadow: '0 0 16px rgba(255,215,0,0.5)',
-            },
-          }}
-        >
-          <DialogTitle id="confirm-payment-dialog-title" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <PaymentIcon sx={{ color: 'secondary.main', fontSize: 28 }} />{' '}
-            Confirm Payment
-          </DialogTitle>
-          <DialogContent dividers>
-            {selectedBill && (
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <Typography>
-                  You are about to pay{' '}
-                  <strong>
-                    {currencyFormatter.format(selectedBill.amount)}
-                  </strong>{' '}
-                  for:
-                </Typography>
-                <Typography variant="subtitle1" fontWeight="medium">
-                  "{selectedBill.title}"
-                </Typography>
-              </Box>
-            )}
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={handleCloseConfirm}
-              variant="outlined"
-              color="secondary"
-              sx={{ borderWidth: 2, minHeight: 44 }}
-              disabled={dialogStep === 1}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={handleConfirmPayment}
-              disabled={dialogStep === 1}
-              startIcon={
-                dialogStep === 1 ? (
-                  <CircularProgress size={16} color="inherit" />
-                ) : (
-                  <PaymentIcon sx={{ color: 'common.white' }} />
-                )
-              }
-              sx={{ boxShadow: '0 2px 8px rgba(255,215,0,0.4)', minHeight: 44 }}>
-              {dialogStep === 1 ? 'Processing...' : 'Pay Bill'}
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        <Paper
-          elevation={8}
-          sx={(theme) => ({
-            display: { xs: 'flex', sm: 'none' },
-            position: 'fixed',
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: theme.zIndex.appBar + 2,
-            px: 1,
-            py: 1,
-            gap: 1,
-            borderTop: `1px solid ${theme.palette.divider}`,
-            backgroundColor: theme.palette.background.paper,
-          })}
-        >
-          <Button
-            fullWidth
-            variant="outlined"
-            color="secondary"
-            sx={{ minHeight: 42, borderWidth: 2 }}
-            onClick={clearFilters}
-          >
-            Clear
-          </Button>
-          <Button
-            fullWidth
-            variant="contained"
-            color="secondary"
-            sx={{ minHeight: 42, boxShadow: '0 2px 8px rgba(255,215,0,0.35)' }}
-            onClick={applyFilters}
-          >
-            Apply
-          </Button>
+          </Paper>
         </Paper>
-      </Paper>
-    </Container>
+      </Container>
     </PageCanvas>
   );
 };

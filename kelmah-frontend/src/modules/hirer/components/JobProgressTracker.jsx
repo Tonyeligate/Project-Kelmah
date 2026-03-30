@@ -1,28 +1,5 @@
 // IconButton focus-visible styling is enforced globally via MuiIconButton theme overrides.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 const JobProgressTracker = () => {
   const theme = useTheme();
   const isMobile = useBreakpointDown('md');
@@ -36,7 +13,11 @@ const JobProgressTracker = () => {
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success',
+  });
 
   // Redux selectors
   const activeJobs = useSelector(selectHirerJobs('active'));
@@ -97,12 +78,20 @@ const JobProgressTracker = () => {
         selectedJob.selectedMilestone?.id,
         Number(paymentAmount),
       );
-      setSnackbar({ open: true, message: 'Payment released successfully!', severity: 'success' });
+      setSnackbar({
+        open: true,
+        message: 'Payment released successfully!',
+        severity: 'success',
+      });
       dispatch(fetchHirerJobs('active'));
       dispatch(fetchHirerJobs('completed'));
       handleDialogClose();
     } catch (err) {
-      setSnackbar({ open: true, message: err?.message || 'Failed to release payment', severity: 'error' });
+      setSnackbar({
+        open: true,
+        message: err?.message || 'Failed to release payment',
+        severity: 'error',
+      });
     } finally {
       setActionLoading(false);
     }
@@ -118,7 +107,11 @@ const JobProgressTracker = () => {
         selectedJob.id || selectedJob._id,
         { rating: reviewRating, comment: reviewComment },
       );
-      setSnackbar({ open: true, message: 'Review submitted successfully!', severity: 'success' });
+      setSnackbar({
+        open: true,
+        message: 'Review submitted successfully!',
+        severity: 'success',
+      });
       dispatch(fetchHirerJobs('active'));
       dispatch(fetchHirerJobs('completed'));
       handleDialogClose();
@@ -143,23 +136,28 @@ const JobProgressTracker = () => {
       job?.workerId;
 
     if (recipientId) {
-      navigate(`/messages?recipient=${encodeURIComponent(String(recipientId))}`, {
-        state: {
-          recipientProfile: {
-            id: String(recipientId),
-            name: job?.worker?.name || 'New conversation',
-            profilePicture: job?.worker?.avatar || null,
+      navigate(
+        `/messages?recipient=${encodeURIComponent(String(recipientId))}`,
+        {
+          state: {
+            recipientProfile: {
+              id: String(recipientId),
+              name: job?.worker?.name || 'New conversation',
+              profilePicture: job?.worker?.avatar || null,
+            },
           },
         },
-      });
+      );
     }
   };
 
   // Build progress model from active jobs
   const trackedJobs = Array.from(
     new Map(
-      [...(Array.isArray(activeJobs) ? activeJobs : []), ...(Array.isArray(completedJobs) ? completedJobs : [])]
-        .map((job) => [job.id || job._id, job]),
+      [
+        ...(Array.isArray(activeJobs) ? activeJobs : []),
+        ...(Array.isArray(completedJobs) ? completedJobs : []),
+      ].map((job) => [job.id || job._id, job]),
     ).values(),
   );
 
@@ -291,14 +289,30 @@ const JobProgressTracker = () => {
                 </Box>
               </Box>
               <Box display="flex" gap={1}>
-                <IconButton sx={{ ...iconButtonA11ySx, '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' } }}
+                <IconButton
+                  sx={{
+                    ...iconButtonA11ySx,
+                    '&:focus-visible': {
+                      outline: '3px solid',
+                      outlineColor: 'primary.main',
+                      outlineOffset: '2px',
+                    },
+                  }}
                   size="small"
                   onClick={() => handleDialogOpen('view', job)}
                   aria-label="View job details"
                 >
                   <ViewIcon />
                 </IconButton>
-                <IconButton sx={{ ...iconButtonA11ySx, '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' } }}
+                <IconButton
+                  sx={{
+                    ...iconButtonA11ySx,
+                    '&:focus-visible': {
+                      outline: '3px solid',
+                      outlineColor: 'primary.main',
+                      outlineOffset: '2px',
+                    },
+                  }}
                   size="small"
                   onClick={() => handleMessageWorker(job)}
                   aria-label="Message worker"
@@ -521,7 +535,16 @@ const JobProgressTracker = () => {
             onChange={(e) => setPaymentAmount(e.target.value)}
             sx={{ mt: 2 }}
             InputProps={{
-              startAdornment: <Typography sx={{ mr: 1 }}>{new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' }).format(0).replace(/0(?:\.00)?$/, '')}</Typography>,
+              startAdornment: (
+                <Typography sx={{ mr: 1 }}>
+                  {new Intl.NumberFormat('en-GH', {
+                    style: 'currency',
+                    currency: 'GHS',
+                  })
+                    .format(0)
+                    .replace(/0(?:\.00)?$/, '')}
+                </Typography>
+              ),
             }}
           />
         </DialogContent>
@@ -569,8 +592,14 @@ const JobProgressTracker = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleDialogClose} disabled={actionLoading}>Cancel</Button>
-          <Button onClick={handleReviewSubmit} variant="contained" disabled={actionLoading}>
+          <Button onClick={handleDialogClose} disabled={actionLoading}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleReviewSubmit}
+            variant="contained"
+            disabled={actionLoading}
+          >
             {actionLoading ? 'Submitting...' : 'Submit Review'}
           </Button>
         </DialogActions>
@@ -595,5 +624,3 @@ const JobProgressTracker = () => {
 };
 
 export default JobProgressTracker;
-
-

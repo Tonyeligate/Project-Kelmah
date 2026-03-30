@@ -734,7 +734,9 @@ const WorkerDirectoryExperience = ({
       showMap={WORKER_DIRECTORY_MAP_ENABLED && showMap}
       onToggleView={WORKER_DIRECTORY_MAP_ENABLED ? handleToggleView : undefined}
       onOpenFilters={handleOpenFilterControls}
-      onRetry={() => executeWorkerSearch(searchParams, { sortOption: sortOrder })}
+      onRetry={() =>
+        executeWorkerSearch(searchParams, { sortOption: sortOrder })
+      }
       onSaveWorker={handleSaveWorker}
       isPublicView={isPublicView}
     />
@@ -985,7 +987,15 @@ const WorkerDirectoryExperience = ({
           <IconButton
             onClick={() => setShowAdvancedFiltersDialog(false)}
             aria-label="Close advanced filters dialog"
-            sx={{ width: 44, height: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
+            sx={{
+              width: 44,
+              height: 44,
+              '&:focus-visible': {
+                outline: '3px solid',
+                outlineColor: 'primary.main',
+                outlineOffset: '2px',
+              },
+            }}
           >
             <CloseIcon />
           </IconButton>
@@ -1017,7 +1027,15 @@ const WorkerDirectoryExperience = ({
           <IconButton
             onClick={() => setShowSavedSearches(false)}
             aria-label="Close saved searches dialog"
-            sx={{ width: 44, height: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
+            sx={{
+              width: 44,
+              height: 44,
+              '&:focus-visible': {
+                outline: '3px solid',
+                outlineColor: 'primary.main',
+                outlineOffset: '2px',
+              },
+            }}
           >
             <CloseIcon />
           </IconButton>
@@ -1040,4 +1058,3 @@ const WorkerDirectoryExperience = ({
 };
 
 export default WorkerDirectoryExperience;
-

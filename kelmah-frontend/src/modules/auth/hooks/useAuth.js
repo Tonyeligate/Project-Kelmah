@@ -40,10 +40,7 @@ const useAuth = () => {
     [dispatch],
   );
 
-  const verifyAuth = useCallback(
-    () => dispatch(verifyAuthThunk()),
-    [dispatch],
-  );
+  const verifyAuth = useCallback(() => dispatch(verifyAuthThunk()), [dispatch]);
 
   const logout = useCallback(() => dispatch(logoutUser()), [dispatch]);
 

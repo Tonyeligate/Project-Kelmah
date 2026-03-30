@@ -272,7 +272,13 @@ export const useProfile = (options = {}) => {
 
       profileInitPromise.catch(() => {});
     }
-  }, [isAuthenticated, autoInitialize, loadProfile, loadStatistics, loadActivity]);
+  }, [
+    isAuthenticated,
+    autoInitialize,
+    loadProfile,
+    loadStatistics,
+    loadActivity,
+  ]);
 
   return {
     loadProfile,
@@ -288,4 +294,3 @@ export const useProfile = (options = {}) => {
     activity,
   };
 };
-

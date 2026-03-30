@@ -206,17 +206,33 @@ const AccountSettings = () => {
         }}
       >
         <Stack direction="row" spacing={1.5} alignItems="center">
-          <Avatar sx={{ bgcolor: 'primary.main', color: 'primary.contrastText', fontWeight: 700 }}>
-            {(formData.firstName?.[0] || user?.firstName?.[0] || 'K').toUpperCase()}
+          <Avatar
+            sx={{
+              bgcolor: 'primary.main',
+              color: 'primary.contrastText',
+              fontWeight: 700,
+            }}
+          >
+            {(
+              formData.firstName?.[0] ||
+              user?.firstName?.[0] ||
+              'K'
+            ).toUpperCase()}
           </Avatar>
           <Box sx={{ minWidth: 0 }}>
             <Typography variant="subtitle1" fontWeight={700}>
-              {[formData.firstName, formData.lastName].filter(Boolean).join(' ') || 'Kelmah account'}
+              {[formData.firstName, formData.lastName]
+                .filter(Boolean)
+                .join(' ') || 'Kelmah account'}
             </Typography>
             <Typography variant="body2" color="text.secondary" noWrap>
               {formData.email || user?.email || 'No email available'}
             </Typography>
-            <Chip label="Account details" size="small" sx={{ mt: 1, fontWeight: 600 }} />
+            <Chip
+              label="Account details"
+              size="small"
+              sx={{ mt: 1, fontWeight: 600 }}
+            />
           </Box>
         </Stack>
       </Paper>
@@ -294,7 +310,8 @@ const AccountSettings = () => {
             inputProps={{ inputMode: 'tel' }}
           />
           <Typography variant="body2" color="text.secondary">
-            Use a phone number with country code so hirers can contact you reliably.
+            Use a phone number with country code so hirers can contact you
+            reliably.
           </Typography>
           <Stack
             direction={{ xs: 'column', sm: 'row' }}
@@ -327,7 +344,11 @@ const AccountSettings = () => {
         <Typography variant="subtitle1" fontWeight={700} color="error.main">
           Sign out of this device
         </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, mb: 2 }}>
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ mt: 0.5, mb: 2 }}
+        >
           Use this when you are done, especially on a shared phone or tablet.
         </Typography>
         <Button
@@ -337,7 +358,8 @@ const AccountSettings = () => {
           onClick={handleLogout}
           startIcon={<LogoutIcon />}
           disabled={isLoggingOut}
-          sx={{ minHeight: 44 }}>
+          sx={{ minHeight: 44 }}
+        >
           {isLoggingOut ? 'Signing out…' : 'Logout of Kelmah'}
         </Button>
       </Paper>

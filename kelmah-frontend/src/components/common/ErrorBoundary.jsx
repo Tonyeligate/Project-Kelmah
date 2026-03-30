@@ -163,9 +163,13 @@ class ErrorBoundary extends React.Component {
             Go Home
           </Button>
 
-          <Alert severity="info" sx={{ mb: 2.5, maxWidth: 600, textAlign: 'left' }}>
+          <Alert
+            severity="info"
+            sx={{ mb: 2.5, maxWidth: 600, textAlign: 'left' }}
+          >
             <Typography variant="body2">
-              Recovery steps: 1) tap Try Again, 2) use Go Home if needed, 3) contact support if the problem continues.
+              Recovery steps: 1) tap Try Again, 2) use Go Home if needed, 3)
+              contact support if the problem continues.
             </Typography>
           </Alert>
 

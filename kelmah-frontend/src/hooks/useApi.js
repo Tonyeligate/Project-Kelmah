@@ -50,7 +50,10 @@ const randomIntInclusive = (maxInclusive) => {
     return 0;
   }
 
-  if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+  if (
+    typeof crypto !== 'undefined' &&
+    typeof crypto.getRandomValues === 'function'
+  ) {
     const bytes = new Uint32Array(1);
     crypto.getRandomValues(bytes);
     return bytes[0] % (cappedMax + 1);
@@ -87,7 +90,8 @@ const getRecoveryGuidance = (error) => {
   }
 
   const status = error?.response?.status;
-  const message = error?.response?.data?.message || error?.message || 'Request failed';
+  const message =
+    error?.response?.data?.message || error?.message || 'Request failed';
 
   if (status === 429) {
     return {
@@ -219,10 +223,7 @@ export const useApi = (apiFunction, options = {}) => {
               const retryDelayMs = computeRetryDelay(err, attempt, retryDelay);
 
               await new Promise((resolve) => {
-                retryTimeoutRef.current = setTimeout(
-                  resolve,
-                  retryDelayMs,
-                );
+                retryTimeoutRef.current = setTimeout(resolve, retryDelayMs);
               });
 
               if (!canUpdateState()) {
@@ -246,7 +247,9 @@ export const useApi = (apiFunction, options = {}) => {
               }
 
               if (showErrorToast) {
-                toast.error(`Service Error: ${guidance.userMessage} ${guidance.suggestedAction}`);
+                toast.error(
+                  `Service Error: ${guidance.userMessage} ${guidance.suggestedAction}`,
+                );
               }
             }
 

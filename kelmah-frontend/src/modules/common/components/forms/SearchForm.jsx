@@ -289,7 +289,15 @@ const SearchForm = ({
                   type="submit"
                   edge="end"
                   aria-label="Run search query"
-                  sx={{ width: 44, height: 44 , '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
+                  sx={{
+                    width: 44,
+                    height: 44,
+                    '&:focus-visible': {
+                      outline: '3px solid',
+                      outlineColor: 'primary.main',
+                      outlineOffset: '2px',
+                    },
+                  }}
                 >
                   <Search />
                 </IconButton>
@@ -409,7 +417,11 @@ const SearchForm = ({
                 startIcon={<TuneRounded />}
                 onClick={() => setShowFilters(!showFilters)}
                 variant="text"
-                aria-label={showFilters ? 'Hide advanced filters' : 'Show advanced filters'}
+                aria-label={
+                  showFilters
+                    ? 'Hide advanced filters'
+                    : 'Show advanced filters'
+                }
                 sx={{ minHeight: 44 }}
               >
                 Advanced Filters
@@ -421,15 +433,15 @@ const SearchForm = ({
 
             {(Object.keys(filters).some((key) => filters[key]) ||
               selectedTags.length > 0) && (
-                <Button
-                  startIcon={<Clear />}
-                  onClick={handleClearFilters}
-                  variant="outlined"
-                  size="small"
-                >
-                  Clear All
-                </Button>
-              )}
+              <Button
+                startIcon={<Clear />}
+                onClick={handleClearFilters}
+                variant="outlined"
+                size="small"
+              >
+                Clear All
+              </Button>
+            )}
           </Box>
         )}
 

@@ -6,7 +6,11 @@ import { SnackbarProvider } from 'notistack';
 import { QueryClientProvider } from '@tanstack/react-query';
 // MED-27 FIX: Lazy-load ReactQueryDevtools only in development
 const ReactQueryDevtools = import.meta.env.DEV
-  ? React.lazy(() => import('@tanstack/react-query-devtools').then(m => ({ default: m.ReactQueryDevtools })))
+  ? React.lazy(() =>
+      import('@tanstack/react-query-devtools').then((m) => ({
+        default: m.ReactQueryDevtools,
+      })),
+    )
   : () => null;
 import { queryClient } from './config/queryClient';
 import store from './store';
@@ -21,7 +25,8 @@ import { checkStorageQuota } from './utils/storageQuota';
 
 // ─── Production log suppressor ───
 // Keep warnings/errors visible in production while suppressing verbose logs by default.
-const enableVerboseProdLogs = import.meta.env.VITE_ENABLE_PROD_DEBUG_LOGS === 'true';
+const enableVerboseProdLogs =
+  import.meta.env.VITE_ENABLE_PROD_DEBUG_LOGS === 'true';
 if (import.meta.env.PROD && !enableVerboseProdLogs) {
   const noop = () => {};
   console.log = noop;
@@ -48,7 +53,11 @@ const navigateToHome = () => {
   try {
     const targetPath = '/';
     const currentPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
-    if (currentPath !== targetPath && window.history && typeof window.history.pushState === 'function') {
+    if (
+      currentPath !== targetPath &&
+      window.history &&
+      typeof window.history.pushState === 'function'
+    ) {
       window.history.pushState({}, '', targetPath);
       window.dispatchEvent(new PopStateEvent('popstate'));
       return;
@@ -57,7 +66,6 @@ const navigateToHome = () => {
     // No-op: keep failure local and avoid forcing a hard navigation.
   }
 };
-
 
 // LOW-13 FIX: ErrorFallback now includes a retry button for user recovery
 const ErrorFallback = ({ error, resetErrorBoundary }) => (
@@ -110,8 +118,8 @@ const ErrorFallback = ({ error, resetErrorBoundary }) => (
         maxWidth: '600px',
       }}
     >
-      We're sorry for the inconvenience. Please try again or contact
-      support if the problem persists.
+      We're sorry for the inconvenience. Please try again or contact support if
+      the problem persists.
     </p>
     <div style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
       <button

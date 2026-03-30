@@ -163,10 +163,7 @@ const SmartNavigation = () => {
         }
       }
     } catch (error) {
-      devWarn(
-        'Quick navigation preference hydrate failed:',
-        error.message,
-      );
+      devWarn('Quick navigation preference hydrate failed:', error.message);
     }
   }, [isAuthenticated, user, preferenceKey]);
 
@@ -549,4 +546,3 @@ const SmartNavigation = () => {
 };
 
 export default SmartNavigation;
-

@@ -3,18 +3,6 @@
  * Displays user performance metrics and tier information
  */
 
-
-
-
-
-
-
-
-
-
-
-
-
 const DEFAULT_PERFORMANCE = {
   performanceTier: 'tier3',
   overallScore: 50,
@@ -52,15 +40,18 @@ const UserPerformanceDashboard = ({ userId, onRefresh }) => {
       const completedJobs = data.completedJobs || data.jobs?.completed || 0;
       const rating = data.averageRating || data.rating || 0;
       const responseRate = data.responseRate || 0;
-      const overallScore = Math.min(100, Math.round(
-        (completedJobs * 2) + (rating * 10) + (responseRate * 0.5)
-      ));
-      const performanceTier = overallScore >= 80 ? 'tier1' : overallScore >= 50 ? 'tier2' : 'tier3';
+      const overallScore = Math.min(
+        100,
+        Math.round(completedJobs * 2 + rating * 10 + responseRate * 0.5),
+      );
+      const performanceTier =
+        overallScore >= 80 ? 'tier1' : overallScore >= 50 ? 'tier2' : 'tier3';
 
       setPerformance({
         performanceTier,
         overallScore,
-        monthlyBidQuota: performanceTier === 'tier1' ? 8 : performanceTier === 'tier2' ? 6 : 5,
+        monthlyBidQuota:
+          performanceTier === 'tier1' ? 8 : performanceTier === 'tier2' ? 6 : 5,
         completedJobs,
         responseRate,
         rating,
@@ -374,7 +365,12 @@ const UserPerformanceDashboard = ({ userId, onRefresh }) => {
                       {performance.skillVerification.primarySkills.map(
                         (skill, index) => (
                           <Chip
-                            key={skill.id || skill._id || skill.skill || `primary-skill-${index}`}
+                            key={
+                              skill.id ||
+                              skill._id ||
+                              skill.skill ||
+                              `primary-skill-${index}`
+                            }
                             label={skill.skill}
                             size="small"
                             color={skill.verified ? 'success' : 'default'}
@@ -403,7 +399,12 @@ const UserPerformanceDashboard = ({ userId, onRefresh }) => {
                       {performance.skillVerification.secondarySkills.map(
                         (skill, index) => (
                           <Chip
-                            key={skill.id || skill._id || skill.skill || `secondary-skill-${index}`}
+                            key={
+                              skill.id ||
+                              skill._id ||
+                              skill.skill ||
+                              `secondary-skill-${index}`
+                            }
                             label={skill.skill}
                             size="small"
                             color={skill.verified ? 'success' : 'default'}
@@ -469,15 +470,15 @@ const UserPerformanceDashboard = ({ userId, onRefresh }) => {
 
                   {performance.locationPreferences.preferredCities?.length >
                     0 && (
-                      <Box sx={{ mt: 1 }}>
-                        <Typography variant="body2" color="text.secondary">
-                          Preferred Cities:{' '}
-                          {performance.locationPreferences.preferredCities.join(
-                            ', ',
-                          )}
-                        </Typography>
-                      </Box>
-                    )}
+                    <Box sx={{ mt: 1 }}>
+                      <Typography variant="body2" color="text.secondary">
+                        Preferred Cities:{' '}
+                        {performance.locationPreferences.preferredCities.join(
+                          ', ',
+                        )}
+                      </Typography>
+                    </Box>
+                  )}
                 </Grid>
               </Grid>
             </CardContent>

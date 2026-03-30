@@ -103,4 +103,3 @@ const useAttachments = (conversationId) => {
 };
 
 export default useAttachments;
-

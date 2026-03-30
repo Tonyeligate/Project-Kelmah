@@ -1,18 +1,5 @@
 // IconButton focus-visible styling is enforced globally via MuiIconButton theme overrides.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 // 🎨 STUNNING ANIMATED BACKGROUND WITH PROFESSIONAL GRADIENTS
 const AnimatedBackground = () => {
   const theme = useTheme();
@@ -263,7 +250,12 @@ const PremiumSearchBar = ({
                       transform: 'scale(1.1)',
                     },
                     transition: 'all 0.2s ease',
-                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
+                    '&:focus-visible': {
+                      outline: '3px solid',
+                      outlineColor: 'primary.main',
+                      outlineOffset: '2px',
+                    },
+                  }}
                 >
                   <CloseIcon />
                 </IconButton>
@@ -475,7 +467,12 @@ const PremiumFilterPanel = ({
                 transform: 'scale(1.1)',
               },
               transition: 'all 0.2s ease',
-                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
+              '&:focus-visible': {
+                outline: '3px solid',
+                outlineColor: 'primary.main',
+                outlineOffset: '2px',
+              },
+            }}
           >
             <CloseIcon />
           </IconButton>
@@ -1623,7 +1620,12 @@ const MapSearchOverlay = ({
             >
               <Grid container spacing={2}>
                 {quickStats.map((stat, index) => (
-                  <Grid item xs={6} sm={3} key={stat.label || `quick-stat-${index}`}>
+                  <Grid
+                    item
+                    xs={6}
+                    sm={3}
+                    key={stat.label || `quick-stat-${index}`}
+                  >
                     <motion.div
                       whileHover={{ scale: 1.05, y: -2 }}
                       transition={{ duration: 0.2 }}
@@ -2216,7 +2218,12 @@ const MapSearchOverlay = ({
                           background: 'rgba(255, 215, 0, 0.1)',
                           transform: 'scale(1.1)',
                         },
-                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
+                        '&:focus-visible': {
+                          outline: '3px solid',
+                          outlineColor: 'primary.main',
+                          outlineOffset: '2px',
+                        },
+                      }}
                     >
                       <ShareIcon />
                     </IconButton>
@@ -2231,7 +2238,12 @@ const MapSearchOverlay = ({
                           background: 'rgba(255, 215, 0, 0.1)',
                           transform: 'scale(1.1)',
                         },
-                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
+                        '&:focus-visible': {
+                          outline: '3px solid',
+                          outlineColor: 'primary.main',
+                          outlineOffset: '2px',
+                        },
+                      }}
                     >
                       <BookmarkIcon />
                     </IconButton>
@@ -2246,7 +2258,12 @@ const MapSearchOverlay = ({
                           background: 'rgba(255, 215, 0, 0.1)',
                           transform: 'scale(1.1)',
                         },
-                  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: '2px' }}}
+                        '&:focus-visible': {
+                          outline: '3px solid',
+                          outlineColor: 'primary.main',
+                          outlineOffset: '2px',
+                        },
+                      }}
                     >
                       <LaunchIcon />
                     </IconButton>
@@ -2305,4 +2322,3 @@ const MapSearchOverlay = ({
 };
 
 export default MapSearchOverlay;
-
