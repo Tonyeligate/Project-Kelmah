@@ -337,7 +337,11 @@ const NotificationsPage = () => {
   return (
     <PageCanvas
       disableContainer
-      sx={{ pt: { xs: 1, md: 4 }, pb: { xs: 10, md: 6 }, overflowX: 'clip' }}
+      sx={{
+        pt: { xs: 1, md: 4 },
+        pb: { xs: withBottomNavSafeArea(24), md: 6 },
+        overflowX: 'clip',
+      }}
     >
       <Container
         maxWidth="md"

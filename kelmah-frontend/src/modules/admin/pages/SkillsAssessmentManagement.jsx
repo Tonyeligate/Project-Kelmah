@@ -31,6 +31,8 @@ import { Helmet } from 'react-helmet-async';
 import ResponsiveDataView from '../../../components/common/ResponsiveDataView';
 import { adminService } from '../services/adminService';
 import PageCanvas from '@/modules/common/components/PageCanvas';
+import { TOUCH_TARGET_MIN, Z_INDEX } from '@/constants/layout';
+import { withBottomNavSafeArea } from '@/utils/safeArea';
 
 const TabPanel = ({ children, value, index }) => (
   <div
@@ -120,7 +122,7 @@ const SkillsAssessmentManagement = () => {
   return (
     <PageCanvas
       disableContainer
-      sx={{ pt: { xs: 1, sm: 4 }, pb: { xs: 10, md: 6 } }}
+      sx={{ pt: { xs: 1, sm: 4 }, pb: { xs: withBottomNavSafeArea(24), md: 6 } }}
     >
       <Container
         maxWidth="lg"
@@ -226,7 +228,7 @@ const SkillsAssessmentManagement = () => {
                 startIcon={<AddIcon />}
                 onClick={() => setOpenCreateDialog(true)}
                 sx={{
-                  minHeight: 42,
+                  minHeight: TOUCH_TARGET_MIN,
                   display: { xs: 'none', sm: 'inline-flex' },
                 }}
               >
@@ -333,8 +335,8 @@ const SkillsAssessmentManagement = () => {
             position: 'fixed',
             left: 0,
             right: 0,
-            bottom: 0,
-            zIndex: theme.zIndex.appBar + 2,
+            bottom: withBottomNavSafeArea(0),
+            zIndex: Z_INDEX.stickyCta,
             px: 1,
             py: 1,
             borderTop: `1px solid ${theme.palette.divider}`,
@@ -345,7 +347,7 @@ const SkillsAssessmentManagement = () => {
             fullWidth
             variant="contained"
             color="secondary"
-            sx={{ minHeight: 42 }}
+            sx={{ minHeight: TOUCH_TARGET_MIN }}
             startIcon={<AddIcon />}
             onClick={() => setOpenCreateDialog(true)}
           >

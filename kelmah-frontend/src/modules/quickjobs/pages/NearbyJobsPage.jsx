@@ -58,10 +58,15 @@ import { Helmet } from 'react-helmet-async';
 import {
   HEADER_HEIGHT,
   HEADER_HEIGHT_MOBILE,
+  TOUCH_TARGET_MIN,
   Z_INDEX,
 } from '../../../constants/layout';
 import PageCanvas from '../../common/components/PageCanvas';
-import { withSafeAreaBottom, withSafeAreaTop } from '../../../utils/safeArea';
+import {
+  withBottomNavSafeArea,
+  withSafeAreaBottom,
+  withSafeAreaTop,
+} from '../../../utils/safeArea';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 
 const NearbyJobsPage = () => {
@@ -244,11 +249,11 @@ const NearbyJobsPage = () => {
   return (
     <PageCanvas
       disableContainer
-      sx={{ pt: { xs: 1.25, md: 4 }, pb: { xs: 4, md: 6 } }}
+      sx={{ pt: { xs: 1.25, md: 4 }, pb: { xs: withBottomNavSafeArea(24), md: 6 } }}
     >
       <Container
         maxWidth="md"
-        sx={{ py: { xs: 1.5, md: 3 }, pb: { xs: 10, md: 3 } }}
+        sx={{ py: { xs: 1.5, md: 3 }, pb: { xs: 4, md: 3 } }}
       >
         <Helmet>
           <title>Nearby Jobs | Kelmah</title>
@@ -587,7 +592,7 @@ const NearbyJobsPage = () => {
                       startIcon={<SendIcon />}
                       onClick={() => openQuoteDialog(job)}
                       fullWidth
-                      sx={{ minHeight: 42 }}
+                      sx={{ minHeight: TOUCH_TARGET_MIN }}
                     >
                       Send Quote
                     </Button>
@@ -771,7 +776,7 @@ const NearbyJobsPage = () => {
                 px: { xs: 1.5, md: 3 },
                 pb: { xs: withSafeAreaBottom(12), md: 3 },
                 position: { xs: 'sticky', md: 'static' },
-                bottom: 0,
+                bottom: { xs: withSafeAreaBottom(0), md: 0 },
                 bgcolor: { xs: 'background.paper', md: 'transparent' },
                 borderTop: { xs: '1px solid', md: 'none' },
                 borderColor: 'divider',
