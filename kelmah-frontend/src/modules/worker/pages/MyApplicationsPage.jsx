@@ -523,7 +523,7 @@ const MyApplicationsPage = () => {
                           flex: 1,
                           fontSize: '0.75rem',
                           textTransform: 'none',
-                          minHeight: 40,
+                          minHeight: 44,
                         }}
                         onClick={(event) => handleOpenDetails(application, event)}
                       >
@@ -537,7 +537,7 @@ const MyApplicationsPage = () => {
                           flex: 1,
                           fontSize: '0.75rem',
                           textTransform: 'none',
-                          minHeight: 40,
+                          minHeight: 44,
                         }}
                         onClick={(event) => handleOpenMessage(application, event)}
                       >

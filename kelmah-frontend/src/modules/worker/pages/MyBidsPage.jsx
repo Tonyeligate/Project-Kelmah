@@ -61,6 +61,7 @@ import { createFeatureLogger } from '@/modules/common/utils/devLogger';
 import { currencyFormatter } from '@/modules/common/utils/formatters';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 import PageCanvas from '@/modules/common/components/PageCanvas';
+import { HEADER_HEIGHT_MOBILE, Z_INDEX } from '../../../constants/layout';
 
 const isAbortError = (error) =>
   error?.name === 'AbortError' ||
@@ -433,14 +434,14 @@ const MyBidsPage = () => {
   }), [bids]);
 
   return (
-    <PageCanvas disableContainer>
+    <PageCanvas disableContainer sx={{ pb: { xs: 10, md: 6 } }}>
       <Container maxWidth="md" sx={{ py: { xs: 1.25, md: 4 } }}>
       <Helmet>
         <title>My Bids | Kelmah</title>
       </Helmet>
 
       {/* Page header */}
-      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: { xs: 1.25, md: 3 }, position: { xs: 'sticky', md: 'static' }, top: { xs: 66, md: 'auto' }, zIndex: 9, py: { xs: 0.5, md: 0 }, bgcolor: { xs: 'background.default', md: 'transparent' } }}>
+      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: { xs: 1.25, md: 3 }, position: { xs: 'sticky', md: 'static' }, top: { xs: HEADER_HEIGHT_MOBILE + 10, md: 'auto' }, zIndex: Z_INDEX.sticky, py: { xs: 0.5, md: 0 }, bgcolor: { xs: 'background.default', md: 'transparent' } }}>
         <Box>
           <Typography variant="h5" fontWeight={700} sx={{ fontSize: { xs: '1.15rem', md: '1.5rem' } }}>
             My Bids
@@ -489,11 +490,11 @@ const MyBidsPage = () => {
         sx={{
           mb: 1.25,
           position: { xs: 'sticky', md: 'static' },
-          top: { xs: 68, md: 'auto' },
-          zIndex: 8,
+          top: { xs: HEADER_HEIGHT_MOBILE + 12, md: 'auto' },
+          zIndex: Z_INDEX.sticky,
           bgcolor: { xs: 'background.default', md: 'transparent' },
           py: { xs: 0.5, md: 0 },
-          '& .MuiTab-root': { textTransform: 'none', minHeight: 40, fontWeight: 600 },
+          '& .MuiTab-root': { textTransform: 'none', minHeight: 44, fontWeight: 600 },
         }}
       >
         {TAB_STATUSES.map((status, i) => (

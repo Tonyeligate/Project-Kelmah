@@ -20,7 +20,8 @@ import { warmUpServices } from './utils/serviceWarmUp';
 import useWebSocketConnect from './hooks/useWebSocketConnect';
 import OfflineBanner from './components/common/OfflineBanner';
 import ScrollToTop from './components/common/ScrollToTop';
-import { BOTTOM_NAV_HEIGHT, Z_INDEX } from './constants/layout';
+import { Z_INDEX } from './constants/layout';
+import { withBottomNavSafeArea } from './utils/safeArea';
 import { telemetryEvents } from './services/errorTelemetry';
 import { devWarn } from './modules/common/utils/devLogger';
 
@@ -70,6 +71,7 @@ const App = () => {
   const [swUpdateAvailable, setSwUpdateAvailable] = useState(false);
   const [pwaInstallAvailable, setPwaInstallAvailable] = useState(false);
   const [apiRecoveryNotice, setApiRecoveryNotice] = useState(null);
+  const hasTopNetworkBanner = servicesWakingUp;
 
   // Auto-connect/disconnect the global websocket singleton based on auth state
   useWebSocketConnect();
@@ -192,6 +194,22 @@ const App = () => {
   useEffect(() => {
     initializePWA();
   }, []);
+
+  useEffect(() => {
+    const root = document?.documentElement;
+    if (!root) {
+      return undefined;
+    }
+
+    root.style.setProperty(
+      '--kelmah-network-banner-offset',
+      hasTopNetworkBanner ? '56px' : '0px',
+    );
+
+    return () => {
+      root.style.setProperty('--kelmah-network-banner-offset', '0px');
+    };
+  }, [hasTopNetworkBanner]);
 
   // Warm up backend services on app load (prevents Render free tier sleep)
   // Defer work until after first render/idle to avoid delaying first paint.
@@ -373,7 +391,7 @@ const App = () => {
           anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
           sx={{
             bottom: {
-              xs: `calc(${BOTTOM_NAV_HEIGHT + 12}px + env(safe-area-inset-bottom, 0px)) !important`,
+              xs: `${withBottomNavSafeArea(12)} !important`,
               md: '24px !important',
             },
             zIndex: Z_INDEX.snackbar,
@@ -405,7 +423,7 @@ const App = () => {
           anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
           sx={{
             bottom: {
-              xs: `calc(${BOTTOM_NAV_HEIGHT + 12}px + env(safe-area-inset-bottom, 0px)) !important`,
+              xs: `${withBottomNavSafeArea(12)} !important`,
               md: '24px !important',
             },
             zIndex: Z_INDEX.snackbar,
@@ -443,7 +461,7 @@ const App = () => {
           anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
           sx={{
             bottom: {
-              xs: `calc(${BOTTOM_NAV_HEIGHT + 12}px + env(safe-area-inset-bottom, 0px)) !important`,
+              xs: `${withBottomNavSafeArea(12)} !important`,
               md: '24px !important',
             },
             zIndex: Z_INDEX.snackbar,

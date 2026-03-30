@@ -261,4 +261,3 @@ GlobalErrorBoundary.propTypes = {
 };
 
 export default GlobalErrorBoundary;
-

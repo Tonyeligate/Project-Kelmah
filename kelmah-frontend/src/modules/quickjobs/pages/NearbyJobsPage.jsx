@@ -55,8 +55,9 @@ import {
   calculateFees
 } from '../services/quickJobService';
 import { Helmet } from 'react-helmet-async';
-import { BOTTOM_NAV_HEIGHT } from '../../../constants/layout';
+import { BOTTOM_NAV_HEIGHT, HEADER_HEIGHT_MOBILE, Z_INDEX } from '../../../constants/layout';
 import PageCanvas from '../../common/components/PageCanvas';
+import { withSafeAreaTop } from '../../../utils/safeArea';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 
 const NearbyJobsPage = () => {
@@ -82,6 +83,7 @@ const NearbyJobsPage = () => {
   const [quoteEstimatedDuration, setQuoteEstimatedDuration] = useState('half_day');
   const [quoteSubmitting, setQuoteSubmitting] = useState(false);
   const [quoteSuccess, setQuoteSuccess] = useState(false);
+  const mobileStickyTop = `calc(${withSafeAreaTop(HEADER_HEIGHT_MOBILE + 10)} + var(--kelmah-network-banner-offset, 0px))`;
 
   // Get worker's location
   const getLocation = useCallback(async () => {
@@ -262,8 +264,8 @@ const NearbyJobsPage = () => {
         <Box
           sx={{
             position: 'sticky',
-            top: { xs: 66, md: 80 },
-            zIndex: 9,
+            top: { xs: mobileStickyTop, md: 80 },
+            zIndex: Z_INDEX.sticky,
             display: 'flex',
             gap: 0.75,
             mb: 1.25,
@@ -306,7 +308,7 @@ const NearbyJobsPage = () => {
             value={categoryFilter}
             label="Category"
             onChange={(e) => setCategoryFilter(e.target.value)}
-            sx={{ minHeight: 40 }}
+            sx={{ minHeight: 44 }}
           >
             <MenuItem value="">All Categories</MenuItem>
             {SERVICE_CATEGORIES.map(cat => (
@@ -323,7 +325,7 @@ const NearbyJobsPage = () => {
             value={maxDistance}
             label="Distance"
             onChange={(e) => setMaxDistance(e.target.value)}
-            sx={{ minHeight: 40 }}
+            sx={{ minHeight: 44 }}
           >
             <MenuItem value={5}>5 km</MenuItem>
             <MenuItem value={10}>10 km</MenuItem>

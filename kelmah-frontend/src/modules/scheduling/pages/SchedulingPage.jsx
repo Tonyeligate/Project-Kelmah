@@ -760,7 +760,7 @@ const SchedulingPage = ({
     : [];
 
   return (
-    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 3, md: 5 }, overflowX: 'clip' }}>
+    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 }, overflowX: 'clip' }}>
       <Container maxWidth="md" sx={{ py: 0, width: '100%', minWidth: 0 }}>
         <Helmet><title>Schedule | Kelmah</title></Helmet>
         {/* Page Header */}

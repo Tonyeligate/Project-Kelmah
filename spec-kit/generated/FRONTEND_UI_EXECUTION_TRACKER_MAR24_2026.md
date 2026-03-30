@@ -36,9 +36,9 @@ Scope: Sprint-ready implementation tracker based on the refreshed re-audit basel
 | W2-05 | Rebalance hirer dashboard modules toward action queues | kelmah-frontend/src/modules/hirer/pages/HirerDashboardPage.jsx | Done | FE-A | 2026-03-24 | Action-queue-first dashboard composition applied; build + smoke suites passed |
 | W2-06 | Reduce chart density on smaller desktop widths | kelmah-frontend/src/modules/hirer/pages/HirerDashboardPage.jsx | Done | FE-A | 2026-03-24 | Chart container density tuned for 1024/1280 layouts; build + smoke suites passed |
 | W2-07 | Re-group jobs desktop toolbar controls | kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx | Done | FE-B | 2026-03-24 | Results toolbar now groups jobs count, sort mode, and filter-state chips for faster scanability |
-| W2-08 | Improve job details desktop section rhythm | kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx | Review | FE-B | 2026-04-02 | Implemented (Mar 24); CTA trust markers and section spacing tightened |
-| W2-09 | Standardize desktop card spacing and border rhythm | kelmah-frontend/src/theme/index.js | Review | FE-A | 2026-04-03 | Implemented (Mar 24); card/paper/button radii normalized |
-| W2-10 | Improve skip-link discoverability and focus visuals | kelmah-frontend/src/modules/layout/components/Layout.jsx | Review | FE-C | 2026-04-03 | Implemented (Mar 24); skip link enlarged with stronger focus state |
+| W2-08 | Improve job details desktop section rhythm | kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx | Done | FE-B | 2026-03-29 | Checklist PASS: mobile(320/768) sticky action controls raised to 44x44 and compact spacing retained; desktop(1024/1440) hero and section rhythm confirmed via responsive p/spacing tokens; build + smoke suites passed |
+| W2-09 | Standardize desktop card spacing and border rhythm | kelmah-frontend/src/theme/index.js | Done | FE-A | 2026-03-29 | Checklist PASS: mobile/desktop card-paper rhythm validated in both light and dark themes (Paper/Card radius 14-16, border/divider consistency, breakpoint overrides reviewed); build + smoke suites passed |
+| W2-10 | Improve skip-link discoverability and focus visuals | kelmah-frontend/src/modules/layout/components/Layout.jsx | Done | FE-C | 2026-03-29 | Checklist PASS: mobile + desktop skip-link verified for visibility, focus ring, and contrast (accent background + strong focus outline); build + smoke suites passed |
 
 ## Week 3 - Trust, Payment, and Onboarding Language
 

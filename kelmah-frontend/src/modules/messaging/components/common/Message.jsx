@@ -25,9 +25,9 @@ import { devError } from '@/modules/common/utils/devLogger';
 // Styled components
 const MessageBubble = styled(Paper)(({ theme, isOwn }) => ({
   position: 'relative',
-  padding: theme.spacing(1.5, 2),
+  padding: theme.spacing(1.25, 1.75),
   borderRadius: theme.spacing(2),
-  maxWidth: '80%',
+  maxWidth: '84%',
   width: 'auto',
   wordBreak: 'break-word',
   backgroundColor: isOwn
@@ -138,11 +138,17 @@ const Message = ({
   };
 
   const shouldShowMenuButton =
-    isMobile ||
     isHovered ||
     isFocusWithin ||
     Boolean(menuAnchorEl) ||
     Boolean(menuPosition);
+
+  const normalizedStatus = String(message.status || '').toLowerCase();
+  const isSending = normalizedStatus === 'sending';
+  const isFailed = normalizedStatus === 'failed' || normalizedStatus === 'error';
+  const isRead = Boolean(message.isRead);
+  const isDelivered = !isRead && (normalizedStatus === 'delivered' || normalizedStatus === 'received');
+  const isSent = !isRead && !isDelivered && !isSending && !isFailed;
 
   const formatTime = (timestamp) => {
     if (!timestamp) return '';
@@ -337,7 +343,7 @@ const Message = ({
         display: 'flex',
         flexDirection: isOwn ? 'row-reverse' : 'row',
         alignItems: 'flex-end',
-        mb: 1,
+        mb: 0.75,
         position: 'relative',
         userSelect: isMobile ? 'none' : undefined, // prevent text-select during long press
         WebkitUserSelect: isMobile ? 'none' : undefined,
@@ -360,7 +366,7 @@ const Message = ({
         <Box sx={{ width: 40 }} /> // Spacer when avatar is not shown
       )}
 
-      <Box sx={{ maxWidth: '80%' }}>
+      <Box sx={{ maxWidth: { xs: '86%', md: '82%' } }}>
         {/* Sender name (for group chats) */}
         {!isOwn && message.sender && message.conversation?.type === 'group' && (
           <Typography
@@ -438,17 +444,18 @@ const Message = ({
           )}
 
           {/* Message menu button (visible on hover) */}
-          <Fade in={shouldShowMenuButton}>
+          <Fade in={shouldShowMenuButton} timeout={{ enter: 140, exit: 90 }}>
             <IconButton
               size="small"
               onClick={handleMenuOpen}
               aria-label="Open message options"
               sx={{
                 position: 'absolute',
-                top: 0,
-                [isOwn ? 'left' : 'right']: -8,
-                width: 44,
-                height: 44,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                [isOwn ? 'left' : 'right']: isMobile ? -10 : -12,
+                width: isMobile ? 44 : 36,
+                height: isMobile ? 44 : 36,
                 backgroundColor: 'background.paper',
                 '&:hover': { backgroundColor: 'action.hover' },
                 '&:focus-visible': {
@@ -477,12 +484,12 @@ const Message = ({
 
           {isOwn && (
             <Box sx={{ display: 'flex', alignItems: 'center', ml: 0.5 }}>
-              {message.status === 'sending' && (
+              {isSending && (
                 <Tooltip title="Sending...">
                   <PendingIcon color="action" sx={{ fontSize: '0.9rem' }} />
                 </Tooltip>
               )}
-              {message.status === 'failed' && (
+              {isFailed && (
                 <Tooltip title="Failed to send. Click to resend.">
                   <IconButton
                     size="small"
@@ -502,13 +509,19 @@ const Message = ({
                   </IconButton>
                 </Tooltip>
               )}
-              {!message.status && (
-                <Tooltip title={message.isRead ? 'Read' : 'Sent'}>
-                  {message.isRead ? (
-                    <ReadIcon color="primary" sx={{ fontSize: '0.9rem' }} />
-                  ) : (
-                    <SentIcon color="action" sx={{ fontSize: '0.9rem' }} />
-                  )}
+              {isRead && (
+                <Tooltip title="Read">
+                  <ReadIcon color="primary" sx={{ fontSize: '0.9rem' }} />
+                </Tooltip>
+              )}
+              {isDelivered && (
+                <Tooltip title="Delivered">
+                  <ReadIcon color="action" sx={{ fontSize: '0.9rem' }} />
+                </Tooltip>
+              )}
+              {isSent && (
+                <Tooltip title="Sent">
+                  <SentIcon color="action" sx={{ fontSize: '0.9rem' }} />
                 </Tooltip>
               )}
             </Box>
@@ -542,14 +555,14 @@ const Message = ({
           <ListItemIcon>
             <CopyIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText>Copy</ListItemText>
+          <ListItemText>Copy message</ListItemText>
         </MenuItem>
         {isOwn && (
-          <MenuItem onClick={handleDelete}>
+          <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
             <ListItemIcon>
-              <DeleteIcon fontSize="small" />
+              <DeleteIcon fontSize="small" color="error" />
             </ListItemIcon>
-            <ListItemText>Delete</ListItemText>
+            <ListItemText>Delete message</ListItemText>
           </MenuItem>
         )}
       </Menu>

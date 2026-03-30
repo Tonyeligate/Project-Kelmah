@@ -35,6 +35,7 @@ import { Helmet } from 'react-helmet-async';
 import { useSnackbar } from 'notistack';
 import { toUserMessage } from '@/services/responseNormalizer';
 import PageCanvas from '@/modules/common/components/PageCanvas';
+import { HEADER_HEIGHT_MOBILE, Z_INDEX } from '../../../constants/layout';
 
 // Demo payment methods for initial display
 const PaymentMethodsPage = () => {
@@ -288,8 +289,8 @@ const PaymentMethodsPage = () => {
           alignItems: { xs: 'flex-start', sm: 'center' },
           gap: 1,
           position: { xs: 'sticky', sm: 'static' },
-          top: { xs: 56, sm: 'auto' },
-          zIndex: { xs: 10, sm: 'auto' },
+          top: { xs: HEADER_HEIGHT_MOBILE, sm: 'auto' },
+          zIndex: { xs: Z_INDEX.sticky, sm: 'auto' },
           py: { xs: 0.5, sm: 0 },
           backgroundColor: { xs: 'background.default', sm: 'transparent' },
         }}

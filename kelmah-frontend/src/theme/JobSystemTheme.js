@@ -107,6 +107,7 @@ const spacing = 8;
 const breakpoints = {
   values: {
     xs: 0,
+      mobileCompact: 390,
     sm: 600,
     md: 900,
     lg: 1200,

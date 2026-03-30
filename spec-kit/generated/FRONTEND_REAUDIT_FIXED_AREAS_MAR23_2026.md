@@ -50,19 +50,13 @@ This note refreshes the earlier findings so they match the current codebase afte
 
 ---
 
-## Remaining Findings To Keep Open
+## Remaining Open Tracking
 
-### 1) Global console noise still exists in several dev-only paths
-- Many modules still emit dev-only `console.log`, `console.warn`, or `console.error` calls.
-- Most are gated, but the codebase still carries substantial diagnostic noise across auth, messaging, config, and worker flows.
-- This is not a blocker, but it remains a maintainability and signal-to-noise issue.
+Open issues are no longer tracked in this fixed-areas document.
+Use the normalized open-areas and strict unresolved artifacts as the only source of truth:
 
-### 2) Some hooks and services still deserve a follow-up contract review
-- `useJobsQuery.js` now has stable serialization and abort forwarding, but it should still be periodically checked as query patterns evolve.
-- `apiClient.js` has stronger retry and auth-redirect logic now, but cross-tab auth handling and refresh flows should remain under watch as more auth states are added.
-
-### 3) Visual backlog should now focus on genuinely open display issues
-- Since the fixed areas are now current, the visual backlog should pivot to the remaining screens and components that still need mobile/desktop polish, rather than repeating already-resolved navigation and warm-up concerns.
+- `spec-kit/generated/FRONTEND_REAUDIT_OPEN_AREAS_MAR23_2026.md`
+- `spec-kit/generated/FRONTEND_UNRESOLVED_P0_P2_MAR29_2026.md`
 
 ---
 
@@ -79,7 +73,7 @@ This note refreshes the earlier findings so they match the current codebase afte
 ### Active Backlog Alignment
 
 - Treat Theme 17 (Error recovery affordances), Theme 18 (Search demand intelligence), Theme 19 (Navigation IA simplification), and Theme 20 (Performance observability UX) in `spec-kit/generated/FRONTEND_BACKLOG_1000_DELTA_MAR21_2026.md` as closed/deprioritized for stale duplicates.
-- Keep only forward-looking follow-up tracks active for these surfaces: console noise reduction, periodic hook/service contract review, and unresolved visual/accessibility polish in other modules.
+- Keep forward-looking work in the strict unresolved list only to avoid duplicate reopened findings.
 
 ---
 

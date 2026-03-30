@@ -18,6 +18,8 @@ import PrivacySettings from '../components/common/PrivacySettings';
 import { useSettings } from '../hooks/useSettings';
 import { Helmet } from 'react-helmet-async';
 import { useBreakpointUp } from '@/hooks/useResponsive';
+import { HEADER_HEIGHT_MOBILE, Z_INDEX } from '@/constants/layout';
+import { withSafeAreaTop } from '@/utils/safeArea';
 import PageCanvas from '../../common/components/PageCanvas';
 
 const SettingsPage = () => {
@@ -82,6 +84,7 @@ const SettingsPage = () => {
   const theme = useTheme();
   const isMdUp = useBreakpointUp('md');
   const { user } = useSelector((state) => state.auth);
+  const mobileStickyTop = `calc(${withSafeAreaTop(HEADER_HEIGHT_MOBILE)} + var(--kelmah-network-banner-offset, 0px))`;
 
   const userDisplayName = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || user?.name || 'Kelmah User';
   const userInitials = ((user?.firstName?.[0] || '') + (user?.lastName?.[0] || '')).toUpperCase() || user?.email?.[0]?.toUpperCase() || 'K';
@@ -103,10 +106,10 @@ const SettingsPage = () => {
     if (mobileSection >= 0) {
       const panel = settingsPanels[mobileSection];
       return (
-        <PageCanvas disableContainer sx={{ pt: { xs: 1, md: 4 }, pb: { xs: 10, md: 4 }, overflowX: 'clip' }}>
+        <PageCanvas disableContainer sx={{ pt: { xs: 1, md: 4 }, pb: { xs: 10, md: 6 }, overflowX: 'clip' }}>
           <Container maxWidth="lg" sx={{ py: 1, px: 1.25, color: 'text.primary', width: '100%', minWidth: 0 }}>
             <Helmet><title>Settings | Kelmah</title></Helmet>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5, gap: 0.5, position: 'sticky', top: 56, zIndex: 10, py: 0.5, backgroundColor: 'background.default', minWidth: 0 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5, gap: 0.5, position: 'sticky', top: mobileStickyTop, zIndex: Z_INDEX.sticky, py: 0.5, backgroundColor: 'background.default', minWidth: 0 }}>
               <IconButton
                 onClick={() => setMobileSection(-1)}
                 sx={{
@@ -150,7 +153,7 @@ const SettingsPage = () => {
                 backgroundColor: theme.palette.background.paper,
               })}
             >
-              <Button fullWidth variant="contained" onClick={() => setMobileSection(-1)} sx={{ minHeight: 42 }}>
+              <Button fullWidth variant="contained" onClick={() => setMobileSection(-1)} sx={{ minHeight: 44 }}>
                 Back To All Settings
               </Button>
             </Paper>
@@ -161,10 +164,10 @@ const SettingsPage = () => {
 
     // Showing the settings list
     return (
-      <PageCanvas disableContainer sx={{ pt: 1, pb: { xs: 2, md: 4 } }}>
+      <PageCanvas disableContainer sx={{ pt: 1, pb: { xs: 4, md: 6 } }}>
         <Container maxWidth="lg" sx={{ py: 1.5, px: 1.25, color: 'text.primary' }}>
           <Helmet><title>Settings | Kelmah</title></Helmet>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5, position: 'sticky', top: 56, zIndex: 10, py: 0.5, backgroundColor: 'background.default' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5, position: 'sticky', top: mobileStickyTop, zIndex: Z_INDEX.sticky, py: 0.5, backgroundColor: 'background.default' }}>
             <SettingsIcon sx={{ fontSize: 28, mr: 1.5, color: 'primary.main' }} />
             <Typography variant="h5" fontWeight="bold">
               Settings
@@ -237,7 +240,7 @@ const SettingsPage = () => {
 
   // ── Desktop: Sidebar tabs + content (unchanged) ──
   return (
-    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 2, md: 4 } }}>
+    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
         <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 }, px: { xs: 1.5, sm: 3 }, color: 'text.primary', width: '100%', minWidth: 0 }}>
         <Helmet><title>Settings | Kelmah</title></Helmet>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 2, md: 4 }, minWidth: 0 }}>

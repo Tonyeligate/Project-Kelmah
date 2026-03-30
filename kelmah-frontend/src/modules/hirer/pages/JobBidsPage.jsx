@@ -429,7 +429,7 @@ const JobBidsPage = () => {
   const acceptedBid = bids.find((b) => b.status === 'accepted');
 
   return (
-    <PageCanvas disableContainer>
+    <PageCanvas disableContainer sx={{ pb: { xs: 10, md: 6 } }}>
       <Container maxWidth="md" sx={{ py: { xs: 2, md: 4 } }}>
       <Helmet>
         <title>Review Bids | Kelmah</title>

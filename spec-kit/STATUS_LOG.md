@@ -1,3 +1,151 @@
+### Session: Top-10 Frontend UX Hardening Batch March 29 2026 🚧 IN PROGRESS
+
+**Date**: March 29, 2026  
+**Scope**: Implement the next highest-impact, low-risk frontend UX batch: safe-area/sticky header cleanup, messaging keyboard overlap hardening, mobile filter overflow fixes, role-aware CTA consistency, empty-state clarity, contrast polish, stat-tile extraction, duplicate landing cleanup, and responsive smoke coverage additions.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/layout/components/Layout.jsx
+- kelmah-frontend/src/modules/settings/pages/SettingsPage.jsx
+- kelmah-frontend/src/modules/notifications/pages/NotificationsPage.jsx
+- kelmah-frontend/src/modules/admin/pages/PayoutQueuePage.jsx
+- kelmah-frontend/src/modules/quickjobs/pages/NearbyJobsPage.jsx
+- kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx
+- kelmah-frontend/src/modules/jobs/components/JobsMobileFilterDrawer.jsx
+- kelmah-frontend/src/pages/HomeLanding.jsx
+- kelmah-frontend/src/modules/home/pages/HomePage.jsx
+- kelmah-frontend/src/modules/common/components/StatTile.jsx
+- kelmah-frontend/src/tests/smoke/routed-paths.smoke.test.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation notes (initial)**
+- Investigation pass completed across layout, messaging, jobs filter drawer, landing/stat surfaces, and smoke route tests.
+- Hardcoded sticky-top offsets and keyboard-overlap risk areas identified and queued for tokenized fixes.
+- Pending: patch set + build/smoke verification, then completion log update.
+
+### Session: P2 Compact Breakpoint Reconciliation and Final Unresolved Closure March 30 2026 ✅ COMPLETED
+
+**Date**: March 30, 2026  
+**Scope**: Continue from the completed P1 batches and close the final strict unresolved item by reconciling stale P2 evidence against current code.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx
+- kelmah-frontend/src/theme/index.js
+- kelmah-frontend/src/theme/JobSystemTheme.js
+- spec-kit/generated/FRONTEND_UNRESOLVED_P0_P2_MAR29_2026.md
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Revalidated the prior P2 claim and confirmed it was stale:
+  - `JobDetailsPage` no longer uses raw pixel `useMaxWidth(390)`.
+  - The compact logic is now tokenized via `useBreakpointDown('mobileCompact')`.
+- Confirmed the governing token remains centralized in theme breakpoints (`mobileCompact: 390`) in both active theme definitions.
+- Updated strict unresolved artifact to mark P2 as closed and retain proof lines/verification snapshot.
+
+**Verification**
+- PASS: source-wide scan for `useMaxWidth(` across `kelmah-frontend/src/**` returned no matches.
+- PASS: tokenized compact breakpoint evidence confirmed at:
+  - `kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx:336`
+  - `kelmah-frontend/src/theme/index.js:77`
+  - `kelmah-frontend/src/theme/JobSystemTheme.js:110`
+
+### Session: Messaging Draft Continuity and Mobile Sequential Triage Follow-up March 29 2026 ✅ COMPLETED
+
+**Date**: March 29, 2026  
+**Scope**: Extend the active UX wave with (1) per-conversation composer draft continuity and (2) faster mobile sequential navigation in hirer review actions.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx
+- kelmah-frontend/src/modules/hirer/pages/ApplicationManagementPage.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Messaging draft continuity (`MessagingPage.jsx`):
+  - Added per-conversation draft state keyed by conversation/participant identity.
+  - Restored draft text automatically when switching between threads.
+  - Cleared only the active conversation draft after successful send.
+  - Added draft visibility in conversation list preview (`Draft: ...`) with explicit Draft chip when unread count is zero.
+  - Added attachment carryover safety: selected files are cleared when switching conversation context to prevent cross-thread file send mistakes.
+- Mobile sequential triage speed (`ApplicationManagementPage.jsx`):
+  - Added previous/next controls directly in the fixed mobile quick-action rail.
+  - Added compact mobile index context (`Application X of Y`) for faster decision flow.
+- Lint follow-up:
+  - Ran auto-fix and validation for messaging files to clear actionable prettier issues introduced during rapid iteration.
+
+**Verification**
+- PASS: `npx eslint src/modules/messaging/pages/MessagingPage.jsx src/modules/messaging/components/common/MessageList.jsx` in `kelmah-frontend`.
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,961 modules transformed).
+- PASS: `npx jest --runInBand tests/smoke/routed-paths.smoke.test.js tests/smoke/critical-path-happy-flow.smoke.test.js tests/smoke/critical-path-gateway-contract.smoke.test.js` in `kelmah-frontend` (3 suites, 29 tests).
+
+### Session: PageCanvas Bottom-Spacing Closure and Sticky Offset Tokenization Pass March 29 2026 ✅ COMPLETED
+
+**Date**: March 29, 2026  
+**Scope**: Verify whether the two open P1 batches were already complete, then finish any remaining work for (1) `PageCanvas` bottom-spacing normalization and (2) sticky top-offset/z-index tokenization in target jobs/worker/payment/hirer/contracts route pages.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx
+- kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx
+- kelmah-frontend/src/modules/jobs/pages/JobAlertsPage.jsx
+- kelmah-frontend/src/modules/worker/pages/WorkerDashboardPage.jsx
+- kelmah-frontend/src/modules/worker/pages/MyBidsPage.jsx
+- kelmah-frontend/src/modules/worker/pages/JobSearchPage.jsx
+- kelmah-frontend/src/modules/contracts/pages/ContractsPage.jsx
+- kelmah-frontend/src/modules/hirer/pages/ApplicationManagementPage.jsx
+- kelmah-frontend/src/modules/hirer/pages/JobManagementPage.jsx
+- kelmah-frontend/src/modules/payment/pages/PaymentsPage.jsx
+- kelmah-frontend/src/modules/payment/pages/PaymentMethodsPage.jsx
+- kelmah-frontend/src/modules/payment/pages/PaymentCenterPage.jsx
+- spec-kit/generated/FRONTEND_UNRESOLVED_P0_P2_MAR29_2026.md
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Verification-first check:
+  - re-ran focused scans on the previously flagged P1 list and confirmed `PageCanvas` bottom-spacing issues were already resolved in code (no remaining `xs/md 0,0` outliers in that target set).
+  - confirmed sticky offsets were still mixed/hardcoded across target route pages and required completion work.
+- Sticky tokenization completion:
+  - replaced hardcoded sticky `top` values with shared layout tokens/formulas anchored on `HEADER_HEIGHT_MOBILE`, and where needed `STICKY_CTA_HEIGHT` / `BOTTOM_NAV_HEIGHT`.
+  - replaced hardcoded sticky z-index numerics with `Z_INDEX.sticky` in the touched route headers/toolbars/tab bars.
+- Documentation closure:
+  - refreshed `FRONTEND_UNRESOLVED_P0_P2_MAR29_2026.md` so P1 is now explicitly closed and only active unresolved items remain.
+
+**Verification**
+- PASS: targeted PageCanvas scan for prior unresolved set (`JobManagementPage`, `JobAlertsPage`, `JobApplicationPage`, `JobDetailsPage`, `ProfessionalMapPage`, `PaymentSettingsPage`) confirms normalized or intentional route-specific spacing values.
+- PASS: sticky hardcoded-top scan over target modules (`jobs|worker|payment|hirer|contracts`) shows no remaining `top: { xs: <number> ... }` patterns.
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,961 modules transformed).
+- PASS: `npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx src/tests/smoke/critical-path-happy-flow.smoke.test.jsx src/tests/smoke/critical-path-gateway-contract.smoke.test.js --runInBand` in `kelmah-frontend` (3 suites, 29 tests).
+
+### Session: Hirer Decision Throughput and Messaging Composer Ergonomics Wave March 29 2026 ✅ COMPLETED
+
+**Date**: March 29, 2026  
+**Scope**: Continue the active dual-stream UX cycle by improving hirer review speed/mobile decision density and messaging composer attachment/reply ergonomics.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/hirer/pages/ApplicationManagementPage.jsx
+- kelmah-frontend/src/modules/hirer/components/ApplicationManagementCards.jsx
+- kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx
+- kelmah-frontend/src/modules/messaging/components/common/MessageList.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Hirer review speed and mobile action density:
+  - Added detail-panel previous/next stepping with "Application X of Y" context and icon navigation.
+  - Added keyboard triage shortcuts in detail mode (arrow navigation, `A` accept, `R` reject, `M` message) with editable-field safety guards.
+  - Improved mobile fixed action rail to prioritize direct decision controls when an application is selected.
+  - Added quick reject reason chips in the decision dialog for one-tap feedback drafting.
+- Hirer list-card triage clarity:
+  - Added "Applied … ago" recency metadata on cards with invalid-date guard.
+  - Increased quick-action icon button touch targets for faster mobile use.
+- Messaging composer ergonomics and attachment review flow:
+  - Added stronger file intake validation (oversize/duplicate/overflow warnings), deduplication, and clear-all attachment control.
+  - Added compact attachment review strip with count, total size, per-file type labeling/icons, and remove controls.
+  - Added quick-reply template chips for common negotiation prompts and a live message character counter.
+  - Updated composer helper text and placeholders to reflect attachment state and send ergonomics.
+- Messaging component hygiene:
+  - Removed stray duplicate comment noise in `MessageList.jsx` to keep diffs and audits cleaner.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,961 modules transformed).
+- PASS: `npx jest --runInBand tests/smoke/routed-paths.smoke.test.js tests/smoke/critical-path-happy-flow.smoke.test.js tests/smoke/critical-path-gateway-contract.smoke.test.js` in `kelmah-frontend` (3 suites, 29 tests).
+
 ### Session: Messaging Lint Hardening, High-Traffic Token Cleanup, and Route Shell Spacing Final Pass March 29 2026 ✅ COMPLETED
 
 **Date**: March 29, 2026  
@@ -28,6 +176,7 @@
 - High-traffic token cleanup:
   - replaced hardcoded status/action colors in `JobDetailsPage.jsx` with theme tokens (`success`, `warning`, `secondary`, `common.black`) and tokenized alpha borders/backgrounds.
   - replaced hardcoded live/clear-filter colors in `JobsPage.jsx` with semantic tokens (`success.light`, `error.main`) and tokenized hover alpha.
+  - replaced remaining hardcoded category palette hex values in `JobsPage.jsx` with theme token keys (`info`, `warning`, `error`, `secondary`, `success`).
   - replaced hardcoded focus-outline and focus-ring color literals in `PaymentCenterPage.jsx` with palette-driven values.
 - Final shell-spacing pass:
   - normalized explicit bottom spacing outliers (`md: 5`/`md: 4`) to the active route baseline where appropriate.
@@ -75,6 +224,36 @@
 **Verification**
 - PASS: `npm run build` in `kelmah-frontend`.
 - PASS: `npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx src/tests/smoke/critical-path-happy-flow.smoke.test.jsx src/tests/smoke/critical-path-gateway-contract.smoke.test.js --runInBand` in `kelmah-frontend`.
+
+### Session: Expanded Mobile Touch-Target Hardening and Unresolved Baseline Refresh March 29 2026 ✅ COMPLETED
+
+**Date**: March 29, 2026  
+**Scope**: Continue post-tracker closure by fixing additional undersized interactive controls across high-traffic frontend surfaces and refreshing unresolved P0-P2 output to strict current state only.
+
+**Files touched**
+- kelmah-frontend/src/modules/quickjobs/pages/NearbyJobsPage.jsx
+- kelmah-frontend/src/modules/messaging/components/common/EmojiPicker.jsx
+- kelmah-frontend/src/modules/messaging/components/common/ConversationList.jsx
+- kelmah-frontend/src/modules/worker/components/SkillsVerificationPanel.jsx
+- kelmah-frontend/src/modules/worker/components/CertificateManager.jsx
+- kelmah-frontend/src/modules/worker/components/AdvancedCalendar.jsx
+- kelmah-frontend/src/modules/worker/pages/MyBidsPage.jsx
+- kelmah-frontend/src/modules/payment/pages/PaymentsPage.jsx
+- kelmah-frontend/src/modules/common/components/forms/SearchForm.jsx
+- kelmah-frontend/src/modules/hirer/pages/HirerQuickJobTrackingPage.jsx
+- kelmah-frontend/src/modules/common/components/cards/JobCard.jsx
+- spec-kit/generated/FRONTEND_UNRESOLVED_P0_P2_MAR29_2026.md
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Raised remaining actionable `40px` controls to `44px` minimum in the listed files (selects, tabs, buttons, and interactive calendar cells).
+- Removed a stray malformed JSX style fragment in `JobCard.jsx` to prevent unstable runtime rendering behavior.
+- Re-ran strict touch-target scan and confirmed remaining `40px` hits are non-action layout/text values rather than tap controls.
+- Refreshed `FRONTEND_UNRESOLVED_P0_P2_MAR29_2026.md` to keep only active unresolved items after this hardening wave.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend` (Vite build succeeded; 13,961 modules transformed).
+- PASS: `npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx src/tests/smoke/critical-path-happy-flow.smoke.test.jsx src/tests/smoke/critical-path-gateway-contract.smoke.test.js --runInBand` in `kelmah-frontend` (3 suites, 29 tests).
 
 ### Session: HomeLanding Ghana Localization and Legal Image Pass March 29 2026 ✅ COMPLETED
 

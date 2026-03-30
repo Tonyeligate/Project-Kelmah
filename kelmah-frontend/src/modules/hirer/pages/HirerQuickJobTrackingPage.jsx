@@ -428,7 +428,7 @@ const HirerQuickJobTrackingPage = () => {
   }
 
   return (
-    <PageCanvas disableContainer>
+    <PageCanvas disableContainer sx={{ pb: { xs: 10, md: 6 } }}>
       <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
       <Helmet>
         <title>Quick-Hire Request | Kelmah</title>
@@ -560,7 +560,7 @@ const HirerQuickJobTrackingPage = () => {
                         variant="outlined"
                         size="small"
                         href={`tel:${acceptedWorker.phoneNumber}`}
-                        sx={{ minHeight: 40 }}
+                        sx={{ minHeight: 44 }}
                       >
                         Call worker
                       </Button>

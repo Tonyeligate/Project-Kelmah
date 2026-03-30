@@ -1,4 +1,5 @@
-﻿import React, { useState, useEffect } from 'react';
+﻿import React, { useCallback, useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
 import {
   Box,
   Drawer,
@@ -10,9 +11,9 @@ import {
   ListItem,
   ListItemText,
   Divider,
-  CircularProgress,
   Chip,
 } from '@mui/material';
+import Skeleton from '@mui/material/Skeleton';
 import {
   Search,
   Close,
@@ -42,9 +43,12 @@ const SearchResult = styled(ListItem)(({ theme }) => ({
   },
 }));
 
-const ContentPreview = styled(Typography)(({ theme, highlight }) => ({
+const ContentPreview = styled(Typography)(({ theme }) => ({
   '& .highlight': {
-    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 215, 0, 0.3)' : 'rgba(184, 134, 11, 0.18)',
+    backgroundColor:
+      theme.palette.mode === 'dark'
+        ? 'rgba(255, 215, 0, 0.3)'
+        : 'rgba(184, 134, 11, 0.18)',
     padding: '0 2px',
     borderRadius: '2px',
   },
@@ -53,13 +57,19 @@ const ContentPreview = styled(Typography)(({ theme, highlight }) => ({
 const FilterChip = styled(Chip)(({ theme, selected }) => ({
   margin: theme.spacing(0.5),
   backgroundColor: selected
-    ? (theme.palette.mode === 'dark' ? 'rgba(255, 215, 0, 0.2)' : 'rgba(184, 134, 11, 0.12)')
-    : theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+    ? theme.palette.mode === 'dark'
+      ? 'rgba(255, 215, 0, 0.2)'
+      : 'rgba(184, 134, 11, 0.12)'
+    : theme.palette.mode === 'dark'
+      ? 'rgba(255, 255, 255, 0.1)'
+      : 'rgba(0, 0, 0, 0.05)',
   color: selected ? theme.palette.secondary.main : theme.palette.text.secondary,
   borderColor: selected ? theme.palette.secondary.main : theme.palette.divider,
   '&:hover': {
     backgroundColor: selected
-      ? (theme.palette.mode === 'dark' ? 'rgba(255, 215, 0, 0.3)' : 'rgba(184, 134, 11, 0.18)')
+      ? theme.palette.mode === 'dark'
+        ? 'rgba(255, 215, 0, 0.3)'
+        : 'rgba(184, 134, 11, 0.18)'
       : theme.palette.action.hover,
   },
 }));
@@ -74,7 +84,7 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
     sender: null,
   });
 
-  const handleSearch = async () => {
+  const handleSearch = useCallback(async () => {
     if (!query.trim()) {
       setResults([]);
       return;
@@ -97,7 +107,7 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters.attachments, filters.period, filters.sender, query]);
 
   // Search when query or filters change
   useEffect(() => {
@@ -108,7 +118,7 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
 
       return () => clearTimeout(delayDebounceFn);
     }
-  }, [query, filters, open]);
+  }, [handleSearch, open]);
 
   const handleSelectResult = (message) => {
     if (onSelectMessage) {
@@ -150,12 +160,14 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
                 {part}
               </span>
             ) : (
-              <React.Fragment key={`plain-part-${i}-${part}`}>{part}</React.Fragment>
+              <React.Fragment key={`plain-part-${i}-${part}`}>
+                {part}
+              </React.Fragment>
             ),
           )}
         </>
       );
-    } catch (_) {
+    } catch {
       return <>{text}</>;
     }
   };
@@ -277,10 +289,24 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
           {[1, 2, 3, 4].map((row) => (
             <Box
               key={`message-search-loading-skeleton-${row}`}
-              sx={{ py: 1.25, borderBottom: '1px solid', borderColor: 'divider' }}
+              sx={{
+                py: 1.25,
+                borderBottom: '1px solid',
+                borderColor: 'divider',
+              }}
             >
-              <Skeleton variant="text" width="42%" height={24} sx={{ mb: 0.5 }} />
-              <Skeleton variant="text" width="88%" height={20} sx={{ mb: 0.4 }} />
+              <Skeleton
+                variant="text"
+                width="42%"
+                height={24}
+                sx={{ mb: 0.5 }}
+              />
+              <Skeleton
+                variant="text"
+                width="88%"
+                height={20}
+                sx={{ mb: 0.4 }}
+              />
               <Skeleton variant="text" width="34%" height={18} />
             </Box>
           ))}
@@ -296,9 +322,17 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
                 <ListItemText
                   primary={
                     <Box
-                      sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, alignItems: 'flex-start' }}
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        gap: 1,
+                        alignItems: 'flex-start',
+                      }}
                     >
-                      <Typography variant="body1" sx={{ minWidth: 0, wordBreak: 'break-word' }}>
+                      <Typography
+                        variant="body1"
+                        sx={{ minWidth: 0, wordBreak: 'break-word' }}
+                      >
                         {message.conversation.title}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
@@ -361,7 +395,8 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
           }}
         >
           <Typography variant="body2" color="text.secondary">
-            No messages matched "{query}". Try a shorter word such as payment, job, or name.
+            No messages matched &quot;{query}&quot;. Try a shorter word such as
+            payment, job, or name.
           </Typography>
         </Box>
       ) : (
@@ -374,7 +409,8 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
           }}
         >
           <Typography variant="body2" color="text.secondary">
-            Type one word to find messages. Use date or attachments to narrow the list.
+            Type one word to find messages. Use date or attachments to narrow
+            the list.
           </Typography>
         </Box>
       )}
@@ -384,4 +420,8 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
 
 export default MessageSearch;
 
-
+MessageSearch.propTypes = {
+  open: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onSelectMessage: PropTypes.func,
+};

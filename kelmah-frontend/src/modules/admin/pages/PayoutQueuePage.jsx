@@ -10,6 +10,8 @@ import SendIcon from '@mui/icons-material/Send';
 import { Helmet } from 'react-helmet-async';
 import { adminService } from '../services/adminService';
 import { useBreakpointDown } from '@/hooks/useResponsive';
+import { HEADER_HEIGHT_MOBILE, Z_INDEX } from '@/constants/layout';
+import { withSafeAreaTop } from '@/utils/safeArea';
 import PageCanvas from '@/modules/common/components/PageCanvas';
 
 const STATUS_COLOR_MAP = {
@@ -104,6 +106,7 @@ const PayoutQueuePage = () => {
   const theme = useTheme();
   const isMobile = useBreakpointDown('md');
   const isCompactMobile = useBreakpointDown('sm');
+  const mobileStickyTop = `calc(${withSafeAreaTop(HEADER_HEIGHT_MOBILE)} + var(--kelmah-network-banner-offset, 0px))`;
   const navigate = useNavigate();
   const { user, isAuthenticated } = useSelector((state) => state.auth);
 
@@ -157,8 +160,8 @@ const PayoutQueuePage = () => {
       <Box
         sx={{
           position: { xs: 'sticky', md: 'static' },
-          top: { xs: 56, md: 'auto' },
-          zIndex: { xs: 10, md: 'auto' },
+          top: { xs: mobileStickyTop, md: 'auto' },
+          zIndex: { xs: Z_INDEX.sticky, md: 'auto' },
           py: { xs: 0.5, md: 0 },
           mb: { xs: 1.5, md: 0 },
           backgroundColor: { xs: 'background.default', md: 'transparent' },

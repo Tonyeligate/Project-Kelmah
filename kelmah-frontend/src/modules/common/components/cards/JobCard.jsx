@@ -417,14 +417,6 @@ const JobCard = ({
         </CardActions>
       )}
     </Card>
-            sx={{
-              minHeight: 40,
-              lineHeight: 1.35,
-              '&:focus-visible': {
-                outline: `3px solid ${theme.palette.primary.main}`,
-                outlineOffset: 2,
-              },
-            }}
   );
 };
 

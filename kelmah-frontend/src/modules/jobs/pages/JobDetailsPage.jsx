@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
@@ -47,7 +47,7 @@ import {
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { styled, useTheme, alpha } from '@mui/material/styles';
-import { useBreakpointDown, useMaxWidth } from '@/hooks/useResponsive';
+import { useBreakpointDown, } from '@/hooks/useResponsive';
 import PageCanvas from '@/modules/common/components/PageCanvas';
 import BidSubmissionForm from '../components/BidSubmissionForm';
 import { useDispatch, useSelector } from 'react-redux';
@@ -333,7 +333,7 @@ const normalizeSkillLabels = (skills) => {
 const JobDetailsPage = () => {
   const theme = useTheme();
   const isMobile = useBreakpointDown('md');
-  const isCompactMobile = useMaxWidth(390);
+  const isCompactMobile = useBreakpointDown('mobileCompact');
   const location = useLocation();
   const { search } = location;
   const { id } = useParams();

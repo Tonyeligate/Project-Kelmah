@@ -89,6 +89,7 @@ import {
 import tradeCategories from '../../jobs/data/tradeCategories.json';
 import ghanaLocations from '../../jobs/data/ghanaLocations.json';
 import PageCanvas from '@/modules/common/components/PageCanvas';
+import { HEADER_HEIGHT_MOBILE, Z_INDEX } from '../../../constants/layout';
 
 // ─── Constants ──────────────────────────────────────────────
 const ITEMS_PER_PAGE = 12;
@@ -261,7 +262,7 @@ const CategoryChips = ({ selected, onChange }) => {
         '&::-webkit-scrollbar': { display: 'none' },
         scrollbarWidth: 'none',
         '& .MuiChip-root': {
-          minHeight: 40,
+          minHeight: 44,
           scrollSnapAlign: 'start',
         },
       }}
@@ -959,8 +960,8 @@ const JobSearchPage = () => {
             sx={{
               mt: 1.5,
               position: { xs: 'sticky', md: 'static' },
-              top: { xs: 68, md: 'auto' },
-              zIndex: 9,
+              top: { xs: HEADER_HEIGHT_MOBILE + 12, md: 'auto' },
+              zIndex: Z_INDEX.sticky,
               py: 0.75,
               bgcolor: { xs: 'background.default', md: 'transparent' },
             }}
@@ -972,7 +973,7 @@ const JobSearchPage = () => {
                   size="small"
                   startIcon={<FilterListIcon />}
                   onClick={() => setFilterDrawerOpen(true)}
-                  sx={{ textTransform: 'none', borderRadius: 2, minHeight: 40 }}
+                  sx={{ textTransform: 'none', borderRadius: 2, minHeight: 44 }}
                 >
                   Filters
                   {hasFilters && <Badge color="primary" variant="dot" sx={{ ml: 1 }} />}

@@ -44,6 +44,8 @@ import { format, formatDistanceToNow } from 'date-fns';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useBreakpointDown } from '@/hooks/useResponsive';
+import { HEADER_HEIGHT_MOBILE, Z_INDEX } from '@/constants/layout';
+import { withSafeAreaTop } from '@/utils/safeArea';
 import PageCanvas from '../../common/components/PageCanvas';
 import {
   isSafeInternalPath,
@@ -265,6 +267,7 @@ const NotificationsPage = () => {
   } = useNotifications();
   const theme = useTheme();
   const isMobile = useBreakpointDown('sm');
+  const mobileStickyTop = `calc(${withSafeAreaTop(HEADER_HEIGHT_MOBILE)} + var(--kelmah-network-banner-offset, 0px))`;
   const [filter, setFilter] = useState('all');
   const [unreadOnly, setUnreadOnly] = useState(false);
   const [actionsAnchor, setActionsAnchor] = useState(null);
@@ -314,7 +317,7 @@ const NotificationsPage = () => {
     });
 
   return (
-    <PageCanvas disableContainer sx={{ pt: { xs: 1, md: 4 }, pb: { xs: 10, md: 5 }, overflowX: 'clip' }}>
+    <PageCanvas disableContainer sx={{ pt: { xs: 1, md: 4 }, pb: { xs: 10, md: 6 }, overflowX: 'clip' }}>
       <Container maxWidth="md" sx={{ py: { xs: 0, md: 0 }, px: { xs: 0.75, sm: 2 }, pb: { xs: 'calc(72px + env(safe-area-inset-bottom, 0px))', md: 0 }, width: '100%', minWidth: 0 }}>
         <Helmet><title>Notifications | Kelmah</title></Helmet>
         {/* Header - stacks vertically on mobile */}
@@ -327,8 +330,8 @@ const NotificationsPage = () => {
           gap: { xs: 1.5, sm: 0 },
           mb: { xs: 1.5, md: 4 },
           position: { xs: 'sticky', sm: 'static' },
-          top: { xs: 56, sm: 'auto' },
-          zIndex: { xs: 10, sm: 'auto' },
+          top: { xs: mobileStickyTop, sm: 'auto' },
+          zIndex: { xs: Z_INDEX.sticky, sm: 'auto' },
           py: { xs: 0.5, sm: 0 },
           backgroundColor: { xs: 'background.default', sm: 'transparent' },
           minWidth: 0,

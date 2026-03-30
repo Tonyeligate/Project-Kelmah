@@ -199,7 +199,7 @@ const HirerProfilePage = () => {
 
   if (loading && !profile) {
     return (
-      <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 2, md: 4 } }}>
+      <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
         <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
           <Skeleton variant="rounded" height={220} sx={{ mb: 3, borderRadius: 3 }} />
           <Grid container spacing={3}>
@@ -216,7 +216,7 @@ const HirerProfilePage = () => {
   }
 
   return (
-    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 2, md: 4 } }}>
+    <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
       <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
         <Helmet>
           <title>Hirer Profile | Kelmah</title>

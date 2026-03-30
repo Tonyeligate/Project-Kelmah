@@ -62,6 +62,7 @@ import { currencyFormatter } from '@/modules/common/utils/formatters';
 import { hasRole } from '../../../utils/userUtils';
 import { useBreakpointDown } from '../../../hooks/useResponsive';
 import PageCanvas from '../../common/components/PageCanvas';
+import { BOTTOM_NAV_HEIGHT, HEADER_HEIGHT_MOBILE, Z_INDEX } from '../../../constants/layout';
 
 const WalletSummary = ({ balance, onDepositClick, onWithdrawClick }) => (
   <Paper
@@ -99,7 +100,7 @@ const WalletSummary = ({ balance, onDepositClick, onWithdrawClick }) => (
         color="success"
         startIcon={<ArrowUpwardIcon />}
         onClick={onDepositClick}
-        sx={{ minHeight: 44 }}
+        sx={{ minHeight: 44, width: { xs: '100%', sm: 'auto' } }}
       >
         Add Money
       </Button>
@@ -108,7 +109,7 @@ const WalletSummary = ({ balance, onDepositClick, onWithdrawClick }) => (
         color="warning"
         startIcon={<ArrowDownwardIcon />}
         onClick={onWithdrawClick}
-        sx={{ minHeight: 44 }}
+        sx={{ minHeight: 44, width: { xs: '100%', sm: 'auto' } }}
       >
         Withdraw Funds
       </Button>
@@ -124,6 +125,20 @@ const WalletSummary = ({ balance, onDepositClick, onWithdrawClick }) => (
 const TransactionHistory = ({ transactions }) => {
   const isNarrowMobile = useBreakpointDown('sm');
 
+  if (!transactions || transactions.length === 0) {
+    return (
+      <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 2, textAlign: 'center' }}>
+        <ReceiptLongIcon sx={{ fontSize: 44, color: 'text.disabled', mb: 1 }} />
+        <Typography variant="h6" fontWeight="bold" sx={{ mb: 1 }}>
+          No transactions yet
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 360, mx: 'auto' }}>
+          Deposits, withdrawals, and escrow releases will appear here once you start using your wallet.
+        </Typography>
+      </Paper>
+    );
+  }
+
   return (
   <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 2 }}>
     <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
@@ -135,8 +150,14 @@ const TransactionHistory = ({ transactions }) => {
     <List>
       {(transactions || []).slice(0, 5).map((tx, idx) => (
         <React.Fragment key={tx.id || tx._id}>
-          <ListItem sx={{ alignItems: isNarrowMobile ? 'flex-start' : 'center' }}>
-            <ListItemIcon>
+          <ListItem
+            sx={{
+              alignItems: isNarrowMobile ? 'flex-start' : 'center',
+              flexDirection: isNarrowMobile ? 'column' : 'row',
+              gap: isNarrowMobile ? 1 : 0,
+            }}
+          >
+            <ListItemIcon sx={{ minWidth: isNarrowMobile ? 40 : 56 }}>
               <Avatar
                 sx={{
                   bgcolor:
@@ -157,6 +178,7 @@ const TransactionHistory = ({ transactions }) => {
                   return tx.date ? format(new Date(tx.date), 'dd/MM/yyyy, hh:mm a') : 'Date unavailable';
                 } catch { return 'Date unavailable'; }
               })()}
+              sx={{ mb: isNarrowMobile ? 0.5 : 0 }}
             />
             <Box sx={{ minWidth: isNarrowMobile ? 0 : 140, ml: isNarrowMobile ? 0 : 1.5 }}>
               <Typography
@@ -799,25 +821,26 @@ const PaymentCenterPage = () => {
   const handleTabChange = (_, newVal) => setTabIndex(newVal);
   const focusVisibleButtonSx = {
     '&:focus-visible': {
-      outline: `3px solid ${theme.palette.mode === 'dark' ? '#FFD700' : '#111827'}`,
+      outline: `3px solid ${theme.palette.mode === 'dark' ? theme.palette.secondary.main : theme.palette.text.primary}`,
       outlineOffset: 3,
-      boxShadow: theme.palette.mode === 'dark'
-        ? '0 0 0 4px rgba(255, 215, 0, 0.18)'
-        : '0 0 0 4px rgba(17, 24, 39, 0.12)',
+      boxShadow:
+        theme.palette.mode === 'dark'
+          ? `0 0 0 4px ${alpha(theme.palette.secondary.main, 0.18)}`
+          : `0 0 0 4px ${alpha(theme.palette.text.primary, 0.12)}`,
     },
   };
   const focusVisibleFieldSx = {
     '& .MuiOutlinedInput-root.Mui-focused': {
       boxShadow:
         theme.palette.mode === 'dark'
-          ? '0 0 0 2px rgba(255, 215, 0, 0.28)'
-          : '0 0 0 2px rgba(17, 24, 39, 0.2)',
+          ? `0 0 0 2px ${alpha(theme.palette.secondary.main, 0.28)}`
+          : `0 0 0 2px ${alpha(theme.palette.text.primary, 0.2)}`,
     },
   };
 
   if (loading)
     return (
-      <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 } }}>
+      <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
         <Container sx={{ py: { xs: 2, md: 4 } }}>
           <Skeleton variant="rectangular" height={300} />
         </Container>
@@ -825,7 +848,7 @@ const PaymentCenterPage = () => {
     );
   if (error)
     return (
-      <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 } }}>
+      <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
         <Container sx={{ py: { xs: 2, md: 4 } }}>
           <Alert
             severity="error"
@@ -848,8 +871,8 @@ const PaymentCenterPage = () => {
       <Box
         sx={{
           position: { xs: 'sticky', md: 'static' },
-          top: { xs: 56, md: 'auto' },
-          zIndex: { xs: 11, md: 'auto' },
+          top: { xs: HEADER_HEIGHT_MOBILE, md: 'auto' },
+          zIndex: { xs: Z_INDEX.sticky, md: 'auto' },
           py: { xs: 0.5, md: 0 },
           mb: { xs: 1.5, md: 0 },
           backgroundColor: { xs: 'background.default', md: 'transparent' },
@@ -925,7 +948,7 @@ const PaymentCenterPage = () => {
             </Grid>
           </Grid>
 
-          <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2, position: { xs: 'sticky', md: 'static' }, top: { xs: 108, md: 'auto' }, zIndex: { xs: 10, md: 'auto' }, backgroundColor: { xs: 'background.default', md: 'transparent' } }}>
+          <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2, position: { xs: 'sticky', md: 'static' }, top: { xs: HEADER_HEIGHT_MOBILE + BOTTOM_NAV_HEIGHT - 4, md: 'auto' }, zIndex: { xs: Z_INDEX.sticky, md: 'auto' }, backgroundColor: { xs: 'background.default', md: 'transparent' } }}>
             <Tabs
               value={tabIndex}
               onChange={handleTabChange}

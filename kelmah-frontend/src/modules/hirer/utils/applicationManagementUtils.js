@@ -44,6 +44,49 @@ export const normalizeApplicationsPage = (value) => {
   return Number.isInteger(parsedValue) && parsedValue > 0 ? parsedValue : 1;
 };
 
+export const formatStatusLabel = (value, fallback = 'Pending') => {
+  const source = String(value || '').trim();
+  if (!source) {
+    return fallback;
+  }
+
+  return source.charAt(0).toUpperCase() + source.slice(1);
+};
+
+export const formatEstimatedDuration = (value) => {
+  if (value == null || value === '') {
+    return null;
+  }
+
+  if (typeof value === 'string') {
+    return value;
+  }
+
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return `${value} day${value === 1 ? '' : 's'}`;
+  }
+
+  if (typeof value === 'object') {
+    const numericValue = Number(value.value ?? value.amount ?? value.days ?? value.weeks ?? value.months);
+    const inferredUnit =
+      value.unit ||
+      (value.days != null ? 'day' : null) ||
+      (value.weeks != null ? 'week' : null) ||
+      (value.months != null ? 'month' : null);
+
+    if (Number.isFinite(numericValue) && inferredUnit) {
+      const singularUnit = String(inferredUnit).replace(/s$/, '');
+      return `${numericValue} ${singularUnit}${numericValue === 1 ? '' : 's'}`;
+    }
+
+    if (typeof value.label === 'string' && value.label.trim()) {
+      return value.label.trim();
+    }
+  }
+
+  return null;
+};
+
 export const isBiddingJob = (job) => {
   if (job?.biddingEnabled === true || job?.biddingEnabled === 'true') {
     return true;
@@ -56,6 +99,8 @@ export const isBiddingJob = (job) => {
 
 export const normalizeApplication = (raw, jobIdFallback, jobTitleFallback) => {
   const worker = raw?.worker || {};
+  const parsedWorkerRating = Number(raw?.workerRating ?? worker?.rating);
+  const parsedProposedRate = Number(raw?.proposedRate ?? raw?.bidAmount);
   const workerName =
     raw?.workerName ||
     worker?.name ||
@@ -75,12 +120,9 @@ export const normalizeApplication = (raw, jobIdFallback, jobTitleFallback) => {
     workerId: raw?.workerId || worker?.id || worker?._id,
     workerName,
     workerAvatar: raw?.workerAvatar || worker?.avatar || worker?.profileImage,
-    workerRating:
-      raw?.workerRating != null || worker?.rating != null
-        ? Number(raw?.workerRating ?? worker?.rating)
-        : null,
+    workerRating: Number.isFinite(parsedWorkerRating) ? parsedWorkerRating : null,
     coverLetter: raw?.coverLetter || raw?.coverLetterPreview || '',
-    proposedRate: raw?.proposedRate ?? raw?.bidAmount ?? null,
-    estimatedDuration: raw?.estimatedDuration ?? null,
+    proposedRate: Number.isFinite(parsedProposedRate) ? parsedProposedRate : null,
+    estimatedDuration: formatEstimatedDuration(raw?.estimatedDuration),
   };
 };

@@ -36,6 +36,7 @@ import InboxOutlinedIcon from '@mui/icons-material/InboxOutlined';
 import { useVisibilityPolling } from '../../../hooks/useVisibilityPolling';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 import PageCanvas from '@/modules/common/components/PageCanvas';
+import { HEADER_HEIGHT_MOBILE, Z_INDEX } from '../../../constants/layout';
 
 /* ---------- Keyframes for spin animation ---------- */
 const spinKeyframes = {
@@ -588,8 +589,8 @@ const WorkerDashboardPage = () => {
             ? '0 18px 34px rgba(0,0,0,0.42)'
             : '0 14px 28px rgba(15,23,42,0.10)',
           position: { xs: 'sticky', md: 'relative' },
-          top: { xs: 56, md: 'auto' },
-          zIndex: { xs: 10, md: 1 },
+          top: { xs: HEADER_HEIGHT_MOBILE, md: 'auto' },
+          zIndex: { xs: Z_INDEX.sticky, md: 1 },
           overflow: 'hidden',
           '&::after': {
             content: '""',
@@ -660,7 +661,7 @@ const WorkerDashboardPage = () => {
               size="small"
               variant="contained"
               onClick={() => navigate('/worker/applications')}
-              sx={{ textTransform: 'none', fontWeight: 700, minHeight: 40 }}
+              sx={{ textTransform: 'none', fontWeight: 700, minHeight: 44 }}
             >
               Open Pipeline
             </Button>

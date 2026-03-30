@@ -1,9 +1,10 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   BottomNavigation,
   BottomNavigationAction,
   Paper,
   Badge,
+  Typography,
   useTheme,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
@@ -20,7 +21,12 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { BRAND_COLORS } from '../../../theme';
 import { useNotifications } from '../../notifications/contexts/NotificationContext';
-import { Z_INDEX, BOTTOM_NAV_HEIGHT } from '../../../constants/layout';
+import {
+  Z_INDEX,
+  BOTTOM_NAV_HEIGHT,
+  TOUCH_TARGET_MIN,
+} from '../../../constants/layout';
+import { withSafeAreaBottom } from '../../../utils/safeArea';
 import useKeyboardVisible from '../../../hooks/useKeyboardVisible';
 import { useBreakpointDown } from '../../../hooks/useResponsive';
 

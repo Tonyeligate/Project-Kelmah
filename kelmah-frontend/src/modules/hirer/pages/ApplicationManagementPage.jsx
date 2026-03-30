@@ -26,6 +26,7 @@ import {
   ListItemButton,
   ListItemText,
   ListItemIcon,
+  IconButton,
   Badge,
   Tooltip,
   Pagination,
@@ -39,6 +40,8 @@ import {
   Cancel,
   Message,
   ArrowBack,
+  NavigateBefore,
+  NavigateNext,
   InboxOutlined,
   TipsAndUpdates,
   ArrowForward,
@@ -62,6 +65,7 @@ import {
   APPLICATION_STATUS_TABS,
   DEFAULT_APPLICATION_COUNTS,
   STATUS_COLORS,
+  formatStatusLabel,
   isBiddingJob,
   normalizeApplication,
   normalizeApplicationsPage,
@@ -74,7 +78,7 @@ import {
   JobListItem,
 } from '../components/ApplicationManagementCards';
 import { useBreakpointDown } from '../../../hooks/useResponsive';
-import { BOTTOM_NAV_HEIGHT } from '../../../constants/layout';
+import { BOTTOM_NAV_HEIGHT, HEADER_HEIGHT_MOBILE, Z_INDEX } from '../../../constants/layout';
 import PageCanvas from '@/modules/common/components/PageCanvas';
 
 /* ─── helpers ─────────────────────────────────────────────────────── */
@@ -383,6 +387,17 @@ function ApplicationManagementPage() {
   const hasNoStandardJobs = !initialLoading && allJobs.length === 0;
   const mobileDetailMode = isMobile && Boolean(selectedApplication);
 
+  const selectedApplicationIndex = useMemo(() => {
+    if (!selectedApplication?.id) {
+      return -1;
+    }
+
+    return filteredApps.findIndex((app) => app.id === selectedApplication.id);
+  }, [filteredApps, selectedApplication?.id]);
+
+  const canSelectPrevious = selectedApplicationIndex > 0;
+  const canSelectNext = selectedApplicationIndex >= 0 && selectedApplicationIndex < filteredApps.length - 1;
+
   const triageSummary = useMemo(() => {
     const withRate = filteredApps.filter((app) => Number.isFinite(Number(app?.proposedRate)));
     const avgRate = withRate.length
@@ -470,10 +485,11 @@ function ApplicationManagementPage() {
     }
   }, [actionType, enqueueSnackbar, feedback, loadApplicationsView, selectedApplication]);
 
-  const handleOpenReviewDialog = (type) => {
+  const handleOpenReviewDialog = useCallback((type) => {
     setActionType(type);
+    setFeedback('');
     setShowReviewDialog(true);
-  };
+  }, []);
 
   const handleSortChange = (nextSort) => {
     setCurrentPage(1);
@@ -501,15 +517,40 @@ function ApplicationManagementPage() {
     }
   }, [isMobile]);
 
-  const handleMessage = async () => {
-    if (!selectedApplication?.workerId) {
+  const handleStepApplication = useCallback((step) => {
+    if (selectedApplicationIndex < 0) return;
+
+    const nextIndex = selectedApplicationIndex + step;
+    if (nextIndex < 0 || nextIndex >= filteredApps.length) return;
+
+    const targetApplication = filteredApps[nextIndex];
+    if (targetApplication) {
+      setSelectedApplication(targetApplication);
+      if (isMobile) {
+        setShowJobList(false);
+      }
+    }
+  }, [filteredApps, isMobile, selectedApplicationIndex]);
+
+  const openReviewDialogForApplication = useCallback((application, type) => {
+    if (!application) return;
+    setSelectedApplication(application);
+    setActionType(type);
+    setFeedback('');
+    setShowReviewDialog(true);
+    if (isMobile) {
+      setShowJobList(false);
+    }
+  }, [isMobile]);
+
+  const startConversationForApplication = useCallback(async (application) => {
+    if (!application?.workerId) {
       setError('Worker contact information is unavailable.');
       return;
     }
+
     try {
-      const conv = await messagingService.createDirectConversation(
-        selectedApplication.workerId,
-      );
+      const conv = await messagingService.createDirectConversation(application.workerId);
       const conversationId =
         conv?.id ||
         conv?._id ||
@@ -525,7 +566,75 @@ function ApplicationManagementPage() {
     } catch (err) {
       setError('Unable to start chat. Please try again later.');
     }
-  };
+  }, [navigate]);
+
+  const handleMessage = useCallback(async () => {
+    await startConversationForApplication(selectedApplication);
+  }, [selectedApplication, startConversationForApplication]);
+
+  useEffect(() => {
+    if (!selectedApplication || showReviewDialog) {
+      return undefined;
+    }
+
+    const handleKeydown = (event) => {
+      const target = event.target;
+      const tagName = String(target?.tagName || '').toLowerCase();
+      const isEditable =
+        target?.isContentEditable ||
+        tagName === 'input' ||
+        tagName === 'textarea' ||
+        tagName === 'select';
+
+      if (isEditable) {
+        return;
+      }
+
+      const key = String(event.key || '').toLowerCase();
+
+      if ((event.key === 'ArrowLeft' || event.key === 'ArrowUp') && canSelectPrevious) {
+        event.preventDefault();
+        handleStepApplication(-1);
+        return;
+      }
+
+      if ((event.key === 'ArrowRight' || event.key === 'ArrowDown') && canSelectNext) {
+        event.preventDefault();
+        handleStepApplication(1);
+        return;
+      }
+
+      if (key === 'a' && selectedApplication.status !== 'accepted') {
+        event.preventDefault();
+        handleOpenReviewDialog('accepted');
+        return;
+      }
+
+      if (key === 'r' && selectedApplication.status !== 'rejected') {
+        event.preventDefault();
+        handleOpenReviewDialog('rejected');
+        return;
+      }
+
+      if (key === 'm') {
+        event.preventDefault();
+        handleMessage();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeydown);
+    return () => {
+      window.removeEventListener('keydown', handleKeydown);
+    };
+  }, [
+    canSelectNext,
+    canSelectPrevious,
+    handleOpenReviewDialog,
+    handleMessage,
+    handleStepApplication,
+    selectedApplication,
+    showReviewDialog,
+  ]);
 
   /* ═══════════════════════════════════════════════════════════════
      RENDER
@@ -558,8 +667,8 @@ function ApplicationManagementPage() {
           flexWrap: 'wrap',
           gap: 1,
           position: { xs: 'sticky', md: 'static' },
-          top: { xs: 56, md: 'auto' },
-          zIndex: { xs: 11, md: 'auto' },
+          top: { xs: HEADER_HEIGHT_MOBILE, md: 'auto' },
+          zIndex: { xs: Z_INDEX.sticky, md: 'auto' },
           py: { xs: 0.5, md: 0 },
           backgroundColor: { xs: 'background.default', md: 'transparent' },
         }}
@@ -744,6 +853,9 @@ function ApplicationManagementPage() {
               onClearError={() => setError(null)}
               onSelectApplication={handleSelectApplication}
               onSelectJob={handleSelectJob}
+              onQuickAccept={(application) => openReviewDialogForApplication(application, 'accepted')}
+              onQuickReject={(application) => openReviewDialogForApplication(application, 'rejected')}
+              onQuickMessage={startConversationForApplication}
             />
 
             <ApplicationsListFooter
@@ -788,6 +900,13 @@ function ApplicationManagementPage() {
                   onAccept={() => handleOpenReviewDialog('accepted')}
                   onReject={() => handleOpenReviewDialog('rejected')}
                   onMessage={handleMessage}
+                  isMobile={isMobile}
+                  selectedIndex={selectedApplicationIndex}
+                  totalCount={filteredApps.length}
+                  canSelectPrevious={canSelectPrevious}
+                  canSelectNext={canSelectNext}
+                  onSelectPrevious={() => handleStepApplication(-1)}
+                  onSelectNext={() => handleStepApplication(1)}
                   onViewJob={() =>
                     navigate(`/jobs/${selectedApplication.jobId}`)
                   }
@@ -839,6 +958,7 @@ function ApplicationManagementPage() {
         elevation={8}
         sx={(theme) => ({
           display: { xs: 'flex', md: 'none' },
+          flexDirection: 'column',
           position: 'fixed',
           left: 0,
           right: 0,
@@ -846,31 +966,99 @@ function ApplicationManagementPage() {
           zIndex: theme.zIndex.appBar + 2,
           px: 1,
           py: 1,
-          gap: 1,
+          gap: 0.75,
           borderTop: `1px solid ${theme.palette.divider}`,
           backgroundColor: theme.palette.background.paper,
         })}
       >
-        <Button
-          fullWidth
-          variant="outlined"
-          color="secondary"
-          sx={{ minHeight: 42 }}
-          startIcon={<Work />}
-          onClick={() => setShowJobList((prev) => !prev)}
-        >
-          {showJobList ? 'Hide Jobs' : selectedJobId ? 'Switch Job' : 'Select Job'}
-        </Button>
-        <Button
-          fullWidth
-          variant="contained"
-          color="secondary"
-          sx={{ minHeight: 42, boxShadow: '0 2px 8px rgba(255,215,0,0.35)' }}
-          startIcon={<ArrowForward />}
-          onClick={() => navigate('/hirer/jobs/post')}
-        >
-          Post Job
-        </Button>
+        {selectedApplication ? (
+          <>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 0.5 }}>
+              <IconButton
+                size="small"
+                onClick={() => handleStepApplication(-1)}
+                disabled={!canSelectPrevious}
+                aria-label="Previous application"
+                sx={{ width: 36, height: 36 }}
+              >
+                <NavigateBefore fontSize="small" />
+              </IconButton>
+              <Typography variant="caption" color="text.secondary">
+                {selectedApplicationIndex >= 0
+                  ? `Application ${selectedApplicationIndex + 1} of ${filteredApps.length}`
+                  : `Application list (${filteredApps.length})`}
+              </Typography>
+              <IconButton
+                size="small"
+                onClick={() => handleStepApplication(1)}
+                disabled={!canSelectNext}
+                aria-label="Next application"
+                sx={{ width: 36, height: 36 }}
+              >
+                <NavigateNext fontSize="small" />
+              </IconButton>
+            </Box>
+            <Typography variant="caption" color="text.secondary" sx={{ px: 0.5 }}>
+              Quick decision for {selectedApplication.workerName || 'selected applicant'}
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <Button
+                fullWidth
+                variant="outlined"
+                sx={{ minHeight: 42 }}
+                startIcon={<Message />}
+                onClick={handleMessage}
+              >
+                Message
+              </Button>
+              <Button
+                fullWidth
+                color="success"
+                variant="contained"
+                sx={{ minHeight: 42 }}
+                startIcon={<CheckCircle />}
+                onClick={() => handleOpenReviewDialog('accepted')}
+                disabled={selectedApplication.status === 'accepted'}
+              >
+                {selectedApplication.status === 'accepted' ? 'Accepted' : 'Accept'}
+              </Button>
+            </Box>
+            <Button
+              fullWidth
+              color="error"
+              variant="outlined"
+              sx={{ minHeight: 42 }}
+              startIcon={<Cancel />}
+              onClick={() => handleOpenReviewDialog('rejected')}
+              disabled={selectedApplication.status === 'rejected'}
+            >
+              {selectedApplication.status === 'rejected' ? 'Rejected' : 'Reject'}
+            </Button>
+          </>
+        ) : (
+          <>
+            <Button
+              fullWidth
+              variant="outlined"
+              color="secondary"
+              sx={{ minHeight: 42 }}
+              startIcon={<Work />}
+              onClick={() => setShowJobList((prev) => !prev)}
+            >
+              {showJobList ? 'Hide Jobs' : selectedJobId ? 'Switch Job' : 'Select Job'}
+            </Button>
+            <Button
+              fullWidth
+              variant="contained"
+              color="secondary"
+              sx={{ minHeight: 42, boxShadow: '0 2px 8px rgba(255,215,0,0.35)' }}
+              startIcon={<ArrowForward />}
+              onClick={() => navigate('/hirer/jobs/post')}
+            >
+              Post Job
+            </Button>
+          </>
+        )}
       </Paper>
 
       <ApplicationReviewDialog
@@ -1094,6 +1282,9 @@ function ApplicationsListContent({
   onClearError,
   onSelectApplication,
   onSelectJob,
+  onQuickAccept,
+  onQuickReject,
+  onQuickMessage,
 }) {
   const theme = useTheme();
 
@@ -1142,6 +1333,10 @@ function ApplicationsListContent({
                 onSelect={onSelectApplication}
                 showJobTitle={false}
                 statusColors={STATUS_COLORS}
+                showQuickActions
+                onAccept={onQuickAccept}
+                onReject={onQuickReject}
+                onMessage={onQuickMessage}
               />
             ));
           }
@@ -1164,7 +1359,15 @@ function ApplicationsListContent({
             grouped[key].apps.push(app);
           });
 
-          return Object.entries(grouped).map(([jobId, group]) => (
+          const groupedEntries = Object.entries(grouped).sort(([, leftGroup], [, rightGroup]) => {
+            if (rightGroup.apps.length !== leftGroup.apps.length) {
+              return rightGroup.apps.length - leftGroup.apps.length;
+            }
+
+            return String(leftGroup.title || '').localeCompare(String(rightGroup.title || ''));
+          });
+
+          return groupedEntries.map(([jobId, group]) => (
             <Box key={jobId} sx={{ mb: 2 }}>
               <ListItemButton
                 sx={{
@@ -1215,6 +1418,10 @@ function ApplicationsListContent({
                   onSelect={onSelectApplication}
                   showJobTitle={false}
                   statusColors={STATUS_COLORS}
+                  showQuickActions
+                  onAccept={onQuickAccept}
+                  onReject={onQuickReject}
+                  onMessage={onQuickMessage}
                 />
               ))}
             </Box>
@@ -1235,6 +1442,13 @@ function ApplicationReviewDialog({
   onFeedbackChange,
   onConfirm,
 }) {
+  const quickRejectReasons = [
+    'Budget does not match project scope',
+    'Timeline is not a fit',
+    'Skills do not fully match requirements',
+    'Proposal details are incomplete',
+  ];
+
   return (
     <Dialog
       open={open}
@@ -1256,15 +1470,37 @@ function ApplicationReviewDialog({
           the application from <strong>{workerName}</strong>.
         </Typography>
         {actionType === 'rejected' && (
-          <TextField
-            label="Feedback (Optional)"
-            multiline
-            rows={4}
-            fullWidth
-            value={feedback}
-            onChange={(e) => onFeedbackChange(e.target.value)}
-            sx={{ mt: 2 }}
-          />
+          <>
+            <TextField
+              label="Feedback (Optional)"
+              multiline
+              rows={4}
+              fullWidth
+              value={feedback}
+              onChange={(e) => onFeedbackChange(e.target.value)}
+              sx={{ mt: 2 }}
+            />
+            <Box sx={{ mt: 1.25, display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
+              {quickRejectReasons.map((reason) => (
+                <Chip
+                  key={reason}
+                  size="small"
+                  label={reason}
+                  onClick={() => {
+                    if (!feedback.trim()) {
+                      onFeedbackChange(reason);
+                      return;
+                    }
+
+                    if (!feedback.includes(reason)) {
+                      onFeedbackChange(`${feedback.trim()}\n- ${reason}`);
+                    }
+                  }}
+                  variant="outlined"
+                />
+              ))}
+            </Box>
+          </>
         )}
       </DialogContent>
       <DialogActions>
@@ -1294,12 +1530,66 @@ function ApplicationDetailPanel({
   onAccept,
   onReject,
   onMessage,
+  isMobile,
+  selectedIndex,
+  totalCount,
+  canSelectPrevious,
+  canSelectNext,
+  onSelectPrevious,
+  onSelectNext,
   onViewJob,
   navigate,
 }) {
   const theme = useTheme();
   return (
     <>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          mb: 1,
+        }}
+      >
+        <Typography variant="caption" color="text.secondary">
+          {selectedIndex >= 0
+            ? `Application ${selectedIndex + 1} of ${totalCount}`
+            : `Application list (${totalCount})`}
+        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <Tooltip title="Previous application">
+            <span>
+              <IconButton
+                size="small"
+                onClick={onSelectPrevious}
+                disabled={!canSelectPrevious}
+                aria-label="Previous application"
+              >
+                <NavigateBefore fontSize="small" />
+              </IconButton>
+            </span>
+          </Tooltip>
+          <Tooltip title="Next application">
+            <span>
+              <IconButton
+                size="small"
+                onClick={onSelectNext}
+                disabled={!canSelectNext}
+                aria-label="Next application"
+              >
+                <NavigateNext fontSize="small" />
+              </IconButton>
+            </span>
+          </Tooltip>
+        </Box>
+      </Box>
+
+      {!isMobile && (
+        <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mb: 1.5 }}>
+          Shortcuts: Left/Right to switch, A to accept, R to reject, M to message.
+        </Typography>
+      )}
+
       {/* Job context banner — shows which job this application is for */}
       <Paper
         variant="outlined"
@@ -1390,9 +1680,7 @@ function ApplicationDetailPanel({
           )}
           <Chip
             size="small"
-            label={
-              app.status?.charAt(0).toUpperCase() + app.status?.slice(1)
-            }
+            label={formatStatusLabel(app.status)}
             color={STATUS_COLORS[app.status] || 'default'}
             variant="outlined"
             sx={{ mt: 0.5 }}
@@ -1447,7 +1735,7 @@ function ApplicationDetailPanel({
               </Typography>
             </Paper>
           )}
-          {app.createdAt && (
+          {app.createdAt && Number.isFinite(new Date(app.createdAt).getTime()) && (
             <Paper
               variant="outlined"
               sx={{
@@ -1499,7 +1787,7 @@ function ApplicationDetailPanel({
       {/* Actions */}
       <Box
         sx={{
-          display: 'flex',
+          display: { xs: 'none', sm: 'flex' },
           flexDirection: { xs: 'column', sm: 'row' },
           gap: 1.5,
           mt: 'auto',

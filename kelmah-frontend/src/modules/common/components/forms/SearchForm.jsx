@@ -410,7 +410,7 @@ const SearchForm = ({
                 onClick={() => setShowFilters(!showFilters)}
                 variant="text"
                 aria-label={showFilters ? 'Hide advanced filters' : 'Show advanced filters'}
-                sx={{ minHeight: 40 }}
+                sx={{ minHeight: 44 }}
               >
                 Advanced Filters
               </Button>

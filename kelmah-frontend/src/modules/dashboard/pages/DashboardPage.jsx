@@ -6,6 +6,7 @@ import { Lock as LockIcon } from '@mui/icons-material';
 import LoadingScreen from '../../common/components/loading/LoadingScreen';
 import { Helmet } from 'react-helmet-async';
 import { getRoleHomePath, getUserRoles } from '../../../utils/userUtils';
+import PageCanvas from '../../common/components/PageCanvas';
 
 // NOTE: dashboardSlice provides shared metrics (profile views, response rate, etc.)
 // It is NOT used for role-specific dashboard data.
@@ -31,33 +32,36 @@ const DashboardPage = () => {
 
   if (!user) {
     return (
-      <Box sx={{ p: 3, textAlign: 'center', minHeight: '50vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minWidth: 0, overflowX: 'hidden' }}>
-        <LockIcon sx={{ fontSize: 56, color: '#D4AF37', mb: 2 }} />
-        <Typography variant="h6" gutterBottom>
-          Please sign in to continue
-        </Typography>
-        <Typography variant="body2" sx={{ mb: 3, color: 'text.secondary' }}>
-          Sign in to open your dashboard, jobs, and messages.
-        </Typography>
-        <Button
-          variant="contained"
-          onClick={() => navigate('/login')}
-          sx={{
-            minHeight: 48,
-            px: 4,
-            bgcolor: '#D4AF37',
-            color: '#000',
-            fontWeight: 600,
-            '&:hover': { bgcolor: '#B8941F' },
-            '&:focus-visible': {
-              outline: '3px solid #111',
-              outlineOffset: 2,
-            },
-          }}
-        >
-          Sign In
-        </Button>
-      </Box>
+      <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
+        <Box sx={{ p: 3, textAlign: 'center', minHeight: '50vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minWidth: 0, overflowX: 'hidden' }}>
+          <LockIcon sx={{ fontSize: 56, color: 'secondary.main', mb: 2 }} />
+          <Typography variant="h6" gutterBottom>
+            Please sign in to continue
+          </Typography>
+          <Typography variant="body2" sx={{ mb: 3, color: 'text.secondary' }}>
+            Sign in to open your dashboard, jobs, and messages.
+          </Typography>
+          <Button
+            variant="contained"
+            onClick={() => navigate('/login')}
+            sx={{
+              minHeight: 48,
+              px: 4,
+              bgcolor: 'secondary.main',
+              color: 'secondary.contrastText',
+              fontWeight: 600,
+              '&:hover': { bgcolor: 'secondary.dark' },
+              '&:focus-visible': {
+                outline: '3px solid',
+                outlineColor: 'primary.main',
+                outlineOffset: 2,
+              },
+            }}
+          >
+            Sign In
+          </Button>
+        </Box>
+      </PageCanvas>
     );
   }
 
@@ -73,26 +77,33 @@ const DashboardPage = () => {
       break;
     case 'admin':
       dashboard = (
-        <Box sx={{ p: 3, textAlign: 'center', minWidth: 0, overflowX: 'hidden' }}>
-          <Typography variant="h5" gutterBottom>Admin Dashboard</Typography>
-          <Typography variant="body1">Admin tools are available in the admin section.</Typography>
-          <Button
-            variant="outlined"
-            onClick={() => navigate(getRoleHomePath(user))}
-            sx={{
-              mt: 2,
-              borderColor: '#D4AF37',
-              color: '#D4AF37',
-              minHeight: 44,
-              '&:focus-visible': {
-                outline: '3px solid #D4AF37',
-                outlineOffset: 2,
-              },
-            }}
-          >
-            Go to Admin Panel
-          </Button>
-        </Box>
+        <PageCanvas disableContainer sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
+          <Box sx={{ p: 3, textAlign: 'center', minWidth: 0, overflowX: 'hidden' }}>
+            <Typography variant="h5" gutterBottom>Admin Dashboard</Typography>
+            <Typography variant="body1">Admin tools are available in the admin section.</Typography>
+            <Button
+              variant="outlined"
+              onClick={() => navigate(getRoleHomePath(user))}
+              sx={{
+                mt: 2,
+                borderColor: 'secondary.main',
+                color: 'secondary.main',
+                minHeight: 44,
+                '&:hover': {
+                  borderColor: 'secondary.dark',
+                  color: 'secondary.dark',
+                },
+                '&:focus-visible': {
+                  outline: '3px solid',
+                  outlineColor: 'primary.main',
+                  outlineOffset: 2,
+                },
+              }}
+            >
+              Go to Admin Panel
+            </Button>
+          </Box>
+        </PageCanvas>
       );
       break;
     default:

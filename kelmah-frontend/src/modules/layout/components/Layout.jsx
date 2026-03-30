@@ -4,12 +4,18 @@ import { Box, Fade, Typography, useTheme, useMediaQuery } from '@mui/material';
 import { useLocation, Outlet } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
-import Sidebar, { SIDEBAR_WIDTH_EXPANDED, SIDEBAR_WIDTH_COLLAPSED } from './sidebar/Sidebar';
+import Sidebar from './sidebar/Sidebar';
 import MobileBottomNav from './MobileBottomNav';
 // import BreadcrumbNavigation from '../../../components/common/BreadcrumbNavigation'; // ✅ REMOVED: Breadcrumb navigation taking up too much space
 import SmartNavigation from '../../../components/common/SmartNavigation';
 import { useThemeMode } from '../../../theme/ThemeProvider';
-import { BOTTOM_NAV_HEIGHT, HEADER_HEIGHT_MOBILE } from '../../../constants/layout';
+import { HEADER_HEIGHT_MOBILE } from '../../../constants/layout';
+import {
+  withBottomNavSafeArea,
+  withSafeAreaBottom,
+  withSafeAreaTop,
+} from '../../../utils/safeArea';
+import useKeyboardVisible from '../../../hooks/useKeyboardVisible';
 import { useBreakpointUp } from '@/hooks/useResponsive';
 // Header functionality integrated into Header component
 
@@ -99,6 +105,7 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
   const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
   // ✅ MOBILE-AUDIT FIX: Use MUI breakpoint instead of custom query to avoid 769-899px dead zone
   const isMobile = !isMdUp;
+  const { isKeyboardVisible } = useKeyboardVisible();
   const currentPath = location.pathname || '';
   const isAuthPage =
     currentPath === '/login' ||
@@ -181,8 +188,8 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
         px: 2.5,
         py: 1.25,
         borderRadius: 999,
-        bgcolor: 'primary.main',
-        color: 'primary.contrastText',
+        bgcolor: 'secondary.main',
+        color: 'secondary.contrastText',
         textDecoration: 'none',
         fontWeight: 600,
         fontSize: '0.95rem',
@@ -240,9 +247,10 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
               width: '100%',
               pt: isMessagesPage
                 ? 0
-                : `calc(${HEADER_HEIGHT_MOBILE}px + env(safe-area-inset-top, 0px) + 12px)`,
-              // ✅ MOBILE-AUDIT FIX: Account for safe-area-inset-bottom on notched phones
-              pb: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px) + 24px)`,
+                : `calc(${withSafeAreaTop(HEADER_HEIGHT_MOBILE + 12)} + var(--kelmah-network-banner-offset, 0px))`,
+              pb: isKeyboardVisible
+                ? withSafeAreaBottom(12)
+                : withBottomNavSafeArea(24),
               px: { xs: 1.5, sm: 2 },
               overflowY: 'auto',
               overflowX: 'hidden',
@@ -280,12 +288,18 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
             flexGrow: 1,
             width: '100%',
             minWidth: 0,
+            maxWidth: { md: 1440, xl: 1600 },
+            mx: 'auto',
             // Dynamic margin to match sidebar width transition
             ml: 0, // Sidebar is already part of flex flow; no manual margin needed
             transition: 'margin-left 0.25s cubic-bezier(0.4,0,0.2,1)',
-            pt: { md: `${HEADER_HEIGHT_MOBILE}px` }, // Matches header minHeight on desktop
+            pt: {
+              md: `calc(${HEADER_HEIGHT_MOBILE}px + var(--kelmah-network-banner-offset, 0px))`,
+            },
             px: { md: 3 },
             pb: { md: 3 },
+            borderLeft: '1px solid',
+            borderColor: 'divider',
           }}
         >
           {sessionExpired && sessionExpiredBanner}
@@ -332,8 +346,8 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
               : isHomePage
               ? 0
               : {
-                  xs: `calc(${HEADER_HEIGHT_MOBILE}px + env(safe-area-inset-top, 0px) + 16px)`,
-                  sm: `calc(${HEADER_HEIGHT_MOBILE}px + 20px)`,
+                  xs: `calc(${withSafeAreaTop(HEADER_HEIGHT_MOBILE + 16)} + var(--kelmah-network-banner-offset, 0px))`,
+                  sm: `calc(${withSafeAreaTop(HEADER_HEIGHT_MOBILE + 20)} + var(--kelmah-network-banner-offset, 0px))`,
                   md: 3,
                 },
             pb: isAuthPage ? 0 : isHomePage ? 0 : { xs: 2.5, sm: 3, md: 3 },

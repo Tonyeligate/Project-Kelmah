@@ -7,6 +7,10 @@
 
 
 
+
+
+
+
 const AdvancedCalendar = ({ schedule = [], onScheduleChange }) => {
   const theme = useTheme();
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -168,7 +172,7 @@ const AdvancedCalendar = ({ schedule = [], onScheduleChange }) => {
                       bgcolor: alpha(theme.palette.primary.main, 0.1),
                     } : {},
                     transition: 'all 0.15s ease',
-                    minHeight: 40,
+                    minHeight: 44,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',

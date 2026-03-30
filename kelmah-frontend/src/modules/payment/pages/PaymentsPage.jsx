@@ -48,6 +48,7 @@ import PageCanvas from '@/modules/common/components/PageCanvas';
 import { currencyFormatter } from '@/modules/common/utils/formatters';
 import { hasRole } from '../../../utils/userUtils';
 import { useBreakpointDown } from '@/hooks/useResponsive';
+import { HEADER_HEIGHT_MOBILE, STICKY_CTA_HEIGHT, Z_INDEX } from '../../../constants/layout';
 
 const PaymentsPage = () => {
   const isMobile = useBreakpointDown('md');
@@ -153,8 +154,8 @@ const PaymentsPage = () => {
           gap: 1.5,
           mb: { xs: 1.25, md: 3 },
           position: { xs: 'sticky', md: 'static' },
-          top: { xs: 66, md: 'auto' },
-          zIndex: 9,
+          top: { xs: HEADER_HEIGHT_MOBILE + 10, md: 'auto' },
+          zIndex: Z_INDEX.sticky,
           py: { xs: 0.5, md: 0 },
           bgcolor: { xs: 'background.default', md: 'transparent' },
         }}
@@ -294,8 +295,8 @@ const PaymentsPage = () => {
               aria-label="Payment page sections"
               sx={{
                 position: { xs: 'sticky', md: 'static' },
-                top: { xs: 118, md: 'auto' },
-                zIndex: 8,
+                top: { xs: HEADER_HEIGHT_MOBILE + STICKY_CTA_HEIGHT - 2, md: 'auto' },
+                zIndex: Z_INDEX.sticky,
                 bgcolor: { xs: 'background.paper', md: 'transparent' },
                 '& .MuiTab-root': { color: 'text.secondary' },
                 '& .Mui-selected': { color: 'secondary.main' },
@@ -328,7 +329,7 @@ const PaymentsPage = () => {
                       onChange={(e) => setStartDate(e.target.value)}
                       InputLabelProps={{ shrink: true }}
                       inputProps={{ 'aria-label': 'Filter transactions from date' }}
-                      sx={{ backgroundColor: 'action.hover', borderRadius: 1, minWidth: { sm: 170 }, flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' }, '& .MuiInputBase-root': { minHeight: 40 } }}
+                      sx={{ backgroundColor: 'action.hover', borderRadius: 1, minWidth: { sm: 170 }, flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' }, '& .MuiInputBase-root': { minHeight: 44 } }}
                     />
                     <TextField
                       variant="filled"
@@ -338,7 +339,7 @@ const PaymentsPage = () => {
                       onChange={(e) => setEndDate(e.target.value)}
                       InputLabelProps={{ shrink: true }}
                       inputProps={{ 'aria-label': 'Filter transactions to date' }}
-                      sx={{ backgroundColor: 'action.hover', borderRadius: 1, minWidth: { sm: 170 }, flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' }, '& .MuiInputBase-root': { minHeight: 40 } }}
+                      sx={{ backgroundColor: 'action.hover', borderRadius: 1, minWidth: { sm: 170 }, flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' }, '& .MuiInputBase-root': { minHeight: 44 } }}
                     />
                     <FormControl sx={{ minWidth: { xs: 0, sm: 170 }, flex: { xs: '1 1 100%', sm: '0 1 auto' } }}>
                       <InputLabel>Type</InputLabel>
@@ -347,7 +348,7 @@ const PaymentsPage = () => {
                         label="Type"
                         onChange={(e) => setFilterType(e.target.value)}
                         inputProps={{ 'aria-label': 'Filter transactions by type' }}
-                        sx={{ minHeight: 40 }}
+                        sx={{ minHeight: 44 }}
                       >
                         <MenuItem value="all">All</MenuItem>
                         <MenuItem value="deposit">Deposit</MenuItem>

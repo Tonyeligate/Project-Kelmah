@@ -351,6 +351,19 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
     setSearchQuery('');
   };
 
+  const resetFilters = () => {
+    setSearchQuery('');
+    setTabValue('all');
+    setDateFilter('allDates');
+  };
+
+  const isFilteredView =
+    searchQuery.trim() !== '' || tabValue !== 'all' || dateFilter !== 'allDates';
+
+  const conversationCountLabel = isFilteredView
+    ? `Showing ${filteredConversations.length} of ${localConversations.length} conversation${localConversations.length === 1 ? '' : 's'}`
+    : `Showing all ${localConversations.length} conversation${localConversations.length === 1 ? '' : 's'}`;
+
   const truncateText = (text, maxLength = 30) => {
     if (!text) return '';
     return text.length > maxLength
@@ -615,7 +628,7 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
         variant="caption"
         sx={{ px: 2, py: 0.75, color: 'text.secondary', display: 'block' }}
       >
-        Showing {filteredConversations.length} of {localConversations.length} conversation{localConversations.length === 1 ? '' : 's'}
+        {conversationCountLabel}
       </Typography>
 
       <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
@@ -799,6 +812,16 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
             >
               No conversations match your current search or filters.
             </Typography>
+            {isFilteredView && (
+              <Button
+                variant="text"
+                size="small"
+                onClick={resetFilters}
+                sx={{ mb: 1, minHeight: 44 }}
+              >
+                Clear filters
+              </Button>
+            )}
             <ActionButton
               variant="outlined"
               startIcon={<PersonAdd />}

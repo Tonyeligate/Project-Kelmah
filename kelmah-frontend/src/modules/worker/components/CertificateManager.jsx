@@ -32,7 +32,7 @@ const CertificateManager = ({ certificates = [], onAdd, onRemove }) => {
                   color="error"
                   onClick={() => onRemove?.(cert.id)}
                   aria-label={`Remove certificate ${cert.title}`}
-                  sx={{ minHeight: 40, whiteSpace: 'nowrap' }}
+                  sx={{ minHeight: 44, whiteSpace: 'nowrap' }}
                 >
                   Remove
                 </Button>

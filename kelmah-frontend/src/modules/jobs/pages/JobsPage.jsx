@@ -196,6 +196,7 @@ import BreadcrumbNavigation from '../../../components/common/BreadcrumbNavigatio
 import PullToRefresh from '../../../components/common/PullToRefresh';
 import usePrefersReducedMotion from '../../../hooks/usePrefersReducedMotion';
 import useNetworkSpeed from '../../../hooks/useNetworkSpeed';
+import { HEADER_HEIGHT_MOBILE, Z_INDEX } from '../../../constants/layout';
 
 const jobsDebugLog = createFeatureLogger({
   flagName: 'VITE_DEBUG_JOBS',
@@ -305,8 +306,8 @@ const AnimatedStatCard = ({ value, suffix = '', label, isLive = false }) => {
               width: 6,
               height: 6,
               borderRadius: '50%',
-              bgcolor: '#4ade80',
-              boxShadow: '0 0 8px #4ade80',
+              bgcolor: 'success.light',
+              boxShadow: (theme) => `0 0 8px ${theme.palette.success.light}`,
               animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
               '@keyframes pulse': {
                 '0%, 100%': {
@@ -325,7 +326,7 @@ const AnimatedStatCard = ({ value, suffix = '', label, isLive = false }) => {
           <Typography
             variant="caption"
             sx={{
-              color: '#4ade80',
+              color: 'success.light',
               fontWeight: 'medium',
             }}
           >
@@ -342,7 +343,7 @@ const ghanaTradeCategories = [
   {
     name: 'Plumbing',
     icon: <PlumbingIcon />,
-    color: '#4A90E2',
+    color: 'info.main',
     description: 'Pipe fitting, water systems & repairs',
   },
   {
@@ -354,37 +355,37 @@ const ghanaTradeCategories = [
   {
     name: 'Carpentry',
     icon: <CarpenterIcon />,
-    color: '#8B4513',
+    color: 'warning.dark',
     description: 'Woodwork, furniture & fittings',
   },
   {
     name: 'Construction',
     icon: <ConstructionIcon />,
-    color: '#E74C3C',
+    color: 'error.main',
     description: 'Building, renovation & structural work',
   },
   {
     name: 'Painting',
     icon: <PaintingIcon />,
-    color: '#9B59B6',
+    color: 'secondary.main',
     description: 'Interior & exterior painting',
   },
   {
     name: 'Welding',
     icon: <WeldingIcon />,
-    color: '#F39C12',
+    color: 'warning.main',
     description: 'Metal fabrication & welding',
   },
   {
     name: 'Masonry',
     icon: <MasonryIcon />,
-    color: '#E67E22',
+    color: 'warning.dark',
     description: 'Block laying, tiling & stonework',
   },
   {
     name: 'Roofing',
     icon: <RoofingIcon />,
-    color: '#2ECC71',
+    color: 'success.main',
     description: 'Roof installation & repair',
   },
 ];
@@ -636,7 +637,12 @@ function JobsResultsHeader({
             <Button
               size="small"
               onClick={onClearAllFilters}
-              sx={{ color: '#ff6b6b', fontSize: '0.75rem', textTransform: 'none', minWidth: 'auto' }}
+              sx={{
+                color: 'error.main',
+                fontSize: '0.75rem',
+                textTransform: 'none',
+                minWidth: 'auto',
+              }}
             >
               Clear filters
             </Button>
@@ -938,8 +944,8 @@ function JobsFiltersPanel({
       <Box
         sx={{
           position: 'sticky',
-          top: { xs: 68, sm: 72 },
-          zIndex: 11,
+          top: { xs: HEADER_HEIGHT_MOBILE + 12, sm: HEADER_HEIGHT_MOBILE + 16 },
+          zIndex: Z_INDEX.sticky,
           pb: 0.25,
           pt: 0.25,
           bgcolor: 'background.default',
@@ -1398,10 +1404,12 @@ function JobsFiltersPanel({
                   onClick={onClearAllFilters}
                   sx={{
                     mt: 1,
-                    color: '#ff6b6b',
+                    color: 'error.main',
                     fontSize: '0.75rem',
                     textTransform: 'none',
-                    '&:hover': { bgcolor: 'rgba(255,107,107,0.1)' },
+                    '&:hover': {
+                      bgcolor: (theme) => alpha(theme.palette.error.main, 0.1),
+                    },
                   }}
                 >
                   • Clear filters

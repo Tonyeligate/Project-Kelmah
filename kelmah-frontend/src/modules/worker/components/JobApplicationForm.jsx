@@ -102,6 +102,29 @@ const JobApplicationForm = () => {
 
   const coverLetterLength = applicationData.coverLetter.trim().length;
 
+  const buildCoverLetterPayload = () => {
+    const details = [];
+
+    if (applicationData.experience) {
+      details.push(`Experience level: ${applicationData.experience}`);
+    }
+
+    const portfolioLink = applicationData.portfolio.trim();
+    if (portfolioLink) {
+      details.push(`Portfolio: ${portfolioLink}`);
+    }
+
+    const extraInfo = applicationData.additionalInfo.trim();
+    if (extraInfo) {
+      details.push(`Additional details: ${extraInfo}`);
+    }
+
+    const summary = applicationData.coverLetter.trim();
+    return details.length > 0
+      ? `${summary}\n\n${details.join('\n')}`
+      : summary;
+  };
+
   useEffect(() => {
     const fetchJobDetails = async () => {
       if (!jobId) return;
@@ -169,7 +192,7 @@ const JobApplicationForm = () => {
       // FIX-003: Send proposedRate (matches Application schema)
       const submissionData = {
         proposedRate: parseFloat(applicationData.proposedRate),
-        coverLetter: applicationData.coverLetter.trim(),
+        coverLetter: buildCoverLetterPayload(),
         estimatedDuration:
           applicationData.availability === 'immediate'
             ? { value: 1, unit: 'week' }
@@ -632,7 +655,7 @@ const JobApplicationForm = () => {
                       placeholder="Share links to photos or videos of your past work..."
                       value={applicationData.portfolio}
                       onChange={handleInputChange('portfolio')}
-                      helperText="If you have photos of your work online, share the link here"
+                      helperText="If you have photos of your work online, share the link here. We include this in your application message."
                     />
                   </Grid>
 
@@ -646,7 +669,7 @@ const JobApplicationForm = () => {
                       placeholder="Any other information the employer should know..."
                       value={applicationData.additionalInfo}
                       onChange={handleInputChange('additionalInfo')}
-                      helperText="Optional: mention transport readiness, team size, or equipment availability."
+                      helperText="Optional: mention transport readiness, team size, or equipment availability. This will be sent with your application."
                     />
                   </Grid>
 

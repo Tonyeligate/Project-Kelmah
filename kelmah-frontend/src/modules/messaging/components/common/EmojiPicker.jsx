@@ -404,7 +404,7 @@ const EmojiPicker = ({ onEmojiSelect, onClose }) => {
                 sx={{
                   borderBottom: 1,
                   borderColor: 'divider',
-                  minHeight: 40,
+                  minHeight: 44,
                   '& .MuiTabs-indicator': {
                     backgroundColor: 'primary.main',
                   },

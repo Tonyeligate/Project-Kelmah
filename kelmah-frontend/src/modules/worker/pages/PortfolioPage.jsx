@@ -76,7 +76,7 @@ const PortfolioPage = () => {
   }
 
   return (
-    <PageCanvas disableContainer>
+    <PageCanvas disableContainer sx={{ pb: { xs: 10, md: 6 } }}>
       <Container maxWidth="lg" sx={{ py: { xs: 2, md: 3 } }}>
         <Helmet><title>My Portfolio | Kelmah</title></Helmet>
         <Typography variant={isMobile ? 'h5' : 'h4'} gutterBottom>

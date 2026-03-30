@@ -39,7 +39,7 @@ const SkillsVerificationPanel = ({
                   variant="outlined"
                   onClick={() => onStartAssessment?.(skill)}
                   aria-label={`Start skill test for ${skill.name}`}
-                  sx={{ minHeight: 40, whiteSpace: 'nowrap' }}
+                  sx={{ minHeight: 44, whiteSpace: 'nowrap' }}
                 >
                   Start Skill Test
                 </Button>

@@ -13,7 +13,7 @@ import { lazyWithRetry } from '../utils/lazyWithRetry';
 const lazy = (factory) => lazyWithRetry(factory);
 
 // Public Pages
-const LandingPage = lazy(() => import('../pages/HomeLanding'));
+const LandingPage = lazy(() => import('../pages/HomeLanding.jsx'));
 const LoginPage = lazy(() => import('../modules/auth/pages/LoginPage'));
 const RegisterPage = lazy(() => import('../modules/auth/pages/RegisterPage'));
 const ForgotPasswordPage = lazy(

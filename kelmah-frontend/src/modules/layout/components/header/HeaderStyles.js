@@ -17,8 +17,6 @@ export const StyledAppBar = styled(AppBar)(({ theme }) => ({
     theme.palette.mode === 'dark'
       ? '0 8px 32px rgba(0, 0, 0, 0.9)'
       : '0 6px 25px rgba(0, 0, 0, 0.25)',
-  position: 'sticky',
-  top: 0,
   zIndex: Z_INDEX.header,
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
 }));

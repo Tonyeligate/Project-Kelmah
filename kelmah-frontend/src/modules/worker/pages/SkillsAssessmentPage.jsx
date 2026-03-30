@@ -1242,7 +1242,7 @@ const SkillsAssessmentPage = () => {
   }
 
   return (
-    <PageCanvas disableContainer>
+    <PageCanvas disableContainer sx={{ pb: { xs: 10, md: 6 } }}>
       <Helmet>
         <title>Skills Assessment - Professional Certification | Kelmah</title>
         <meta

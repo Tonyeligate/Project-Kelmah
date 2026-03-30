@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { Box, Skeleton, useTheme } from '@mui/material';
+import { useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
+import { Box, Skeleton } from '@mui/material';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 
 /**
@@ -8,7 +9,6 @@ import { useBreakpointDown } from '@/hooks/useResponsive';
  * perceive faster transitions — especially important on 3G / low-end devices.
  */
 const LoadingScreen = ({ isLoading = true, message }) => {
-  const theme = useTheme();
   const isMobile = useBreakpointDown('sm');
   const [reduceMotion, setReduceMotion] = useState(false);
 
@@ -49,25 +49,59 @@ const LoadingScreen = ({ isLoading = true, message }) => {
       }}
     >
       {/* Screen-reader text */}
-      <Box sx={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)' }}>
+      <Box
+        sx={{
+          position: 'absolute',
+          width: 1,
+          height: 1,
+          overflow: 'hidden',
+          clip: 'rect(0 0 0 0)',
+        }}
+      >
         {message || 'Loading content, please wait...'}
       </Box>
       {/* Header skeleton */}
-      <Skeleton animation={skeletonAnimation} variant="rectangular" height={isMobile ? 56 : 64} sx={{ borderRadius: 1, mb: 3 }} />
+      <Skeleton
+        animation={skeletonAnimation}
+        variant="rectangular"
+        height={isMobile ? 56 : 64}
+        sx={{ borderRadius: 1, mb: 3 }}
+      />
 
       {/* Content area */}
-      <Box sx={{ display: 'flex', gap: 3, flexDirection: { xs: 'column', md: 'row' } }}>
+      <Box
+        sx={{
+          display: 'flex',
+          gap: 3,
+          flexDirection: { xs: 'column', md: 'row' },
+        }}
+      >
         {/* Sidebar skeleton (desktop) */}
         {!isMobile && (
           <Box sx={{ width: 260, flexShrink: 0 }}>
-            <Skeleton animation={skeletonAnimation} variant="rectangular" height={200} sx={{ borderRadius: 2, mb: 2 }} />
-            <Skeleton animation={skeletonAnimation} variant="rectangular" height={120} sx={{ borderRadius: 2 }} />
+            <Skeleton
+              animation={skeletonAnimation}
+              variant="rectangular"
+              height={200}
+              sx={{ borderRadius: 2, mb: 2 }}
+            />
+            <Skeleton
+              animation={skeletonAnimation}
+              variant="rectangular"
+              height={120}
+              sx={{ borderRadius: 2 }}
+            />
           </Box>
         )}
 
         {/* Main content skeletons */}
         <Box sx={{ flex: 1 }}>
-          <Skeleton animation={skeletonAnimation} variant="rectangular" height={isMobile ? 44 : 52} sx={{ borderRadius: 1, mb: 2 }} />
+          <Skeleton
+            animation={skeletonAnimation}
+            variant="rectangular"
+            height={isMobile ? 44 : 52}
+            sx={{ borderRadius: 1, mb: 2 }}
+          />
           {[1, 2, 3].map((i) => (
             <Skeleton
               key={`loading-content-skeleton-${i}`}
@@ -81,6 +115,11 @@ const LoadingScreen = ({ isLoading = true, message }) => {
       </Box>
     </Box>
   );
+};
+
+LoadingScreen.propTypes = {
+  isLoading: PropTypes.bool,
+  message: PropTypes.string,
 };
 
 export default LoadingScreen;

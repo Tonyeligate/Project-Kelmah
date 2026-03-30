@@ -21,6 +21,7 @@ import { useBreakpointDown } from '@/hooks/useResponsive';
 import { toUserMessage } from '@/services/responseNormalizer';
 import { devError } from '@/modules/common/utils/devLogger';
 import PageCanvas from '@/modules/common/components/PageCanvas';
+import { HEADER_HEIGHT_MOBILE, Z_INDEX } from '../../../constants/layout';
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All contracts' },
@@ -186,7 +187,7 @@ const ContractsPage = () => {
         spacing={2}
         alignItems={{ md: 'center' }}
         justifyContent="space-between"
-        sx={{ mb: 2, position: { xs: 'sticky', md: 'static' }, top: { xs: 56, md: 'auto' }, zIndex: { xs: 10, md: 'auto' }, py: { xs: 0.5, md: 0 }, backgroundColor: { xs: 'background.default', md: 'transparent' } }}
+        sx={{ mb: 2, position: { xs: 'sticky', md: 'static' }, top: { xs: HEADER_HEIGHT_MOBILE, md: 'auto' }, zIndex: { xs: Z_INDEX.sticky, md: 'auto' }, py: { xs: 0.5, md: 0 }, backgroundColor: { xs: 'background.default', md: 'transparent' } }}
       >
         <Box>
           <Typography variant={isMobile ? 'h5' : 'h4'} sx={{ fontWeight: 700, lineHeight: 1.1 }}>

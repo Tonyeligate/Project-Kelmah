@@ -1,4 +1,5 @@
 import React, { useState, useContext } from 'react';
+import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 import { logout, logoutUser } from '../../auth/services/authSlice';
 import {
@@ -35,8 +36,17 @@ import { captureRecoverableApiError } from '@/services/errorTelemetry';
 
 // Extracted sub-components & utilities
 import {
-  StyledAppBar, BrandLogo, LogoIcon, BrandText, TaglineText,
-  ActionButton, UserAvatar, ThemeMenu, ThemeOption, AuthButton, StatusIndicator,
+  StyledAppBar,
+  BrandLogo,
+  LogoIcon,
+  BrandText,
+  TaglineText,
+  ActionButton,
+  UserAvatar,
+  ThemeMenu,
+  ThemeOption,
+  AuthButton,
+  StatusIndicator,
 } from './header/HeaderStyles';
 import UserMenu from './header/UserMenu';
 import NotificationBells from './header/NotificationBells';
@@ -45,13 +55,7 @@ import useAutoHideHeader from './header/useAutoHideHeader';
 import getCurrentPageInfo from './header/pageDetection';
 import buildMenuItems from './header/menuConfig';
 
-const Header = ({
-  toggleTheme,
-  setThemeMode,
-  mode,
-  isDashboardMode = false,
-  autoShowMode = false,
-}) => {
+const Header = ({ toggleTheme, setThemeMode, mode, autoShowMode = false }) => {
   const theme = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
@@ -99,7 +103,6 @@ const Header = ({
     user,
     hasUser,
     canShowUserFeatures,
-    shouldShowAuthButtons,
   } = authState;
 
   // 🎯 SMART DISPLAY LOGIC: Context-aware element visibility
@@ -184,7 +187,7 @@ const Header = ({
           if (avail) setHeaderAvailability(avail);
           if (comp) setHeaderCompletion(comp);
         }
-      } catch (e) {
+      } catch {
         // Non-blocking: header chips are optional
       }
     };
@@ -194,8 +197,11 @@ const Header = ({
   const currentPage = getCurrentPageInfo(location.pathname);
 
   // ✅ ENHANCED: Dynamic data based on user state and current page
-  const { unreadCount: notifUnreadCount, notifications: notifList = [], markAllAsRead } =
-    useNotifications();
+  const {
+    unreadCount: notifUnreadCount,
+    notifications: notifList = [],
+    markAllAsRead,
+  } = useNotifications();
   const unreadNotifications = showUserFeatures ? notifUnreadCount || 0 : 0;
   // H39 fix: Wire to messaging context for real unread message count
   const messageCtx = useContext(MessageContext);
@@ -281,7 +287,11 @@ const Header = ({
     if (!user) return 'U';
     const first = user.firstName || '';
     const last = user.lastName || '';
-    return `${first.charAt(0)}${last.charAt(0)}`.toUpperCase() || user.email?.charAt(0).toUpperCase() || 'U';
+    return (
+      `${first.charAt(0)}${last.charAt(0)}`.toUpperCase() ||
+      user.email?.charAt(0).toUpperCase() ||
+      'U'
+    );
   };
 
   // User menu and notifications menu are now rendered via <UserMenu> and <NotificationBells> components
@@ -303,7 +313,7 @@ const Header = ({
               <LogoIcon>K</LogoIcon>
               <Box>
                 <BrandText variant="h6">elmah</BrandText>
-                <TaglineText>Ghana's Skilled Trades Platform</TaglineText>
+                <TaglineText>Ghana&apos;s Skilled Trades Platform</TaglineText>
               </Box>
             </BrandLogo>
             <Box sx={{ flexGrow: 1 }} />
@@ -346,7 +356,11 @@ const Header = ({
         sx={{
           minHeight: { xs: 56, sm: 56, md: 56 },
           px: { xs: 1, sm: 2, md: 3 },
-          pt: { xs: 'calc(env(safe-area-inset-top, 0px) + 4px)', sm: 'calc(env(safe-area-inset-top, 0px) + 4px)', md: 0.25 },
+          pt: {
+            xs: 'calc(env(safe-area-inset-top, 0px) + 4px)',
+            sm: 'calc(env(safe-area-inset-top, 0px) + 4px)',
+            md: 0.25,
+          },
           pb: { xs: 0.5, sm: 0.5, md: 0.25 },
           gap: { xs: 0.5, sm: 0.75, md: 1 },
           // ✅ MOBILE-AUDIT FIX: Ensure safe-area breathing room and 56px mobile header rhythm
@@ -433,7 +447,14 @@ const Header = ({
             </Box>
           ) : showUserFeatures ? (
             <>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mr: { xs: 0, md: 0.75 } }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 0.5,
+                  mr: { xs: 0, md: 0.75 },
+                }}
+              >
                 {!isMobile && (
                   <NotificationBells
                     unreadMessages={unreadMessages}
@@ -443,7 +464,17 @@ const Header = ({
                     onNotificationsClick={handleNotificationsOpen}
                     notificationsAnchor={notificationsAnchor}
                     onNotificationsClose={handleNotificationsClose}
-                    onMarkAllRead={() => { try { markAllAsRead?.(); } catch (_) {} }}
+                    onMarkAllRead={() => {
+                      try {
+                        markAllAsRead?.();
+                      } catch (error) {
+                        captureRecoverableApiError(error, {
+                          phase: 'notifications-mark-all-read',
+                          feature: 'header-notifications',
+                          suppressUi: true,
+                        });
+                      }
+                    }}
                     onViewAll={() => navigate('/notifications')}
                   />
                 )}
@@ -452,7 +483,11 @@ const Header = ({
                   <Chip
                     size="small"
                     label={`${unreadTotal} unread`}
-                    onClick={() => navigate(unreadMessages > 0 ? '/messages' : '/notifications')}
+                    onClick={() =>
+                      navigate(
+                        unreadMessages > 0 ? '/messages' : '/notifications',
+                      )
+                    }
                     clickable
                     sx={{
                       ml: 0.5,
@@ -476,24 +511,39 @@ const Header = ({
                     {headerAvailability && (
                       <Chip
                         size="small"
-                        label={headerAvailability.isAvailable ? 'Available' : headerAvailability.status || 'Busy'}
+                        label={
+                          headerAvailability.isAvailable
+                            ? 'Available'
+                            : headerAvailability.status || 'Busy'
+                        }
                         sx={{
                           backgroundColor: headerAvailability.isAvailable
-                            ? (theme.palette.mode === 'dark' ? 'rgba(102, 187, 106, 0.22)' : 'rgba(76, 175, 80, 0.2)')
-                            : (theme.palette.mode === 'dark' ? 'rgba(255, 183, 77, 0.25)' : 'rgba(255, 152, 0, 0.22)'),
+                            ? theme.palette.mode === 'dark'
+                              ? 'rgba(102, 187, 106, 0.22)'
+                              : 'rgba(76, 175, 80, 0.2)'
+                            : theme.palette.mode === 'dark'
+                              ? 'rgba(255, 183, 77, 0.25)'
+                              : 'rgba(255, 152, 0, 0.22)',
                           color: headerAvailability.isAvailable
-                            ? (theme.palette.mode === 'dark' ? '#c8e6c9' : '#1b5e20')
-                            : (theme.palette.mode === 'dark' ? '#ffe0b2' : '#7a3e00'),
-                          border: theme.palette.mode === 'dark'
-                            ? '1px solid rgba(255, 224, 178, 0.35)'
-                            : '1px solid rgba(0, 0, 0, 0.2)',
+                            ? theme.palette.mode === 'dark'
+                              ? '#c8e6c9'
+                              : '#1b5e20'
+                            : theme.palette.mode === 'dark'
+                              ? '#ffe0b2'
+                              : '#7a3e00',
+                          border:
+                            theme.palette.mode === 'dark'
+                              ? '1px solid rgba(255, 224, 178, 0.35)'
+                              : '1px solid rgba(0, 0, 0, 0.2)',
                           '& .MuiChip-label': {
                             fontSize: '0.76rem',
                             lineHeight: 1.3,
                             fontWeight: 600,
                           },
                         }}
-                        onClick={() => navigate('/worker/profile/edit?section=availability')}
+                        onClick={() =>
+                          navigate('/worker/profile/edit?section=availability')
+                        }
                         clickable
                       />
                     )}
@@ -502,13 +552,18 @@ const Header = ({
                         size="small"
                         label={`${Math.round(headerCompletion.completion)}%`}
                         sx={{
-                          backgroundColor: theme.palette.mode === 'dark'
-                            ? 'rgba(255, 213, 79, 0.28)'
-                            : 'rgba(255, 215, 0, 0.3)',
-                          color: theme.palette.mode === 'dark' ? '#fff3c4' : '#6b5200',
-                          border: theme.palette.mode === 'dark'
-                            ? '1px solid rgba(255, 213, 79, 0.42)'
-                            : '1px solid rgba(0, 0, 0, 0.22)',
+                          backgroundColor:
+                            theme.palette.mode === 'dark'
+                              ? 'rgba(255, 213, 79, 0.28)'
+                              : 'rgba(255, 215, 0, 0.3)',
+                          color:
+                            theme.palette.mode === 'dark'
+                              ? '#fff3c4'
+                              : '#6b5200',
+                          border:
+                            theme.palette.mode === 'dark'
+                              ? '1px solid rgba(255, 213, 79, 0.42)'
+                              : '1px solid rgba(0, 0, 0, 0.22)',
                           '& .MuiChip-label': {
                             fontSize: '0.76rem',
                             lineHeight: 1.3,
@@ -547,7 +602,11 @@ const Header = ({
                   to={authCta.secondary.to}
                   variant="outlined"
                   size="small"
-                  sx={{ lineHeight: 1.3, letterSpacing: '0.01em', fontSize: '0.86rem' }}
+                  sx={{
+                    lineHeight: 1.3,
+                    letterSpacing: '0.01em',
+                    fontSize: '0.86rem',
+                  }}
                 >
                   {authCta.secondary.label}
                 </AuthButton>
@@ -599,7 +658,9 @@ const Header = ({
                   },
                 }}
               >
-                <LogoutIcon sx={{ fontSize: { xs: '1.15rem', sm: '1.25rem' } }} />
+                <LogoutIcon
+                  sx={{ fontSize: { xs: '1.15rem', sm: '1.25rem' } }}
+                />
               </ActionButton>
             </Tooltip>
           )}
@@ -722,7 +783,12 @@ const Header = ({
             toggleTheme();
             handleThemeMenuClose();
           }}
-          sx={{ justifyContent: 'center', fontWeight: 600, lineHeight: 1.35, letterSpacing: '0.01em' }}
+          sx={{
+            justifyContent: 'center',
+            fontWeight: 600,
+            lineHeight: 1.35,
+            letterSpacing: '0.01em',
+          }}
         >
           Quick Toggle
         </MenuItem>
@@ -731,5 +797,11 @@ const Header = ({
   );
 };
 
-export default Header;
+Header.propTypes = {
+  toggleTheme: PropTypes.func,
+  setThemeMode: PropTypes.func,
+  mode: PropTypes.string,
+  autoShowMode: PropTypes.bool,
+};
 
+export default Header;

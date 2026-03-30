@@ -11,6 +11,15 @@ export const HEADER_HEIGHT = 64; // px — desktop header
 export const HEADER_HEIGHT_MOBILE = 56; // px — mobile header (compact)
 export const BOTTOM_NAV_HEIGHT = 56; // px — MobileBottomNav
 export const STICKY_CTA_HEIGHT = 64; // px — sticky bottom action bars
+export const TOUCH_TARGET_MIN = 44; // px — WCAG-friendly touch area
+
+// 8/12/16/24 spacing rhythm for mobile sections
+export const MOBILE_SPACE = {
+  xs: 8,
+  sm: 12,
+  md: 16,
+  lg: 24,
+};
 
 // ── Z-Index Scale ────────────────────────────────────────────────
 // Each layer is separated by 10 so we have room to insert if needed.
@@ -43,4 +52,12 @@ export const Z_INDEX = {
   tooltip: 1700,
 };
 
-export default { HEADER_HEIGHT, HEADER_HEIGHT_MOBILE, BOTTOM_NAV_HEIGHT, STICKY_CTA_HEIGHT, Z_INDEX };
+export default {
+  HEADER_HEIGHT,
+  HEADER_HEIGHT_MOBILE,
+  BOTTOM_NAV_HEIGHT,
+  STICKY_CTA_HEIGHT,
+  TOUCH_TARGET_MIN,
+  MOBILE_SPACE,
+  Z_INDEX,
+};
