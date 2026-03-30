@@ -25,6 +25,8 @@ import {
   Search as SearchIcon,
 } from '@mui/icons-material';
 import { formatGhanaCurrency } from '@/utils/formatters';
+import useKeyboardVisible from '@/hooks/useKeyboardVisible';
+import { withSafeAreaBottom } from '@/utils/safeArea';
 
 
 
@@ -53,6 +55,8 @@ const JobsMobileFilterDrawer = ({
     salaryRange: [500, 10000],
     ...initialFilters,
   });
+  const { isKeyboardVisible } = useKeyboardVisible();
+  const drawerMaxHeight = isKeyboardVisible ? '92dvh' : '88dvh';
 
   // Sync with initial filters when drawer opens
   useEffect(() => {
@@ -97,10 +101,13 @@ const JobsMobileFilterDrawer = ({
         sx: {
           borderTopLeftRadius: 20,
           borderTopRightRadius: 20,
-          maxHeight: '88vh',
+          maxHeight: drawerMaxHeight,
+          minHeight: '56dvh',
           bgcolor: 'var(--k-bg-surface)',
           border: '1px solid var(--k-accent-border)',
           borderBottom: 'none',
+          display: 'flex',
+          flexDirection: 'column',
         },
       }}
     >
@@ -144,8 +151,10 @@ const JobsMobileFilterDrawer = ({
       <Box
         sx={{
           p: 1.5,
+          flex: 1,
+          minHeight: 0,
           overflowY: 'auto',
-          maxHeight: 'calc(88vh - 128px)',
+          maxHeight: 'none',
         }}
       >
         <Stack spacing={2.25}>
@@ -265,6 +274,11 @@ const JobsMobileFilterDrawer = ({
           borderColor: 'var(--k-accent-border)',
           display: 'flex',
           gap: 1,
+          position: 'sticky',
+          bottom: 0,
+          zIndex: 2,
+          bgcolor: 'var(--k-bg-surface)',
+          pb: withSafeAreaBottom(6),
         }}
       >
         <Button

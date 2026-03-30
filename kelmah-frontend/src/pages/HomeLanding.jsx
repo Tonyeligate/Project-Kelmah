@@ -30,6 +30,7 @@ import {
   Work as WorkIcon,
 } from '@mui/icons-material';
 import SEO from '@/modules/common/components/common/SEO';
+import StatTile from '@/modules/common/components/StatTile';
 import homeService from '@/modules/home/services/homeService';
 import { devWarn } from '@/modules/common/utils/devLogger';
 
@@ -451,32 +452,13 @@ const HomeLanding = () => {
           <Grid container spacing={2}>
             {TRUST_SIGNALS.map((tile) => (
               <Grid item xs={6} md={3} key={tile.label}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 2,
-                    borderRadius: 3,
-                    bgcolor: isDark
-                      ? alpha('#FFFFFF', 0.06)
-                      : alpha('#FFFFFF', 0.85),
-                    border: `1px solid ${isDark ? alpha('#FFFFFF', 0.08) : alpha('#0F172A', 0.08)}`,
-                    textAlign: 'center',
-                  }}
-                >
-                  <Typography
-                    variant="h5"
-                    fontWeight={900}
-                    sx={{ color: '#FFD166', lineHeight: 1 }}
-                  >
-                    {tile.value}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{ mt: 0.5, color: 'text.secondary' }}
-                  >
-                    {tile.label}
-                  </Typography>
-                </Paper>
+                <StatTile
+                  value={tile.value}
+                  label={tile.label}
+                  isDark={isDark}
+                  lightOpacity={0.85}
+                  darkOpacity={0.06}
+                />
               </Grid>
             ))}
           </Grid>
@@ -799,32 +781,13 @@ const HomeLanding = () => {
           <Grid container spacing={2}>
             {liveStatsTiles.map((tile) => (
               <Grid item xs={6} md={3} key={tile.label}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 2,
-                    borderRadius: 3,
-                    bgcolor: isDark
-                      ? alpha('#FFFFFF', 0.05)
-                      : alpha('#FFFFFF', 0.9),
-                    border: `1px solid ${isDark ? alpha('#FFFFFF', 0.08) : alpha('#0F172A', 0.08)}`,
-                    textAlign: 'center',
-                  }}
-                >
-                  <Typography
-                    variant="h5"
-                    fontWeight={900}
-                    sx={{ color: '#FFD166', lineHeight: 1 }}
-                  >
-                    {tile.value}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{ mt: 0.5, color: 'text.secondary' }}
-                  >
-                    {tile.label}
-                  </Typography>
-                </Paper>
+                <StatTile
+                  value={tile.value}
+                  label={tile.label}
+                  isDark={isDark}
+                  lightOpacity={0.9}
+                  darkOpacity={0.05}
+                />
               </Grid>
             ))}
           </Grid>

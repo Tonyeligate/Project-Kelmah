@@ -1357,13 +1357,9 @@ const MessagingPage = () => {
                   subtitle={
                     searchQuery || activeFilter !== 'all'
                       ? 'Try a different keyword or clear filters to see more chats.'
-                      : user?.role === 'worker'
-                        ? 'Browse jobs to start a conversation with a hirer.'
-                        : 'Find workers to begin a new chat.'
+                      : emptyConversationSubtitle
                   }
-                  actionLabel={
-                    user?.role === 'worker' ? 'Browse jobs' : 'Find workers'
-                  }
+                  actionLabel={emptyStateActionLabel}
                   onAction={handleStartNewChat}
                 />
               </Box>
@@ -1405,9 +1401,7 @@ const MessagingPage = () => {
               variant="messages"
               title="Select or start a conversation"
               subtitle="Pick a chat from the list or tap the + icon to connect with someone new."
-              actionLabel={
-                user?.role === 'worker' ? 'Browse jobs' : 'Find workers'
-              }
+              actionLabel={emptyStateActionLabel}
               onAction={handleStartNewChat}
             />
           )}
@@ -1428,6 +1422,10 @@ const MessagingPage = () => {
     const jobTitle = selectedConversation.jobRelated?.title;
     const sendDisabled =
       isSending || (!messageText.trim() && selectedFiles.length === 0);
+    const mobileComposerOffset =
+      mobile && !isKeyboardVisible
+        ? `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px))`
+        : 0;
 
     return (
       <Paper
@@ -1552,6 +1550,7 @@ const MessagingPage = () => {
             overflowY: 'auto',
             px: { xs: 1.25, md: 2 },
             py: { xs: 1.5, md: 2 },
+            pb: { xs: mobile && !isKeyboardVisible ? 2.5 : 1.25, md: 2 },
             backgroundImage:
               theme.palette.mode === 'dark'
                 ? 'radial-gradient(circle at top, rgba(18,140,126,0.12), transparent 42%), linear-gradient(180deg, rgba(255,255,255,0.015) 0%, transparent 100%)'
@@ -1634,7 +1633,7 @@ const MessagingPage = () => {
           onSubmit={handleSendMessage}
           sx={{
             position: 'sticky',
-            bottom: 0,
+            bottom: mobileComposerOffset,
             zIndex: 2,
             px: { xs: 1.25, md: 2 },
             py: 1.25,
