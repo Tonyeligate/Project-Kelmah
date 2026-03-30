@@ -31,7 +31,7 @@ import {
   Tooltip,
   Typography,
   alpha,
-  useMediaQuery,
+          color="text.secondary"
   useTheme,
 } from '@mui/material';
 import {
@@ -58,6 +58,8 @@ import EmptyState from '../../../components/common/EmptyState';
 import PageCanvas from '../../common/components/PageCanvas';
 import { useMessages } from '../contexts/MessageContext';
 import { messagingService } from '../services/messagingService';
+import useKeyboardVisible from '../../../hooks/useKeyboardVisible';
+import { BOTTOM_NAV_HEIGHT } from '@/constants/layout';
 
 const CHAT_ACCENT = '#128C7E';
 const CHAT_BG_DARK = '#0B141A';
@@ -322,7 +324,7 @@ const MessageBubble = ({ message, currentUserId }) => {
             {text}
           </Typography>
         )}
-
+                                color="text.secondary"
         {attachments.length > 0 && (
           <Stack spacing={1} sx={{ mt: text ? 1 : 0 }}>
             {attachments.map((attachment, index) => {
@@ -463,10 +465,22 @@ const MessagingPage = () => {
   const location = useLocation();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { user } = useSelector((state) => state.auth);
+  const { isKeyboardVisible } = useKeyboardVisible();
 
   const currentUserId = useMemo(() => getCurrentUserId(user), [user]);
   const searchDestination = useMemo(
     () => getSearchDestination(user?.role),
+    [user?.role],
+  );
+  const emptyStateActionLabel = useMemo(
+    () => (user?.role === 'worker' ? 'Browse jobs' : 'Find workers'),
+    [user?.role],
+  );
+  const emptyConversationSubtitle = useMemo(
+    () =>
+      user?.role === 'worker'
+        ? 'Browse open jobs and message a hirer directly to get started.'
+        : 'Find workers and send your first message with job details.',
     [user?.role],
   );
 
@@ -1279,7 +1293,7 @@ const MessagingPage = () => {
                             ) : (
                               <Typography
                                 variant="caption"
-                                color="text.disabled"
+                                color="text.secondary"
                               >
                                 {isOnline ? 'Online' : 'Seen'}
                               </Typography>
@@ -1650,7 +1664,7 @@ const MessagingPage = () => {
                   Attachment review ({selectedFiles.length}/{MAX_ATTACHMENTS})
                 </Typography>
                 <Stack direction="row" spacing={1} alignItems="center">
-                  <Typography variant="caption" color="text.disabled">
+                  <Typography variant="caption" color="text.secondary">
                     {formatFileSize(totalAttachmentSize)} total
                   </Typography>
                   <Button
