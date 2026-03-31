@@ -1060,16 +1060,17 @@ function ApplicationManagementPage() {
       disableContainer
       sx={{
         pt: { xs: 1, md: 4 },
-        pb: { xs: withBottomNavSafeArea(84), md: 6 },
+        pb: { xs: withBottomNavSafeArea(76), md: 6 },
         overflowX: 'clip',
       }}
     >
       <Container
         maxWidth="xl"
+        data-ui-audit-root="application-management-page"
         sx={{
           mt: { xs: 1, md: 3 },
           mb: { xs: 2, md: 4 },
-          px: { xs: 1, sm: 2 },
+          px: { xs: 0.75, sm: 2 },
           pb: { xs: withSafeAreaBottom(12), md: 0 },
           width: '100%',
           minWidth: 0,
@@ -1085,18 +1086,19 @@ function ApplicationManagementPage() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            mb: 1.5,
+            mb: 1.25,
             flexWrap: 'wrap',
-            gap: 1,
+            gap: 0.75,
             position: { xs: 'sticky', md: 'static' },
             top: { xs: withSafeAreaTop(HEADER_HEIGHT_MOBILE), md: 'auto' },
             zIndex: { xs: Z_INDEX.sticky, md: 'auto' },
-            py: { xs: 0.5, md: 0 },
+            py: { xs: 0.35, md: 0 },
             backgroundColor: { xs: 'background.default', md: 'transparent' },
           }}
         >
           <Box>
             <Typography
+              component="h1"
               variant={isCompactMobile ? 'h5' : isMobile ? 'h5' : 'h4'}
               fontWeight={700}
               sx={{ lineHeight: 1.1 }}
@@ -1242,10 +1244,12 @@ function ApplicationManagementPage() {
             elevation={0}
             sx={{
               border: `1px solid ${theme.palette.divider}`,
-              borderRadius: 2,
+              borderRadius: { xs: 1.5, md: 2 },
               display: 'flex',
               flexDirection: isMobile ? 'column' : 'row',
               minHeight: isMobile ? 'auto' : 560,
+              minWidth: 0,
+              overflow: 'hidden',
             }}
           >
             <JobSidebar
@@ -1262,13 +1266,14 @@ function ApplicationManagementPage() {
             {/* ── Col 2: Applications list ────────────────────────── */}
             <Box
               sx={{
-                width: isMobile ? '100%' : isTablet ? 300 : 360,
-                minWidth: isMobile ? 'auto' : isTablet ? 300 : 360,
+                width: isMobile ? '100%' : isTablet ? 280 : 340,
+                minWidth: isMobile ? 'auto' : isTablet ? 280 : 340,
                 borderRight: isMobile
                   ? 'none'
                   : `1px solid ${theme.palette.divider}`,
                 display: mobileDetailMode ? 'none' : 'flex',
                 flexDirection: 'column',
+                minHeight: 0,
               }}
             >
               {/* Status tabs */}
@@ -1286,7 +1291,7 @@ function ApplicationManagementPage() {
                     minWidth: 80,
                     minHeight: 44,
                     px: 1.5,
-                    fontSize: '0.8rem',
+                    fontSize: '0.88rem',
                   },
                 }}
                 variant={isMobile ? 'scrollable' : 'fullWidth'}
@@ -1363,9 +1368,10 @@ function ApplicationManagementPage() {
               sx={{
                 flex: 1,
                 width: isMobile ? '100%' : 'auto',
-                p: { xs: 2, md: 3 },
+                p: { xs: 1.5, md: 3 },
                 display: isMobile && !mobileDetailMode ? 'none' : 'flex',
                 flexDirection: 'column',
+                minWidth: 0,
               }}
             >
               {selectedApplication ? (
@@ -1375,7 +1381,7 @@ function ApplicationManagementPage() {
                       variant="text"
                       startIcon={<ArrowBack />}
                       onClick={() => setSelectedApplication(null)}
-                      sx={{ alignSelf: 'flex-start', mb: 1, minHeight: 44 }}
+                      sx={{ alignSelf: 'flex-start', mb: 0.75, minHeight: 44 }}
                     >
                       Back To Applications
                     </Button>
@@ -1406,9 +1412,9 @@ function ApplicationManagementPage() {
                     alignItems: 'center',
                     justifyContent: 'center',
                     height: '100%',
-                    minHeight: 300,
+                    minHeight: 280,
                     textAlign: 'center',
-                    p: 4,
+                    p: { xs: 2.5, md: 4 },
                   }}
                 >
                   <Box
@@ -1449,10 +1455,10 @@ function ApplicationManagementPage() {
             right: 0,
             bottom: withBottomNavSafeArea(0),
             zIndex: Z_INDEX.stickyCta,
-            px: 1.25,
-            pt: 0.75,
-            pb: withSafeAreaBottom(8),
-            gap: 0.75,
+            px: 1,
+            pt: 0.55,
+            pb: withSafeAreaBottom(6),
+            gap: 0.6,
             borderTop: `1px solid ${theme.palette.divider}`,
             backgroundColor: theme.palette.background.paper,
             boxShadow:
@@ -1469,6 +1475,7 @@ function ApplicationManagementPage() {
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   px: 0.5,
+                  gap: 0.75,
                 }}
               >
                 <IconButton
@@ -1480,7 +1487,17 @@ function ApplicationManagementPage() {
                 >
                   <NavigateBefore fontSize="small" />
                 </IconButton>
-                <Typography variant="caption" color="text.secondary">
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  noWrap
+                  sx={{
+                    flex: 1,
+                    minWidth: 0,
+                    textAlign: 'center',
+                    fontSize: { xs: '0.66rem', sm: '0.75rem' },
+                  }}
+                >
                   {selectedApplicationIndex >= 0
                     ? `Application ${selectedApplicationIndex + 1} of ${filteredApps.length}`
                     : `Application list (${filteredApps.length})`}
@@ -1498,7 +1515,13 @@ function ApplicationManagementPage() {
               <Typography
                 variant="caption"
                 color="text.secondary"
-                sx={{ px: 0.5 }}
+                noWrap
+                sx={{
+                  px: 0.5,
+                  maxWidth: '100%',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
               >
                 Quick decision for{' '}
                 {selectedApplication.workerName || 'selected applicant'}
@@ -1606,7 +1629,7 @@ function ApplicationManagementPage() {
                 fullWidth
                 variant="outlined"
                 color="secondary"
-                sx={{ minHeight: 42 }}
+                sx={{ minHeight: 40 }}
                 startIcon={<Work />}
                 onClick={() => setShowJobList((prev) => !prev)}
               >
@@ -1621,8 +1644,8 @@ function ApplicationManagementPage() {
                 variant="contained"
                 color="secondary"
                 sx={{
-                  minHeight: 42,
-                  boxShadow: '0 2px 8px rgba(255,215,0,0.35)',
+                  minHeight: 40,
+                  boxShadow: '0 2px 8px rgba(25,118,210,0.28)',
                 }}
                 startIcon={<ArrowForward />}
                 onClick={() => navigate('/hirer/jobs/post')}
@@ -1674,8 +1697,8 @@ function ApplicationsListFooter({
   return (
     <Box
       sx={{
-        px: 1.5,
-        py: 1.25,
+        px: { xs: 1, sm: 1.5 },
+        py: { xs: 1, sm: 1.25 },
         borderTop: `1px solid ${theme.palette.divider}`,
       }}
     >
@@ -1684,17 +1707,17 @@ function ApplicationsListFooter({
           display: 'flex',
           alignItems: { xs: 'stretch', sm: 'center' },
           justifyContent: 'space-between',
-          gap: 1,
+          gap: 0.75,
           flexDirection: { xs: 'column', sm: 'row' },
         }}
       >
-        <Typography variant="caption" color="text.secondary" display="block">
+        <Typography variant="body2" color="text.secondary" display="block">
           {selectedScopeTotal > 0
             ? `Showing ${visibleRange.start}-${visibleRange.end} of ${pagination.totalItems || selectedScopeTotal} ${selectedJobId ? 'applications' : 'applications in this view'}`
             : 'No applications to show'}
         </Typography>
         <Typography
-          variant="caption"
+          variant="body2"
           color="text.disabled"
           display="block"
           sx={{ mt: 0.25 }}
@@ -1705,11 +1728,20 @@ function ApplicationsListFooter({
           sx={{
             display: 'flex',
             alignItems: 'center',
-            gap: 1,
+            gap: 0.75,
             flexWrap: 'wrap',
           }}
         >
-          <FormControl size="small" sx={{ minWidth: 150 }}>
+          <FormControl
+            sx={{
+              minWidth: { xs: 128, sm: 150 },
+              '& .MuiSelect-select': {
+                minHeight: 44,
+                display: 'flex',
+                alignItems: 'center',
+              },
+            }}
+          >
             <Select
               value={sortBy}
               onChange={(event) => onSortChange(event.target.value)}
@@ -1723,7 +1755,16 @@ function ApplicationsListFooter({
               ))}
             </Select>
           </FormControl>
-          <FormControl size="small" sx={{ minWidth: 92 }}>
+          <FormControl
+            sx={{
+              minWidth: { xs: 84, sm: 92 },
+              '& .MuiSelect-select': {
+                minHeight: 44,
+                display: 'flex',
+                alignItems: 'center',
+              },
+            }}
+          >
             <Select
               value={pageSize}
               onChange={(event) => onPageSizeChange(Number(event.target.value))}
@@ -1746,7 +1787,7 @@ function ApplicationsListFooter({
           siblingCount={isMobile ? 0 : 1}
           boundaryCount={1}
           onChange={(_, page) => onPageChange(page)}
-          sx={{ mt: 1, alignSelf: 'center' }}
+          sx={{ mt: 0.75, alignSelf: 'center' }}
         />
       )}
     </Box>
@@ -1772,8 +1813,8 @@ function JobSidebar({
   return (
     <Box
       sx={{
-        width: isMobile ? '100%' : isTablet ? 220 : 260,
-        minWidth: isMobile ? 'auto' : isTablet ? 220 : 260,
+        width: isMobile ? '100%' : isTablet ? 180 : 240,
+        minWidth: isMobile ? 'auto' : isTablet ? 180 : 240,
         borderRight: isMobile ? 'none' : `1px solid ${theme.palette.divider}`,
         borderBottom: isMobile ? `1px solid ${theme.palette.divider}` : 'none',
         display: 'flex',
@@ -1783,23 +1824,23 @@ function JobSidebar({
     >
       <Box
         sx={{
-          px: 1.5,
-          py: 1.5,
+          px: { xs: 1.1, sm: 1.5 },
+          py: { xs: 1.1, sm: 1.5 },
           borderBottom: `1px solid ${theme.palette.divider}`,
         }}
       >
-        <Typography variant="overline" color="text.secondary" fontWeight={700}>
+        <Typography variant="subtitle2" color="text.secondary" fontWeight={700}>
           Your Jobs ({allJobs.length})
         </Typography>
         <Typography
-          variant="caption"
+          variant="body2"
           color="text.disabled"
           sx={{ display: 'block', mt: 0.25 }}
         >
           Pick a job to narrow this list.
         </Typography>
       </Box>
-      <Box sx={{ flex: 1, p: 1 }}>
+      <Box sx={{ flex: 1, p: { xs: 0.75, sm: 1 } }}>
         {/* "All Jobs" option */}
         <ListItemButton
           selected={!selectedJobId}
@@ -1807,8 +1848,8 @@ function JobSidebar({
           sx={{
             borderRadius: 1.5,
             mb: 0.5,
-            py: 1,
-            px: 1.5,
+            py: { xs: 0.8, sm: 1 },
+            px: { xs: 1.1, sm: 1.5 },
             borderLeft: !selectedJobId
               ? `3px solid ${theme.palette.primary.main}`
               : '3px solid transparent',
@@ -1817,7 +1858,7 @@ function JobSidebar({
             },
           }}
         >
-          <ListItemIcon sx={{ minWidth: 36 }}>
+          <ListItemIcon sx={{ minWidth: { xs: 32, sm: 36 } }}>
             <Badge badgeContent={totalApplications} color="primary" max={99}>
               <FilterList fontSize="small" />
             </Badge>
@@ -1872,25 +1913,35 @@ function ApplicationsListContent({
   const theme = useTheme();
 
   return (
-    <Box sx={{ flex: 1, p: 1.5 }}>
+    <Box sx={{ flex: 1, p: { xs: 1, sm: 1.5 } }}>
       {initialLoading &&
         Array.from({ length: 4 }).map((_, i) => (
           <Skeleton
             key={`application-skeleton-${i}`}
             variant="rectangular"
-            height={72}
-            sx={{ mb: 1.5, borderRadius: 2 }}
+            height={66}
+            sx={{ mb: { xs: 1.1, sm: 1.5 }, borderRadius: 2 }}
           />
         ))}
 
       {error && (
-        <Alert severity="error" sx={{ mb: 1.5 }} onClose={onClearError}>
+        <Alert
+          severity="error"
+          sx={{ mb: { xs: 1.1, sm: 1.5 } }}
+          onClose={onClearError}
+        >
           {error}
         </Alert>
       )}
 
       {applicationsLoading && !initialLoading && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 1.5 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            py: { xs: 1.1, sm: 1.5 },
+          }}
+        >
           <CircularProgress size={20} />
         </Box>
       )}
@@ -1955,15 +2006,16 @@ function ApplicationsListContent({
           );
 
           return groupedEntries.map(([jobId, group]) => (
-            <Box key={jobId} sx={{ mb: 2 }}>
+            <Box key={jobId} sx={{ mb: { xs: 1.5, sm: 2 } }}>
               <ListItemButton
                 sx={{
                   display: 'flex',
                   alignItems: 'center',
                   borderRadius: 1.25,
-                  mb: 1,
-                  py: 0.5,
-                  px: 0.75,
+                  mb: 0.85,
+                  py: 0.65,
+                  px: 0.65,
+                  minHeight: 44,
                   '&:hover': {
                     bgcolor: alpha(theme.palette.primary.main, 0.06),
                   },
@@ -1978,13 +2030,13 @@ function ApplicationsListContent({
                   primary={group.title}
                   secondary="Show only this job"
                   primaryTypographyProps={{
-                    variant: 'caption',
+                    variant: 'body2',
                     fontWeight: 700,
                     color: 'primary.main',
                     noWrap: true,
                   }}
                   secondaryTypographyProps={{
-                    variant: 'caption',
+                    variant: 'body2',
                     color: 'text.disabled',
                     noWrap: true,
                   }}
@@ -1993,7 +2045,7 @@ function ApplicationsListContent({
                 <Chip
                   size="small"
                   label={activeTabCountsByJob[jobId] || group.apps.length}
-                  sx={{ height: 18, fontSize: '0.65rem' }}
+                  sx={{ height: 24, fontSize: '0.8rem' }}
                 />
               </ListItemButton>
               {group.apps.map((app) => (
@@ -2135,9 +2187,20 @@ function ApplicationDetailPanel({
           alignItems: 'center',
           justifyContent: 'space-between',
           mb: 1,
+          gap: 0.75,
         }}
       >
-        <Typography variant="caption" color="text.secondary">
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          noWrap
+          sx={{
+            flex: 1,
+            minWidth: 0,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+        >
           {selectedIndex >= 0
             ? `Application ${selectedIndex + 1} of ${totalCount}`
             : `Application list (${totalCount})`}
@@ -2150,6 +2213,7 @@ function ApplicationDetailPanel({
                 onClick={onSelectPrevious}
                 disabled={!canSelectPrevious}
                 aria-label="Previous application"
+                sx={{ width: 44, height: 44 }}
               >
                 <NavigateBefore fontSize="small" />
               </IconButton>
@@ -2162,6 +2226,7 @@ function ApplicationDetailPanel({
                 onClick={onSelectNext}
                 disabled={!canSelectNext}
                 aria-label="Next application"
+                sx={{ width: 44, height: 44 }}
               >
                 <NavigateNext fontSize="small" />
               </IconButton>
@@ -2185,19 +2250,19 @@ function ApplicationDetailPanel({
       <Paper
         variant="outlined"
         sx={{
-          p: 1.5,
+          p: { xs: 1.1, sm: 1.5 },
           mb: 2,
-          borderRadius: 2,
+          borderRadius: { xs: 1.5, sm: 2 },
           display: 'flex',
           alignItems: 'center',
-          gap: 1,
+          gap: { xs: 0.8, sm: 1 },
           bgcolor: alpha(theme.palette.primary.main, 0.04),
           cursor: 'pointer',
           '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.08) },
         }}
         onClick={onViewJob}
       >
-        <Work sx={{ color: 'primary.main', fontSize: 20 }} />
+        <Work sx={{ color: 'primary.main', fontSize: { xs: 18, sm: 20 } }} />
         <Box sx={{ flex: 1, minWidth: 0 }}>
           <Typography
             variant="body2"
@@ -2207,41 +2272,51 @@ function ApplicationDetailPanel({
           >
             {app.jobTitle}
           </Typography>
-          <Typography variant="caption" color="text.secondary">
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            noWrap
+            sx={{ fontSize: { xs: '0.8rem', sm: '0.85rem' } }}
+          >
             Click to view job details
           </Typography>
         </Box>
-        <OpenInNew sx={{ color: 'text.disabled', fontSize: 18 }} />
+        <OpenInNew
+          sx={{ color: 'text.disabled', fontSize: { xs: 16, sm: 18 } }}
+        />
       </Paper>
 
       {/* Applicant header */}
       <Paper
         variant="outlined"
         sx={{
-          p: 2.5,
-          mb: 2.5,
-          borderRadius: 2,
+          p: { xs: 1.5, sm: 2.5 },
+          mb: { xs: 2, sm: 2.5 },
+          borderRadius: { xs: 1.5, sm: 2 },
           display: 'flex',
-          alignItems: 'center',
-          gap: 2,
+          alignItems: { xs: 'flex-start', sm: 'center' },
+          gap: { xs: 1.2, sm: 2 },
         }}
       >
         <Avatar
           src={app.workerAvatar}
           alt={app.workerName || 'Applicant'}
           sx={{
-            width: 64,
-            height: 64,
+            width: { xs: 52, sm: 64 },
+            height: { xs: 52, sm: 64 },
             cursor: app.workerId ? 'pointer' : 'default',
+            flexShrink: 0,
           }}
           onClick={() => app.workerId && navigate(`/workers/${app.workerId}`)}
         />
-        <Box sx={{ flex: 1 }}>
+        <Box sx={{ flex: 1, minWidth: 0 }}>
           <Typography
             variant="h5"
             fontWeight={600}
+            noWrap
             sx={{
               cursor: app.workerId ? 'pointer' : 'default',
+              fontSize: { xs: '1rem', sm: '1.4rem' },
               '&:hover': app.workerId ? { textDecoration: 'underline' } : {},
             }}
             onClick={() => app.workerId && navigate(`/workers/${app.workerId}`)}
@@ -2277,21 +2352,28 @@ function ApplicationDetailPanel({
 
       {/* Proposal details */}
       {(app.proposedRate != null || app.estimatedDuration || app.createdAt) && (
-        <Box sx={{ display: 'flex', gap: 2, mb: 2.5, flexWrap: 'wrap' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            gap: { xs: 1.1, sm: 2 },
+            mb: { xs: 2, sm: 2.5 },
+            flexWrap: 'wrap',
+          }}
+        >
           {app.proposedRate != null && (
             <Paper
               variant="outlined"
               sx={{
-                px: 2,
-                py: 1.5,
-                borderRadius: 2,
+                px: { xs: 1.5, sm: 2 },
+                py: { xs: 1.1, sm: 1.5 },
+                borderRadius: { xs: 1.5, sm: 2 },
                 flex: '1 1 140px',
               }}
             >
               <Typography
                 variant="overline"
                 color="text.secondary"
-                sx={{ fontSize: '0.65rem' }}
+                sx={{ fontSize: '0.78rem' }}
               >
                 Proposed Rate
               </Typography>
@@ -2304,16 +2386,16 @@ function ApplicationDetailPanel({
             <Paper
               variant="outlined"
               sx={{
-                px: 2,
-                py: 1.5,
-                borderRadius: 2,
+                px: { xs: 1.5, sm: 2 },
+                py: { xs: 1.1, sm: 1.5 },
+                borderRadius: { xs: 1.5, sm: 2 },
                 flex: '1 1 140px',
               }}
             >
               <Typography
                 variant="overline"
                 color="text.secondary"
-                sx={{ fontSize: '0.65rem' }}
+                sx={{ fontSize: '0.78rem' }}
               >
                 Est. Duration
               </Typography>
@@ -2327,16 +2409,16 @@ function ApplicationDetailPanel({
               <Paper
                 variant="outlined"
                 sx={{
-                  px: 2,
-                  py: 1.5,
-                  borderRadius: 2,
+                  px: { xs: 1.5, sm: 2 },
+                  py: { xs: 1.1, sm: 1.5 },
+                  borderRadius: { xs: 1.5, sm: 2 },
                   flex: '1 1 140px',
                 }}
               >
                 <Typography
                   variant="overline"
                   color="text.secondary"
-                  sx={{ fontSize: '0.65rem' }}
+                  sx={{ fontSize: '0.78rem' }}
                 >
                   Applied
                 </Typography>
@@ -2357,16 +2439,22 @@ function ApplicationDetailPanel({
       <Paper
         variant="outlined"
         sx={{
-          p: 2.5,
+          p: { xs: 1.6, sm: 2.5 },
           mb: 3,
-          borderRadius: 2,
+          borderRadius: { xs: 1.5, sm: 2 },
           bgcolor: 'action.hover',
           minHeight: 100,
         }}
       >
         <Typography
           variant="body1"
-          sx={{ whiteSpace: 'pre-wrap', lineHeight: 1.7 }}
+          sx={{
+            whiteSpace: 'pre-wrap',
+            lineHeight: { xs: 1.55, sm: 1.7 },
+            fontSize: { xs: '0.9rem', sm: '1rem' },
+            overflowWrap: 'anywhere',
+            wordBreak: 'break-word',
+          }}
         >
           {app.coverLetter || 'No cover letter provided.'}
         </Typography>

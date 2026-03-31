@@ -668,8 +668,8 @@ const MobileRegister = () => {
                       }
                       aria-label={
                         showConfirmPassword
-                          ? 'Hide confirm password'
-                          : 'Show confirm password'
+                          ? 'Hide password confirmation'
+                          : 'Show password confirmation'
                       }
                       sx={{
                         color: 'text.secondary',

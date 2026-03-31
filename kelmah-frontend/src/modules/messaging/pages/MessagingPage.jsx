@@ -67,17 +67,19 @@ import {
 } from '@/constants/layout';
 import { withBottomNavSafeArea, withSafeAreaBottom } from '@/utils/safeArea';
 
-const CHAT_ACCENT = '#25D366';
-const CHAT_ACCENT_DARK = '#128C7E';
-const CHAT_HEADER = '#075E54';
-const CHAT_BG_LIGHT = '#D9DBD5';
-const CHAT_PANEL_BG = '#FFFFFF';
-const CHAT_PANEL_HEADER = '#F0F2F5';
-const CHAT_MESSAGE_BG = '#EFEAE2';
-const CHAT_OUTGOING_BUBBLE = '#DCF8C6';
+const CHAT_ACCENT = '#FFD700';
+const CHAT_ACCENT_DARK = '#B8860B';
+const CHAT_HEADER = '#1B1C22';
+const CHAT_BG_LIGHT = '#F3E8CB';
+const CHAT_PANEL_BG = '#FFFDF4';
+const CHAT_PANEL_HEADER = '#F4EFE3';
+const CHAT_MESSAGE_BG = '#F9F7ED';
+const CHAT_OUTGOING_BUBBLE = '#F6E7BE';
 const CHAT_INCOMING_BUBBLE = '#FFFFFF';
-const CHAT_TEXT_PRIMARY = '#111B21';
-const CHAT_TEXT_SECONDARY = '#667781';
+const CHAT_TEXT_PRIMARY = '#111111';
+const CHAT_TEXT_SECONDARY = '#5D584D';
+const CHAT_BORDER = '#D8CCAF';
+const CHAT_MUTED_FILL = '#E8DFC7';
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
 const MAX_ATTACHMENTS = 5;
 const DRAFT_STORAGE_KEY = 'kelmah.messaging.drafts.v1';
@@ -328,7 +330,7 @@ const ConversationSkeleton = () => (
           mb: 1,
           borderRadius: 1.5,
           border: '1px solid',
-          borderColor: '#E9EDEF',
+          borderColor: CHAT_BORDER,
           bgcolor: CHAT_PANEL_BG,
         }}
       >
@@ -338,7 +340,7 @@ const ConversationSkeleton = () => (
             sx={{
               width: '48%',
               height: 14,
-              bgcolor: '#E9EDEF',
+              bgcolor: CHAT_MUTED_FILL,
               borderRadius: 999,
               mb: 1,
             }}
@@ -347,7 +349,7 @@ const ConversationSkeleton = () => (
             sx={{
               width: '84%',
               height: 10,
-              bgcolor: '#E9EDEF',
+              bgcolor: CHAT_MUTED_FILL,
               borderRadius: 999,
             }}
           />
@@ -382,20 +384,20 @@ const MessageBubble = ({ message, currentUserId }) => {
       sx={{
         display: 'flex',
         justifyContent: isOwn ? 'flex-end' : 'flex-start',
-        mb: 1.25,
+        mb: { xs: 0.75, sm: 0.9, md: 1.05 },
       }}
     >
       <Box
         sx={{
-          maxWidth: { xs: '86%', sm: '72%' },
-          px: 1.5,
-          py: 1,
-          borderRadius: isOwn ? '12px 12px 4px 12px' : '12px 12px 12px 4px',
+          maxWidth: { xs: '91%', sm: '84%', md: '74%', lg: '68%' },
+          px: { xs: 1.25, sm: 1.4, md: 1.55 },
+          py: { xs: 0.85, sm: 0.95, md: 1.05 },
+          borderRadius: isOwn ? '10px 10px 4px 10px' : '10px 10px 10px 4px',
           bgcolor: isOwn ? CHAT_OUTGOING_BUBBLE : CHAT_INCOMING_BUBBLE,
           color: CHAT_TEXT_PRIMARY,
           boxShadow: '0 1px 1px rgba(11, 20, 26, 0.12)',
           border: '1px solid',
-          borderColor: isOwn ? '#D2F1C7' : '#E9EDEF',
+          borderColor: isOwn ? alpha(CHAT_ACCENT_DARK, 0.35) : CHAT_BORDER,
         }}
       >
         {text && (
@@ -404,8 +406,8 @@ const MessageBubble = ({ message, currentUserId }) => {
             sx={{
               whiteSpace: 'pre-wrap',
               wordBreak: 'break-word',
-              lineHeight: 1.55,
-              fontSize: { xs: '0.95rem', md: '0.92rem' },
+              lineHeight: 1.45,
+              fontSize: { xs: '0.9rem', sm: '0.92rem', md: '0.94rem' },
             }}
           >
             {text}
@@ -500,7 +502,7 @@ const MessageBubble = ({ message, currentUserId }) => {
             <CloseIcon sx={{ fontSize: 14, color: '#D32F2F' }} />
           )}
           {isOwn && isRead && (
-            <DoneAllIcon sx={{ fontSize: 14, color: '#34B7F1' }} />
+            <DoneAllIcon sx={{ fontSize: 14, color: CHAT_ACCENT_DARK }} />
           )}
           {isOwn && isDelivered && (
             <DoneAllIcon sx={{ fontSize: 14, color: CHAT_ACCENT_DARK }} />
@@ -1289,21 +1291,21 @@ const MessagingPage = () => {
         borderRadius: 0,
         border: 'none',
         borderRight: mobile ? 'none' : '1px solid',
-        borderColor: '#D1D7DB',
+        borderColor: CHAT_BORDER,
         bgcolor: CHAT_PANEL_BG,
       }}
     >
       <Box
         sx={{
-          px: mobile ? 1.5 : 2,
-          pt: mobile ? 1.5 : 2,
-          pb: 1.5,
+          px: mobile ? { xs: 1.1, sm: 1.5 } : { md: 1.5, lg: 1.75, xl: 2 },
+          pt: mobile ? { xs: 1.1, sm: 1.5 } : { md: 1.5, lg: 1.75, xl: 2 },
+          pb: mobile ? { xs: 1.1, sm: 1.35 } : { md: 1.15, lg: 1.35 },
           position: 'sticky',
           top: 0,
           zIndex: 3,
           bgcolor: CHAT_PANEL_HEADER,
           borderBottom: '1px solid',
-          borderColor: '#D1D7DB',
+          borderColor: CHAT_BORDER,
           backdropFilter: 'blur(16px)',
         }}
       >
@@ -1312,14 +1314,14 @@ const MessagingPage = () => {
           alignItems="center"
           justifyContent="space-between"
           spacing={1}
-          sx={{ mb: 1.25 }}
+          sx={{ mb: { xs: 0.85, sm: 1.1, md: 1.15 } }}
         >
           <Box>
             <Typography variant="h6" fontWeight={800} sx={{ lineHeight: 1.1 }}>
               Chats
             </Typography>
             <Typography variant="caption" sx={{ color: CHAT_TEXT_SECONDARY }}>
-              WhatsApp-style inbox
+              Kelmah service inbox
             </Typography>
           </Box>
           <Stack direction="row" spacing={1} alignItems="center">
@@ -1330,8 +1332,12 @@ const MessagingPage = () => {
               }
               sx={{
                 fontWeight: 700,
+                minHeight: mobile ? TOUCH_TARGET_MIN : undefined,
                 bgcolor: alpha(CHAT_HEADER, 0.12),
                 color: CHAT_HEADER,
+                '& .MuiChip-label': {
+                  px: mobile ? 1.1 : undefined,
+                },
                 display: {
                   xs: unreadCount > 0 ? 'inline-flex' : 'none',
                   sm: 'inline-flex',
@@ -1345,8 +1351,12 @@ const MessagingPage = () => {
                 icon={<PushPinIcon sx={{ fontSize: 12 }} />}
                 sx={{
                   fontWeight: 700,
+                  minHeight: mobile ? TOUCH_TARGET_MIN : undefined,
                   bgcolor: alpha(theme.palette.warning.main, 0.16),
                   color: theme.palette.warning.dark,
+                  '& .MuiChip-label': {
+                    px: mobile ? 1.1 : undefined,
+                  },
                   '& .MuiChip-icon': {
                     color: theme.palette.warning.dark,
                   },
@@ -1373,7 +1383,7 @@ const MessagingPage = () => {
 
         <TextField
           fullWidth
-          size="small"
+          size={mobile ? 'medium' : 'small'}
           placeholder="Search by name or keyword"
           value={searchQuery}
           onChange={(event) => setSearchQuery(event.target.value)}
@@ -1381,8 +1391,8 @@ const MessagingPage = () => {
           sx={{
             '& .MuiOutlinedInput-root': {
               borderRadius: 2,
-              bgcolor: '#fff',
-              '& fieldset': { borderColor: '#D1D7DB' },
+              bgcolor: CHAT_PANEL_BG,
+              '& fieldset': { borderColor: CHAT_BORDER },
               '&:hover fieldset': { borderColor: CHAT_HEADER },
               '&.Mui-focused fieldset': { borderColor: CHAT_HEADER },
             },
@@ -1413,12 +1423,16 @@ const MessagingPage = () => {
 
         <Stack
           direction="row"
-          spacing={1}
+          spacing={0.75}
+          useFlexGap
           sx={{
-            mt: 1.5,
-            pb: 0.25,
-            overflowX: { xs: 'auto', md: 'visible' },
-            flexWrap: { xs: 'nowrap', md: 'wrap' },
+            mt: { xs: 1, sm: 1.25, md: 1.35 },
+            pb: 0.15,
+            pr: mobile ? 0.35 : 0,
+            maxWidth: '100%',
+            overflowX: 'visible',
+            flexWrap: 'wrap',
+            rowGap: 0.75,
           }}
         >
           {[
@@ -1431,12 +1445,19 @@ const MessagingPage = () => {
               label={chip.label}
               onClick={() => setActiveFilter(chip.key)}
               clickable
+              size={mobile ? 'medium' : 'small'}
               variant={activeFilter === chip.key ? 'filled' : 'outlined'}
               sx={{
                 fontWeight: 700,
+                minWidth: mobile ? TOUCH_TARGET_MIN : undefined,
+                minHeight: mobile ? TOUCH_TARGET_MIN : undefined,
                 borderColor: alpha(CHAT_HEADER, 0.28),
-                bgcolor: activeFilter === chip.key ? CHAT_HEADER : '#fff',
+                bgcolor:
+                  activeFilter === chip.key ? CHAT_HEADER : CHAT_PANEL_BG,
                 color: activeFilter === chip.key ? '#fff' : CHAT_TEXT_PRIMARY,
+                '& .MuiChip-label': {
+                  px: mobile ? 1.15 : undefined,
+                },
               }}
             />
           ))}
@@ -1448,14 +1469,22 @@ const MessagingPage = () => {
             }
             onClick={() => setActiveFilter('drafts')}
             clickable
+            size={mobile ? 'medium' : 'small'}
             icon={<PushPinIcon sx={{ fontSize: 14 }} />}
             variant={activeFilter === 'drafts' ? 'filled' : 'outlined'}
             sx={{
               fontWeight: 700,
+              minWidth: mobile ? TOUCH_TARGET_MIN : undefined,
+              minHeight: mobile ? TOUCH_TARGET_MIN : undefined,
               borderColor: alpha(theme.palette.warning.main, 0.3),
               bgcolor:
-                activeFilter === 'drafts' ? theme.palette.warning.main : '#fff',
+                activeFilter === 'drafts'
+                  ? theme.palette.warning.main
+                  : CHAT_PANEL_BG,
               color: activeFilter === 'drafts' ? '#111' : CHAT_TEXT_PRIMARY,
+              '& .MuiChip-label': {
+                px: mobile ? 1.15 : undefined,
+              },
               '& .MuiChip-icon': {
                 color:
                   activeFilter === 'drafts'
@@ -1472,17 +1501,23 @@ const MessagingPage = () => {
             }
             onClick={() => setActiveFilter('unread-drafts')}
             clickable
+            size={mobile ? 'medium' : 'small'}
             icon={<PushPinIcon sx={{ fontSize: 14 }} />}
             variant={activeFilter === 'unread-drafts' ? 'filled' : 'outlined'}
             sx={{
               fontWeight: 700,
+              minWidth: mobile ? TOUCH_TARGET_MIN : undefined,
+              minHeight: mobile ? TOUCH_TARGET_MIN : undefined,
               borderColor: alpha(theme.palette.error.main, 0.35),
               bgcolor:
                 activeFilter === 'unread-drafts'
                   ? theme.palette.error.main
-                  : '#fff',
+                  : CHAT_PANEL_BG,
               color:
                 activeFilter === 'unread-drafts' ? '#fff' : CHAT_TEXT_PRIMARY,
+              '& .MuiChip-label': {
+                px: mobile ? 1.15 : undefined,
+              },
               '& .MuiChip-icon': {
                 color:
                   activeFilter === 'unread-drafts'
@@ -1581,13 +1616,19 @@ const MessagingPage = () => {
                     onClick={() => handleSelectConversation(conversation)}
                     selected={isSelected}
                     sx={{
-                      py: mobile ? 1.2 : 1.05,
-                      px: mobile ? 1.5 : 2,
+                      py: mobile
+                        ? { xs: 0.85, sm: 1.05 }
+                        : { md: 0.85, lg: 0.95, xl: 1 },
+                      px: mobile
+                        ? { xs: 1, sm: 1.35 }
+                        : { md: 1.2, lg: 1.5, xl: 1.6 },
                       borderLeft: isSelected
                         ? `3px solid ${CHAT_HEADER}`
                         : '4px solid transparent',
-                      bgcolor: isSelected ? '#E9EDEF' : 'transparent',
-                      '&:hover': { bgcolor: '#F5F6F6' },
+                      bgcolor: isSelected
+                        ? alpha(CHAT_HEADER, 0.08)
+                        : 'transparent',
+                      '&:hover': { bgcolor: alpha(CHAT_HEADER, 0.04) },
                     }}
                   >
                     <ListItemAvatar sx={{ minWidth: { xs: 52, md: 48 } }}>
@@ -1609,8 +1650,20 @@ const MessagingPage = () => {
                           }
                           alt={title}
                           sx={{
-                            width: { xs: 48, md: 44 },
-                            height: { xs: 48, md: 44 },
+                            width: {
+                              xs: 40,
+                              sm: 44,
+                              md: 40,
+                              lg: 42,
+                              xl: 44,
+                            },
+                            height: {
+                              xs: 40,
+                              sm: 44,
+                              md: 40,
+                              lg: 42,
+                              xl: 44,
+                            },
                             bgcolor: alpha(CHAT_HEADER, 0.12),
                             color: CHAT_HEADER,
                             fontWeight: 800,
@@ -1642,7 +1695,17 @@ const MessagingPage = () => {
                                 variant="subtitle2"
                                 fontWeight={800}
                                 noWrap
-                                sx={{ minWidth: 0, lineHeight: 1.2, flex: 1 }}
+                                sx={{
+                                  minWidth: 0,
+                                  lineHeight: 1.2,
+                                  flex: 1,
+                                  fontSize: {
+                                    xs: '0.86rem',
+                                    sm: '0.9rem',
+                                    md: '0.86rem',
+                                    lg: '0.89rem',
+                                  },
+                                }}
                               >
                                 {title}
                               </Typography>
@@ -1671,7 +1734,13 @@ const MessagingPage = () => {
                                 display: '-webkit-box',
                                 WebkitLineClamp: mobile ? 2 : 1,
                                 WebkitBoxOrient: 'vertical',
-                                lineHeight: 1.35,
+                                lineHeight: 1.25,
+                                fontSize: {
+                                  xs: '0.78rem',
+                                  sm: '0.82rem',
+                                  md: '0.78rem',
+                                  lg: '0.82rem',
+                                },
                                 color: hasDraftPreview
                                   ? theme.palette.warning.dark
                                   : CHAT_TEXT_SECONDARY,
@@ -1697,8 +1766,17 @@ const MessagingPage = () => {
 
                           <Stack
                             alignItems="flex-end"
-                            spacing={0.35}
-                            sx={{ flexShrink: 0, minWidth: { xs: 60, md: 68 } }}
+                            spacing={0.25}
+                            sx={{
+                              flexShrink: 0,
+                              minWidth: {
+                                xs: 52,
+                                sm: 58,
+                                md: 58,
+                                lg: 64,
+                                xl: 68,
+                              },
+                            }}
                           >
                             <Typography
                               variant="caption"
@@ -1898,7 +1976,18 @@ const MessagingPage = () => {
             borderBottom: '1px solid rgba(255,255,255,0.14)',
           }}
         >
-          <Toolbar sx={{ minHeight: { xs: 64, md: 72 }, px: { xs: 1, md: 2 } }}>
+          <Toolbar
+            sx={{
+              minHeight: {
+                xs: 56,
+                sm: 60,
+                md: 62,
+                lg: 66,
+                xl: 70,
+              },
+              px: { xs: 0.65, sm: 1, md: 1.25, lg: 1.5, xl: 1.75 },
+            }}
+          >
             {mobile && (
               <IconButton
                 onClick={handleBackToList}
@@ -1929,12 +2018,12 @@ const MessagingPage = () => {
                 src={avatarUrl || undefined}
                 alt={title}
                 sx={{
-                  width: 42,
-                  height: 42,
+                  width: { xs: 34, sm: 38, md: 38, lg: 40 },
+                  height: { xs: 34, sm: 38, md: 38, lg: 40 },
                   bgcolor: alpha('#fff', 0.24),
                   color: '#fff',
                   fontWeight: 800,
-                  mr: 1.5,
+                  mr: { xs: 0.85, sm: 1.15, md: 1.25, lg: 1.5 },
                 }}
               >
                 {title.charAt(0).toUpperCase()}
@@ -1946,7 +2035,15 @@ const MessagingPage = () => {
                 variant="h6"
                 fontWeight={800}
                 noWrap
-                sx={{ lineHeight: 1.1 }}
+                sx={{
+                  lineHeight: 1.1,
+                  fontSize: {
+                    xs: '0.95rem',
+                    sm: '1rem',
+                    md: '0.97rem',
+                    lg: '1rem',
+                  },
+                }}
               >
                 {title}
               </Typography>
@@ -2026,9 +2123,20 @@ const MessagingPage = () => {
           sx={{
             flex: 1,
             overflowY: 'auto',
-            px: { xs: 1.25, md: 2 },
-            py: { xs: 1.5, md: 2 },
-            pb: { xs: mobile && !isKeyboardVisible ? 2.5 : 1.25, md: 2 },
+            px: {
+              xs: 0.65,
+              sm: 1,
+              md: 1.15,
+              lg: 1.35,
+              xl: 1.5,
+            },
+            py: { xs: 0.8, sm: 1.1, md: 1.2, lg: 1.35, xl: 1.5 },
+            pb: {
+              xs: mobile && !isKeyboardVisible ? 1.55 : 0.9,
+              sm: mobile && !isKeyboardVisible ? 1.9 : 1.2,
+              md: 1.5,
+              lg: 1.75,
+            },
             backgroundColor: CHAT_MESSAGE_BG,
             backgroundImage:
               'radial-gradient(rgba(17, 27, 33, 0.06) 0.7px, transparent 0.7px), radial-gradient(rgba(17, 27, 33, 0.04) 0.7px, transparent 0.7px)',
@@ -2059,14 +2167,14 @@ const MessagingPage = () => {
                       width: { xs: '72%', sm: '58%' },
                       p: 1.5,
                       borderRadius: 2,
-                      bgcolor: '#F6F7F8',
+                      bgcolor: CHAT_PANEL_HEADER,
                     }}
                   >
                     <Box
                       sx={{
                         width: '80%',
                         height: 10,
-                        bgcolor: '#E9EDEF',
+                        bgcolor: CHAT_MUTED_FILL,
                         borderRadius: 999,
                         mb: 1,
                       }}
@@ -2075,7 +2183,7 @@ const MessagingPage = () => {
                       sx={{
                         width: '45%',
                         height: 10,
-                        bgcolor: '#E9EDEF',
+                        bgcolor: CHAT_MUTED_FILL,
                         borderRadius: 999,
                       }}
                     />
@@ -2144,8 +2252,13 @@ const MessagingPage = () => {
           <Box
             sx={{
               position: 'absolute',
-              right: { xs: 16, md: 20 },
-              bottom: { xs: withBottomNavSafeArea(104), md: 96 },
+              right: { xs: 10, sm: 14, md: 16, lg: 20 },
+              bottom: {
+                xs: withBottomNavSafeArea(92),
+                sm: withBottomNavSafeArea(96),
+                md: 84,
+                lg: 92,
+              },
               zIndex: Z_INDEX.stickyCta,
             }}
           >
@@ -2177,18 +2290,22 @@ const MessagingPage = () => {
             position: 'sticky',
             bottom: mobileComposerOffset,
             zIndex: 2,
-            px: { xs: 1.25, md: 2 },
-            py: { xs: 1, md: 1.25 },
+            px: { xs: 0.65, sm: 1, md: 1.15, lg: 1.35, xl: 1.5 },
+            py: { xs: 0.65, sm: 0.8, md: 0.9, lg: 1 },
             pb: {
               xs: isKeyboardVisible
+                ? withSafeAreaBottom(6)
+                : withBottomNavSafeArea(10),
+              sm: isKeyboardVisible
                 ? withSafeAreaBottom(8)
                 : withBottomNavSafeArea(12),
-              md: 1.25,
+              md: 1,
+              lg: 1.15,
             },
             bgcolor: alpha(CHAT_PANEL_HEADER, 0.98),
             backdropFilter: 'blur(14px)',
             borderTop: '1px solid',
-            borderColor: '#D1D7DB',
+            borderColor: CHAT_BORDER,
             transition: 'padding-bottom 0.22s ease',
           }}
         >
@@ -2364,7 +2481,7 @@ const MessagingPage = () => {
                     fontWeight: 700,
                     bgcolor: alpha(CHAT_HEADER, 0.05),
                     borderColor: alpha(CHAT_HEADER, 0.22),
-                    '& .MuiChip-label': { px: 1.25 },
+                    '& .MuiChip-label': { px: { xs: 1, sm: 1.2 } },
                   }}
                 />
               ))}
@@ -2391,8 +2508,8 @@ const MessagingPage = () => {
                     minWidth: TOUCH_TARGET_MIN,
                     minHeight: TOUCH_TARGET_MIN,
                     color: CHAT_HEADER,
-                    bgcolor: '#fff',
-                    '&:hover': { bgcolor: '#F5F6F6' },
+                    bgcolor: CHAT_PANEL_BG,
+                    '&:hover': { bgcolor: CHAT_PANEL_HEADER },
                   }}
                 >
                   <AttachFileIcon />
@@ -2455,14 +2572,19 @@ const MessagingPage = () => {
               sx={{
                 '& .MuiOutlinedInput-root': {
                   borderRadius: 3,
-                  bgcolor: '#fff',
-                  '& fieldset': { borderColor: '#D1D7DB' },
+                  bgcolor: CHAT_PANEL_BG,
+                  '& fieldset': { borderColor: CHAT_BORDER },
                   '&:hover fieldset': { borderColor: CHAT_ACCENT_DARK },
                   '&.Mui-focused fieldset': { borderColor: CHAT_ACCENT_DARK },
                 },
                 '& .MuiInputBase-input': {
-                  fontSize: '1rem',
-                  lineHeight: 1.45,
+                  fontSize: {
+                    xs: '0.9rem',
+                    sm: '0.94rem',
+                    md: '0.95rem',
+                    lg: '0.98rem',
+                  },
+                  lineHeight: 1.4,
                 },
               }}
             />
@@ -2499,10 +2621,10 @@ const MessagingPage = () => {
             sx={{ display: 'block', mt: 0.75, pl: 0.5 }}
           >
             {selectedFiles.length > 0
-              ? `${selectedFiles.length} attached � ${remainingAttachmentSlots} slot${remainingAttachmentSlots === 1 ? '' : 's'} left � ${messageCharacterCount}/1000 chars � Press Enter to send`
+              ? `${selectedFiles.length} attached | ${remainingAttachmentSlots} slot${remainingAttachmentSlots === 1 ? '' : 's'} left | ${messageCharacterCount}/1000 chars | Press Enter to send`
               : hasSelectedDraft
-                ? `Press Enter for quick send � Shift+Enter for new line � ${messageCharacterCount}/1000 chars � Draft ${selectedDraftSavedLabel}`
-                : `Press Enter for quick send � Shift+Enter for new line � ${messageCharacterCount}/1000 chars � Max ${MAX_ATTACHMENTS} files (10MB limit)`}
+                ? `Press Enter for quick send | Shift+Enter for new line | ${messageCharacterCount}/1000 chars | Draft ${selectedDraftSavedLabel}`
+                : `Press Enter for quick send | Shift+Enter for new line | ${messageCharacterCount}/1000 chars | Max ${MAX_ATTACHMENTS} files (10MB limit)`}
           </Typography>
           {isKeyboardVisible && (
             <Typography
@@ -2535,7 +2657,10 @@ const MessagingPage = () => {
           color: 'text.primary',
           backgroundImage: {
             xs: 'none',
-            md: 'linear-gradient(180deg, #D4AF37 0px, #D4AF37 132px, #f2f2f2 132px)',
+            md: `linear-gradient(180deg, ${alpha(CHAT_ACCENT, 0.28)} 0px, ${alpha(
+              CHAT_ACCENT,
+              0.1,
+            )} 140px, ${CHAT_BG_LIGHT} 140px)`,
           },
         }}
       >
@@ -2547,15 +2672,17 @@ const MessagingPage = () => {
 
         <Box
           sx={{
-            px: { xs: 0, md: 2 },
-            py: { xs: 0, md: 2 },
+            px: { xs: 0, sm: 0.25, md: 1.2, lg: 1.5, xl: 2 },
+            py: { xs: 0, sm: 0.25, md: 1.25, lg: 1.5, xl: 2 },
             pb: {
               xs: isMobile
                 ? isKeyboardVisible
                   ? withSafeAreaBottom(0)
                   : withBottomNavSafeArea(4)
-                : 2,
-              md: 2,
+                : 1.25,
+              md: 1.25,
+              lg: 1.5,
+              xl: 2,
             },
             flex: 1,
             display: 'flex',
@@ -2575,14 +2702,18 @@ const MessagingPage = () => {
               sx={{
                 flex: 1,
                 width: '100%',
-                maxWidth: 1460,
+                maxWidth: 1500,
                 minHeight: 0,
                 display: 'grid',
-                gridTemplateColumns: { md: '360px 1fr', lg: '380px 1fr' },
+                gridTemplateColumns: {
+                  md: '320px 1fr',
+                  lg: '360px 1fr',
+                  xl: '400px 1fr',
+                },
                 gap: 0,
                 borderRadius: 2,
                 overflow: 'hidden',
-                border: '1px solid #D1D7DB',
+                border: `1px solid ${CHAT_BORDER}`,
                 boxShadow: '0 16px 40px rgba(11, 20, 26, 0.2)',
                 bgcolor: CHAT_PANEL_BG,
               }}

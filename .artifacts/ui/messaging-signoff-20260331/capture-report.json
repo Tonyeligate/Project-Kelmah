@@ -1,0 +1,129 @@
+{
+  "mode": "capture",
+  "taskId": "messaging-signoff-20260331",
+  "baselineId": null,
+  "route": "/messages",
+  "baseUrl": "http://127.0.0.1:3000",
+  "threshold": 0.015,
+  "strict": true,
+  "generatedAt": "2026-03-31T04:38:03.678Z",
+  "captureResults": [
+    {
+      "breakpoint": "320",
+      "width": 320,
+      "height": 900,
+      "mobile": true,
+      "authenticated": false,
+      "requestedUrl": "http://127.0.0.1:3000/messages",
+      "finalUrl": "http://127.0.0.1:3000/login",
+      "screenshotPath": ".artifacts/ui/messaging-signoff-20260331/320.png",
+      "navigationError": null,
+      "screenshotError": null,
+      "consoleErrors": [],
+      "uiChecks": {
+        "hasHorizontalOverflow": false,
+        "offscreenElements": 0,
+        "headingCount": 0,
+        "uniqueHeadingFontSizes": 0,
+        "interactiveCount": 9,
+        "smallTapTargets": 0,
+        "textTooSmallCount": 0,
+        "bodyScrollHeight": 900,
+        "viewportWidth": 320,
+        "viewportHeight": 900
+      }
+    },
+    {
+      "breakpoint": "768",
+      "width": 768,
+      "height": 1024,
+      "mobile": true,
+      "authenticated": false,
+      "requestedUrl": "http://127.0.0.1:3000/messages",
+      "finalUrl": "http://127.0.0.1:3000/login",
+      "screenshotPath": ".artifacts/ui/messaging-signoff-20260331/768.png",
+      "navigationError": null,
+      "screenshotError": null,
+      "consoleErrors": [],
+      "uiChecks": {
+        "hasHorizontalOverflow": false,
+        "offscreenElements": 0,
+        "headingCount": 0,
+        "uniqueHeadingFontSizes": 0,
+        "interactiveCount": 9,
+        "smallTapTargets": 0,
+        "textTooSmallCount": 0,
+        "bodyScrollHeight": 1024,
+        "viewportWidth": 768,
+        "viewportHeight": 1024
+      }
+    },
+    {
+      "breakpoint": "1024",
+      "width": 1024,
+      "height": 960,
+      "mobile": false,
+      "authenticated": false,
+      "requestedUrl": "http://127.0.0.1:3000/messages",
+      "finalUrl": "http://127.0.0.1:3000/login",
+      "screenshotPath": ".artifacts/ui/messaging-signoff-20260331/1024.png",
+      "navigationError": null,
+      "screenshotError": null,
+      "consoleErrors": [],
+      "uiChecks": {
+        "hasHorizontalOverflow": false,
+        "offscreenElements": 0,
+        "headingCount": 2,
+        "uniqueHeadingFontSizes": 2,
+        "interactiveCount": 11,
+        "smallTapTargets": 0,
+        "textTooSmallCount": 2,
+        "bodyScrollHeight": 960,
+        "viewportWidth": 1024,
+        "viewportHeight": 960
+      }
+    },
+    {
+      "breakpoint": "1440",
+      "width": 1440,
+      "height": 1024,
+      "mobile": false,
+      "authenticated": false,
+      "requestedUrl": "http://127.0.0.1:3000/messages",
+      "finalUrl": "http://127.0.0.1:3000/login",
+      "screenshotPath": ".artifacts/ui/messaging-signoff-20260331/1440.png",
+      "navigationError": null,
+      "screenshotError": null,
+      "consoleErrors": [],
+      "uiChecks": {
+        "hasHorizontalOverflow": false,
+        "offscreenElements": 0,
+        "headingCount": 2,
+        "uniqueHeadingFontSizes": 2,
+        "interactiveCount": 11,
+        "smallTapTargets": 0,
+        "textTooSmallCount": 2,
+        "bodyScrollHeight": 1024,
+        "viewportWidth": 1440,
+        "viewportHeight": 1024
+      }
+    }
+  ],
+  "compareResults": [],
+  "scorecard": {
+    "visualHierarchyScore": 3,
+    "spacingScore": 5,
+    "positioningScore": 5,
+    "interactionScore": 5,
+    "densityScore": 5,
+    "totalScore": 23,
+    "threshold": 0.015,
+    "pass": false
+  },
+  "issuesCount": 2,
+  "failureSummary": {
+    "hasCaptureFailures": false,
+    "hasRegressionFailures": false,
+    "strictFailed": true
+  }
+}

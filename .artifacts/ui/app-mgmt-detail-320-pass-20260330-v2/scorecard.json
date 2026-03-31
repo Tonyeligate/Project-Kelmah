@@ -1,0 +1,10 @@
+{
+  "visualHierarchyScore": 0,
+  "spacingScore": 5,
+  "positioningScore": 1,
+  "interactionScore": 0,
+  "densityScore": 5,
+  "totalScore": 11,
+  "threshold": 0.015,
+  "pass": false
+}

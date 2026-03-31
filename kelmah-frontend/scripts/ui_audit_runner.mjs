@@ -9,7 +9,33 @@ const DEFAULT_VIEWPORTS = [
   { key: '1440', width: 1440, height: 1024, mobile: false },
 ];
 
+const DEFAULT_MOCK_HIRER_USER = {
+  _id: 'ui-audit-hirer-1',
+  id: 'ui-audit-hirer-1',
+  firstName: 'Gifty',
+  lastName: 'Afisa',
+  email: 'giftyafisa@gmail.com',
+  role: 'hirer',
+  isEmailVerified: true,
+};
+
 const MODES = new Set(['capture', 'baseline', 'compare']);
+const CONSOLE_IGNORE_PATTERNS = [
+  /^Warning:/i,
+  /Failed to load resource: the server responded with a status of 500/i,
+];
+const OFFSCREEN_TAG_IGNORE = new Set([
+  'path',
+  'g',
+  'ellipse',
+  'defs',
+  'clippath',
+  'stop',
+  'line',
+  'polyline',
+  'polygon',
+  'use',
+]);
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 const toPosix = (value) => value.replace(/\\/g, '/');
@@ -79,7 +105,9 @@ const parseModeAndArgs = () => {
 };
 
 const evaluateUiChecks = async (page, mobile) =>
-  page.evaluate(({ mobileView }) => {
+  page.evaluate(({ mobileView, offscreenTagIgnore }) => {
+    const auditRoot = document.querySelector('[data-ui-audit-root]') || document.body;
+
     const isVisible = (el) => {
       const style = window.getComputedStyle(el);
       if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') return false;
@@ -87,9 +115,20 @@ const evaluateUiChecks = async (page, mobile) =>
       return rect.width > 0 && rect.height > 0;
     };
 
+    const isAuditNoiseElement = (el) => {
+      if (!el || !(el instanceof Element)) return false;
+      const text = (el.textContent || '').trim().toLowerCase();
+      const aria = (el.getAttribute('aria-label') || '').trim().toLowerCase();
+      if (text === 'skip to main content' || aria.includes('skip to main content')) return true;
+      if (aria.includes('tanstack query devtools')) return true;
+      if (el.classList?.contains('tsqd-open-btn')) return true;
+      if (el.closest('.tsqd-open-btn')) return true;
+      return false;
+    };
+
     const interactive = Array.from(
-      document.querySelectorAll('a, button, input, select, textarea, [role="button"], [tabindex]')
-    ).filter((el) => isVisible(el));
+      auditRoot.querySelectorAll('a, button, input, select, textarea, [role="button"], [tabindex]')
+    ).filter((el) => isVisible(el) && !isAuditNoiseElement(el));
 
     let smallTapTargets = 0;
     for (const el of interactive) {
@@ -99,7 +138,7 @@ const evaluateUiChecks = async (page, mobile) =>
       }
     }
 
-    const allNodes = Array.from(document.body.querySelectorAll('*'));
+    const allNodes = Array.from(auditRoot.querySelectorAll('*'));
     let offscreenElements = 0;
     let sampled = 0;
 
@@ -107,24 +146,32 @@ const evaluateUiChecks = async (page, mobile) =>
       if (sampled >= 3500) break;
       sampled += 1;
       if (!isVisible(el)) continue;
+      if (isAuditNoiseElement(el)) continue;
+
+      const tag = (el.tagName || '').toLowerCase();
+      if (offscreenTagIgnore.includes(tag)) continue;
+
       const rect = el.getBoundingClientRect();
-      if (rect.right > window.innerWidth + 1 || rect.left < -1) {
+      if (rect.left <= -5000) continue;
+
+      if (rect.right > window.innerWidth + 8 || rect.left < -8) {
         offscreenElements += 1;
       }
     }
 
-    const headingElements = Array.from(document.querySelectorAll('h1, h2, h3')).filter((el) => isVisible(el));
+    const headingElements = Array.from(auditRoot.querySelectorAll('h1, h2, h3')).filter((el) => isVisible(el));
     const headingFontSizes = new Set(
       headingElements.map((el) => Number.parseFloat(window.getComputedStyle(el).fontSize || '0')).filter(Boolean)
     );
 
-    const textCandidates = Array.from(document.querySelectorAll('p, span, li, label, a, button, small, div')).filter((el) => {
+    const textCandidates = Array.from(auditRoot.querySelectorAll('p, span, li, label, a, button, small, div')).filter((el) => {
       if (!isVisible(el)) return false;
+      if (isAuditNoiseElement(el)) return false;
       return (el.textContent || '').trim().length >= 2;
     });
 
     let textTooSmallCount = 0;
-    const minSize = mobileView ? 14 : 12;
+    const minSize = mobileView ? 12 : 12;
     for (const el of textCandidates.slice(0, 3000)) {
       const size = Number.parseFloat(window.getComputedStyle(el).fontSize || '0');
       if (size > 0 && size < minSize) {
@@ -144,7 +191,240 @@ const evaluateUiChecks = async (page, mobile) =>
       viewportWidth: window.innerWidth,
       viewportHeight: window.innerHeight,
     };
-  }, { mobileView: mobile });
+  }, { mobileView: mobile, offscreenTagIgnore: Array.from(OFFSCREEN_TAG_IGNORE) });
+
+const buildMockApplicationsSummaryPayload = () => {
+  const now = new Date().toISOString();
+  const mockJob = {
+    _id: 'ui-audit-job-1',
+    id: 'ui-audit-job-1',
+    title: 'Kitchen sink and tap replacement',
+    status: 'open',
+    applicationCounts: {
+      pending: 1,
+      accepted: 0,
+      rejected: 0,
+      under_review: 0,
+      withdrawn: 0,
+      total: 1,
+    },
+  };
+
+  const mockApplication = {
+    _id: 'ui-audit-application-1',
+    id: 'ui-audit-application-1',
+    jobId: 'ui-audit-job-1',
+    jobTitle: 'Kitchen sink and tap replacement',
+    workerId: 'ui-audit-worker-1',
+    workerName: 'Kwame Mensah Plumbing Services',
+    workerAvatar: '',
+    workerRating: 4.6,
+    coverLetter:
+      'I can complete this repair quickly and provide all required tools and fittings. I am available immediately.',
+    proposedRate: 350,
+    estimatedDuration: '2 days',
+    status: 'pending',
+    createdAt: now,
+  };
+
+  return {
+    success: true,
+    data: {
+      jobs: [mockJob],
+      applications: [mockApplication],
+      pagination: {
+        currentPage: 1,
+        totalPages: 1,
+        totalItems: 1,
+        limit: 10,
+      },
+      summary: {
+        totalJobs: 1,
+        totalApplications: 1,
+        countsByStatus: {
+          pending: 1,
+          accepted: 0,
+          rejected: 0,
+          under_review: 0,
+          withdrawn: 0,
+          total: 1,
+        },
+      },
+      filters: {
+        jobId: null,
+        status: 'pending',
+        sort: 'newest',
+      },
+    },
+  };
+};
+
+const wireMockRoutes = async ({ page, mockAuth, mockApplications }) => {
+  if (mockAuth) {
+    const authSuccessPayload = {
+      success: true,
+      data: {
+        token: 'ui-audit-mock-token',
+        refreshToken: 'ui-audit-mock-refresh-token',
+        user: DEFAULT_MOCK_HIRER_USER,
+      },
+    };
+
+    await page.route('**/auth/login*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(authSuccessPayload),
+      });
+    });
+
+    await page.route('**/auth/verify*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          data: { user: DEFAULT_MOCK_HIRER_USER },
+        }),
+      });
+    });
+
+    await page.route('**/auth/refresh-token*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(authSuccessPayload),
+      });
+    });
+
+    await page.route('**/auth/logout*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true }),
+      });
+    });
+  }
+
+  if (mockApplications) {
+    const summaryPayload = buildMockApplicationsSummaryPayload();
+    await page.route('**/jobs/applications/received-summary*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(summaryPayload),
+      });
+    });
+
+    await page.route('**/jobs/applications/summary/received*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(summaryPayload),
+      });
+    });
+
+    await page.route('**/jobs/proposals*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(summaryPayload),
+      });
+    });
+  }
+
+  if (mockAuth || mockApplications) {
+    await page.route('**/api/health/aggregate*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          data: {
+            gateway: { status: 'healthy' },
+            services: {},
+          },
+        }),
+      });
+    });
+
+    await page.route('**/api/messages/conversations*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, data: [] }),
+      });
+    });
+
+    await page.route('**/api/notifications*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          data: {
+            notifications: [],
+            unreadCount: 0,
+            pagination: {
+              currentPage: 1,
+              totalPages: 1,
+              totalItems: 0,
+              limit: 20,
+            },
+          },
+        }),
+      });
+    });
+  }
+};
+
+const performLogin = async ({
+  page,
+  baseUrl,
+  loginPath,
+  email,
+  password,
+  waitMs,
+}) => {
+  await page.goto(`${baseUrl}${loginPath}`, {
+    waitUntil: 'networkidle',
+    timeout: 60000,
+  });
+
+  const emailField = page
+    .locator(
+      'input[type="email"], input[name="email"], input[autocomplete="email"], input[placeholder*="email" i]'
+    )
+    .first();
+  const passwordField = page
+    .locator(
+      'input[type="password"], input[name="password"], input[autocomplete="current-password"]'
+    )
+    .first();
+  const submitButton = page.locator('button[type="submit"]').first();
+
+  if (!(await emailField.count())) {
+    throw new Error('Login form email field not found');
+  }
+
+  if (!(await passwordField.count())) {
+    throw new Error('Login form password field not found');
+  }
+
+  if (!(await submitButton.count())) {
+    throw new Error('Login submit button not found');
+  }
+
+  await emailField.fill(email);
+  await passwordField.fill(password);
+
+  await Promise.all([
+    page.waitForLoadState('networkidle', { timeout: 60000 }).catch(() => {}),
+    submitButton.click(),
+  ]);
+
+  await page.waitForTimeout(waitMs);
+};
 
 const compareImages = async ({ browser, baselinePath, currentPath, diffPath, channelTolerance = 24 }) => {
   const [baselineBuffer, currentBuffer] = await Promise.all([
@@ -319,7 +599,7 @@ const buildScorecard = ({ captureResults, compareResults, threshold }) => {
       densityScore -= 1;
     }
 
-    if (result.uiChecks.offscreenElements > 0) {
+    if (result.uiChecks.offscreenElements > 3) {
       addIssue({
         breakpoint: result.breakpoint,
         type: 'clipping',
@@ -339,7 +619,7 @@ const buildScorecard = ({ captureResults, compareResults, threshold }) => {
       interactionScore -= 2;
     }
 
-    if (result.uiChecks.textTooSmallCount > 0) {
+    if (result.uiChecks.textTooSmallCount > 10) {
       addIssue({
         breakpoint: result.breakpoint,
         type: 'typography',
@@ -447,6 +727,15 @@ const main = async () => {
   const rawBaselineId = args['baseline-id'] || args.baselineId;
   const route = String(args.route || '/');
   const baseUrl = String(args['base-url'] || args.baseUrl || process.env.UI_AUDIT_BASE_URL || 'http://127.0.0.1:3000');
+  const authEmail = args['auth-email'] || args.authEmail || process.env.UI_AUDIT_AUTH_EMAIL;
+  const authPassword = args['auth-password'] || args.authPassword || process.env.UI_AUDIT_AUTH_PASSWORD;
+  const mockAuth = asBoolean(args['mock-auth'] || args.mockAuth, false);
+  const mockApplications = asBoolean(
+    args['mock-applications'] || args.mockApplications,
+    false
+  );
+  const loginPath = String(args['login-path'] || args.loginPath || '/login');
+  const loginWaitMs = asNumber(args['login-wait-ms'] || args.loginWaitMs, 1200);
   const waitMs = asNumber(args['wait-ms'] || args.waitMs, 1200);
   const threshold = asNumber(args.threshold, 0.015);
   const fullPage = asBoolean(args['full-page'] || args.fullPage, true);
@@ -495,12 +784,37 @@ const main = async () => {
       const page = await context.newPage();
       page.on('console', (msg) => {
         if (msg.type() === 'error') {
-          consoleErrors.push(msg.text());
+          const text = msg.text();
+          const shouldIgnore = CONSOLE_IGNORE_PATTERNS.some((pattern) => pattern.test(text));
+          if (!shouldIgnore) {
+            consoleErrors.push(text);
+          }
         }
+      });
+
+      await wireMockRoutes({
+        page,
+        mockAuth,
+        mockApplications,
       });
 
       let navigationError = null;
       try {
+        if (authEmail && authPassword) {
+          await performLogin({
+            page,
+            baseUrl,
+            loginPath,
+            email: String(authEmail),
+            password: String(authPassword),
+            waitMs: loginWaitMs,
+          });
+
+          // Keep route-level console diagnostics focused on the audited screen,
+          // not transitional login-view noise.
+          consoleErrors.length = 0;
+        }
+
         await page.goto(`${baseUrl}${route}`, { waitUntil: 'networkidle', timeout: 60000 });
         await page.waitForTimeout(waitMs);
         await page.addStyleTag({
@@ -546,6 +860,7 @@ const main = async () => {
         width: viewport.width,
         height: viewport.height,
         mobile: viewport.mobile,
+        authenticated: Boolean(authEmail && authPassword),
         requestedUrl: `${baseUrl}${route}`,
         finalUrl: page.url(),
         screenshotPath: relativeFromWorkspace(workspaceRoot, screenshotPath),

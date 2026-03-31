@@ -1,8 +1,59 @@
+import React, { useEffect, useState } from 'react';
+import {
+  Alert,
+  Avatar,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Divider,
+  Grid,
+  IconButton,
+  LinearProgress,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemSecondaryAction,
+  ListItemText,
+  Rating,
+  Skeleton,
+  Snackbar,
+  TextField,
+  Typography,
+} from '@mui/material';
+import {
+  CheckCircle as CompleteIcon,
+  Message as MessageIcon,
+  Payment as PaymentIcon,
+  PlayArrow as StartIcon,
+  Schedule as ScheduleIcon,
+  Star as StarIcon,
+  Visibility as ViewIcon,
+} from '@mui/icons-material';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { TOUCH_TARGET_MIN } from '@/constants/layout';
+import { formatGhanaCurrency } from '@/utils/formatters';
+import { hirerService } from '@/modules/hirer/services/hirerService';
+import {
+  fetchHirerJobs,
+  selectHirerJobs,
+  selectHirerLoading,
+} from '@/modules/hirer/services/hirerSlice';
+
 // IconButton focus-visible styling is enforced globally via MuiIconButton theme overrides.
 
+const iconButtonA11ySx = {
+  minWidth: TOUCH_TARGET_MIN,
+  minHeight: TOUCH_TARGET_MIN,
+};
+
 const JobProgressTracker = () => {
-  const theme = useTheme();
-  const isMobile = useBreakpointDown('md');
   const dispatch = useDispatch();
   const navigate = useNavigate();
 

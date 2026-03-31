@@ -3,7 +3,6 @@ import {
   Avatar,
   Box,
   Card,
-  CardActionArea,
   CardContent,
   Chip,
   IconButton,
@@ -64,12 +63,18 @@ export const ApplicationCard = ({
     appliedDate && !Number.isNaN(appliedDate.getTime())
       ? formatDistanceToNow(appliedDate, { addSuffix: true })
       : null;
+  const handleCardKeyDown = (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      onSelect(application);
+    }
+  };
 
   return (
     <Card
       elevation={isSelected ? 3 : 0}
       sx={{
-        mb: 1.5,
+        mb: { xs: 1, sm: 1.5 },
         borderLeft: isSelected
           ? `4px solid ${theme.palette.primary.main}`
           : '4px solid transparent',
@@ -80,25 +85,47 @@ export const ApplicationCard = ({
         '&:hover': { backgroundColor: alpha(theme.palette.primary.main, 0.04) },
       }}
     >
-      <CardActionArea
+      <Box
+        role="button"
+        tabIndex={0}
         onClick={() => onSelect(application)}
+        onKeyDown={handleCardKeyDown}
         aria-label={`Application from ${application.workerName}`}
         sx={{
+          cursor: 'pointer',
+          borderRadius: 1,
           '&:focus-visible': {
             outline: `2px solid ${theme.palette.primary.main}`,
             outlineOffset: 2,
           },
         }}
       >
-        <CardContent sx={{ py: 1.5, px: 2, '&:last-child': { pb: 1.5 } }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+        <CardContent
+          sx={{
+            py: { xs: 1.1, sm: 1.5 },
+            px: { xs: 1.35, sm: 2 },
+            '&:last-child': { pb: { xs: 1.1, sm: 1.5 } },
+          }}
+        >
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: { xs: 1.1, sm: 1.5 },
+            }}
+          >
             <Avatar
               src={application.workerAvatar}
               alt={application.workerName || 'Applicant'}
-              sx={{ width: 40, height: 40 }}
+              sx={{ width: { xs: 34, sm: 40 }, height: { xs: 34, sm: 40 } }}
             />
             <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Typography variant="subtitle2" noWrap fontWeight={600}>
+              <Typography
+                variant="subtitle2"
+                noWrap
+                fontWeight={600}
+                sx={{ fontSize: { xs: '0.88rem', sm: '0.92rem' } }}
+              >
                 {application.workerName}
               </Typography>
               {application.workerRating !== null ? (
@@ -120,10 +147,10 @@ export const ApplicationCard = ({
               color={statusColors[application.status] || 'default'}
               variant="outlined"
               sx={{
-                fontSize: '0.75rem',
-                minHeight: 26,
+                fontSize: { xs: '0.82rem', sm: '0.84rem' },
+                minHeight: { xs: 28, sm: 30 },
                 '& .MuiChip-label': {
-                  px: 1,
+                  px: { xs: 0.95, sm: 1.1 },
                 },
               }}
             />
@@ -133,7 +160,12 @@ export const ApplicationCard = ({
               variant="caption"
               color="primary.main"
               noWrap
-              sx={{ display: 'block', mt: 0.5, fontWeight: 500 }}
+              sx={{
+                display: 'block',
+                mt: 0.35,
+                fontWeight: 500,
+                fontSize: { xs: '0.82rem', sm: '0.85rem' },
+              }}
             >
               {application.jobTitle}
             </Typography>
@@ -142,7 +174,8 @@ export const ApplicationCard = ({
             variant="body2"
             color="text.secondary"
             sx={{
-              mt: 0.5,
+              mt: 0.4,
+              fontSize: { xs: '0.88rem', sm: '0.92rem' },
               display: '-webkit-box',
               WebkitLineClamp: 2,
               WebkitBoxOrient: 'vertical',
@@ -156,19 +189,20 @@ export const ApplicationCard = ({
               variant="caption"
               color="text.secondary"
               sx={{
-                mt: 0.75,
+                mt: 0.55,
                 display: 'flex',
                 alignItems: 'center',
-                gap: 0.5,
+                gap: 0.35,
                 flexWrap: 'wrap',
+                fontSize: { xs: '0.82rem', sm: '0.85rem' },
               }}
             >
-              <AttachMoney sx={{ fontSize: 14 }} />
+              <AttachMoney sx={{ fontSize: { xs: 13, sm: 14 } }} />
               {formatGhanaCurrencyLabel(application.proposedRate)}
               {application.estimatedDuration && (
                 <>
                   {' '}
-                  <Schedule sx={{ fontSize: 14, ml: 0.75 }} />
+                  <Schedule sx={{ fontSize: { xs: 13, sm: 14 }, ml: 0.6 }} />
                   {application.estimatedDuration}
                 </>
               )}
@@ -179,9 +213,15 @@ export const ApplicationCard = ({
             <Typography
               variant="caption"
               color="text.disabled"
-              sx={{ mt: 0.5, display: 'flex', alignItems: 'center', gap: 0.5 }}
+              sx={{
+                mt: 0.35,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.4,
+                fontSize: { xs: '0.82rem', sm: '0.85rem' },
+              }}
             >
-              <Schedule sx={{ fontSize: 13 }} />
+              <Schedule sx={{ fontSize: { xs: 12, sm: 13 } }} />
               Applied {appliedAgo}
             </Typography>
           )}
@@ -189,13 +229,13 @@ export const ApplicationCard = ({
           {showQuickActions && (
             <Box
               sx={{
-                mt: 1,
-                pt: 1,
+                mt: 0.75,
+                pt: 0.75,
                 borderTop: `1px dashed ${alpha(theme.palette.divider, 0.7)}`,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                gap: 0.5,
+                gap: 0.35,
               }}
             >
               <Typography variant="caption" color="text.secondary">
@@ -212,7 +252,7 @@ export const ApplicationCard = ({
                       }}
                       disabled={!canMessage}
                       aria-label={`Message ${application.workerName || 'worker'}`}
-                      sx={{ width: 38, height: 38 }}
+                      sx={{ width: 44, height: 44 }}
                     >
                       <Message fontSize="small" />
                     </IconButton>
@@ -231,7 +271,7 @@ export const ApplicationCard = ({
                       }}
                       disabled={isAccepted}
                       aria-label={`Accept ${application.workerName || 'application'}`}
-                      sx={{ width: 38, height: 38 }}
+                      sx={{ width: 44, height: 44 }}
                     >
                       <CheckCircleOutline fontSize="small" />
                     </IconButton>
@@ -250,7 +290,7 @@ export const ApplicationCard = ({
                       }}
                       disabled={isRejected}
                       aria-label={`Reject ${application.workerName || 'application'}`}
-                      sx={{ width: 38, height: 38 }}
+                      sx={{ width: 44, height: 44 }}
                     >
                       <CancelOutlined fontSize="small" />
                     </IconButton>
@@ -260,7 +300,7 @@ export const ApplicationCard = ({
             </Box>
           )}
         </CardContent>
-      </CardActionArea>
+      </Box>
     </Card>
   );
 };
@@ -275,9 +315,9 @@ export const JobListItem = ({ job, isSelected, onClick, appCount }) => {
       sx={{
         borderRadius: 1.5,
         mb: 0.5,
-        minHeight: 56,
-        py: 1,
-        px: 1.5,
+        minHeight: { xs: 50, sm: 56 },
+        py: { xs: 0.8, sm: 1 },
+        px: { xs: 1.1, sm: 1.5 },
         borderLeft: isSelected
           ? `3px solid ${theme.palette.primary.main}`
           : '3px solid transparent',
@@ -286,7 +326,7 @@ export const JobListItem = ({ job, isSelected, onClick, appCount }) => {
         },
       }}
     >
-      <ListItemIcon sx={{ minWidth: 36 }}>
+      <ListItemIcon sx={{ minWidth: { xs: 32, sm: 36 } }}>
         <Badge badgeContent={appCount} color="primary" max={99} showZero>
           <Work
             fontSize="small"

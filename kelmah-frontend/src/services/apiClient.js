@@ -69,15 +69,93 @@ let isForceLogoutInProgress = false;
 const AUTH_SYNC_STORAGE_KEY = 'kelmah_auth_sync';
 let authSyncListenersInitialized = false;
 
-// Create axios instance
-const apiClient = axios.create({
-  baseURL: API_BASE_URL,
-  timeout: 30000,
-  withCredentials: true,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+const isTestRuntime =
+  typeof process !== 'undefined' && process.env?.NODE_ENV === 'test';
+
+const createNoopInterceptorManager = () => ({
+  use: () => 0,
+  eject: () => {},
 });
+
+const createTestFallbackApiClient = () => {
+  const resolveResponse = (config = {}) =>
+    Promise.resolve({
+      data: null,
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config,
+    });
+
+  const fallbackClient = (config = {}) => resolveResponse(config);
+
+  fallbackClient.request = (config = {}) => resolveResponse(config);
+  fallbackClient.get = (url, config = {}) =>
+    resolveResponse({ ...config, method: 'get', url });
+  fallbackClient.delete = (url, config = {}) =>
+    resolveResponse({ ...config, method: 'delete', url });
+  fallbackClient.head = (url, config = {}) =>
+    resolveResponse({ ...config, method: 'head', url });
+  fallbackClient.options = (url, config = {}) =>
+    resolveResponse({ ...config, method: 'options', url });
+  fallbackClient.post = (url, data, config = {}) =>
+    resolveResponse({ ...config, method: 'post', url, data });
+  fallbackClient.put = (url, data, config = {}) =>
+    resolveResponse({ ...config, method: 'put', url, data });
+  fallbackClient.patch = (url, data, config = {}) =>
+    resolveResponse({ ...config, method: 'patch', url, data });
+
+  fallbackClient.defaults = {
+    baseURL: API_BASE_URL,
+    timeout: 30000,
+    withCredentials: true,
+    headers: {
+      common: {},
+      'Content-Type': 'application/json',
+    },
+  };
+
+  fallbackClient.interceptors = {
+    request: createNoopInterceptorManager(),
+    response: createNoopInterceptorManager(),
+  };
+
+  return fallbackClient;
+};
+
+const resolveAxiosFactory = () => {
+  if (typeof axios?.create === 'function') {
+    return axios.create.bind(axios);
+  }
+
+  if (typeof axios?.default?.create === 'function') {
+    return axios.default.create.bind(axios.default);
+  }
+
+  return null;
+};
+
+// Create axios instance
+const axiosFactory = resolveAxiosFactory();
+const apiClient = axiosFactory
+  ? axiosFactory({
+      baseURL: API_BASE_URL,
+      timeout: 30000,
+      withCredentials: true,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+  : (() => {
+      if (!isTestRuntime) {
+        throw new Error('axios.create is unavailable');
+      }
+
+      apiClientWarn(
+        'axios.create is unavailable in test runtime; using fallback client.',
+      );
+      return createTestFallbackApiClient();
+    })();
 
 apiClient._refreshPromise = null;
 apiClient._isRefreshing = false;

@@ -310,16 +310,16 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
             flexGrow: 1,
             width: '100%',
             minWidth: 0,
-            maxWidth: { md: 1440, xl: 1600 },
-            mx: 'auto',
+            maxWidth: isMessagesPage ? 'none' : { md: 1440, xl: 1600 },
+            mx: isMessagesPage ? 0 : 'auto',
             // Dynamic margin to match sidebar width transition
             ml: 0, // Sidebar is already part of flex flow; no manual margin needed
             transition: 'margin-left 0.25s cubic-bezier(0.4,0,0.2,1)',
             pt: {
               md: `calc(${HEADER_HEIGHT_MOBILE}px + var(--kelmah-network-banner-offset, 0px))`,
             },
-            px: { md: 3 },
-            pb: { md: 3 },
+            px: isMessagesPage ? { md: 0 } : { md: 3 },
+            pb: isMessagesPage ? { md: 0 } : { md: 3 },
             borderLeft: '1px solid',
             borderColor: 'divider',
           }}

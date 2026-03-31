@@ -58,6 +58,11 @@ const SmartNavigation = () => {
   const theme = useTheme();
   const isMobile = useBreakpointDown('md');
   const { user, isAuthenticated } = useSelector((state) => state.auth);
+  const isMessagingRoute =
+    location.pathname === '/messages' ||
+    location.pathname.startsWith('/messages/') ||
+    location.pathname === '/chat' ||
+    location.pathname.startsWith('/chat/');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isPinned, setIsPinned] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
@@ -168,7 +173,7 @@ const SmartNavigation = () => {
   }, [isAuthenticated, user, preferenceKey]);
 
   // Don't show on mobile or if user is not authenticated
-  if (isMobile || !isAuthenticated || !user) {
+  if (isMobile || !isAuthenticated || !user || isMessagingRoute) {
     return null;
   }
 

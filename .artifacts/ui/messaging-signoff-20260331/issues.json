@@ -1,0 +1,18 @@
+[
+  {
+    "id": "ISSUE-001",
+    "breakpoint": "320",
+    "type": "hierarchy",
+    "severity": "medium",
+    "message": "No visible heading elements detected",
+    "details": null
+  },
+  {
+    "id": "ISSUE-002",
+    "breakpoint": "768",
+    "type": "hierarchy",
+    "severity": "medium",
+    "message": "No visible heading elements detected",
+    "details": null
+  }
+]

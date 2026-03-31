@@ -1,9 +1,55 @@
+import React, { useEffect, useState } from 'react';
+import {
+  Alert,
+  Avatar,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Divider,
+  Grid,
+  IconButton,
+  Menu,
+  MenuItem,
+  Rating,
+  Skeleton,
+  Snackbar,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TextField,
+  Typography,
+} from '@mui/material';
+import {
+  AttachMoney as MoneyIcon,
+  Edit as EditIcon,
+  MoreVert as MoreVertIcon,
+  Schedule as ScheduleIcon,
+  Star as StarIcon,
+  ThumbUp as ThumbUpIcon,
+  Visibility as ViewIcon,
+  Work as WorkIcon,
+} from '@mui/icons-material';
+import { TOUCH_TARGET_MIN } from '@/constants/layout';
+import { devError, devWarn } from '@/modules/common/utils/devLogger';
+import { hirerService } from '@/modules/hirer/services/hirerService';
+
 // IconButton focus-visible styling is enforced globally via MuiIconButton theme overrides.
 
-const WorkerReview = () => {
-  const theme = useTheme();
-  const isMobile = useBreakpointDown('md');
+const iconButtonA11ySx = {
+  minWidth: TOUCH_TARGET_MIN,
+  minHeight: TOUCH_TARGET_MIN,
+};
 
+const WorkerReview = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [snackbar, setSnackbar] = useState({

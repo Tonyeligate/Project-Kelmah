@@ -1,0 +1,154 @@
+[
+  {
+    "id": "ISSUE-001",
+    "breakpoint": "320",
+    "type": "clipping",
+    "severity": "high",
+    "message": "7 elements rendered off-screen horizontally",
+    "details": null
+  },
+  {
+    "id": "ISSUE-002",
+    "breakpoint": "320",
+    "type": "tap-target",
+    "severity": "high",
+    "message": "3 interactive elements are below 44px target size",
+    "details": null
+  },
+  {
+    "id": "ISSUE-003",
+    "breakpoint": "320",
+    "type": "typography",
+    "severity": "medium",
+    "message": "7 text nodes are below recommended minimum size",
+    "details": null
+  },
+  {
+    "id": "ISSUE-004",
+    "breakpoint": "320",
+    "type": "hierarchy",
+    "severity": "medium",
+    "message": "No visible heading elements detected",
+    "details": null
+  },
+  {
+    "id": "ISSUE-005",
+    "breakpoint": "320",
+    "type": "console",
+    "severity": "medium",
+    "message": "8 console errors detected",
+    "details": [
+      "Warning: Failed %s type: %s%s prop The prop `children` is marked as required in `Layout`, but its value is `undefined`. \n    at Layout (http://127.0.0.1:3000/src/modules/layout/components/Layout.jsx:80:19)",
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "Login failed: AxiosError"
+    ]
+  },
+  {
+    "id": "ISSUE-006",
+    "breakpoint": "768",
+    "type": "clipping",
+    "severity": "high",
+    "message": "7 elements rendered off-screen horizontally",
+    "details": null
+  },
+  {
+    "id": "ISSUE-007",
+    "breakpoint": "768",
+    "type": "tap-target",
+    "severity": "high",
+    "message": "3 interactive elements are below 44px target size",
+    "details": null
+  },
+  {
+    "id": "ISSUE-008",
+    "breakpoint": "768",
+    "type": "typography",
+    "severity": "medium",
+    "message": "7 text nodes are below recommended minimum size",
+    "details": null
+  },
+  {
+    "id": "ISSUE-009",
+    "breakpoint": "768",
+    "type": "hierarchy",
+    "severity": "medium",
+    "message": "No visible heading elements detected",
+    "details": null
+  },
+  {
+    "id": "ISSUE-010",
+    "breakpoint": "768",
+    "type": "console",
+    "severity": "medium",
+    "message": "9 console errors detected",
+    "details": [
+      "Warning: Failed %s type: %s%s prop The prop `children` is marked as required in `Layout`, but its value is `undefined`. \n    at Layout (http://127.0.0.1:3000/src/modules/layout/components/Layout.jsx:80:19)",
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "Login failed: AxiosError"
+    ]
+  },
+  {
+    "id": "ISSUE-011",
+    "breakpoint": "1024",
+    "type": "clipping",
+    "severity": "high",
+    "message": "7 elements rendered off-screen horizontally",
+    "details": null
+  },
+  {
+    "id": "ISSUE-012",
+    "breakpoint": "1024",
+    "type": "typography",
+    "severity": "medium",
+    "message": "2 text nodes are below recommended minimum size",
+    "details": null
+  },
+  {
+    "id": "ISSUE-013",
+    "breakpoint": "1024",
+    "type": "console",
+    "severity": "medium",
+    "message": "15 console errors detected",
+    "details": [
+      "Warning: Failed %s type: %s%s prop The prop `children` is marked as required in `Layout`, but its value is `undefined`. \n    at Layout (http://127.0.0.1:3000/src/modules/layout/components/Layout.jsx:80:19)",
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    ]
+  },
+  {
+    "id": "ISSUE-014",
+    "breakpoint": "1440",
+    "type": "clipping",
+    "severity": "high",
+    "message": "7 elements rendered off-screen horizontally",
+    "details": null
+  },
+  {
+    "id": "ISSUE-015",
+    "breakpoint": "1440",
+    "type": "typography",
+    "severity": "medium",
+    "message": "2 text nodes are below recommended minimum size",
+    "details": null
+  },
+  {
+    "id": "ISSUE-016",
+    "breakpoint": "1440",
+    "type": "console",
+    "severity": "medium",
+    "message": "15 console errors detected",
+    "details": [
+      "Warning: Failed %s type: %s%s prop The prop `children` is marked as required in `Layout`, but its value is `undefined`. \n    at Layout (http://127.0.0.1:3000/src/modules/layout/components/Layout.jsx:80:19)",
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    ]
+  }
+]

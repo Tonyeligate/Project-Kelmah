@@ -1,0 +1,170 @@
+[
+  {
+    "id": "ISSUE-001",
+    "breakpoint": "320",
+    "type": "clipping",
+    "severity": "high",
+    "message": "8 elements rendered off-screen horizontally",
+    "details": null
+  },
+  {
+    "id": "ISSUE-002",
+    "breakpoint": "320",
+    "type": "tap-target",
+    "severity": "high",
+    "message": "7 interactive elements are below 44px target size",
+    "details": null
+  },
+  {
+    "id": "ISSUE-003",
+    "breakpoint": "320",
+    "type": "typography",
+    "severity": "medium",
+    "message": "28 text nodes are below recommended minimum size",
+    "details": null
+  },
+  {
+    "id": "ISSUE-004",
+    "breakpoint": "320",
+    "type": "hierarchy",
+    "severity": "medium",
+    "message": "No visible heading elements detected",
+    "details": null
+  },
+  {
+    "id": "ISSUE-005",
+    "breakpoint": "320",
+    "type": "console",
+    "severity": "medium",
+    "message": "6 console errors detected",
+    "details": [
+      "Warning: Failed %s type: %s%s prop The prop `children` is marked as required in `Layout`, but its value is `undefined`. \n    at Layout (http://127.0.0.1:3000/src/modules/layout/components/Layout.jsx:80:19)",
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "Warning: validateDOMNesting(...): %s cannot appear as a descendant of <%s>.%s <button> button \n    at button\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at ButtonBase2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-BK764VIS.js?v=e3b9e3a9:545:17)\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at IconButton2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-QVNQQ6HL.js?v=e3b9e3a9:248:17)\n    at span\n    at Tooltip2 (http://127.0.0.1:3000/node_modules/.vite/deps/@mui_material.js?v=e24438f3:17299:17)\n    at div\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Box3 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:424:19)\n    at div\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Box3 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:424:19)\n    at div\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at CardContent2 (http://127.0.0.1:3000/node_modules/.vite/deps/@mui_material.js?v=e24438f3:6999:17)\n    at button\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at ButtonBase2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-BK764VIS.js?v=e3b9e3a9:545:17)\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at CardActionArea2 (http://127.0.0.1:3000/node_modules/.vite/deps/@mui_material.js?v=e24438f3:6804:17)\n    at div\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Paper2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-7KNGHT6F.js?v=e3b9e3a9:5587:17)\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Card2 (http://127.0.0.1:3000/node_modules/.vite/deps/@mui_material.js?v=e24438f3:6674:17)\n    at ApplicationCard (http://127.0.0.1:3000/src/modules/hirer/components/ApplicationManagementCards.jsx:59:3)\n    at div\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Box3 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:424:19)\n    at div\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Box3 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:424:19)\n    at ApplicationsListContent (http://127.0.0.1:3000/src/modules/hirer/pages/ApplicationManagementPage.jsx:2407:3)\n    at div\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Box3 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:424:19)\n    at div\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Paper2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-7KNGHT6F.js?v=e3b9e3a9:5587:17)\n    at div\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Container3 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:2183:19)\n    at main\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Box3 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:424:19)\n    at PageCanvas (http://127.0.0.1:3000/src/modules/common/components/PageCanvas.jsx:21:3)\n    at ApplicationManagementPage (http://127.0.0.1:3000/src/modules/hirer/pages/ApplicationManagementPage.jsx:135:17)\n    at RouteErrorBoundary (http://127.0.0.1:3000/src/modules/common/components/RouteErrorBoundary.jsx:10:5)\n    at ProtectedRoute (http://127.0.0.1:3000/src/modules/auth/components/common/ProtectedRoute.jsx:29:14)\n    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/react-router-dom.js?v=566e89fd:4088:5)\n    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/react-router-dom.js?v=566e89fd:4088:5)\n    at Outlet (http://127.0.0.1:3000/node_modules/.vite/deps/react-router-dom.js?v=566e89fd:4494:26)\n    at main\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Box3 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:424:19)\n    at div\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Box3 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:424:19)\n    at Layout (http://127.0.0.1:3000/src/modules/layout/components/Layout.jsx:80:19)\n    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/react-router-dom.js?v=566e89fd:4088:5)\n    at Suspense\n    at AppRoutes (http://127.0.0.1:3000/src/routes/config.jsx:2139:19)\n    at main\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Box3 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:424:19)\n    at GlobalErrorBoundaryInner (http://127.0.0.1:3000/src/modules/common/components/GlobalErrorBoundary.jsx:42:5)\n    at GlobalErrorBoundary (http://127.0.0.1:3000/src/modules/common/components/GlobalErrorBoundary.jsx:340:17)\n    at DefaultPropsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-AFM5GZTT.js?v=e3b9e3a9:3325:3)\n    at RtlProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:1174:5)\n    at ThemeProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:1124:5)\n    at ThemeProvider2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:1264:5)\n    at ThemeProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-ZOYLNT2P.js?v=e3b9e3a9:321:12)\n    at KelmahThemeProvider (http://127.0.0.1:3000/src/theme/ThemeProvider.jsx:172:39)\n    at App (http://127.0.0.1:3000/src/App.jsx:76:20)\n    at MessageProvider (http://127.0.0.1:3000/src/modules/messaging/contexts/MessageContext.jsx:209:35)\n    at NotificationProvider (http://127.0.0.1:3000/src/modules/notifications/contexts/NotificationContext.jsx:55:40)\n    at _a (http://127.0.0.1:3000/node_modules/.vite/deps/react-helmet-async.js?v=4f9219ea:624:5)\n    at ErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/react-error-boundary.js?v=f86af55d:18:5)\n    at SnackbarProvider2 (http://127.0.0.1:3000/node_modules/.vite/deps/notistack.js?v=4646f53a:1226:24)\n    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/react-router-dom.js?v=566e89fd:4501:15)\n    at BrowserRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router-dom.js?v=566e89fd:5247:5)\n    at QueryClientProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-364IGIBO.js?v=e3b9e3a9:3093:3)\n    at Provider (http://127.0.0.1:3000/node_modules/.vite/deps/react-redux.js?v=e24438f3:923:11)",
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    ]
+  },
+  {
+    "id": "ISSUE-006",
+    "breakpoint": "768",
+    "type": "clipping",
+    "severity": "high",
+    "message": "8 elements rendered off-screen horizontally",
+    "details": null
+  },
+  {
+    "id": "ISSUE-007",
+    "breakpoint": "768",
+    "type": "tap-target",
+    "severity": "high",
+    "message": "7 interactive elements are below 44px target size",
+    "details": null
+  },
+  {
+    "id": "ISSUE-008",
+    "breakpoint": "768",
+    "type": "typography",
+    "severity": "medium",
+    "message": "29 text nodes are below recommended minimum size",
+    "details": null
+  },
+  {
+    "id": "ISSUE-009",
+    "breakpoint": "768",
+    "type": "hierarchy",
+    "severity": "medium",
+    "message": "No visible heading elements detected",
+    "details": null
+  },
+  {
+    "id": "ISSUE-010",
+    "breakpoint": "768",
+    "type": "console",
+    "severity": "medium",
+    "message": "6 console errors detected",
+    "details": [
+      "Warning: Failed %s type: %s%s prop The prop `children` is marked as required in `Layout`, but its value is `undefined`. \n    at Layout (http://127.0.0.1:3000/src/modules/layout/components/Layout.jsx:80:19)",
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "Warning: validateDOMNesting(...): %s cannot appear as a descendant of <%s>.%s <button> button \n    at button\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at ButtonBase2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-BK764VIS.js?v=e3b9e3a9:545:17)\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at IconButton2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-QVNQQ6HL.js?v=e3b9e3a9:248:17)\n    at span\n    at Tooltip2 (http://127.0.0.1:3000/node_modules/.vite/deps/@mui_material.js?v=e24438f3:17299:17)\n    at div\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Box3 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:424:19)\n    at div\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Box3 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:424:19)\n    at div\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at CardContent2 (http://127.0.0.1:3000/node_modules/.vite/deps/@mui_material.js?v=e24438f3:6999:17)\n    at button\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at ButtonBase2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-BK764VIS.js?v=e3b9e3a9:545:17)\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at CardActionArea2 (http://127.0.0.1:3000/node_modules/.vite/deps/@mui_material.js?v=e24438f3:6804:17)\n    at div\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Paper2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-7KNGHT6F.js?v=e3b9e3a9:5587:17)\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Card2 (http://127.0.0.1:3000/node_modules/.vite/deps/@mui_material.js?v=e24438f3:6674:17)\n    at ApplicationCard (http://127.0.0.1:3000/src/modules/hirer/components/ApplicationManagementCards.jsx:59:3)\n    at div\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Box3 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:424:19)\n    at div\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Box3 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:424:19)\n    at ApplicationsListContent (http://127.0.0.1:3000/src/modules/hirer/pages/ApplicationManagementPage.jsx:2407:3)\n    at div\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Box3 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:424:19)\n    at div\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Paper2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-7KNGHT6F.js?v=e3b9e3a9:5587:17)\n    at div\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Container3 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:2183:19)\n    at main\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Box3 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:424:19)\n    at PageCanvas (http://127.0.0.1:3000/src/modules/common/components/PageCanvas.jsx:21:3)\n    at ApplicationManagementPage (http://127.0.0.1:3000/src/modules/hirer/pages/ApplicationManagementPage.jsx:135:17)\n    at RouteErrorBoundary (http://127.0.0.1:3000/src/modules/common/components/RouteErrorBoundary.jsx:10:5)\n    at ProtectedRoute (http://127.0.0.1:3000/src/modules/auth/components/common/ProtectedRoute.jsx:29:14)\n    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/react-router-dom.js?v=566e89fd:4088:5)\n    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/react-router-dom.js?v=566e89fd:4088:5)\n    at Outlet (http://127.0.0.1:3000/node_modules/.vite/deps/react-router-dom.js?v=566e89fd:4494:26)\n    at main\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Box3 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:424:19)\n    at div\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Box3 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:424:19)\n    at Layout (http://127.0.0.1:3000/src/modules/layout/components/Layout.jsx:80:19)\n    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/react-router-dom.js?v=566e89fd:4088:5)\n    at Suspense\n    at AppRoutes (http://127.0.0.1:3000/src/routes/config.jsx:2139:19)\n    at main\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Box3 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:424:19)\n    at GlobalErrorBoundaryInner (http://127.0.0.1:3000/src/modules/common/components/GlobalErrorBoundary.jsx:42:5)\n    at GlobalErrorBoundary (http://127.0.0.1:3000/src/modules/common/components/GlobalErrorBoundary.jsx:340:17)\n    at DefaultPropsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-AFM5GZTT.js?v=e3b9e3a9:3325:3)\n    at RtlProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:1174:5)\n    at ThemeProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:1124:5)\n    at ThemeProvider2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:1264:5)\n    at ThemeProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-ZOYLNT2P.js?v=e3b9e3a9:321:12)\n    at KelmahThemeProvider (http://127.0.0.1:3000/src/theme/ThemeProvider.jsx:172:39)\n    at App (http://127.0.0.1:3000/src/App.jsx:76:20)\n    at MessageProvider (http://127.0.0.1:3000/src/modules/messaging/contexts/MessageContext.jsx:209:35)\n    at NotificationProvider (http://127.0.0.1:3000/src/modules/notifications/contexts/NotificationContext.jsx:55:40)\n    at _a (http://127.0.0.1:3000/node_modules/.vite/deps/react-helmet-async.js?v=4f9219ea:624:5)\n    at ErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/react-error-boundary.js?v=f86af55d:18:5)\n    at SnackbarProvider2 (http://127.0.0.1:3000/node_modules/.vite/deps/notistack.js?v=4646f53a:1226:24)\n    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/react-router-dom.js?v=566e89fd:4501:15)\n    at BrowserRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router-dom.js?v=566e89fd:5247:5)\n    at QueryClientProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-364IGIBO.js?v=e3b9e3a9:3093:3)\n    at Provider (http://127.0.0.1:3000/node_modules/.vite/deps/react-redux.js?v=e24438f3:923:11)",
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    ]
+  },
+  {
+    "id": "ISSUE-011",
+    "breakpoint": "1024",
+    "type": "clipping",
+    "severity": "high",
+    "message": "56 elements rendered off-screen horizontally",
+    "details": null
+  },
+  {
+    "id": "ISSUE-012",
+    "breakpoint": "1024",
+    "type": "typography",
+    "severity": "medium",
+    "message": "3 text nodes are below recommended minimum size",
+    "details": null
+  },
+  {
+    "id": "ISSUE-013",
+    "breakpoint": "1024",
+    "type": "hierarchy",
+    "severity": "medium",
+    "message": "No visible heading elements detected",
+    "details": null
+  },
+  {
+    "id": "ISSUE-014",
+    "breakpoint": "1024",
+    "type": "console",
+    "severity": "medium",
+    "message": "6 console errors detected",
+    "details": [
+      "Warning: Failed %s type: %s%s prop The prop `children` is marked as required in `Layout`, but its value is `undefined`. \n    at Layout (http://127.0.0.1:3000/src/modules/layout/components/Layout.jsx:80:19)",
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "Warning: validateDOMNesting(...): %s cannot appear as a descendant of <%s>.%s <button> button \n    at button\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at ButtonBase2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-BK764VIS.js?v=e3b9e3a9:545:17)\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at IconButton2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-QVNQQ6HL.js?v=e3b9e3a9:248:17)\n    at span\n    at Tooltip2 (http://127.0.0.1:3000/node_modules/.vite/deps/@mui_material.js?v=e24438f3:17299:17)\n    at div\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Box3 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:424:19)\n    at div\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Box3 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:424:19)\n    at div\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at CardContent2 (http://127.0.0.1:3000/node_modules/.vite/deps/@mui_material.js?v=e24438f3:6999:17)\n    at button\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at ButtonBase2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-BK764VIS.js?v=e3b9e3a9:545:17)\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at CardActionArea2 (http://127.0.0.1:3000/node_modules/.vite/deps/@mui_material.js?v=e24438f3:6804:17)\n    at div\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Paper2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-7KNGHT6F.js?v=e3b9e3a9:5587:17)\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Card2 (http://127.0.0.1:3000/node_modules/.vite/deps/@mui_material.js?v=e24438f3:6674:17)\n    at ApplicationCard (http://127.0.0.1:3000/src/modules/hirer/components/ApplicationManagementCards.jsx:59:3)\n    at div\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Box3 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:424:19)\n    at div\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Box3 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:424:19)\n    at ApplicationsListContent (http://127.0.0.1:3000/src/modules/hirer/pages/ApplicationManagementPage.jsx:2407:3)\n    at div\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Box3 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:424:19)\n    at div\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Paper2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-7KNGHT6F.js?v=e3b9e3a9:5587:17)\n    at div\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Container3 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:2183:19)\n    at main\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Box3 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:424:19)\n    at PageCanvas (http://127.0.0.1:3000/src/modules/common/components/PageCanvas.jsx:21:3)\n    at ApplicationManagementPage (http://127.0.0.1:3000/src/modules/hirer/pages/ApplicationManagementPage.jsx:135:17)\n    at RouteErrorBoundary (http://127.0.0.1:3000/src/modules/common/components/RouteErrorBoundary.jsx:10:5)\n    at ProtectedRoute (http://127.0.0.1:3000/src/modules/auth/components/common/ProtectedRoute.jsx:29:14)\n    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/react-router-dom.js?v=566e89fd:4088:5)\n    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/react-router-dom.js?v=566e89fd:4088:5)\n    at Outlet (http://127.0.0.1:3000/node_modules/.vite/deps/react-router-dom.js?v=566e89fd:4494:26)\n    at main\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Box3 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:424:19)\n    at div\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Box3 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:424:19)\n    at Layout (http://127.0.0.1:3000/src/modules/layout/components/Layout.jsx:80:19)\n    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/react-router-dom.js?v=566e89fd:4088:5)\n    at Suspense\n    at AppRoutes (http://127.0.0.1:3000/src/routes/config.jsx:2139:19)\n    at main\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Box3 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:424:19)\n    at GlobalErrorBoundaryInner (http://127.0.0.1:3000/src/modules/common/components/GlobalErrorBoundary.jsx:42:5)\n    at GlobalErrorBoundary (http://127.0.0.1:3000/src/modules/common/components/GlobalErrorBoundary.jsx:340:17)\n    at DefaultPropsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-AFM5GZTT.js?v=e3b9e3a9:3325:3)\n    at RtlProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:1174:5)\n    at ThemeProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:1124:5)\n    at ThemeProvider2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:1264:5)\n    at ThemeProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-ZOYLNT2P.js?v=e3b9e3a9:321:12)\n    at KelmahThemeProvider (http://127.0.0.1:3000/src/theme/ThemeProvider.jsx:172:39)\n    at App (http://127.0.0.1:3000/src/App.jsx:76:20)\n    at MessageProvider (http://127.0.0.1:3000/src/modules/messaging/contexts/MessageContext.jsx:209:35)\n    at NotificationProvider (http://127.0.0.1:3000/src/modules/notifications/contexts/NotificationContext.jsx:55:40)\n    at _a (http://127.0.0.1:3000/node_modules/.vite/deps/react-helmet-async.js?v=4f9219ea:624:5)\n    at ErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/react-error-boundary.js?v=f86af55d:18:5)\n    at SnackbarProvider2 (http://127.0.0.1:3000/node_modules/.vite/deps/notistack.js?v=4646f53a:1226:24)\n    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/react-router-dom.js?v=566e89fd:4501:15)\n    at BrowserRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router-dom.js?v=566e89fd:5247:5)\n    at QueryClientProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-364IGIBO.js?v=e3b9e3a9:3093:3)\n    at Provider (http://127.0.0.1:3000/node_modules/.vite/deps/react-redux.js?v=e24438f3:923:11)",
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    ]
+  },
+  {
+    "id": "ISSUE-015",
+    "breakpoint": "1440",
+    "type": "clipping",
+    "severity": "high",
+    "message": "20 elements rendered off-screen horizontally",
+    "details": null
+  },
+  {
+    "id": "ISSUE-016",
+    "breakpoint": "1440",
+    "type": "typography",
+    "severity": "medium",
+    "message": "3 text nodes are below recommended minimum size",
+    "details": null
+  },
+  {
+    "id": "ISSUE-017",
+    "breakpoint": "1440",
+    "type": "hierarchy",
+    "severity": "medium",
+    "message": "No visible heading elements detected",
+    "details": null
+  },
+  {
+    "id": "ISSUE-018",
+    "breakpoint": "1440",
+    "type": "console",
+    "severity": "medium",
+    "message": "6 console errors detected",
+    "details": [
+      "Warning: Failed %s type: %s%s prop The prop `children` is marked as required in `Layout`, but its value is `undefined`. \n    at Layout (http://127.0.0.1:3000/src/modules/layout/components/Layout.jsx:80:19)",
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "Warning: validateDOMNesting(...): %s cannot appear as a descendant of <%s>.%s <button> button \n    at button\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at ButtonBase2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-BK764VIS.js?v=e3b9e3a9:545:17)\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at IconButton2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-QVNQQ6HL.js?v=e3b9e3a9:248:17)\n    at span\n    at Tooltip2 (http://127.0.0.1:3000/node_modules/.vite/deps/@mui_material.js?v=e24438f3:17299:17)\n    at div\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Box3 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:424:19)\n    at div\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Box3 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:424:19)\n    at div\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at CardContent2 (http://127.0.0.1:3000/node_modules/.vite/deps/@mui_material.js?v=e24438f3:6999:17)\n    at button\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at ButtonBase2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-BK764VIS.js?v=e3b9e3a9:545:17)\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at CardActionArea2 (http://127.0.0.1:3000/node_modules/.vite/deps/@mui_material.js?v=e24438f3:6804:17)\n    at div\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Paper2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-7KNGHT6F.js?v=e3b9e3a9:5587:17)\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Card2 (http://127.0.0.1:3000/node_modules/.vite/deps/@mui_material.js?v=e24438f3:6674:17)\n    at ApplicationCard (http://127.0.0.1:3000/src/modules/hirer/components/ApplicationManagementCards.jsx:59:3)\n    at div\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Box3 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:424:19)\n    at div\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Box3 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:424:19)\n    at ApplicationsListContent (http://127.0.0.1:3000/src/modules/hirer/pages/ApplicationManagementPage.jsx:2407:3)\n    at div\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Box3 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:424:19)\n    at div\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Paper2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-7KNGHT6F.js?v=e3b9e3a9:5587:17)\n    at div\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Container3 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:2183:19)\n    at main\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Box3 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:424:19)\n    at PageCanvas (http://127.0.0.1:3000/src/modules/common/components/PageCanvas.jsx:21:3)\n    at ApplicationManagementPage (http://127.0.0.1:3000/src/modules/hirer/pages/ApplicationManagementPage.jsx:135:17)\n    at RouteErrorBoundary (http://127.0.0.1:3000/src/modules/common/components/RouteErrorBoundary.jsx:10:5)\n    at ProtectedRoute (http://127.0.0.1:3000/src/modules/auth/components/common/ProtectedRoute.jsx:29:14)\n    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/react-router-dom.js?v=566e89fd:4088:5)\n    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/react-router-dom.js?v=566e89fd:4088:5)\n    at Outlet (http://127.0.0.1:3000/node_modules/.vite/deps/react-router-dom.js?v=566e89fd:4494:26)\n    at main\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Box3 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:424:19)\n    at div\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Box3 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:424:19)\n    at Layout (http://127.0.0.1:3000/src/modules/layout/components/Layout.jsx:80:19)\n    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/react-router-dom.js?v=566e89fd:4088:5)\n    at Suspense\n    at AppRoutes (http://127.0.0.1:3000/src/routes/config.jsx:2139:19)\n    at main\n    at http://127.0.0.1:3000/node_modules/.vite/deps/chunk-6SDYVYRB.js?v=e3b9e3a9:1657:49\n    at Box3 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:424:19)\n    at GlobalErrorBoundaryInner (http://127.0.0.1:3000/src/modules/common/components/GlobalErrorBoundary.jsx:42:5)\n    at GlobalErrorBoundary (http://127.0.0.1:3000/src/modules/common/components/GlobalErrorBoundary.jsx:340:17)\n    at DefaultPropsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-AFM5GZTT.js?v=e3b9e3a9:3325:3)\n    at RtlProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:1174:5)\n    at ThemeProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:1124:5)\n    at ThemeProvider2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-IEM2JXDI.js?v=e3b9e3a9:1264:5)\n    at ThemeProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-ZOYLNT2P.js?v=e3b9e3a9:321:12)\n    at KelmahThemeProvider (http://127.0.0.1:3000/src/theme/ThemeProvider.jsx:172:39)\n    at App (http://127.0.0.1:3000/src/App.jsx:76:20)\n    at MessageProvider (http://127.0.0.1:3000/src/modules/messaging/contexts/MessageContext.jsx:209:35)\n    at NotificationProvider (http://127.0.0.1:3000/src/modules/notifications/contexts/NotificationContext.jsx:55:40)\n    at _a (http://127.0.0.1:3000/node_modules/.vite/deps/react-helmet-async.js?v=4f9219ea:624:5)\n    at ErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/react-error-boundary.js?v=f86af55d:18:5)\n    at SnackbarProvider2 (http://127.0.0.1:3000/node_modules/.vite/deps/notistack.js?v=4646f53a:1226:24)\n    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/react-router-dom.js?v=566e89fd:4501:15)\n    at BrowserRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router-dom.js?v=566e89fd:5247:5)\n    at QueryClientProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-364IGIBO.js?v=e3b9e3a9:3093:3)\n    at Provider (http://127.0.0.1:3000/node_modules/.vite/deps/react-redux.js?v=e24438f3:923:11)",
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    ]
+  }
+]

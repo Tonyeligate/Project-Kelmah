@@ -956,8 +956,8 @@ const Register = () => {
                 edge="end"
                 aria-label={
                   showConfirmPassword
-                    ? 'Hide confirm password'
-                    : 'Show confirm password'
+                    ? 'Hide password confirmation'
+                    : 'Show password confirmation'
                 }
                 sx={{
                   color: formPanelSoft,

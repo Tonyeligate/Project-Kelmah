@@ -1,0 +1,26 @@
+[
+  {
+    "id": "ISSUE-001",
+    "breakpoint": "320",
+    "type": "clipping",
+    "severity": "high",
+    "message": "26 elements rendered off-screen horizontally",
+    "details": null
+  },
+  {
+    "id": "ISSUE-002",
+    "breakpoint": "320",
+    "type": "tap-target",
+    "severity": "high",
+    "message": "6 interactive elements are below 44px target size",
+    "details": null
+  },
+  {
+    "id": "ISSUE-003",
+    "breakpoint": "768",
+    "type": "tap-target",
+    "severity": "high",
+    "message": "6 interactive elements are below 44px target size",
+    "details": null
+  }
+]

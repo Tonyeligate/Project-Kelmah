@@ -1043,8 +1043,8 @@ const HirerDashboardPage = () => {
                 sm: 'repeat(2, 1fr)',
                 md: 'repeat(4, 1fr)',
               },
-              gap: { xs: 1, sm: 2.25, md: 2, lg: 2 },
-              mb: { xs: 2.25, md: 4 },
+              gap: { xs: 0.75, sm: 2.25, md: 2, lg: 2 },
+              mb: { xs: 1.9, md: 4 },
               pb: { xs: 1, sm: 0 },
             }}
           >
@@ -1056,7 +1056,7 @@ const HirerDashboardPage = () => {
                 icon: (
                   <WorkIcon
                     sx={{
-                      fontSize: { xs: 32, sm: 42 },
+                      fontSize: { xs: 28, sm: 42 },
                       color: alpha('#F39C12', 0.28),
                     }}
                   />
@@ -1071,7 +1071,7 @@ const HirerDashboardPage = () => {
                 icon: (
                   <CheckCircleIcon
                     sx={{
-                      fontSize: { xs: 32, sm: 42 },
+                      fontSize: { xs: 28, sm: 42 },
                       color: alpha('#1ABC9C', 0.28),
                     }}
                   />
@@ -1086,7 +1086,7 @@ const HirerDashboardPage = () => {
                 icon: (
                   <ProposalIcon
                     sx={{
-                      fontSize: { xs: 32, sm: 42 },
+                      fontSize: { xs: 28, sm: 42 },
                       color: alpha('#3498DB', 0.28),
                     }}
                   />
@@ -1101,7 +1101,7 @@ const HirerDashboardPage = () => {
                 icon: (
                   <PaymentIcon
                     sx={{
-                      fontSize: { xs: 32, sm: 42 },
+                      fontSize: { xs: 28, sm: 42 },
                       color: alpha(theme.palette.info.main, 0.28),
                     }}
                   />
@@ -1140,8 +1140,8 @@ const HirerDashboardPage = () => {
                       <Paper
                         elevation={0}
                         sx={{
-                          p: { xs: 1.2, sm: 2.25 },
-                          borderRadius: { xs: 2.5, sm: 2.5 },
+                          p: { xs: 0.95, sm: 2.25 },
+                          borderRadius: { xs: 1.25, sm: 2.5 },
                           background:
                             theme.palette.mode === 'dark'
                               ? `linear-gradient(155deg, ${alpha(card.tone, 0.2)} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`
@@ -1158,7 +1158,7 @@ const HirerDashboardPage = () => {
                           color: 'text.primary',
                           position: 'relative',
                           overflow: 'hidden',
-                          minHeight: { xs: 94, sm: 126, md: 132 },
+                          minHeight: { xs: 80, sm: 126, md: 132 },
                           display: 'flex',
                           flexDirection: 'column',
                           justifyContent: 'space-between',
@@ -1181,7 +1181,7 @@ const HirerDashboardPage = () => {
                         <Box
                           sx={{
                             position: 'absolute',
-                            right: { xs: 12, sm: 16 },
+                            right: { xs: 8, sm: 16 },
                             top: '50%',
                             transform: 'translateY(-50%)',
                           }}
@@ -1199,7 +1199,7 @@ const HirerDashboardPage = () => {
                             mb: 0.55,
                             textTransform: 'uppercase',
                             letterSpacing: 0.5,
-                            fontSize: { xs: '0.66rem', sm: '0.75rem' },
+                            fontSize: { xs: '0.64rem', sm: '0.75rem' },
                             maxWidth: { xs: '66%', sm: '100%' },
                             whiteSpace: { xs: 'nowrap', sm: 'normal' },
                             textOverflow: 'ellipsis',
@@ -1214,12 +1214,12 @@ const HirerDashboardPage = () => {
                             fontWeight: 800,
                             letterSpacing: -0.5,
                             fontSize: {
-                              xs: '1.02rem',
+                              xs: '0.94rem',
                               sm: '1.45rem',
                               md: '1.75rem',
                             },
                             lineHeight: 1.2,
-                            pr: { xs: 5, sm: 6 },
+                            pr: { xs: 4, sm: 6 },
                           }}
                         >
                           {card.value}
@@ -1245,33 +1245,33 @@ const HirerDashboardPage = () => {
             ))}
           </Box>
           {/* TWO CHART SECTIONS - LC Portal Style */}
-          <Grid container spacing={{ xs: 0.9, sm: 2.5, md: 2, lg: 2 }}>
+          <Grid container spacing={{ xs: 0.75, sm: 2.5, md: 2, lg: 2 }}>
             {/* Bills Chart / Spending Chart */}
             <Grid item xs={12} md={6}>
               <Paper
                 elevation={0}
                 sx={{
-                  p: { xs: 1.05, sm: 2, md: 3 },
+                  p: { xs: 0.9, sm: 2, md: 3 },
                   borderRadius: 2.5,
                   bgcolor: alpha(theme.palette.background.paper, 0.9),
                   border: '1px solid',
                   borderColor: alpha(theme.palette.success.main, 0.24),
-                  height: { xs: 218, sm: 350 },
+                  height: { xs: 198, sm: 350 },
                 }}
               >
                 <Typography
                   variant="h6"
                   fontWeight={600}
                   sx={{
-                    mb: { xs: 1.5, sm: 3 },
+                    mb: { xs: 1.1, sm: 3 },
                     color: 'text.primary',
-                    fontSize: { xs: '0.95rem', sm: '1.25rem' },
+                    fontSize: { xs: '0.86rem', sm: '1.25rem' },
                   }}
                 >
                   Jobs Overview
                 </Typography>
                 {/* Recharts BarChart replacing manual Box bars */}
-                <Box sx={{ height: { xs: 170, sm: 205 }, width: '100%' }}>
+                <Box sx={{ height: { xs: 150, sm: 205 }, width: '100%' }}>
                   {summaryData.totalSpent > 0 ||
                   summaryData.completedJobs > 0 ||
                   summaryData.activeJobs > 0 ? (
@@ -1294,14 +1294,14 @@ const HirerDashboardPage = () => {
                           dataKey="name"
                           tick={{
                             fill: theme.palette.text.secondary,
-                            fontSize: 12,
+                            fontSize: isCompactMobile ? 10 : 12,
                           }}
                         />
                         <YAxis
                           allowDecimals={false}
                           tick={{
                             fill: theme.palette.text.secondary,
-                            fontSize: 12,
+                            fontSize: isCompactMobile ? 10 : 12,
                           }}
                         />
                         <RechartsTooltip
@@ -1361,21 +1361,21 @@ const HirerDashboardPage = () => {
               <Paper
                 elevation={0}
                 sx={{
-                  p: { xs: 1.05, sm: 2, md: 3 },
+                  p: { xs: 0.9, sm: 2, md: 3 },
                   borderRadius: 2.5,
                   bgcolor: alpha(theme.palette.background.paper, 0.9),
                   border: '1px solid',
                   borderColor: alpha(theme.palette.info.main, 0.24),
-                  height: { xs: 218, sm: 350 },
+                  height: { xs: 198, sm: 350 },
                 }}
               >
                 <Typography
                   variant="h6"
                   fontWeight={600}
                   sx={{
-                    mb: { xs: 1.5, sm: 3 },
+                    mb: { xs: 1.1, sm: 3 },
                     color: 'text.primary',
-                    fontSize: { xs: '0.95rem', sm: '1.25rem' },
+                    fontSize: { xs: '0.86rem', sm: '1.25rem' },
                   }}
                 >
                   Applications Overview
@@ -1408,7 +1408,7 @@ const HirerDashboardPage = () => {
                       sx={{
                         display: 'flex',
                         flexDirection: { xs: 'column', sm: 'row' },
-                        height: { xs: 'auto', sm: 250 },
+                        height: { xs: 'auto', sm: 236 },
                         alignItems: 'center',
                       }}
                     >
@@ -1477,13 +1477,13 @@ const HirerDashboardPage = () => {
                           alignItems: 'center',
                           justifyContent: 'center',
                           position: 'relative',
-                          minHeight: { xs: 138, sm: 220 },
+                          minHeight: { xs: 120, sm: 220 },
                         }}
                       >
                         {appDonutData.length > 0 ? (
                           <ResponsiveContainer
                             width="100%"
-                            height={isCompactMobile ? 170 : 220}
+                            height={isCompactMobile ? 150 : 220}
                           >
                             <PieChart>
                               <Pie
@@ -1492,8 +1492,8 @@ const HirerDashboardPage = () => {
                                 nameKey="name"
                                 cx="50%"
                                 cy="50%"
-                                innerRadius={55}
-                                outerRadius={85}
+                                innerRadius={isCompactMobile ? 42 : 55}
+                                outerRadius={isCompactMobile ? 67 : 85}
                                 paddingAngle={2}
                                 stroke="none"
                               >
@@ -1517,8 +1517,8 @@ const HirerDashboardPage = () => {
                         ) : (
                           <Box
                             sx={{
-                              width: 138,
-                              height: 138,
+                              width: 122,
+                              height: 122,
                               borderRadius: '50%',
                               bgcolor: 'action.disabledBackground',
                               display: 'flex',
@@ -1547,7 +1547,7 @@ const HirerDashboardPage = () => {
                               top: '50%',
                               left: '50%',
                               transform: 'translate(-50%, -50%)',
-                              fontSize: { xs: '1.25rem', sm: '2rem' },
+                              fontSize: { xs: '1.05rem', sm: '2rem' },
                               pointerEvents: 'none',
                             }}
                           >
@@ -1563,7 +1563,7 @@ const HirerDashboardPage = () => {
           </Grid>
 
           {/* Recent Activity Feed (Phase 3) */}
-          <Box sx={{ mt: { xs: 1.4, sm: 3 } }}>
+          <Box sx={{ mt: { xs: 1, sm: 3 } }}>
             <RecentActivityFeed
               jobs={activeJobs || []}
               applications={applicationRecords || {}}

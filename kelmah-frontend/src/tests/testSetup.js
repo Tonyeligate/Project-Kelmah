@@ -1,4 +1,5 @@
 require('dotenv').config();
+require('@testing-library/jest-dom');
 
 if (typeof window !== 'undefined') {
   Object.defineProperty(window, 'matchMedia', {
