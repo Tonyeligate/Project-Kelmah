@@ -27456,3 +27456,30 @@ Full visual and structural redesign of `kelmah-frontend/src/modules/jobs/pages/J
 - PASS: strict authenticated UI capture task `messaging-signoff-20260331-fixed2` with `25/25` and `pass: true`.
   - Artifacts: `.artifacts/ui/messaging-signoff-20260331-fixed2/320.png`, `.artifacts/ui/messaging-signoff-20260331-fixed2/768.png`, `.artifacts/ui/messaging-signoff-20260331-fixed2/1024.png`, `.artifacts/ui/messaging-signoff-20260331-fixed2/1440.png`, `.artifacts/ui/messaging-signoff-20260331-fixed2/scorecard.json`, `.artifacts/ui/messaging-signoff-20260331-fixed2/issues.json`.
 - RUN: backend service smoke command `cd kelmah-backend && npm run test:services` completed; current scripts report placeholder outputs (`Tests not implemented yet`) for auth/user service suites.
+
+### Session: Backend Service Test Script Activation + Placeholder Test Replacement March 31 2026 [COMPLETED]
+
+**Date**: March 31, 2026
+**Scope**: Replace placeholder auth/user service test scripts and convert placeholder backend test suites into meaningful assertions.
+
+**Files touched**
+- kelmah-backend/services/auth-service/package.json
+- kelmah-backend/services/user-service/package.json
+- kelmah-backend/services/auth-service/tests/auth.test.js
+- kelmah-backend/services/auth-service/tests/token-rotation.test.js
+- kelmah-backend/services/auth-service/tests/auth.routes.validation.test.js
+- kelmah-backend/services/user-service/tests/user.test.js
+- kelmah-backend/services/user-service/tests/availability-analytics.test.js
+- kelmah-backend/services/user-service/tests/worker-analytics.e2e.test.js
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Replaced placeholder `echo` test scripts in auth/user service package manifests with executable Jest test commands.
+- Rewrote auth placeholder tests to validate real auth-cookie behavior and token rotation verification paths.
+- Rewrote user placeholder tests to validate canonical response envelope helpers, availability ownership filtering, and analytics route authorization behavior.
+- Fixed auth route validation test middleware mock to include `optionalGatewayVerification` used by `/logout`.
+
+**Verification**
+- PASS: `cd kelmah-backend/services/auth-service && npm test` (`12/12` suites, `44/44` tests).
+- PASS: `cd kelmah-backend/services/user-service && npm test` (`13/13` suites, `47/47` tests).
+- PASS: `cd kelmah-backend && npm run test:services` now executes real suites for both services end-to-end (no placeholder output).

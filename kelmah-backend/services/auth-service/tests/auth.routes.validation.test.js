@@ -35,6 +35,7 @@ jest.mock('../../../shared/middlewares/serviceTrust', () => ({
     req.user = { id: 'user-1', role: 'worker' };
     next();
   },
+  optionalGatewayVerification: (_req, _res, next) => next(),
 }));
 jest.mock('../middlewares/rateLimiter', () => ({
   createLimiter: (key) => (req, res, next) => {
