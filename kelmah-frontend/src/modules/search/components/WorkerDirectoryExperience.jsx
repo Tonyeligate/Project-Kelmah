@@ -43,7 +43,7 @@ const PageWrapper = styled(Box)(({ theme }) => ({
   padding: theme.spacing(0, 0, 4),
   backgroundColor: theme.palette.background.default,
   color: theme.palette.text.primary,
-  minHeight: 'calc(100dvh - 64px)',
+  minHeight: '100vh',
 }));
 
 const POPULAR_SEARCH_TERMS = [
@@ -743,7 +743,11 @@ const WorkerDirectoryExperience = ({
   );
 
   return (
-    <PageWrapper>
+    <PageWrapper
+      sx={{
+        minHeight: { xs: 'calc(100dvh - 56px)', md: 'calc(100dvh - 64px)' },
+      }}
+    >
       <SEO title={seoTitle} description={seoDescription} />
 
       <Container maxWidth="xl" sx={{ pt: 0 }}>

@@ -1,5 +1,10 @@
-import React from 'react';
-import { Box, Container, alpha, useTheme } from '@mui/material';
+import {
+  Box,
+  Container,
+  alpha,
+  useMediaQuery,
+  useTheme,
+} from '@mui/material';
 
 const PageCanvas = ({
   children,
@@ -11,11 +16,17 @@ const PageCanvas = ({
   ...props
 }) => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const content = disableContainer ? (
     children
   ) : (
-    <Container maxWidth={maxWidth} disableGutters sx={{ width: '100%', minWidth: 0, ...containerSx }} {...containerProps}>
+    <Container
+      maxWidth={maxWidth}
+      disableGutters
+      sx={{ width: '100%', minWidth: 0, ...containerSx }}
+      {...containerProps}
+    >
       {children}
     </Container>
   );
@@ -31,7 +42,7 @@ const PageCanvas = ({
         overflowX: 'hidden',
         isolation: 'isolate',
         backgroundColor: theme.palette.background.default,
-        backgroundAttachment: 'fixed',
+        backgroundAttachment: isMobile ? 'scroll' : 'fixed',
         backgroundImage:
           theme.palette.mode === 'dark'
             ? `radial-gradient(circle at 10% 0%, ${alpha(theme.palette.secondary.main, 0.14)} 0%, transparent 28%), radial-gradient(circle at 88% 8%, ${alpha(theme.palette.info.main, 0.09)} 0%, transparent 24%), radial-gradient(circle at 50% 100%, ${alpha(theme.palette.success.main, 0.06)} 0%, transparent 34%), linear-gradient(180deg, ${alpha(theme.palette.common.black, 0.15)} 0%, transparent 22%)`
@@ -47,7 +58,8 @@ const PageCanvas = ({
               : 'linear-gradient(rgba(15,15,23,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(15,15,23,0.035) 1px, transparent 1px)',
           backgroundSize: '88px 88px',
           opacity: 0.14,
-          maskImage: 'linear-gradient(180deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.5) 56%, transparent 100%)',
+          maskImage:
+            'linear-gradient(180deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.5) 56%, transparent 100%)',
         },
         '& > *': {
           position: 'relative',

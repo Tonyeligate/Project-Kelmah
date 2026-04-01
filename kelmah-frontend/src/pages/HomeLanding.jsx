@@ -32,14 +32,11 @@ import {
   Verified as VerifiedIcon,
   Work as WorkIcon,
 } from '@mui/icons-material';
+import heroImage from '@/assets/images/background.jpg';
+import supportImage from '@/assets/images/construction.jpg';
 import SEO from '@/modules/common/components/common/SEO';
 import homeService from '@/modules/home/services/homeService';
 import { devWarn } from '@/modules/common/utils/devLogger';
-
-const HERO_IMAGE =
-  'https://images.unsplash.com/photo-1727660945524-10719ae0a247?q=80&w=1800&auto=format&fit=crop';
-const SUPPORT_IMAGE =
-  'https://images.pexels.com/photos/36484215/pexels-photo-36484215.jpeg?cs=srgb&dl=pexels-eons-36484215.jpg&fm=jpg';
 
 const SERVICES = [
   {
@@ -161,10 +158,10 @@ const HomeLanding = () => {
         overflowX: 'clip',
         backgroundColor: isDark ? '#0B0D11' : '#F8FAFC',
         backgroundImage: isDark
-          ? `linear-gradient(180deg, rgba(8,10,14,0.62), rgba(8,10,14,0.88)), url(${HERO_IMAGE})`
-          : `linear-gradient(180deg, rgba(248,250,252,0.70), rgba(248,250,252,0.96)), url(${HERO_IMAGE})`,
+          ? `linear-gradient(180deg, rgba(8,10,14,0.62), rgba(8,10,14,0.88)), url(${heroImage})`
+          : `linear-gradient(180deg, rgba(248,250,252,0.70), rgba(248,250,252,0.96)), url(${heroImage})`,
         backgroundSize: 'cover',
-        backgroundAttachment: 'fixed',
+        backgroundAttachment: isMobile ? 'scroll' : 'fixed',
         backgroundPosition: 'center top',
       }}
     >
@@ -504,7 +501,7 @@ const HomeLanding = () => {
                 <Box
                   sx={{
                     minHeight: 220,
-                    backgroundImage: `linear-gradient(180deg, rgba(8,10,14,0.22), rgba(8,10,14,0.72)), url(${SUPPORT_IMAGE})`,
+                    backgroundImage: `linear-gradient(180deg, rgba(8,10,14,0.22), rgba(8,10,14,0.72)), url(${supportImage})`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center top',
                   }}

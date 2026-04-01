@@ -4,14 +4,6 @@ import { BrowserRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { SnackbarProvider } from 'notistack';
 import { QueryClientProvider } from '@tanstack/react-query';
-// MED-27 FIX: Lazy-load ReactQueryDevtools only in development
-const ReactQueryDevtools = import.meta.env.DEV
-  ? React.lazy(() =>
-      import('@tanstack/react-query-devtools').then((m) => ({
-        default: m.ReactQueryDevtools,
-      })),
-    )
-  : () => null;
 import { queryClient } from './config/queryClient';
 import store from './store';
 import App from './App.jsx';
@@ -22,6 +14,18 @@ import { NotificationProvider } from './modules/notifications/contexts/Notificat
 import { MessageProvider } from './modules/messaging/contexts/MessageContext';
 import BidNotificationListener from './modules/notifications/components/BidNotificationListener';
 import { checkStorageQuota } from './utils/storageQuota';
+
+// MED-27 FIX: Keep React Query devtools opt-in so they do not leak into audit or user-facing builds.
+const enableReactQueryDevtools =
+  import.meta.env.DEV &&
+  import.meta.env.VITE_ENABLE_QUERY_DEVTOOLS === 'true';
+const ReactQueryDevtools = enableReactQueryDevtools
+  ? React.lazy(() =>
+      import('@tanstack/react-query-devtools').then((m) => ({
+        default: m.ReactQueryDevtools,
+      })),
+    )
+  : null;
 
 // ─── Production log suppressor ───
 // Keep warnings/errors visible in production while suppressing verbose logs by default.
@@ -219,7 +223,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
             </ErrorBoundary>
           </SnackbarProvider>
         </BrowserRouter>
-        <ReactQueryDevtools initialIsOpen={false} />
+        {enableReactQueryDevtools && ReactQueryDevtools ? (
+          <ReactQueryDevtools initialIsOpen={false} />
+        ) : null}
       </QueryClientProvider>
     </Provider>
   </React.StrictMode>,

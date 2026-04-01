@@ -580,7 +580,7 @@ const WorkerSearchResults = ({
               sx={{
                 textTransform: 'none',
                 whiteSpace: 'nowrap',
-                minHeight: { xs: 44, sm: 40 },
+                minHeight: 44,
                 width: { xs: '100%', sm: 'auto' },
               }}
             >
@@ -589,12 +589,19 @@ const WorkerSearchResults = ({
           )}
 
           <FormControl
-            size="small"
+            size={isMobile ? 'medium' : 'small'}
             sx={{
               minWidth: { xs: '100%', sm: 140 },
               width: { xs: '100%', sm: 'auto' },
               '& .MuiInputBase-root': {
                 fontSize: { xs: '0.85rem', sm: '0.875rem' },
+                minHeight: 44,
+              },
+              '& .MuiSelect-select': {
+                minHeight: 44,
+                display: 'flex',
+                alignItems: 'center',
+                boxSizing: 'border-box',
               },
             }}
           >
@@ -602,11 +609,31 @@ const WorkerSearchResults = ({
               Sort by
             </InputLabel>
             <Select
+              size={isMobile ? 'medium' : 'small'}
               value={selectedSort}
               onChange={handleSortChange}
               label="Sort by"
               disabled={loading}
               inputProps={{ 'aria-label': 'Sort worker search results' }}
+              SelectDisplayProps={{
+                style: {
+                  minHeight: 44,
+                  height: 44,
+                  display: 'flex',
+                  alignItems: 'center',
+                  boxSizing: 'border-box',
+                },
+              }}
+              sx={{
+                '& .MuiSelect-select': {
+                  minHeight: 44,
+                  height: 44,
+                  display: 'flex',
+                  alignItems: 'center',
+                  boxSizing: 'border-box',
+                  py: 0,
+                },
+              }}
             >
               <MenuItem value="relevance">Relevance</MenuItem>
               <MenuItem value="rating">Highest Rated</MenuItem>

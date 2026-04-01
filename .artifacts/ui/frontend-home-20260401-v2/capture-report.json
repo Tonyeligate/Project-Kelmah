@@ -1,0 +1,129 @@
+{
+  "mode": "capture",
+  "taskId": "frontend-home-20260401-v2",
+  "baselineId": null,
+  "route": "/",
+  "baseUrl": "http://127.0.0.1:3000",
+  "threshold": 0.015,
+  "strict": true,
+  "generatedAt": "2026-04-01T18:31:11.292Z",
+  "captureResults": [
+    {
+      "breakpoint": "320",
+      "width": 320,
+      "height": 900,
+      "mobile": true,
+      "authenticated": false,
+      "requestedUrl": "http://127.0.0.1:3000/",
+      "finalUrl": "http://127.0.0.1:3000/",
+      "screenshotPath": ".artifacts/ui/frontend-home-20260401-v2/320.png",
+      "navigationError": null,
+      "screenshotError": null,
+      "consoleErrors": [],
+      "uiChecks": {
+        "hasHorizontalOverflow": false,
+        "offscreenElements": 3,
+        "headingCount": 2,
+        "uniqueHeadingFontSizes": 2,
+        "interactiveCount": 10,
+        "smallTapTargets": 0,
+        "textTooSmallCount": 0,
+        "bodyScrollHeight": 900,
+        "viewportWidth": 320,
+        "viewportHeight": 900
+      }
+    },
+    {
+      "breakpoint": "768",
+      "width": 768,
+      "height": 1024,
+      "mobile": true,
+      "authenticated": false,
+      "requestedUrl": "http://127.0.0.1:3000/",
+      "finalUrl": "http://127.0.0.1:3000/",
+      "screenshotPath": ".artifacts/ui/frontend-home-20260401-v2/768.png",
+      "navigationError": null,
+      "screenshotError": null,
+      "consoleErrors": [],
+      "uiChecks": {
+        "hasHorizontalOverflow": false,
+        "offscreenElements": 0,
+        "headingCount": 2,
+        "uniqueHeadingFontSizes": 2,
+        "interactiveCount": 10,
+        "smallTapTargets": 0,
+        "textTooSmallCount": 1,
+        "bodyScrollHeight": 1024,
+        "viewportWidth": 768,
+        "viewportHeight": 1024
+      }
+    },
+    {
+      "breakpoint": "1024",
+      "width": 1024,
+      "height": 960,
+      "mobile": false,
+      "authenticated": false,
+      "requestedUrl": "http://127.0.0.1:3000/",
+      "finalUrl": "http://127.0.0.1:3000/",
+      "screenshotPath": ".artifacts/ui/frontend-home-20260401-v2/1024.png",
+      "navigationError": null,
+      "screenshotError": null,
+      "consoleErrors": [],
+      "uiChecks": {
+        "hasHorizontalOverflow": false,
+        "offscreenElements": 2,
+        "headingCount": 2,
+        "uniqueHeadingFontSizes": 2,
+        "interactiveCount": 38,
+        "smallTapTargets": 0,
+        "textTooSmallCount": 0,
+        "bodyScrollHeight": 960,
+        "viewportWidth": 1024,
+        "viewportHeight": 960
+      }
+    },
+    {
+      "breakpoint": "1440",
+      "width": 1440,
+      "height": 1024,
+      "mobile": false,
+      "authenticated": false,
+      "requestedUrl": "http://127.0.0.1:3000/",
+      "finalUrl": "http://127.0.0.1:3000/",
+      "screenshotPath": ".artifacts/ui/frontend-home-20260401-v2/1440.png",
+      "navigationError": null,
+      "screenshotError": null,
+      "consoleErrors": [],
+      "uiChecks": {
+        "hasHorizontalOverflow": false,
+        "offscreenElements": 0,
+        "headingCount": 2,
+        "uniqueHeadingFontSizes": 2,
+        "interactiveCount": 38,
+        "smallTapTargets": 0,
+        "textTooSmallCount": 0,
+        "bodyScrollHeight": 1024,
+        "viewportWidth": 1440,
+        "viewportHeight": 1024
+      }
+    }
+  ],
+  "compareResults": [],
+  "scorecard": {
+    "visualHierarchyScore": 5,
+    "spacingScore": 5,
+    "positioningScore": 5,
+    "interactionScore": 5,
+    "densityScore": 5,
+    "totalScore": 25,
+    "threshold": 0.015,
+    "pass": true
+  },
+  "issuesCount": 0,
+  "failureSummary": {
+    "hasCaptureFailures": false,
+    "hasRegressionFailures": false,
+    "strictFailed": false
+  }
+}

@@ -397,6 +397,18 @@ const LocationBasedSearch = ({
     }
   };
 
+  const handleRegionSelect = async (region) => {
+    const nextLocation = {
+      name: region.name,
+      region: region.name,
+      type: 'region',
+      jobs: region.cities.reduce((sum, city) => sum + (city.jobs || 0), 0),
+    };
+
+    setSearchQuery(region.name);
+    await handleLocationSelect(nextLocation);
+  };
+
   // Handle radius change
   const handleRadiusChange = (event, newValue) => {
     setSearchRadius(newValue);
@@ -841,6 +853,7 @@ const LocationBasedSearch = ({
                     <ListItem key={region.name} disablePadding>
                       <ListItemButton
                         aria-label={`Choose region ${region.name}`}
+                        onClick={() => handleRegionSelect(region)}
                       >
                         <ListItemIcon>
                           <CityIcon color="action" />

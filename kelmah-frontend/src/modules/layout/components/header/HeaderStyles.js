@@ -36,6 +36,9 @@ export const BrandLogo = styled(Box)(({ theme }) => ({
   alignItems: 'center',
   textDecoration: 'none',
   cursor: 'pointer',
+  minHeight: 44,
+  padding: theme.spacing(0.5, 0.75),
+  borderRadius: 8,
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   '&:focus-visible': {
     outline: `3px solid ${theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black}`,

@@ -87,8 +87,13 @@ const CompactSearchBar = ({
               </InputAdornment>
             ),
             sx: {
-              height: '44px', // Touch-friendly
+              minHeight: '44px', // Touch-friendly
               borderRadius: 2,
+              '& .MuiInputBase-input': {
+                height: '44px',
+                boxSizing: 'border-box',
+                py: 0,
+              },
             },
           }}
           inputProps={{
@@ -98,6 +103,7 @@ const CompactSearchBar = ({
           sx={{
             '& .MuiOutlinedInput-root': {
               bgcolor: 'background.paper',
+              minHeight: '44px',
             },
           }}
         />
