@@ -1,0 +1,29 @@
+[
+  {
+    "id": "ISSUE-001",
+    "breakpoint": "320",
+    "type": "tap-target",
+    "severity": "high",
+    "message": "2 interactive elements are below 44px target size",
+    "details": null
+  },
+  {
+    "id": "ISSUE-002",
+    "breakpoint": "320",
+    "type": "console",
+    "severity": "medium",
+    "message": "2 console errors detected",
+    "details": [
+      "Failed to load resource: net::ERR_CONNECTION_RESET",
+      "Failed to load resource: net::ERR_CONNECTION_RESET"
+    ]
+  },
+  {
+    "id": "ISSUE-003",
+    "breakpoint": "768",
+    "type": "tap-target",
+    "severity": "high",
+    "message": "2 interactive elements are below 44px target size",
+    "details": null
+  }
+]

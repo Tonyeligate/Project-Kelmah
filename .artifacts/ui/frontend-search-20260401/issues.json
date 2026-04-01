@@ -1,0 +1,18 @@
+[
+  {
+    "id": "ISSUE-001",
+    "breakpoint": "320",
+    "type": "tap-target",
+    "severity": "high",
+    "message": "4 interactive elements are below 44px target size",
+    "details": null
+  },
+  {
+    "id": "ISSUE-002",
+    "breakpoint": "768",
+    "type": "tap-target",
+    "severity": "high",
+    "message": "5 interactive elements are below 44px target size",
+    "details": null
+  }
+]
