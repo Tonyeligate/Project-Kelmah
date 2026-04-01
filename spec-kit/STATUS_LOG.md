@@ -1,3 +1,69 @@
+### Session: Messaging UI/UX Error Sweep + Dashboard Nav Deconflict April 1 2026 ✅ COMPLETED
+
+**Date**: April 1, 2026  
+**Scope**: Resolve active `/messages` production UX defects from screenshot review: duplicate bubble persistence, nav overload, header/sidebar clipping, conversation visibility/context gaps, and contrast/readability weaknesses.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/layout/components/Layout.jsx
+- kelmah-frontend/src/modules/layout/components/Header.jsx
+- kelmah-frontend/src/modules/layout/components/DesktopNav.jsx
+- kelmah-frontend/src/hooks/useNavLinks.js
+- kelmah-frontend/src/modules/messaging/contexts/MessageContext.jsx
+- kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Removed desktop dashboard wayfinding duplication by allowing `Header` to hide primary desktop nav when the sidebar is already present (`showPrimaryNav={false}` in dashboard shell).
+- Reduced top-left clipping/overlap risk by adding explicit desktop sidebar top offset under the fixed header and network banner offset.
+- Standardized nav language by aligning top-nav label to `Find Talent` and synchronizing icon-map key.
+- Strengthened message dedupe reconciliation in `MessageContext` with semantic fallback keys (conversation + sender + timestamp + content + attachment signature) in addition to canonical realtime keys.
+- Improved `/messages` visual hierarchy and usability:
+  - clearer selected conversation affordance,
+  - improved metadata/timestamp/readability contrast,
+  - explicit active-chat context strip in desktop pane,
+  - filter summary clarity with active-filter label,
+  - auto-reset to `all` when selected conversation is hidden by active filter,
+  - denser desktop balance via wider conversation rail and centered message/composer content columns.
+
+**Verification**
+- PASS: `npx eslint src/modules/messaging/pages/MessagingPage.jsx src/modules/messaging/contexts/MessageContext.jsx src/modules/layout/components/Layout.jsx src/modules/layout/components/Header.jsx src/modules/layout/components/DesktopNav.jsx src/hooks/useNavLinks.js` in `kelmah-frontend` (clean run).
+- PASS: `npm run build` in `kelmah-frontend` (Vite production build succeeded).
+
+### Session: Frontend Visual Audit and Mobile Tap-Target Hardening April 1 2026 ✅ COMPLETED
+
+**Date**: April 1, 2026  
+**Scope**: Audit the Kelmah frontend public/search surfaces for mobile and desktop visual regressions, tap-target failures, and low-bandwidth resilience issues tied to the platform purpose.
+
+**Files currently in scope**
+- kelmah-frontend/src/pages/HomeLanding.jsx
+- kelmah-frontend/src/modules/common/components/layout/index.jsx
+- kelmah-frontend/src/modules/common/components/PageCanvas.jsx
+- kelmah-frontend/src/modules/layout/components/Layout.jsx
+- kelmah-frontend/src/modules/layout/components/header/HeaderStyles.js
+- kelmah-frontend/src/main.jsx
+- kelmah-frontend/src/modules/search/components/common/CompactSearchBar.jsx
+- kelmah-frontend/src/modules/search/components/results/WorkerSearchResults.jsx
+- kelmah-frontend/src/modules/search/components/LocationBasedSearch.jsx
+- kelmah-frontend/src/modules/search/components/WorkerDirectoryExperience.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Replaced external landing-page hero/support imagery with bundled local assets to eliminate flaky network loads and make the page better suited to low-bandwidth users.
+- Removed background parallax on mobile for the shared page canvas and landing page so the public surfaces render more smoothly on phones.
+- Hid React Query Devtools behind an explicit env gate so development-only tooling no longer pollutes the audit surface.
+- Upgraded public/search tap targets and shell affordances:
+  - Route-layout skip link now uses an offscreen accessible pattern and only expands on focus.
+  - Header brand logo link now has a 44px mobile tap target.
+  - Compact worker search input, filters button, and sort control were resized/hardened for 44px interaction.
+  - Location region rows now dispatch a real selection action instead of acting like dead controls.
+  - Worker directory shell height now respects the 56px mobile header and 64px desktop header.
+
+**Verification**
+- PASS: `npm run build` in `kelmah-frontend`.
+- PASS: `npm run ui:audit:capture -- --task-id frontend-home-20260401-v2 --base-url http://127.0.0.1:3000 --route / --strict` → `Score: 25/25 | Pass: true`.
+- PASS: `npm run ui:audit:capture -- --task-id frontend-search-20260401-v5 --base-url http://127.0.0.1:3000 --route /search --strict` → `Score: 25/25 | Pass: true`.
+- Artifacts: `.artifacts/ui/frontend-home-20260401-v2/` and `.artifacts/ui/frontend-search-20260401-v5/`.
+
 ### Session: Messaging Duplicate Bubble Deduplication April 1 2026 COMPLETED
 
 **Date**: April 1, 2026  

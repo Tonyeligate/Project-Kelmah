@@ -200,14 +200,15 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
       onClick={handleSkipToContent}
       sx={{
         position: 'absolute',
-        left: 16,
-        top: -48,
+        left: '-9999px',
+        top: 'auto',
         zIndex: 1500,
-        px: 2.5,
-        py: 1.25,
-        borderRadius: 999,
-        bgcolor: 'secondary.main',
-        color: 'secondary.contrastText',
+        width: '1px',
+        height: '1px',
+        overflow: 'hidden',
+        clip: 'rect(0 0 0 0)',
+        whiteSpace: 'nowrap',
+        border: 0,
         textDecoration: 'none',
         fontWeight: 600,
         fontSize: '0.95rem',
@@ -215,12 +216,24 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
         boxShadow: '0 12px 28px rgba(0, 0, 0, 0.28)',
         transition: 'top 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease',
         '&:focus, &:focus-visible': {
+          position: 'fixed',
+          left: 16,
           top: 14,
+          width: 'auto',
+          height: 'auto',
+          overflow: 'visible',
+          clip: 'auto',
+          whiteSpace: 'normal',
           outline: '3px solid',
           outlineColor: 'primary.contrastText',
           outlineOffset: 3,
           boxShadow: '0 0 0 4px rgba(0,0,0,0.22), 0 16px 32px rgba(0,0,0,0.35)',
           transform: 'translateY(0) scale(1.01)',
+          px: 2.5,
+          py: 1.25,
+          borderRadius: 999,
+          bgcolor: 'secondary.main',
+          color: 'secondary.contrastText',
         },
       }}
     >
@@ -292,10 +305,19 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
             toggleTheme={resolvedToggleTheme}
             mode={resolvedMode}
             autoShowMode={true}
+            showPrimaryNav={false}
             setThemeMode={resolvedSetThemeMode}
           />
         </Box>
-        <Box component="aside" aria-label="Sidebar navigation">
+        <Box
+          component="aside"
+          aria-label="Sidebar navigation"
+          sx={{
+            pt: {
+              md: `calc(${HEADER_HEIGHT_MOBILE}px + var(--kelmah-network-banner-offset, 0px))`,
+            },
+          }}
+        >
           <Sidebar
             variant="permanent"
             collapsed={sidebarCollapsed}
@@ -349,6 +371,7 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
           <Header
             toggleTheme={resolvedToggleTheme}
             mode={resolvedMode}
+            showPrimaryNav={true}
             setThemeMode={resolvedSetThemeMode}
           />
         </Box>

@@ -14,7 +14,7 @@ const useNavLinks = () => {
     const links = [
       { label: 'Home', to: '/' },
       { label: 'Jobs', to: '/jobs' },
-      { label: 'Find Workers', to: '/find-talents' },
+      { label: 'Find Talent', to: '/find-talents' },
     ];
 
     // Add "Post a Job" for authenticated hirers

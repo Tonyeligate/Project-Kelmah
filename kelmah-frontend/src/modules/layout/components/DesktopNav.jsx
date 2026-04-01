@@ -91,7 +91,7 @@ const DesktopNav = () => {
     const iconMap = {
       Home: <HomeIcon />,
       Jobs: <WorkIcon />,
-      'Find Workers': <EngineeringIcon />,
+      'Find Talent': <EngineeringIcon />,
       'Post a Job': <PostAddIcon />,
       Pricing: <StarIcon />,
       Messages: <MessageIcon />,

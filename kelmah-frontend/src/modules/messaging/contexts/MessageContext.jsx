@@ -204,6 +204,72 @@ const getMessageTimestamp = (message = {}) => {
   return Number.isFinite(parsedTimestamp) ? parsedTimestamp : 0;
 };
 
+const getSemanticAttachmentSignature = (message = {}) => {
+  const attachments = Array.isArray(message.attachments)
+    ? message.attachments
+    : [];
+
+  if (attachments.length === 0) {
+    return 'no-attachments';
+  }
+
+  return attachments
+    .map((attachment) => {
+      const name = String(
+        attachment?.name || attachment?.fileName || attachment?.filename || '',
+      )
+        .trim()
+        .toLowerCase();
+      const size = Number(attachment?.size || attachment?.fileSize || 0) || 0;
+      const mimeType = String(
+        attachment?.mimeType || attachment?.fileType || attachment?.type || '',
+      )
+        .trim()
+        .toLowerCase();
+      const url = String(attachment?.url || attachment?.fileUrl || '')
+        .trim()
+        .toLowerCase();
+      return `${name}:${size}:${mimeType}:${url}`;
+    })
+    .join('|');
+};
+
+const buildSemanticMessageKey = (message = {}) => {
+  const conversationId =
+    message.conversationId ||
+    message.conversation_id ||
+    message.conversation?.id ||
+    message.conversation?._id ||
+    null;
+  const senderId =
+    message.senderId ||
+    message.sender ||
+    message.sender_id ||
+    message.senderInfo?.id ||
+    null;
+  const timestamp = getMessageTimestamp(message);
+  const normalizedText = String(message.text || message.content || '')
+    .trim()
+    .toLowerCase();
+  const attachmentSignature = getSemanticAttachmentSignature(message);
+
+  if (!conversationId || !senderId || timestamp <= 0) {
+    return null;
+  }
+
+  if (!normalizedText && attachmentSignature === 'no-attachments') {
+    return null;
+  }
+
+  return [
+    String(conversationId),
+    String(senderId),
+    String(timestamp),
+    normalizedText || '[attachment-message]',
+    attachmentSignature,
+  ].join(':');
+};
+
 const isOptimisticMessage = (message = {}) =>
   Boolean(
     message?.optimistic ||
@@ -247,30 +313,66 @@ const dedupeMessageList = (messages = []) => {
   }
 
   const dedupedMessages = [];
-  const messageIndexByKey = new Map();
+  const messageIndexByCanonicalKey = new Map();
+  const messageIndexBySemanticKey = new Map();
 
   messages.forEach((message) => {
     if (!message || typeof message !== 'object') {
       return;
     }
 
-    const key = buildRealtimeMessageKey(message);
-    if (!key) {
+    const canonicalKey = buildRealtimeMessageKey(message);
+    const semanticKey = buildSemanticMessageKey(message);
+
+    if (!canonicalKey && !semanticKey) {
       dedupedMessages.push(message);
       return;
     }
 
-    if (!messageIndexByKey.has(key)) {
-      messageIndexByKey.set(key, dedupedMessages.length);
+    const existingIndexFromCanonical = canonicalKey
+      ? messageIndexByCanonicalKey.get(canonicalKey)
+      : undefined;
+    const existingIndexFromSemantic = semanticKey
+      ? messageIndexBySemanticKey.get(semanticKey)
+      : undefined;
+    const existingIndex =
+      existingIndexFromCanonical ?? existingIndexFromSemantic;
+
+    if (existingIndex === undefined) {
+      const newIndex = dedupedMessages.length;
       dedupedMessages.push(message);
+
+      if (canonicalKey) {
+        messageIndexByCanonicalKey.set(canonicalKey, newIndex);
+      }
+      if (semanticKey) {
+        messageIndexBySemanticKey.set(semanticKey, newIndex);
+      }
+
       return;
     }
 
-    const existingIndex = messageIndexByKey.get(key);
-    dedupedMessages[existingIndex] = preferMessageVersion(
+    const preferredMessage = preferMessageVersion(
       dedupedMessages[existingIndex],
       message,
     );
+    dedupedMessages[existingIndex] = preferredMessage;
+
+    const preferredCanonicalKey = buildRealtimeMessageKey(preferredMessage);
+    const preferredSemanticKey = buildSemanticMessageKey(preferredMessage);
+
+    if (canonicalKey) {
+      messageIndexByCanonicalKey.set(canonicalKey, existingIndex);
+    }
+    if (preferredCanonicalKey) {
+      messageIndexByCanonicalKey.set(preferredCanonicalKey, existingIndex);
+    }
+    if (semanticKey) {
+      messageIndexBySemanticKey.set(semanticKey, existingIndex);
+    }
+    if (preferredSemanticKey) {
+      messageIndexBySemanticKey.set(preferredSemanticKey, existingIndex);
+    }
   });
 
   return dedupedMessages;

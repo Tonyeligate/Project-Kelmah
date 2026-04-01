@@ -55,7 +55,13 @@ import useAutoHideHeader from './header/useAutoHideHeader';
 import getCurrentPageInfo from './header/pageDetection';
 import buildMenuItems from './header/menuConfig';
 
-const Header = ({ toggleTheme, setThemeMode, mode, autoShowMode = false }) => {
+const Header = ({
+  toggleTheme,
+  setThemeMode,
+  mode,
+  autoShowMode = false,
+  showPrimaryNav = true,
+}) => {
   const theme = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
@@ -409,7 +415,7 @@ const Header = ({ toggleTheme, setThemeMode, mode, autoShowMode = false }) => {
         </Box>
 
         {/* Desktop Navigation */}
-        {!isMobile && <DesktopNav />}
+        {!isMobile && showPrimaryNav && <DesktopNav />}
 
         {/* Action Buttons - Simplified for mobile */}
         <Box
@@ -802,6 +808,7 @@ Header.propTypes = {
   setThemeMode: PropTypes.func,
   mode: PropTypes.string,
   autoShowMode: PropTypes.bool,
+  showPrimaryNav: PropTypes.bool,
 };
 
 export default Header;

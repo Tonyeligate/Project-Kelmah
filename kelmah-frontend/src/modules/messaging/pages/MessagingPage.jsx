@@ -77,13 +77,21 @@ const CHAT_MESSAGE_BG = '#F9F7ED';
 const CHAT_OUTGOING_BUBBLE = '#F6E7BE';
 const CHAT_INCOMING_BUBBLE = '#FFFFFF';
 const CHAT_TEXT_PRIMARY = '#111111';
-const CHAT_TEXT_SECONDARY = '#5D584D';
+const CHAT_TEXT_SECONDARY = '#4A453B';
 const CHAT_BORDER = '#D8CCAF';
 const CHAT_MUTED_FILL = '#E8DFC7';
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
 const MAX_ATTACHMENTS = 5;
 const DRAFT_STORAGE_KEY = 'kelmah.messaging.drafts.v1';
 const SCROLL_TO_LATEST_THRESHOLD = 140;
+
+const FILTER_LABELS = {
+  all: 'All conversations',
+  unread: 'Unread conversations',
+  pinned: 'Pinned conversations',
+  drafts: 'Draft conversations',
+  'unread-drafts': 'Unread + drafts',
+};
 
 const getCurrentUserId = (user) =>
   user?.id || user?._id || user?.userId || user?.sub || null;
@@ -1113,6 +1121,34 @@ const MessagingPage = () => {
   const totalConversationCount = safeConversations.length;
   const hasConversationFilters =
     activeFilter !== 'all' || searchQuery.trim() !== '';
+  const selectedConversationId =
+    selectedConversation?.id || selectedConversation?._id || null;
+  const activeFilterLabel = FILTER_LABELS[activeFilter] || 'Filtered view';
+
+  useEffect(() => {
+    if (!selectedConversationId || activeFilter === 'all') {
+      return;
+    }
+
+    if (searchQuery.trim()) {
+      return;
+    }
+
+    const selectedConversationIsVisible = filteredConversations.some(
+      (conversation) =>
+        String(conversation.id || conversation._id) ===
+        String(selectedConversationId),
+    );
+
+    if (!selectedConversationIsVisible) {
+      setActiveFilter('all');
+    }
+  }, [
+    activeFilter,
+    filteredConversations,
+    searchQuery,
+    selectedConversationId,
+  ]);
 
   const typingLabel = useMemo(
     () => formatTypingLabel(selectedConversation ? getTypingUsers() : []),
@@ -1455,6 +1491,7 @@ const MessagingPage = () => {
                 bgcolor:
                   activeFilter === chip.key ? CHAT_HEADER : CHAT_PANEL_BG,
                 color: activeFilter === chip.key ? '#fff' : CHAT_TEXT_PRIMARY,
+                opacity: activeFilter === chip.key ? 1 : 0.82,
                 '& .MuiChip-label': {
                   px: mobile ? 1.15 : undefined,
                 },
@@ -1482,6 +1519,7 @@ const MessagingPage = () => {
                   ? theme.palette.warning.main
                   : CHAT_PANEL_BG,
               color: activeFilter === 'drafts' ? '#111' : CHAT_TEXT_PRIMARY,
+              opacity: activeFilter === 'drafts' ? 1 : 0.82,
               '& .MuiChip-label': {
                 px: mobile ? 1.15 : undefined,
               },
@@ -1515,6 +1553,7 @@ const MessagingPage = () => {
                   : CHAT_PANEL_BG,
               color:
                 activeFilter === 'unread-drafts' ? '#fff' : CHAT_TEXT_PRIMARY,
+              opacity: activeFilter === 'unread-drafts' ? 1 : 0.82,
               '& .MuiChip-label': {
                 px: mobile ? 1.15 : undefined,
               },
@@ -1543,7 +1582,7 @@ const MessagingPage = () => {
           sx={{ display: 'block', mt: 0.25, color: CHAT_TEXT_SECONDARY }}
         >
           {hasConversationFilters
-            ? `Showing ${filteredConversations.length} of ${totalConversationCount} conversations`
+            ? `Showing ${filteredConversations.length} of ${totalConversationCount} conversations | ${activeFilterLabel}`
             : `Showing all ${totalConversationCount} conversations`}
         </Typography>
       </Box>
@@ -1623,12 +1662,15 @@ const MessagingPage = () => {
                         ? { xs: 1, sm: 1.35 }
                         : { md: 1.2, lg: 1.5, xl: 1.6 },
                       borderLeft: isSelected
-                        ? `3px solid ${CHAT_HEADER}`
+                        ? `4px solid ${CHAT_ACCENT_DARK}`
                         : '4px solid transparent',
                       bgcolor: isSelected
-                        ? alpha(CHAT_HEADER, 0.08)
+                        ? alpha(CHAT_ACCENT_DARK, 0.12)
                         : 'transparent',
-                      '&:hover': { bgcolor: alpha(CHAT_HEADER, 0.04) },
+                      boxShadow: isSelected
+                        ? `inset 0 0 0 1px ${alpha(CHAT_ACCENT_DARK, 0.25)}`
+                        : 'none',
+                      '&:hover': { bgcolor: alpha(CHAT_ACCENT_DARK, 0.06) },
                     }}
                   >
                     <ListItemAvatar sx={{ minWidth: { xs: 52, md: 48 } }}>
@@ -1744,7 +1786,7 @@ const MessagingPage = () => {
                                 color: hasDraftPreview
                                   ? theme.palette.warning.dark
                                   : CHAT_TEXT_SECONDARY,
-                                fontWeight: hasDraftPreview ? 700 : 400,
+                                fontWeight: hasDraftPreview ? 700 : 500,
                               }}
                             >
                               {conversationPreviewLabel}
@@ -1756,7 +1798,8 @@ const MessagingPage = () => {
                                 sx={{
                                   display: 'block',
                                   mt: 0.35,
-                                  color: CHAT_TEXT_SECONDARY,
+                                  color: alpha(CHAT_TEXT_PRIMARY, 0.74),
+                                  fontWeight: 500,
                                 }}
                               >
                                 Job: {jobContextLabel}
@@ -1780,7 +1823,11 @@ const MessagingPage = () => {
                           >
                             <Typography
                               variant="caption"
-                              sx={{ color: CHAT_TEXT_SECONDARY }}
+                              sx={{
+                                color: alpha(CHAT_TEXT_PRIMARY, 0.72),
+                                fontWeight: hasDraftPreview ? 700 : 600,
+                                fontSize: '0.76rem',
+                              }}
                             >
                               {hasDraftPreview
                                 ? draftSavedLabel
@@ -1818,7 +1865,11 @@ const MessagingPage = () => {
                             ) : (
                               <Typography
                                 variant="caption"
-                                sx={{ color: CHAT_TEXT_SECONDARY }}
+                                sx={{
+                                  color: alpha(CHAT_TEXT_PRIMARY, 0.68),
+                                  fontSize: '0.74rem',
+                                  fontWeight: 500,
+                                }}
                               >
                                 {isOnline ? 'Online now' : 'Offline'}
                               </Typography>
@@ -1971,9 +2022,12 @@ const MessagingPage = () => {
           position="sticky"
           elevation={0}
           sx={{
+            top: 0,
+            zIndex: 4,
             bgcolor: CHAT_HEADER,
             color: '#fff',
             borderBottom: '1px solid rgba(255,255,255,0.14)',
+            boxShadow: '0 6px 16px rgba(0,0,0,0.22)',
           }}
         >
           <Toolbar
@@ -2118,6 +2172,29 @@ const MessagingPage = () => {
           </Toolbar>
         </AppBar>
 
+        {!mobile && (
+          <Box
+            sx={{
+              px: { md: 1.4, lg: 1.7, xl: 2 },
+              py: 0.55,
+              bgcolor: alpha(CHAT_PANEL_HEADER, 0.98),
+              borderBottom: '1px solid',
+              borderColor: CHAT_BORDER,
+            }}
+          >
+            <Typography
+              variant="caption"
+              sx={{
+                color: alpha(CHAT_TEXT_PRIMARY, 0.72),
+                fontWeight: 600,
+                letterSpacing: '0.01em',
+              }}
+            >
+              Active chat: {title}
+            </Typography>
+          </Box>
+        )}
+
         <Box
           ref={messagesScrollRef}
           sx={{
@@ -2144,108 +2221,116 @@ const MessagingPage = () => {
             backgroundSize: '16px 16px',
           }}
         >
-          {(realtimeIssue || !isConnected) && (
-            <Alert severity="warning" sx={{ mb: 2, borderRadius: 2 }}>
-              {realtimeIssue ||
-                'Weak connection detected. Your messages will queue and send automatically.'}
-            </Alert>
-          )}
+          <Box
+            sx={{
+              width: '100%',
+              maxWidth: mobile ? '100%' : { md: 980, lg: 1060, xl: 1140 },
+              mx: mobile ? 0 : 'auto',
+            }}
+          >
+            {(realtimeIssue || !isConnected) && (
+              <Alert severity="warning" sx={{ mb: 2, borderRadius: 2 }}>
+                {realtimeIssue ||
+                  'Weak connection detected. Your messages will queue and send automatically.'}
+              </Alert>
+            )}
 
-          {loadingMessages ? (
-            <Box sx={{ py: 2 }}>
-              {Array.from({ length: 4 }).map((_, index) => (
-                <Box
-                  key={`message-skeleton-${index}`}
-                  sx={{
-                    display: 'flex',
-                    justifyContent: index % 2 ? 'flex-end' : 'flex-start',
-                    mb: 1.5,
-                  }}
-                >
+            {loadingMessages ? (
+              <Box sx={{ py: 2 }}>
+                {Array.from({ length: 4 }).map((_, index) => (
                   <Box
+                    key={`message-skeleton-${index}`}
                     sx={{
-                      width: { xs: '72%', sm: '58%' },
-                      p: 1.5,
-                      borderRadius: 2,
-                      bgcolor: CHAT_PANEL_HEADER,
+                      display: 'flex',
+                      justifyContent: index % 2 ? 'flex-end' : 'flex-start',
+                      mb: 1.5,
                     }}
                   >
                     <Box
                       sx={{
-                        width: '80%',
-                        height: 10,
-                        bgcolor: CHAT_MUTED_FILL,
-                        borderRadius: 999,
-                        mb: 1,
+                        width: { xs: '72%', sm: '58%' },
+                        p: 1.5,
+                        borderRadius: 2,
+                        bgcolor: CHAT_PANEL_HEADER,
                       }}
-                    />
-                    <Box
-                      sx={{
-                        width: '45%',
-                        height: 10,
-                        bgcolor: CHAT_MUTED_FILL,
-                        borderRadius: 999,
-                      }}
-                    />
+                    >
+                      <Box
+                        sx={{
+                          width: '80%',
+                          height: 10,
+                          bgcolor: CHAT_MUTED_FILL,
+                          borderRadius: 999,
+                          mb: 1,
+                        }}
+                      />
+                      <Box
+                        sx={{
+                          width: '45%',
+                          height: 10,
+                          bgcolor: CHAT_MUTED_FILL,
+                          borderRadius: 999,
+                        }}
+                      />
+                    </Box>
                   </Box>
-                </Box>
-              ))}
-            </Box>
-          ) : messages.length === 0 ? (
-            <Box sx={{ py: 6 }}>
-              {hasSelectedDraft && (
-                <Paper
-                  variant="outlined"
-                  sx={{
-                    p: 1.5,
-                    mb: 2,
-                    borderRadius: 2,
-                    bgcolor: alpha(theme.palette.warning.main, 0.08),
-                    borderColor: alpha(theme.palette.warning.main, 0.4),
-                  }}
-                >
-                  <Stack
-                    direction="row"
-                    spacing={0.75}
-                    alignItems="center"
-                    sx={{ mb: 0.75 }}
+                ))}
+              </Box>
+            ) : messages.length === 0 ? (
+              <Box sx={{ py: 6 }}>
+                {hasSelectedDraft && (
+                  <Paper
+                    variant="outlined"
+                    sx={{
+                      p: 1.5,
+                      mb: 2,
+                      borderRadius: 2,
+                      bgcolor: alpha(theme.palette.warning.main, 0.08),
+                      borderColor: alpha(theme.palette.warning.main, 0.4),
+                    }}
                   >
-                    <ScheduleIcon
-                      sx={{ fontSize: 14, color: theme.palette.warning.main }}
-                    />
-                    <Typography variant="caption" color="warning.main">
-                      Unsent draft {selectedDraftSavedLabel}
+                    <Stack
+                      direction="row"
+                      spacing={0.75}
+                      alignItems="center"
+                      sx={{ mb: 0.75 }}
+                    >
+                      <ScheduleIcon
+                        sx={{ fontSize: 14, color: theme.palette.warning.main }}
+                      />
+                      <Typography variant="caption" color="warning.main">
+                        Unsent draft {selectedDraftSavedLabel}
+                      </Typography>
+                    </Stack>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}
+                    >
+                      {selectedDraftPreview}
                     </Typography>
-                  </Stack>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}
-                  >
-                    {selectedDraftPreview}
-                  </Typography>
-                </Paper>
-              )}
-              <EmptyState
-                variant="messages"
-                title="Start the conversation"
-                subtitle="Send a message below or attach photos/documents to get started."
-              />
-            </Box>
-          ) : (
-            messages.map((message, index) => (
-              <MessageBubble
-                key={
-                  message.id ||
-                  message._id ||
-                  `${message.timestamp || 'message'}-${index}`
-                }
-                message={message}
-                currentUserId={currentUserId}
-              />
-            ))
-          )}
-          <div ref={messageEndRef} />
+                  </Paper>
+                )}
+                <EmptyState
+                  variant="messages"
+                  title="Start the conversation"
+                  subtitle="Send a message below or attach photos/documents to get started."
+                />
+              </Box>
+            ) : (
+              messages.map((message, index) => (
+                <MessageBubble
+                  key={
+                    message.id ||
+                    message._id ||
+                    `${message.timestamp || 'message'}-${index}`
+                  }
+                  message={message}
+                  currentUserId={currentUserId}
+                />
+              ))
+            )}
+            <div ref={messageEndRef} />
+          </Box>
         </Box>
 
         {showScrollToLatest && (
@@ -2309,332 +2394,346 @@ const MessagingPage = () => {
             transition: 'padding-bottom 0.22s ease',
           }}
         >
-          {selectedFiles.length > 0 && (
-            <Box sx={{ mb: 1.25 }}>
-              <Stack
-                direction="row"
-                alignItems="center"
-                justifyContent="space-between"
-                spacing={1}
-                sx={{ mb: 0.75, px: 0.25 }}
-              >
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{ fontWeight: 700 }}
+          <Box
+            sx={{
+              width: '100%',
+              maxWidth: mobile ? '100%' : { md: 980, lg: 1060, xl: 1140 },
+              mx: mobile ? 0 : 'auto',
+            }}
+          >
+            {selectedFiles.length > 0 && (
+              <Box sx={{ mb: 1.25 }}>
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  justifyContent="space-between"
+                  spacing={1}
+                  sx={{ mb: 0.75, px: 0.25 }}
                 >
-                  Attachment review ({selectedFiles.length}/{MAX_ATTACHMENTS})
-                </Typography>
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <Typography variant="caption" color="text.secondary">
-                    {formatFileSize(totalAttachmentSize)} total
-                  </Typography>
-                  <Button
-                    size="small"
-                    color="inherit"
-                    onClick={handleClearFiles}
-                    startIcon={<DeleteSweepIcon sx={{ fontSize: 16 }} />}
-                    sx={{ minHeight: TOUCH_TARGET_MIN, px: 1.25 }}
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ fontWeight: 700 }}
                   >
-                    Clear all
-                  </Button>
-                </Stack>
-              </Stack>
-
-              <Stack
-                direction="row"
-                spacing={1}
-                sx={{ overflowX: 'auto', pb: 0.5 }}
-              >
-                {selectedFiles.map((file, index) => {
-                  const fileType = String(file.type || '').toLowerCase();
-                  const isVideoFile = fileType.startsWith('video/');
-                  const isDocumentFile =
-                    fileType.includes('pdf') ||
-                    fileType.includes('word') ||
-                    fileType.includes('document');
-                  const AttachmentIcon = isVideoFile
-                    ? VideocamIcon
-                    : isDocumentFile
-                      ? DescriptionIcon
-                      : InsertDriveFileIcon;
-
-                  return (
-                    <Box
-                      key={`${file.name}-${index}`}
-                      sx={{
-                        minWidth: 136,
-                        maxWidth: 190,
-                        flexShrink: 0,
-                        borderRadius: 2,
-                        border: '1px solid',
-                        borderColor: 'divider',
-                        bgcolor: 'background.paper',
-                        p: 1,
-                        position: 'relative',
-                      }}
+                    Attachment review ({selectedFiles.length}/{MAX_ATTACHMENTS})
+                  </Typography>
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Typography variant="caption" color="text.secondary">
+                      {formatFileSize(totalAttachmentSize)} total
+                    </Typography>
+                    <Button
+                      size="small"
+                      color="inherit"
+                      onClick={handleClearFiles}
+                      startIcon={<DeleteSweepIcon sx={{ fontSize: 16 }} />}
+                      sx={{ minHeight: TOUCH_TARGET_MIN, px: 1.25 }}
                     >
-                      <IconButton
-                        size="small"
-                        onClick={() => handleRemoveFile(index)}
-                        aria-label={`Remove ${file.name}`}
+                      Clear all
+                    </Button>
+                  </Stack>
+                </Stack>
+
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  sx={{ overflowX: 'auto', pb: 0.5 }}
+                >
+                  {selectedFiles.map((file, index) => {
+                    const fileType = String(file.type || '').toLowerCase();
+                    const isVideoFile = fileType.startsWith('video/');
+                    const isDocumentFile =
+                      fileType.includes('pdf') ||
+                      fileType.includes('word') ||
+                      fileType.includes('document');
+                    const AttachmentIcon = isVideoFile
+                      ? VideocamIcon
+                      : isDocumentFile
+                        ? DescriptionIcon
+                        : InsertDriveFileIcon;
+
+                    return (
+                      <Box
+                        key={`${file.name}-${index}`}
                         sx={{
-                          position: 'absolute',
-                          top: -8,
-                          right: -8,
-                          width: 36,
-                          height: 36,
-                          bgcolor: 'error.main',
-                          color: 'error.contrastText',
-                          '&:hover': { bgcolor: 'error.dark' },
+                          minWidth: 136,
+                          maxWidth: 190,
+                          flexShrink: 0,
+                          borderRadius: 2,
+                          border: '1px solid',
+                          borderColor: 'divider',
+                          bgcolor: 'background.paper',
+                          p: 1,
+                          position: 'relative',
                         }}
                       >
-                        <CloseIcon sx={{ fontSize: 14 }} />
-                      </IconButton>
-
-                      {fileType.startsWith('image/') ? (
-                        <Box
-                          component="img"
-                          src={previewUrls[index] || ''}
-                          alt={file.name}
+                        <IconButton
+                          size="small"
+                          onClick={() => handleRemoveFile(index)}
+                          aria-label={`Remove ${file.name}`}
                           sx={{
-                            width: '100%',
-                            height: 72,
-                            borderRadius: 1.25,
-                            objectFit: 'cover',
-                            display: 'block',
-                            mb: 0.75,
+                            position: 'absolute',
+                            top: -8,
+                            right: -8,
+                            width: 36,
+                            height: 36,
+                            bgcolor: 'error.main',
+                            color: 'error.contrastText',
+                            '&:hover': { bgcolor: 'error.dark' },
                           }}
-                        />
-                      ) : (
-                        <Stack
-                          direction="row"
-                          spacing={1}
-                          alignItems="center"
-                          sx={{ mb: 0.75 }}
                         >
-                          <AttachmentIcon
-                            sx={{ fontSize: 18, color: CHAT_ACCENT }}
+                          <CloseIcon sx={{ fontSize: 14 }} />
+                        </IconButton>
+
+                        {fileType.startsWith('image/') ? (
+                          <Box
+                            component="img"
+                            src={previewUrls[index] || ''}
+                            alt={file.name}
+                            sx={{
+                              width: '100%',
+                              height: 72,
+                              borderRadius: 1.25,
+                              objectFit: 'cover',
+                              display: 'block',
+                              mb: 0.75,
+                            }}
                           />
-                          <Typography variant="caption" fontWeight={700} noWrap>
-                            {getAttachmentKindLabel(file)}
-                          </Typography>
-                        </Stack>
-                      )}
+                        ) : (
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            alignItems="center"
+                            sx={{ mb: 0.75 }}
+                          >
+                            <AttachmentIcon
+                              sx={{ fontSize: 18, color: CHAT_ACCENT }}
+                            />
+                            <Typography
+                              variant="caption"
+                              fontWeight={700}
+                              noWrap
+                            >
+                              {getAttachmentKindLabel(file)}
+                            </Typography>
+                          </Stack>
+                        )}
 
-                      <Typography
-                        variant="caption"
-                        fontWeight={700}
-                        noWrap
-                        sx={{ display: 'block' }}
-                      >
-                        {file.name}
-                      </Typography>
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        noWrap
-                      >
-                        {formatFileSize(file.size)}
-                      </Typography>
-                    </Box>
-                  );
-                })}
-              </Stack>
-            </Box>
-          )}
-
-          {sendError && (
-            <Alert
-              severity="error"
-              sx={{ mb: 1.25, borderRadius: 2 }}
-              onClose={() => setSendError('')}
-            >
-              {sendError}
-            </Alert>
-          )}
-
-          {draftRestoreNotice && (
-            <Alert
-              severity="info"
-              sx={{ mb: 1.25, borderRadius: 2 }}
-              onClose={() => setDraftRestoreNotice('')}
-            >
-              {draftRestoreNotice}
-            </Alert>
-          )}
-
-          {messageText.trim().length === 0 && (
-            <Stack
-              direction="row"
-              spacing={0.75}
-              sx={{ mb: 1, overflowX: 'auto', pb: 0.25 }}
-            >
-              {quickReplyTemplates.map((template) => (
-                <Chip
-                  key={template}
-                  label={template}
-                  onClick={() => handleQuickTemplateSelect(template)}
-                  clickable
-                  variant="outlined"
-                  sx={{
-                    fontWeight: 700,
-                    bgcolor: alpha(CHAT_HEADER, 0.05),
-                    borderColor: alpha(CHAT_HEADER, 0.22),
-                    '& .MuiChip-label': { px: { xs: 1, sm: 1.2 } },
-                  }}
-                />
-              ))}
-            </Stack>
-          )}
-
-          <Stack direction="row" spacing={1} alignItems="flex-end">
-            <input
-              ref={fileInputRef}
-              type="file"
-              multiple
-              accept="image/*,video/*,.pdf,.doc,.docx,.txt"
-              hidden
-              onChange={handleFileChange}
-            />
-
-            <Tooltip title="Attach file">
-              <span>
-                <IconButton
-                  onClick={() => fileInputRef.current?.click()}
-                  aria-label="Attach file"
-                  disabled={remainingAttachmentSlots === 0}
-                  sx={{
-                    minWidth: TOUCH_TARGET_MIN,
-                    minHeight: TOUCH_TARGET_MIN,
-                    color: CHAT_HEADER,
-                    bgcolor: CHAT_PANEL_BG,
-                    '&:hover': { bgcolor: CHAT_PANEL_HEADER },
-                  }}
-                >
-                  <AttachFileIcon />
-                </IconButton>
-              </span>
-            </Tooltip>
-
-            <TextField
-              fullWidth
-              multiline
-              maxRows={4}
-              placeholder={
-                selectedFiles.length > 0
-                  ? 'Add a note for these attachments (optional)'
-                  : 'Type your message (price, timing, and next step)'
-              }
-              value={messageText}
-              onChange={(event) => {
-                const nextValue = event.target.value;
-                setMessageText(nextValue);
-                if (selectedConversationKey) {
-                  setDraftsByConversation((previous) => {
-                    const trimmedValue = nextValue.trim();
-                    const previousEntry = getDraftEntry(
-                      previous[selectedConversationKey],
+                        <Typography
+                          variant="caption"
+                          fontWeight={700}
+                          noWrap
+                          sx={{ display: 'block' }}
+                        >
+                          {file.name}
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          noWrap
+                        >
+                          {formatFileSize(file.size)}
+                        </Typography>
+                      </Box>
                     );
+                  })}
+                </Stack>
+              </Box>
+            )}
 
-                    if (!trimmedValue) {
-                      if (!(selectedConversationKey in previous)) {
+            {sendError && (
+              <Alert
+                severity="error"
+                sx={{ mb: 1.25, borderRadius: 2 }}
+                onClose={() => setSendError('')}
+              >
+                {sendError}
+              </Alert>
+            )}
+
+            {draftRestoreNotice && (
+              <Alert
+                severity="info"
+                sx={{ mb: 1.25, borderRadius: 2 }}
+                onClose={() => setDraftRestoreNotice('')}
+              >
+                {draftRestoreNotice}
+              </Alert>
+            )}
+
+            {messageText.trim().length === 0 && (
+              <Stack
+                direction="row"
+                spacing={0.75}
+                sx={{ mb: 1, overflowX: 'auto', pb: 0.25 }}
+              >
+                {quickReplyTemplates.map((template) => (
+                  <Chip
+                    key={template}
+                    label={template}
+                    onClick={() => handleQuickTemplateSelect(template)}
+                    clickable
+                    variant="outlined"
+                    sx={{
+                      fontWeight: 700,
+                      bgcolor: alpha(CHAT_HEADER, 0.05),
+                      borderColor: alpha(CHAT_HEADER, 0.22),
+                      '& .MuiChip-label': { px: { xs: 1, sm: 1.2 } },
+                    }}
+                  />
+                ))}
+              </Stack>
+            )}
+
+            <Stack direction="row" spacing={1} alignItems="flex-end">
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept="image/*,video/*,.pdf,.doc,.docx,.txt"
+                hidden
+                onChange={handleFileChange}
+              />
+
+              <Tooltip title="Attach file">
+                <span>
+                  <IconButton
+                    onClick={() => fileInputRef.current?.click()}
+                    aria-label="Attach file"
+                    disabled={remainingAttachmentSlots === 0}
+                    sx={{
+                      minWidth: TOUCH_TARGET_MIN,
+                      minHeight: TOUCH_TARGET_MIN,
+                      color: CHAT_HEADER,
+                      bgcolor: CHAT_PANEL_BG,
+                      '&:hover': { bgcolor: CHAT_PANEL_HEADER },
+                    }}
+                  >
+                    <AttachFileIcon />
+                  </IconButton>
+                </span>
+              </Tooltip>
+
+              <TextField
+                fullWidth
+                multiline
+                maxRows={4}
+                placeholder={
+                  selectedFiles.length > 0
+                    ? 'Add a note for these attachments (optional)'
+                    : 'Type your message (price, timing, and next step)'
+                }
+                value={messageText}
+                onChange={(event) => {
+                  const nextValue = event.target.value;
+                  setMessageText(nextValue);
+                  if (selectedConversationKey) {
+                    setDraftsByConversation((previous) => {
+                      const trimmedValue = nextValue.trim();
+                      const previousEntry = getDraftEntry(
+                        previous[selectedConversationKey],
+                      );
+
+                      if (!trimmedValue) {
+                        if (!(selectedConversationKey in previous)) {
+                          return previous;
+                        }
+
+                        const nextDrafts = { ...previous };
+                        delete nextDrafts[selectedConversationKey];
+                        return nextDrafts;
+                      }
+
+                      if (previousEntry?.text === nextValue) {
                         return previous;
                       }
 
-                      const nextDrafts = { ...previous };
-                      delete nextDrafts[selectedConversationKey];
-                      return nextDrafts;
-                    }
-
-                    if (previousEntry?.text === nextValue) {
-                      return previous;
-                    }
-
-                    return {
-                      ...previous,
-                      [selectedConversationKey]: {
-                        text: nextValue,
-                        updatedAt: Date.now(),
-                      },
-                    };
-                  });
-                }
-                handleTyping();
-              }}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' && !event.shiftKey) {
-                  event.preventDefault();
-                  handleSendMessage(event);
-                }
-              }}
-              inputProps={{ 'aria-label': 'Type message', maxLength: 1000 }}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: 3,
-                  bgcolor: CHAT_PANEL_BG,
-                  '& fieldset': { borderColor: CHAT_BORDER },
-                  '&:hover fieldset': { borderColor: CHAT_ACCENT_DARK },
-                  '&.Mui-focused fieldset': { borderColor: CHAT_ACCENT_DARK },
-                },
-                '& .MuiInputBase-input': {
-                  fontSize: {
-                    xs: '0.9rem',
-                    sm: '0.94rem',
-                    md: '0.95rem',
-                    lg: '0.98rem',
-                  },
-                  lineHeight: 1.4,
-                },
-              }}
-            />
-
-            <Tooltip title="Send message">
-              <IconButton
-                type="submit"
-                disabled={sendDisabled}
-                aria-label="Send message"
+                      return {
+                        ...previous,
+                        [selectedConversationKey]: {
+                          text: nextValue,
+                          updatedAt: Date.now(),
+                        },
+                      };
+                    });
+                  }
+                  handleTyping();
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' && !event.shiftKey) {
+                    event.preventDefault();
+                    handleSendMessage(event);
+                  }
+                }}
+                inputProps={{ 'aria-label': 'Type message', maxLength: 1000 }}
                 sx={{
-                  minWidth: TOUCH_TARGET_MIN,
-                  minHeight: TOUCH_TARGET_MIN,
-                  bgcolor: CHAT_HEADER,
-                  color: '#fff',
-                  '&:hover': { bgcolor: CHAT_ACCENT_DARK },
-                  '&:disabled': {
-                    bgcolor: alpha(theme.palette.text.primary, 0.08),
-                    color: 'text.disabled',
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 3,
+                    bgcolor: CHAT_PANEL_BG,
+                    '& fieldset': { borderColor: CHAT_BORDER },
+                    '&:hover fieldset': { borderColor: CHAT_ACCENT_DARK },
+                    '&.Mui-focused fieldset': {
+                      borderColor: CHAT_ACCENT_DARK,
+                    },
+                  },
+                  '& .MuiInputBase-input': {
+                    fontSize: {
+                      xs: '0.9rem',
+                      sm: '0.94rem',
+                      md: '0.95rem',
+                      lg: '0.98rem',
+                    },
+                    lineHeight: 1.4,
                   },
                 }}
-              >
-                {isSending ? (
-                  <CircularProgress size={18} sx={{ color: 'inherit' }} />
-                ) : (
-                  <SendIcon />
-                )}
-              </IconButton>
-            </Tooltip>
-          </Stack>
+              />
 
-          <Typography
-            variant="caption"
-            color="text.secondary"
-            sx={{ display: 'block', mt: 0.75, pl: 0.5 }}
-          >
-            {selectedFiles.length > 0
-              ? `${selectedFiles.length} attached | ${remainingAttachmentSlots} slot${remainingAttachmentSlots === 1 ? '' : 's'} left | ${messageCharacterCount}/1000 chars | Press Enter to send`
-              : hasSelectedDraft
-                ? `Press Enter for quick send | Shift+Enter for new line | ${messageCharacterCount}/1000 chars | Draft ${selectedDraftSavedLabel}`
-                : `Press Enter for quick send | Shift+Enter for new line | ${messageCharacterCount}/1000 chars | Max ${MAX_ATTACHMENTS} files (10MB limit)`}
-          </Typography>
-          {isKeyboardVisible && (
+              <Tooltip title="Send message">
+                <IconButton
+                  type="submit"
+                  disabled={sendDisabled}
+                  aria-label="Send message"
+                  sx={{
+                    minWidth: TOUCH_TARGET_MIN,
+                    minHeight: TOUCH_TARGET_MIN,
+                    bgcolor: CHAT_HEADER,
+                    color: '#fff',
+                    '&:hover': { bgcolor: CHAT_ACCENT_DARK },
+                    '&:disabled': {
+                      bgcolor: alpha(theme.palette.text.primary, 0.08),
+                      color: 'text.disabled',
+                    },
+                  }}
+                >
+                  {isSending ? (
+                    <CircularProgress size={18} sx={{ color: 'inherit' }} />
+                  ) : (
+                    <SendIcon />
+                  )}
+                </IconButton>
+              </Tooltip>
+            </Stack>
+
             <Typography
               variant="caption"
               color="text.secondary"
-              sx={{ display: 'block', mt: 0.25, pl: 0.5 }}
+              sx={{ display: 'block', mt: 0.75, pl: 0.5 }}
             >
-              Keyboard open - composer remains pinned for quick replies.
+              {selectedFiles.length > 0
+                ? `${selectedFiles.length} attached | ${remainingAttachmentSlots} slot${remainingAttachmentSlots === 1 ? '' : 's'} left | ${messageCharacterCount}/1000 chars | Press Enter to send`
+                : hasSelectedDraft
+                  ? `Press Enter for quick send | Shift+Enter for new line | ${messageCharacterCount}/1000 chars | Draft ${selectedDraftSavedLabel}`
+                  : `Press Enter for quick send | Shift+Enter for new line | ${messageCharacterCount}/1000 chars | Max ${MAX_ATTACHMENTS} files (10MB limit)`}
             </Typography>
-          )}
+            {isKeyboardVisible && (
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ display: 'block', mt: 0.25, pl: 0.5 }}
+              >
+                Keyboard open - composer remains pinned for quick replies.
+              </Typography>
+            )}
+          </Box>
         </Box>
       </Paper>
     );
@@ -2643,13 +2742,17 @@ const MessagingPage = () => {
   return (
     <PageCanvas
       disableContainer
-      sx={{ pt: { xs: 0, md: 2 }, pb: { xs: 0, md: 2 }, overflow: 'hidden' }}
+      sx={{
+        pt: { xs: 0, md: 0.5 },
+        pb: { xs: 0, md: 1.5 },
+        overflow: 'hidden',
+      }}
     >
       <Box
         sx={{
           height: {
             xs: `calc(100dvh - ${HEADER_HEIGHT_MOBILE}px - var(--kelmah-network-banner-offset, 0px))`,
-            md: 'calc(100dvh - 64px)',
+            md: `calc(100dvh - ${HEADER_HEIGHT_MOBILE}px - var(--kelmah-network-banner-offset, 0px))`,
           },
           display: 'flex',
           flexDirection: 'column',
@@ -2702,13 +2805,13 @@ const MessagingPage = () => {
               sx={{
                 flex: 1,
                 width: '100%',
-                maxWidth: 1500,
+                maxWidth: 1560,
                 minHeight: 0,
                 display: 'grid',
                 gridTemplateColumns: {
-                  md: '320px 1fr',
-                  lg: '360px 1fr',
-                  xl: '400px 1fr',
+                  md: '360px 1fr',
+                  lg: '420px 1fr',
+                  xl: '460px 1fr',
                 },
                 gap: 0,
                 borderRadius: 2,
