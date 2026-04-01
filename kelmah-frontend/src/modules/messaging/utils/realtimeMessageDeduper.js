@@ -2,7 +2,7 @@ const DEFAULT_TTL_MS = 15_000;
 const DEFAULT_MAX_ENTRIES = 500;
 
 export const buildRealtimeMessageKey = (message = {}) => {
-  const id = message.id || message._id || message.messageId || message.clientId;
+  const id = message.clientId || message.id || message._id || message.messageId;
   if (!id) return null;
 
   const conversationId =

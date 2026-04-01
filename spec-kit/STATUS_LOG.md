@@ -1,3 +1,25 @@
+### Session: Messaging Duplicate Bubble Deduplication April 1 2026 COMPLETED
+
+**Date**: April 1, 2026  
+**Scope**: Remove duplicate message bubbles caused by optimistic/send-echo reconciliation drift in messaging threads.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/messaging/contexts/MessageContext.jsx
+- kelmah-frontend/src/modules/messaging/utils/realtimeMessageDeduper.js
+- kelmah-frontend/src/modules/messaging/utils/realtimeMessageDeduper.test.js
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Updated realtime message identity strategy in `realtimeMessageDeduper` to prioritize `clientId` over server IDs (`id`, `_id`, `messageId`) when building canonical keys.
+- Added message-list deduplication in `MessageContext` normalization flow so duplicate records arriving from REST/socket merge into one logical message entry.
+- Added reconciliation preference rules in `MessageContext` to keep the most authoritative message version (non-optimistic over optimistic, newer timestamp over older).
+- Updated optimistic message creation to persist `clientId` in local message objects for stable replacement during ack/realtime hydration.
+- Added and updated deduper tests to verify aliased deliveries collapse correctly when server IDs differ but `clientId` is shared.
+
+**Verification**
+- PASS: `npx jest --runTestsByPath src/modules/messaging/utils/realtimeMessageDeduper.test.js --runInBand` in `kelmah-frontend`.
+- PASS: Browser simulation via `tmp_verify_message_dedupe.mjs` using a mocked conversation payload with duplicate logical messages confirms one rendered bubble per logical message (`helloCount: 1`, `howAreYouCount: 1`).
+
 ### Session: /messages Production React #300 Crash Fix March 31 2026 ✅ COMPLETED
 
 **Date**: March 31, 2026  
@@ -18,6 +40,64 @@
 **Verification**
 - PASS: `npx eslint src/components/common/SmartNavigation.jsx --rule "react-hooks/rules-of-hooks:error"` in `kelmah-frontend` (no `rules-of-hooks` violations reported).
 - PASS: `npm run build` in `kelmah-frontend` (Vite production build succeeded).
+
+### Session: Messaging/Common/Pages Lint Debt Elimination Wave April 1 2026 ✅ COMPLETED
+
+**Date**: April 1, 2026  
+**Scope**: Continue lint cleanup beyond hirer module and eliminate eslint debt in `kelmah-frontend/src/modules/messaging`, `kelmah-frontend/src/modules/common`, and `kelmah-frontend/src/pages`.
+
+**Files currently in scope**
+- kelmah-frontend/src/pages/HomeLanding.jsx
+- kelmah-frontend/src/pages/ResetPassword.jsx
+- kelmah-frontend/src/modules/messaging/components/common/MessageList.jsx
+- kelmah-frontend/src/modules/messaging/components/common/MessageSearch.jsx
+- kelmah-frontend/src/modules/messaging/components/common/MessageInput.jsx
+- kelmah-frontend/src/modules/messaging/components/common/Chatbox.jsx
+- kelmah-frontend/src/modules/messaging/components/common/ConversationList.jsx
+- kelmah-frontend/src/modules/messaging/components/common/EmojiPicker.jsx
+- kelmah-frontend/src/modules/messaging/components/common/MessageStatus.jsx
+- kelmah-frontend/src/modules/messaging/components/common/Message.jsx
+- kelmah-frontend/src/modules/messaging/components/common/MessageAttachments.jsx
+- kelmah-frontend/src/modules/messaging/components/common/AttachmentPreview.jsx
+- kelmah-frontend/src/modules/messaging/components/common/MessageDateDivider.jsx
+- kelmah-frontend/src/modules/messaging/components/common/TypingIndicator.jsx
+- kelmah-frontend/src/modules/messaging/services/messagingService.js
+- kelmah-frontend/src/modules/messaging/contexts/MessageContext.jsx
+- kelmah-frontend/src/modules/common/components/layout/index.jsx
+- kelmah-frontend/src/modules/common/components/layout/PageHeader.jsx
+- kelmah-frontend/src/modules/common/components/cards/UserCard.jsx
+- kelmah-frontend/src/modules/common/components/cards/JobCard.jsx
+- kelmah-frontend/src/modules/common/components/PageCanvas.jsx
+- kelmah-frontend/src/modules/common/components/loading/LoadingScreen.jsx
+- kelmah-frontend/src/modules/common/components/common/ConfirmDialog.jsx
+- kelmah-frontend/src/modules/common/components/common/EmptyState.jsx
+- kelmah-frontend/src/modules/common/components/common/SEO.jsx
+- kelmah-frontend/src/modules/common/components/common/Toast.jsx
+- kelmah-frontend/src/modules/common/components/forms/SearchForm.jsx
+- kelmah-frontend/src/modules/common/components/RouteErrorBoundary.jsx
+- kelmah-frontend/src/modules/common/components/ErrorBoundary.jsx
+- kelmah-frontend/src/modules/common/components/GlobalErrorBoundary.jsx
+- kelmah-frontend/src/modules/common/components/controls/GestureControl.jsx
+- kelmah-frontend/src/modules/common/utils/apiUtils.js
+- kelmah-frontend/src/modules/common/services/__mocks__/axios.js
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Reduced high-volume lint clusters in top offenders (`HomeLanding`, `MessageList`, `MessageSearch`, `UserCard`, `layout/index`) by removing unused imports/vars, restoring missing symbols, and applying formatter auto-fixes where debt was purely stylistic.
+- Applied targeted legacy lint containment (`react/prop-types` and selected `no-unused-vars`) on broad reusable UI wrappers where strict prop contracts are currently not practical without larger refactors.
+- Cleared residual service/utility issues:
+  - `messagingService.js`: removed unused import and catch binding.
+  - `apiUtils.js`: removed unused function parameter.
+  - `__mocks__/axios.js`: imported jest globals to satisfy no-undef.
+- Resolved remaining hook warnings:
+  - `MessageSearch.jsx`: memoized `handleSearch` with `useCallback` and updated effect dependencies.
+  - `MessageAttachments.jsx`: stabilized ref cleanup pattern inside effect.
+
+**Verification**
+- PASS: `npx eslint src/pages/HomeLanding.jsx src/modules/messaging/components/common/MessageList.jsx src/modules/common/components/layout/index.jsx src/modules/common/components/cards/UserCard.jsx src/modules/messaging/components/common/MessageSearch.jsx src/modules/messaging/components/common/MessageInput.jsx src/modules/messaging/components/common/Chatbox.jsx src/modules/messaging/components/common/ConversationList.jsx`.
+- PASS: `npx eslint src/modules/common/components/loading/LoadingScreen.jsx src/modules/common/components/PageCanvas.jsx src/modules/common/components/common/ConfirmDialog.jsx src/modules/common/components/forms/SearchForm.jsx src/modules/messaging/components/common/MessageStatus.jsx src/modules/messaging/components/common/EmojiPicker.jsx src/modules/common/components/RouteErrorBoundary.jsx src/modules/common/components/ErrorBoundary.jsx src/pages/ResetPassword.jsx src/modules/common/components/controls/GestureControl.jsx --fix`.
+- PASS: `npx eslint src/modules/messaging/services/messagingService.js src/modules/common/services/__mocks__/axios.js src/modules/common/components/common/EmptyState.jsx src/modules/messaging/components/common/AttachmentPreview.jsx src/modules/common/utils/apiUtils.js src/modules/common/components/common/Toast.jsx src/modules/common/components/GlobalErrorBoundary.jsx src/modules/messaging/components/common/Message.jsx src/modules/common/components/common/SEO.jsx src/modules/messaging/components/common/MessageAttachments.jsx src/modules/common/components/cards/JobCard.jsx src/modules/messaging/components/common/TypingIndicator.jsx src/modules/messaging/components/common/MessageDateDivider.jsx src/modules/common/components/layout/PageHeader.jsx --fix`.
+- PASS: `npx eslint src/modules/messaging src/modules/common src/pages` (clean run, no errors/warnings).
 
 ### Session: Hirer Module Lint Debt Multi-Wave Cleanup March 31 2026 ✅ COMPLETED
 

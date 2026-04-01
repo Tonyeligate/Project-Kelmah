@@ -1,4 +1,5 @@
-﻿import {
+﻿/* eslint-disable react-refresh/only-export-components */
+import {
   createContext,
   useState,
   useEffect,
@@ -18,7 +19,10 @@ import {
   MESSAGE_DELIVERY_ALIASES,
   SOCKET_EVENTS,
 } from '../../../services/socketEvents';
-import { createRealtimeMessageDeduper } from '../utils/realtimeMessageDeduper';
+import {
+  buildRealtimeMessageKey,
+  createRealtimeMessageDeduper,
+} from '../utils/realtimeMessageDeduper';
 import {
   createFeatureLogger,
   devError,
@@ -194,6 +198,84 @@ const normalizeMessageAttachments = (message = {}) => {
   };
 };
 
+const getMessageTimestamp = (message = {}) => {
+  const timestamp = message.updatedAt || message.createdAt || message.timestamp;
+  const parsedTimestamp = new Date(timestamp || 0).getTime();
+  return Number.isFinite(parsedTimestamp) ? parsedTimestamp : 0;
+};
+
+const isOptimisticMessage = (message = {}) =>
+  Boolean(
+    message?.optimistic ||
+      String(message?.status || '').toLowerCase() === 'sending',
+  );
+
+const preferMessageVersion = (existingMessage, incomingMessage) => {
+  if (!existingMessage) {
+    return incomingMessage;
+  }
+
+  if (!incomingMessage) {
+    return existingMessage;
+  }
+
+  const existingOptimistic = isOptimisticMessage(existingMessage);
+  const incomingOptimistic = isOptimisticMessage(incomingMessage);
+
+  if (existingOptimistic !== incomingOptimistic) {
+    return existingOptimistic ? incomingMessage : existingMessage;
+  }
+
+  const existingTimestamp = getMessageTimestamp(existingMessage);
+  const incomingTimestamp = getMessageTimestamp(incomingMessage);
+
+  if (incomingTimestamp !== existingTimestamp) {
+    return incomingTimestamp > existingTimestamp
+      ? incomingMessage
+      : existingMessage;
+  }
+
+  return {
+    ...existingMessage,
+    ...incomingMessage,
+  };
+};
+
+const dedupeMessageList = (messages = []) => {
+  if (!Array.isArray(messages) || messages.length === 0) {
+    return [];
+  }
+
+  const dedupedMessages = [];
+  const messageIndexByKey = new Map();
+
+  messages.forEach((message) => {
+    if (!message || typeof message !== 'object') {
+      return;
+    }
+
+    const key = buildRealtimeMessageKey(message);
+    if (!key) {
+      dedupedMessages.push(message);
+      return;
+    }
+
+    if (!messageIndexByKey.has(key)) {
+      messageIndexByKey.set(key, dedupedMessages.length);
+      dedupedMessages.push(message);
+      return;
+    }
+
+    const existingIndex = messageIndexByKey.get(key);
+    dedupedMessages[existingIndex] = preferMessageVersion(
+      dedupedMessages[existingIndex],
+      message,
+    );
+  });
+
+  return dedupedMessages;
+};
+
 const normalizeConversation = (conversation = {}) => {
   if (!conversation || typeof conversation !== 'object') return null;
 
@@ -228,9 +310,11 @@ const normalizeConversationList = (list = []) =>
     .filter(Boolean);
 
 const normalizeMessageList = (list = []) =>
-  (Array.isArray(list) ? list : [])
-    .map((message) => normalizeMessageAttachments(message))
-    .filter(Boolean);
+  dedupeMessageList(
+    (Array.isArray(list) ? list : [])
+      .map((message) => normalizeMessageAttachments(message))
+      .filter(Boolean),
+  );
 
 const createTemporaryConversation = (participant = {}) => {
   const participantId = resolveParticipantId(participant);
@@ -925,6 +1009,7 @@ export const MessageProvider = ({ children }) => {
           const now = new Date().toISOString();
           const optimisticMessage = {
             id: clientId,
+            clientId,
             conversationId: activeConversation.id,
             senderId: currentUserId,
             sender: currentUserId,
@@ -942,7 +1027,9 @@ export const MessageProvider = ({ children }) => {
             status: 'sending',
             optimistic: true,
           };
-          setMessages((prev) => [...prev, optimisticMessage]);
+          setMessages((prev) =>
+            dedupeMessageList([...prev, optimisticMessage]),
+          );
           setConversations((prev) =>
             sortConversationsByActivity(
               prev.map((c) =>
@@ -1019,12 +1106,12 @@ export const MessageProvider = ({ children }) => {
 
                   const idx = prev.findIndex((m) => m.id === clientId);
                   if (idx === -1) {
-                    return [...prev, normalized];
+                    return dedupeMessageList([...prev, normalized]);
                   }
 
                   const copy = [...prev];
                   copy[idx] = { ...normalized, status: 'sent' };
-                  return copy;
+                  return dedupeMessageList(copy);
                 });
                 setConversations((prev) =>
                   sortConversationsByActivity(
@@ -1083,9 +1170,9 @@ export const MessageProvider = ({ children }) => {
                 ...updated[existingIndex],
                 ...normalized,
               };
-              return updated;
+              return dedupeMessageList(updated);
             }
-            return [...prev, normalized];
+            return dedupeMessageList([...prev, normalized]);
           });
           setConversations((prev) =>
             sortConversationsByActivity(

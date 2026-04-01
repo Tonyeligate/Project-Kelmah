@@ -25,6 +25,14 @@ describe('realtimeMessageDeduper contracts', () => {
         conversationId: 'conv-3',
       }),
     ).toBe('conv-3:msg-3');
+
+    expect(
+      buildRealtimeMessageKey({
+        id: 'server-msg-4',
+        clientId: 'client-msg-4',
+        conversationId: 'conv-4',
+      }),
+    ).toBe('conv-4:client-msg-4');
   });
 
   test('returns null when payload has no stable message id', () => {
@@ -34,13 +42,15 @@ describe('realtimeMessageDeduper contracts', () => {
   test('marks duplicate deliveries across aliased events', () => {
     const deduper = createRealtimeMessageDeduper();
     const firstDelivery = {
-      messageId: 'msg-9',
+      id: 'server-msg-9',
+      clientId: 'client-msg-9',
       conversationId: 'conv-9',
       content: 'hello',
     };
 
     const secondDelivery = {
-      id: 'msg-9',
+      id: 'server-msg-9-b',
+      clientId: 'client-msg-9',
       conversation_id: 'conv-9',
       content: 'hello',
     };
