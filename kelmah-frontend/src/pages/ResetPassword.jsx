@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   Alert,
   Box,
@@ -7,7 +7,6 @@ import {
   InputAdornment,
   TextField,
   Typography,
-  useTheme,
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import {
@@ -23,7 +22,6 @@ import PageCanvas from '../modules/common/components/PageCanvas';
 import { withSafeAreaBottom } from '@/utils/safeArea';
 
 const ResetPassword = () => {
-  const theme = useTheme();
   const isMobile = useBreakpointDown('md');
   const navigate = useNavigate();
 
@@ -76,7 +74,7 @@ const ResetPassword = () => {
       );
       setPassword('');
       setConfirmPassword('');
-    } catch (err) {
+    } catch {
       setError('Password reset failed. The link may be invalid or expired.');
     } finally {
       setLoading(false);

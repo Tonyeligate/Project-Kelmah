@@ -1,5 +1,4 @@
-﻿/* eslint-disable no-unused-vars, react/prop-types */
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+﻿import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Box,
   CircularProgress,

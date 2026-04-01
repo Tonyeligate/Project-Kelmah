@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Alert,
@@ -19,14 +19,17 @@ import {
 } from '@mui/material';
 import {
   Bolt as BoltIcon,
+  ChatBubbleOutline as ChatBubbleOutlineIcon,
   CheckCircleOutline as CheckCircleOutlineIcon,
   Construction as ConstructionIcon,
   ElectricBolt as ElectricBoltIcon,
+  Handshake as HandshakeIcon,
   Plumbing as PlumbingIcon,
   Roofing as RoofingIcon,
   Search as SearchIcon,
   Security as SecurityIcon,
   Star as StarIcon,
+  Verified as VerifiedIcon,
   Work as WorkIcon,
 } from '@mui/icons-material';
 import SEO from '@/modules/common/components/common/SEO';
@@ -114,7 +117,7 @@ const HomeLanding = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isDark = theme.palette.mode === 'dark';
 
-  const [, setPlatformStats] = useState(null);
+  const [platformStats, setPlatformStats] = useState(null);
   const [statsError, setStatsError] = useState('');
 
   useEffect(() => {
@@ -140,6 +143,12 @@ const HomeLanding = () => {
       controller.abort();
     };
   }, []);
+
+  const statValue = (value, fallback) => {
+    if (value == null || value === 0) return fallback;
+    if (value >= 1000) return `${Math.round(value / 1000)}k+`;
+    return `${value}+`;
+  };
 
   const cardBg = isDark ? 'rgba(10,13,18,0.68)' : 'rgba(255,255,255,0.88)';
   const cardBorder = isDark ? alpha('#FFD166', 0.16) : alpha('#111827', 0.08);
@@ -220,24 +229,17 @@ const HomeLanding = () => {
                     maxWidth: 660,
                     fontWeight: 400,
                     lineHeight: 1.75,
-                    color: isDark
-                      ? alpha('#F8FAFC', 0.78)
-                      : alpha('#0F172A', 0.82),
+                    color: isDark ? alpha('#F8FAFC', 0.78) : alpha('#0F172A', 0.82),
                     fontSize: { xs: '1rem', md: '1.12rem' },
                   }}
                 >
-                  Kelmah connects homes, shops, and project sites in Accra,
-                  Kumasi, Tamale, Takoradi, and beyond with vetted carpenters,
-                  electricians, plumbers, masons, painters, and other
-                  professionals. Search, chat, compare, and hire in one simple
+                  Kelmah connects homes, shops, and project sites in Accra, Kumasi, Tamale,
+                  Takoradi, and beyond with vetted carpenters, electricians, plumbers, masons,
+                  painters, and other professionals. Search, chat, compare, and hire in one simple
                   flow.
                 </Typography>
 
-                <Stack
-                  direction={{ xs: 'column', sm: 'row' }}
-                  spacing={1.5}
-                  sx={{ mt: { xs: 1, md: 1 } }}
-                >
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ mt: { xs: 1, md: 1 } }}>
                   <Button
                     variant="contained"
                     size="large"
@@ -266,39 +268,26 @@ const HomeLanding = () => {
                     sx={{
                       minHeight: { xs: 50, sm: 54 },
                       borderRadius: 2,
-                      borderColor: isDark
-                        ? alpha('#FFFFFF', 0.22)
-                        : alpha('#0F172A', 0.18),
+                      borderColor: isDark ? alpha('#FFFFFF', 0.22) : alpha('#0F172A', 0.18),
                       color: 'inherit',
                       fontWeight: 900,
                       textTransform: 'none',
                       px: 3.5,
-                      '&:hover': {
-                        borderColor: '#FFD166',
-                        bgcolor: alpha('#FFD166', 0.08),
-                      },
+                      '&:hover': { borderColor: '#FFD166', bgcolor: alpha('#FFD166', 0.08) },
                     }}
                   >
                     I need work
                   </Button>
                 </Stack>
 
-                <Stack
-                  direction="row"
-                  spacing={1}
-                  useFlexGap
-                  flexWrap="wrap"
-                  sx={{ display: { xs: 'none', md: 'flex' } }}
-                >
+                <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ display: { xs: 'none', md: 'flex' } }}>
                   {BENEFITS.map((item) => (
                     <Chip
                       key={item}
                       label={item}
                       sx={{
                         fontWeight: 700,
-                        bgcolor: isDark
-                          ? alpha('#FFFFFF', 0.08)
-                          : alpha('#111827', 0.06),
+                        bgcolor: isDark ? alpha('#FFFFFF', 0.08) : alpha('#111827', 0.06),
                         color: 'inherit',
                         border: `1px solid ${isDark ? alpha('#FFFFFF', 0.08) : alpha('#111827', 0.08)}`,
                       }}
@@ -306,15 +295,8 @@ const HomeLanding = () => {
                   ))}
                 </Stack>
 
-                <Stack
-                  direction="row"
-                  spacing={1.5}
-                  alignItems="center"
-                  sx={{ mt: { xs: 1, md: 0 } }}
-                >
-                  <Avatar
-                    sx={{ bgcolor: alpha('#FFD166', 0.18), color: '#FFD166' }}
-                  >
+                <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mt: { xs: 1, md: 0 } }}>
+                  <Avatar sx={{ bgcolor: alpha('#FFD166', 0.18), color: '#FFD166' }}>
                     <BoltIcon />
                   </Avatar>
                   <Box>
@@ -346,8 +328,8 @@ const HomeLanding = () => {
                       Why Kelmah works in Ghana
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      A direct, low-friction flow built for people who want to
-                      get work done in cities and towns across Ghana.
+                      A direct, low-friction flow built for people who want to get work done in
+                      cities and towns across Ghana.
                     </Typography>
                   </Box>
 
@@ -360,40 +342,19 @@ const HomeLanding = () => {
                           sx={{
                             p: 1.4,
                             borderRadius: 3,
-                            bgcolor: isDark
-                              ? alpha('#FFFFFF', 0.04)
-                              : alpha('#0F172A', 0.03),
+                            bgcolor: isDark ? alpha('#FFFFFF', 0.04) : alpha('#0F172A', 0.03),
                             border: `1px solid ${isDark ? alpha('#FFFFFF', 0.07) : alpha('#0F172A', 0.06)}`,
                           }}
                         >
-                          <Stack
-                            direction="row"
-                            spacing={1.5}
-                            alignItems="flex-start"
-                          >
-                            <Avatar
-                              sx={{
-                                bgcolor: alpha('#FFD166', 0.14),
-                                color: '#FFD166',
-                                width: 44,
-                                height: 44,
-                              }}
-                            >
+                          <Stack direction="row" spacing={1.5} alignItems="flex-start">
+                            <Avatar sx={{ bgcolor: alpha('#FFD166', 0.14), color: '#FFD166', width: 44, height: 44 }}>
                               <Icon fontSize="small" />
                             </Avatar>
                             <Box>
-                              <Typography
-                                variant="subtitle2"
-                                fontWeight={900}
-                                sx={{ mb: 0.25 }}
-                              >
+                              <Typography variant="subtitle2" fontWeight={900} sx={{ mb: 0.25 }}>
                                 {item.title}
                               </Typography>
-                              <Typography
-                                variant="body2"
-                                color="text.secondary"
-                                sx={{ lineHeight: 1.65 }}
-                              >
+                              <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.65 }}>
                                 {item.text}
                               </Typography>
                             </Box>
@@ -419,24 +380,15 @@ const HomeLanding = () => {
                   sx={{
                     p: 2,
                     borderRadius: 3,
-                    bgcolor: isDark
-                      ? alpha('#FFFFFF', 0.06)
-                      : alpha('#FFFFFF', 0.85),
+                    bgcolor: isDark ? alpha('#FFFFFF', 0.06) : alpha('#FFFFFF', 0.85),
                     border: `1px solid ${isDark ? alpha('#FFFFFF', 0.08) : alpha('#0F172A', 0.08)}`,
                     textAlign: 'center',
                   }}
                 >
-                  <Typography
-                    variant="h5"
-                    fontWeight={900}
-                    sx={{ color: '#FFD166', lineHeight: 1 }}
-                  >
+                  <Typography variant="h5" fontWeight={900} sx={{ color: '#FFD166', lineHeight: 1 }}>
                     {tile.value}
                   </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{ mt: 0.5, color: 'text.secondary' }}
-                  >
+                  <Typography variant="body2" sx={{ mt: 0.5, color: 'text.secondary' }}>
                     {tile.label}
                   </Typography>
                 </Paper>
@@ -451,18 +403,9 @@ const HomeLanding = () => {
           <Stack spacing={1} sx={{ mb: 4 }}>
             <Chip
               label="How it works"
-              sx={{
-                width: 'fit-content',
-                fontWeight: 900,
-                bgcolor: alpha('#FFD166', 0.12),
-                color: 'inherit',
-              }}
+              sx={{ width: 'fit-content', fontWeight: 900, bgcolor: alpha('#FFD166', 0.12), color: 'inherit' }}
             />
-            <Typography
-              variant="h3"
-              fontWeight={900}
-              sx={{ fontSize: { xs: '1.95rem', md: '2.8rem' } }}
-            >
+            <Typography variant="h3" fontWeight={900} sx={{ fontSize: { xs: '1.95rem', md: '2.8rem' } }}>
               Three steps to a completed job.
             </Typography>
           </Stack>
@@ -475,30 +418,18 @@ const HomeLanding = () => {
                     height: '100%',
                     p: 3,
                     borderRadius: 4,
-                    bgcolor: isDark
-                      ? alpha('#FFFFFF', 0.05)
-                      : alpha('#FFFFFF', 0.9),
+                    bgcolor: isDark ? alpha('#FFFFFF', 0.05) : alpha('#FFFFFF', 0.9),
                     border: `1px solid ${isDark ? alpha('#FFFFFF', 0.08) : alpha('#0F172A', 0.08)}`,
                   }}
                 >
                   <Stack spacing={1.5}>
-                    <Avatar
-                      sx={{
-                        bgcolor: alpha('#FFD166', 0.16),
-                        color: '#FFD166',
-                        fontWeight: 900,
-                      }}
-                    >
+                    <Avatar sx={{ bgcolor: alpha('#FFD166', 0.16), color: '#FFD166', fontWeight: 900 }}>
                       {index + 1}
                     </Avatar>
                     <Typography variant="h6" fontWeight={900}>
                       {step.title}
                     </Typography>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ lineHeight: 1.75 }}
-                    >
+                    <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.75 }}>
                       {step.text}
                     </Typography>
                   </Stack>
@@ -519,39 +450,22 @@ const HomeLanding = () => {
                   height: '100%',
                   p: { xs: 3, md: 4 },
                   borderRadius: 4,
-                  bgcolor: isDark
-                    ? alpha('#FFFFFF', 0.05)
-                    : alpha('#FFFFFF', 0.9),
+                  bgcolor: isDark ? alpha('#FFFFFF', 0.05) : alpha('#FFFFFF', 0.9),
                   border: `1px solid ${isDark ? alpha('#FFFFFF', 0.08) : alpha('#0F172A', 0.08)}`,
                 }}
               >
                 <Stack spacing={2}>
                   <Chip
                     label="Built for mobile-first users"
-                    sx={{
-                      width: 'fit-content',
-                      fontWeight: 900,
-                      bgcolor: alpha('#FFD166', 0.14),
-                      color: 'inherit',
-                    }}
+                    sx={{ width: 'fit-content', fontWeight: 900, bgcolor: alpha('#FFD166', 0.14), color: 'inherit' }}
                   />
-                  <Typography
-                    variant="h4"
-                    fontWeight={900}
-                    sx={{ fontSize: { xs: '1.7rem', md: '2.35rem' } }}
-                  >
-                    Clear enough for first-time users. Strong enough for serious
-                    jobs in Ghana.
+                  <Typography variant="h4" fontWeight={900} sx={{ fontSize: { xs: '1.7rem', md: '2.35rem' } }}>
+                    Clear enough for first-time users. Strong enough for serious jobs in Ghana.
                   </Typography>
-                  <Typography
-                    variant="body1"
-                    color="text.secondary"
-                    sx={{ lineHeight: 1.85 }}
-                  >
-                    Kelmah keeps the important parts up front: who can help, how
-                    much it costs, and how to start a conversation. The layout
-                    is designed to stay readable on small screens and still feel
-                    polished on desktop, whether you are in Accra, Kumasi,
+                  <Typography variant="body1" color="text.secondary" sx={{ lineHeight: 1.85 }}>
+                    Kelmah keeps the important parts up front: who can help, how much it costs, and
+                    how to start a conversation. The layout is designed to stay readable on small
+                    screens and still feel polished on desktop, whether you are in Accra, Kumasi,
                     Tamale, or Takoradi.
                   </Typography>
 
@@ -564,12 +478,7 @@ const HomeLanding = () => {
                       'Trust signals that reduce hiring risk',
                       'A clean visual style that feels premium, not busy',
                     ].map((item) => (
-                      <Stack
-                        key={item}
-                        direction="row"
-                        spacing={1.25}
-                        alignItems="center"
-                      >
+                      <Stack key={item} direction="row" spacing={1.25} alignItems="center">
                         <CheckCircleOutlineIcon sx={{ color: '#D4A90A' }} />
                         <Typography variant="body2" color="text.secondary">
                           {item}
@@ -588,9 +497,7 @@ const HomeLanding = () => {
                   height: '100%',
                   overflow: 'hidden',
                   borderRadius: 4,
-                  bgcolor: isDark
-                    ? alpha('#FFFFFF', 0.05)
-                    : alpha('#FFFFFF', 0.9),
+                  bgcolor: isDark ? alpha('#FFFFFF', 0.05) : alpha('#FFFFFF', 0.9),
                   border: `1px solid ${isDark ? alpha('#FFFFFF', 0.08) : alpha('#0F172A', 0.08)}`,
                 }}
               >
@@ -607,14 +514,9 @@ const HomeLanding = () => {
                     <Typography variant="h5" fontWeight={900}>
                       Join as a worker or hirer
                     </Typography>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ lineHeight: 1.75 }}
-                    >
-                      Start with the role that fits you best. You can always
-                      browse, compare, and switch between hiring and working
-                      later from anywhere in Ghana.
+                    <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.75 }}>
+                      Start with the role that fits you best. You can always browse, compare, and
+                      switch between hiring and working later from anywhere in Ghana.
                     </Typography>
 
                     <Stack spacing={1.25} sx={{ pt: 0.5 }}>
@@ -641,28 +543,18 @@ const HomeLanding = () => {
                         onClick={() => navigate('/register?role=hirer')}
                         sx={{
                           minHeight: 50,
-                          borderColor: isDark
-                            ? alpha('#FFFFFF', 0.22)
-                            : alpha('#0F172A', 0.18),
+                          borderColor: isDark ? alpha('#FFFFFF', 0.22) : alpha('#0F172A', 0.18),
                           color: 'inherit',
                           fontWeight: 900,
                           textTransform: 'none',
-                          '&:hover': {
-                            borderColor: '#FFD166',
-                            bgcolor: alpha('#FFD166', 0.08),
-                          },
+                          '&:hover': { borderColor: '#FFD166', bgcolor: alpha('#FFD166', 0.08) },
                         }}
                       >
                         Create hirer account
                       </Button>
                     </Stack>
 
-                    <Stack
-                      direction="row"
-                      spacing={1}
-                      alignItems="center"
-                      sx={{ pt: 1 }}
-                    >
+                    <Stack direction="row" spacing={1} alignItems="center" sx={{ pt: 1 }}>
                       <SecurityIcon sx={{ color: '#D4A90A' }} />
                       <Typography variant="body2" color="text.secondary">
                         Built for trust, safety, and clear communication.
@@ -679,16 +571,12 @@ const HomeLanding = () => {
       <Box component="section" sx={{ py: { xs: 5, md: 8 } }}>
         <Container>
           <Stack spacing={1} sx={{ mb: 4 }}>
-            <Typography
-              variant="h4"
-              fontWeight={900}
-              sx={{ fontSize: { xs: '1.9rem', md: '2.5rem' } }}
-            >
+            <Typography variant="h4" fontWeight={900} sx={{ fontSize: { xs: '1.9rem', md: '2.5rem' } }}>
               What people across Ghana say
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              Real users across Accra, Kumasi, and Tamale appreciate the fast
-              chat flow and the clarity of the marketplace.
+              Real users across Accra, Kumasi, and Tamale appreciate the fast chat flow and the
+              clarity of the marketplace.
             </Typography>
           </Stack>
 
@@ -701,26 +589,17 @@ const HomeLanding = () => {
                     p: 3,
                     height: '100%',
                     borderRadius: 4,
-                    bgcolor: isDark
-                      ? alpha('#FFFFFF', 0.05)
-                      : alpha('#FFFFFF', 0.9),
+                    bgcolor: isDark ? alpha('#FFFFFF', 0.05) : alpha('#FFFFFF', 0.9),
                     border: `1px solid ${isDark ? alpha('#FFFFFF', 0.08) : alpha('#0F172A', 0.08)}`,
                   }}
                 >
                   <Stack spacing={1.5}>
                     <Stack direction="row" spacing={0.25}>
                       {Array.from({ length: 5 }).map((_, index) => (
-                        <StarIcon
-                          key={`star-${testimonial.name}-${index}`}
-                          sx={{ color: '#FFD166', fontSize: 18 }}
-                        />
+                        <StarIcon key={`star-${testimonial.name}-${index}`} sx={{ color: '#FFD166', fontSize: 18 }} />
                       ))}
                     </Stack>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ lineHeight: 1.8 }}
-                    >
+                    <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.8 }}>
                       {testimonial.text}
                     </Typography>
                     <Box>
@@ -754,24 +633,15 @@ const HomeLanding = () => {
                   sx={{
                     p: 2,
                     borderRadius: 3,
-                    bgcolor: isDark
-                      ? alpha('#FFFFFF', 0.05)
-                      : alpha('#FFFFFF', 0.9),
+                    bgcolor: isDark ? alpha('#FFFFFF', 0.05) : alpha('#FFFFFF', 0.9),
                     border: `1px solid ${isDark ? alpha('#FFFFFF', 0.08) : alpha('#0F172A', 0.08)}`,
                     textAlign: 'center',
                   }}
                 >
-                  <Typography
-                    variant="h5"
-                    fontWeight={900}
-                    sx={{ color: '#FFD166', lineHeight: 1 }}
-                  >
+                  <Typography variant="h5" fontWeight={900} sx={{ color: '#FFD166', lineHeight: 1 }}>
                     {tile.value}
                   </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{ mt: 0.5, color: 'text.secondary' }}
-                  >
+                  <Typography variant="body2" sx={{ mt: 0.5, color: 'text.secondary' }}>
                     {tile.label}
                   </Typography>
                 </Paper>
@@ -785,3 +655,4 @@ const HomeLanding = () => {
 };
 
 export default HomeLanding;
+

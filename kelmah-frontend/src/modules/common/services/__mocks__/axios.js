@@ -1,3 +1,5 @@
+import { jest } from '@jest/globals';
+
 export const jobServiceClient = {
   get: jest.fn(),
   post: jest.fn(),

@@ -1,11 +1,6 @@
-import React from 'react';
+/* eslint-disable react/prop-types */
 import { Box, Tooltip, Typography, Avatar, AvatarGroup } from '@mui/material';
-import {
-  CheckCircleOutline,
-  Check,
-  CheckCircle,
-  AccessTime,
-} from '@mui/icons-material';
+import { Check, CheckCircle, AccessTime } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 
 const StatusContainer = styled(Box)(({ theme }) => ({

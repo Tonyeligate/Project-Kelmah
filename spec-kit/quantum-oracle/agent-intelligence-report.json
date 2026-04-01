@@ -1,6 +1,6 @@
 {
-  "generatedAtUtc": "2026-03-24T03:57:06.660Z",
-  "quarter": "Q1-2026",
+  "generatedAtUtc": "2026-04-01T18:10:40.737Z",
+  "quarter": "Q2-2026",
   "inputSummary": "spec-kit/quantum-oracle/learning-ledger-summary.json",
   "learningEnabledTaskCount": 3,
   "advancedMissingLearningEvidence": [],
@@ -43,15 +43,15 @@
     },
     {
       "agent": "debugger",
-      "gateCount": 15,
+      "gateCount": 16,
       "learningTasks": 0,
       "growthVelocity": 0,
       "transferSuccess": 0,
       "regressionPreventionStrength": 0,
-      "gateMaturity": 93.8,
+      "gateMaturity": 100,
       "toolchainDepth": 0,
       "immersiveSupportReadiness": 100,
-      "overallScore": 18.4
+      "overallScore": 19
     },
     {
       "agent": "database",

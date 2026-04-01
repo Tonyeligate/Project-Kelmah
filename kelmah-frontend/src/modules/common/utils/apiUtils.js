@@ -3,10 +3,9 @@ import { devDebug } from '@/modules/common/utils/devLogger';
 
 /**
  * Check if the API is reachable
- * @param {boolean} showLoading - Whether to show loading state in component
  * @returns {Promise<boolean>} - Whether the API is reachable
  */
-export const checkApiHealth = async (showLoading = true) => {
+export const checkApiHealth = async () => {
   // In development, allow proceeding without API connectivity
   if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_FRONTEND === 'true') {
     devDebug('[apiUtils] Development mode: assuming API is available');

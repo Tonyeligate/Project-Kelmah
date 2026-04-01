@@ -97,7 +97,6 @@ const JobCard = ({
     hirerAvatar,
     urgency,
     applications = 0,
-    coverImage,
   } = job;
   const resolvedCoverImage = resolveJobVisualUrl(job);
   const resolvedHirerAvatar =

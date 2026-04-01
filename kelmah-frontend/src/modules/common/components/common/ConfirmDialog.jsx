@@ -1,4 +1,5 @@
-import React, { useId } from 'react';
+/* eslint-disable react/prop-types */
+import { useId } from 'react';
 import {
   Dialog,
   DialogTitle,

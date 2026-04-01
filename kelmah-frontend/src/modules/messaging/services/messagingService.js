@@ -7,7 +7,6 @@
 import axios from 'axios';
 import { api } from '../../../services/apiClient';
 import store from '../../../store';
-import { getServiceStatusMessage } from '../../../utils/serviceHealthCheck';
 import { secureStorage } from '../../../utils/secureStorage';
 import authService from '../../auth/services/authService';
 import { devWarn } from '@/modules/common/utils/devLogger';
@@ -275,7 +274,7 @@ export const messagingService = {
           };
         }
         return normalizeConversation(data);
-      } catch (_) {
+      } catch {
         // Fall through to gateway
       }
     }

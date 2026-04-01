@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import {
   Box,
@@ -118,9 +118,10 @@ const MessageAttachments = ({
 
   // Cleanup blob URLs on unmount or when attachments change
   useEffect(() => {
+    const blobUrls = blobUrlsRef.current;
     return () => {
-      blobUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
-      blobUrlsRef.current.clear();
+      blobUrls.forEach((url) => URL.revokeObjectURL(url));
+      blobUrls.clear();
     };
   }, [attachments]);
 

@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import {
   Box,
@@ -11,14 +11,11 @@ import {
   Typography,
   Popper,
   Paper,
-  Divider,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import EmojiEmotionsIcon from '@mui/icons-material/EmojiEmotions';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import FavoriteIcon from '@mui/icons-material/Favorite';
 import { devError } from '@/modules/common/utils/devLogger';
 
 // Define emoji categories

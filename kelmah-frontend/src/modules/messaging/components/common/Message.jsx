@@ -13,7 +13,6 @@ import {
   Paper,
   Fade,
   Chip,
-  useTheme,
 } from '@mui/material';
 import { styled, alpha } from '@mui/material/styles';
 import { format } from 'date-fns';
@@ -88,7 +87,6 @@ const Message = ({
   const [isHovered, setIsHovered] = useState(false);
   const [isFocusWithin, setIsFocusWithin] = useState(false);
   const messageRef = useRef(null);
-  const theme = useTheme();
   const isMobile = useBreakpointDown('md');
 
   // Long-press handler for mobile: opens context menu at touch coordinates

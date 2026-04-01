@@ -1,4 +1,5 @@
-﻿import React from 'react';
+﻿/* eslint-disable react/prop-types */
+import React from 'react';
 import { Box, Typography, Button, Paper } from '@mui/material';
 import { ErrorOutline as ErrorIcon } from '@mui/icons-material';
 import { devError } from '@/modules/common/utils/devLogger';
