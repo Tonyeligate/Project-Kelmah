@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import PropTypes from 'prop-types';
 import {
   List,
   ListItem,
@@ -259,6 +260,12 @@ const RecentActivityFeed = ({
       </Box>
     </Paper>
   );
+};
+
+RecentActivityFeed.propTypes = {
+  jobs: PropTypes.array,
+  applications: PropTypes.oneOfType([PropTypes.array, PropTypes.object]),
+  activities: PropTypes.oneOfType([PropTypes.array, PropTypes.oneOf([null])]),
 };
 
 export default RecentActivityFeed;

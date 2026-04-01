@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Alert,
   Avatar,
@@ -473,7 +473,7 @@ const JobProgressTracker = () => {
               Milestones
             </Typography>
             <List dense>
-              {job.milestones.map((milestone, index) => (
+              {job.milestones.map((milestone) => (
                 <ListItem key={milestone.id} sx={{ px: 0 }}>
                   <ListItemAvatar>
                     <Avatar

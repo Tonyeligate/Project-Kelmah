@@ -397,7 +397,9 @@ const missingEnvVars = requiredEnvVars.filter((envVar) => !process.env[envVar]);
 if (missingEnvVars.length > 0) {
   logger.error("Error: Missing required environment variables:");
   missingEnvVars.forEach((envVar) => logger.error(`- ${envVar}`));
-  process.exit(1);
+  if (require.main === module) {
+    process.exit(1);
+  }
 }
 
 // Connect to MongoDB but do not block server start if ALLOW_START_WITHOUT_DB=true
@@ -409,19 +411,21 @@ const startServer = () => {
   });
 };
 
-connectDB()
-  .then(() => {
-    logger.info("✅ Auth Service connected to MongoDB");
-    startServer();
-  })
-  .catch((err) => {
-    logger.error("❌ MongoDB connection error:", err);
-    if (process.env.ALLOW_START_WITHOUT_DB === 'true') {
-      logger.warn('Starting server without DB connection due to ALLOW_START_WITHOUT_DB=true');
+if (require.main === module) {
+  connectDB()
+    .then(() => {
+      logger.info("✅ Auth Service connected to MongoDB");
       startServer();
-    } else {
-      process.exit(1);
-    }
-  });
+    })
+    .catch((err) => {
+      logger.error("❌ MongoDB connection error:", err);
+      if (process.env.ALLOW_START_WITHOUT_DB === 'true') {
+        logger.warn('Starting server without DB connection due to ALLOW_START_WITHOUT_DB=true');
+        startServer();
+      } else {
+        process.exit(1);
+      }
+    });
+}
 
 module.exports = app;

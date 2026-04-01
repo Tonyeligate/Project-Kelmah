@@ -1,4 +1,4 @@
-import React from 'react';
+/* eslint-disable react/prop-types */
 import {
   Card,
   CardContent,
@@ -10,9 +10,8 @@ import {
   Rating,
   Stack,
   Button,
-  IconButton,
 } from '@mui/material';
-import { LocationOn, Email, Phone, Star, Verified } from '@mui/icons-material';
+import { LocationOn, Email, Phone, Verified } from '@mui/icons-material';
 
 /**
  * Generic UserCard Component

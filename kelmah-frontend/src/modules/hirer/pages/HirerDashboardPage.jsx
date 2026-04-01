@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  useEffect,
-  useCallback,
-  useRef,
-  useMemo,
-} from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import PullToRefresh from '../../../components/common/PullToRefresh';
 import {
   Box,
@@ -14,12 +8,10 @@ import {
   ButtonBase,
   Typography,
   Button,
-  CircularProgress,
   Alert,
   IconButton,
   Tooltip,
   Chip,
-  LinearProgress,
   Stack,
   useTheme,
   Fade,
@@ -37,7 +29,6 @@ import {
   Payment as PaymentIcon,
   Refresh as RefreshIcon,
   Add as AddIcon,
-  ArrowForward as ArrowForwardIcon,
   CheckCircle as CheckCircleIcon,
   People as PeopleIcon,
   Message as MessageIcon,
@@ -77,17 +68,6 @@ import { useBreakpointDown } from '@/hooks/useResponsive';
 import { formatGhanaCurrency } from '@/utils/formatters';
 import PageCanvas from '@/modules/common/components/PageCanvas';
 import { withBottomNavSafeArea } from '@/utils/safeArea';
-
-/* ---------- Extracted sub-component (stable reference) ---------- */
-const LoadingOverviewSkeleton = () => (
-  <Grid container spacing={{ xs: 1.5, sm: 3, md: 2.5, lg: 2 }}>
-    {[...Array(4)].map((_, i) => (
-      <Grid item xs={6} sm={6} md={3} key={`overview-skeleton-${i}`}>
-        <Skeleton variant="rounded" height={180} animation="wave" />
-      </Grid>
-    ))}
-  </Grid>
-);
 
 const DASHBOARD_LOADING_TIMEOUT_MS = 10000;
 const APPLICATION_REFRESH_TTL_MS = 2 * 60 * 1000; // 2 minutes
@@ -311,7 +291,7 @@ const HirerDashboardPage = () => {
             'Backend services are temporarily unavailable. Please retry in a few seconds.',
           );
         }
-      } catch (err) {
+      } catch {
         // Error captured in state — no console logging in production
         if (!isMountedRef.current) {
           return;
@@ -375,7 +355,7 @@ const HirerDashboardPage = () => {
       await fetchDashboardData('manual-refresh');
       setLastRefreshed(Date.now());
       setTimeSinceRefresh('Just now');
-    } catch (err) {
+    } catch {
       // Error captured in state — no console logging in production
       setError('Failed to refresh data. Please try again.');
     } finally {

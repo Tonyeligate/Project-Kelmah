@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+/* eslint-disable react/prop-types */
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   Container,
   Paper,
@@ -6,9 +7,6 @@ import {
   Box,
   Tabs,
   Tab,
-  Card,
-  CardContent,
-  CardActionArea,
   Button,
   Avatar,
   Chip,
@@ -48,8 +46,6 @@ import {
   Badge as BadgeIcon,
   Work,
   OpenInNew,
-  AttachMoney,
-  Schedule,
   FilterList,
 } from '@mui/icons-material';
 import { formatDistanceToNow } from 'date-fns';
@@ -67,7 +63,6 @@ import {
   APPLICATIONS_PAGE_SIZE,
   APPLICATIONS_PAGE_SIZE_OPTIONS,
   APPLICATION_SORT_OPTIONS,
-  APPLICATION_STATUS_TABS,
   DEFAULT_APPLICATION_COUNTS,
   STATUS_COLORS,
   formatStatusLabel,
@@ -412,7 +407,7 @@ function ApplicationManagementPage() {
         }
       }
     },
-    [activeTab, currentPage, pageSize, selectedJobId, sortBy, urlJobId],
+    [activeTab, currentPage, pageSize, selectedJobId, sortBy],
   );
 
   // ── Fetch jobs and their applications ──────────────────────────
@@ -598,7 +593,7 @@ function ApplicationManagementPage() {
         `Application ${actionType === 'accepted' ? 'accepted' : 'rejected'} successfully`,
         { variant: 'success' },
       );
-    } catch (err) {
+    } catch {
       setError('Failed to update application status.');
       enqueueSnackbar('Failed to update application status', {
         variant: 'error',
@@ -705,7 +700,7 @@ function ApplicationManagementPage() {
         }
         setError('Unable to start chat. Please try again later.');
         return false;
-      } catch (err) {
+      } catch {
         setError('Unable to start chat. Please try again later.');
         return false;
       }

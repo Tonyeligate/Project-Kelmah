@@ -2,6 +2,59 @@
 
 // No mock data - using real API data only
 
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  Alert,
+  Avatar,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Divider,
+  Grid,
+  IconButton,
+  LinearProgress,
+  Skeleton,
+  Snackbar,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TextField,
+  Tooltip,
+  Typography,
+} from '@mui/material';
+import {
+  AccountBalance as BankIcon,
+  AttachMoney as MoneyIcon,
+  Refresh as RefreshIcon,
+  Schedule as ScheduleIcon,
+  TrendingUp as TrendingUpIcon,
+  Visibility as ViewIcon,
+} from '@mui/icons-material';
+
+import { TOUCH_TARGET_MIN } from '@/constants/layout';
+import { useBreakpointDown } from '@/hooks/useResponsive';
+import { devError, devWarn } from '@/modules/common/utils/devLogger';
+import paymentService from '@/modules/payment/services/paymentService';
+import { formatGhanaCurrency } from '@/utils/formatters';
+import {
+  fetchPaymentSummary,
+  selectHirerError,
+  selectHirerLoading,
+  selectHirerPayments,
+} from '../services/hirerSlice';
+
 const PAYMENT_SUMMARY_TIMEOUT_MS = 8000;
 const PAYMENT_SUMMARY_TTL_MS = 60_000;
 const PAYMENT_SUMMARY_MAX_RETRIES = 3;
@@ -9,8 +62,12 @@ const PAYMENT_SUMMARY_RETRY_BASE_DELAY_MS = 700;
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+const iconButtonA11ySx = {
+  minWidth: TOUCH_TARGET_MIN,
+  minHeight: TOUCH_TARGET_MIN,
+};
+
 const PaymentRelease = () => {
-  const theme = useTheme();
   const isMobile = useBreakpointDown('md');
   const dispatch = useDispatch();
 
@@ -33,7 +90,6 @@ const PaymentRelease = () => {
   const summaryTimeoutRef = useRef(null);
 
   // Redux selectors
-  const activeJobs = useSelector(selectHirerJobs('active'));
   const jobsLoading = useSelector(selectHirerLoading('jobs'));
   const paymentsLoading = useSelector(selectHirerLoading('payments'));
   const paymentSummary = useSelector(selectHirerPayments);

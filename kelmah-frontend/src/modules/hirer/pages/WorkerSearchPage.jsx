@@ -1,5 +1,3 @@
-import React from 'react';
-import { Helmet } from 'react-helmet-async';
 import WorkerDirectoryExperience from '../../search/components/WorkerDirectoryExperience';
 import PageCanvas from '../../common/components/PageCanvas';
 

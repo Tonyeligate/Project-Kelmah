@@ -1,5 +1,6 @@
+/* eslint-disable react/prop-types */
 // IconButton focus-visible styling is enforced globally via MuiIconButton theme overrides.
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -557,7 +558,8 @@ const JobPostingPage = () => {
       return;
     }
     setFieldErrors((prev) => {
-      const { coverImage, ...rest } = prev;
+      const rest = { ...prev };
+      delete rest.coverImage;
       return rest;
     });
     const reader = new FileReader();
@@ -1399,7 +1401,8 @@ const JobPostingPage = () => {
             sx={{ mb: 2 }}
             onClose={() =>
               setFieldErrors((prev) => {
-                const { submit, ...rest } = prev;
+                const rest = { ...prev };
+                delete rest.submit;
                 return rest;
               })
             }

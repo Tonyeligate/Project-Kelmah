@@ -3,58 +3,52 @@
  */
 
 const request = require('supertest');
-// Test utilities - using local mock implementations
-const setupTestDatabase = () => Promise.resolve();
-const cleanupTestDatabase = () => Promise.resolve();
+process.env.JWT_SECRET = process.env.JWT_SECRET || 'test-jwt-secret-for-auth-health';
+process.env.JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'test-refresh-secret-for-auth-health';
 
-// Import the app (you'll need to export it from server.js)
-// const app = require('../server');
+const app = require('../server');
 
 describe('Health Endpoints', () => {
-  beforeAll(async () => {
-    await setupTestDatabase();
-  });
-  
-  afterAll(async () => {
-    await cleanupTestDatabase();
-  });
-  
-  // Note: Uncomment these tests when server.js exports the app
-  
-  /*
   test('GET /health should return service health', async () => {
     const response = await request(app).get('/health');
-    
+
     expect(response.status).toBe(200);
-    expect(response.body).toHaveProperty('service', 'auth-service');
-    expect(response.body).toHaveProperty('status', 'healthy');
+    expect(response.body).toHaveProperty('service', 'Auth Service');
+    expect(response.body).toHaveProperty('status', 'OK');
     expect(response.body).toHaveProperty('timestamp');
   });
-  
+
+  test('GET /api/health should mirror health response contract', async () => {
+    const response = await request(app).get('/api/health');
+
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveProperty('service', 'Auth Service');
+    expect(response.body).toHaveProperty('status', 'OK');
+    expect(response.body).toHaveProperty('timestamp');
+  });
+
   test('GET /health/ready should return readiness status', async () => {
     const response = await request(app).get('/health/ready');
-    
-    expect(response.status).toBe(200);
-    expect(response.body).toHaveProperty('ready', true);
+
+    expect([200, 503]).toContain(response.status);
+    expect(response.body).toHaveProperty('ready');
+    expect(typeof response.body.ready).toBe('boolean');
+    expect(response.body).toHaveProperty('timestamp');
   });
-  
+
   test('GET /health/live should return liveness status', async () => {
     const response = await request(app).get('/health/live');
-    
+
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty('alive', true);
+    expect(response.body).toHaveProperty('timestamp');
   });
-  
-  test('GET /ping should return pong', async () => {
-    const response = await request(app).get('/ping');
-    
+
+  test('GET /api/health/live should return liveness status', async () => {
+    const response = await request(app).get('/api/health/live');
+
     expect(response.status).toBe(200);
-    expect(response.text).toBe('pong');
-  });
-  */
-  
-  // Placeholder test to prevent "no tests found" error
-  test('auth-service test suite is set up', () => {
-    expect(true).toBe(true);
+    expect(response.body).toHaveProperty('alive', true);
+    expect(response.body).toHaveProperty('timestamp');
   });
 });

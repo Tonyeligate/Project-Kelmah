@@ -1,4 +1,4 @@
-import React from 'react';
+import PropTypes from 'prop-types';
 import {
   Dialog,
   DialogTitle,
@@ -75,5 +75,24 @@ function ApplicationDecisionDialog({
     </Dialog>
   );
 }
+
+ApplicationDecisionDialog.propTypes = {
+  open: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  actionType: PropTypes.oneOf(['accepted', 'rejected']).isRequired,
+  workerName: PropTypes.string,
+  feedback: PropTypes.string,
+  onFeedbackChange: PropTypes.func.isRequired,
+  onConfirm: PropTypes.func.isRequired,
+  updating: PropTypes.bool,
+  fullScreen: PropTypes.bool,
+};
+
+ApplicationDecisionDialog.defaultProps = {
+  workerName: '',
+  feedback: '',
+  updating: false,
+  fullScreen: false,
+};
 
 export default ApplicationDecisionDialog;

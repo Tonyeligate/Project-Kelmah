@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import PropTypes from 'prop-types';
 import {
   Box,
   Typography,
@@ -81,6 +82,11 @@ const SkillsRequirementBuilder = ({ value = [], onChange }) => {
       </Paper>
     </Box>
   );
+};
+
+SkillsRequirementBuilder.propTypes = {
+  value: PropTypes.arrayOf(PropTypes.string),
+  onChange: PropTypes.func,
 };
 
 export default SkillsRequirementBuilder;

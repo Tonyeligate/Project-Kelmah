@@ -1,4 +1,5 @@
-﻿/**
+﻿/* eslint-disable react/prop-types */
+/**
  * JobBidsPanel - Hirer's bid review panel for a specific job
  *
  * DATA FLOW:
@@ -586,7 +587,8 @@ const JobBidsPage = () => {
         {acceptedBid && (
           <Alert severity="success" icon={<AcceptIcon />} sx={{ mb: 2 }}>
             You accepted{' '}
-            <strong>{acceptedBid.worker?.name || 'a worker'}</strong>'s bid of{' '}
+            <strong>{acceptedBid.worker?.name || 'a worker'}</strong>
+            &apos;s bid of{' '}
             <strong>{formatGhanaCurrency(acceptedBid.bidAmount ?? 0)}</strong>.
           </Alert>
         )}
@@ -625,7 +627,8 @@ const JobBidsPage = () => {
               No bids yet
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Workers haven't placed any bids on this job yet. Check back soon.
+              Workers haven&apos;t placed any bids on this job yet. Check back
+              soon.
             </Typography>
             <Button
               variant="outlined"
@@ -667,7 +670,7 @@ const JobBidsPage = () => {
             <DialogContentText>
               Accepting{' '}
               <strong>{acceptDialog.bid?.worker?.name || 'this worker'}</strong>
-              's bid of{' '}
+              &apos;s bid of{' '}
               <strong>
                 {formatGhanaCurrency(acceptDialog.bid?.bidAmount ?? 0)}
               </strong>{' '}

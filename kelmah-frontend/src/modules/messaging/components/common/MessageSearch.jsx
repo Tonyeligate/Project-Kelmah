@@ -1,5 +1,5 @@
-﻿import React, { useCallback, useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
+﻿/* eslint-disable no-unused-vars, react/prop-types */
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Drawer,
@@ -11,6 +11,7 @@ import {
   ListItem,
   ListItemText,
   Divider,
+  CircularProgress,
   Chip,
 } from '@mui/material';
 import Skeleton from '@mui/material/Skeleton';
@@ -43,7 +44,7 @@ const SearchResult = styled(ListItem)(({ theme }) => ({
   },
 }));
 
-const ContentPreview = styled(Typography)(({ theme }) => ({
+const ContentPreview = styled(Typography)(({ theme, highlight }) => ({
   '& .highlight': {
     backgroundColor:
       theme.palette.mode === 'dark'
@@ -84,7 +85,7 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
     sender: null,
   });
 
-  const handleSearch = useCallback(async () => {
+  const handleSearch = async () => {
     if (!query.trim()) {
       setResults([]);
       return;
@@ -107,7 +108,7 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
     } finally {
       setLoading(false);
     }
-  }, [filters.attachments, filters.period, filters.sender, query]);
+  };
 
   // Search when query or filters change
   useEffect(() => {
@@ -118,7 +119,7 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
 
       return () => clearTimeout(delayDebounceFn);
     }
-  }, [handleSearch, open]);
+  }, [query, filters, open]);
 
   const handleSelectResult = (message) => {
     if (onSelectMessage) {
@@ -167,7 +168,7 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
           )}
         </>
       );
-    } catch {
+    } catch (_) {
       return <>{text}</>;
     }
   };
@@ -419,9 +420,3 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
 };
 
 export default MessageSearch;
-
-MessageSearch.propTypes = {
-  open: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired,
-  onSelectMessage: PropTypes.func,
-};

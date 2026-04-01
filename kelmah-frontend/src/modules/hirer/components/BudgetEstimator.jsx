@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Box, Typography, Paper, Grid, TextField } from '@mui/material';
 import { formatGhanaCurrency } from '@/utils/formatters';
 

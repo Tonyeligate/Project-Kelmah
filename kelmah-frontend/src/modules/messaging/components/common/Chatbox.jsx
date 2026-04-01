@@ -1,4 +1,4 @@
-import React from 'react';
+/* eslint-disable react/prop-types */
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import {

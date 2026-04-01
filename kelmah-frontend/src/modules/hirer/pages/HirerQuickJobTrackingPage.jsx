@@ -1,7 +1,68 @@
+/* eslint-disable react/prop-types */
 // IconButton focus-visible styling is enforced globally via MuiIconButton theme overrides.
 
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import {
+  Alert,
+  Avatar,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  CircularProgress,
+  Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Divider,
+  Grid,
+  IconButton,
+  MenuItem,
+  Rating,
+  Skeleton,
+  Stack,
+  Step,
+  StepLabel,
+  Stepper,
+  TextField,
+  Typography,
+} from '@mui/material';
+import {
+  ArrowBack as ArrowBackIcon,
+  AssignmentTurnedIn as AssignmentTurnedInIcon,
+  CheckCircleOutline as CheckCircleOutlineIcon,
+  LocalShipping as LocalShippingIcon,
+  Payment as PaymentIcon,
+  WarningAmber as WarningAmberIcon,
+} from '@mui/icons-material';
+import { Helmet } from 'react-helmet-async';
+import { useSnackbar } from 'notistack';
+
 import PageCanvas from '@/modules/common/components/PageCanvas';
+import {
+  SERVICE_CATEGORIES,
+  acceptQuote,
+  approveWork,
+  cancelQuickJob,
+  formatCurrency,
+  getQuickJob,
+  getQuickJobPaymentStatus,
+  initializeQuickJobPayment,
+  raiseDispute,
+  verifyQuickJobPayment,
+} from '@/modules/quickjobs/services/quickJobService';
+import { TOUCH_TARGET_MIN } from '@/constants/layout';
 import { withBottomNavSafeArea } from '@/utils/safeArea';
+import { sanitizeExternalUrl } from '@/utils/externalNavigation';
+import { useVisibilityPolling } from '../../../hooks/useVisibilityPolling';
+
+const iconButtonA11ySx = {
+  minWidth: TOUCH_TARGET_MIN,
+  minHeight: TOUCH_TARGET_MIN,
+};
 
 const requesterSteps = [
   { status: 'pending', label: 'Waiting for quotes' },

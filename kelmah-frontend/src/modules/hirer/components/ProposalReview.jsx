@@ -1,5 +1,63 @@
 // IconButton focus-visible styling is enforced globally via MuiIconButton theme overrides.
 
+import { useCallback, useMemo, useState } from 'react';
+import {
+  Alert,
+  Avatar,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Divider,
+  Grid,
+  IconButton,
+  LinearProgress,
+  Menu,
+  MenuItem,
+  Pagination,
+  Skeleton,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TextField,
+  Typography,
+} from '@mui/material';
+import {
+  CheckCircleOutline as CheckCircleOutlineIcon,
+  HighlightOff as HighlightOffIcon,
+  MonetizationOnOutlined as MonetizationOnOutlinedIcon,
+  MoreVert as MoreVertIcon,
+  PersonOutlined as PersonOutlinedIcon,
+  Refresh as RefreshIcon,
+  ScheduleOutlined as ScheduleOutlinedIcon,
+  Star as StarIcon,
+  VisibilityOutlined as VisibilityOutlinedIcon,
+} from '@mui/icons-material';
+import { useSnackbar } from 'notistack';
+
+import { TOUCH_TARGET_MIN } from '@/constants/layout';
+import { useBreakpointDown } from '@/hooks/useResponsive';
+import { useProposals } from '@/hooks/useProposals';
+import { devError } from '@/modules/common/utils/devLogger';
+import { DEFAULT_PROPOSAL_PAGE_SIZE } from '@/modules/hirer/constants/hirerConstants';
+import hirerService from '@/modules/hirer/services/hirerService';
+import { formatGhanaCurrency } from '@/utils/formatters';
+
+const iconButtonA11ySx = {
+  minWidth: TOUCH_TARGET_MIN,
+  minHeight: TOUCH_TARGET_MIN,
+};
+
 const STATUS_FILTERS = [
   { label: 'All', value: 'all' },
   { label: 'Pending', value: 'pending' },
@@ -20,7 +78,7 @@ const formatDate = (value) => {
       day: 'numeric',
       year: 'numeric',
     }).format(new Date(value));
-  } catch (err) {
+  } catch {
     return 'Not specified';
   }
 };
@@ -83,7 +141,6 @@ const getStatusColor = (status) => {
 const toArray = (value) => (Array.isArray(value) ? value : []);
 
 const ProposalReview = () => {
-  const theme = useTheme();
   const isMobile = useBreakpointDown('md');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedProposal, setSelectedProposal] = useState(null);
@@ -113,7 +170,10 @@ const ProposalReview = () => {
     limit: DEFAULT_PROPOSAL_PAGE_SIZE,
   });
 
-  const statusCounts = meta?.aggregates?.statusCounts ?? {};
+  const statusCounts = useMemo(
+    () => meta?.aggregates?.statusCounts ?? {},
+    [meta],
+  );
   const paginationData = meta?.pagination ?? {
     page: currentPage,
     totalPages: 1,
@@ -163,7 +223,7 @@ const ProposalReview = () => {
         hour: '2-digit',
         minute: '2-digit',
       }).format(new Date(lastUpdated));
-    } catch (err) {
+    } catch {
       return 'Never';
     }
   }, [lastUpdated]);

@@ -1,4 +1,5 @@
-import React, { useState, useRef } from 'react';
+/* eslint-disable no-unused-vars, react/prop-types */
+import { useState, useRef } from 'react';
 import {
   Box,
   TextField,

@@ -31,6 +31,7 @@ import { Helmet } from 'react-helmet-async';
 import { useSnackbar } from 'notistack';
 import ProfilePicture from '../../profile/components/ProfilePicture';
 import { useProfile } from '../../profile/hooks/useProfile';
+import PageCanvas from '../../common/components/PageCanvas';
 import {
   selectProfile,
   selectProfileError,

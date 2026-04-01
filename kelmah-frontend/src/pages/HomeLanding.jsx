@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Alert,
@@ -30,7 +30,6 @@ import {
   Work as WorkIcon,
 } from '@mui/icons-material';
 import SEO from '@/modules/common/components/common/SEO';
-import StatTile from '@/modules/common/components/StatTile';
 import homeService from '@/modules/home/services/homeService';
 import { devWarn } from '@/modules/common/utils/devLogger';
 
@@ -69,7 +68,7 @@ const BENEFITS = [
   'Built for first-time users, busy households, and small businesses',
 ];
 
-const TRUST_SIGNALS = [
+const SOCIAL_PROOF = [
   { label: 'Verified workers', value: '12K+' },
   { label: 'Completed jobs', value: '85K+' },
   { label: 'Average response', value: '< 10 min' },
@@ -115,7 +114,7 @@ const HomeLanding = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isDark = theme.palette.mode === 'dark';
 
-  const [platformStats, setPlatformStats] = useState(null);
+  const [, setPlatformStats] = useState(null);
   const [statsError, setStatsError] = useState('');
 
   useEffect(() => {
@@ -142,43 +141,6 @@ const HomeLanding = () => {
     };
   }, []);
 
-  const statValue = (value, fallback) => {
-    if (value == null || value === 0) return fallback;
-    if (value >= 1000) return `${Math.round(value / 1000)}k+`;
-    return `${value}+`;
-  };
-
-  const percentValue = (value, fallback) => {
-    const numeric = Number(value);
-    if (!Number.isFinite(numeric) || numeric <= 0) return fallback;
-
-    const normalized = numeric <= 1 ? numeric * 100 : numeric;
-    const clamped = Math.max(1, Math.min(100, Math.round(normalized)));
-    return `${clamped}%`;
-  };
-
-  const liveStatsTiles = useMemo(
-    () => [
-      {
-        label: 'Open jobs now',
-        value: statValue(platformStats?.availableJobs, '1.2k+'),
-      },
-      {
-        label: 'Active hirers',
-        value: statValue(platformStats?.activeEmployers, '4.5k+'),
-      },
-      {
-        label: 'Skilled workers',
-        value: statValue(platformStats?.skilledWorkers, '12k+'),
-      },
-      {
-        label: 'Success rate',
-        value: percentValue(platformStats?.successRate, '95%'),
-      },
-    ],
-    [platformStats],
-  );
-
   const cardBg = isDark ? 'rgba(10,13,18,0.68)' : 'rgba(255,255,255,0.88)';
   const cardBorder = isDark ? alpha('#FFD166', 0.16) : alpha('#111827', 0.08);
 
@@ -193,7 +155,7 @@ const HomeLanding = () => {
           ? `linear-gradient(180deg, rgba(8,10,14,0.62), rgba(8,10,14,0.88)), url(${HERO_IMAGE})`
           : `linear-gradient(180deg, rgba(248,250,252,0.70), rgba(248,250,252,0.96)), url(${HERO_IMAGE})`,
         backgroundSize: 'cover',
-        backgroundAttachment: { xs: 'scroll', md: 'fixed' },
+        backgroundAttachment: 'fixed',
         backgroundPosition: 'center top',
       }}
     >
@@ -450,15 +412,34 @@ const HomeLanding = () => {
       <Box component="section" sx={{ py: { xs: 2.5, md: 3.5 } }}>
         <Container>
           <Grid container spacing={2}>
-            {TRUST_SIGNALS.map((tile) => (
+            {SOCIAL_PROOF.map((tile) => (
               <Grid item xs={6} md={3} key={tile.label}>
-                <StatTile
-                  value={tile.value}
-                  label={tile.label}
-                  isDark={isDark}
-                  lightOpacity={0.85}
-                  darkOpacity={0.06}
-                />
+                <Paper
+                  elevation={0}
+                  sx={{
+                    p: 2,
+                    borderRadius: 3,
+                    bgcolor: isDark
+                      ? alpha('#FFFFFF', 0.06)
+                      : alpha('#FFFFFF', 0.85),
+                    border: `1px solid ${isDark ? alpha('#FFFFFF', 0.08) : alpha('#0F172A', 0.08)}`,
+                    textAlign: 'center',
+                  }}
+                >
+                  <Typography
+                    variant="h5"
+                    fontWeight={900}
+                    sx={{ color: '#FFD166', lineHeight: 1 }}
+                  >
+                    {tile.value}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{ mt: 0.5, color: 'text.secondary' }}
+                  >
+                    {tile.label}
+                  </Typography>
+                </Paper>
               </Grid>
             ))}
           </Grid>
@@ -760,34 +741,40 @@ const HomeLanding = () => {
 
       <Box sx={{ py: { xs: 3, md: 4 } }}>
         <Container>
-          <Stack spacing={1} sx={{ mb: 2 }}>
-            <Typography
-              variant="h5"
-              fontWeight={900}
-              sx={{ fontSize: { xs: '1.35rem', md: '1.7rem' } }}
-            >
-              Live marketplace snapshot
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Updated from current platform activity to help users make faster
-              hiring decisions.
-            </Typography>
-          </Stack>
           {statsError ? (
             <Alert severity="info" variant="outlined" sx={{ mb: 2 }}>
               {statsError}
             </Alert>
           ) : null}
           <Grid container spacing={2}>
-            {liveStatsTiles.map((tile) => (
+            {SOCIAL_PROOF.map((tile) => (
               <Grid item xs={6} md={3} key={tile.label}>
-                <StatTile
-                  value={tile.value}
-                  label={tile.label}
-                  isDark={isDark}
-                  lightOpacity={0.9}
-                  darkOpacity={0.05}
-                />
+                <Paper
+                  elevation={0}
+                  sx={{
+                    p: 2,
+                    borderRadius: 3,
+                    bgcolor: isDark
+                      ? alpha('#FFFFFF', 0.05)
+                      : alpha('#FFFFFF', 0.9),
+                    border: `1px solid ${isDark ? alpha('#FFFFFF', 0.08) : alpha('#0F172A', 0.08)}`,
+                    textAlign: 'center',
+                  }}
+                >
+                  <Typography
+                    variant="h5"
+                    fontWeight={900}
+                    sx={{ color: '#FFD166', lineHeight: 1 }}
+                  >
+                    {tile.value}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{ mt: 0.5, color: 'text.secondary' }}
+                  >
+                    {tile.label}
+                  </Typography>
+                </Paper>
               </Grid>
             ))}
           </Grid>

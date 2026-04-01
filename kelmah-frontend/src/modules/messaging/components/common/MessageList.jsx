@@ -1,17 +1,35 @@
-﻿import React, { useCallback, useEffect, useRef, useState } from 'react';
-import PropTypes from 'prop-types';
-import { Box, CircularProgress, Typography } from '@mui/material';
+﻿/* eslint-disable no-unused-vars, react/prop-types */
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  Box,
+  CircularProgress,
+  ListItemIcon,
+  ListItemText,
+  Menu,
+  MenuItem,
+  Paper,
+  Typography,
+} from '@mui/material';
 import Skeleton from '@mui/material/Skeleton';
+import {
+  ContentCopy as CopyIcon,
+  Delete as DeleteIcon,
+  Image as ImageIcon,
+  InsertDriveFile as FileIcon,
+} from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import { format } from 'date-fns';
 import { useInView } from 'react-intersection-observer';
+import EmptyState from '@/components/common/EmptyState';
+import { MESSAGE_TYPES } from '@/config/constants';
+import useAuth from '@/modules/auth/hooks/useAuth';
 import { useMessages } from '../../contexts/MessageContext';
 import Message from './Message';
 import MessageDateDivider from './MessageDateDivider';
 import TypingIndicator from './TypingIndicator';
 
 // Styled components
-const MessageListContainer = styled(Box)(() => ({
+const MessageListContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   height: '100%',
@@ -28,30 +46,89 @@ const MessagesContainer = styled(Box)(({ theme }) => ({
   lineHeight: 1.62,
 }));
 
-// DateDivider removed - unused styled component
+// MessageBubble and MessageTime removed â€” unused styled components
+
+const SystemMessage = styled(Box)(({ theme }) => ({
+  textAlign: 'center',
+  margin: theme.spacing(1, 0),
+  padding: theme.spacing(0.5, 1),
+  backgroundColor: theme.palette.primary.main,
+  borderRadius: theme.spacing(1),
+  color: theme.palette.primary.contrastText,
+  fontSize: '0.92rem',
+  lineHeight: 1.45,
+}));
+
+const AttachmentContainer = styled(Box)(({ theme }) => ({
+  marginTop: theme.spacing(1),
+  display: 'flex',
+  flexWrap: 'wrap',
+  gap: theme.spacing(1),
+}));
+
+const AttachmentItem = styled(Paper)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  padding: theme.spacing(1),
+  backgroundColor: theme.palette.background.default,
+  borderRadius: theme.spacing(1),
+  cursor: 'pointer',
+  '&:hover': {
+    backgroundColor: theme.palette.action.hover,
+  },
+}));
+
+const FilePreview = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  marginTop: theme.spacing(1),
+  padding: theme.spacing(1),
+  backgroundColor: theme.palette.background.default,
+  borderRadius: theme.shape.borderRadius,
+}));
+
+const ImagePreview = styled('img')(({ theme }) => ({
+  maxWidth: '100%',
+  maxHeight: 200,
+  borderRadius: theme.shape.borderRadius,
+  marginTop: theme.spacing(1),
+}));
+
+// DateDivider removed â€” unused styled component
+
+const EmptyStateContainer = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  height: '100%',
+  padding: theme.spacing(3),
+  textAlign: 'center',
+}));
 
 const MessageList = ({
-  messages = [],
+  messages,
   currentUserId,
-  isLoading = false,
+  isLoading,
   typingUsers = [],
   onLoadMore,
-  hasMore = false,
+  hasMore,
   conversation,
   onMessageRead,
   deleteMessage,
   onReply,
 }) => {
+  const { user } = useAuth();
   const { getTypingUsers, messageAnnouncement } = useMessages();
-  const contextTypingUsers = getTypingUsers();
-  const activeTypingUsers =
-    contextTypingUsers.length > 0 ? contextTypingUsers : typingUsers;
   const messagesEndRef = useRef(null);
+  const [menuAnchorEl, setMenuAnchorEl] = useState(null);
+  const [selectedMessage, setSelectedMessage] = useState(null);
   const [loadingMore, setLoadingMore] = useState(false);
   const loadMoreLockRef = useRef(false);
   const isMountedRef = useRef(true);
   const loadMoreRequestIdRef = useRef(0);
   const [isFirstLoad, setIsFirstLoad] = useState(true);
+  const [visibleMessages, setVisibleMessages] = useState(new Set());
 
   // Ref for intersection observer to detect when we're at the top of the list
   const { ref: topRef, inView: isTopVisible } = useInView({
@@ -67,6 +144,7 @@ const MessageList = ({
       loadMoreRequestIdRef.current += 1;
     };
   }, []);
+
   // Group messages by date for dividers
   const groupedMessages = React.useMemo(() => {
     if (!messages || messages.length === 0) return [];
@@ -128,7 +206,6 @@ const MessageList = ({
         hasMore &&
         !loadingMore &&
         !isLoading &&
-        typeof onLoadMore === 'function' &&
         !loadMoreLockRef.current
       ) {
         loadMoreLockRef.current = true;
@@ -186,8 +263,23 @@ const MessageList = ({
   // Track visible messages for read receipts
   const updateVisibleMessages = useCallback(
     (messageId, isVisible) => {
-      if (isVisible && onMessageRead) {
-        onMessageRead(messageId);
+      if (isVisible) {
+        setVisibleMessages((prev) => {
+          const newSet = new Set(prev);
+          newSet.add(messageId);
+          return newSet;
+        });
+
+        // Mark message as read
+        if (onMessageRead) {
+          onMessageRead(messageId);
+        }
+      } else {
+        setVisibleMessages((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(messageId);
+          return newSet;
+        });
       }
     },
     [onMessageRead],
@@ -217,6 +309,147 @@ const MessageList = ({
 
     setPrevMessagesLength(messages.length);
   }, [messages.length, loadingMore, prevMessagesLength, scrollHeight]);
+
+  // Handle menu open
+  const handleMenuOpen = (event, message) => {
+    event.stopPropagation();
+    setMenuAnchorEl(event.currentTarget);
+    setSelectedMessage(message);
+  };
+
+  // Handle menu close
+  const handleMenuClose = () => {
+    setMenuAnchorEl(null);
+    setSelectedMessage(null);
+  };
+
+  // Handle message delete
+  const handleDeleteMessage = async () => {
+    if (selectedMessage && typeof deleteMessage === 'function') {
+      try {
+        await deleteMessage(selectedMessage.id);
+      } finally {
+        if (isMountedRef.current) {
+          handleMenuClose();
+        }
+      }
+    } else {
+      handleMenuClose();
+    }
+  };
+
+  // Handle message copy
+  const handleCopyMessage = () => {
+    if (selectedMessage) {
+      navigator.clipboard.writeText(selectedMessage.content);
+      handleMenuClose();
+    }
+  };
+
+  // Render system message
+  const renderSystemMessage = (message) => (
+    <SystemMessage key={message.id}>{message.content}</SystemMessage>
+  );
+
+  // Render attachments
+  const renderAttachments = (message) => {
+    if (!message.attachments || message.attachments.length === 0) return null;
+
+    return (
+      <AttachmentContainer>
+        {message.attachments.map((attachment, index) => (
+          <AttachmentItem
+            key={
+              attachment.id ||
+              attachment.url ||
+              attachment.name ||
+              `attachment-${index}`
+            }
+            component="a"
+            href={attachment.url}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {attachment.type.startsWith('image/') ? (
+              <ImageIcon sx={{ mr: 1 }} />
+            ) : (
+              <FileIcon sx={{ mr: 1 }} />
+            )}
+            <Typography variant="body2" noWrap>
+              {attachment.name}
+            </Typography>
+          </AttachmentItem>
+        ))}
+      </AttachmentContainer>
+    );
+  };
+
+  // Render message content based on type
+  const renderMessageContent = (message) => {
+    switch (message.type) {
+      case MESSAGE_TYPES.IMAGE:
+        return (
+          <>
+            {message.content && (
+              <Typography variant="body1">{message.content}</Typography>
+            )}
+            <ImagePreview
+              src={message.attachment?.url}
+              alt="Message attachment"
+              loading="lazy"
+            />
+          </>
+        );
+      case MESSAGE_TYPES.ATTACHMENT:
+        return (
+          <>
+            {message.content && (
+              <Typography variant="body1">{message.content}</Typography>
+            )}
+            <FilePreview>
+              <FileIcon sx={{ mr: 1 }} />
+              <Typography variant="body2" noWrap>
+                {message.attachment?.filename || 'Attachment'}
+              </Typography>
+            </FilePreview>
+          </>
+        );
+      default:
+        return <Typography variant="body1">{message.content}</Typography>;
+    }
+  };
+
+  // Render message
+  const renderMessage = (message) => {
+    if (message.type === MESSAGE_TYPES.SYSTEM) {
+      return renderSystemMessage(message);
+    }
+
+    const isSender = message.senderId === user?.id;
+
+    return (
+      <Message
+        key={message.id}
+        message={message}
+        isOwn={isSender}
+        showAvatar={!isSender && message.senderId !== messages[0]?.senderId}
+        onVisibilityChange={(isVisible) =>
+          updateVisibleMessages(message.id, isVisible)
+        }
+      />
+    );
+  };
+
+  // Render empty state
+  const renderEmptyState = () => (
+    <EmptyStateContainer>
+      <EmptyState
+        variant="messages"
+        title="No messages yet"
+        subtitle="Start the conversation by sending a message"
+      />
+    </EmptyStateContainer>
+  );
 
   // Render loading state
   const renderLoadingState = () => (
@@ -399,9 +632,9 @@ const MessageList = ({
           ))}
 
           {/* Typing indicators */}
-          {activeTypingUsers.length > 0 && (
+          {getTypingUsers().length > 0 && (
             <Box sx={{ mb: 2 }}>
-              {activeTypingUsers.map((u) => (
+              {getTypingUsers().map((u) => (
                 <TypingIndicator key={u.id} user={u} />
               ))}
             </Box>
@@ -433,40 +666,30 @@ const MessageList = ({
           </Typography>
         </Box>
       )}
+
+      {/* Message options menu */}
+      <Menu
+        anchorEl={menuAnchorEl}
+        open={Boolean(menuAnchorEl)}
+        onClose={handleMenuClose}
+      >
+        <MenuItem onClick={handleCopyMessage} aria-label="Copy message">
+          <ListItemIcon>
+            <CopyIcon fontSize="small" aria-hidden="true" />
+          </ListItemIcon>
+          <ListItemText>Copy message</ListItemText>
+        </MenuItem>
+        {typeof deleteMessage === 'function' && (
+          <MenuItem onClick={handleDeleteMessage} aria-label="Delete message">
+            <ListItemIcon>
+              <DeleteIcon fontSize="small" aria-hidden="true" />
+            </ListItemIcon>
+            <ListItemText>Delete message</ListItemText>
+          </MenuItem>
+        )}
+      </Menu>
     </MessageListContainer>
   );
-};
-
-const messageShape = PropTypes.shape({
-  id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  senderId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  content: PropTypes.string,
-  createdAt: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.number,
-    PropTypes.instanceOf(Date),
-  ]),
-});
-
-MessageList.propTypes = {
-  messages: PropTypes.arrayOf(messageShape),
-  currentUserId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  isLoading: PropTypes.bool,
-  typingUsers: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-      name: PropTypes.string,
-    }),
-  ),
-  onLoadMore: PropTypes.func,
-  hasMore: PropTypes.bool,
-  conversation: PropTypes.shape({
-    type: PropTypes.string,
-    name: PropTypes.string,
-  }),
-  onMessageRead: PropTypes.func,
-  deleteMessage: PropTypes.func,
-  onReply: PropTypes.func,
 };
 
 export default MessageList;

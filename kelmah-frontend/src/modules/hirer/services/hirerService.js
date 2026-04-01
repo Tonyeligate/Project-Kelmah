@@ -295,7 +295,7 @@ export const hirerService = {
       try {
         const fallback = await api.get('/users/profile');
         return unwrapPayload(fallback?.data) || {};
-      } catch (_) {
+      } catch {
         throw error;
       }
     }
@@ -525,8 +525,8 @@ export const hirerService = {
   },
 
   async getApplicationsSummary(filters = {}) {
+    const params = {};
     try {
-      const params = {};
       if (typeof filters.status === 'string' && filters.status.trim()) {
         params.status = filters.status.trim();
       }
@@ -774,11 +774,9 @@ export const hirerService = {
     try {
       const sanitizedReviewData =
         reviewData && typeof reviewData === 'object' ? reviewData : {};
-      const {
-        workerId: _ignoredWorkerId,
-        jobId: _ignoredJobId,
-        ...safeReviewData
-      } = sanitizedReviewData;
+      const safeReviewData = { ...sanitizedReviewData };
+      delete safeReviewData.workerId;
+      delete safeReviewData.jobId;
 
       const response = await api.post('/reviews', {
         ...safeReviewData,

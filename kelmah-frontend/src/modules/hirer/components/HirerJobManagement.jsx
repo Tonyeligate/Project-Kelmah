@@ -1,7 +1,66 @@
 // IconButton focus-visible styling is enforced globally via MuiIconButton theme overrides.
 
+import { useEffect, useMemo, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import {
+  Alert,
+  Avatar,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Grid,
+  IconButton,
+  Menu,
+  MenuItem,
+  Skeleton,
+  Snackbar,
+  Tab,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TablePagination,
+  TableRow,
+  Tabs,
+  Typography,
+} from '@mui/material';
+import {
+  AttachMoney as MoneyIcon,
+  Delete as DeleteIcon,
+  Edit as EditIcon,
+  MoreVert as MoreVertIcon,
+  People as PeopleIcon,
+  Publish as PublishIcon,
+  TrendingUp as TrendingUpIcon,
+  Visibility as ViewIcon,
+  Work as WorkIcon,
+} from '@mui/icons-material';
+
+import { TOUCH_TARGET_MIN } from '@/constants/layout';
+import { useBreakpointDown } from '@/hooks/useResponsive';
+import {
+  deleteHirerJob,
+  fetchHirerJobs,
+  selectHirerError,
+  selectHirerJobs,
+  selectHirerLoading,
+  updateJobStatus,
+} from '../services/hirerSlice';
+
+const iconButtonA11ySx = {
+  minWidth: TOUCH_TARGET_MIN,
+  minHeight: TOUCH_TARGET_MIN,
+};
+
 const HirerJobManagement = () => {
-  const theme = useTheme();
   const isMobile = useBreakpointDown('md');
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -77,7 +136,7 @@ const HirerJobManagement = () => {
     }
   };
 
-  const handleTabChange = (event, newValue) => {
+  const handleTabChange = (_, newValue) => {
     setActiveTab(newValue);
     setPage(0); // Reset pagination when changing tabs
   };
@@ -724,7 +783,7 @@ const HirerJobManagement = () => {
                 component="div"
                 count={currentJobs.length}
                 page={page}
-                onPageChange={(e, newPage) => setPage(newPage)}
+                onPageChange={(_, newPage) => setPage(newPage)}
                 rowsPerPage={rowsPerPage}
                 onRowsPerPageChange={(e) => {
                   setRowsPerPage(parseInt(e.target.value, 10));

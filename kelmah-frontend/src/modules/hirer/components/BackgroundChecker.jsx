@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import PropTypes from 'prop-types';
+import { useState } from 'react';
 import {
   Box,
   Typography,
@@ -61,6 +62,14 @@ const BackgroundChecker = ({ onCheck }) => {
       </Paper>
     </Box>
   );
+};
+
+BackgroundChecker.propTypes = {
+  onCheck: PropTypes.func,
+};
+
+BackgroundChecker.defaultProps = {
+  onCheck: undefined,
 };
 
 export default BackgroundChecker;

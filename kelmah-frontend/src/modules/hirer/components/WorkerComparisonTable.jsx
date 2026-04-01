@@ -205,7 +205,9 @@ const WorkerComparisonTable = ({ workers = [] }) => {
                       sx={{ fontSize: 14, color: 'info.main' }}
                     />
                     <Typography variant="caption" fontWeight={600}>
-                      {w?.avgRate != null ? formatCurrency(w.avgRate) : 'N/A'}
+                      {w?.avgRate != null
+                        ? formatGhanaCurrency(w.avgRate)
+                        : 'N/A'}
                     </Typography>
                   </Box>
                 </Stack>
