@@ -6,12 +6,24 @@ import { useState, useEffect } from 'react';
  * On mobile: hides on scroll-down, shows on scroll-up.
  * Returns `isHeaderVisible` boolean.
  */
-export default function useAutoHideHeader(autoShowMode, isMobile) {
+export default function useAutoHideHeader(
+  autoShowMode,
+  isMobile,
+  disableAutoHide = false,
+) {
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+
+  useEffect(() => {
+    if (!disableAutoHide) {
+      return;
+    }
+
+    setIsHeaderVisible(true);
+  }, [disableAutoHide]);
 
   // Desktop: mouse-proximity based show/hide
   useEffect(() => {
-    if (!autoShowMode || isMobile) return;
+    if (disableAutoHide || !autoShowMode || isMobile) return;
     const handleMouseMove = (e) => {
       setIsHeaderVisible(e.clientY < 50);
     };
@@ -22,11 +34,11 @@ export default function useAutoHideHeader(autoShowMode, isMobile) {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseleave', handleMouseLeave);
     };
-  }, [autoShowMode, isMobile]);
+  }, [autoShowMode, isMobile, disableAutoHide]);
 
   // Mobile: scroll-direction based show/hide
   useEffect(() => {
-    if (!isMobile) return;
+    if (disableAutoHide || !isMobile) return;
     let lastScrollY = window.scrollY;
     let ticking = false;
     const handleScroll = () => {
@@ -43,7 +55,7 @@ export default function useAutoHideHeader(autoShowMode, isMobile) {
     };
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
-  }, [isMobile]);
+  }, [isMobile, disableAutoHide]);
 
   return isHeaderVisible;
 }

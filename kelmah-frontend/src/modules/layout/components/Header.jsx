@@ -61,6 +61,7 @@ const Header = ({
   mode,
   autoShowMode = false,
   showPrimaryNav = true,
+  disableAutoHide = false,
 }) => {
   const theme = useTheme();
   const navigate = useNavigate();
@@ -82,8 +83,21 @@ const Header = ({
   const mobileMenuButtonRef = React.useRef(null);
   const profileMenuButtonRef = React.useRef(null);
 
+  const isMessagesRoute =
+    location.pathname === '/messages' ||
+    location.pathname.startsWith('/messages/') ||
+    location.pathname === '/chat' ||
+    location.pathname.startsWith('/chat/');
+
   // Auto-hide header behaviour (desktop: mouse proximity, mobile: scroll direction)
-  const isHeaderVisible = useAutoHideHeader(autoShowMode, isMobile);
+  const isHeaderVisible = useAutoHideHeader(
+    autoShowMode,
+    isMobile,
+    disableAutoHide,
+  );
+
+  const canRenderPrimaryDesktopNav =
+    !isMobile && showPrimaryNav && !isMessagesRoute;
 
   // 🎯 ENHANCED: Comprehensive page type detection
   const isOnAuthPage =
@@ -415,7 +429,7 @@ const Header = ({
         </Box>
 
         {/* Desktop Navigation */}
-        {!isMobile && showPrimaryNav && <DesktopNav />}
+        {canRenderPrimaryDesktopNav && <DesktopNav />}
 
         {/* Action Buttons - Simplified for mobile */}
         <Box
@@ -809,6 +823,7 @@ Header.propTypes = {
   mode: PropTypes.string,
   autoShowMode: PropTypes.bool,
   showPrimaryNav: PropTypes.bool,
+  disableAutoHide: PropTypes.bool,
 };
 
 export default Header;

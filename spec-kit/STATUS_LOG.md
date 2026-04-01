@@ -1,3 +1,47 @@
+### Session: Messaging Long-Thread Scroll Ownership + Header Persistence + Realtime Duplicate Guard April 1 2026 ✅ COMPLETED
+
+**Date**: April 1, 2026  
+**Scope**: Fix screenshot-reproduced `/messages` regressions under high message volume: disappearing composer, non-persistent conversation context, page-level overflow drift, reappearing top navigation clutter, and duplicate message bubble persistence.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/layout/components/Layout.jsx
+- kelmah-frontend/src/modules/layout/components/Header.jsx
+- kelmah-frontend/src/modules/layout/components/header/useAutoHideHeader.js
+- kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx
+- kelmah-frontend/src/modules/messaging/contexts/MessageContext.jsx
+- kelmah-frontend/src/components/common/SmartNavigation.jsx
+- spec-kit/STATUS_LOG.md
+
+**Root-cause findings**
+- Desktop messages shell had conflicting vertical ownership (layout-level top offset + messages page viewport sizing), allowing page-level scroll to compete with chat-pane scroll and push anchored controls out of view.
+- Header auto-hide behavior remained active for desktop messaging context, allowing orientation loss in deep-thread usage.
+- Realtime active-conversation insert path could append messages without running full list deduplication.
+- Label inconsistency remained in quick-navigation wording (`Find Workers` vs `Find Talent`).
+
+**Implementation summary**
+- Layout shell hardening for messages route:
+  - Disabled duplicate desktop top offset on message route content area.
+  - Forced messages route main container to `overflow: hidden` + flex column with `minHeight: 0` to keep scroll ownership inside pane.
+  - Suppressed quick-navigation panel mount on messages route.
+- Header persistence hardening:
+  - Added `disableAutoHide` support and wired it on messages route.
+  - Added route-level guard to never render desktop primary top nav on `/messages` and `/chat` paths.
+- Auto-hide hook update:
+  - Added third parameter to disable hide listeners and hold visible state when required by route context.
+- Messaging page shell updates:
+  - Removed extra page canvas top/bottom offsets and enforced full-height-in-parent behavior.
+  - Desktop composer now uses stable relative positioning in flex flow; mobile keeps sticky safe-area behavior.
+  - Updated CTA copy to `Find talent` for consistency.
+- Realtime duplicate guard tightening:
+  - Websocket active-conversation insert path now always reconciles through `dedupeMessageList`.
+  - Semantic dedupe timestamp key normalized to second-level buckets to collapse same-message multi-event drift.
+- Navigation wording alignment:
+  - `SmartNavigation` hirer shortcut label updated to `Find Talent`.
+
+**Verification**
+- PASS: `npx eslint src/modules/layout/components/header/useAutoHideHeader.js src/modules/layout/components/Header.jsx src/modules/layout/components/Layout.jsx src/modules/messaging/pages/MessagingPage.jsx src/modules/messaging/contexts/MessageContext.jsx src/components/common/SmartNavigation.jsx` in `kelmah-frontend` (clean run).
+- PASS: `npm run build` in `kelmah-frontend` (Vite production build succeeded).
+
 ### Session: Messaging UI/UX Error Sweep + Dashboard Nav Deconflict April 1 2026 ✅ COMPLETED
 
 **Date**: April 1, 2026  

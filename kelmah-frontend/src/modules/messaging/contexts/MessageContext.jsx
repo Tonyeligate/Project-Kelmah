@@ -248,6 +248,7 @@ const buildSemanticMessageKey = (message = {}) => {
     message.senderInfo?.id ||
     null;
   const timestamp = getMessageTimestamp(message);
+  const timestampBucket = Math.floor(timestamp / 1000);
   const normalizedText = String(message.text || message.content || '')
     .trim()
     .toLowerCase();
@@ -264,7 +265,7 @@ const buildSemanticMessageKey = (message = {}) => {
   return [
     String(conversationId),
     String(senderId),
-    String(timestamp),
+    String(timestampBucket),
     normalizedText || '[attachment-message]',
     attachmentSignature,
   ].join(':');
@@ -640,24 +641,32 @@ export const MessageProvider = ({ children }) => {
             const existingIdIndex = prev.findIndex(
               (message) => String(message.id) === String(hydratedMessage.id),
             );
+
+            const updated = [...prev];
+
             if (existingIdIndex !== -1) {
-              const updated = [...prev];
               updated[existingIdIndex] = {
                 ...updated[existingIdIndex],
                 ...hydratedMessage,
                 status: 'sent',
               };
-              return updated;
+
+              return dedupeMessageList(updated);
             }
+
             if (clientId) {
-              const index = prev.findIndex((m) => m.id === clientId);
+              const index = updated.findIndex(
+                (message) => message.id === clientId,
+              );
               if (index !== -1) {
-                const updated = [...prev];
                 updated[index] = { ...hydratedMessage, status: 'sent' };
-                return updated;
+
+                return dedupeMessageList(updated);
               }
             }
-            return [...prev, hydratedMessage];
+
+            updated.push(hydratedMessage);
+            return dedupeMessageList(updated);
           });
         }
 

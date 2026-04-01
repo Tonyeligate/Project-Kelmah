@@ -570,14 +570,14 @@ const MessagingPage = () => {
     [user?.role],
   );
   const emptyStateActionLabel = useMemo(
-    () => (user?.role === 'worker' ? 'Browse jobs' : 'Find workers'),
+    () => (user?.role === 'worker' ? 'Browse jobs' : 'Find talent'),
     [user?.role],
   );
   const emptyConversationSubtitle = useMemo(
     () =>
       user?.role === 'worker'
         ? 'Browse open jobs and message a hirer directly to get started.'
-        : 'Find workers and send your first message with job details.',
+        : 'Find talent and send your first message with job details.',
     [user?.role],
   );
 
@@ -2372,8 +2372,8 @@ const MessagingPage = () => {
           component="form"
           onSubmit={handleSendMessage}
           sx={{
-            position: 'sticky',
-            bottom: mobileComposerOffset,
+            position: mobile ? 'sticky' : 'relative',
+            bottom: mobile ? mobileComposerOffset : 0,
             zIndex: 2,
             px: { xs: 0.65, sm: 1, md: 1.15, lg: 1.35, xl: 1.5 },
             py: { xs: 0.65, sm: 0.8, md: 0.9, lg: 1 },
@@ -2743,8 +2743,10 @@ const MessagingPage = () => {
     <PageCanvas
       disableContainer
       sx={{
-        pt: { xs: 0, md: 0.5 },
-        pb: { xs: 0, md: 1.5 },
+        minHeight: '100%',
+        height: '100%',
+        pt: { xs: 0, md: 0 },
+        pb: { xs: 0, md: 0 },
         overflow: 'hidden',
       }}
     >

@@ -305,6 +305,7 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
             toggleTheme={resolvedToggleTheme}
             mode={resolvedMode}
             autoShowMode={true}
+            disableAutoHide={isMessagesPage}
             showPrimaryNav={false}
             setThemeMode={resolvedSetThemeMode}
           />
@@ -330,18 +331,24 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
           tabIndex={-1}
           sx={{
             flexGrow: 1,
+            display: 'flex',
+            flexDirection: 'column',
             width: '100%',
             minWidth: 0,
+            minHeight: 0,
             maxWidth: isMessagesPage ? 'none' : { md: 1440, xl: 1600 },
             mx: isMessagesPage ? 0 : 'auto',
             // Dynamic margin to match sidebar width transition
             ml: 0, // Sidebar is already part of flex flow; no manual margin needed
             transition: 'margin-left 0.25s cubic-bezier(0.4,0,0.2,1)',
             pt: {
-              md: `calc(${HEADER_HEIGHT_MOBILE}px + var(--kelmah-network-banner-offset, 0px))`,
+              md: isMessagesPage
+                ? 0
+                : `calc(${HEADER_HEIGHT_MOBILE}px + var(--kelmah-network-banner-offset, 0px))`,
             },
             px: isMessagesPage ? { md: 0 } : { md: 3 },
             pb: isMessagesPage ? { md: 0 } : { md: 3 },
+            overflow: isMessagesPage ? 'hidden' : 'visible',
             borderLeft: '1px solid',
             borderColor: 'divider',
           }}
@@ -349,9 +356,11 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
           {sessionExpired && sessionExpiredBanner}
           {content}
         </Box>
-        <Box component="nav" aria-label="Quick navigation suggestions">
-          <SmartNavigation />
-        </Box>
+        {!isMessagesPage && (
+          <Box component="nav" aria-label="Quick navigation suggestions">
+            <SmartNavigation />
+          </Box>
+        )}
       </Box>
     );
   }

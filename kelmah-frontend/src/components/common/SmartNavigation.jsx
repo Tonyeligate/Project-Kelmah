@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import {
@@ -8,7 +8,6 @@ import {
   Button,
   Chip,
   Stack,
-  useTheme,
   Fade,
   Slide,
   Tooltip,
@@ -22,7 +21,6 @@ import {
   Home as HomeIcon,
   TrendingUp as TrendingIcon,
   Bookmark as BookmarkIcon,
-  Notifications as NotificationIcon,
   InfoOutlined as InfoIcon,
   PushPin as PushPinIcon,
   PushPinOutlined as PushPinOutlinedIcon,
@@ -53,16 +51,15 @@ const ELIGIBLE_PATH_PREFIXES = [
 ];
 
 const SmartNavigation = () => {
-  const location = useLocation();
+  const { pathname } = useLocation();
   const navigate = useNavigate();
-  const theme = useTheme();
   const isMobile = useBreakpointDown('md');
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const isMessagingRoute =
-    location.pathname === '/messages' ||
-    location.pathname.startsWith('/messages/') ||
-    location.pathname === '/chat' ||
-    location.pathname.startsWith('/chat/');
+    pathname === '/messages' ||
+    pathname.startsWith('/messages/') ||
+    pathname === '/chat' ||
+    pathname.startsWith('/chat/');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isPinned, setIsPinned] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
@@ -98,7 +95,6 @@ const SmartNavigation = () => {
 
   // Toggle visibility based on current path eligibility
   useEffect(() => {
-    const { pathname } = location;
     const isEligible = ELIGIBLE_PATH_PREFIXES.some((prefix) =>
       pathname.startsWith(prefix),
     );
@@ -113,7 +109,7 @@ const SmartNavigation = () => {
     } else {
       setShowSuggestions(false);
     }
-  }, [location.pathname, isPinned, isDismissed]);
+  }, [pathname, isPinned, isDismissed]);
 
   useEffect(() => {
     if (
@@ -180,7 +176,7 @@ const SmartNavigation = () => {
   // Memoize contextual navigation suggestions based on current page and user role
   const suggestions = useMemo(() => {
     const result = [];
-    const currentPath = location.pathname;
+    const currentPath = pathname;
 
     // Common suggestions for all users
     if (currentPath === '/jobs' || currentPath.includes('/jobs/')) {
@@ -242,7 +238,7 @@ const SmartNavigation = () => {
           color: '#3F51B5',
         },
         {
-          label: 'Find Workers',
+          label: 'Find Talent',
           icon: <SearchIcon />,
           path: '/hirer/find-talents',
           description: 'Search for skilled workers',
@@ -261,7 +257,7 @@ const SmartNavigation = () => {
     });
 
     return result.slice(0, 4);
-  }, [location.pathname, userRole]);
+  }, [pathname, userRole]);
 
   const handleTogglePin = () => {
     setIsPinned((prev) => {
@@ -275,7 +271,7 @@ const SmartNavigation = () => {
         setShowSuggestions(true);
       } else {
         const isEligible = ELIGIBLE_PATH_PREFIXES.some((prefix) =>
-          location.pathname.startsWith(prefix),
+          pathname.startsWith(prefix),
         );
         setShowSuggestions(isEligible);
       }
@@ -311,7 +307,7 @@ const SmartNavigation = () => {
     setIsDismissed(false);
     persistPreference({ hidden: false });
     const isEligible = ELIGIBLE_PATH_PREFIXES.some((prefix) =>
-      location.pathname.startsWith(prefix),
+      pathname.startsWith(prefix),
     );
     setShowSuggestions(isEligible || isPinned);
   };
