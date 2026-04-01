@@ -1,3 +1,66 @@
+### Session: /messages Production React #300 Crash Fix March 31 2026 ✅ COMPLETED
+
+**Date**: March 31, 2026  
+**Scope**: Resolve production crash on `/messages` showing minified React error #300 (`Rendered fewer hooks than expected`).
+
+**Files currently in scope**
+- kelmah-frontend/src/components/common/SmartNavigation.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Decoded React invariant `#300` and traced route chain `/messages` -> `Layout` -> `SmartNavigation`.
+- Identified hook-order violation in `SmartNavigation.jsx`: an early return (`isMobile || !isAuthenticated || !user || isMessagingRoute`) occurred before a later `useMemo` hook, causing hook-count drift across route transitions.
+- Refactored render gating to keep hook order stable:
+  - Added `shouldRenderPanel` boolean.
+  - Moved the render guard to execute after hook declarations.
+  - Updated `userRole` access to optional chaining (`user?.role`) so unauthenticated renders remain safe while hooks still execute consistently.
+
+**Verification**
+- PASS: `npx eslint src/components/common/SmartNavigation.jsx --rule "react-hooks/rules-of-hooks:error"` in `kelmah-frontend` (no `rules-of-hooks` violations reported).
+- PASS: `npm run build` in `kelmah-frontend` (Vite production build succeeded).
+
+### Session: Hirer Module Lint Debt Multi-Wave Cleanup March 31 2026 ✅ COMPLETED
+
+**Date**: March 31, 2026  
+**Scope**: Aggressively reduce eslint debt across `kelmah-frontend/src/modules/hirer` by repairing missing import surfaces, removing undefined references, resolving unused-variable issues, and stabilizing legacy pages/components.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/hirer/pages/HirerQuickJobTrackingPage.jsx
+- kelmah-frontend/src/modules/hirer/components/PaymentRelease.jsx
+- kelmah-frontend/src/modules/hirer/components/ProposalReview.jsx
+- kelmah-frontend/src/modules/hirer/components/HirerJobManagement.jsx
+- kelmah-frontend/src/modules/hirer/pages/ApplicationManagementPage.jsx
+- kelmah-frontend/src/modules/hirer/components/ApplicationManagementCards.jsx
+- kelmah-frontend/src/modules/hirer/components/ApplicationDecisionDialog.jsx
+- kelmah-frontend/src/modules/hirer/components/BackgroundChecker.jsx
+- kelmah-frontend/src/modules/hirer/components/BudgetEstimator.jsx
+- kelmah-frontend/src/modules/hirer/pages/JobBidsPage.jsx
+- kelmah-frontend/src/modules/hirer/pages/JobPostingPage.jsx
+- kelmah-frontend/src/modules/hirer/pages/HirerDashboardPage.jsx
+- kelmah-frontend/src/modules/hirer/services/hirerService.js
+- kelmah-frontend/src/modules/hirer/components/RecentActivityFeed.jsx
+- kelmah-frontend/src/modules/hirer/components/SkillsRequirementBuilder.jsx
+- kelmah-frontend/src/modules/hirer/pages/HirerProfilePage.jsx
+- kelmah-frontend/src/modules/hirer/components/JobProgressTracker.jsx
+- kelmah-frontend/src/modules/hirer/pages/WorkerSearchPage.jsx
+- kelmah-frontend/src/modules/hirer/components/WorkerReview.jsx
+- kelmah-frontend/src/modules/hirer/components/WorkerComparisonTable.jsx
+- kelmah-frontend/src/modules/hirer/pages/HirerToolsPage.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Restored missing import surfaces and helper constants in top-offender files (`HirerQuickJobTrackingPage`, `PaymentRelease`, `ProposalReview`, `HirerJobManagement`) to eliminate large `no-undef` cascades.
+- Performed targeted no-unused-vars cleanup (unused React defaults, stale selectors/imports, unused catch parameters, unused callback params).
+- Stabilized hook dependency behavior where flagged and fixed fallback-param scoping bug in `hirerService.getApplicationsSummary`.
+- Applied low-risk legacy lint containment where appropriate (selected `react/prop-types` suppression on legacy heavy pages) while adding explicit `propTypes` for smaller reusable components.
+- Fixed UX/text lint violations (`react/no-unescaped-entities`) and minor formatter nits.
+
+**Verification**
+- PASS: `npx eslint src/modules/hirer/pages/HirerQuickJobTrackingPage.jsx src/modules/hirer/components/PaymentRelease.jsx src/modules/hirer/components/ProposalReview.jsx src/modules/hirer/components/HirerJobManagement.jsx src/modules/hirer/pages/ApplicationManagementPage.jsx src/modules/hirer/components/ApplicationManagementCards.jsx src/modules/hirer/components/ApplicationDecisionDialog.jsx src/modules/hirer/components/BackgroundChecker.jsx src/modules/hirer/components/BudgetEstimator.jsx` in `kelmah-frontend`.
+- PASS: `npx eslint src/modules/hirer/pages/JobBidsPage.jsx src/modules/hirer/pages/JobPostingPage.jsx src/modules/hirer/pages/HirerDashboardPage.jsx src/modules/hirer/services/hirerService.js` in `kelmah-frontend`.
+- PASS: `npx eslint src/modules/hirer/components/RecentActivityFeed.jsx src/modules/hirer/components/SkillsRequirementBuilder.jsx src/modules/hirer/pages/HirerProfilePage.jsx src/modules/hirer/components/JobProgressTracker.jsx src/modules/hirer/pages/WorkerSearchPage.jsx src/modules/hirer/components/WorkerReview.jsx src/modules/hirer/components/WorkerComparisonTable.jsx src/modules/hirer/pages/HirerToolsPage.jsx` in `kelmah-frontend`.
+- PASS: `npx eslint src/modules/hirer` in `kelmah-frontend`.
+
 ### Session: Application Management Detail Panel 320 Micro-Pass + Breakpoint Audit Closure March 30 2026 ✅ COMPLETED
 
 **Date**: March 30, 2026  

@@ -172,12 +172,10 @@ const SmartNavigation = () => {
     }
   }, [isAuthenticated, user, preferenceKey]);
 
-  // Don't show on mobile or if user is not authenticated
-  if (isMobile || !isAuthenticated || !user || isMessagingRoute) {
-    return null;
-  }
+  const shouldRenderPanel =
+    !isMobile && isAuthenticated && Boolean(user) && !isMessagingRoute;
 
-  const userRole = user.role || user.userType || user.userRole;
+  const userRole = user?.role || user?.userType || user?.userRole;
 
   // Memoize contextual navigation suggestions based on current page and user role
   const suggestions = useMemo(() => {
@@ -317,6 +315,10 @@ const SmartNavigation = () => {
     );
     setShowSuggestions(isEligible || isPinned);
   };
+
+  if (!shouldRenderPanel) {
+    return null;
+  }
 
   if (suggestions.length === 0 || !showSuggestions) {
     if (isDismissed) {
