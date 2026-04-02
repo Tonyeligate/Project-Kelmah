@@ -279,11 +279,13 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
               pt: isMessagesPage
                 ? 0
                 : `calc(${withSafeAreaTop(HEADER_HEIGHT_MOBILE + 12)} + var(--kelmah-network-banner-offset, 0px))`,
-              pb: isKeyboardVisible
-                ? withSafeAreaBottom(12)
-                : withBottomNavSafeArea(24),
-              px: { xs: 1.5, sm: 2 },
-              overflowY: 'auto',
+              pb: isMessagesPage
+                ? 0
+                : isKeyboardVisible
+                  ? withSafeAreaBottom(12)
+                  : withBottomNavSafeArea(24),
+              px: isMessagesPage ? 0 : { xs: 1.5, sm: 2 },
+              overflowY: isMessagesPage ? 'hidden' : 'auto',
               overflowX: 'hidden',
               WebkitOverflowScrolling: 'touch',
             }}

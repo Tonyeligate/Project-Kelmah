@@ -1,3 +1,24 @@
+### Session: Messaging Long-Thread Visual Proof Closure April 1 2026 ✅ COMPLETED
+
+**Date**: April 1, 2026  
+**Scope**: Close remaining `/messages` long-thread mobile/tablet composer-anchor drift and produce final breakpoint proof artifacts at 320/768/1024/1440.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/layout/components/Layout.jsx
+- kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Removed extra mobile dashboard shell reservation on `/messages` by setting route-specific main content bottom padding to `0`, removing side padding, and enforcing `overflowY: hidden` for chat-pane scroll ownership.
+- Updated messaging page mobile height model to use full viewport (`100dvh` minus network banner offset only), preventing an unnecessary header-height deduction on routes where dashboard header is intentionally suppressed.
+- Removed additional mobile chat wrapper bottom reservation when a conversation is open so the composer anchor is controlled by the composer offset itself instead of stacked shell offsets.
+- Retained dedicated chat scroll region + sticky composer behavior and deterministic test hooks for robust automated verification (`messages-chat-header`, `messages-active-chat-context`, `messages-scroll-region`, `messages-composer`).
+
+**Verification**
+- PASS: `npx eslint src/modules/layout/components/Layout.jsx src/modules/messaging/pages/MessagingPage.jsx` in `kelmah-frontend` (clean run).
+- PASS: automated long-thread multi-breakpoint proof run (`messages-long-thread-20260401-v6`) returned `Score: 25/25`, `pass: true`, `issues: 0`.
+- Artifacts: `.artifacts/ui/messages-long-thread-20260401-v6/` including required `320.png`, `768.png`, `1024.png`, `1440.png`, `scorecard.json`, and `issues.json`.
+
 ### Session: Messaging Long-Thread Scroll Ownership + Header Persistence + Realtime Duplicate Guard April 1 2026 ✅ COMPLETED
 
 **Date**: April 1, 2026  

@@ -2010,6 +2010,7 @@ const MessagingPage = () => {
         elevation={0}
         sx={{
           height: '100%',
+          minHeight: 0,
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
@@ -2019,6 +2020,7 @@ const MessagingPage = () => {
         }}
       >
         <AppBar
+          data-testid="messages-chat-header"
           position="sticky"
           elevation={0}
           sx={{
@@ -2174,6 +2176,7 @@ const MessagingPage = () => {
 
         {!mobile && (
           <Box
+            data-testid="messages-active-chat-context"
             sx={{
               px: { md: 1.4, lg: 1.7, xl: 2 },
               py: 0.55,
@@ -2196,9 +2199,11 @@ const MessagingPage = () => {
         )}
 
         <Box
+          data-testid="messages-scroll-region"
           ref={messagesScrollRef}
           sx={{
             flex: 1,
+            minHeight: 0,
             overflowY: 'auto',
             px: {
               xs: 0.65,
@@ -2370,9 +2375,11 @@ const MessagingPage = () => {
 
         <Box
           component="form"
+          data-testid="messages-composer"
           onSubmit={handleSendMessage}
           sx={{
             position: mobile ? 'sticky' : 'relative',
+            flexShrink: 0,
             bottom: mobile ? mobileComposerOffset : 0,
             zIndex: 2,
             px: { xs: 0.65, sm: 1, md: 1.15, lg: 1.35, xl: 1.5 },
@@ -2380,10 +2387,10 @@ const MessagingPage = () => {
             pb: {
               xs: isKeyboardVisible
                 ? withSafeAreaBottom(6)
-                : withBottomNavSafeArea(10),
+                : withSafeAreaBottom(10),
               sm: isKeyboardVisible
                 ? withSafeAreaBottom(8)
-                : withBottomNavSafeArea(12),
+                : withSafeAreaBottom(12),
               md: 1,
               lg: 1.15,
             },
@@ -2753,7 +2760,7 @@ const MessagingPage = () => {
       <Box
         sx={{
           height: {
-            xs: `calc(100dvh - ${HEADER_HEIGHT_MOBILE}px - var(--kelmah-network-banner-offset, 0px))`,
+            xs: 'calc(100dvh - var(--kelmah-network-banner-offset, 0px))',
             md: `calc(100dvh - ${HEADER_HEIGHT_MOBILE}px - var(--kelmah-network-banner-offset, 0px))`,
           },
           display: 'flex',
@@ -2781,24 +2788,29 @@ const MessagingPage = () => {
             py: { xs: 0, sm: 0.25, md: 1.25, lg: 1.5, xl: 2 },
             pb: {
               xs: isMobile
-                ? isKeyboardVisible
-                  ? withSafeAreaBottom(0)
-                  : withBottomNavSafeArea(4)
+                ? selectedConversation
+                  ? 0
+                  : isKeyboardVisible
+                    ? withSafeAreaBottom(0)
+                    : withBottomNavSafeArea(4)
                 : 1.25,
               md: 1.25,
               lg: 1.5,
               xl: 2,
             },
             flex: 1,
+            minHeight: 0,
             display: 'flex',
             justifyContent: { xs: 'stretch', md: 'center' },
           }}
         >
           {isMobile ? (
             selectedConversation ? (
-              <Box sx={{ flex: 1, minHeight: 0 }}>{renderChatPane(true)}</Box>
+              <Box sx={{ flex: 1, minHeight: 0, height: '100%' }}>
+                {renderChatPane(true)}
+              </Box>
             ) : (
-              <Box sx={{ flex: 1, minHeight: 0 }}>
+              <Box sx={{ flex: 1, minHeight: 0, height: '100%' }}>
                 {renderConversationList(true)}
               </Box>
             )
@@ -2808,6 +2820,7 @@ const MessagingPage = () => {
                 flex: 1,
                 width: '100%',
                 maxWidth: 1560,
+                height: '100%',
                 minHeight: 0,
                 display: 'grid',
                 gridTemplateColumns: {
@@ -2815,6 +2828,8 @@ const MessagingPage = () => {
                   lg: '420px 1fr',
                   xl: '460px 1fr',
                 },
+                gridTemplateRows: 'minmax(0, 1fr)',
+                alignItems: 'stretch',
                 gap: 0,
                 borderRadius: 2,
                 overflow: 'hidden',
@@ -2823,8 +2838,12 @@ const MessagingPage = () => {
                 bgcolor: CHAT_PANEL_BG,
               }}
             >
-              <Box sx={{ minHeight: 0 }}>{renderConversationList(false)}</Box>
-              <Box sx={{ minHeight: 0 }}>{renderChatPane(false)}</Box>
+              <Box sx={{ minHeight: 0, height: '100%', display: 'flex' }}>
+                {renderConversationList(false)}
+              </Box>
+              <Box sx={{ minHeight: 0, height: '100%', display: 'flex' }}>
+                {renderChatPane(false)}
+              </Box>
             </Box>
           )}
         </Box>
