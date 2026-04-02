@@ -2004,6 +2004,21 @@ const MessagingPage = () => {
       isSending || (!messageText.trim() && selectedFiles.length === 0);
     const mobileComposerOffset =
       mobile && !isKeyboardVisible ? withBottomNavSafeArea(0) : 0;
+    const quickReplyBarVisible = messageText.trim().length === 0;
+    const scrollCtaBottomOffset = {
+      xs: isKeyboardVisible
+        ? withSafeAreaBottom(126)
+        : quickReplyBarVisible
+          ? withBottomNavSafeArea(156)
+          : withBottomNavSafeArea(120),
+      sm: isKeyboardVisible
+        ? withSafeAreaBottom(132)
+        : quickReplyBarVisible
+          ? withBottomNavSafeArea(164)
+          : withBottomNavSafeArea(126),
+      md: quickReplyBarVisible ? 170 : 136,
+      lg: quickReplyBarVisible ? 182 : 146,
+    };
 
     return (
       <Paper
@@ -2340,15 +2355,11 @@ const MessagingPage = () => {
 
         {showScrollToLatest && (
           <Box
+            data-testid="messages-jump-latest"
             sx={{
               position: 'absolute',
               right: { xs: 10, sm: 14, md: 16, lg: 20 },
-              bottom: {
-                xs: withBottomNavSafeArea(92),
-                sm: withBottomNavSafeArea(96),
-                md: 84,
-                lg: 92,
-              },
+              bottom: scrollCtaBottomOffset,
               zIndex: Z_INDEX.stickyCta,
             }}
           >
@@ -2567,8 +2578,9 @@ const MessagingPage = () => {
               </Alert>
             )}
 
-            {messageText.trim().length === 0 && (
+            {quickReplyBarVisible && (
               <Stack
+                data-testid="messages-quick-replies"
                 direction="row"
                 spacing={0.75}
                 sx={{ mb: 1, overflowX: 'auto', pb: 0.25 }}

@@ -1,3 +1,29 @@
+### Session: Messaging Jump-To-Latest Overlap Polish April 2 2026 ✅ COMPLETED
+
+**Date**: April 2, 2026  
+**Scope**: Remove residual `Jump to latest` overlap with quick-reply chips/composer in `/messages` at long-thread states.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Added context-aware vertical offsets for `Jump to latest` so CTA placement adapts to:
+  - keyboard visibility,
+  - quick-reply chip row visibility,
+  - breakpoint tier.
+- Increased desktop CTA bottom offsets to clear the composer surface in dense long-thread states.
+- Added deterministic test hooks for overlap regression checks:
+  - `messages-jump-latest`
+  - `messages-quick-replies`
+
+**Verification**
+- PASS: `npx eslint src/modules/messaging/pages/MessagingPage.jsx` in `kelmah-frontend`.
+- PASS: focused Playwright geometry check (320/768/1024/1440) confirms:
+  - no CTA overlap with quick-reply chips,
+  - no CTA overlap with composer,
+  - conversation open state stable at all breakpoints.
+
 ### Session: Messaging Long-Thread Visual Proof Closure April 1 2026 ✅ COMPLETED
 
 **Date**: April 1, 2026  
