@@ -35,6 +35,13 @@ const LoginPage = () => {
           pb: { xs: withSafeAreaBottom(20), md: 6 },
         }}
       >
+        <Typography
+          component="h1"
+          variant="h5"
+          sx={{ px: 2, mb: 1, fontWeight: 800 }}
+        >
+          Sign In to Kelmah
+        </Typography>
         <MobileLogin registrationSuccess={registered} />
       </PageCanvas>
     );
@@ -50,6 +57,9 @@ const LoginPage = () => {
         <Helmet>
           <title>Log In | Kelmah</title>
         </Helmet>
+        <Typography component="h1" variant="h4" sx={{ mb: 2, fontWeight: 800 }}>
+          Sign In to Kelmah
+        </Typography>
         {registered && (
           <Alert severity="success" sx={{ mb: 2 }}>
             Registration complete. Check your email for a verification link,

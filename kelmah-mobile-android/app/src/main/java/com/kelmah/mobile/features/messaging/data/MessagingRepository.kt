@@ -26,6 +26,33 @@ class MessagingRepository @Inject constructor(
         ApiResult.Success(parseConversations(response))
     }
 
+    suspend fun getConversationById(
+        conversationId: String,
+    ): ApiResult<ConversationDetailPayload> = executeAuthorizedApiCall(sessionCoordinator) {
+        val response = messagingApiService.getConversationById(conversationId)
+        val userId = currentUserId()
+        val rawConversation = response.nestedObject("data")?.nestedObject("conversation")
+            ?: response.nestedObject("conversation")
+            ?: response.nestedObject("data")
+            ?: response
+
+        val conversation = parseConversationSummary(rawConversation, userId)
+            ?: throw IllegalStateException("Conversation payload was invalid")
+
+        val messages = rawConversation
+            .nestedArray("messages")
+            ?.mapNotNull { parseMessage(it as? JsonObject ?: return@mapNotNull null, conversation.id, userId) }
+            ?.sortedBy { it.createdAt ?: "" }
+            ?: emptyList()
+
+        ApiResult.Success(
+            ConversationDetailPayload(
+                conversation = conversation,
+                messages = messages,
+            ),
+        )
+    }
+
     suspend fun getMessages(
         conversationId: String,
         limit: Int = 50,
@@ -81,22 +108,29 @@ class MessagingRepository @Inject constructor(
 
         return values.mapNotNull { item ->
             val obj = item as? JsonObject ?: return@mapNotNull null
-            val id = obj.string("id") ?: obj.string("_id") ?: return@mapNotNull null
-            val participants = parseParticipants(obj.nestedArray("participants"))
-            val otherParticipant = obj.nestedObject("otherParticipant")?.let(::parseParticipant)
-                ?: participants.firstOrNull { participant -> participant.id != userId }
-            val lastMessage = obj.nestedObject("lastMessage") ?: obj.nestedObject("latestMessage")
-
-            ConversationSummary(
-                id = id,
-                title = obj.string("title"),
-                participants = participants,
-                otherParticipant = otherParticipant,
-                unreadCount = obj.int("unreadCount") ?: obj.int("unread") ?: 0,
-                lastMessagePreview = previewFor(lastMessage),
-                lastMessageAt = obj.string("lastMessageAt") ?: obj.string("updatedAt") ?: lastMessage?.string("createdAt"),
-            )
+            parseConversationSummary(obj, userId)
         }.sortedByDescending { it.lastMessageAt ?: "" }
+    }
+
+    private fun parseConversationSummary(
+        obj: JsonObject,
+        userId: String?,
+    ): ConversationSummary? {
+        val id = obj.string("id") ?: obj.string("_id") ?: return null
+        val participants = parseParticipants(obj.nestedArray("participants"))
+        val otherParticipant = obj.nestedObject("otherParticipant")?.let(::parseParticipant)
+            ?: participants.firstOrNull { participant -> participant.id != userId }
+        val lastMessage = obj.nestedObject("lastMessage") ?: obj.nestedObject("latestMessage")
+
+        return ConversationSummary(
+            id = id,
+            title = obj.string("title"),
+            participants = participants,
+            otherParticipant = otherParticipant,
+            unreadCount = obj.int("unreadCount") ?: obj.int("unread") ?: 0,
+            lastMessagePreview = previewFor(lastMessage),
+            lastMessageAt = obj.string("lastMessageAt") ?: obj.string("updatedAt") ?: lastMessage?.string("createdAt"),
+        )
     }
 
     private fun parseMessages(response: JsonObject, conversationId: String): List<ThreadMessage> {
@@ -173,6 +207,11 @@ class MessagingRepository @Inject constructor(
         }
     }
 }
+
+data class ConversationDetailPayload(
+    val conversation: ConversationSummary,
+    val messages: List<ThreadMessage>,
+)
 
 private fun JsonObject.string(key: String): String? = (this[key] as? JsonPrimitive)?.contentOrNull()
 

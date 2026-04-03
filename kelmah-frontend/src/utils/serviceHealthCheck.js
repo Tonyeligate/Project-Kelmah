@@ -11,6 +11,7 @@ import {
   devError as healthError,
   devWarn as healthWarn,
 } from '../modules/common/utils/devLogger';
+import { markHealthTimer } from './healthTimerDebug';
 
 // Service health status cache
 const serviceHealthCache = new Map();
@@ -325,6 +326,10 @@ export const initializeServiceHealth = () => {
 
     // Set up periodic health checks
     healthMonitorState.intervalId = setInterval(() => {
+      markHealthTimer('serviceHealthCheck.interval', {
+        trigger: 'interval',
+        serviceCount: periodicTargets.length,
+      });
       healthLog('🏥 Running periodic service health checks...');
       periodicTargets.forEach((service) => {
         checkServiceHealth(service);
@@ -337,6 +342,9 @@ export const initializeServiceHealth = () => {
         return;
       }
 
+      markHealthTimer('serviceHealthCheck.visibilitychange', {
+        trigger: 'visibilitychange',
+      });
       healthLog('🏥 Page focused - warming up services...');
       warmUpAllServices();
     };

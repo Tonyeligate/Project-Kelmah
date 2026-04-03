@@ -122,6 +122,7 @@ mock-services/
 render-cli/
 temp/
 /data/
+.artifacts/
 .vercel/
 backup/root_cleanup_20260201/cli/
 ngrok-config.json

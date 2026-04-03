@@ -6,6 +6,7 @@ import com.kelmah.mobile.core.network.ApiResult
 import com.kelmah.mobile.core.realtime.RealtimeSignal
 import com.kelmah.mobile.core.realtime.RealtimeSocketManager
 import com.kelmah.mobile.features.messaging.data.ConversationSummary
+import com.kelmah.mobile.features.messaging.data.ConversationDetailPayload
 import com.kelmah.mobile.features.messaging.data.MessagingRepository
 import com.kelmah.mobile.features.messaging.data.ThreadMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -106,22 +107,62 @@ class MessagesViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            when (val result = messagingRepository.getConversations()) {
+            _uiState.update {
+                it.copy(
+                    isLoadingConversations = true,
+                    isLoadingMessages = true,
+                    errorMessage = null,
+                )
+            }
+            when (val result = messagingRepository.getConversationById(conversationId)) {
                 is ApiResult.Success -> {
-                    val conversation = result.data.firstOrNull { it.id == conversationId }
-                    _uiState.update {
-                        it.copy(
-                            conversations = result.data,
-                            selectedConversation = conversation ?: it.selectedConversation,
-                            errorMessage = if (conversation == null) "Chat not found" else null,
-                        )
-                    }
-                    conversation?.let(::openConversation)
+                    applyConversationDetail(result.data)
                 }
                 is ApiResult.Error -> {
-                    _uiState.update { it.copy(errorMessage = result.message) }
+                    when (val listResult = messagingRepository.getConversations()) {
+                        is ApiResult.Success -> {
+                            val conversation = listResult.data.firstOrNull { it.id == conversationId }
+                            _uiState.update {
+                                it.copy(
+                                    isLoadingConversations = false,
+                                    isLoadingMessages = false,
+                                    conversations = listResult.data,
+                                    selectedConversation = conversation ?: it.selectedConversation,
+                                    errorMessage = if (conversation == null) "Chat not found" else null,
+                                )
+                            }
+                            conversation?.let(::openConversation)
+                        }
+                        is ApiResult.Error -> {
+                            _uiState.update {
+                                it.copy(
+                                    isLoadingConversations = false,
+                                    isLoadingMessages = false,
+                                    errorMessage = listResult.message,
+                                )
+                            }
+                        }
+                    }
                 }
             }
+        }
+    }
+
+    private fun applyConversationDetail(detail: ConversationDetailPayload) {
+        _uiState.update { state ->
+            val selectedConversation = detail.conversation.copy(unreadCount = 0)
+            val mergedConversations = buildList {
+                add(selectedConversation)
+                addAll(state.conversations.filterNot { it.id == selectedConversation.id })
+            }
+            state.copy(
+                isLoadingConversations = false,
+                isLoadingMessages = false,
+                selectedConversation = selectedConversation,
+                messages = detail.messages,
+                conversations = mergedConversations,
+                errorMessage = null,
+            )
         }
     }
 

@@ -57,6 +57,13 @@
     "ui:audit:capture": "npm --prefix kelmah-frontend run ui:audit:capture --",
     "ui:audit:baseline": "npm --prefix kelmah-frontend run ui:audit:baseline --",
     "ui:audit:compare": "npm --prefix kelmah-frontend run ui:audit:compare --",
+    "ui:pack:capture": "npm --prefix kelmah-frontend run ui:pack:capture --",
+    "ui:pack:baseline": "npm --prefix kelmah-frontend run ui:pack:baseline --",
+    "ui:pack:compare": "npm --prefix kelmah-frontend run ui:pack:compare --",
+    "ui:pack:ensure-baselines": "npm --prefix kelmah-frontend run ui:pack:ensure-baselines --",
+    "ui:auto-remediate": "npm --prefix kelmah-frontend run ui:auto-remediate --",
+    "ui:pre-push-gate": "node scripts/ui-pre-push-gate.js",
+    "hooks:install": "node scripts/install-git-hooks.js",
     "build:all": "npm run build:frontend && npm run build:backend",
     "build:frontend": "cd kelmah-frontend && npm run build",
     "build:backend": "echo 'Backend requires no build'",
@@ -66,7 +73,8 @@
     "docker:logs": "docker-compose logs -f",
     "logs:all": "tail -f kelmah-backend/services/*/logs/*.log",
     "clean:all": "npm run services:clean && cd kelmah-frontend && npm run clean",
-    "setup": "npm install && npm run services:install && cd kelmah-frontend && npm install"
+    "setup": "npm install && npm run services:install && cd kelmah-frontend && npm install",
+    "postinstall": "node scripts/install-git-hooks.js"
   },
   "dependencies": {
     "@emotion/react": "^11.11.0",

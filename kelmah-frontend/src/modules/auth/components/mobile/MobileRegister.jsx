@@ -776,6 +776,7 @@ const MobileRegister = () => {
           sx={{ width: 50, height: 50, mb: 1, borderRadius: '50%' }}
         />
         <Typography
+          component="h1"
           sx={{ color: 'primary.main', fontWeight: 700, fontSize: '18px' }}
         >
           Join Kelmah

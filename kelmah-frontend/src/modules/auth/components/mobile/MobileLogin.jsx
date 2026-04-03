@@ -228,6 +228,7 @@ const MobileLogin = ({ registrationSuccess = false }) => {
             <Box>
               <Typography
                 variant="h6"
+                component="h1"
                 sx={{
                   color: 'text.primary',
                   fontWeight: 700,

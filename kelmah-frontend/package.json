@@ -12,6 +12,11 @@
     "ui:audit:capture": "node scripts/ui_audit_runner.mjs capture",
     "ui:audit:baseline": "node scripts/ui_audit_runner.mjs baseline",
     "ui:audit:compare": "node scripts/ui_audit_runner.mjs compare",
+    "ui:pack:capture": "node scripts/ui_audit_pack_runner.mjs capture",
+    "ui:pack:baseline": "node scripts/ui_audit_pack_runner.mjs baseline",
+    "ui:pack:compare": "node scripts/ui_audit_pack_runner.mjs compare",
+    "ui:pack:ensure-baselines": "node scripts/ui_audit_pack_runner.mjs ensure-baselines",
+    "ui:auto-remediate": "node scripts/ui_auto_remediate.mjs",
     "lhci:collect": "lhci collect --config lighthouserc.json",
     "lhci:assert": "lhci assert --config lighthouserc.json",
     "lhci": "npm run lhci:collect && npm run lhci:assert"

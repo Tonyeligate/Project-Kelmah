@@ -42,7 +42,12 @@ const RegisterPage = () => {
         }}
       >
         {pageTitle}
-        <Box sx={{ px: 2, pt: 1.5 }}>{helperCopy}</Box>
+        <Box sx={{ px: 2, pt: 1.5 }}>
+          <Typography component="h1" variant="h5" sx={{ mb: 1, fontWeight: 800 }}>
+            Create Your Kelmah Account
+          </Typography>
+          {helperCopy}
+        </Box>
         <MobileRegister />
       </PageCanvas>
     );
@@ -57,6 +62,9 @@ const RegisterPage = () => {
       <Box
         sx={{ maxWidth: 960, mx: 'auto', px: { xs: 2, md: 0 }, pt: 1.5 }}
       >
+        <Typography component="h1" variant="h4" sx={{ mb: 1, fontWeight: 800 }}>
+          Create Your Kelmah Account
+        </Typography>
         {helperCopy}
       </Box>
       <Register />

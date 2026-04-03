@@ -11,6 +11,11 @@ interface MessagingApiService {
     @GET("messages/conversations")
     suspend fun getConversations(@QueryMap query: Map<String, String>): JsonObject
 
+    @GET("messages/conversations/{conversationId}")
+    suspend fun getConversationById(
+        @Path("conversationId") conversationId: String,
+    ): JsonObject
+
     @GET("messages/conversations/{conversationId}/messages")
     suspend fun getMessages(
         @Path("conversationId") conversationId: String,

@@ -375,7 +375,7 @@ const JobManagementPage = () => {
     if (isBiddingJob(job)) {
       navigate(`/hirer/jobs/${jobId}/bids`);
     } else {
-      navigate(`/hirer/applications?jobId=${jobId}`);
+      navigate('/hirer/applications');
     }
 
     handleMenuClose();

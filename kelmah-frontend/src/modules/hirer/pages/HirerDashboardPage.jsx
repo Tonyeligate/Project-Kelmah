@@ -758,6 +758,7 @@ const HirerDashboardPage = () => {
                 <Box>
                   <Typography
                     variant="h4"
+                    component="h1"
                     sx={{
                       color: 'text.primary',
                       fontWeight: 800,

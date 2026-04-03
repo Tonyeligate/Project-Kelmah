@@ -5,8 +5,7 @@ import {
   Paper,
   Typography,
   Box,
-  Tabs,
-  Tab,
+  Drawer,
   Button,
   Avatar,
   Chip,
@@ -18,14 +17,9 @@ import {
   CircularProgress,
   Alert,
   Rating,
-  Divider,
   useTheme,
   Skeleton,
-  ListItemButton,
-  ListItemText,
-  ListItemIcon,
   IconButton,
-  Badge,
   Tooltip,
   Pagination,
   FormControl,
@@ -44,9 +38,9 @@ import {
   TipsAndUpdates,
   ArrowForward,
   Badge as BadgeIcon,
+  Close,
   Work,
   OpenInNew,
-  FilterList,
 } from '@mui/icons-material';
 import { formatDistanceToNow } from 'date-fns';
 import { Helmet } from 'react-helmet-async';
@@ -73,10 +67,7 @@ import {
   normalizeApplicationsSort,
   normalizeApplicationsTab,
 } from '../utils/applicationManagementUtils';
-import {
-  ApplicationCard,
-  JobListItem,
-} from '../components/ApplicationManagementCards';
+import { ApplicationCard } from '../components/ApplicationManagementCards';
 import { useBreakpointDown } from '../../../hooks/useResponsive';
 import {
   HEADER_HEIGHT_MOBILE,
@@ -127,7 +118,6 @@ function ApplicationManagementPage() {
   const theme = useTheme();
   const isMobile = useBreakpointDown('md');
   const isCompactMobile = useBreakpointDown('sm');
-  const isTablet = useBreakpointDown('lg');
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -162,7 +152,6 @@ function ApplicationManagementPage() {
   );
 
   // ── State ──────────────────────────────────────────────────────
-  const [selectedJobId, setSelectedJobId] = useState(urlJobId || null);
   const [activeTab, setActiveTab] = useState(urlActiveTab);
   const [applications, setApplications] = useState([]);
   const [summary, setSummary] = useState({
@@ -187,7 +176,6 @@ function ApplicationManagementPage() {
   const [feedback, setFeedback] = useState('');
   const [updating, setUpdating] = useState(false);
   const [actionType, setActionType] = useState('');
-  const [showJobList, setShowJobList] = useState(!isMobile);
   const [macroAction, setMacroAction] = useState('');
   const [lastMacroTelemetry, setLastMacroTelemetry] = useState(null);
 
@@ -237,20 +225,14 @@ function ApplicationManagementPage() {
     setLastMacroTelemetry(null);
   }, []);
 
-  // Sync URL-derived pane state and redirect bid-based jobs to the bid review screen.
+  // Sync URL-derived state and redirect bid-based jobs to the bid review screen.
   useEffect(() => {
-    const nextJobId = urlJobId || null;
-
     const matchingJob = urlJobId
       ? dedupedJobs.find((job) => (job.id || job._id) === urlJobId)
       : null;
     if (matchingJob && isBiddingJob(matchingJob)) {
       navigate(`/hirer/jobs/${urlJobId}/bids`, { replace: true });
       return;
-    }
-
-    if (nextJobId !== selectedJobId) {
-      setSelectedJobId(nextJobId);
     }
 
     if (urlActiveTab !== activeTab) {
@@ -274,7 +256,6 @@ function ApplicationManagementPage() {
     dedupedJobs,
     navigate,
     pageSize,
-    selectedJobId,
     sortBy,
     urlActiveTab,
     urlCurrentPage,
@@ -285,12 +266,7 @@ function ApplicationManagementPage() {
 
   useEffect(() => {
     const nextParams = new URLSearchParams(searchParams);
-
-    if (selectedJobId) {
-      nextParams.set('jobId', selectedJobId);
-    } else {
-      nextParams.delete('jobId');
-    }
+    nextParams.delete('jobId');
 
     if (activeTab !== 'pending') {
       nextParams.set('tab', activeTab);
@@ -319,15 +295,7 @@ function ApplicationManagementPage() {
     if (nextParams.toString() !== searchParams.toString()) {
       setSearchParams(nextParams, { replace: true });
     }
-  }, [
-    activeTab,
-    currentPage,
-    pageSize,
-    searchParams,
-    selectedJobId,
-    setSearchParams,
-    sortBy,
-  ]);
+  }, [activeTab, currentPage, pageSize, searchParams, setSearchParams, sortBy]);
 
   const loadApplicationsView = useCallback(
     async ({ isCancelled = () => false } = {}) => {
@@ -336,7 +304,6 @@ function ApplicationManagementPage() {
 
       try {
         const response = await hirerService.getApplicationsSummary({
-          jobId: selectedJobId || undefined,
           status: activeTab,
           page: currentPage,
           limit: pageSize,
@@ -377,9 +344,6 @@ function ApplicationManagementPage() {
         if (nextPagination.currentPage !== currentPage) {
           setCurrentPage(nextPagination.currentPage);
         }
-
-        // Keep view mode stable: do not auto-switch from "All Jobs" to a
-        // single-job view unless the user explicitly selects a job or URL has jobId.
       } catch (loadError) {
         if (isCancelled()) return;
         setJobs([]);
@@ -407,7 +371,7 @@ function ApplicationManagementPage() {
         }
       }
     },
-    [activeTab, currentPage, pageSize, selectedJobId, sortBy],
+    [activeTab, currentPage, pageSize, sortBy],
   );
 
   // ── Fetch jobs and their applications ──────────────────────────
@@ -420,42 +384,17 @@ function ApplicationManagementPage() {
   }, [loadApplicationsView]);
 
   // ── Derived data ───────────────────────────────────────────────
-  const selectedJob = useMemo(
-    () => allJobs.find((j) => (j.id || j._id) === selectedJobId) || null,
-    [allJobs, selectedJobId],
-  );
-
   const filteredApps = useMemo(() => applications, [applications]);
 
   const tabCounts = useMemo(() => {
-    const sourceCounts = selectedJobId
-      ? selectedJob?.applicationCounts || DEFAULT_APPLICATION_COUNTS
-      : summary?.countsByStatus || DEFAULT_APPLICATION_COUNTS;
+    const sourceCounts = summary?.countsByStatus || DEFAULT_APPLICATION_COUNTS;
 
     return {
       pending: sourceCounts.pending || 0,
       accepted: sourceCounts.accepted || 0,
       rejected: sourceCounts.rejected || 0,
     };
-  }, [selectedJob, selectedJobId, summary]);
-
-  const totalAppCounts = useMemo(() => {
-    const counts = {};
-    allJobs.forEach((job) => {
-      const jobId = job.id || job._id;
-      counts[jobId] = job?.applicationCounts?.total || 0;
-    });
-    return counts;
-  }, [allJobs]);
-
-  const activeTabCountsByJob = useMemo(() => {
-    const counts = {};
-    allJobs.forEach((job) => {
-      const jobId = job.id || job._id;
-      counts[jobId] = job?.applicationCounts?.[activeTab] || 0;
-    });
-    return counts;
-  }, [activeTab, allJobs]);
+  }, [summary]);
 
   const visibleRange = useMemo(() => {
     if (!filteredApps.length) {
@@ -470,9 +409,7 @@ function ApplicationManagementPage() {
     };
   }, [filteredApps.length, pageSize, pagination.currentPage, pagination.limit]);
 
-  const selectedScopeTotal = selectedJobId
-    ? selectedJob?.applicationCounts?.total || 0
-    : summary?.totalApplications || 0;
+  const selectedScopeTotal = summary?.totalApplications || 0;
 
   const hasNoStandardJobs = !initialLoading && allJobs.length === 0;
   const mobileDetailMode = isMobile && Boolean(selectedApplication);
@@ -519,7 +456,7 @@ function ApplicationManagementPage() {
     };
   }, [filteredApps]);
 
-  // Auto-select first filtered app when job or tab changes
+  // Keep current selection only while it remains in the filtered result set.
   useEffect(() => {
     if (!initialLoading) {
       setSelectedApplication((current) => {
@@ -527,37 +464,17 @@ function ApplicationManagementPage() {
           return null;
         }
 
-        if (isMobile && !current) {
+        if (!current?.id) {
           return null;
         }
 
-        if (current) {
-          const stillVisible = filteredApps.find(
-            (app) => app.id === current.id,
-          );
-          if (stillVisible) {
-            return stillVisible;
-          }
-
-          if (isMobile) {
-            return null;
-          }
-        }
-
-        return filteredApps[0];
+        const stillVisible = filteredApps.find((app) => app.id === current.id);
+        return stillVisible || null;
       });
     }
-  }, [filteredApps, initialLoading, isMobile]);
+  }, [filteredApps, initialLoading]);
 
   // ── Handlers ───────────────────────────────────────────────────
-  const handleSelectJob = (jobId) => {
-    setSelectedJobId(jobId);
-    setActiveTab('pending');
-    setCurrentPage(1);
-    setSelectedApplication(null);
-    if (isMobile) setShowJobList(false);
-  };
-
   const updateApplicationStatusAndRefresh = useCallback(
     async ({ application, status, feedbackText = '' }) => {
       if (!application?.id || !application?.jobId) {
@@ -615,6 +532,19 @@ function ApplicationManagementPage() {
     setShowReviewDialog(true);
   }, []);
 
+  const handleStatusFilterChange = useCallback(
+    (nextStatus) => {
+      if (!nextStatus || nextStatus === activeTab) {
+        return;
+      }
+
+      setCurrentPage(1);
+      setActiveTab(nextStatus);
+      setSelectedApplication(null);
+    },
+    [activeTab],
+  );
+
   const handleSortChange = (nextSort) => {
     setCurrentPage(1);
     setSelectedApplication(null);
@@ -634,15 +564,9 @@ function ApplicationManagementPage() {
     }
   };
 
-  const handleSelectApplication = useCallback(
-    (application) => {
-      setSelectedApplication(application);
-      if (isMobile) {
-        setShowJobList(false);
-      }
-    },
-    [isMobile],
-  );
+  const handleSelectApplication = useCallback((application) => {
+    setSelectedApplication(application);
+  }, []);
 
   const handleStepApplication = useCallback(
     (step) => {
@@ -654,27 +578,18 @@ function ApplicationManagementPage() {
       const targetApplication = filteredApps[nextIndex];
       if (targetApplication) {
         setSelectedApplication(targetApplication);
-        if (isMobile) {
-          setShowJobList(false);
-        }
       }
     },
-    [filteredApps, isMobile, selectedApplicationIndex],
+    [filteredApps, selectedApplicationIndex],
   );
 
-  const openReviewDialogForApplication = useCallback(
-    (application, type) => {
-      if (!application) return;
-      setSelectedApplication(application);
-      setActionType(type);
-      setFeedback('');
-      setShowReviewDialog(true);
-      if (isMobile) {
-        setShowJobList(false);
-      }
-    },
-    [isMobile],
-  );
+  const openReviewDialogForApplication = useCallback((application, type) => {
+    if (!application) return;
+    setSelectedApplication(application);
+    setActionType(type);
+    setFeedback('');
+    setShowReviewDialog(true);
+  }, []);
 
   const startConversationForApplication = useCallback(
     async (application) => {
@@ -1110,45 +1025,11 @@ function ApplicationManagementPage() {
                 are excluded here.
               </Typography>
             )}
-            {selectedJob && (
-              <Box
-                sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}
-              >
-                <Chip
-                  icon={<Work />}
-                  label={selectedJob.title}
-                  color="primary"
-                  variant="outlined"
-                  onClick={() => navigate(`/jobs/${selectedJobId}`)}
-                  onDelete={() => handleSelectJob(null)}
-                  deleteIcon={
-                    <Tooltip title="View all jobs">
-                      <FilterList />
-                    </Tooltip>
-                  }
-                  sx={{ maxWidth: 400, cursor: 'pointer' }}
-                />
-                <Typography variant="body2" color="text.secondary">
-                  {selectedScopeTotal} application
-                  {selectedScopeTotal !== 1 ? 's' : ''}
-                </Typography>
-              </Box>
-            )}
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+              {selectedScopeTotal} application
+              {selectedScopeTotal !== 1 ? 's' : ''} in this update queue.
+            </Typography>
           </Box>
-          {isMobile && (
-            <Button
-              size="small"
-              variant="outlined"
-              startIcon={<Work />}
-              onClick={() => setShowJobList(!showJobList)}
-            >
-              {showJobList
-                ? 'Hide Jobs'
-                : selectedJobId
-                  ? 'Switch Job'
-                  : 'Select Job'}
-            </Button>
-          )}
         </Box>
 
         {!isMobile && !hasNoStandardJobs && (
@@ -1247,93 +1128,68 @@ function ApplicationManagementPage() {
               overflow: 'hidden',
             }}
           >
-            <JobSidebar
-              isMobile={isMobile}
-              showJobList={showJobList}
-              isTablet={isTablet}
-              allJobs={allJobs}
-              selectedJobId={selectedJobId}
-              totalApplications={summary?.totalApplications || 0}
-              totalAppCounts={totalAppCounts}
-              onSelectJob={handleSelectJob}
-            />
-
-            {/* ── Col 2: Applications list ────────────────────────── */}
             <Box
               sx={{
-                width: isMobile ? '100%' : isTablet ? 280 : 340,
-                minWidth: isMobile ? 'auto' : isTablet ? 280 : 340,
-                borderRight: isMobile
-                  ? 'none'
-                  : `1px solid ${theme.palette.divider}`,
+                width: '100%',
+                minWidth: 0,
+                borderRight: 'none',
                 display: mobileDetailMode ? 'none' : 'flex',
                 flexDirection: 'column',
                 minHeight: 0,
               }}
             >
-              {/* Status tabs */}
-              <Tabs
-                value={activeTab}
-                onChange={(e, v) => {
-                  setCurrentPage(1);
-                  setActiveTab(v);
-                  setSelectedApplication(null);
-                }}
+              <Box
                 sx={{
                   borderBottom: `1px solid ${theme.palette.divider}`,
-                  minHeight: 44,
-                  '& .MuiTab-root': {
-                    minWidth: 80,
-                    minHeight: 44,
-                    px: 1.5,
-                    fontSize: '0.88rem',
-                  },
+                  px: { xs: 1, sm: 1.5 },
+                  py: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 0.75,
+                  flexWrap: 'wrap',
                 }}
-                variant={isMobile ? 'scrollable' : 'fullWidth'}
-                scrollButtons={isMobile ? 'auto' : false}
-                allowScrollButtonsMobile={isMobile}
               >
-                <Tab
-                  label={
-                    tabCounts.pending
-                      ? `Pending (${tabCounts.pending})`
-                      : 'Pending'
-                  }
-                  value="pending"
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ fontWeight: 700, mr: 0.25 }}
+                >
+                  Filter
+                </Typography>
+                <Chip
+                  size="small"
+                  color={activeTab === 'pending' ? 'warning' : 'default'}
+                  variant={activeTab === 'pending' ? 'filled' : 'outlined'}
+                  label={`Pending (${tabCounts.pending})`}
+                  onClick={() => handleStatusFilterChange('pending')}
                 />
-                <Tab
-                  label={
-                    tabCounts.accepted
-                      ? `Accepted (${tabCounts.accepted})`
-                      : 'Accepted'
-                  }
-                  value="accepted"
+                <Chip
+                  size="small"
+                  color={activeTab === 'accepted' ? 'success' : 'default'}
+                  variant={activeTab === 'accepted' ? 'filled' : 'outlined'}
+                  label={`Accepted (${tabCounts.accepted})`}
+                  onClick={() => handleStatusFilterChange('accepted')}
                 />
-                <Tab
-                  label={
-                    tabCounts.rejected
-                      ? `Rejected (${tabCounts.rejected})`
-                      : 'Rejected'
-                  }
-                  value="rejected"
+                <Chip
+                  size="small"
+                  color={activeTab === 'rejected' ? 'error' : 'default'}
+                  variant={activeTab === 'rejected' ? 'filled' : 'outlined'}
+                  label={`Rejected (${tabCounts.rejected})`}
+                  onClick={() => handleStatusFilterChange('rejected')}
                 />
-              </Tabs>
+              </Box>
 
               <ApplicationsListContent
                 initialLoading={initialLoading}
                 error={error}
                 applicationsLoading={applicationsLoading}
-                selectedJobId={selectedJobId}
                 filteredApps={filteredApps}
                 activeTab={activeTab}
-                selectedJob={selectedJob}
                 summary={summary}
                 navigate={navigate}
                 selectedApplicationId={selectedApplication?.id}
-                activeTabCountsByJob={activeTabCountsByJob}
                 onClearError={() => setError(null)}
                 onSelectApplication={handleSelectApplication}
-                onSelectJob={handleSelectJob}
                 onQuickAccept={(application) =>
                   openReviewDialogForApplication(application, 'accepted')
                 }
@@ -1347,7 +1203,6 @@ function ApplicationManagementPage() {
                 selectedScopeTotal={selectedScopeTotal}
                 visibleRange={visibleRange}
                 pagination={pagination}
-                selectedJobId={selectedJobId}
                 sortBy={sortBy}
                 pageSize={pageSize}
                 currentPage={currentPage}
@@ -1364,7 +1219,11 @@ function ApplicationManagementPage() {
                 flex: 1,
                 width: isMobile ? '100%' : 'auto',
                 p: { xs: 1.5, md: 3 },
-                display: isMobile && !mobileDetailMode ? 'none' : 'flex',
+                display: isMobile
+                  ? mobileDetailMode
+                    ? 'flex'
+                    : 'none'
+                  : 'none',
                 flexDirection: 'column',
                 minWidth: 0,
               }}
@@ -1430,15 +1289,77 @@ function ApplicationManagementPage() {
                     Select an application to review
                   </Typography>
                   <Typography variant="body2" color="text.disabled">
-                    {selectedJobId
-                      ? 'Choose an application from the middle list to view details and actions.'
-                      : 'Pick a job first, then open an application to continue.'}
+                    Choose an application from the list to view details and take
+                    action.
                   </Typography>
                 </Box>
               )}
             </Box>
           </Paper>
         )}
+
+        <Drawer
+          anchor="right"
+          open={!isMobile && Boolean(selectedApplication)}
+          onClose={() => setSelectedApplication(null)}
+          ModalProps={{ keepMounted: true }}
+          PaperProps={{
+            sx: {
+              width: { xs: '100%', sm: 440, lg: 520 },
+              maxWidth: '100vw',
+              borderLeft: `1px solid ${theme.palette.divider}`,
+            },
+          }}
+        >
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              px: 2,
+              py: 1.5,
+              borderBottom: `1px solid ${theme.palette.divider}`,
+            }}
+          >
+            <Typography variant="subtitle1" fontWeight={700}>
+              Application Details
+            </Typography>
+            <IconButton
+              size="small"
+              onClick={() => setSelectedApplication(null)}
+              aria-label="Close application details"
+              sx={{ width: 36, height: 36 }}
+            >
+              <Close fontSize="small" />
+            </IconButton>
+          </Box>
+
+          {selectedApplication && (
+            <Box
+              sx={{
+                p: { xs: 1.5, md: 2 },
+                pb: { xs: 2.5, md: 3 },
+                overflowY: 'auto',
+              }}
+            >
+              <ApplicationDetailPanel
+                app={selectedApplication}
+                onAccept={() => handleOpenReviewDialog('accepted')}
+                onReject={() => handleOpenReviewDialog('rejected')}
+                onMessage={handleMessage}
+                isMobile={false}
+                selectedIndex={selectedApplicationIndex}
+                totalCount={filteredApps.length}
+                canSelectPrevious={canSelectPrevious}
+                canSelectNext={canSelectNext}
+                onSelectPrevious={() => handleStepApplication(-1)}
+                onSelectNext={() => handleStepApplication(1)}
+                onViewJob={() => navigate(`/jobs/${selectedApplication.jobId}`)}
+                navigate={navigate}
+              />
+            </Box>
+          )}
+        </Drawer>
 
         <Paper
           elevation={8}
@@ -1622,20 +1543,6 @@ function ApplicationManagementPage() {
             <>
               <Button
                 fullWidth
-                variant="outlined"
-                color="secondary"
-                sx={{ minHeight: 40 }}
-                startIcon={<Work />}
-                onClick={() => setShowJobList((prev) => !prev)}
-              >
-                {showJobList
-                  ? 'Hide Jobs'
-                  : selectedJobId
-                    ? 'Switch Job'
-                    : 'Select Job'}
-              </Button>
-              <Button
-                fullWidth
                 variant="contained"
                 color="secondary"
                 sx={{
@@ -1675,7 +1582,6 @@ function ApplicationsListFooter({
   selectedScopeTotal,
   visibleRange,
   pagination,
-  selectedJobId,
   sortBy,
   pageSize,
   currentPage,
@@ -1708,7 +1614,7 @@ function ApplicationsListFooter({
       >
         <Typography variant="body2" color="text.secondary" display="block">
           {selectedScopeTotal > 0
-            ? `Showing ${visibleRange.start}-${visibleRange.end} of ${pagination.totalItems || selectedScopeTotal} ${selectedJobId ? 'applications' : 'applications in this view'}`
+            ? `Showing ${visibleRange.start}-${visibleRange.end} of ${pagination.totalItems || selectedScopeTotal} applications`
             : 'No applications to show'}
         </Typography>
         <Typography
@@ -1789,124 +1695,21 @@ function ApplicationsListFooter({
   );
 }
 
-function JobSidebar({
-  isMobile,
-  showJobList,
-  isTablet,
-  allJobs,
-  selectedJobId,
-  totalApplications,
-  totalAppCounts,
-  onSelectJob,
-}) {
-  const theme = useTheme();
-
-  if (isMobile && !showJobList) {
-    return null;
-  }
-
-  return (
-    <Box
-      sx={{
-        width: isMobile ? '100%' : isTablet ? 180 : 240,
-        minWidth: isMobile ? 'auto' : isTablet ? 180 : 240,
-        borderRight: isMobile ? 'none' : `1px solid ${theme.palette.divider}`,
-        borderBottom: isMobile ? `1px solid ${theme.palette.divider}` : 'none',
-        display: 'flex',
-        flexDirection: 'column',
-        bgcolor: alpha(theme.palette.background.default, 0.5),
-      }}
-    >
-      <Box
-        sx={{
-          px: { xs: 1.1, sm: 1.5 },
-          py: { xs: 1.1, sm: 1.5 },
-          borderBottom: `1px solid ${theme.palette.divider}`,
-        }}
-      >
-        <Typography variant="subtitle2" color="text.secondary" fontWeight={700}>
-          Your Jobs ({allJobs.length})
-        </Typography>
-        <Typography
-          variant="body2"
-          color="text.disabled"
-          sx={{ display: 'block', mt: 0.25 }}
-        >
-          Pick a job to narrow this list.
-        </Typography>
-      </Box>
-      <Box sx={{ flex: 1, p: { xs: 0.75, sm: 1 } }}>
-        {/* "All Jobs" option */}
-        <ListItemButton
-          selected={!selectedJobId}
-          onClick={() => onSelectJob(null)}
-          sx={{
-            borderRadius: 1.5,
-            mb: 0.5,
-            py: { xs: 0.8, sm: 1 },
-            px: { xs: 1.1, sm: 1.5 },
-            borderLeft: !selectedJobId
-              ? `3px solid ${theme.palette.primary.main}`
-              : '3px solid transparent',
-            '&.Mui-selected': {
-              backgroundColor: alpha(theme.palette.primary.main, 0.1),
-            },
-          }}
-        >
-          <ListItemIcon sx={{ minWidth: { xs: 32, sm: 36 } }}>
-            <Badge badgeContent={totalApplications} color="primary" max={99}>
-              <FilterList fontSize="small" />
-            </Badge>
-          </ListItemIcon>
-          <ListItemText
-            primary="All Jobs"
-            primaryTypographyProps={{
-              variant: 'body2',
-              fontWeight: !selectedJobId ? 700 : 400,
-            }}
-          />
-        </ListItemButton>
-
-        <Divider sx={{ my: 0.5 }} />
-
-        {allJobs.map((job) => {
-          const jid = job.id || job._id;
-          return (
-            <JobListItem
-              key={jid}
-              job={job}
-              isSelected={selectedJobId === jid}
-              onClick={() => onSelectJob(jid)}
-              appCount={totalAppCounts[jid] || 0}
-            />
-          );
-        })}
-      </Box>
-    </Box>
-  );
-}
-
 function ApplicationsListContent({
   initialLoading,
   error,
   applicationsLoading,
-  selectedJobId,
   filteredApps,
   activeTab,
-  selectedJob,
   summary,
   navigate,
   selectedApplicationId,
-  activeTabCountsByJob,
   onClearError,
   onSelectApplication,
-  onSelectJob,
   onQuickAccept,
   onQuickReject,
   onQuickMessage,
 }) {
-  const theme = useTheme();
-
   return (
     <Box sx={{ flex: 1, p: { xs: 1, sm: 1.5 } }}>
       {initialLoading &&
@@ -1943,34 +1746,6 @@ function ApplicationsListContent({
 
       {!initialLoading &&
         (() => {
-          // Single job selected — flat list
-          if (selectedJobId) {
-            if (filteredApps.length === 0) {
-              return (
-                <EmptyAppsPanel
-                  tab={activeTab}
-                  hasAnyApps={(selectedJob?.applicationCounts?.total || 0) > 0}
-                  navigate={navigate}
-                />
-              );
-            }
-            return filteredApps.map((app) => (
-              <ApplicationCard
-                key={app.id}
-                application={app}
-                isSelected={selectedApplicationId === app.id}
-                onSelect={onSelectApplication}
-                showJobTitle={false}
-                statusColors={STATUS_COLORS}
-                showQuickActions
-                onAccept={onQuickAccept}
-                onReject={onQuickReject}
-                onMessage={onQuickMessage}
-              />
-            ));
-          }
-
-          // "All Jobs" mode — group applications by job
           if (filteredApps.length === 0) {
             return (
               <EmptyAppsPanel
@@ -1981,83 +1756,19 @@ function ApplicationsListContent({
             );
           }
 
-          const grouped = {};
-          filteredApps.forEach((app) => {
-            const key = app.jobId || 'unknown';
-            if (!grouped[key]) grouped[key] = { title: app.jobTitle, apps: [] };
-            grouped[key].apps.push(app);
-          });
-
-          const groupedEntries = Object.entries(grouped).sort(
-            ([, leftGroup], [, rightGroup]) => {
-              if (rightGroup.apps.length !== leftGroup.apps.length) {
-                return rightGroup.apps.length - leftGroup.apps.length;
-              }
-
-              return String(leftGroup.title || '').localeCompare(
-                String(rightGroup.title || ''),
-              );
-            },
-          );
-
-          return groupedEntries.map(([jobId, group]) => (
-            <Box key={jobId} sx={{ mb: { xs: 1.5, sm: 2 } }}>
-              <ListItemButton
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  borderRadius: 1.25,
-                  mb: 0.85,
-                  py: 0.65,
-                  px: 0.65,
-                  minHeight: 44,
-                  '&:hover': {
-                    bgcolor: alpha(theme.palette.primary.main, 0.06),
-                  },
-                }}
-                aria-label={`Show only ${group.title} applications`}
-                onClick={() => onSelectJob(jobId)}
-              >
-                <ListItemIcon sx={{ minWidth: 28 }}>
-                  <Work sx={{ fontSize: 16, color: 'primary.main' }} />
-                </ListItemIcon>
-                <ListItemText
-                  primary={group.title}
-                  secondary="Show only this job"
-                  primaryTypographyProps={{
-                    variant: 'body2',
-                    fontWeight: 700,
-                    color: 'primary.main',
-                    noWrap: true,
-                  }}
-                  secondaryTypographyProps={{
-                    variant: 'body2',
-                    color: 'text.disabled',
-                    noWrap: true,
-                  }}
-                  sx={{ my: 0 }}
-                ></ListItemText>
-                <Chip
-                  size="small"
-                  label={activeTabCountsByJob[jobId] || group.apps.length}
-                  sx={{ height: 24, fontSize: '0.8rem' }}
-                />
-              </ListItemButton>
-              {group.apps.map((app) => (
-                <ApplicationCard
-                  key={app.id}
-                  application={app}
-                  isSelected={selectedApplicationId === app.id}
-                  onSelect={onSelectApplication}
-                  showJobTitle={false}
-                  statusColors={STATUS_COLORS}
-                  showQuickActions
-                  onAccept={onQuickAccept}
-                  onReject={onQuickReject}
-                  onMessage={onQuickMessage}
-                />
-              ))}
-            </Box>
+          return filteredApps.map((app) => (
+            <ApplicationCard
+              key={app.id}
+              application={app}
+              isSelected={selectedApplicationId === app.id}
+              onSelect={onSelectApplication}
+              showJobTitle
+              statusColors={STATUS_COLORS}
+              showQuickActions
+              onAccept={onQuickAccept}
+              onReject={onQuickReject}
+              onMessage={onQuickMessage}
+            />
           ));
         })()}
     </Box>
@@ -2597,7 +2308,7 @@ function EmptyAppsPanel({ tab, hasAnyApps, navigate }) {
         sx={{ mb: 3, maxWidth: 280, mx: 'auto' }}
       >
         {hasAnyApps
-          ? 'Switch tabs to view your other applications.'
+          ? 'Switch filters to view your other applications.'
           : 'Once workers apply to your jobs, their proposals will appear here.'}
       </Typography>
       {!hasAnyApps && (

@@ -156,19 +156,28 @@ export const ApplicationCard = ({
             />
           </Box>
           {showJobTitle && (
-            <Typography
-              variant="caption"
-              color="primary.main"
-              noWrap
-              sx={{
-                display: 'block',
-                mt: 0.35,
-                fontWeight: 500,
-                fontSize: { xs: '0.82rem', sm: '0.85rem' },
-              }}
-            >
-              {application.jobTitle}
-            </Typography>
+            <Box sx={{ mt: 0.55 }}>
+              <Chip
+                size="small"
+                icon={<Work sx={{ fontSize: 14 }} />}
+                label={application.jobTitle || 'Unknown job'}
+                variant="outlined"
+                sx={{
+                  maxWidth: '100%',
+                  borderColor: alpha(theme.palette.primary.main, 0.45),
+                  bgcolor: alpha(theme.palette.primary.main, 0.05),
+                  '& .MuiChip-label': {
+                    maxWidth: 188,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    px: 0.85,
+                    fontSize: { xs: '0.78rem', sm: '0.82rem' },
+                    fontWeight: 500,
+                  },
+                }}
+              />
+            </Box>
           )}
           <Typography
             variant="body2"

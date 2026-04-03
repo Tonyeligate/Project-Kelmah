@@ -72,15 +72,17 @@ class SessionCoordinator @Inject constructor(
     suspend fun refreshSession(): Boolean = refreshSessionInternal()
 
     suspend fun logout(logoutAll: Boolean = false) {
-        // Always clear local session first, regardless of server response
-        tokenManager.clearSession()
-        _sessionState.value = SessionState.Unauthenticated
-        didBootstrap = false
-        // Best-effort server-side logout (ignore failures)
+        val cachedRefreshToken = tokenManager.getRefreshToken()
+        // Best-effort server-side logout using the cached refresh token so
+        // "sign out everywhere" can still revoke sessions server-side.
         try {
-            authRepository.logout(logoutAll)
+            authRepository.logout(logoutAll = logoutAll, refreshTokenOverride = cachedRefreshToken)
         } catch (_: Exception) {
-            // Server-side revocation is best-effort; local cleanup is guaranteed above
+            // Server-side revocation is best-effort
+        } finally {
+            tokenManager.clearSession()
+            _sessionState.value = SessionState.Unauthenticated
+            didBootstrap = false
         }
     }
 

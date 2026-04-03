@@ -803,6 +803,7 @@ const WorkerDashboardPage = () => {
                   <Box>
                     <Typography
                       variant={isCompactMobile ? 'h5' : 'h4'}
+                      component="h1"
                       sx={{
                         color: 'text.primary',
                         fontWeight: 800,

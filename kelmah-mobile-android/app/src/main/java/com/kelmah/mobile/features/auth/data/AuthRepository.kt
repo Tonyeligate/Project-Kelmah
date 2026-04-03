@@ -156,23 +156,19 @@ class AuthRepository @Inject constructor(
             }
         }
 
-    suspend fun logout(logoutAll: Boolean = false): ApiResult<Unit> {
-        val refreshToken = tokenManager.getRefreshToken()
-        // Always clear local session regardless of server response.
-        // A user who taps "Sign out" must be signed out locally even if the
-        // server revocation call fails (e.g. network timeout).
-        return try {
-            executeWithRetry(maxRetries = 1) {
-                authApiService.logout(
-                    LogoutRequest(
-                        refreshToken = refreshToken,
-                        logoutAll = logoutAll,
-                    ),
-                )
-                ApiResult.Success(Unit)
-            }
-        } finally {
-            tokenManager.clearSession()
+    suspend fun logout(
+        logoutAll: Boolean = false,
+        refreshTokenOverride: String? = null,
+    ): ApiResult<Unit> {
+        val refreshToken = refreshTokenOverride ?: tokenManager.getRefreshToken()
+        return executeWithRetry(maxRetries = 1) {
+            authApiService.logout(
+                LogoutRequest(
+                    refreshToken = refreshToken,
+                    logoutAll = logoutAll,
+                ),
+            )
+            ApiResult.Success(Unit)
         }
     }
 

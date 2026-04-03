@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+set -eu
+
+ROOT_DIR=$(git rev-parse --show-toplevel)
+cd "$ROOT_DIR"
+
+if [ "${SKIP_UI_PREPUSH:-0}" = "1" ]; then
+  echo "UI pre-push gate skipped (SKIP_UI_PREPUSH=1)."
+  exit 0
+fi
+
+node scripts/ui-pre-push-gate.js "$@"

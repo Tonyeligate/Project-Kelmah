@@ -11,6 +11,7 @@ import {
   devError as warmupError,
   devWarn as warmupWarn,
 } from '../modules/common/utils/devLogger';
+import { markHealthTimer } from './healthTimerDebug';
 
 const WARMUP_ENDPOINTS = ['/health/aggregate'];
 
@@ -256,6 +257,11 @@ export const warmUpServices = async (options = {}) => {
         );
         if (!retryState.retryTimer) {
           retryState.retryTimer = setTimeout(() => {
+            markHealthTimer('serviceWarmUp.retry', {
+              trigger: 'timeout',
+              delayMs: RETRY_DELAY_MS,
+              retryCount: retryState.retryCount,
+            });
             retryState.retryTimer = null;
             warmUpServices({ force: true, maxRetries, retryState });
           }, RETRY_DELAY_MS);

@@ -8,10 +8,20 @@ import androidx.compose.foundation.isSystemInDarkTheme
 
 private val LightColors = lightColorScheme(
     primary = KelmahNavy,
+    onPrimary = KelmahSurface,
     primaryContainer = KelmahNavyContainer,
+    onPrimaryContainer = KelmahSurface,
     secondary = KelmahGold,
+    onSecondary = KelmahNavy,
+    secondaryContainer = KelmahSurfaceVariant,
+    onSecondaryContainer = KelmahNavy,
     background = KelmahBackground,
+    onBackground = KelmahNavy,
     surface = KelmahSurface,
+    onSurface = KelmahNavy,
+    surfaceVariant = KelmahSurfaceVariant,
+    onSurfaceVariant = KelmahNavyMuted,
+    outline = KelmahOutline,
 )
 
 private val DarkColors = darkColorScheme(

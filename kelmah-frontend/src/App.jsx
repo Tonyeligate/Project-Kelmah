@@ -23,6 +23,7 @@ import { initializePWA, applyPwaUpdate } from './utils/pwaHelpers';
 import GlobalErrorBoundary from './modules/common/components/GlobalErrorBoundary';
 import { useApiHealth } from './hooks/useApiHealth';
 import { warmUpServices } from './utils/serviceWarmUp';
+import { markHealthTimer } from './utils/healthTimerDebug';
 import useWebSocketConnect from './hooks/useWebSocketConnect';
 import OfflineBanner from './components/common/OfflineBanner';
 import ScrollToTop from './components/common/ScrollToTop';
@@ -236,6 +237,7 @@ const App = () => {
   useEffect(() => {
     let timerId;
     let idleId;
+    let wakeupTrigger = 'idleCallback';
 
     const wakeUpBackend = async () => {
       if (
@@ -244,6 +246,10 @@ const App = () => {
       ) {
         return;
       }
+
+      markHealthTimer('app.wakeUpBackend', {
+        trigger: wakeupTrigger,
+      });
 
       setServicesWakingUp(true);
       try {
@@ -267,8 +273,10 @@ const App = () => {
 
     const scheduleWakeUp = () => {
       if (typeof requestIdleCallback === 'function') {
+        wakeupTrigger = 'requestIdleCallback';
         idleId = requestIdleCallback(wakeUpBackend, { timeout: 5000 });
       } else {
+        wakeupTrigger = 'timeout';
         timerId = window.setTimeout(wakeUpBackend, 2500);
       }
     };

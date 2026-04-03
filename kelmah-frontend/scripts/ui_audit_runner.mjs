@@ -19,6 +19,40 @@ const DEFAULT_MOCK_HIRER_USER = {
   isEmailVerified: true,
 };
 
+const DEFAULT_MOCK_WORKER_USER = {
+  _id: 'ui-audit-worker-1',
+  id: 'ui-audit-worker-1',
+  firstName: 'Kwame',
+  lastName: 'Mensah',
+  email: 'worker@kelmah.test',
+  role: 'worker',
+  isEmailVerified: true,
+};
+
+const DEFAULT_MOCK_ADMIN_USER = {
+  _id: 'ui-audit-admin-1',
+  id: 'ui-audit-admin-1',
+  firstName: 'Kelmah',
+  lastName: 'Admin',
+  email: 'admin@kelmah.test',
+  role: 'admin',
+  isEmailVerified: true,
+};
+
+const resolveMockUser = (role) => {
+  const normalizedRole = String(role || 'hirer').toLowerCase().trim();
+
+  if (normalizedRole === 'worker') {
+    return DEFAULT_MOCK_WORKER_USER;
+  }
+
+  if (normalizedRole === 'admin') {
+    return DEFAULT_MOCK_ADMIN_USER;
+  }
+
+  return DEFAULT_MOCK_HIRER_USER;
+};
+
 const MODES = new Set(['capture', 'baseline', 'compare']);
 const CONSOLE_IGNORE_PATTERNS = [
   /^Warning:/i,
@@ -259,14 +293,14 @@ const buildMockApplicationsSummaryPayload = () => {
   };
 };
 
-const wireMockRoutes = async ({ page, mockAuth, mockApplications }) => {
+const wireMockRoutes = async ({ page, mockAuth, mockApplications, mockUser }) => {
   if (mockAuth) {
     const authSuccessPayload = {
       success: true,
       data: {
         token: 'ui-audit-mock-token',
         refreshToken: 'ui-audit-mock-refresh-token',
-        user: DEFAULT_MOCK_HIRER_USER,
+        user: mockUser,
       },
     };
 
@@ -284,7 +318,7 @@ const wireMockRoutes = async ({ page, mockAuth, mockApplications }) => {
         contentType: 'application/json',
         body: JSON.stringify({
           success: true,
-          data: { user: DEFAULT_MOCK_HIRER_USER },
+          data: { user: mockUser },
         }),
       });
     });
@@ -730,6 +764,7 @@ const main = async () => {
   const authEmail = args['auth-email'] || args.authEmail || process.env.UI_AUDIT_AUTH_EMAIL;
   const authPassword = args['auth-password'] || args.authPassword || process.env.UI_AUDIT_AUTH_PASSWORD;
   const mockAuth = asBoolean(args['mock-auth'] || args.mockAuth, false);
+  const mockRole = String(args['mock-role'] || args.mockRole || 'hirer');
   const mockApplications = asBoolean(
     args['mock-applications'] || args.mockApplications,
     false
@@ -768,6 +803,7 @@ const main = async () => {
   const compareResults = [];
 
   const browser = await chromium.launch({ headless: true });
+  const mockUser = resolveMockUser(mockRole);
 
   try {
     for (const viewport of DEFAULT_VIEWPORTS) {
@@ -796,6 +832,7 @@ const main = async () => {
         page,
         mockAuth,
         mockApplications,
+        mockUser,
       });
 
       let navigationError = null;
@@ -815,7 +852,28 @@ const main = async () => {
           consoleErrors.length = 0;
         }
 
-        await page.goto(`${baseUrl}${route}`, { waitUntil: 'networkidle', timeout: 60000 });
+        try {
+          await page.goto(`${baseUrl}${route}`, {
+            waitUntil: 'networkidle',
+            timeout: 60000,
+          });
+        } catch (primaryNavigationError) {
+          const primaryMessage =
+            primaryNavigationError?.message || String(primaryNavigationError);
+          const shouldFallbackToDomReady =
+            /waiting until "networkidle"/i.test(primaryMessage) ||
+            /Timeout\s*\d+ms exceeded/i.test(primaryMessage);
+
+          if (!shouldFallbackToDomReady) {
+            throw primaryNavigationError;
+          }
+
+          await page.goto(`${baseUrl}${route}`, {
+            waitUntil: 'domcontentloaded',
+            timeout: 60000,
+          });
+        }
+
         await page.waitForTimeout(waitMs);
         await page.addStyleTag({
           content:
@@ -871,10 +929,32 @@ const main = async () => {
       };
 
       captureResults.push(captureEntry);
-      await context.close();
+      try {
+        await context.close();
+      } catch (closeError) {
+        const closeMessage = closeError?.message || String(closeError);
+        const benignCloseError =
+          /Failed to find context with id/i.test(closeMessage) ||
+          /Target page, context or browser has been closed/i.test(closeMessage);
+
+        if (!benignCloseError) {
+          throw closeError;
+        }
+      }
     }
   } finally {
-    await browser.close();
+    try {
+      await browser.close();
+    } catch (closeError) {
+      const closeMessage = closeError?.message || String(closeError);
+      const benignCloseError =
+        /Target page, context or browser has been closed/i.test(closeMessage) ||
+        /Failed to find context with id/i.test(closeMessage);
+
+      if (!benignCloseError) {
+        throw closeError;
+      }
+    }
   }
 
   if (mode === 'baseline') {

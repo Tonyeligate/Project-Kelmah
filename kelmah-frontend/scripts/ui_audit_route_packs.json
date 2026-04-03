@@ -1,0 +1,58 @@
+{
+  "defaultPack": "core-public",
+  "packs": {
+    "core-public": {
+      "description": "Primary public routes used as stable UI baseline references.",
+      "routes": [
+        {
+          "id": "home",
+          "path": "/",
+          "baselineId": "core-public-home"
+        },
+        {
+          "id": "jobs",
+          "path": "/jobs",
+          "baselineId": "core-public-jobs"
+        },
+        {
+          "id": "search",
+          "path": "/search",
+          "baselineId": "core-public-search"
+        },
+        {
+          "id": "support",
+          "path": "/support",
+          "baselineId": "core-public-support"
+        },
+        {
+          "id": "docs",
+          "path": "/docs",
+          "baselineId": "core-public-docs"
+        },
+        {
+          "id": "community",
+          "path": "/community",
+          "baselineId": "core-public-community"
+        }
+      ]
+    },
+    "hirer-core": {
+      "description": "Hirer workflow routes using mock auth stubs for consistent audit runs.",
+      "routes": [
+        {
+          "id": "hirer-dashboard",
+          "path": "/hirer/dashboard",
+          "baselineId": "hirer-core-dashboard",
+          "mockAuth": true
+        },
+        {
+          "id": "hirer-applications",
+          "path": "/hirer/applications",
+          "baselineId": "hirer-core-applications",
+          "mockAuth": true,
+          "mockApplications": true
+        }
+      ]
+    }
+  }
+}

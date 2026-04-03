@@ -4,6 +4,7 @@ import {
   createFeatureLogger,
   devWarn as apiHealthWarn,
 } from '../modules/common/utils/devLogger';
+import { markHealthTimer } from '../utils/healthTimerDebug';
 
 const apiHealthDebug = createFeatureLogger({
   flagName: 'VITE_DEBUG_SERVICE_HEALTH',
@@ -78,7 +79,14 @@ export const useApiHealth = () => {
             5000,
           );
           retryTimeoutRef.current = setTimeout(
-            () => checkHealth(true),
+            () => {
+              markHealthTimer('useApiHealth.retry', {
+                trigger: 'timeout',
+                delayMs: backoffMs,
+                retryCount: retryCountRef.current,
+              });
+              checkHealth(true);
+            },
             backoffMs,
           );
           return;
@@ -90,10 +98,22 @@ export const useApiHealth = () => {
     };
 
     // Initial check with delay to allow backend cold start
-    const initialDelay = setTimeout(() => checkHealth(), 1500);
+    const initialDelay = setTimeout(() => {
+      markHealthTimer('useApiHealth.initialDelay', {
+        trigger: 'timeout',
+        delayMs: 1500,
+      });
+      checkHealth();
+    }, 1500);
 
     // Check every 10 minutes while visible
-    const interval = setInterval(() => checkHealth(), 10 * 60 * 1000);
+    const interval = setInterval(() => {
+      markHealthTimer('useApiHealth.interval', {
+        trigger: 'interval',
+        delayMs: 10 * 60 * 1000,
+      });
+      checkHealth();
+    }, 10 * 60 * 1000);
 
     return () => {
       isMountedRef.current = false;
