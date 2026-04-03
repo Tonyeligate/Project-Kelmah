@@ -29,6 +29,14 @@ Native Android app root.
 - The workflow uses Java 17, Gradle 8.7, and Android SDK platform 35 so the CI path matches the lightweight local validation setup already proven on Windows.
 - Android validation is paired with remote macOS iOS validation so both native apps share one production-readiness gate.
 
+## Local validation commands (wrapper-first)
+- `./gradlew --version`
+- `./gradlew testDebugUnitTest`
+- `./gradlew assembleDebug`
+- `./gradlew lintDebug`
+
+Using the wrapper keeps local and CI builds aligned without requiring a globally installed Gradle version.
+
 ## Auth and session hardening
 - single API Gateway endpoint for all API calls
 - centralized session coordinator

@@ -16,7 +16,9 @@
     "validate": "npm-check-updates && npm audit",
     "seed-jobs": "node scripts/seed-jobs.js",
     "reindex-search": "node scripts/reindex-search.js",
-    "test:jobs": "jest --testPathPattern=job"
+    "test:jobs": "jest --testPathPattern=job",
+    "backfill:job-responses:dry": "node scripts/backfill-job-response-modes.js",
+    "backfill:job-responses": "node scripts/backfill-job-response-modes.js --apply"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

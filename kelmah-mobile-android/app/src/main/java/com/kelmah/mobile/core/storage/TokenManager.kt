@@ -1,5 +1,6 @@
 package com.kelmah.mobile.core.storage
 
+import android.annotation.SuppressLint
 import android.content.Context
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
@@ -47,6 +48,7 @@ class TokenManager @Inject constructor(
     private val _sessionFlow = MutableStateFlow(loadSession())
     val sessionFlow: StateFlow<StoredSession?> = _sessionFlow.asStateFlow()
 
+    @SuppressLint("ApplySharedPref")
     fun saveSession(accessToken: String, refreshToken: String?, user: SessionUser? = _sessionFlow.value?.user) {
         val session = StoredSession(
             accessToken = accessToken,
@@ -72,6 +74,7 @@ class TokenManager @Inject constructor(
 
     fun getStoredSession(): StoredSession? = _sessionFlow.value
 
+    @SuppressLint("ApplySharedPref")
     fun updateUser(user: SessionUser?) {
         val current = _sessionFlow.value ?: return
         val updated = current.copy(user = user)
@@ -81,6 +84,7 @@ class TokenManager @Inject constructor(
         _sessionFlow.value = updated
     }
 
+    @SuppressLint("ApplySharedPref")
     fun clearSession() {
         prefs.edit().clear().commit()
         _sessionFlow.value = null

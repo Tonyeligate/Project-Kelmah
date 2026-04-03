@@ -99,7 +99,12 @@ const LoadingTimeoutWarning = ({ onRefresh }) => (
     severity="warning"
     sx={{ mb: 2, borderRadius: 2 }}
     action={
-      <Button color="inherit" size="small" onClick={onRefresh}>
+      <Button
+        color="inherit"
+        size="small"
+        onClick={onRefresh}
+        sx={{ minHeight: TOUCH_TARGET_MIN }}
+      >
         Refresh
       </Button>
     }
@@ -617,6 +622,7 @@ const WorkerDashboardPage = () => {
             size="small"
             onClick={handleRefresh}
             disabled={isLoading}
+            sx={{ minHeight: TOUCH_TARGET_MIN }}
             startIcon={
               isLoading ? (
                 <RefreshIcon
@@ -829,31 +835,35 @@ const WorkerDashboardPage = () => {
                     </Typography>
                   </Box>
                   <Tooltip title="Refresh dashboard data" arrow>
-                    <IconButton
-                      onClick={handleRefresh}
-                      disabled={isLoading}
-                      sx={{
-                        color: 'text.secondary',
-                        border: '1px solid',
-                        borderColor: alpha(theme.palette.info.main, 0.4),
-                        backgroundColor: alpha(theme.palette.info.main, 0.08),
-                        '&:focus-visible': {
-                          outline: '3px solid',
-                          outlineColor: 'primary.main',
-                          outlineOffset: '2px',
-                        },
-                      }}
-                      aria-label="Refresh dashboard"
-                    >
-                      <RefreshIcon
+                    <Box component="span" sx={{ display: 'inline-flex' }}>
+                      <IconButton
+                        onClick={handleRefresh}
+                        disabled={isLoading}
                         sx={{
-                          animation: isLoading
-                            ? 'spin 1s linear infinite'
-                            : 'none',
-                          ...spinKeyframes,
+                          minWidth: TOUCH_TARGET_MIN,
+                          minHeight: TOUCH_TARGET_MIN,
+                          color: 'text.secondary',
+                          border: '1px solid',
+                          borderColor: alpha(theme.palette.info.main, 0.4),
+                          backgroundColor: alpha(theme.palette.info.main, 0.08),
+                          '&:focus-visible': {
+                            outline: '3px solid',
+                            outlineColor: 'primary.main',
+                            outlineOffset: '2px',
+                          },
                         }}
-                      />
-                    </IconButton>
+                        aria-label="Refresh dashboard"
+                      >
+                        <RefreshIcon
+                          sx={{
+                            animation: isLoading
+                              ? 'spin 1s linear infinite'
+                              : 'none',
+                            ...spinKeyframes,
+                          }}
+                        />
+                      </IconButton>
+                    </Box>
                   </Tooltip>
                 </Box>
 
@@ -929,7 +939,7 @@ const WorkerDashboardPage = () => {
                     sx={{
                       textTransform: 'none',
                       fontWeight: 700,
-                      minHeight: 40,
+                      minHeight: TOUCH_TARGET_MIN,
                       width: { xs: '100%', sm: 'auto' },
                       backgroundColor: '#0ea5e9',
                       color: '#031526',

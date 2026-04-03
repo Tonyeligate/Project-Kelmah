@@ -1,3 +1,15 @@
 <resources>
     <string name="app_name">Kelmah</string>
+    <string name="profile_sign_out">Sign out</string>
+    <string name="profile_sign_out_everywhere">Sign out everywhere</string>
+    <string name="profile_sign_out_all">Sign out all</string>
+    <string name="messages_title">Messages</string>
+    <string name="messages_search_placeholder">Search messages</string>
+    <string name="messages_loading">Loading messages…</string>
+    <string name="messages_empty_title">No messages yet</string>
+    <string name="messages_empty_subtitle">Your job messages will show here.</string>
+    <string name="messages_thread_empty_subtitle">Send the first message.</string>
+    <string name="messages_draft_placeholder">Type message</string>
+    <string name="messages_send">Send</string>
+    <string name="messages_sending">Sending</string>
 </resources>

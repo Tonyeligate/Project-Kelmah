@@ -85,6 +85,8 @@ fun JobsScreen(
     } else {
         "Your newest hiring posts will show here."
     }
+    val urgentCount = jobs.count { it.isUrgent }
+    val highFitCount = if (isWorker) uiState.discoverJobs.count { (it.matchScore ?: 0.0) >= 80.0 } else 0
 
     LaunchedEffect(userRole) {
         viewModel.bootstrap(userRole)
@@ -136,6 +138,31 @@ fun JobsScreen(
                     onClick = { viewModel.switchFeed(JobsFeed.SAVED) },
                     label = { Text(savedLabel) },
                 )
+            }
+
+            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    JobsMetricTile(
+                        modifier = Modifier.weight(1f),
+                        label = if (uiState.activeFeed == JobsFeed.SAVED) "Saved" else "Jobs",
+                        value = jobs.size,
+                    )
+                    JobsMetricTile(
+                        modifier = Modifier.weight(1f),
+                        label = "Urgent",
+                        value = urgentCount,
+                    )
+                    JobsMetricTile(
+                        modifier = Modifier.weight(1f),
+                        label = if (isWorker) "80%+ fit" else "Bookmarked",
+                        value = if (isWorker) highFitCount else uiState.savedJobs.size,
+                    )
+                }
             }
 
             if (isWorker) {
@@ -333,5 +360,33 @@ private fun EmptyJobsState(
     ) {
         Text(title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
         Text(description, style = MaterialTheme.typography.bodyMedium)
+    }
+}
+
+@Composable
+private fun JobsMetricTile(
+    modifier: Modifier = Modifier,
+    label: String,
+    value: Int,
+) {
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            Text(
+                text = value.toString(),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
     }
 }

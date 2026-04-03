@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
@@ -69,6 +70,21 @@ fun HomeScreen(
     val unreadAlerts = notificationsState.unreadCount
     val savedJobs = jobsState.savedJobs.size
     val activeJobs = jobsState.hirerJobs.count { it.status.equals("open", ignoreCase = true) || it.status.equals("in-progress", ignoreCase = true) }
+    val urgentJobs = primaryJobs.count { it.isUrgent }
+    val prioritySignals = buildList {
+        if (unreadMessages > 0) {
+            add(HomePrioritySignal("Unread chats", unreadMessages, onOpenMessages))
+        }
+        if (unreadAlerts > 0) {
+            add(HomePrioritySignal("New alerts", unreadAlerts, onOpenNotifications))
+        }
+        if (role == KelmahUserRole.WORKER && urgentJobs > 0) {
+            add(HomePrioritySignal("Urgent jobs", urgentJobs, onBrowseJobs))
+        }
+        if (role == KelmahUserRole.HIRER && activeJobs > 0) {
+            add(HomePrioritySignal("Active jobs", activeJobs, onBrowseJobs))
+        }
+    }
 
     LaunchedEffect(currentUser?.id, role) {
         jobsViewModel.refreshHome(role)
@@ -139,6 +155,31 @@ fun HomeScreen(
                             }
                             OutlinedButton(onClick = onOpenNotifications, modifier = Modifier.weight(1f)) {
                                 Text("Alerts")
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (prioritySignals.isNotEmpty()) {
+            item {
+                Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
+                    Column(
+                        modifier = Modifier.padding(14.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Text(
+                            text = "Priority queue",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            items(prioritySignals, key = { signal -> signal.label }) { signal ->
+                                AssistChip(
+                                    onClick = signal.onOpen,
+                                    label = { Text("${signal.label}: ${signal.count}") },
+                                )
                             }
                         }
                     }
@@ -394,6 +435,12 @@ private fun formatMatchScore(score: Double?): String {
         String.format(Locale.US, "%.1f", score)
     }
 }
+
+private data class HomePrioritySignal(
+    val label: String,
+    val count: Int,
+    val onOpen: () -> Unit,
+)
 
 @Composable
 private fun ConversationPreviewCard(

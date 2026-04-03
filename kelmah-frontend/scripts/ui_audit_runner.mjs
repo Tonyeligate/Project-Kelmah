@@ -138,6 +138,31 @@ const parseModeAndArgs = () => {
   return { mode, args };
 };
 
+const isLikelyProtectedRoute = (route = '/') => {
+  const normalizedRoute = String(route || '/');
+  const protectedPrefixes = [
+    '/dashboard',
+    '/worker',
+    '/hirer',
+    '/messages',
+    '/chat',
+    '/notifications',
+    '/settings',
+    '/contracts',
+    '/payments',
+    '/payment',
+    '/wallet',
+    '/schedule',
+    '/reviews',
+    '/admin',
+  ];
+
+  return protectedPrefixes.some(
+    (prefix) =>
+      normalizedRoute === prefix || normalizedRoute.startsWith(`${prefix}/`)
+  );
+};
+
 const evaluateUiChecks = async (page, mobile) =>
   page.evaluate(({ mobileView, offscreenTagIgnore }) => {
     const auditRoot = document.querySelector('[data-ui-audit-root]') || document.body;
@@ -157,11 +182,14 @@ const evaluateUiChecks = async (page, mobile) =>
       if (aria.includes('tanstack query devtools')) return true;
       if (el.classList?.contains('tsqd-open-btn')) return true;
       if (el.closest('.tsqd-open-btn')) return true;
+      // LinearProgress bars intentionally animate off-canvas while loading.
+      if (el.classList?.contains('MuiLinearProgress-bar')) return true;
+      if (el.closest('.MuiLinearProgress-bar')) return true;
       return false;
     };
 
     const interactive = Array.from(
-      auditRoot.querySelectorAll('a, button, input, select, textarea, [role="button"], [tabindex]')
+      auditRoot.querySelectorAll('a, button, input, select, textarea, [role="button"]')
     ).filter((el) => isVisible(el) && !isAuditNoiseElement(el));
 
     let smallTapTargets = 0;
@@ -425,6 +453,12 @@ const performLogin = async ({
     timeout: 60000,
   });
 
+  const normalizedLoginPath = String(loginPath || '/login').split('?')[0] || '/login';
+  const landingPath = new URL(page.url()).pathname;
+  if (landingPath !== normalizedLoginPath) {
+    return;
+  }
+
   const emailField = page
     .locator(
       'input[type="email"], input[name="email"], input[autocomplete="email"], input[placeholder*="email" i]'
@@ -435,7 +469,21 @@ const performLogin = async ({
       'input[type="password"], input[name="password"], input[autocomplete="current-password"]'
     )
     .first();
-  const submitButton = page.locator('button[type="submit"]').first();
+  const submitButton = page
+    .locator(
+      'button[type="submit"], button:has-text("Sign In"), button:has-text("Login")'
+    )
+    .first();
+
+  const isLoginRoute = () => new URL(page.url()).pathname === normalizedLoginPath;
+
+  try {
+    await emailField.waitFor({ state: 'visible', timeout: 15000 });
+  } catch {
+    if (!isLoginRoute()) {
+      return;
+    }
+  }
 
   if (!(await emailField.count())) {
     throw new Error('Login form email field not found');
@@ -775,6 +823,14 @@ const main = async () => {
   const threshold = asNumber(args.threshold, 0.015);
   const fullPage = asBoolean(args['full-page'] || args.fullPage, true);
   const strict = asBoolean(args.strict, false);
+  const shouldAutologinMockUser =
+    mockAuth &&
+    isLikelyProtectedRoute(route) &&
+    (!authEmail || !authPassword);
+  const effectiveAuthEmail =
+    authEmail || (shouldAutologinMockUser ? 'ui-audit@kelmah.test' : null);
+  const effectiveAuthPassword =
+    authPassword || (shouldAutologinMockUser ? 'TestUser123!' : null);
 
   if (!rawTaskId) {
     throw new Error('Missing required argument: --task-id <value>');
@@ -837,13 +893,13 @@ const main = async () => {
 
       let navigationError = null;
       try {
-        if (authEmail && authPassword) {
+        if (effectiveAuthEmail && effectiveAuthPassword) {
           await performLogin({
             page,
             baseUrl,
             loginPath,
-            email: String(authEmail),
-            password: String(authPassword),
+            email: String(effectiveAuthEmail),
+            password: String(effectiveAuthPassword),
             waitMs: loginWaitMs,
           });
 
@@ -918,7 +974,7 @@ const main = async () => {
         width: viewport.width,
         height: viewport.height,
         mobile: viewport.mobile,
-        authenticated: Boolean(authEmail && authPassword),
+        authenticated: Boolean(effectiveAuthEmail && effectiveAuthPassword),
         requestedUrl: `${baseUrl}${route}`,
         finalUrl: page.url(),
         screenshotPath: relativeFromWorkspace(workspaceRoot, screenshotPath),

@@ -399,6 +399,9 @@ exports.acceptBid = async (req, res, next) => {
         await freshBid.job.save({ session });
       });
 
+      // Keep job-level counters synchronized after status transitions.
+      await freshBid.job.updateBidCount();
+
       // Notify the worker whose bid was accepted
       ServiceClient.messaging.sendBidNotification(
         freshBid.worker.toString(),
@@ -473,6 +476,9 @@ exports.rejectBid = async (req, res, next) => {
         reason: hirerNotes || '',
       }
     ).catch(() => {});
+
+    // Keep job-level counters synchronized after status transitions.
+    await rejectedBid.job.updateBidCount();
 
     return successResponse(res, 200, 'Bid rejected successfully', rejectedBid);
   } catch (error) {

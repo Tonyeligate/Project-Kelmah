@@ -93,7 +93,37 @@ export const formatEstimatedDuration = (value) => {
 };
 
 export const isBiddingJob = (job) => {
+  if (job?.responseMode === 'bids') {
+    return true;
+  }
+
+  if (job?.responseMode === 'applications') {
+    return false;
+  }
+
   if (job?.biddingEnabled === true || job?.biddingEnabled === 'true') {
+    return true;
+  }
+
+  const responseBidCount = Number(
+    job?.responseCounts?.bids ?? job?.bidCount ?? job?.bidsCount,
+  );
+  const responseApplicationCount = Number(
+    job?.responseCounts?.applications ??
+      job?.applicationsCount ??
+      job?.applicantCount ??
+      job?.proposalCount,
+  );
+
+  if (
+    Number.isFinite(responseApplicationCount) &&
+    responseApplicationCount > 0 &&
+    (!Number.isFinite(responseBidCount) || responseBidCount <= 0)
+  ) {
+    return false;
+  }
+
+  if (Number.isFinite(responseBidCount) && responseBidCount > 0) {
     return true;
   }
 

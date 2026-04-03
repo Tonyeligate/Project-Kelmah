@@ -455,6 +455,7 @@ const HirerDashboardPage = () => {
           >
             <Typography
               variant="h5"
+              component="h1"
               sx={{
                 fontWeight: 800,
                 letterSpacing: -0.3,
@@ -506,7 +507,12 @@ const HirerDashboardPage = () => {
               color={autoRefreshEnabled ? 'success' : 'default'}
               variant="outlined"
               onClick={() => setAutoRefreshEnabled((prev) => !prev)}
-              sx={{ fontWeight: 700, cursor: 'pointer' }}
+              sx={{
+                fontWeight: 700,
+                cursor: 'pointer',
+                minHeight: TOUCH_TARGET_MIN,
+                '& .MuiChip-label': { px: 1.25 },
+              }}
             />
           </Paper>
 
@@ -583,7 +589,11 @@ const HirerDashboardPage = () => {
                 variant="contained"
                 startIcon={<PostAddIcon />}
                 onClick={() => navigate('/hirer/jobs/post')}
-                sx={{ minHeight: 40, textTransform: 'none', fontWeight: 700 }}
+                sx={{
+                  minHeight: TOUCH_TARGET_MIN,
+                  textTransform: 'none',
+                  fontWeight: 700,
+                }}
               >
                 Post Job
               </Button>
@@ -594,7 +604,11 @@ const HirerDashboardPage = () => {
                 variant="outlined"
                 startIcon={<PeopleIcon />}
                 onClick={() => navigate('/hirer/find-talents')}
-                sx={{ minHeight: 40, textTransform: 'none', fontWeight: 700 }}
+                sx={{
+                  minHeight: TOUCH_TARGET_MIN,
+                  textTransform: 'none',
+                  fontWeight: 700,
+                }}
               >
                 Find Talent
               </Button>
@@ -605,7 +619,11 @@ const HirerDashboardPage = () => {
                 variant="outlined"
                 startIcon={<ProposalIcon />}
                 onClick={() => navigate('/hirer/applications')}
-                sx={{ minHeight: 40, textTransform: 'none', fontWeight: 700 }}
+                sx={{
+                  minHeight: TOUCH_TARGET_MIN,
+                  textTransform: 'none',
+                  fontWeight: 700,
+                }}
               >
                 Applications
               </Button>
@@ -616,7 +634,11 @@ const HirerDashboardPage = () => {
                 variant="outlined"
                 startIcon={<MessageIcon />}
                 onClick={() => navigate('/messages')}
-                sx={{ minHeight: 40, textTransform: 'none', fontWeight: 700 }}
+                sx={{
+                  minHeight: TOUCH_TARGET_MIN,
+                  textTransform: 'none',
+                  fontWeight: 700,
+                }}
               >
                 Messages
               </Button>
@@ -650,6 +672,7 @@ const HirerDashboardPage = () => {
                 variant="contained"
                 startIcon={<PostAddIcon />}
                 onClick={() => navigate('/hirer/jobs/post')}
+                sx={{ minHeight: TOUCH_TARGET_MIN }}
               >
                 Post Your First Job
               </Button>
@@ -1651,18 +1674,19 @@ const HirerDashboardPage = () => {
                     sx={{
                       cursor: 'pointer',
                       fontSize: '0.7rem',
-                      height: 24,
-                      '& .MuiChip-label': { px: 1 },
+                      minHeight: TOUCH_TARGET_MIN,
+                      '& .MuiChip-label': { px: 1.25 },
                     }}
                   />
                 </Tooltip>
                 <Tooltip title="Refresh Dashboard" arrow>
                   <IconButton
                     onClick={handleRefresh}
-                    size="small"
                     disabled={refreshing}
                     aria-label="Refresh dashboard data"
                     sx={{
+                      minWidth: TOUCH_TARGET_MIN,
+                      minHeight: TOUCH_TARGET_MIN,
                       color: 'text.secondary',
                       '&:focus-visible': {
                         outline: '3px solid',

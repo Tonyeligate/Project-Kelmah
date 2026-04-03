@@ -38,12 +38,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kelmah.mobile.R
 import com.kelmah.mobile.features.profile.data.AvailabilityDay
 import com.kelmah.mobile.features.profile.data.WorkerProfileSnapshot
 
@@ -62,10 +64,10 @@ fun ProfileScreen(
     if (showLogoutDialog) {
         AlertDialog(
             onDismissRequest = { showLogoutDialog = false },
-            title = { Text("Sign out") },
+            title = { Text(stringResource(id = R.string.profile_sign_out)) },
             text = { Text("You will be signed out of this device.") },
             confirmButton = {
-                TextButton(onClick = { showLogoutDialog = false; onLogout() }) { Text("Sign out") }
+                TextButton(onClick = { showLogoutDialog = false; onLogout() }) { Text(stringResource(id = R.string.profile_sign_out)) }
             },
             dismissButton = {
                 TextButton(onClick = { showLogoutDialog = false }) { Text("Cancel") }
@@ -75,10 +77,10 @@ fun ProfileScreen(
     if (showLogoutAllDialog) {
         AlertDialog(
             onDismissRequest = { showLogoutAllDialog = false },
-            title = { Text("Sign out everywhere") },
+            title = { Text(stringResource(id = R.string.profile_sign_out_everywhere)) },
             text = { Text("You will be signed out everywhere.") },
             confirmButton = {
-                TextButton(onClick = { showLogoutAllDialog = false; onLogoutAll() }) { Text("Sign out all") }
+                TextButton(onClick = { showLogoutAllDialog = false; onLogoutAll() }) { Text(stringResource(id = R.string.profile_sign_out_all)) }
             },
             dismissButton = {
                 TextButton(onClick = { showLogoutAllDialog = false }) { Text("Cancel") }
@@ -235,13 +237,13 @@ fun ProfileScreen(
                     onClick = { showLogoutDialog = true },
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Text("Sign out")
+                    Text(stringResource(id = R.string.profile_sign_out))
                 }
                 Button(
                     onClick = { showLogoutAllDialog = true },
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Text("Sign out everywhere")
+                    Text(stringResource(id = R.string.profile_sign_out_everywhere))
                 }
             }
         }

@@ -64,6 +64,7 @@ import { api } from '../../../services/apiClient';
 import { useBreakpointDown } from '../../../hooks/useResponsive';
 import { formatJobLocation } from '../../../utils/formatters';
 import { deleteHirerJob, updateJobStatus } from '../services/hirerSlice';
+import { isBiddingJob as isBiddingModeJob } from '../utils/applicationManagementUtils';
 
 import PageCanvas from '@/modules/common/components/PageCanvas';
 import {
@@ -105,6 +106,12 @@ const jobPropType = PropTypes.shape({
   proposalCount: PropTypes.number,
   applicantCount: PropTypes.number,
   applicationsCount: PropTypes.number,
+  responseCount: PropTypes.number,
+  responseMode: PropTypes.oneOf(['bids', 'applications']),
+  responseCounts: PropTypes.shape({
+    bids: PropTypes.number,
+    applications: PropTypes.number,
+  }),
   applications: PropTypes.array,
   bidding: PropTypes.shape({
     bidStatus: PropTypes.any,
@@ -356,14 +363,38 @@ const JobManagementPage = () => {
     handleMenuClose();
   };
 
-  const isBiddingJob = (job) => Boolean(job?.bidding?.bidStatus);
+  const isBiddingJob = (job) => isBiddingModeJob(job);
 
-  const getJobResponseCount = (job) =>
-    job?.proposalCount ??
-    job?.applicantCount ??
-    job?.applicationsCount ??
-    job?.applications?.length ??
-    0;
+  const getJobResponseCount = (job) => {
+    const explicitResponseCount = Number(job?.responseCount);
+    if (Number.isFinite(explicitResponseCount) && explicitResponseCount >= 0) {
+      return explicitResponseCount;
+    }
+
+    if (isBiddingJob(job)) {
+      const bidsCount = Number(
+        job?.responseCounts?.bids ??
+          job?.bidCount ??
+          job?.bidsCount ??
+          job?.bidding?.currentBidders,
+      );
+      return Number.isFinite(bidsCount) && bidsCount >= 0 ? bidsCount : 0;
+    }
+
+    const applicationsCount = Number(
+      job?.responseCounts?.applications ??
+        job?.proposalCount ??
+        job?.applicantCount ??
+        job?.applicationsCount ??
+        job?.applications?.length,
+    );
+    return Number.isFinite(applicationsCount) && applicationsCount >= 0
+      ? applicationsCount
+      : 0;
+  };
+
+  const getJobResponseLabel = (job) =>
+    isBiddingJob(job) ? 'bids' : 'applications';
 
   const handleReviewResponses = (job) => {
     const jobId = job?.id || job?._id;
@@ -539,7 +570,7 @@ const JobManagementPage = () => {
               )}
             </Badge>
             <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
-              {isBiddingJob(job) ? 'bids' : 'applicants'}
+              {getJobResponseLabel(job)}
             </Typography>
           </Box>
 

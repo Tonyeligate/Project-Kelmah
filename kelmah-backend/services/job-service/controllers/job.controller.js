@@ -2031,6 +2031,8 @@ const getMyJobs = async (req, res, next) => {
     const db = client.db();
     const jobsCollection = db.collection('jobs');
     const usersCollection = db.collection('users');
+    const applicationsCollection = db.collection('applications');
+    const bidsCollection = db.collection('bids');
 
     const search = typeof req.query.search === 'string' ? req.query.search.trim().slice(0, 100) : '';
 
@@ -2071,6 +2073,55 @@ const getMyJobs = async (req, res, next) => {
       .limit(limit)
       .toArray();
 
+    const jobObjectIds = jobs
+      .map((job) => job?._id)
+      .filter((jobId) => mongoose.Types.ObjectId.isValid(jobId));
+
+    const [applicationCountEntries, bidCountEntries] = await Promise.all([
+      jobObjectIds.length > 0
+        ? applicationsCollection
+          .aggregate([
+            {
+              $match: {
+                job: { $in: jobObjectIds },
+              },
+            },
+            {
+              $group: {
+                _id: '$job',
+                count: { $sum: 1 },
+              },
+            },
+          ])
+          .toArray()
+        : [],
+      jobObjectIds.length > 0
+        ? bidsCollection
+          .aggregate([
+            {
+              $match: {
+                job: { $in: jobObjectIds },
+                status: { $ne: 'withdrawn' },
+              },
+            },
+            {
+              $group: {
+                _id: '$job',
+                count: { $sum: 1 },
+              },
+            },
+          ])
+          .toArray()
+        : [],
+    ]);
+
+    const applicationCountMap = new Map(
+      applicationCountEntries.map((entry) => [String(entry._id), Number(entry.count) || 0]),
+    );
+    const bidCountMap = new Map(
+      bidCountEntries.map((entry) => [String(entry._id), Number(entry.count) || 0]),
+    );
+
     const workerIds = Array.from(
       new Set(
         jobs
@@ -2102,11 +2153,44 @@ const getMyJobs = async (req, res, next) => {
       const jobId = job._id?.toString?.() || String(job._id);
       const workerId = job.worker ? job.worker.toString() : null;
       const worker = workerId ? workerMap.get(workerId) : null;
+      const applicationCount = Number(applicationCountMap.get(jobId) || 0);
+      const bidCount = Number(bidCountMap.get(jobId) || 0);
+      const explicitlyBidding =
+        job?.biddingEnabled === true || job?.biddingEnabled === 'true';
+
+      let responseMode = 'applications';
+      if (explicitlyBidding) {
+        responseMode = 'bids';
+      } else if (bidCount > 0 && applicationCount === 0) {
+        responseMode = 'bids';
+      } else if (applicationCount > 0 && bidCount === 0) {
+        responseMode = 'applications';
+      } else if (bidCount > 0 && applicationCount > 0) {
+        responseMode = applicationCount >= bidCount ? 'applications' : 'bids';
+      } else {
+        const legacyCurrentBidders = Number(job?.bidding?.currentBidders ?? 0);
+        if (Number.isFinite(legacyCurrentBidders) && legacyCurrentBidders > 0) {
+          responseMode = 'bids';
+        }
+      }
+
+      const responseCount = responseMode === 'bids' ? bidCount : applicationCount;
 
       return {
         ...job,
         _id: jobId,
         id: jobId,
+        responseMode,
+        responseCount,
+        responseCounts: {
+          applications: applicationCount,
+          bids: bidCount,
+        },
+        applicationsCount: applicationCount,
+        applicantCount: applicationCount,
+        bidCount,
+        bidsCount: bidCount,
+        proposalCount: responseCount,
         hirer: job.hirer?.toString?.() || String(job.hirer),
         worker: worker
           ? {

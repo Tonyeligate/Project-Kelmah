@@ -119,29 +119,13 @@ class MessagesViewModel @Inject constructor(
                     applyConversationDetail(result.data)
                 }
                 is ApiResult.Error -> {
-                    when (val listResult = messagingRepository.getConversations()) {
-                        is ApiResult.Success -> {
-                            val conversation = listResult.data.firstOrNull { it.id == conversationId }
-                            _uiState.update {
-                                it.copy(
-                                    isLoadingConversations = false,
-                                    isLoadingMessages = false,
-                                    conversations = listResult.data,
-                                    selectedConversation = conversation ?: it.selectedConversation,
-                                    errorMessage = if (conversation == null) "Chat not found" else null,
-                                )
-                            }
-                            conversation?.let(::openConversation)
-                        }
-                        is ApiResult.Error -> {
-                            _uiState.update {
-                                it.copy(
-                                    isLoadingConversations = false,
-                                    isLoadingMessages = false,
-                                    errorMessage = listResult.message,
-                                )
-                            }
-                        }
+                    val resolvedMessage = if (result.code == 404) "Chat not found" else result.message
+                    _uiState.update {
+                        it.copy(
+                            isLoadingConversations = false,
+                            isLoadingMessages = false,
+                            errorMessage = resolvedMessage,
+                        )
                     }
                 }
             }

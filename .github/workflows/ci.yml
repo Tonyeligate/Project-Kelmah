@@ -36,6 +36,11 @@ jobs:
         run: |
           cd kelmah-frontend && npm ci --ignore-scripts || true
 
+      - name: Required frontend smoke gate (hirer review routing)
+        run: |
+          cd kelmah-frontend
+          npx jest --config jest.smoke.config.cjs --runTestsByPath src/tests/smoke/hirer-job-review-routing.smoke.test.jsx --runInBand
+
       - name: Run backend service tests (best-effort)
         run: |
           set -e

@@ -9,12 +9,33 @@ import androidx.compose.ui.unit.sp
 private val KelmahFontFamily = FontFamily.SansSerif
 
 val KelmahTypography = Typography(
+	displayLarge = TextStyle(
+		fontFamily = KelmahFontFamily,
+		fontWeight = FontWeight.Bold,
+		fontSize = 44.sp,
+		lineHeight = 48.sp,
+		letterSpacing = (-0.6).sp,
+	),
+	displayMedium = TextStyle(
+		fontFamily = KelmahFontFamily,
+		fontWeight = FontWeight.Bold,
+		fontSize = 40.sp,
+		lineHeight = 44.sp,
+		letterSpacing = (-0.5).sp,
+	),
 	displaySmall = TextStyle(
 		fontFamily = KelmahFontFamily,
 		fontWeight = FontWeight.Bold,
 		fontSize = 36.sp,
 		lineHeight = 40.sp,
 		letterSpacing = (-0.4).sp,
+	),
+	headlineLarge = TextStyle(
+		fontFamily = KelmahFontFamily,
+		fontWeight = FontWeight.Bold,
+		fontSize = 32.sp,
+		lineHeight = 38.sp,
+		letterSpacing = (-0.3).sp,
 	),
 	headlineMedium = TextStyle(
 		fontFamily = KelmahFontFamily,

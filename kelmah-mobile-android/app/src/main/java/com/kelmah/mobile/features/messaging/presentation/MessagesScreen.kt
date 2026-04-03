@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
@@ -54,12 +55,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kelmah.mobile.R
 import com.kelmah.mobile.core.utils.RelativeTimeFormatter
 import com.kelmah.mobile.features.messaging.data.ConversationSummary
 import com.kelmah.mobile.features.messaging.data.ThreadMessage
@@ -110,7 +113,7 @@ fun MessagesScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = state.selectedConversation?.displayTitle ?: "Messages",
+                        text = state.selectedConversation?.displayTitle ?: stringResource(id = R.string.messages_title),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
@@ -176,7 +179,7 @@ private fun ConversationListContent(
             onValueChange = onSearchChange,
             modifier = Modifier.fillMaxWidth(),
             leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
-            placeholder = { Text("Search messages") },
+            placeholder = { Text(stringResource(id = R.string.messages_search_placeholder)) },
             singleLine = true,
         )
 
@@ -187,7 +190,7 @@ private fun ConversationListContent(
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         CircularProgressIndicator()
-                        Text("Loading messages...")
+                        Text(stringResource(id = R.string.messages_loading))
                     }
                 }
             }
@@ -195,8 +198,8 @@ private fun ConversationListContent(
             conversations.isEmpty() -> {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     EmptyStateCard(
-                        title = "No messages yet",
-                        subtitle = "Your job messages will show here.",
+                        title = stringResource(id = R.string.messages_empty_title),
+                        subtitle = stringResource(id = R.string.messages_empty_subtitle),
                     )
                 }
             }
@@ -296,6 +299,13 @@ private fun ThreadContent(
     onSend: () -> Unit,
 ) {
     val listState = rememberLazyListState()
+    val quickReplies = remember(conversation?.id) {
+        listOf(
+            "Hi, is this still available?",
+            "I can start this job today.",
+            "Please share the exact location.",
+        )
+    }
 
     LaunchedEffect(messages.size) {
         if (messages.isNotEmpty()) {
@@ -331,8 +341,8 @@ private fun ThreadContent(
             messages.isEmpty() -> {
                 Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                     EmptyStateCard(
-                        title = "No messages yet",
-                        subtitle = "Send the first message.",
+                        title = stringResource(id = R.string.messages_empty_title),
+                        subtitle = stringResource(id = R.string.messages_thread_empty_subtitle),
                     )
                 }
             }
@@ -357,15 +367,36 @@ private fun ThreadContent(
 
         Spacer(modifier = Modifier.height(12.dp))
 
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            items(quickReplies, key = { it }) { reply ->
+                AssistChip(
+                    onClick = {
+                        val merged = if (draftMessage.isBlank()) reply else "$draftMessage $reply"
+                        onDraftChange(merged.take(500))
+                    },
+                    label = { Text(reply) },
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
         Row(verticalAlignment = Alignment.Bottom) {
             OutlinedTextField(
                 value = draftMessage,
-                onValueChange = onDraftChange,
+                onValueChange = { updated ->
+                    if (updated.length <= 500) {
+                        onDraftChange(updated)
+                    }
+                },
                 modifier = Modifier.weight(1f),
-                placeholder = { Text("Type message") },
+                placeholder = { Text(stringResource(id = R.string.messages_draft_placeholder)) },
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
                 keyboardActions = KeyboardActions(onSend = { onSend() }),
                 maxLines = 4,
+                supportingText = {
+                    Text("${draftMessage.length}/500")
+                },
             )
 
             Spacer(modifier = Modifier.width(8.dp))
@@ -382,7 +413,7 @@ private fun ThreadContent(
                         color = MaterialTheme.colorScheme.onPrimary,
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Sending")
+                    Text(stringResource(id = R.string.messages_sending))
                 } else {
                     Icon(
                         Icons.AutoMirrored.Outlined.Send,
@@ -390,7 +421,7 @@ private fun ThreadContent(
                         tint = MaterialTheme.colorScheme.onPrimary,
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Send")
+                    Text(stringResource(id = R.string.messages_send))
                 }
             }
         }

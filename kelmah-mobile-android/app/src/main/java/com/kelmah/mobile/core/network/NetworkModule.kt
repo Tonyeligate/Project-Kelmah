@@ -26,6 +26,7 @@ object NetworkModule {
 
     @Provides
     @Singleton
+    @OptIn(ExperimentalSerializationApi::class)
     fun provideJson(): Json = Json {
         ignoreUnknownKeys = true
         explicitNulls = false

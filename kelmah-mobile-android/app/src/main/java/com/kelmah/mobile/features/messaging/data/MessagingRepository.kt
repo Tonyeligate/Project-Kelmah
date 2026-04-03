@@ -21,8 +21,18 @@ class MessagingRepository @Inject constructor(
 ) {
     fun currentUserId(): String? = tokenManager.getStoredSession()?.user?.resolvedId
 
-    suspend fun getConversations(): ApiResult<List<ConversationSummary>> = executeAuthorizedApiCall(sessionCoordinator) {
-        val response = messagingApiService.getConversations(emptyMap())
+    suspend fun getConversations(
+        page: Int = 1,
+        limit: Int = 50,
+    ): ApiResult<List<ConversationSummary>> = executeAuthorizedApiCall(sessionCoordinator) {
+        val safePage = page.coerceAtLeast(1)
+        val safeLimit = limit.coerceIn(1, 50)
+        val response = messagingApiService.getConversations(
+            mapOf(
+                "page" to safePage.toString(),
+                "limit" to safeLimit.toString(),
+            ),
+        )
         ApiResult.Success(parseConversations(response))
     }
 
