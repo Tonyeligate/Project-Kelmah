@@ -344,9 +344,7 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
             ml: 0, // Sidebar is already part of flex flow; no manual margin needed
             transition: 'margin-left 0.25s cubic-bezier(0.4,0,0.2,1)',
             pt: {
-              md: isMessagesPage
-                ? 0
-                : `calc(${HEADER_HEIGHT_MOBILE}px + var(--kelmah-network-banner-offset, 0px))`,
+              md: `calc(${HEADER_HEIGHT_MOBILE}px + var(--kelmah-network-banner-offset, 0px))`,
             },
             px: isMessagesPage ? { md: 0 } : { md: 3 },
             pb: isMessagesPage ? { md: 0 } : { md: 3 },

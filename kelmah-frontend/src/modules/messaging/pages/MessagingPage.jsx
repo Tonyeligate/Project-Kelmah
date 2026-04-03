@@ -60,11 +60,7 @@ import PageCanvas from '../../common/components/PageCanvas';
 import { useMessages } from '../contexts/MessageContext';
 import { messagingService } from '../services/messagingService';
 import useKeyboardVisible from '../../../hooks/useKeyboardVisible';
-import {
-  HEADER_HEIGHT_MOBILE,
-  TOUCH_TARGET_MIN,
-  Z_INDEX,
-} from '@/constants/layout';
+import { HEADER_HEIGHT_MOBILE, TOUCH_TARGET_MIN } from '@/constants/layout';
 import { withBottomNavSafeArea, withSafeAreaBottom } from '@/utils/safeArea';
 
 const CHAT_ACCENT = '#FFD700';
@@ -198,6 +194,23 @@ const formatMessageTime = (value) => {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '';
   return format(date, 'HH:mm');
+};
+
+const getMessageDayKey = (value) => {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return format(date, 'yyyy-MM-dd');
+};
+
+const formatMessageDayLabel = (value) => {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+
+  if (isToday(date)) return 'Today';
+  if (isYesterday(date)) return 'Yesterday';
+  return format(date, 'EEE, MMM d');
 };
 
 const formatTypingLabel = (typingUsers = []) => {
@@ -497,8 +510,8 @@ const MessageBubble = ({ message, currentUserId }) => {
             variant="caption"
             sx={{
               opacity: 0.95,
-              color: alpha(CHAT_TEXT_PRIMARY, 0.62),
-              fontSize: '0.7rem',
+              color: alpha(CHAT_TEXT_PRIMARY, 0.74),
+              fontSize: '0.72rem',
             }}
           >
             {formatMessageTime(message.timestamp || message.createdAt)}
@@ -554,6 +567,35 @@ MessageBubble.propTypes = {
     isRead: PropTypes.bool,
   }).isRequired,
   currentUserId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+};
+
+const MessageDayDivider = ({ label }) => (
+  <Box
+    sx={{
+      display: 'flex',
+      alignItems: 'center',
+      gap: 1,
+      my: { xs: 1.25, md: 1.45 },
+    }}
+  >
+    <Divider sx={{ flex: 1, borderColor: alpha(CHAT_TEXT_PRIMARY, 0.15) }} />
+    <Chip
+      size="small"
+      label={label}
+      sx={{
+        fontWeight: 700,
+        color: alpha(CHAT_TEXT_PRIMARY, 0.78),
+        bgcolor: alpha(CHAT_PANEL_HEADER, 0.98),
+        border: '1px solid',
+        borderColor: alpha(CHAT_TEXT_PRIMARY, 0.18),
+      }}
+    />
+    <Divider sx={{ flex: 1, borderColor: alpha(CHAT_TEXT_PRIMARY, 0.15) }} />
+  </Box>
+);
+
+MessageDayDivider.propTypes = {
+  label: PropTypes.string.isRequired,
 };
 
 const MessagingPage = () => {
@@ -2005,20 +2047,6 @@ const MessagingPage = () => {
     const mobileComposerOffset =
       mobile && !isKeyboardVisible ? withBottomNavSafeArea(0) : 0;
     const quickReplyBarVisible = messageText.trim().length === 0;
-    const scrollCtaBottomOffset = {
-      xs: isKeyboardVisible
-        ? withSafeAreaBottom(126)
-        : quickReplyBarVisible
-          ? withBottomNavSafeArea(156)
-          : withBottomNavSafeArea(120),
-      sm: isKeyboardVisible
-        ? withSafeAreaBottom(132)
-        : quickReplyBarVisible
-          ? withBottomNavSafeArea(164)
-          : withBottomNavSafeArea(126),
-      md: quickReplyBarVisible ? 170 : 136,
-      lg: quickReplyBarVisible ? 182 : 146,
-    };
 
     return (
       <Paper
@@ -2194,22 +2222,51 @@ const MessagingPage = () => {
             data-testid="messages-active-chat-context"
             sx={{
               px: { md: 1.4, lg: 1.7, xl: 2 },
-              py: 0.55,
+              py: 0.5,
               bgcolor: alpha(CHAT_PANEL_HEADER, 0.98),
               borderBottom: '1px solid',
               borderColor: CHAT_BORDER,
             }}
           >
-            <Typography
-              variant="caption"
-              sx={{
-                color: alpha(CHAT_TEXT_PRIMARY, 0.72),
-                fontWeight: 600,
-                letterSpacing: '0.01em',
-              }}
+            <Stack
+              direction="row"
+              alignItems="center"
+              spacing={0.75}
+              sx={{ minWidth: 0 }}
             >
-              Active chat: {title}
-            </Typography>
+              <Box
+                sx={{
+                  width: 7,
+                  height: 7,
+                  borderRadius: '50%',
+                  bgcolor:
+                    participantPresenceId && isUserOnline(participantPresenceId)
+                      ? theme.palette.success.main
+                      : alpha(CHAT_TEXT_PRIMARY, 0.35),
+                  flexShrink: 0,
+                }}
+              />
+              <Typography
+                variant="body2"
+                noWrap
+                sx={{
+                  color: alpha(CHAT_TEXT_PRIMARY, 0.86),
+                  fontWeight: 700,
+                  letterSpacing: '0.005em',
+                }}
+              >
+                Active chat: {title}
+              </Typography>
+              {jobTitle && (
+                <Typography
+                  variant="caption"
+                  noWrap
+                  sx={{ color: alpha(CHAT_TEXT_PRIMARY, 0.68) }}
+                >
+                  | Job: {jobTitle}
+                </Typography>
+              )}
+            </Stack>
           </Box>
         )}
 
@@ -2220,6 +2277,7 @@ const MessagingPage = () => {
             flex: 1,
             minHeight: 0,
             overflowY: 'auto',
+            scrollPaddingTop: { xs: 72, sm: 78, md: 92 },
             px: {
               xs: 0.65,
               sm: 1,
@@ -2227,7 +2285,7 @@ const MessagingPage = () => {
               lg: 1.35,
               xl: 1.5,
             },
-            py: { xs: 0.8, sm: 1.1, md: 1.2, lg: 1.35, xl: 1.5 },
+            py: { xs: 1.05, sm: 1.2, md: 1.35, lg: 1.5, xl: 1.6 },
             pb: {
               xs: mobile && !isKeyboardVisible ? 1.55 : 0.9,
               sm: mobile && !isKeyboardVisible ? 1.9 : 1.2,
@@ -2244,7 +2302,7 @@ const MessagingPage = () => {
           <Box
             sx={{
               width: '100%',
-              maxWidth: mobile ? '100%' : { md: 980, lg: 1060, xl: 1140 },
+              maxWidth: mobile ? '100%' : { md: 1080, lg: 1220, xl: 1320 },
               mx: mobile ? 0 : 'auto',
             }}
           >
@@ -2337,52 +2395,37 @@ const MessagingPage = () => {
                 />
               </Box>
             ) : (
-              messages.map((message, index) => (
-                <MessageBubble
-                  key={
-                    message.id ||
-                    message._id ||
-                    `${message.timestamp || 'message'}-${index}`
-                  }
-                  message={message}
-                  currentUserId={currentUserId}
-                />
-              ))
+              messages.map((message, index) => {
+                const messageTimestamp = message.timestamp || message.createdAt;
+                const previousMessage = index > 0 ? messages[index - 1] : null;
+                const previousTimestamp =
+                  previousMessage?.timestamp || previousMessage?.createdAt;
+                const currentDayKey = getMessageDayKey(messageTimestamp);
+                const previousDayKey = getMessageDayKey(previousTimestamp);
+                const showDayDivider =
+                  currentDayKey && currentDayKey !== previousDayKey;
+                const dayLabel = formatMessageDayLabel(messageTimestamp);
+                const messageKey =
+                  message.id ||
+                  message._id ||
+                  `${message.timestamp || 'message'}-${index}`;
+
+                return (
+                  <React.Fragment key={messageKey}>
+                    {showDayDivider && dayLabel && (
+                      <MessageDayDivider label={dayLabel} />
+                    )}
+                    <MessageBubble
+                      message={message}
+                      currentUserId={currentUserId}
+                    />
+                  </React.Fragment>
+                );
+              })
             )}
             <div ref={messageEndRef} />
           </Box>
         </Box>
-
-        {showScrollToLatest && (
-          <Box
-            data-testid="messages-jump-latest"
-            sx={{
-              position: 'absolute',
-              right: { xs: 10, sm: 14, md: 16, lg: 20 },
-              bottom: scrollCtaBottomOffset,
-              zIndex: Z_INDEX.stickyCta,
-            }}
-          >
-            <Button
-              variant="contained"
-              color="inherit"
-              onClick={handleScrollToLatest}
-              sx={{
-                minHeight: TOUCH_TARGET_MIN,
-                borderRadius: 999,
-                textTransform: 'none',
-                fontWeight: 700,
-                px: 2,
-                color: '#fff',
-                bgcolor: CHAT_HEADER,
-                '&:hover': { bgcolor: CHAT_ACCENT_DARK },
-                boxShadow: '0 8px 20px rgba(0,0,0,0.2)',
-              }}
-            >
-              Jump to latest
-            </Button>
-          </Box>
-        )}
 
         <Box
           component="form"
@@ -2415,10 +2458,40 @@ const MessagingPage = () => {
           <Box
             sx={{
               width: '100%',
-              maxWidth: mobile ? '100%' : { md: 980, lg: 1060, xl: 1140 },
+              maxWidth: mobile ? '100%' : { md: 1080, lg: 1220, xl: 1320 },
               mx: mobile ? 0 : 'auto',
             }}
           >
+            {showScrollToLatest && !(mobile && isKeyboardVisible) && (
+              <Box
+                data-testid="messages-jump-latest"
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  mb: 0.85,
+                }}
+              >
+                <Button
+                  variant="contained"
+                  color="inherit"
+                  onClick={handleScrollToLatest}
+                  sx={{
+                    minHeight: TOUCH_TARGET_MIN,
+                    borderRadius: 999,
+                    textTransform: 'none',
+                    fontWeight: 700,
+                    px: 2,
+                    color: '#fff',
+                    bgcolor: CHAT_HEADER,
+                    '&:hover': { bgcolor: CHAT_ACCENT_DARK },
+                    boxShadow: '0 8px 20px rgba(0,0,0,0.2)',
+                  }}
+                >
+                  Jump to latest
+                </Button>
+              </Box>
+            )}
+
             {selectedFiles.length > 0 && (
               <Box sx={{ mb: 1.25 }}>
                 <Stack
@@ -2836,9 +2909,9 @@ const MessagingPage = () => {
                 minHeight: 0,
                 display: 'grid',
                 gridTemplateColumns: {
-                  md: '360px 1fr',
-                  lg: '420px 1fr',
-                  xl: '460px 1fr',
+                  md: '390px 1fr',
+                  lg: '450px 1fr',
+                  xl: '500px 1fr',
                 },
                 gridTemplateRows: 'minmax(0, 1fr)',
                 alignItems: 'stretch',

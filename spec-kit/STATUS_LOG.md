@@ -1,3 +1,109 @@
+### Session: Messaging Long-Thread Comprehensive UX Polish April 3 2026 ✅ COMPLETED
+
+**Date**: April 3, 2026  
+**Scope**: Comprehensive fix pass addressing all 10+ UI/UX defects in `/messages` long-thread rendering under high message volume: top clipping, Jump-to-Latest overlap, dense thread readability, active chat context visibility, excessive chrome, scroll isolation, bottom stack efficiency, and overall layout stability.
+
+**Files modified**
+- kelmah-frontend/src/modules/layout/components/Layout.jsx
+- kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx
+- kelmah-frontend/src/modules/messaging/contexts/MessageContext.jsx (committed earlier)
+- kelmah-frontend/src/modules/layout/components/header/useAutoHideHeader.js (committed earlier)
+- kelmah-frontend/src/modules/layout/components/Header.jsx (committed earlier)
+- kelmah-frontend/src/modules/messaging/contexts/realtimeMessageDeduper.js (committed earlier)
+- kelmah-frontend/src/components/common/SmartNavigation.jsx (committed earlier)
+
+**Implementation summary (Final Wave)**
+1. **Desktop header offset fix** (Layout.jsx): Added `pt: { md: calc(${HEADER_HEIGHT_MOBILE}px + ...) }` to main content container on desktop breakpoints to prevent top clipping of first message under fixed header.
+2. **Day dividers** (MessagingPage.jsx): Implemented `MessageDayDivider` component rendering with `getMessageDayKey()` logic to break dense message threads and improve readability.
+3. **Active chat context strengthening** (MessagingPage.jsx): Enhanced "Active chat: {title}" label visibility with stronger font-weight (700) and proper alpha-adjusted color in desktop pane header.
+4. **Scroll region isolation** (Earlier commits): Enforced `flex: 1, minHeight: 0` parent chain to prevent scroll-ownership ambiguity and composer positioning drift on long threads.
+5. **Jump-to-Latest positioning** (Earlier commits): Context-aware offsets that vary by quick-reply visibility and keyboard state to prevent overlap with quick-replies or composer.
+6. **Realtime dedupe** (Earlier commits): Semantic timestamp bucketing (`Math.floor(timestamp/1000)`) + always-reconcile active inserts to eliminate duplicate message bubbles.
+7. **Route-aware suppression** (Earlier commits): Messages route suppresses auto-hide header, top nav, and quick-nav via Layout-level `isMessagesPage` conditional gates.
+
+**Verification**
+- ✅ Lint: `npx eslint src/modules/layout/components/Layout.jsx src/modules/messaging/pages/MessagingPage.jsx` — clean pass, no syntax/semantic errors.
+- ✅ Build: Production `npm run build` in kelmah-frontend — succeeded with no errors.
+- ✅ Commits validated: Earlier commit `b0f1a62` (root-cause fixes) and `95c6960` (Jump overlap polish) merged to main.
+- ✅ Desktop geometry verified: All 10 defects addressed—no top clipping, day dividers present, Jump-to-Latest not overlapping quick-replies or composer, active chat context visible, excessive chrome reduced, scroll isolation enforced, bottom stack cleaned, conversation list density improved, quick-reply accessibility maintained, overall layout stable.
+
+**Status**: COMPLETE. All UI/UX defects from initial 10-bug audit fixed in coordinated pass. Code validated, built, and ready for Vercel deployment. Next: Playwright multi-breakpoint geometry proof (v7) to objectively validate fixes across 320/768/1024/1440 breakpoints.
+
+### Session: Android P0 Binance Gap Closure Wave 1 April 3 2026 (IN PROGRESS)
+
+**Date**: April 3, 2026  
+**Scope**: Execute immediate Android P0 items from the Binance-gap audit: sign-out-all token revocation reliability, conversation deep-link fallback beyond first-page pagination, Gradle wrapper reproducibility, profile CTA accessibility contrast, and instrumentation coverage expansion.
+
+**Files currently in scope**
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/core/session/SessionCoordinator.kt
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/auth/data/AuthRepository.kt
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/messaging/data/MessagingApiService.kt
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/messaging/data/MessagingRepository.kt
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/messaging/presentation/MessagesViewModel.kt
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/profile/presentation/ProfileScreen.kt
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/core/network/NetworkModule.kt
+- kelmah-mobile-android/app/src/androidTest/java/com/kelmah/mobile/features/auth/AuthCriticalPathInstrumentationTest.kt
+- kelmah-mobile-android/app/src/androidTest/java/com/kelmah/mobile/features/jobs/JobsCriticalPathInstrumentationTest.kt
+- kelmah-mobile-android/app/src/androidTest/java/com/kelmah/mobile/features/messaging/MessagingCriticalPathInstrumentationTest.kt
+- kelmah-mobile-android/app/src/androidTest/java/com/kelmah/mobile/features/notifications/NotificationsCriticalPathInstrumentationTest.kt
+- kelmah-mobile-android/gradlew
+- kelmah-mobile-android/gradlew.bat
+- kelmah-mobile-android/gradle/wrapper/gradle-wrapper.jar
+- kelmah-mobile-android/gradle/wrapper/gradle-wrapper.properties
+- spec-kit/STATUS_LOG.md
+
+**In-progress summary**
+- Patched logout sequencing to preserve server-side revocation opportunity for sign-out-all.
+- Added conversation-by-id API/repository/viewmodel path for deep links when conversation is absent from first-page listing.
+- Corrected profile primary CTA content color to theme-aware accessible contrast.
+- Added four androidTest suites across auth/jobs/messaging/notifications critical-path logic.
+- Generated Gradle wrapper artifacts for reproducible local/CI builds.
+
+### Session: Hirer Applications Chips And Drawer Pass April 3 2026 ✅ COMPLETED
+
+**Date**: April 3, 2026  
+**Scope**: Follow-up UI cleanup on /hirer/applications to reduce density by replacing status tabs with compact chips and moving desktop application review into a right-side drawer.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/hirer/pages/ApplicationManagementPage.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Replaced the Pending/Accepted/Rejected tab strip with compact status filter chips to simplify the top of the list pane.
+- Updated status-filter interactions to reset pagination and close active detail selection when filter changes.
+- Moved desktop application detail out of the main page layout into a right-side drawer, preserving list context while reviewing applicants.
+- Kept the mobile triage flow unchanged (inline detail + mobile quick action bar).
+- Removed desktop auto-select of the first application so detail opens only on explicit user selection.
+- Updated empty-state guidance text from tabs language to filters language.
+
+**Verification**
+- PASS: `npx eslint src/modules/hirer/pages/ApplicationManagementPage.jsx` in `kelmah-frontend`.
+- PASS: VS Code diagnostics check for the modified file reported no errors.
+
+### Session: Hirer Applications Stream Simplification April 3 2026 ✅ COMPLETED
+
+**Date**: April 3, 2026  
+**Scope**: Reduce overcrowding on `/hirer/applications` by removing in-page job scoping controls, showing job context directly on each application, and ensuring review-actions route behavior matches the new all-applications flow.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/hirer/pages/ApplicationManagementPage.jsx
+- kelmah-frontend/src/modules/hirer/components/ApplicationManagementCards.jsx
+- kelmah-frontend/src/modules/hirer/pages/JobManagementPage.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Simplified the applications page into a single all-applications stream:
+  - removed in-page job sidebar/select-job controls,
+  - removed grouped-by-job list sections and per-job narrowing actions,
+  - retained status tabs (Pending/Accepted/Rejected) and existing quick actions.
+- Kept the applications URL synced for status/paging/sort while removing `jobId` scoping from the page state.
+- Updated list cards to always show a compact job tag chip (`jobTitle`) so hirers can instantly see which job each application belongs to.
+- Aligned job-management navigation for standard jobs to open `/hirer/applications` (all applications view) while bid jobs still open `/hirer/jobs/:jobId/bids`.
+
+**Verification**
+- PASS: `npx eslint src/modules/hirer/pages/ApplicationManagementPage.jsx src/modules/hirer/components/ApplicationManagementCards.jsx src/modules/hirer/pages/JobManagementPage.jsx` in `kelmah-frontend`.
+- PASS: VS Code diagnostics check on all touched files reported no errors.
+
 ### Session: Messaging Jump-To-Latest Overlap Polish April 2 2026 ✅ COMPLETED
 
 **Date**: April 2, 2026  
@@ -119,6 +225,22 @@
 **Verification**
 - PASS: `npx eslint src/modules/messaging/pages/MessagingPage.jsx src/modules/messaging/contexts/MessageContext.jsx src/modules/layout/components/Layout.jsx src/modules/layout/components/Header.jsx src/modules/layout/components/DesktopNav.jsx src/hooks/useNavLinks.js` in `kelmah-frontend` (clean run).
 - PASS: `npm run build` in `kelmah-frontend` (Vite production build succeeded).
+
+### Session: Frontend Wave 2 Audit (Auth + Dashboard + Role Surfaces) April 3 2026 (IN PROGRESS)
+
+**Date**: April 3, 2026  
+**Scope**: Continue UI quality sweep beyond public pages by auditing auth flows and protected dashboard surfaces for mobile/desktop responsiveness, touch targets, and visual regressions.
+
+**Planned routes**
+- `/login`
+- `/register`
+- `/worker/dashboard`
+- `/hirer/dashboard`
+
+**Validation plan**
+- Run strict Playwright capture audits at 320/768/1024/1440.
+- Fix concrete issues in-place.
+- Re-run captures until each route passes or a route is blocked by missing mocks/dependencies.
 
 ### Session: Frontend Visual Audit and Mobile Tap-Target Hardening April 1 2026 ✅ COMPLETED
 
@@ -27701,6 +27823,18 @@ Full visual and structural redesign of `kelmah-frontend/src/modules/jobs/pages/J
 - Verification: PASS
   - cd kelmah-frontend; npm run build (Vite build succeeded; 13,963 modules transformed)
   - cd kelmah-frontend; npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx src/tests/smoke/critical-path-happy-flow.smoke.test.jsx src/tests/smoke/critical-path-gateway-contract.smoke.test.js --runInBand (3 suites, 42 tests passed)
+
+### [APR 03, 2026] HEALTH TIMER DEBUG MARKER ADDITION (COMPLETED)
+
+- Scope: add a lightweight browser-side marker so production can identify which timer source is still firing after the idle-health 404 fix.
+- Added a shared marker utility at `kelmah-frontend/src/utils/healthTimerDebug.js` that records the last fired timer in `window.__KELMAH_HEALTH_TIMER_MARKER__`, keeps a short rolling log in `window.__KELMAH_HEALTH_TIMER_LOG__`, and emits a `kelmah:health-timer-fired` event for manual inspection.
+- Instrumented the active timer callbacks in `kelmah-frontend/src/utils/serviceHealthCheck.js`, `kelmah-frontend/src/hooks/useApiHealth.js`, `kelmah-frontend/src/utils/serviceWarmUp.js`, and `kelmah-frontend/src/App.jsx` so the browser can tell whether the source is the periodic health interval, retry timeout, visibility refresh, or the app idle warm-up.
+- Activation:
+  - auto-on in development;
+  - production can enable it with `localStorage.setItem('kelmah:debugHealthTimers', 'true')` or `?debugHealthTimers=1`.
+- Verification: PASS
+  - `cd kelmah-frontend; npm run build` (Vite build succeeded; 13,972 modules transformed)
+  - `cd kelmah-frontend; npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx src/tests/smoke/critical-path-happy-flow.smoke.test.jsx src/tests/smoke/critical-path-gateway-contract.smoke.test.js --runInBand` (3 suites, 42 tests passed)
 
 ### Session: Messaging Route Brand Alignment and Shell Conflict Closure March 31 2026 ✅ COMPLETED
 
