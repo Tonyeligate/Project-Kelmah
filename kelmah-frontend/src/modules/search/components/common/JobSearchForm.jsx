@@ -34,6 +34,15 @@ const JobSearchForm = ({
   onSearch,
   initialValues = {},
   initialFilters,
+  submitLabel = 'Search',
+  keywordLabel = 'What work do you need?',
+  keywordPlaceholder = 'e.g., emergency plumber, electrician, tiler',
+  keywordHelperText = 'Start with trade first, then include area if known.',
+  locationLabel = 'Where in Ghana?',
+  locationPlaceholder = 'e.g., Accra, Kumasi, Tamale',
+  locationHelperText =
+    'City, town, or neighborhood helps rank nearby matches first.',
+  showSkillBuilder = true,
 }) => {
   const resolvedInitials = initialFilters || initialValues || {};
   const {
@@ -136,7 +145,7 @@ const JobSearchForm = ({
           <Grid item xs={12} sm={6} md={3}>
             <TextField
               fullWidth
-              label="What work do you need?"
+              label={keywordLabel}
               variant="outlined"
               size="small"
               value={keyword}
@@ -147,19 +156,19 @@ const JobSearchForm = ({
                 );
                 setKeyword(nextKeyword);
               }}
-              placeholder="e.g., emergency plumber, electrician, tiler"
+              placeholder={keywordPlaceholder}
               inputProps={{
                 maxLength: SEARCH_QUERY_MAX_LENGTH,
                 'aria-label': 'Search by work keyword',
               }}
-              helperText="Start with trade first, then include area if known."
+              helperText={keywordHelperText}
             />
           </Grid>
 
           <Grid item xs={12} sm={6} md={2}>
             <TextField
               fullWidth
-              label="Where in Ghana?"
+              label={locationLabel}
               variant="outlined"
               size="small"
               value={location}
@@ -170,12 +179,12 @@ const JobSearchForm = ({
                 );
                 setLocation(nextLocation);
               }}
-              placeholder="e.g., Accra, Kumasi, Tamale"
+              placeholder={locationPlaceholder}
               inputProps={{
                 maxLength: SEARCH_LOCATION_MAX_LENGTH,
                 'aria-label': 'Search by location',
               }}
-              helperText="City, town, or neighborhood helps rank nearby matches first."
+              helperText={locationHelperText}
             />
           </Grid>
 
@@ -234,59 +243,60 @@ const JobSearchForm = ({
               fullWidth
               sx={{ minHeight: 44 }}
             >
-              Find Work
+              {submitLabel}
             </Button>
           </Grid>
         </Grid>
 
-        {/* FIX H5: Skills Section - Add input field + existing chips */}
-        <Box
-          sx={{
-            mt: 1,
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: 1,
-            alignItems: 'center',
-          }}
-        >
-          <TextField
-            size="small"
-            label="Add skill"
-            variant="outlined"
-            value={skill}
-            onChange={(e) =>
-              setSkill(e.target.value.slice(0, SEARCH_SKILL_MAX_LENGTH))
-            }
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                handleAddSkill();
-              }
+        {showSkillBuilder && (
+          <Box
+            sx={{
+              mt: 1,
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: 1,
+              alignItems: 'center',
             }}
-            placeholder="e.g., Welding"
-            inputProps={{ maxLength: SEARCH_SKILL_MAX_LENGTH }}
-            sx={{ minWidth: 140, maxWidth: 200 }}
-          />
-          <Button
-            variant="outlined"
-            size="small"
-            onClick={handleAddSkill}
-            disabled={!skill.trim()}
-            sx={{ minHeight: 44 }}
           >
-            Add
-          </Button>
-          {skills.map((s) => (
-            <Chip
-              key={s}
-              label={s}
-              onDelete={() => handleRemoveSkill(s)}
-              color="primary"
+            <TextField
+              size="small"
+              label="Add skill"
+              variant="outlined"
+              value={skill}
+              onChange={(e) =>
+                setSkill(e.target.value.slice(0, SEARCH_SKILL_MAX_LENGTH))
+              }
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleAddSkill();
+                }
+              }}
+              placeholder="e.g., Welding"
+              inputProps={{ maxLength: SEARCH_SKILL_MAX_LENGTH }}
+              sx={{ minWidth: 140, maxWidth: 200 }}
+            />
+            <Button
               variant="outlined"
               size="small"
-            />
-          ))}
-        </Box>
+              onClick={handleAddSkill}
+              disabled={!skill.trim()}
+              sx={{ minHeight: 44 }}
+            >
+              Add
+            </Button>
+            {skills.map((s) => (
+              <Chip
+                key={s}
+                label={s}
+                onDelete={() => handleRemoveSkill(s)}
+                color="primary"
+                variant="outlined"
+                size="small"
+              />
+            ))}
+          </Box>
+        )}
       </Box>
     </Paper>
   );
@@ -297,6 +307,14 @@ JobSearchForm.propTypes = {
   onSearch: PropTypes.func,
   initialValues: PropTypes.object,
   initialFilters: PropTypes.object,
+  submitLabel: PropTypes.string,
+  keywordLabel: PropTypes.string,
+  keywordPlaceholder: PropTypes.string,
+  keywordHelperText: PropTypes.string,
+  locationLabel: PropTypes.string,
+  locationPlaceholder: PropTypes.string,
+  locationHelperText: PropTypes.string,
+  showSkillBuilder: PropTypes.bool,
 };
 
 export default JobSearchForm;

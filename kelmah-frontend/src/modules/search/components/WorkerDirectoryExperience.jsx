@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   Container,
   Box,
   Grid,
   Button,
+  Chip,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -27,7 +28,6 @@ import workerService from '../../worker/services/workerService';
 import JobSearchForm from '../components/common/JobSearchForm';
 import CompactSearchBar from '../components/common/CompactSearchBar';
 import MobileFilterDrawer from '../components/common/MobileFilterDrawer';
-import CollapsibleHeroSection from '../components/common/CollapsibleHeroSection';
 import WorkerSearchResults from '../components/results/WorkerSearchResults';
 import JobMapView from '../components/map/JobMapView';
 import SearchSuggestions from '../components/suggestions/SearchSuggestions';
@@ -265,7 +265,6 @@ const WorkerDirectoryExperience = ({
   basePath = '/find-talents',
   seoTitle = 'Find Skilled Workers | Kelmah',
   seoDescription = 'Search for skilled workers by location, skills, experience level, and more. Find carpenters, plumbers, electricians, and other professionals in Ghana.',
-  showHero = variant === 'public',
 }) => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -719,20 +718,46 @@ const WorkerDirectoryExperience = ({
       return;
     }
 
-    if (typeof window !== 'undefined') {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    setShowAdvancedFiltersDialog(true);
   }, [canUseHirerTools, isMobile]);
 
   const showResultFilterShortcut =
     isMobile || canUseHirerTools || isAuthenticated;
 
+  const activeFilterCount = useMemo(
+    () =>
+      Object.entries(searchParams).filter(([key, value]) => {
+        if (key === 'page' || key === 'limit' || key === 'sort') {
+          return false;
+        }
+
+        if (value === null || value === undefined) {
+          return false;
+        }
+
+        if (typeof value === 'string') {
+          return value.trim().length > 0;
+        }
+
+        if (Array.isArray(value)) {
+          return value.length > 0;
+        }
+
+        if (typeof value === 'object') {
+          return Object.keys(value).length > 0;
+        }
+
+        return true;
+      }).length,
+    [searchParams],
+  );
+
   const contextHeading = canUseHirerTools
-    ? 'Find Talent for Your Jobs'
+    ? 'Find Talent'
     : 'Find Skilled Workers in Ghana';
   const contextCopy = canUseHirerTools
-    ? 'Search by trade, location, and availability to shortlist workers quickly.'
-    : 'Search trusted workers by trade, location, and rate in one focused flow.';
+    ? 'Search by trade and location, then shortlist the strongest matches quickly.'
+    : 'Search by trade, location, and rate in one focused flow.';
 
   const renderResults = (isPublicView = false) => (
     <WorkerSearchResults
@@ -781,24 +806,19 @@ const WorkerDirectoryExperience = ({
               onSearch={handleSearch}
               initialFilters={searchParams}
             />
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{
-                display: 'block',
-                mb: 1.5,
-                lineHeight: 1.4,
-                wordBreak: 'break-word',
-              }}
-            >
-              Tip: Start with a trade and town first, then open filters only if
-              you need to narrow results.
-            </Typography>
           </>
         ) : (
           <JobSearchForm
             onSearch={handleSearch}
             initialFilters={searchParams}
+            submitLabel="Find Talent"
+            keywordLabel="What talent do you need?"
+            keywordPlaceholder="e.g., plumber, electrician, carpenter"
+            keywordHelperText="Start with one trade, then add location if known."
+            locationLabel="Where in Ghana?"
+            locationPlaceholder="e.g., Accra, Kumasi, Tamale"
+            locationHelperText="City, town, or neighborhood helps rank nearby matches first."
+            showSkillBuilder={false}
           />
         )}
 
@@ -815,51 +835,67 @@ const WorkerDirectoryExperience = ({
           </Typography>
         </Box>
 
-        {canUseHirerTools && !isMobile && (
-          <Box display="flex" gap={1} mb={2} flexWrap="wrap">
-            <Button
-              variant={showAdvancedFilters ? 'contained' : 'outlined'}
-              size="small"
-              startIcon={<FilterListIcon />}
-              onClick={() => setShowAdvancedFilters((prev) => !prev)}
-              sx={{ minWidth: 'auto', px: 2, minHeight: 44 }}
-            >
-              Filters
-            </Button>
-            <Button
-              variant={showLocationSearch ? 'contained' : 'outlined'}
-              size="small"
-              startIcon={<MapIcon />}
-              onClick={() => setShowLocationSearch((prev) => !prev)}
-              sx={{ minWidth: 'auto', px: 2, minHeight: 44 }}
-            >
-              Nearby Search
-            </Button>
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{ display: 'block', flexBasis: '100%', lineHeight: 1.4 }}
-            >
-              Use Filters for skills and rates, and Nearby Search to prioritize
-              workers close to your selected area.
-            </Typography>
-          </Box>
-        )}
+        {(activeFilterCount > 0 || canUseHirerTools || isAuthenticated || !isMobile) && (
+          <Box
+            sx={{
+              display: 'flex',
+              gap: 1,
+              mb: 2,
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              p: 1.25,
+              borderRadius: 2,
+              border: '1px solid',
+              borderColor: 'divider',
+              bgcolor: 'background.paper',
+            }}
+          >
+            {activeFilterCount > 0 && (
+              <Chip
+                size="small"
+                color="primary"
+                variant="outlined"
+                label={`${activeFilterCount} active filter${activeFilterCount === 1 ? '' : 's'}`}
+              />
+            )}
 
-        {isAuthenticated && (
-          <Box mb={2}>
-            <Box display="flex" gap={1} flexWrap="wrap">
-              {!canUseHirerTools && !isMobile && (
-                <Button
-                  variant="outlined"
-                  size="small"
-                  startIcon={<FilterListIcon />}
-                  onClick={() => setShowAdvancedFiltersDialog(true)}
-                  sx={{ minHeight: 44 }}
-                >
-                  Advanced Filters
-                </Button>
-              )}
+            {!canUseHirerTools && !isMobile && (
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<FilterListIcon />}
+                onClick={handleOpenFilterControls}
+                sx={{ minHeight: 44 }}
+              >
+                Filters
+              </Button>
+            )}
+
+            {canUseHirerTools && !isMobile && (
+              <Button
+                variant={showAdvancedFilters ? 'contained' : 'outlined'}
+                size="small"
+                startIcon={<FilterListIcon />}
+                onClick={() => setShowAdvancedFilters((prev) => !prev)}
+                sx={{ minHeight: 44 }}
+              >
+                Filters
+              </Button>
+            )}
+
+            {canUseHirerTools && !isMobile && (
+              <Button
+                variant={showLocationSearch ? 'contained' : 'outlined'}
+                size="small"
+                startIcon={<MapIcon />}
+                onClick={() => setShowLocationSearch((prev) => !prev)}
+                sx={{ minHeight: 44 }}
+              >
+                Nearby
+              </Button>
+            )}
+
+            {isAuthenticated && (
               <Button
                 variant="outlined"
                 size="small"
@@ -869,31 +905,19 @@ const WorkerDirectoryExperience = ({
               >
                 Saved Searches
               </Button>
-              {canUseWorkerAlertTools && (
-                <Button
-                  variant="outlined"
-                  size="small"
-                  startIcon={<JobAlertsIcon />}
-                  onClick={() => navigate('/worker/job-alerts')}
-                  sx={{ minHeight: 44 }}
-                >
-                  Job Alerts
-                </Button>
-              )}
-            </Box>
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{
-                display: 'block',
-                mt: 0.75,
-                lineHeight: 1.4,
-                wordBreak: 'break-word',
-              }}
-            >
-              Save common searches so your team can rerun trusted filters in one
-              tap.
-            </Typography>
+            )}
+
+            {canUseWorkerAlertTools && (
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<JobAlertsIcon />}
+                onClick={() => navigate('/worker/job-alerts')}
+                sx={{ minHeight: 44 }}
+              >
+                Job Alerts
+              </Button>
+            )}
           </Box>
         )}
 
@@ -993,9 +1017,6 @@ const WorkerDirectoryExperience = ({
         ) : (
           <Grid container spacing={2}>
             <Grid item xs={12}>
-              {showHero && (
-                <CollapsibleHeroSection isAuthenticated={isAuthenticated} />
-              )}
               {renderResults(true)}
             </Grid>
           </Grid>
@@ -1094,7 +1115,6 @@ WorkerDirectoryExperience.propTypes = {
   basePath: PropTypes.string,
   seoTitle: PropTypes.string,
   seoDescription: PropTypes.string,
-  showHero: PropTypes.bool,
 };
 
 export default WorkerDirectoryExperience;

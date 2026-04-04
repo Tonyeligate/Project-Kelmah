@@ -1,3 +1,85 @@
+### Session: Android Emulator CI + Messaging Conversation Contract April 4 2026 ✅ COMPLETED
+
+**Date**: April 4, 2026  
+**Scope**: Add automated emulator-backed Android connected tests in CI and add direct gateway contract coverage for the mobile conversation-by-id endpoint path.
+
+**Files currently in scope**
+- .github/workflows/mobile-native-validation.yml
+- kelmah-backend/api-gateway/routes/messaging.routes.test.js
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Added a dedicated `android-connected-tests` workflow job to `mobile-native-validation.yml`:
+  - Runs on `ubuntu-latest`.
+  - Installs emulator + Android 35 system image.
+  - Boots emulator via `reactivecircus/android-emulator-runner@v2`.
+  - Executes `./gradlew connectedDebugAndroidTest --stacktrace --no-daemon` in `kelmah-mobile-android`.
+  - Uploads connected-test artifacts (`androidTests/connected`, `test-results/connected`, output bundles).
+- Extended `messaging.routes.test.js` with gateway-level mobile contract checks for `GET /api/messages/conversations/:conversationId`:
+  - Verifies proxy wiring uses messaging-service target and required conversation rewrite map.
+  - Verifies success envelope passthrough for conversation payloads.
+  - Verifies 404 envelope passthrough for not-found conversations.
+
+**Verification**
+- PASS: `cd kelmah-backend && npx jest --runTestsByPath api-gateway/routes/messaging.routes.test.js --runInBand`
+  - Result: `4 passed, 0 failed`.
+- PASS: YAML diagnostics on `mobile-native-validation.yml` (no errors).
+- BLOCKED (host device availability): `./gradlew connectedDebugAndroidTest --stacktrace --no-daemon`
+  - Result: task started and failed with `DeviceException: No connected devices!`.
+- LOCAL DEVICE CHECK: `adb devices` and `adb devices -l` returned no attached devices on this host at execution time, so phone-connected instrumentation execution could not be started in this session.
+
+### Session: Find Talent and Jobs UX Consolidation April 4 2026 ✅ COMPLETED
+
+**Date**: April 4, 2026  
+**Scope**: Apply intentional, unified UX improvements for Find Talent (public + hirer) and Jobs listings (public + worker) to reduce clutter, improve filter navigation clarity, and tighten desktop/mobile visual hierarchy.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/search/pages/SearchPage.jsx
+- kelmah-frontend/src/modules/hirer/pages/WorkerSearchPage.jsx
+- kelmah-frontend/src/modules/search/components/common/JobSearchForm.jsx
+- kelmah-frontend/src/modules/search/components/WorkerDirectoryExperience.jsx
+- kelmah-frontend/src/modules/jobs/components/DiscoveryShellFrame.jsx
+- kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx
+- kelmah-frontend/src/modules/worker/pages/JobSearchPage.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Removed redundant top-level instructional shell on public Find Talent and kept the page focused on search + results.
+- Unified public and hirer worker search wrappers around the same streamlined `WorkerDirectoryExperience` surface.
+- Added intent-explicit search form semantics for talent discovery:
+  - introduced configurable labels/placeholders/helper text in `JobSearchForm`.
+  - set talent-oriented copy (`Find Talent`, talent-focused prompt text) in worker directory usage.
+  - disabled the skill-builder row for the main talent search form to reduce control clutter.
+- Consolidated top action controls in worker directory to a single compact utility row with active-filter visibility and role-aware actions.
+- Added shared top discovery shell component (`DiscoveryShellFrame`) and wired both public Jobs and worker Find Work to the same structural shell for cross-role consistency.
+- Removed non-task-critical Jobs listing surface blocks and tightened vertical hierarchy:
+  - replaced oversized hero split with a compact heading + filter panel stack.
+  - limited mobile quick-category pills to clean-search state only (hidden once filters/search are active).
+  - retained core discovery flow (search, filters, chips, results, pagination) while dropping marketing-heavy noise from the listing surface.
+- Preserved worker category filtering after shell unification by adding trade category selection into the worker filter panel and keeping mobile quick trade picks in clean state.
+
+**Verification**
+- PASS: frontend compile validation
+  - `cd kelmah-frontend && npm run build`
+  - Result: `vite build` succeeded.
+- PASS: strict UI evidence captures on redesigned routes (desktop/mobile breakpoints)
+  - `node scripts/ui_audit_runner.mjs capture --task-id redesign-find-talents-public-20260404-v2 --route /find-talents --base-url http://127.0.0.1:3002 --strict true`
+    - Result: `24/25`, pass.
+  - `node scripts/ui_audit_runner.mjs capture --task-id redesign-hirer-find-talents-20260404-v2 --route /hirer/find-talents --base-url http://127.0.0.1:3002 --mock-auth true --mock-role hirer --mock-applications true --strict true`
+    - Result: `25/25`, pass.
+  - `node scripts/ui_audit_runner.mjs capture --task-id redesign-jobs-public-20260404-v2 --route /jobs --base-url http://127.0.0.1:3002 --strict true`
+    - Result: `24/25`, pass.
+- PASS: role-surface non-regression captures
+  - `node scripts/ui_audit_runner.mjs capture --task-id redesign-worker-find-work-20260404-v1 --route /worker/find-work --base-url http://127.0.0.1:3002 --mock-auth true --mock-role worker --strict true`
+    - Result: `25/25`, pass.
+  - `node scripts/ui_audit_runner.mjs capture --task-id redesign-hirer-jobs-20260404-v1 --route /hirer/jobs --base-url http://127.0.0.1:3002 --mock-auth true --mock-role hirer --mock-applications true --strict true`
+    - Result: `25/25`, pass.
+- PASS: second-pass shared-shell validation
+  - `node scripts/ui_audit_runner.mjs capture --task-id redesign-jobs-public-20260404-v3 --route /jobs --base-url http://127.0.0.1:3002 --strict true`
+    - Result: `25/25`, pass.
+  - `node scripts/ui_audit_runner.mjs capture --task-id redesign-worker-find-work-20260404-v2 --route /worker/find-work --base-url http://127.0.0.1:3002 --mock-auth true --mock-role worker --strict true`
+    - Result: `25/25`, pass.
+
 ### Session: Strict UI Pre-Push Gate Stabilization April 4 2026 ✅ COMPLETED
 
 **Date**: April 4, 2026  
@@ -26,6 +108,31 @@
 - PASS: pre-push gate execution (stdin-closed hook simulation)
   - `$env:UI_AUDIT_BASE_URL='http://127.0.0.1:4175'; '' | node scripts/ui-pre-push-gate.js --changed-files "kelmah-frontend/src/modules/search/components/results/WorkerSearchResults.jsx,kelmah-frontend/scripts/ui_audit_runner.mjs"`
   - Result: `UI pre-push gate: PASS`
+
+### Session: Android Home and Jobs Localization Pass April 4 2026 ✅ COMPLETED
+
+**Date**: April 4, 2026  
+**Scope**: Convert high-traffic Home and Jobs screen UI copy from hardcoded literals to Android string resources for localization readiness.
+
+**Files currently in scope**
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/home/presentation/HomeScreen.kt
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/jobs/presentation/JobsScreen.kt
+- kelmah-mobile-android/app/src/main/res/values/strings.xml
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Replaced HomeScreen UI literals with `stringResource(...)` lookups, including:
+  - headlines, overview labels/descriptions, section titles/actions, empty states, helper labels, CTA hints, and count-based chips.
+- Replaced JobsScreen UI literals with `stringResource(...)` lookups, including:
+  - titles, feed labels, helper copy, search/location labels, quick-metric chips, empty states, action button labels, and content descriptions.
+- Added corresponding resource keys to `values/strings.xml` for Home and Jobs domains.
+- Fixed Android lint format-string issue by escaping literal percent in `jobs_metric_high_fit` (`80%%+ fit`).
+
+**Verification**
+- PASS: `./gradlew assembleDebug --no-daemon --console=plain`
+  - Result: `BUILD SUCCESSFUL`
+- PASS: `./gradlew lintDebug --no-daemon --console=plain`
+  - Result: `BUILD SUCCESSFUL`
 
 ### Session: Android Remaining Audit Gap Closure April 4 2026 ✅ COMPLETED
 
@@ -28313,3 +28420,20 @@ Full visual and structural redesign of `kelmah-frontend/src/modules/jobs/pages/J
 - PASS: `cd kelmah-backend/services/auth-service && npm test` (`12/12` suites, `44/44` tests).
 - PASS: `cd kelmah-backend/services/user-service && npm test` (`13/13` suites, `47/47` tests).
 - PASS: `cd kelmah-backend && npm run test:services` now executes real suites for both services end-to-end (no placeholder output).
+
+### [APR 04, 2026] THEME MODE VISIBILITY REGRESSION SWEEP (COMPLETED)
+
+- Scope: fix light/dark mode visibility regressions where text, links, icons, and action components become low-contrast or appear only on hover.
+- Root cause confirmed:
+  - Shared theme in `kelmah-frontend/src/theme/index.js` mapped `palette.primary.main` to surface colors.
+  - Frontend modules broadly use `primary.main` for links, icons, focus outlines, and action emphasis, causing low-contrast states in both modes.
+- Implementation:
+  - Re-mapped dark mode `palette.primary` to a high-visibility accent scale (`gold`, `goldLight`, `goldDark`) with dark contrast text.
+  - Re-mapped light mode `palette.primary` to a deeper accessible accent (`#8A6700` main, `#B8860B` light, `#6E5200` dark) to preserve legibility on light surfaces.
+  - Added explicit `MuiLink` defaults in both themes so link visibility does not depend on hover state.
+- Verification: PASS
+  - `cd kelmah-frontend && npm run build` (Vite build succeeded; 13,972 modules transformed).
+  - `cd kelmah-frontend && node scripts/ui_audit_runner.mjs capture --task-id theme-visibility-login-20260404 --base-url http://127.0.0.1:3002 --route /login --strict true` (Score `25/25`, `pass: true`).
+  - Playwright dark/light contrast check on `/login` links:
+    - Dark mode: `Forgot password?` and `Create account` contrast `14.97:1`.
+    - Light mode: `Forgot password?` and `Create account` contrast `4.86:1`.

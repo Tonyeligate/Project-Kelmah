@@ -86,6 +86,7 @@ import {
   useUnsaveJobMutation,
   useSavedJobIds,
 } from '../../jobs/hooks/useJobsQuery';
+import DiscoveryShellFrame from '../../jobs/components/DiscoveryShellFrame';
 import tradeCategories from '../../jobs/data/tradeCategories.json';
 import ghanaLocations from '../../jobs/data/ghanaLocations.json';
 import PageCanvas from '@/modules/common/components/PageCanvas';
@@ -151,6 +152,7 @@ const SearchHeader = ({
   isLoading,
   hasFilters,
   isMobile,
+  showHeading = true,
 }) => {
   const theme = useTheme();
 
@@ -172,18 +174,22 @@ const SearchHeader = ({
       }}
     >
       <Stack spacing={1.5}>
-        <Typography
-          component="h1"
-          variant={isMobile ? 'h6' : 'h5'}
-          fontWeight={700}
-          sx={{ display: 'block' }}
-        >
-          Find Work
-        </Typography>
-        {isMobile && (
-          <Typography variant="caption" color="text.secondary">
-            Start with trade and location, then refine with filters.
-          </Typography>
+        {showHeading && (
+          <>
+            <Typography
+              component="h1"
+              variant={isMobile ? 'h6' : 'h5'}
+              fontWeight={700}
+              sx={{ display: 'block' }}
+            >
+              Find Work
+            </Typography>
+            {isMobile && (
+              <Typography variant="caption" color="text.secondary">
+                Start with trade and location, then refine with filters.
+              </Typography>
+            )}
+          </>
         )}
         <Box component="form" onSubmit={handleSubmit} noValidate>
           <Stack
@@ -372,6 +378,8 @@ const CategoryChips = ({ selected, onChange }) => {
 
 // ─── Subcomponent: Filter Panel ─────────────────────────────
 const FilterPanel = ({
+  category,
+  setCategory,
   location,
   setLocation,
   budgetRange,
@@ -383,6 +391,26 @@ const FilterPanel = ({
   const theme = useTheme();
   return (
     <Stack spacing={2.5}>
+      {/* Category */}
+      <FormControl size="small" fullWidth>
+        <InputLabel>Trade Category</InputLabel>
+        <Select
+          value={category}
+          label="Trade Category"
+          onChange={(e) => setCategory(e.target.value)}
+          sx={{ borderRadius: 2 }}
+        >
+          <MenuItem value="">All Categories</MenuItem>
+          {tradeCategories
+            .filter((cat) => cat.value)
+            .map((cat) => (
+              <MenuItem key={cat.value} value={cat.value}>
+                {cat.label || cat.value}
+              </MenuItem>
+            ))}
+        </Select>
+      </FormControl>
+
       {/* Location */}
       <FormControl size="small" fullWidth>
         <InputLabel>Location</InputLabel>
@@ -1025,6 +1053,15 @@ const JobSearchPage = () => {
   // ─── Filter panel content ────────────────────────────────
   const filterContent = (
     <FilterPanel
+      category={category}
+      setCategory={(v) => {
+        setCategory(v);
+        setPage(1);
+        const params = new URLSearchParams(searchParams);
+        if (v) params.set('category', v);
+        else params.delete('category');
+        setSearchParams(params, { replace: true });
+      }}
       location={location}
       setLocation={(v) => {
         setLocation(v);
@@ -1063,24 +1100,50 @@ const JobSearchPage = () => {
         }}
       >
         <Container maxWidth="lg" sx={{ pt: { xs: 2, md: 3 } }}>
-          {/* ─── Search Header ─────────────────────────── */}
-          <SearchHeader
-            search={searchText}
-            setSearch={setSearchText}
-            onSearch={handleSearch}
-            resultCount={jobsData?.totalJobs || jobs.length}
-            isLoading={isLoading}
-            hasFilters={hasFilters}
+          <DiscoveryShellFrame
+            heading="Find Jobs in Ghana"
+            subheading="Search by trade, location, and budget, then refine with filters."
             isMobile={isMobile}
-          />
-
-          {/* ─── Category Chips ────────────────────────── */}
-          <Box sx={{ mt: 2 }}>
-            <CategoryChips
-              selected={category}
-              onChange={handleCategoryChange}
+            quickPicks={
+              !hasFilters ? (
+                <Box
+                  sx={{
+                    mb: { xs: 2, md: 0 },
+                    px: { xs: 0.5, sm: 0 },
+                    display: { xs: 'block', md: 'none' },
+                  }}
+                >
+                  <Typography
+                    variant="subtitle1"
+                    sx={{
+                      color: 'var(--k-gold)',
+                      fontWeight: 'bold',
+                      mb: { xs: 1, md: 0 },
+                      fontSize: { xs: '0.95rem', sm: '1rem' },
+                      textAlign: 'left',
+                    }}
+                  >
+                    Quick trade picks
+                  </Typography>
+                  <CategoryChips
+                    selected={category}
+                    onChange={handleCategoryChange}
+                  />
+                </Box>
+              ) : null
+            }
+          >
+            <SearchHeader
+              search={searchText}
+              setSearch={setSearchText}
+              onSearch={handleSearch}
+              resultCount={jobsData?.totalJobs || jobs.length}
+              isLoading={isLoading}
+              hasFilters={hasFilters}
+              isMobile={isMobile}
+              showHeading={false}
             />
-          </Box>
+          </DiscoveryShellFrame>
 
           {/* ─── Stats Bar ─────────────────────────────── */}
           {!isLoading && jobs.length > 0 && !isMobile && (

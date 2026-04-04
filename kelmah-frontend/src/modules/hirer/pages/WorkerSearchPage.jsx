@@ -12,7 +12,6 @@ const WorkerSearchPage = () => {
         basePath="/hirer/find-talents"
         seoTitle="Find Talent | Kelmah"
         seoDescription="Search, compare, and shortlist skilled workers for your next job on Kelmah."
-        showHero={false}
       />
     </PageCanvas>
   );

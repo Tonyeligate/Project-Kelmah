@@ -71,6 +71,7 @@ import { hasRole } from '../../../utils/userUtils';
 import JobsCardsGrid from '../components/JobsCardsGrid';
 import JobsCompactSearchBar from '../components/JobsCompactSearchBar';
 import JobsMobileFilterDrawer from '../components/JobsMobileFilterDrawer';
+import DiscoveryShellFrame from '../components/DiscoveryShellFrame';
 import tradeCategoriesData from '../data/tradeCategories.json';
 import ghanaLocations from '../data/ghanaLocations.json';
 import { useJobsQuery } from '../hooks/useJobsQuery';
@@ -600,9 +601,7 @@ function JobsResultsHeader({
           variant="h5"
           sx={{ color: 'var(--k-gold)', fontWeight: 'bold', mb: 1 }}
         >
-          {selectedCategory
-            ? `${selectedCategory} Jobs`
-            : 'Featured Opportunities'}
+          {selectedCategory ? `${selectedCategory} Jobs` : 'Job Results'}
         </Typography>
         <Typography
           variant="body2"
@@ -612,8 +611,8 @@ function JobsResultsHeader({
             display: { xs: 'none', md: 'block' },
           }}
         >
-          Sorted by {SORT_LABELS[sortBy] || SORT_LABELS.relevance}. Compare jobs
-          quickly using budget, payment type, and applicant count on each card.
+          Sorted by {SORT_LABELS[sortBy] || SORT_LABELS.relevance}. Use filters
+          and chips to narrow results quickly.
         </Typography>
         {hasActiveFilters &&
           (isMobile ? (
@@ -2342,162 +2341,77 @@ const JobsPage = () => {
                 />
               </Helmet>
 
-              {/* Hero Section & Filter System - Directly Below Header */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
                 {...motionProps}
               >
-                <Box
-                  sx={{
-                    mb: { xs: 2, md: 4 },
-                    mt: { xs: 1, md: 0 },
-                    px: { xs: 1, sm: 0 },
-                  }}
-                >
-                  {isMobile && (
-                    <Box sx={{ mb: 1.5, px: 0.25 }}>
-                      <Typography
-                        component="h1"
-                        variant="h5"
-                        sx={{ fontWeight: 800, color: 'text.primary', mb: 0.5 }}
-                      >
-                        Find Jobs in Ghana
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                        Search by trade, location, and budget to find work that
-                        fits quickly.
-                      </Typography>
-                    </Box>
-                  )}
-
-                  {/* Mobile-optimized hero section */}
-                  <Grid
-                    container
-                    spacing={{ xs: 1.25, md: 3 }}
-                    alignItems="center"
-                  >
-                    {/* Left Side - Hero Text */}
-                    <Grid
-                      item
-                      xs={12}
-                      md={4}
-                      sx={{ display: { xs: 'none', md: 'block' } }}
-                    >
+                <DiscoveryShellFrame
+                  heading="Find Jobs in Ghana"
+                  subheading="Search by trade, location, and budget, then refine with filters."
+                  isMobile={isMobile}
+                  quickPicks={
+                    !hasActiveFilters && !effectiveSearch ? (
                       <Box
                         sx={{
-                          textAlign: { xs: 'center', md: 'left' },
-                          px: { xs: 1, sm: 0 },
+                          mb: { xs: 2, md: 0 },
+                          px: { xs: 0.5, sm: 0 },
+                          display: { xs: 'block', md: 'none' },
                         }}
                       >
                         <Typography
-                          variant="h4"
-                          component="h1"
+                          variant="subtitle1"
                           sx={{
+                            color: 'var(--k-gold)',
                             fontWeight: 'bold',
-                            background:
-                              'linear-gradient(45deg, var(--k-gold-dark) 30%, var(--k-gold) 90%)',
-                            backgroundClip: 'text',
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent',
-                            mb: { xs: 0.5, md: 1 },
-                            fontSize: {
-                              xs: '1.35rem', // ✓ Increased from 1.25rem for better mobile readability
-                              sm: '1.65rem', // ✓ Increased from 1.5rem
-                              md: '2rem',
-                              lg: '2.25rem',
-                            },
-                            lineHeight: { xs: 1.3, md: 1.3 }, // ✓ Better line spacing on mobile
-                            wordWrap: 'break-word', // ✓ Prevent text overflow
+                            mb: { xs: 1, md: 0 },
+                            fontSize: { xs: '0.95rem', sm: '1rem' },
+                            textAlign: 'left',
                           }}
                         >
-                          Find Your Next Trade Opportunity
+                          Quick trade picks
                         </Typography>
-                        <Typography
-                          variant="h6"
-                          sx={{
-                            color: 'text.secondary',
-                            fontSize: {
-                              xs: '0.85rem',
-                              sm: '0.95rem',
-                              md: '1rem',
-                            }, // ✓ Improved readability
-                            lineHeight: { xs: 1.5, md: 1.5 }, // ✓ Better line spacing
-                            maxWidth: { xs: '100%', md: '90%' },
-                            wordWrap: 'break-word', // ✓ Prevent overflow
-                          }}
-                        >
-                          {
-                            "Connect with Ghana's top employers and advance your skilled trades career"
-                          }
-                        </Typography>
+                        <JobsCategoryBrowseGrid
+                          categoryData={categoryData}
+                          selectedCategory={selectedCategory}
+                          onSelectCategory={handleBrowseCategorySelect}
+                          isMobile={isMobile}
+                        />
                       </Box>
-                    </Grid>
-
-                    {/* Right Side - Filter System: Compact on mobile, expanded on desktop */}
-                    <Grid item xs={12} md={8}>
-                      <JobsFiltersPanel
-                        isMobile={isMobile}
-                        isSmallMobile={isSmallMobile}
-                        searchQuery={searchQuery}
-                        onSearchInputChange={setSearchQuery}
-                        onSearchSubmit={handleSearchSubmit}
-                        mobileFilterOpen={mobileFilterOpen}
-                        onOpenMobileFilters={handleOpenMobileFilters}
-                        onCloseMobileFilters={handleCloseMobileFilters}
-                        onApplyMobileFilters={handleApplyMobileFilters}
-                        selectedCategory={selectedCategory}
-                        onCategoryChange={setSelectedCategory}
-                        selectedLocation={selectedLocation}
-                        onLocationChange={setSelectedLocation}
-                        budgetRange={budgetRange}
-                        showFilters={showFilters}
-                        onToggleFilters={handleToggleFilters}
-                        hasActiveFilters={hasActiveFilters}
-                        activeFilterCount={activeFilterCount}
-                        isJobsFetching={isJobsFetching}
-                        budgetFilterActive={budgetFilterActive}
-                        onBudgetFilterToggle={handleBudgetFilterToggle}
-                        onBudgetRangeChange={handleBudgetRangeChange}
-                        quickFilters={quickFilters}
-                        onToggleQuickFilter={toggleQuickFilter}
-                        sortBy={sortBy}
-                        onSortChange={setSortBy}
-                        onClearAllFilters={clearAllFilters}
-                      />
-                    </Grid>
-                  </Grid>
-                </Box>
-              </motion.div>
-
-              {/* Browse by Trade Category - Large visual icons for easy browsing */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: 0.3 }}
-                {...motionProps}
-              >
-                <Box sx={{ mb: { xs: 3, md: 4 }, px: { xs: 0.5, sm: 0 } }}>
-                  <Typography
-                    variant="h5"
-                    sx={{
-                      color: 'var(--k-gold)',
-                      fontWeight: 'bold',
-                      mb: { xs: 1.5, md: 2 },
-                      fontSize: { xs: '1.15rem', sm: '1.35rem', md: '1.5rem' },
-                      textAlign: { xs: 'center', md: 'left' },
-                    }}
-                  >
-                    Browse by Trade
-                  </Typography>
-                  <JobsCategoryBrowseGrid
-                    categoryData={categoryData}
-                    selectedCategory={selectedCategory}
-                    onSelectCategory={handleBrowseCategorySelect}
+                    ) : null
+                  }
+                >
+                  <JobsFiltersPanel
                     isMobile={isMobile}
+                    isSmallMobile={isSmallMobile}
+                    searchQuery={searchQuery}
+                    onSearchInputChange={setSearchQuery}
+                    onSearchSubmit={handleSearchSubmit}
+                    mobileFilterOpen={mobileFilterOpen}
+                    onOpenMobileFilters={handleOpenMobileFilters}
+                    onCloseMobileFilters={handleCloseMobileFilters}
+                    onApplyMobileFilters={handleApplyMobileFilters}
+                    selectedCategory={selectedCategory}
+                    onCategoryChange={setSelectedCategory}
+                    selectedLocation={selectedLocation}
+                    onLocationChange={setSelectedLocation}
+                    budgetRange={budgetRange}
+                    showFilters={showFilters}
+                    onToggleFilters={handleToggleFilters}
+                    hasActiveFilters={hasActiveFilters}
+                    activeFilterCount={activeFilterCount}
+                    isJobsFetching={isJobsFetching}
+                    budgetFilterActive={budgetFilterActive}
+                    onBudgetFilterToggle={handleBudgetFilterToggle}
+                    onBudgetRangeChange={handleBudgetRangeChange}
+                    quickFilters={quickFilters}
+                    onToggleQuickFilter={toggleQuickFilter}
+                    sortBy={sortBy}
+                    onSortChange={setSortBy}
+                    onClearAllFilters={clearAllFilters}
                   />
-                </Box>
+                </DiscoveryShellFrame>
               </motion.div>
 
               {/* Enhanced Jobs Grid */}
@@ -2589,231 +2503,6 @@ const JobsPage = () => {
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
               />
-
-              {/* Stats Section - Moved to Bottom */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.6 }}
-                {...motionProps}
-              >
-                <Box
-                  sx={{
-                    mt: { xs: 6, md: 8 }, // ✓ Reduced top margin on mobile
-                    mb: { xs: 4, md: 6 }, // ✓ Reduced bottom margin on mobile
-                    px: { xs: 1, sm: 0 }, // ✓ Add horizontal padding on mobile
-                    display: { xs: 'none', md: 'block' },
-                  }}
-                >
-                  <Typography
-                    variant="h4"
-                    sx={{
-                      color: 'var(--k-gold)',
-                      fontWeight: 'bold',
-                      textAlign: 'center',
-                      mb: { xs: 3, md: 4 }, // ✓ Responsive margin
-                      fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' }, // ✓ Responsive font size
-                    }}
-                  >
-                    Platform Statistics
-                  </Typography>
-                  <Grid container spacing={{ xs: 2, sm: 3 }}>
-                    {' '}
-                    {/* ✓ Responsive spacing */}
-                    {/* Available Jobs Stat */}
-                    <Grid item xs={6} sm={6} md={3}>
-                      {' '}
-                      {/* ✓ 2 columns on mobile, 4 on desktop */}
-                      <AnimatedStatCard
-                        value={
-                          platformStats.loading
-                            ? uniqueJobs.length
-                            : platformStats.availableJobs
-                        }
-                        label="Available Jobs"
-                        isLive={true}
-                      />
-                    </Grid>
-                    {/* Active Employers Stat */}
-                    <Grid item xs={6} sm={6} md={3}>
-                      {' '}
-                      {/* ✓ 2 columns on mobile, 4 on desktop */}
-                      <AnimatedStatCard
-                        value={
-                          platformStats.loading
-                            ? 0
-                            : platformStats.activeEmployers
-                        }
-                        suffix="+"
-                        label="Active Employers"
-                      />
-                    </Grid>
-                    {/* Skilled Workers Stat */}
-                    <Grid item xs={6} sm={6} md={3}>
-                      {' '}
-                      {/* ✓ 2 columns on mobile, 4 on desktop */}
-                      <AnimatedStatCard
-                        value={
-                          platformStats.loading
-                            ? 0
-                            : platformStats.skilledWorkers
-                        }
-                        suffix="+"
-                        label="Skilled Workers"
-                      />
-                    </Grid>
-                    {/* Success Rate Stat */}
-                    <Grid item xs={6} sm={6} md={3}>
-                      {' '}
-                      {/* ✓ 2 columns on mobile, 4 on desktop */}
-                      <AnimatedStatCard
-                        value={
-                          platformStats.loading ? 0 : platformStats.successRate
-                        }
-                        suffix="%"
-                        label="Success Rate"
-                      />
-                    </Grid>
-                  </Grid>
-                </Box>
-              </motion.div>
-
-              {/* CTA Section */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.8 }}
-                {...motionProps}
-              >
-                <Paper
-                  sx={{
-                    mt: { xs: 3, md: 4 }, // ✓ Reduced mobile margin
-                    p: { xs: 2.5, sm: 3, md: 4 }, // ✓ Responsive padding
-                    mx: { xs: 1, sm: 0 }, // ✓ Mobile horizontal spacing
-                    display: { xs: 'none', md: 'block' },
-                    textAlign: 'center',
-                    bgcolor: 'var(--k-accent-soft)',
-                    border: '1px solid var(--k-accent-border-strong)',
-                  }}
-                >
-                  <Typography
-                    variant="h4"
-                    sx={{
-                      color: 'var(--k-gold)',
-                      fontWeight: 'bold',
-                      mb: { xs: 1.5, md: 2 }, // ✓ Responsive margin
-                      fontSize: { xs: '1.35rem', sm: '1.75rem', md: '2rem' }, // ✓ Responsive font
-                      px: { xs: 1, sm: 0 }, // ✓ Mobile padding
-                    }}
-                  >
-                    Ready to Take Your Career to the Next Level?
-                  </Typography>
-                  <Typography
-                    variant="body1"
-                    sx={{
-                      color: 'text.secondary',
-                      mb: { xs: 2.5, md: 3 }, // ✓ Responsive margin
-                      fontSize: { xs: '0.9rem', sm: '0.95rem', md: '1rem' }, // ✓ Responsive font
-                      lineHeight: { xs: 1.5, md: 1.6 }, // ✓ Better readability
-                      maxWidth: 600,
-                      mx: 'auto',
-                      px: { xs: 1, sm: 0 }, // ✓ Mobile padding
-                    }}
-                  >
-                    Join thousands of skilled professionals who've found their
-                    dream jobs through Kelmah. Get personalized job
-                    recommendations and connect directly with employers.
-                  </Typography>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      gap: { xs: 1.5, sm: 2 }, // ✓ Responsive gap
-                      justifyContent: 'center',
-                      flexWrap: 'wrap',
-                      px: { xs: 1, sm: 0 }, // ✓ Mobile padding
-                    }}
-                  >
-                    <Button
-                      variant="contained"
-                      size="large"
-                      onClick={() => {
-                        if (!authState.isAuthenticated) {
-                          navigate('/login', {
-                            state: {
-                              from: '/jobs',
-                              message: isHirerUser
-                                ? 'Sign in to post a job'
-                                : 'Sign in to manage job alerts',
-                            },
-                          });
-                          return;
-                        }
-                        if (isHirerUser) {
-                          navigate('/hirer/jobs/post');
-                          return;
-                        }
-                        handleCreateJobAlert();
-                      }}
-                      sx={{
-                        bgcolor: 'var(--k-gold)',
-                        color: 'var(--k-text-on-accent)',
-                        fontWeight: 'bold',
-                        fontSize: { xs: '0.9rem', sm: '0.95rem', md: '1rem' }, // ✓ Responsive font
-                        px: { xs: 3, sm: 3.5, md: 4 }, // ✓ Responsive padding
-                        minHeight: { xs: '44px', sm: '48px' }, // ✓ Touch target
-                        '&:hover': {
-                          bgcolor: 'var(--k-gold-dark)',
-                        },
-                        '&:active': {
-                          transform: 'scale(0.98)', // ✓ Touch feedback
-                        },
-                      }}
-                    >
-                      {isHirerUser ? 'Post a Job' : 'Manage Job Alerts'}
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      size="large"
-                      onClick={() => {
-                        if (!authState.isAuthenticated) {
-                          navigate('/login', {
-                            state: {
-                              from: isHirerUser
-                                ? '/hirer/find-talents'
-                                : '/profile/upload-cv',
-                              message: isHirerUser
-                                ? 'Sign in to find talent'
-                                : 'Sign in to upload your CV',
-                            },
-                          });
-                          return;
-                        }
-                        navigate(
-                          isHirerUser
-                            ? '/hirer/find-talents'
-                            : '/profile/upload-cv',
-                        );
-                      }}
-                      sx={{
-                        borderColor: 'var(--k-gold)',
-                        color: 'var(--k-gold)',
-                        fontSize: { xs: '0.9rem', sm: '0.95rem', md: '1rem' }, // ✓ Responsive font
-                        px: { xs: 3, sm: 3.5, md: 4 }, // ✓ Responsive padding
-                        minHeight: { xs: '44px', sm: '48px' }, // ✓ Touch target
-                        '&:hover': {
-                          borderColor: 'var(--k-gold-dark)',
-                          bgcolor: 'var(--k-accent-soft)',
-                        },
-                        '&:active': {
-                          transform: 'scale(0.98)', // ✓ Touch feedback
-                        },
-                      }}
-                    >
-                      {isHirerUser ? 'Find Talent' : 'Upload CV'}
-                    </Button>
-                  </Box>
-                </Paper>
-              </motion.div>
             </Container>
           </Box>
           <Snackbar
