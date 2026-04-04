@@ -1,10 +1,13 @@
 package com.kelmah.mobile.features.messaging.data
 
+import com.kelmah.mobile.BuildConfig
 import com.kelmah.mobile.core.network.ApiResult
 import com.kelmah.mobile.core.network.executeAuthorizedApiCall
 import com.kelmah.mobile.core.session.SessionCoordinator
 import com.kelmah.mobile.core.storage.TokenManager
 import dagger.Lazy
+import java.time.Instant
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.serialization.json.JsonArray
@@ -12,6 +15,14 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
+import okio.BufferedSink
+import retrofit2.HttpException
 
 @Singleton
 class MessagingRepository @Inject constructor(
@@ -19,6 +30,14 @@ class MessagingRepository @Inject constructor(
     private val sessionCoordinator: Lazy<SessionCoordinator>,
     private val tokenManager: TokenManager,
 ) {
+    private val uploadHttpClient: OkHttpClient by lazy {
+        OkHttpClient.Builder()
+            .connectTimeout(60, TimeUnit.SECONDS)
+            .readTimeout(60, TimeUnit.SECONDS)
+            .writeTimeout(60, TimeUnit.SECONDS)
+            .build()
+    }
+
     fun currentUserId(): String? = tokenManager.getStoredSession()?.user?.resolvedId
 
     suspend fun getConversations(
@@ -90,6 +109,226 @@ class MessagingRepository @Inject constructor(
             ),
         )
         ApiResult.Success(parseSentMessage(response, conversationId))
+    }
+
+    suspend fun uploadAttachment(
+        conversationId: String,
+        fileName: String,
+        mimeType: String,
+        fileBytes: ByteArray,
+        onProgress: (Int) -> Unit = {},
+    ): ApiResult<MessageAttachment> = executeAuthorizedApiCall(sessionCoordinator) {
+        val safeMimeType = mimeType.ifBlank { "application/octet-stream" }
+        val safeFileName = sanitizeFileName(fileName)
+        val safeFolder = "messaging/$conversationId"
+        onProgress(5)
+
+        val presignedResult = requestPresignedUpload(
+            folder = safeFolder,
+            fileName = safeFileName,
+            mimeType = safeMimeType,
+        )
+
+        if (presignedResult is ApiResult.Success) {
+            when (
+                val secureUploadResult = uploadViaPresignedUrl(
+                    uploadPayload = presignedResult.data,
+                    fileName = safeFileName,
+                    mimeType = safeMimeType,
+                    fileBytes = fileBytes,
+                    onProgress = onProgress,
+                )
+            ) {
+                is ApiResult.Success -> return@executeAuthorizedApiCall secureUploadResult
+                is ApiResult.Error -> Unit
+            }
+        }
+
+        uploadAttachmentViaGateway(
+            conversationId = conversationId,
+            fileName = safeFileName,
+            mimeType = safeMimeType,
+            fileBytes = fileBytes,
+            onProgress = onProgress,
+        )
+    }
+
+    private suspend fun requestPresignedUpload(
+        folder: String,
+        fileName: String,
+        mimeType: String,
+    ): ApiResult<PresignedUploadPayload> {
+        return try {
+            val response = messagingApiService.requestPresignedUpload(
+                PresignUploadRequest(
+                    folder = folder,
+                    filename = fileName,
+                    contentType = mimeType,
+                ),
+            )
+            val payload = parsePresignedUploadPayload(response)
+                ?: return ApiResult.Error("Secure upload URL response was invalid")
+
+            ApiResult.Success(payload)
+        } catch (error: HttpException) {
+            if (error.code() == 401) throw error
+            ApiResult.Error(
+                message = "Secure upload URL unavailable",
+                code = error.code(),
+            )
+        } catch (_: Exception) {
+            ApiResult.Error("Secure upload URL unavailable")
+        }
+    }
+
+    private suspend fun uploadViaPresignedUrl(
+        uploadPayload: PresignedUploadPayload,
+        fileName: String,
+        mimeType: String,
+        fileBytes: ByteArray,
+        onProgress: (Int) -> Unit,
+    ): ApiResult<MessageAttachment> {
+        val mediaType = mimeType.toMediaTypeOrNull() ?: "application/octet-stream".toMediaTypeOrNull()
+        if (mediaType == null) {
+            return ApiResult.Error("Unsupported attachment type")
+        }
+
+        val requestBody = ProgressRequestBody(mediaType, fileBytes) { uploadProgress ->
+            val mappedProgress = 10 + ((uploadProgress.coerceIn(0, 100) * 85) / 100)
+            onProgress(mappedProgress.coerceIn(10, 95))
+        }
+
+        return try {
+            onProgress(10)
+            val request = Request.Builder()
+                .url(uploadPayload.putUrl)
+                .put(requestBody)
+                .header("Content-Type", mimeType)
+                .build()
+
+            uploadHttpClient.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) {
+                    return ApiResult.Error(
+                        message = "Secure upload failed (${response.code})",
+                        code = response.code,
+                    )
+                }
+            }
+
+            onProgress(100)
+            ApiResult.Success(
+                MessageAttachment(
+                    name = fileName,
+                    fileUrl = normalizeAttachmentUrl(uploadPayload.getUrl),
+                    fileType = mimeType,
+                    fileSize = fileBytes.size.toLong(),
+                    uploadDate = Instant.now().toString(),
+                ),
+            )
+        } catch (_: Exception) {
+            ApiResult.Error("Secure upload failed")
+        }
+    }
+
+    private suspend fun uploadAttachmentViaGateway(
+        conversationId: String,
+        fileName: String,
+        mimeType: String,
+        fileBytes: ByteArray,
+        onProgress: (Int) -> Unit,
+    ): ApiResult<MessageAttachment> {
+        onProgress(15)
+        val filePart = MultipartBody.Part.createFormData(
+            name = "files",
+            filename = fileName,
+            body = fileBytes.toRequestBody(mimeType.toMediaTypeOrNull()),
+        )
+
+        val response = messagingApiService.uploadAttachments(
+            conversationId = conversationId,
+            files = listOf(filePart),
+        )
+
+        onProgress(100)
+        return ApiResult.Success(
+            parseUploadedAttachment(
+                response = response,
+                fallbackName = fileName,
+                fallbackMimeType = mimeType,
+            ),
+        )
+    }
+
+    private fun parsePresignedUploadPayload(response: JsonObject): PresignedUploadPayload? {
+        val payload = response.nestedObject("data") ?: response
+        val putUrl = payload.string("putUrl")?.trim().orEmpty()
+        val getUrl = payload.string("getUrl")?.trim().orEmpty()
+        if (putUrl.isBlank() || getUrl.isBlank()) {
+            return null
+        }
+
+        return PresignedUploadPayload(
+            putUrl = putUrl,
+            getUrl = getUrl,
+        )
+    }
+
+    private fun parseUploadedAttachment(
+        response: JsonObject,
+        fallbackName: String,
+        fallbackMimeType: String,
+    ): MessageAttachment {
+        val payload = response.nestedObject("data") ?: response
+        val firstAttachment = payload.nestedArray("files")?.firstOrNull() as? JsonObject
+            ?: payload.nestedArray("attachments")?.firstOrNull() as? JsonObject
+            ?: payload.nestedObject("file")
+            ?: throw IllegalStateException("Attachment payload was invalid")
+
+        return parseAttachment(firstAttachment, fallbackName, fallbackMimeType)
+            ?: throw IllegalStateException("Attachment payload was invalid")
+    }
+
+    private fun parseAttachments(values: JsonArray?): List<MessageAttachment> =
+        values?.mapNotNull { item ->
+            val obj = item as? JsonObject ?: return@mapNotNull null
+            parseAttachment(obj)
+        } ?: emptyList()
+
+    private fun parseAttachment(
+        obj: JsonObject,
+        fallbackName: String = "Attachment",
+        fallbackMimeType: String = "application/octet-stream",
+    ): MessageAttachment? {
+        val rawFileUrl = obj.string("fileUrl")
+            ?: obj.string("url")
+            ?: obj.string("secureUrl")
+            ?: return null
+        val fileType = obj.string("fileType") ?: obj.string("mimeType") ?: fallbackMimeType
+
+        return MessageAttachment(
+            name = obj.string("name")
+                ?: obj.string("fileName")
+                ?: obj.string("originalname")
+                ?: fallbackName,
+            fileUrl = normalizeAttachmentUrl(rawFileUrl),
+            fileType = fileType,
+            fileSize = obj.long("fileSize") ?: obj.long("size") ?: obj.long("bytes"),
+            uploadDate = obj.string("uploadDate") ?: obj.string("createdAt"),
+        )
+    }
+
+    private fun normalizeAttachmentUrl(rawUrl: String): String {
+        val trimmed = rawUrl.trim()
+        return when {
+            trimmed.startsWith("https://", ignoreCase = true) || trimmed.startsWith("http://", ignoreCase = true) -> trimmed
+            trimmed.startsWith("/") -> "${BuildConfig.GATEWAY_ORIGIN.trimEnd('/')}$trimmed"
+            else -> trimmed
+        }
+    }
+
+    private fun sanitizeFileName(fileName: String): String {
+        val normalized = fileName.trim().ifBlank { "attachment_${System.currentTimeMillis()}" }
+        return normalized.replace(Regex("[^a-zA-Z0-9._-]"), "_")
     }
 
     suspend fun createConversation(
@@ -212,19 +451,6 @@ class MessagingRepository @Inject constructor(
         )
     }
 
-    private fun parseAttachments(values: JsonArray?): List<MessageAttachment> =
-        values?.mapNotNull { item ->
-            val obj = item as? JsonObject ?: return@mapNotNull null
-            val fileUrl = obj.string("fileUrl") ?: return@mapNotNull null
-            MessageAttachment(
-                name = obj.string("name") ?: obj.string("fileName") ?: "Attachment",
-                fileUrl = fileUrl,
-                fileType = obj.string("fileType") ?: "application/octet-stream",
-                fileSize = obj.string("fileSize")?.toLongOrNull(),
-                uploadDate = obj.string("uploadDate"),
-            )
-        } ?: emptyList()
-
     private fun previewFor(lastMessage: JsonObject?): String {
         if (lastMessage == null) return "No messages yet"
         val content = lastMessage.string("content") ?: lastMessage.string("text") ?: ""
@@ -243,9 +469,45 @@ data class ConversationDetailPayload(
     val messages: List<ThreadMessage>,
 )
 
+private data class PresignedUploadPayload(
+    val putUrl: String,
+    val getUrl: String,
+)
+
+private class ProgressRequestBody(
+    private val contentType: okhttp3.MediaType,
+    private val data: ByteArray,
+    private val onProgress: (Int) -> Unit,
+) : RequestBody() {
+    override fun contentType(): okhttp3.MediaType? = contentType
+
+    override fun contentLength(): Long = data.size.toLong()
+
+    override fun writeTo(sink: BufferedSink) {
+        val totalBytes = data.size.toLong().coerceAtLeast(1L)
+        val chunkSize = 8 * 1024
+        var bytesWritten = 0
+        var lastProgress = -1
+
+        while (bytesWritten < data.size) {
+            val toWrite = minOf(chunkSize, data.size - bytesWritten)
+            sink.write(data, bytesWritten, toWrite)
+            bytesWritten += toWrite
+
+            val progress = ((bytesWritten.toLong() * 100) / totalBytes).toInt().coerceIn(0, 100)
+            if (progress != lastProgress) {
+                lastProgress = progress
+                onProgress(progress)
+            }
+        }
+    }
+}
+
 private fun JsonObject.string(key: String): String? = (this[key] as? JsonPrimitive)?.contentOrNull()
 
 private fun JsonObject.int(key: String): Int? = (this[key] as? JsonPrimitive)?.intOrNull()
+
+private fun JsonObject.long(key: String): Long? = (this[key] as? JsonPrimitive)?.longOrNull()
 
 private fun JsonObject.bool(key: String): Boolean? = (this[key] as? JsonPrimitive)?.booleanOrNull()
 
@@ -256,5 +518,7 @@ private fun JsonObject.nestedArray(key: String): JsonArray? = this[key] as? Json
 private fun JsonPrimitive.contentOrNull(): String? = if (this == JsonNull) null else content
 
 private fun JsonPrimitive.intOrNull(): Int? = content.toIntOrNull()
+
+private fun JsonPrimitive.longOrNull(): Long? = content.toLongOrNull()
 
 private fun JsonPrimitive.booleanOrNull(): Boolean? = content.toBooleanStrictOrNull()

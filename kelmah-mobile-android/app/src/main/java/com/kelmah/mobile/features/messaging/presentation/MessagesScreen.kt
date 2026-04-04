@@ -1,5 +1,11 @@
 package com.kelmah.mobile.features.messaging.presentation
 
+import android.content.Context
+import android.net.Uri
+import android.provider.OpenableColumns
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -23,11 +29,11 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.automirrored.outlined.Send
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Forum
 import androidx.compose.material.icons.outlined.Image
-import androidx.compose.material.icons.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.AssistChip
@@ -41,6 +47,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -54,12 +61,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -71,7 +80,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kelmah.mobile.R
 import com.kelmah.mobile.core.utils.RelativeTimeFormatter
 import com.kelmah.mobile.features.messaging.data.ConversationSummary
+import com.kelmah.mobile.features.messaging.data.MessageAttachment
 import com.kelmah.mobile.features.messaging.data.ThreadMessage
+import java.io.ByteArrayOutputStream
+import java.io.InputStream
+import java.util.Locale
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -81,7 +97,38 @@ fun MessagesScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbars = remember { SnackbarHostState() }
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
     var handledInitialConversation by rememberSaveable(initialConversationId) { mutableStateOf(initialConversationId == null) }
+
+    val uploadFromUri: (Uri?, Boolean) -> Unit = { uri, preferImageMime ->
+        if (uri == null) {
+            Unit
+        } else {
+            coroutineScope.launch {
+                when (val prepared = prepareAttachmentForUpload(context, uri, preferImageMime)) {
+                    is PreparedAttachmentResult.Ready -> {
+                        viewModel.uploadAttachment(
+                            fileName = prepared.name,
+                            mimeType = prepared.mimeType,
+                            fileBytes = prepared.bytes,
+                        )
+                    }
+                    is PreparedAttachmentResult.Error -> {
+                        viewModel.reportAttachmentSelectionError(prepared.message)
+                    }
+                }
+            }
+        }
+    }
+
+    val photoPickerLauncher = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        uploadFromUri(uri, true)
+    }
+    val filePickerLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        uploadFromUri(uri, false)
+    }
+
     val filteredConversations = remember(state.conversations, state.searchQuery) {
         val query = state.searchQuery.trim().lowercase()
         if (query.isBlank()) {
@@ -162,17 +209,24 @@ fun MessagesScreen(
                 messages = state.messages,
                 draftMessage = state.draftMessage,
                 composerMode = state.composerMode,
-                attachmentName = state.attachmentName,
-                attachmentUrl = state.attachmentUrl,
-                attachmentMimeType = state.attachmentMimeType,
+                pendingAttachment = state.pendingAttachment,
                 isLoading = state.isLoadingMessages,
                 isSending = state.isSending,
+                isUploadingAttachment = state.isUploadingAttachment,
+                attachmentUploadProgress = state.attachmentUploadProgress,
+                canRetryAttachmentUpload = state.canRetryAttachmentUpload,
                 onDraftChange = viewModel::updateDraft,
                 onComposerModeChange = viewModel::updateComposerMode,
-                onAttachmentNameChange = viewModel::updateAttachmentName,
-                onAttachmentUrlChange = viewModel::updateAttachmentUrl,
-                onAttachmentMimeTypeChange = viewModel::updateAttachmentMimeType,
+                onPickPhoto = {
+                    photoPickerLauncher.launch(
+                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
+                    )
+                },
+                onPickFile = {
+                    filePickerLauncher.launch(arrayOf("*/*"))
+                },
                 onAttachmentClear = viewModel::clearAttachmentDraft,
+                onRetryAttachmentUpload = viewModel::retryAttachmentUpload,
                 onSend = viewModel::sendMessage,
             )
         }
@@ -309,17 +363,18 @@ private fun ThreadContent(
     messages: List<ThreadMessage>,
     draftMessage: String,
     composerMode: MessageComposerMode,
-    attachmentName: String,
-    attachmentUrl: String,
-    attachmentMimeType: String,
+    pendingAttachment: MessageAttachment?,
     isLoading: Boolean,
     isSending: Boolean,
+    isUploadingAttachment: Boolean,
+    attachmentUploadProgress: Int,
+    canRetryAttachmentUpload: Boolean,
     onDraftChange: (String) -> Unit,
     onComposerModeChange: (MessageComposerMode) -> Unit,
-    onAttachmentNameChange: (String) -> Unit,
-    onAttachmentUrlChange: (String) -> Unit,
-    onAttachmentMimeTypeChange: (String) -> Unit,
+    onPickPhoto: () -> Unit,
+    onPickFile: () -> Unit,
     onAttachmentClear: () -> Unit,
+    onRetryAttachmentUpload: () -> Unit,
     onSend: () -> Unit,
 ) {
     val listState = rememberLazyListState()
@@ -337,11 +392,19 @@ private fun ThreadContent(
         }
     }
 
-    val canSend = draftMessage.trim().isNotEmpty() || attachmentUrl.trim().isNotEmpty()
-    val sendLabel = when (composerMode) {
-        MessageComposerMode.TEXT -> stringResource(id = R.string.messages_send)
-        MessageComposerMode.PHOTO -> stringResource(id = R.string.messages_send_photo)
-        MessageComposerMode.FILE -> stringResource(id = R.string.messages_send_file)
+    val canSend = (draftMessage.trim().isNotEmpty() || pendingAttachment != null) && !isUploadingAttachment
+    val attachmentMode = when {
+        composerMode == MessageComposerMode.PHOTO -> MessageComposerMode.PHOTO
+        composerMode == MessageComposerMode.FILE -> MessageComposerMode.FILE
+        pendingAttachment?.fileType?.startsWith("image/", ignoreCase = true) == true -> MessageComposerMode.PHOTO
+        else -> MessageComposerMode.FILE
+    }
+    val sendLabel = when {
+        pendingAttachment != null && attachmentMode == MessageComposerMode.PHOTO -> stringResource(id = R.string.messages_send_photo)
+        pendingAttachment != null && attachmentMode == MessageComposerMode.FILE -> stringResource(id = R.string.messages_send_file)
+        composerMode == MessageComposerMode.PHOTO -> stringResource(id = R.string.messages_send_photo)
+        composerMode == MessageComposerMode.FILE -> stringResource(id = R.string.messages_send_file)
+        else -> stringResource(id = R.string.messages_send)
     }
 
     Column(modifier = modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
@@ -430,41 +493,125 @@ private fun ThreadContent(
             }
         }
 
-        if (composerMode != MessageComposerMode.TEXT) {
+        if (composerMode != MessageComposerMode.TEXT || pendingAttachment != null || isUploadingAttachment) {
             Spacer(modifier = Modifier.height(8.dp))
-            OutlinedTextField(
-                value = attachmentUrl,
-                onValueChange = onAttachmentUrlChange,
+            Card(
                 modifier = Modifier.fillMaxWidth(),
-                label = { Text(stringResource(id = R.string.messages_attachment_url_label)) },
-                placeholder = { Text(stringResource(id = R.string.messages_attachment_url_placeholder)) },
-                singleLine = true,
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = stringResource(id = R.string.messages_attachment_link_hint),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            OutlinedTextField(
-                value = attachmentName,
-                onValueChange = onAttachmentNameChange,
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text(stringResource(id = R.string.messages_attachment_name_label)) },
-                singleLine = true,
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            OutlinedTextField(
-                value = attachmentMimeType,
-                onValueChange = onAttachmentMimeTypeChange,
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text(stringResource(id = R.string.messages_attachment_type_label)) },
-                singleLine = true,
-            )
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                TextButton(onClick = onAttachmentClear) {
-                    Text(stringResource(id = R.string.messages_attachment_clear))
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f),
+                ),
+            ) {
+                Column(
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    Text(
+                        text = if (attachmentMode == MessageComposerMode.PHOTO) {
+                            stringResource(id = R.string.messages_attachment_photo_title)
+                        } else {
+                            stringResource(id = R.string.messages_attachment_file_title)
+                        },
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+
+                    when {
+                        isUploadingAttachment -> {
+                            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                ) {
+                                    CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                                    Text(
+                                        text = stringResource(
+                                            id = R.string.messages_attachment_uploading_progress,
+                                            attachmentUploadProgress.coerceIn(0, 100),
+                                        ),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                                LinearProgressIndicator(
+                                    progress = { attachmentUploadProgress.coerceIn(0, 100) / 100f },
+                                    modifier = Modifier.fillMaxWidth(),
+                                )
+                            }
+                        }
+
+                        pendingAttachment != null -> {
+                            Text(
+                                text = pendingAttachment.name,
+                                style = MaterialTheme.typography.bodyMedium,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                            Text(
+                                text = pendingAttachment.fileType,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            pendingAttachment.fileSize?.let { bytes ->
+                                Text(
+                                    text = formatAttachmentSize(bytes),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        }
+
+                        else -> {
+                            Text(
+                                text = if (attachmentMode == MessageComposerMode.PHOTO) {
+                                    stringResource(id = R.string.messages_attachment_photo_hint)
+                                } else {
+                                    stringResource(id = R.string.messages_attachment_file_hint)
+                                },
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End,
+                    ) {
+                        TextButton(
+                            onClick = {
+                                if (attachmentMode == MessageComposerMode.PHOTO) {
+                                    onPickPhoto()
+                                } else {
+                                    onPickFile()
+                                }
+                            },
+                            enabled = !isUploadingAttachment,
+                        ) {
+                            Text(
+                                text = if (pendingAttachment == null) {
+                                    stringResource(id = R.string.messages_attachment_pick)
+                                } else {
+                                    stringResource(id = R.string.messages_attachment_replace)
+                                },
+                            )
+                        }
+
+                        if (pendingAttachment != null) {
+                            TextButton(
+                                onClick = onAttachmentClear,
+                                enabled = !isUploadingAttachment,
+                            ) {
+                                Text(stringResource(id = R.string.messages_attachment_clear))
+                            }
+                        } else if (canRetryAttachmentUpload) {
+                            TextButton(
+                                onClick = onRetryAttachmentUpload,
+                                enabled = !isUploadingAttachment,
+                            ) {
+                                Text(stringResource(id = R.string.messages_attachment_retry))
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -596,7 +743,7 @@ private fun MessageBubble(
                                 }
                                 if (openable) {
                                     TextButton(onClick = { runCatching { uriHandler.openUri(attachment.fileUrl) } }) {
-                                        Icon(Icons.Outlined.OpenInNew, contentDescription = null)
+                                        Icon(Icons.AutoMirrored.Outlined.OpenInNew, contentDescription = null)
                                         Spacer(modifier = Modifier.width(4.dp))
                                         Text(stringResource(id = R.string.common_open))
                                     }
@@ -641,4 +788,85 @@ private fun EmptyStateCard(
             )
         }
     }
+}
+
+private const val MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024
+
+private sealed interface PreparedAttachmentResult {
+    data class Ready(
+        val name: String,
+        val mimeType: String,
+        val bytes: ByteArray,
+    ) : PreparedAttachmentResult
+
+    data class Error(val message: String) : PreparedAttachmentResult
+}
+
+private suspend fun prepareAttachmentForUpload(
+    context: Context,
+    uri: Uri,
+    preferImageMime: Boolean,
+): PreparedAttachmentResult = withContext(Dispatchers.IO) {
+    val resolver = context.contentResolver
+    val mimeType = resolver.getType(uri)?.trim().takeUnless { it.isNullOrBlank() }
+        ?: if (preferImageMime) "image/jpeg" else "application/octet-stream"
+    val displayName = queryDisplayName(context, uri)
+        ?: uri.lastPathSegment
+        ?: if (preferImageMime) "photo.jpg" else "attachment.bin"
+
+    val stream = runCatching { resolver.openInputStream(uri) }.getOrNull()
+        ?: return@withContext PreparedAttachmentResult.Error("Unable to open selected file")
+
+    val bytes = stream.use { input -> readWithLimit(input, MAX_ATTACHMENT_BYTES) }
+        ?: return@withContext PreparedAttachmentResult.Error("File exceeds 25 MB limit")
+
+    if (bytes.isEmpty()) {
+        return@withContext PreparedAttachmentResult.Error("Selected file is empty")
+    }
+
+    PreparedAttachmentResult.Ready(
+        name = displayName,
+        mimeType = mimeType,
+        bytes = bytes,
+    )
+}
+
+private fun queryDisplayName(context: Context, uri: Uri): String? {
+    val resolver = context.contentResolver
+    return runCatching {
+        resolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { cursor ->
+            if (!cursor.moveToFirst()) {
+                null
+            } else {
+                val index = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                if (index == -1) null else cursor.getString(index)
+            }
+        }
+    }.getOrNull()
+}
+
+private fun readWithLimit(inputStream: InputStream, maxBytes: Int): ByteArray? {
+    val buffer = ByteArray(8 * 1024)
+    val output = ByteArrayOutputStream()
+    var totalRead = 0
+
+    while (true) {
+        val bytesRead = inputStream.read(buffer)
+        if (bytesRead <= 0) break
+        totalRead += bytesRead
+        if (totalRead > maxBytes) {
+            return null
+        }
+        output.write(buffer, 0, bytesRead)
+    }
+
+    return output.toByteArray()
+}
+
+private fun formatAttachmentSize(bytes: Long): String {
+    if (bytes <= 0L) return "0 KB"
+    val kb = bytes / 1024.0
+    if (kb < 1024) return String.format(Locale.US, "%.1f KB", kb)
+    val mb = kb / 1024.0
+    return String.format(Locale.US, "%.1f MB", mb)
 }

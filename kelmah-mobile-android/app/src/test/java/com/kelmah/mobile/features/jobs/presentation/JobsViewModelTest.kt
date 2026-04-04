@@ -13,6 +13,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -93,5 +94,20 @@ class JobsViewModelTest {
         assertEquals("Application submitted successfully", viewModel.uiState.value.infoMessage)
         assertFalse(viewModel.uiState.value.isSubmittingApplication)
         coVerify(exactly = 1) { jobsRepository.applyToJob(any(), any()) }
+    }
+
+    @Test
+    fun loadJobDetail_failure_clearsLoadingAndKeepsSelectionEmpty() = runTest {
+        val viewModel = JobsViewModel(jobsRepository)
+
+        coEvery { jobsRepository.getJobDetail("job-404") } returns ApiResult.Error("Unable to open this job")
+
+        viewModel.loadJobDetail("job-404")
+        advanceUntilIdle()
+
+        assertFalse(viewModel.uiState.value.isDetailLoading)
+        assertEquals("Unable to open this job", viewModel.uiState.value.errorMessage)
+        assertNull(viewModel.uiState.value.selectedJob)
+        coVerify(exactly = 1) { jobsRepository.getJobDetail("job-404") }
     }
 }

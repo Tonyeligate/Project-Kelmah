@@ -44,10 +44,11 @@ val NotificationItem.actionTarget: NotificationActionTarget?
         val rawActionUrl = actionUrl?.trim().orEmpty()
         val path = notificationActionPath(rawActionUrl)
         val conversationId = notificationActionQueryParameter(rawActionUrl, "conversation")
+        val validConversationId = conversationId?.trim()?.takeIf(::isValidObjectId)
         val relatedId = relatedEntityId?.trim().orEmpty().takeIf(::isValidObjectId)
 
         return when {
-            !conversationId.isNullOrBlank() -> conversationId.takeIf(::isValidObjectId)?.let(NotificationActionTarget::Conversation)
+            validConversationId != null -> NotificationActionTarget.Conversation(validConversationId)
             path.startsWith("/messages/") -> path.substringAfterLast('/').takeIf(::isValidObjectId)?.let(NotificationActionTarget::Conversation)
             path.startsWith("/jobs/detail/") -> path.substringAfterLast('/').takeIf(::isValidObjectId)?.let(NotificationActionTarget::Job)
             path.startsWith("/jobs/") -> path.substringAfterLast('/').takeIf(::isValidObjectId)?.let(NotificationActionTarget::Job)

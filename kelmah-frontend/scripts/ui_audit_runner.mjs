@@ -448,10 +448,27 @@ const performLogin = async ({
   password,
   waitMs,
 }) => {
-  await page.goto(`${baseUrl}${loginPath}`, {
-    waitUntil: 'networkidle',
-    timeout: 60000,
-  });
+  try {
+    await page.goto(`${baseUrl}${loginPath}`, {
+      waitUntil: 'networkidle',
+      timeout: 60000,
+    });
+  } catch (loginNavigationError) {
+    const loginMessage =
+      loginNavigationError?.message || String(loginNavigationError);
+    const shouldFallbackToDomReady =
+      /waiting until "networkidle"/i.test(loginMessage) ||
+      /Timeout\s*\d+ms exceeded/i.test(loginMessage);
+
+    if (!shouldFallbackToDomReady) {
+      throw loginNavigationError;
+    }
+
+    await page.goto(`${baseUrl}${loginPath}`, {
+      waitUntil: 'domcontentloaded',
+      timeout: 60000,
+    });
+  }
 
   const normalizedLoginPath = String(loginPath || '/login').split('?')[0] || '/login';
   const landingPath = new URL(page.url()).pathname;

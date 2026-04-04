@@ -22,6 +22,10 @@ import com.kelmah.mobile.features.notifications.presentation.NotificationsViewMo
 import com.kelmah.mobile.features.notifications.presentation.NotificationsScreen
 import com.kelmah.mobile.features.profile.presentation.ProfileScreen
 
+private val NAVIGATION_OBJECT_ID_REGEX = Regex("^[0-9a-fA-F]{24}$")
+
+private fun isValidNavigationEntityId(value: String): Boolean = NAVIGATION_OBJECT_ID_REGEX.matches(value)
+
 @Composable
 fun KelmahNavHost(
     navController: NavHostController,
@@ -35,18 +39,16 @@ fun KelmahNavHost(
 ) {
     val currentRole = currentUser.kelmahUserRole
 
-    LaunchedEffect(currentUser?.resolvedId, pendingDeepLinkUrl) {
-        if (currentUser == null || pendingDeepLinkUrl.isNullOrBlank()) return@LaunchedEffect
-
-        val route = resolveKelmahDeepLink(pendingDeepLinkUrl)
-        if (route != null) {
+    PendingDeepLinkEffect(
+        currentUserId = currentUser?.resolvedId,
+        pendingDeepLinkUrl = pendingDeepLinkUrl,
+        onNavigate = { route ->
             navController.navigate(route) {
                 launchSingleTop = true
             }
-            onDeepLinkConsumed(pendingDeepLinkUrl)
-        }
-        // Do not consume unresolvable deep links -- leave them pending for retry
-    }
+        },
+        onDeepLinkConsumed = onDeepLinkConsumed,
+    )
 
     NavHost(
         navController = navController,
@@ -64,11 +66,7 @@ fun KelmahNavHost(
                 onOpenJob = { jobId -> navController.navigate(KelmahDestination.jobDetail(jobId)) },
                 onOpenConversation = { conversationId -> navController.navigate(KelmahDestination.messages(conversationId)) },
                 onOpenNotification = { notification ->
-                    when (val target = notification.actionTarget) {
-                        is NotificationActionTarget.Conversation -> navController.navigate(KelmahDestination.messages(target.conversationId))
-                        is NotificationActionTarget.Job -> navController.navigate(KelmahDestination.jobDetail(target.jobId))
-                        null -> navController.navigate(KelmahDestination.Notifications.route)
-                    }
+                    navigateToNotificationTarget(navController, notification.actionTarget)
                 },
             )
         }
@@ -126,11 +124,7 @@ fun KelmahNavHost(
             NotificationsScreen(
                 viewModel = notificationsViewModel,
                 onOpenNotification = { notification ->
-                    when (val target = notification.actionTarget) {
-                        is NotificationActionTarget.Conversation -> navController.navigate(KelmahDestination.messages(target.conversationId))
-                        is NotificationActionTarget.Job -> navController.navigate(KelmahDestination.jobDetail(target.jobId))
-                        null -> Unit
-                    }
+                    navigateToNotificationTarget(navController, notification.actionTarget)
                 },
             )
         }
@@ -141,6 +135,60 @@ fun KelmahNavHost(
                 onHireNow = { navController.navigate(KelmahDestination.Jobs.route) },
                 onMessageWorker = { navController.navigate(KelmahDestination.Messages.route) },
             )
+        }
+    }
+}
+
+@Composable
+internal fun PendingDeepLinkEffect(
+    currentUserId: String?,
+    pendingDeepLinkUrl: String?,
+    onNavigate: (String) -> Unit,
+    onDeepLinkConsumed: (String) -> Unit,
+) {
+    LaunchedEffect(currentUserId, pendingDeepLinkUrl) {
+        if (currentUserId.isNullOrBlank() || pendingDeepLinkUrl.isNullOrBlank()) return@LaunchedEffect
+
+        val route = resolveKelmahDeepLink(pendingDeepLinkUrl)
+        if (route != null) {
+            onNavigate(route)
+            onDeepLinkConsumed(pendingDeepLinkUrl)
+        }
+        // Do not consume unresolvable deep links -- leave them pending for retry
+    }
+}
+
+private fun navigateToNotificationTarget(
+    navController: NavHostController,
+    target: NotificationActionTarget?,
+) {
+    when (target) {
+        is NotificationActionTarget.Conversation -> {
+            if (isValidNavigationEntityId(target.conversationId)) {
+                navController.navigate(KelmahDestination.messages(target.conversationId)) {
+                    launchSingleTop = true
+                }
+            } else {
+                navController.navigate(KelmahDestination.Notifications.route) {
+                    launchSingleTop = true
+                }
+            }
+        }
+        is NotificationActionTarget.Job -> {
+            if (isValidNavigationEntityId(target.jobId)) {
+                navController.navigate(KelmahDestination.jobDetail(target.jobId)) {
+                    launchSingleTop = true
+                }
+            } else {
+                navController.navigate(KelmahDestination.Notifications.route) {
+                    launchSingleTop = true
+                }
+            }
+        }
+        null -> {
+            navController.navigate(KelmahDestination.Notifications.route) {
+                launchSingleTop = true
+            }
         }
     }
 }

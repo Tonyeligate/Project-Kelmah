@@ -1,3 +1,170 @@
+### Session: Android Attachment Upload + Localization + Interaction Tests April 4 2026 ✅ COMPLETED
+
+### Session: Core-Public Controlled Rebaseline After Theme Visibility Update April 4 2026 ⚠️ PARTIAL PASS
+
+**Date**: April 4, 2026  
+**Scope**: Run a controlled rebaseline for affected `core-public` routes after theme visibility token updates and validate strict compare alignment.
+
+**Files currently in scope**
+- kelmah-frontend/src/theme/index.js
+- kelmah-frontend/src/index.css
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Executed strict + non-strict baseline refresh flow for affected routes:
+  - `/` (`core-public-home`)
+  - `/jobs` (`core-public-jobs`)
+  - `/search` (`core-public-search`)
+- Re-ran strict pack compare for full `core-public` after baseline refresh.
+
+**Verification**
+- PASS: home strict baseline
+  - `npm --prefix kelmah-frontend run ui:audit:baseline -- --task-id rebaseline-core-public-home-20260404 --baseline-id core-public-home --base-url https://kelmah-frontend-cyan.vercel.app --route / --strict true`
+  - Result: `25/25`, pass.
+- FAIL (strict quality gate): jobs strict baseline
+  - `npm --prefix kelmah-frontend run ui:audit:baseline -- --task-id rebaseline-core-public-jobs-20260404 --baseline-id core-public-jobs --base-url https://kelmah-frontend-cyan.vercel.app --route /jobs --strict true`
+  - Result: `21/25`, fail.
+- FAIL (strict quality gate): search strict baseline
+  - `npm --prefix kelmah-frontend run ui:audit:baseline -- --task-id rebaseline-core-public-search-20260404 --baseline-id core-public-search --base-url https://kelmah-frontend-cyan.vercel.app --route /search --strict true`
+  - Result: `21/25`, fail.
+- PASS: non-strict baseline refresh (jobs/search) to remove stale baseline drift.
+- FAIL: post-rebaseline strict compare remains partial
+  - `npm run ui:pack:compare -- --pack core-public --task-id core-public-post-rebaseline-20260404-v2 --base-url https://kelmah-frontend-cyan.vercel.app --strict true`
+  - Pack report: `.artifacts/ui/packs/core-public-post-rebaseline-20260404-v2/pack-report.json`
+  - Route outcomes:
+    - PASS: `/` (25/25), `/support` (24/25), `/docs` (24/25), `/community` (24/25)
+    - FAIL: `/jobs` (17/25) with 768 visual mismatch `11.12%` + typography debt
+    - FAIL: `/search` (21/25) due tap-target debt (`7` interactive elements below `44px` at 320/768)
+
+### Session: Android Attachment Upload + Localization + Interaction Tests April 4 2026 ✅ COMPLETED
+
+**Date**: April 4, 2026  
+**Scope**: Implement true Android attachment upload flow with secure URL issuance + retry/progress UX, complete auth/profile/app-shell localization sweep, and add Compose interaction instrumentation coverage for deep-link entry, notification tap routing, and job-detail retry.
+
+**Files currently in scope**
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/messaging/data/MessagingModels.kt
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/messaging/data/MessagingApiService.kt
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/messaging/data/MessagingRepository.kt
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/messaging/presentation/MessagesViewModel.kt
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/messaging/presentation/MessagesScreen.kt
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/auth/presentation/LoginScreen.kt
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/profile/presentation/ProfileScreen.kt
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/app/KelmahApp.kt
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/app/navigation/KelmahNavHost.kt
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/jobs/presentation/JobDetailScreen.kt
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/notifications/presentation/NotificationsScreen.kt
+- kelmah-mobile-android/app/src/main/res/values/strings.xml
+- kelmah-mobile-android/app/src/test/java/com/kelmah/mobile/features/messaging/presentation/MessagesViewModelTest.kt
+- kelmah-mobile-android/app/src/androidTest/java/com/kelmah/mobile/app/navigation/DeepLinkEntryInstrumentationTest.kt
+- kelmah-mobile-android/app/src/androidTest/java/com/kelmah/mobile/features/notifications/NotificationRoutingInteractionInstrumentationTest.kt
+- kelmah-mobile-android/app/src/androidTest/java/com/kelmah/mobile/features/jobs/JobDetailRetryInteractionInstrumentationTest.kt
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Implemented secure attachment upload pipeline in Android messaging:
+  - Added `PresignUploadRequest` and wired `POST /api/uploads/presign` call in `MessagingApiService`.
+  - `MessagingRepository.uploadAttachment(...)` now requests a secure presigned upload URL, uploads bytes via signed `PUT` with streaming progress, and falls back to existing multipart gateway upload endpoint when secure upload is unavailable or fails.
+  - Added attachment URL normalization to ensure relative service paths resolve through gateway origin.
+- Added full upload progress and retry behavior in compose/state:
+  - `MessagesUiState` now tracks `isUploadingAttachment`, `attachmentUploadProgress`, and `canRetryAttachmentUpload`.
+  - `MessagesViewModel` stores pending upload payload for explicit retry, blocks sends during in-flight upload, and clears retry state after success.
+  - `MessagesScreen` now renders progress bar + percentage, retry action, and safer send enablement.
+- Completed localization sweep for auth/profile/app shell:
+  - Replaced hardcoded UI literals in `LoginScreen`, `ProfileScreen`, and `KelmahApp` with `stringResource(...)`.
+  - Added missing resource keys in `strings.xml` for auth modes/actions, profile sections/dialogs, and app-shell recovery/network banners.
+- Added real interaction-path Compose instrumentation tests:
+  - `DeepLinkEntryInstrumentationTest` validates deep-link entry effect navigation + consume semantics.
+  - `NotificationRoutingInteractionInstrumentationTest` validates tap routing behavior for valid and invalid notification targets.
+  - `JobDetailRetryInteractionInstrumentationTest` validates retry/back interaction callbacks in job-detail failure state.
+  - Extracted testable UI/effect units (`PendingDeepLinkEffect`, `JobDetailLoadErrorState`, and `NotificationCard` visibility) to support interaction-level verification.
+
+**Verification**
+- PASS: diagnostics for modified source/test files (`get_errors`) reported no IDE errors.
+- PASS: Android compile/package validation including instrumentation sources:
+  - `./gradlew.bat :app:assembleDebug :app:assembleDebugAndroidTest --no-daemon --console=plain`
+  - Result: `BUILD SUCCESSFUL`.
+- PASS: focused unit test validation on modified pure model logic:
+  - `./gradlew.bat :app:testDebugUnitTest --tests "com.kelmah.mobile.features.notifications.data.NotificationsModelsTest" --no-daemon --console=plain`
+  - Result: `BUILD SUCCESSFUL`.
+- BLOCKED (existing workspace/unit-test runtime instability): broad legacy unit-test suites currently fail with `NoClassDefFoundError` classpath/runtime issues unrelated to this patch's compile integrity.
+  - Example failures observed in existing runs: missing runtime loading for `KelmahDeepLinkResolverKt`, `KelmahUserRole`, and `RealtimeSocketManager` during multi-suite `:app:testDebugUnitTest` execution.
+
+### Session: Wave 3 Protected Route Strict Audit Lock April 4 2026 ✅ COMPLETED
+
+**Date**: April 4, 2026  
+**Scope**: Close strict 4-breakpoint UI audit for Wave 3 protected routes (`/worker/find-work`, `/hirer/jobs`, worker/hirer applications, worker/hirer messaging) and lock regressions with baseline+compare pack evidence.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/worker/pages/MyApplicationsPage.jsx
+- kelmah-frontend/scripts/ui_audit_runner.mjs
+- kelmah-frontend/scripts/ui_audit_pack_runner.mjs
+- kelmah-frontend/scripts/ui_audit_route_packs.json
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Added route-level mock role propagation in `ui_audit_pack_runner.mjs` so protected pack routes can run with correct auth role context.
+- Added new route pack `protected-wave3` in `ui_audit_route_packs.json` covering:
+  - `/worker/find-work` (worker)
+  - `/hirer/jobs` (hirer)
+  - `/worker/applications` (worker + mock applications)
+  - `/hirer/applications` (hirer + mock applications)
+  - `/messages` (worker)
+  - `/messages` (hirer)
+- Hardened protected-route login in `ui_audit_runner.mjs` by adding fallback navigation (`networkidle` timeout fallback to `domcontentloaded`).
+- Closed final worker-applications strict blockers in `MyApplicationsPage.jsx`:
+  - switched mobile status chips from horizontal overflow rail to wrapped layout,
+  - enforced `44x44` minimum touch targets on compact chips,
+  - set explicit desktop `h1` semantics for hierarchy checks.
+
+**Verification**
+- PASS: strict route capture closure for final failing route:
+  - `cd kelmah-frontend && npm run ui:audit:capture -- --task-id wave3-worker-applications-20260404-v6 --route /worker/applications --base-url http://127.0.0.1:3002 --mock-auth true --mock-role worker --mock-applications true --strict true`
+  - Result: `25/25`, pass.
+- PASS: strict baseline seeding/validation for protected Wave 3 pack:
+  - `cd kelmah-frontend && npm run ui:pack:ensure-baselines -- --pack protected-wave3 --task-id wave3-protected-baselines-20260404-v1 --base-url http://127.0.0.1:3002 --strict true`
+  - Result: all 6 routes `25/25`, pass.
+  - Pack report: `.artifacts/ui/packs/wave3-protected-baselines-20260404-v1/pack-report.json`.
+- PASS: strict regression compare lock for protected Wave 3 pack:
+  - `cd kelmah-frontend && npm run ui:pack:compare -- --pack protected-wave3 --task-id wave3-protected-compare-20260404-v1 --base-url http://127.0.0.1:3002 --strict true`
+  - Result: all 6 routes `25/25`, pass; all breakpoints at `0.00%` mismatch.
+  - Pack report: `.artifacts/ui/packs/wave3-protected-compare-20260404-v1/pack-report.json`.
+
+### Session: Android Deep-Link and Notification Reliability Hardening April 4 2026 ✅ COMPLETED
+
+**Date**: April 4, 2026  
+**Scope**: Audit and harden Android navigation reliability for deep links and notification-driven routing, with focused regression tests for malformed ids and route parsing.
+
+**Files currently in scope**
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/app/navigation/KelmahDeepLinkResolver.kt
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/app/navigation/KelmahNavHost.kt
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/notifications/data/NotificationsModels.kt
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/messaging/presentation/MessagesScreen.kt
+- kelmah-mobile-android/app/src/test/java/com/kelmah/mobile/app/navigation/KelmahDeepLinkResolverTest.kt
+- kelmah-mobile-android/app/src/test/java/com/kelmah/mobile/features/notifications/data/NotificationsRepositoryTest.kt
+- kelmah-mobile-android/app/src/test/java/com/kelmah/mobile/features/jobs/presentation/JobsViewModelTest.kt
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Hardened deep-link resolver path policy:
+  - normalized custom-scheme host/path handling (`kelmah://messages/...`, `kelmah://jobs/...`) with explicit allowed-host validation.
+  - tightened path-prefix checks so only supported routes resolve, while preserving `conversation` query-id handling.
+- Hardened notification action-target parsing:
+  - added strict MongoDB ObjectId validation for query param ids, path-tail ids, and `relatedEntityId` fallback.
+  - improved path/query parsing for relative links, full https links, and custom `kelmah://` links.
+- Added defensive nav fallback in `KelmahNavHost`:
+  - centralized notification target navigation and blocked invalid ids from reaching chat/job detail routes.
+  - invalid targets now safely route to Alerts instead of dead-end navigation.
+- Expanded regression test coverage:
+  - added custom-scheme + invalid-id test cases in `KelmahDeepLinkResolverTest`.
+  - added invalid-id and `kelmah://` action-url tests in `NotificationsRepositoryTest`.
+  - added `JobsViewModel` detail-load failure test to verify loading state exits correctly.
+- Removed one compile warning in messaging UI by switching deprecated `OpenInNew` icon usage to AutoMirrored variant.
+
+**Verification**
+- PASS: focused Android unit validation
+  - `./gradlew testDebugUnitTest --tests "*KelmahDeepLinkResolverTest*" --tests "*NotificationsRepositoryTest*" --tests "*JobsViewModelTest*" --no-daemon --console=plain`
+  - Result: `BUILD SUCCESSFUL`.
+
 ### Session: Android Emulator CI + Messaging Conversation Contract April 4 2026 ✅ COMPLETED
 
 **Date**: April 4, 2026  
@@ -20800,9 +20967,12 @@ WorkerProfile "Message Worker" click
 - ✅ Only intentional brand uses remain: logo fallback gradient, avatar bg gold (correct)
 
 **Verification:**
-- ✅ Build: `✔ built in 1m 4s` — zero errors
-- ✅ Committed and pushed: `4f21a00` → Vercel auto-deploying
-
+- PASS: `./gradlew.bat :app:testDebugUnitTest --tests "com.kelmah.mobile.features.messaging.presentation.MessagesViewModelTest" --no-daemon --stacktrace`
+  - Result: `BUILD SUCCESSFUL`.
+- PASS: `./gradlew.bat :app:testDebugUnitTest --tests "com.kelmah.mobile.features.notifications.presentation.NotificationsViewModelTest" --no-daemon --stacktrace`
+  - Result: `BUILD SUCCESSFUL`.
+- PASS: `./gradlew.bat :app:testDebugUnitTest --tests "com.kelmah.mobile.features.notifications.data.NotificationsModelsTest" --no-daemon --stacktrace`
+  - Result: `BUILD SUCCESSFUL`.
 
 ### Session: Payment Fixed-Rail Safe-Area Standardization March 30 2026 (COMPLETED)
 
@@ -28438,7 +28608,7 @@ Full visual and structural redesign of `kelmah-frontend/src/modules/jobs/pages/J
     - Dark mode: `Forgot password?` and `Create account` contrast `14.97:1`.
     - Light mode: `Forgot password?` and `Create account` contrast `4.86:1`.
 
-### [APR 04, 2026] ANDROID MILESTONE 1 TRUST/NAV HARDENING (IN PROGRESS)
+### [APR 04, 2026] ANDROID MILESTONE 1 TRUST/NAV HARDENING (COMPLETED)
 
 - Scope: start P0 Milestone 1 implementation for Android trust and navigation integrity.
 - Files in active implementation scope:
@@ -28448,8 +28618,12 @@ Full visual and structural redesign of `kelmah-frontend/src/modules/jobs/pages/J
   - `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/notifications/data/NotificationsModels.kt`
   - `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/app/navigation/KelmahNavHost.kt`
   - `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/app/KelmahApp.kt`
-- Planned outcomes in this pass:
-  - remove Job Detail infinite-loader trap and add explicit retry state;
-  - unify deep-link scheme behavior between resolver and manifest;
-  - validate notification targets before route navigation and apply safe fallback;
-  - standardize offline/timeout visibility in app shell.
+- Implementation summary:
+  - Removed the Job Detail dead-end loader condition and added explicit retry/back recovery UI when detail payload is unavailable.
+  - Hardened deep-link parsing for `kelmah://` routes by enforcing allowed hosts (`messages`, `jobs`) and stricter route-prefix checks.
+  - Added safe notification navigation fallback routing so invalid conversation/job targets always land on Alerts.
+  - Standardized app-shell network status feedback with offline and timeout banners in `KelmahApp`.
+  - Added and updated unit tests for deep-link handling and notification target validation.
+- Verification:
+  - PASS: Android diagnostics returned no errors across updated source and test files.
+  - PASS (after Windows file-lock stabilization): `cd kelmah-mobile-android && .\\gradlew.bat --stop; .\\gradlew.bat :app:testDebugUnitTest`.

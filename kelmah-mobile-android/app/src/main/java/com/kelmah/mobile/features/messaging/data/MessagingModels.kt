@@ -18,6 +18,13 @@ data class SendMessageRequest(
 )
 
 @Serializable
+data class PresignUploadRequest(
+    val folder: String,
+    val filename: String,
+    val contentType: String,
+)
+
+@Serializable
 data class MessageAttachment(
     val name: String,
     val fileUrl: String,

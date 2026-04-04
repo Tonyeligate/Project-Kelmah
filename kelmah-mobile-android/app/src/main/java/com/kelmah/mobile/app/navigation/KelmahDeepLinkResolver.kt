@@ -6,12 +6,18 @@ import java.nio.charset.StandardCharsets
 
 /** Only allow kelmah:// and https:// schemes for deep links */
 private val ALLOWED_SCHEMES = setOf("kelmah", "https")
-private val ALLOWED_PATH_PREFIXES = listOf("/messages/", "/jobs/", "/jobs/detail/")
+private val ALLOWED_PATH_PREFIXES = listOf("/messages", "/jobs", "/jobs/detail")
+private val ALLOWED_CUSTOM_SCHEME_HOSTS = setOf("messages", "jobs")
 
 /** MongoDB ObjectId: exactly 24 hex characters */
 private val OBJECT_ID_REGEX = Regex("^[0-9a-fA-F]{24}$")
 
 private fun isValidObjectId(value: String): Boolean = OBJECT_ID_REGEX.matches(value)
+
+private fun isAllowedPath(path: String): Boolean =
+    ALLOWED_PATH_PREFIXES.any { prefix ->
+        path == prefix || path.startsWith("$prefix/")
+    }
 
 internal fun resolveKelmahDeepLink(rawUrl: String): String? {
     val trimmedUrl = rawUrl.trim()
@@ -30,7 +36,7 @@ internal fun resolveKelmahDeepLink(rawUrl: String): String? {
     if (scheme != null && scheme !in ALLOWED_SCHEMES) return null
 
     val path = normalizedDeepLinkPath(uri)
-    if (ALLOWED_PATH_PREFIXES.none { prefix -> path.startsWith(prefix) } && queryParameter(uri.rawQuery, "conversation").isNullOrBlank()) {
+    if (!isAllowedPath(path) && queryParameter(uri.rawQuery, "conversation").isNullOrBlank()) {
         return null
     }
 
@@ -51,8 +57,8 @@ private fun normalizedDeepLinkPath(uri: URI): String {
         return rawPath
     }
 
-    val host = uri.host.orEmpty()
-    if (host.isBlank()) {
+    val host = uri.host?.lowercase().orEmpty()
+    if (host !in ALLOWED_CUSTOM_SCHEME_HOSTS) {
         return rawPath
     }
 

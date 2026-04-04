@@ -111,7 +111,7 @@ class MessagesViewModelTest {
     }
 
     @Test
-    fun sendMessage_withFileAttachment_sendsAttachmentPayloadAndClearsDraft() = runTest {
+    fun sendMessage_withUploadedFileAttachment_sendsAttachmentPayloadAndClearsComposer() = runTest {
         val participant = MessagingParticipant(id = "worker-2", name = "Ama Worker")
         val conversation = ConversationSummary(
             id = "conversation-42",
@@ -120,6 +120,11 @@ class MessagesViewModelTest {
             unreadCount = 0,
             lastMessagePreview = "Morning",
         )
+        val uploadedAttachment = MessageAttachment(
+            name = "scope.pdf",
+            fileUrl = "https://files.kelmah.test/scope.pdf",
+            fileType = "application/pdf",
+        )
         val sentMessage = ThreadMessage(
             id = "message-2",
             conversationId = "conversation-42",
@@ -127,19 +132,22 @@ class MessagesViewModelTest {
             senderName = "You",
             content = "[Attachment]",
             messageType = "file",
-            attachments = listOf(
-                MessageAttachment(
-                    name = "scope.pdf",
-                    fileUrl = "https://files.kelmah.test/scope.pdf",
-                    fileType = "application/pdf",
-                ),
-            ),
+            attachments = listOf(uploadedAttachment),
             createdAt = "2026-04-03T09:05:00Z",
         )
 
         every { messagingRepository.currentUserId() } returns "hirer-1"
         every { realtimeSocketManager.signals } returns MutableSharedFlow<RealtimeSignal>()
         coEvery { messagingRepository.getMessages("conversation-42") } returns ApiResult.Success(emptyList())
+        coEvery {
+            messagingRepository.uploadAttachment(
+                conversationId = "conversation-42",
+                fileName = "scope.pdf",
+                mimeType = "application/pdf",
+                fileBytes = any(),
+                onProgress = any(),
+            )
+        } returns ApiResult.Success(uploadedAttachment)
         coEvery {
             messagingRepository.sendMessage(
                 conversationId = "conversation-42",
@@ -159,19 +167,33 @@ class MessagesViewModelTest {
         )
 
         viewModel.openConversation(conversation)
-        viewModel.updateComposerMode(MessageComposerMode.FILE)
-        viewModel.updateAttachmentName("scope.pdf")
-        viewModel.updateAttachmentUrl("https://files.kelmah.test/scope.pdf")
+        viewModel.uploadAttachment(
+            fileName = "scope.pdf",
+            mimeType = "application/pdf",
+            fileBytes = "mock-file".toByteArray(),
+        )
+        advanceUntilIdle()
+
         viewModel.sendMessage()
         advanceUntilIdle()
 
         val uiState = viewModel.uiState.value
         assertEquals("", uiState.draftMessage)
-        assertEquals("", uiState.attachmentName)
-        assertEquals("", uiState.attachmentUrl)
+        assertNull(uiState.pendingAttachment)
         assertEquals(MessageComposerMode.TEXT, uiState.composerMode)
         assertEquals("Attachment", uiState.selectedConversation?.lastMessagePreview)
         assertEquals(1, uiState.messages.size)
+        assertFalse(uiState.canRetryAttachmentUpload)
+
+        coVerify(exactly = 1) {
+            messagingRepository.uploadAttachment(
+                conversationId = "conversation-42",
+                fileName = "scope.pdf",
+                mimeType = "application/pdf",
+                fileBytes = any(),
+                onProgress = any(),
+            )
+        }
 
         coVerify(exactly = 1) {
             messagingRepository.sendMessage(
@@ -184,7 +206,109 @@ class MessagesViewModelTest {
     }
 
     @Test
-    fun sendMessage_withInvalidAttachmentUrl_setsValidationError() = runTest {
+    fun uploadAttachment_failureEnablesRetryState() = runTest {
+        val participant = MessagingParticipant(id = "worker-2", name = "Ama Worker")
+        val conversation = ConversationSummary(
+            id = "conversation-42",
+            participants = listOf(participant),
+            otherParticipant = participant,
+        )
+
+        every { messagingRepository.currentUserId() } returns "hirer-1"
+        every { realtimeSocketManager.signals } returns MutableSharedFlow<RealtimeSignal>()
+        coEvery { messagingRepository.getMessages("conversation-42") } returns ApiResult.Success(emptyList())
+        coEvery {
+            messagingRepository.uploadAttachment(
+                conversationId = "conversation-42",
+                fileName = "scope.pdf",
+                mimeType = "application/pdf",
+                fileBytes = any(),
+                onProgress = any(),
+            )
+        } returns ApiResult.Error("Upload failed")
+
+        val viewModel = MessagesViewModel(
+            messagingRepository = messagingRepository,
+            realtimeSocketManager = realtimeSocketManager,
+        )
+
+        viewModel.openConversation(conversation)
+        viewModel.uploadAttachment(
+            fileName = "scope.pdf",
+            mimeType = "application/pdf",
+            fileBytes = "mock-file".toByteArray(),
+        )
+        advanceUntilIdle()
+
+        assertFalse(viewModel.uiState.value.isUploadingAttachment)
+        assertTrue(viewModel.uiState.value.canRetryAttachmentUpload)
+        assertEquals("Upload failed", viewModel.uiState.value.errorMessage)
+    }
+
+    @Test
+    fun retryAttachmentUpload_reusesPendingSelectionAndClearsRetryStateOnSuccess() = runTest {
+        val participant = MessagingParticipant(id = "worker-2", name = "Ama Worker")
+        val conversation = ConversationSummary(
+            id = "conversation-42",
+            participants = listOf(participant),
+            otherParticipant = participant,
+        )
+        val uploadedAttachment = MessageAttachment(
+            name = "scope.pdf",
+            fileUrl = "https://files.kelmah.test/scope.pdf",
+            fileType = "application/pdf",
+        )
+
+        every { messagingRepository.currentUserId() } returns "hirer-1"
+        every { realtimeSocketManager.signals } returns MutableSharedFlow<RealtimeSignal>()
+        coEvery { messagingRepository.getMessages("conversation-42") } returns ApiResult.Success(emptyList())
+        coEvery {
+            messagingRepository.uploadAttachment(
+                conversationId = "conversation-42",
+                fileName = "scope.pdf",
+                mimeType = "application/pdf",
+                fileBytes = any(),
+                onProgress = any(),
+            )
+        } returnsMany listOf(
+            ApiResult.Error("Upload failed"),
+            ApiResult.Success(uploadedAttachment),
+        )
+
+        val viewModel = MessagesViewModel(
+            messagingRepository = messagingRepository,
+            realtimeSocketManager = realtimeSocketManager,
+        )
+
+        viewModel.openConversation(conversation)
+        viewModel.uploadAttachment(
+            fileName = "scope.pdf",
+            mimeType = "application/pdf",
+            fileBytes = "mock-file".toByteArray(),
+        )
+        advanceUntilIdle()
+
+        viewModel.retryAttachmentUpload()
+        advanceUntilIdle()
+
+        val uiState = viewModel.uiState.value
+        assertFalse(uiState.canRetryAttachmentUpload)
+        assertEquals(100, uiState.attachmentUploadProgress)
+        assertEquals("scope.pdf", uiState.pendingAttachment?.name)
+
+        coVerify(exactly = 2) {
+            messagingRepository.uploadAttachment(
+                conversationId = "conversation-42",
+                fileName = "scope.pdf",
+                mimeType = "application/pdf",
+                fileBytes = any(),
+                onProgress = any(),
+            )
+        }
+    }
+
+    @Test
+    fun sendMessage_withoutDraftOrAttachment_setsValidationError() = runTest {
         val participant = MessagingParticipant(id = "worker-2", name = "Ama Worker")
         val conversation = ConversationSummary(
             id = "conversation-42",
@@ -202,13 +326,11 @@ class MessagesViewModelTest {
         )
 
         viewModel.openConversation(conversation)
-        viewModel.updateComposerMode(MessageComposerMode.PHOTO)
-        viewModel.updateAttachmentUrl("ftp://bad-link")
         viewModel.sendMessage()
         advanceUntilIdle()
 
         assertEquals(
-            "Attachment link must start with http:// or https://",
+            "Write a message or attach a file first",
             viewModel.uiState.value.errorMessage,
         )
         coVerify(exactly = 0) {

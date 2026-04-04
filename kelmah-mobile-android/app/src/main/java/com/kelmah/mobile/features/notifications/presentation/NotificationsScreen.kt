@@ -59,6 +59,9 @@ fun NotificationsScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbars = remember { SnackbarHostState() }
+    val groupedNotifications = remember(state.notifications) {
+        groupNotifications(state.notifications)
+    }
 
     LaunchedEffect(state.errorMessage) {
         state.errorMessage?.let {
@@ -143,15 +146,25 @@ fun NotificationsScreen(
                 }
 
                 else -> {
-                    LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        items(state.notifications, key = { it.id }) { notification ->
-                            NotificationCard(
-                                notification = notification,
-                                isMutating = state.isMutating,
-                                onMarkRead = { viewModel.markAsRead(notification.id) },
-                                onDelete = { viewModel.deleteNotification(notification.id) },
-                                onOpen = { onOpenNotification(notification) },
-                            )
+                    LazyColumn(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                        items(groupedNotifications, key = { it.key }) { section ->
+                            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                Text(
+                                    text = section.title,
+                                    style = MaterialTheme.typography.titleSmall,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.SemiBold,
+                                )
+                                section.notifications.forEach { notification ->
+                                    NotificationCard(
+                                        notification = notification,
+                                        isMutating = state.isMutating,
+                                        onMarkRead = { viewModel.markAsRead(notification.id) },
+                                        onDelete = { viewModel.deleteNotification(notification.id) },
+                                        onOpen = { onOpenNotification(notification) },
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -161,17 +174,19 @@ fun NotificationsScreen(
 }
 
 @Composable
-private fun NotificationCard(
+internal fun NotificationCard(
     notification: NotificationItem,
     isMutating: Boolean,
     onMarkRead: () -> Unit,
     onDelete: () -> Unit,
     onOpen: () -> Unit,
 ) {
+    val actionTarget = notification.actionTarget
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(enabled = notification.actionTarget != null) {
+            .clickable(enabled = actionTarget != null) {
                 if (!notification.isRead) onMarkRead()
                 onOpen()
             },
@@ -223,31 +238,74 @@ private fun NotificationCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Spacer(modifier = Modifier.weight(1f))
+
+                if (actionTarget != null) {
+                    TextButton(
+                        onClick = {
+                            if (!notification.isRead) onMarkRead()
+                            onOpen()
+                        },
+                        enabled = isMutating.not(),
+                    ) {
+                        Text(notification.actionLabel ?: "Open")
+                    }
+                }
+
                 if (!notification.isRead) {
                     TextButton(onClick = onMarkRead, enabled = isMutating.not()) {
                         Text("Mark as read")
                     }
-                }
-                notification.actionLabel?.let { actionLabel ->
-                    Text(
-                        text = actionLabel,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(end = 8.dp),
-                    )
                 }
                 IconButton(onClick = onDelete, enabled = isMutating.not()) {
                     Icon(Icons.Outlined.DeleteOutline, contentDescription = "Delete alert")
                 }
             }
 
-            if (notification.actionTarget != null) {
+            if (actionTarget != null) {
                 Text(
                     text = "Tap to open alert",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.primary,
                 )
             }
+        }
+    }
+}
+
+private data class NotificationSection(
+    val key: String,
+    val title: String,
+    val notifications: List<NotificationItem>,
+)
+
+private fun groupNotifications(items: List<NotificationItem>): List<NotificationSection> {
+    if (items.isEmpty()) return emptyList()
+
+    val grouped = items.groupBy { notification ->
+        when {
+            notification.priority.equals("high", ignoreCase = true) -> "priority"
+            notification.actionTarget is com.kelmah.mobile.features.notifications.data.NotificationActionTarget.Conversation -> "messages"
+            notification.actionTarget is com.kelmah.mobile.features.notifications.data.NotificationActionTarget.Job -> "jobs"
+            else -> "general"
+        }
+    }
+
+    val orderedKeys = listOf("priority", "messages", "jobs", "general")
+    return orderedKeys.mapNotNull { key ->
+        val notifications = grouped[key].orEmpty()
+        if (notifications.isEmpty()) {
+            null
+        } else {
+            NotificationSection(
+                key = key,
+                title = when (key) {
+                    "priority" -> "Priority"
+                    "messages" -> "Messages"
+                    "jobs" -> "Jobs"
+                    else -> "General"
+                },
+                notifications = notifications,
+            )
         }
     }
 }

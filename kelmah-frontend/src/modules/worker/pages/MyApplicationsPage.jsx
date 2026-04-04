@@ -357,6 +357,7 @@ const MyApplicationsPage = () => {
                 <ArrowBackIcon sx={{ fontSize: 20 }} />
               </IconButton>
               <Typography
+                component="h1"
                 color="primary"
                 sx={{ fontSize: '1.125rem', fontWeight: 'bold' }}
               >
@@ -390,7 +391,14 @@ const MyApplicationsPage = () => {
                     key={item.label}
                     label={`${item.label}: ${item.value}`}
                     size="small"
-                    sx={{ fontWeight: 600 }}
+                    sx={{
+                      fontWeight: 600,
+                      minWidth: 44,
+                      minHeight: 44,
+                      '& .MuiChip-label': {
+                        px: 1,
+                      },
+                    }}
                   />
                 ))}
               </Stack>
@@ -399,10 +407,8 @@ const MyApplicationsPage = () => {
               sx={{
                 display: 'flex',
                 gap: 0.75,
-                overflowX: 'auto',
+                flexWrap: 'wrap',
                 pb: 1.25,
-                scrollbarWidth: 'none',
-                '&::-webkit-scrollbar': { display: 'none' },
               }}
             >
               {[
@@ -422,9 +428,12 @@ const MyApplicationsPage = () => {
                   sx={{
                     fontWeight: 500,
                     fontSize: '0.75rem',
-                    minWidth: 'fit-content',
+                    minWidth: 44,
                     whiteSpace: 'nowrap',
-                    height: 30,
+                    minHeight: 44,
+                    '& .MuiChip-label': {
+                      px: 1,
+                    },
                   }}
                 />
               ))}
@@ -550,7 +559,10 @@ const MyApplicationsPage = () => {
                           sx={{
                             fontSize: '0.65rem',
                             fontWeight: 'bold',
-                            height: 22,
+                            minHeight: 44,
+                            '& .MuiChip-label': {
+                              px: 1,
+                            },
                           }}
                         />
                       </Box>
@@ -567,7 +579,12 @@ const MyApplicationsPage = () => {
                             label={`Rate: ${currencyFormatter.format(application.proposedRate)}`}
                             size="small"
                             variant="outlined"
-                            sx={{ height: 24 }}
+                            sx={{
+                              minHeight: 44,
+                              '& .MuiChip-label': {
+                                px: 1,
+                              },
+                            }}
                           />
                         ) : null}
                         <Chip
@@ -578,7 +595,16 @@ const MyApplicationsPage = () => {
                           }
                           size="small"
                           variant="outlined"
-                          sx={{ height: 24 }}
+                          sx={{
+                            minHeight: 44,
+                            maxWidth: '100%',
+                            '& .MuiChip-label': {
+                              px: 1,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            },
+                          }}
                         />
                       </Stack>
 
@@ -641,7 +667,7 @@ const MyApplicationsPage = () => {
         <Helmet>
           <title>My Applications | Kelmah</title>
         </Helmet>
-        <Typography variant="h4" gutterBottom>
+        <Typography component="h1" variant="h4" gutterBottom>
           My Applications
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>

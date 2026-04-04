@@ -1162,6 +1162,10 @@ function ApplicationManagementPage() {
                   variant={activeTab === 'pending' ? 'filled' : 'outlined'}
                   label={`Pending (${tabCounts.pending})`}
                   onClick={() => handleStatusFilterChange('pending')}
+                  sx={{
+                    minHeight: TOUCH_TARGET_MIN,
+                    '& .MuiChip-label': { px: 1.1 },
+                  }}
                 />
                 <Chip
                   size="small"
@@ -1169,6 +1173,10 @@ function ApplicationManagementPage() {
                   variant={activeTab === 'accepted' ? 'filled' : 'outlined'}
                   label={`Accepted (${tabCounts.accepted})`}
                   onClick={() => handleStatusFilterChange('accepted')}
+                  sx={{
+                    minHeight: TOUCH_TARGET_MIN,
+                    '& .MuiChip-label': { px: 1.1 },
+                  }}
                 />
                 <Chip
                   size="small"
@@ -1176,6 +1184,10 @@ function ApplicationManagementPage() {
                   variant={activeTab === 'rejected' ? 'filled' : 'outlined'}
                   label={`Rejected (${tabCounts.rejected})`}
                   onClick={() => handleStatusFilterChange('rejected')}
+                  sx={{
+                    minHeight: TOUCH_TARGET_MIN,
+                    '& .MuiChip-label': { px: 1.1 },
+                  }}
                 />
               </Box>
 
@@ -1472,8 +1484,8 @@ function ApplicationManagementPage() {
                       onClick={handleResetMacroTelemetry}
                       aria-label="Reset macro telemetry snapshot"
                       sx={{
-                        width: 28,
-                        height: 28,
+                        width: TOUCH_TARGET_MIN,
+                        height: TOUCH_TARGET_MIN,
                         color: 'text.secondary',
                       }}
                     >

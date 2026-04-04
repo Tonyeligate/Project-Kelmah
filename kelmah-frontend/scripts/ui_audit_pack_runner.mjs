@@ -143,6 +143,10 @@ const buildAuditArgs = ({
     args.push('--mock-auth', 'true');
   }
 
+  if (route.mockRole) {
+    args.push('--mock-role', String(route.mockRole));
+  }
+
   if (route.mockApplications) {
     args.push('--mock-applications', 'true');
   }

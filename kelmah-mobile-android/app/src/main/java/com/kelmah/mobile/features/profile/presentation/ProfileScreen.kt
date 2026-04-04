@@ -65,12 +65,12 @@ fun ProfileScreen(
         AlertDialog(
             onDismissRequest = { showLogoutDialog = false },
             title = { Text(stringResource(id = R.string.profile_sign_out)) },
-            text = { Text("You will be signed out of this device.") },
+            text = { Text(stringResource(id = R.string.profile_sign_out_this_device)) },
             confirmButton = {
                 TextButton(onClick = { showLogoutDialog = false; onLogout() }) { Text(stringResource(id = R.string.profile_sign_out)) }
             },
             dismissButton = {
-                TextButton(onClick = { showLogoutDialog = false }) { Text("Cancel") }
+                TextButton(onClick = { showLogoutDialog = false }) { Text(stringResource(id = R.string.common_cancel)) }
             },
         )
     }
@@ -78,12 +78,12 @@ fun ProfileScreen(
         AlertDialog(
             onDismissRequest = { showLogoutAllDialog = false },
             title = { Text(stringResource(id = R.string.profile_sign_out_everywhere)) },
-            text = { Text("You will be signed out everywhere.") },
+            text = { Text(stringResource(id = R.string.profile_sign_out_everywhere_message)) },
             confirmButton = {
                 TextButton(onClick = { showLogoutAllDialog = false; onLogoutAll() }) { Text(stringResource(id = R.string.profile_sign_out_all)) }
             },
             dismissButton = {
-                TextButton(onClick = { showLogoutAllDialog = false }) { Text("Cancel") }
+                TextButton(onClick = { showLogoutAllDialog = false }) { Text(stringResource(id = R.string.common_cancel)) }
             },
         )
     }
@@ -102,7 +102,11 @@ fun ProfileScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         item {
-            Text("Profile", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+            Text(
+                stringResource(id = R.string.profile_title),
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+            )
         }
         item {
             Card(
@@ -115,11 +119,24 @@ fun ProfileScreen(
                     modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    Text(uiState.currentUser?.displayName ?: "Kelmah User", style = MaterialTheme.typography.titleLarge)
-                    Text(uiState.currentUser?.email ?: "No email added")
-                    Text("Role: ${(uiState.currentUser?.role ?: "worker").replaceFirstChar { it.uppercase() }}")
                     Text(
-                        if (uiState.currentUser?.isEmailVerified == true) "Email verified" else "Email not verified yet",
+                        uiState.currentUser?.displayName
+                            ?: stringResource(id = R.string.profile_default_user_name),
+                        style = MaterialTheme.typography.titleLarge,
+                    )
+                    Text(uiState.currentUser?.email ?: stringResource(id = R.string.profile_no_email_added))
+                    Text(
+                        stringResource(
+                            id = R.string.profile_role_label,
+                            (uiState.currentUser?.role ?: "worker").replaceFirstChar { it.uppercase() },
+                        ),
+                    )
+                    Text(
+                        if (uiState.currentUser?.isEmailVerified == true) {
+                            stringResource(id = R.string.profile_email_verified)
+                        } else {
+                            stringResource(id = R.string.profile_email_not_verified)
+                        },
                         color = if (uiState.currentUser?.isEmailVerified == true) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
                     )
                 }
@@ -137,9 +154,9 @@ fun ProfileScreen(
                         modifier = Modifier.padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
-                        Text("Your work details", style = MaterialTheme.typography.titleLarge)
+                        Text(stringResource(id = R.string.profile_work_details_title), style = MaterialTheme.typography.titleLarge)
                         Text(
-                            "These details help Kelmah show you better jobs.",
+                            stringResource(id = R.string.profile_work_details_subtitle),
                             style = MaterialTheme.typography.bodyMedium,
                         )
 
@@ -150,9 +167,13 @@ fun ProfileScreen(
                                 }
                             }
                             uiState.profileErrorMessage != null -> {
-                                Text(uiState.profileErrorMessage ?: "We could not load your work details.", color = MaterialTheme.colorScheme.error)
+                                Text(
+                                    uiState.profileErrorMessage
+                                        ?: stringResource(id = R.string.profile_work_details_error),
+                                    color = MaterialTheme.colorScheme.error,
+                                )
                                 Button(onClick = viewModel::refreshWorkerProfileSignals) {
-                                    Text("Try again")
+                                    Text(stringResource(id = R.string.common_try_again))
                                 }
                             }
                             uiState.profileSnapshot != null -> {
@@ -165,7 +186,7 @@ fun ProfileScreen(
                                 }
                             }
                             else -> {
-                                Text("Your work details will show here.")
+                                Text(stringResource(id = R.string.profile_work_details_placeholder))
                             }
                         }
                     }
@@ -183,8 +204,8 @@ fun ProfileScreen(
                     modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    Text("Password", style = MaterialTheme.typography.titleLarge)
-                    Text("Change your password.")
+                    Text(stringResource(id = R.string.profile_password_title), style = MaterialTheme.typography.titleLarge)
+                    Text(stringResource(id = R.string.profile_password_subtitle))
 
                     uiState.infoMessage?.let { Text(it, color = MaterialTheme.colorScheme.primary) }
                     uiState.errorMessage?.let { Text(it, color = MaterialTheme.colorScheme.error) }
@@ -193,7 +214,7 @@ fun ProfileScreen(
                         value = uiState.currentPassword,
                         onValueChange = viewModel::onCurrentPasswordChanged,
                         modifier = Modifier.fillMaxWidth(),
-                        label = { Text("Current password") },
+                        label = { Text(stringResource(id = R.string.profile_current_password)) },
                         visualTransformation = PasswordVisualTransformation(),
                         singleLine = true,
                     )
@@ -201,7 +222,7 @@ fun ProfileScreen(
                         value = uiState.newPassword,
                         onValueChange = viewModel::onNewPasswordChanged,
                         modifier = Modifier.fillMaxWidth(),
-                        label = { Text("New password") },
+                        label = { Text(stringResource(id = R.string.profile_new_password)) },
                         visualTransformation = PasswordVisualTransformation(),
                         singleLine = true,
                     )
@@ -209,7 +230,7 @@ fun ProfileScreen(
                         value = uiState.confirmPassword,
                         onValueChange = viewModel::onConfirmPasswordChanged,
                         modifier = Modifier.fillMaxWidth(),
-                        label = { Text("Confirm new password") },
+                        label = { Text(stringResource(id = R.string.profile_confirm_new_password)) },
                         visualTransformation = PasswordVisualTransformation(),
                         singleLine = true,
                     )
@@ -222,7 +243,7 @@ fun ProfileScreen(
                         if (uiState.isSaving) {
                             CircularProgressIndicator(strokeWidth = 2.dp)
                         } else {
-                            Text("Change password")
+                            Text(stringResource(id = R.string.profile_change_password))
                         }
                     }
                 }
@@ -263,7 +284,7 @@ private fun WorkerProfileSignalsContent(
     var showFullBio by remember { mutableStateOf(false) }
 
     val bio = profile.bio.ifBlank {
-        "I deliver clean finishing, dependable timelines, and quality craft for every project."
+        stringResource(id = R.string.profile_default_bio)
     }
     val canTruncateBio = bio.length > 160
     val visibleBio = if (canTruncateBio && !showFullBio) {
@@ -315,7 +336,7 @@ private fun WorkerProfileSignalsContent(
                             fontWeight = FontWeight.Bold,
                         )
                         Text(
-                            profile.profession.ifBlank { "Professional Worker" },
+                            profile.profession.ifBlank { stringResource(id = R.string.profile_profession_fallback) },
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -328,7 +349,7 @@ private fun WorkerProfileSignalsContent(
                                     reviewHighlights.size,
                                 )
                             } else {
-                                "No ratings yet"
+                                stringResource(id = R.string.profile_no_ratings)
                             },
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -372,11 +393,22 @@ private fun WorkerProfileSignalsContent(
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)),
         ) {
             Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("About Me", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
+                Text(
+                    stringResource(id = R.string.profile_about_me),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.SemiBold,
+                )
                 Text(visibleBio, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
                 if (canTruncateBio) {
                     TextButton(onClick = { showFullBio = !showFullBio }) {
-                        Text(if (showFullBio) "Show less" else "Read more")
+                        Text(
+                            if (showFullBio) {
+                                stringResource(id = R.string.profile_show_less)
+                            } else {
+                                stringResource(id = R.string.profile_read_more)
+                            },
+                        )
                     }
                 }
             }
@@ -389,10 +421,15 @@ private fun WorkerProfileSignalsContent(
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)),
         ) {
             Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("Portfolio", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
+                Text(
+                    stringResource(id = R.string.profile_portfolio),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.SemiBold,
+                )
                 if (snapshot.portfolio.items.isEmpty()) {
                     Text(
-                        "Portfolio samples will appear here once added.",
+                        stringResource(id = R.string.profile_portfolio_placeholder),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -442,17 +479,26 @@ private fun WorkerProfileSignalsContent(
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)),
         ) {
             Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("Reviews", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
+                Text(
+                    stringResource(id = R.string.profile_reviews),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.SemiBold,
+                )
                 if (reviewHighlights.isEmpty()) {
                     Text(
-                        "Client review highlights will appear here.",
+                        stringResource(id = R.string.profile_reviews_placeholder),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 } else {
                     reviewHighlights.forEach { project ->
                         Text(
-                            "• ${project.title}: ${String.format(java.util.Locale.US, "%.1f", project.clientRating ?: 0.0)} stars",
+                            stringResource(
+                                id = R.string.profile_review_highlight,
+                                project.title,
+                                String.format(java.util.Locale.US, "%.1f", project.clientRating ?: 0.0),
+                            ),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurface,
                         )
@@ -475,7 +521,7 @@ private fun WorkerProfileSignalsContent(
                 ),
                 shape = RoundedCornerShape(24.dp)
             ) {
-                Text("FIND JOBS", fontWeight = FontWeight.Bold)
+                Text(stringResource(id = R.string.profile_find_jobs), fontWeight = FontWeight.Bold)
             }
             OutlinedButton(
                 onClick = { onMessageWorker?.invoke() },
@@ -487,14 +533,23 @@ private fun WorkerProfileSignalsContent(
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
                 shape = RoundedCornerShape(24.dp)
             ) {
-                Text("OPEN MESSAGES", fontWeight = FontWeight.Bold)
+                Text(stringResource(id = R.string.profile_open_messages), fontWeight = FontWeight.Bold)
             }
         }
 
-        ProfileFact("Location", profile.location.ifBlank { "Add your work area" })
         ProfileFact(
-            "Rate",
-            profile.hourlyRate?.let { "${profile.currency} ${formatRate(it)}/hr" } ?: "Add your rate",
+            stringResource(id = R.string.profile_location),
+            profile.location.ifBlank { stringResource(id = R.string.profile_add_work_area) },
+        )
+        ProfileFact(
+            stringResource(id = R.string.profile_rate),
+            profile.hourlyRate?.let {
+                stringResource(
+                    id = R.string.profile_rate_value,
+                    profile.currency,
+                    formatRate(it),
+                )
+            } ?: stringResource(id = R.string.profile_add_rate),
         )
 
         if (snapshot.partialWarnings.isNotEmpty()) {

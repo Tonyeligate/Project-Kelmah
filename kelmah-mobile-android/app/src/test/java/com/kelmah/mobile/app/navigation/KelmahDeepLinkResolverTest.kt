@@ -27,6 +27,34 @@ class KelmahDeepLinkResolverTest {
     }
 
     @Test
+    fun resolvesConversationFromKelmahSchemeHostPath() {
+        val route = resolveKelmahDeepLink("kelmah://messages/69aa0b13e0a41572beebe499")
+
+        assertEquals("messages?conversationId=69aa0b13e0a41572beebe499", route)
+    }
+
+    @Test
+    fun resolvesJobDetailFromKelmahSchemeHostPath() {
+        val route = resolveKelmahDeepLink("kelmah://jobs/detail/69a73f7c2ea54264fff6275e")
+
+        assertEquals("jobs/detail/69a73f7c2ea54264fff6275e", route)
+    }
+
+    @Test
+    fun returnsNullForInvalidConversationId() {
+        val route = resolveKelmahDeepLink("kelmah://messages/not-a-valid-objectid")
+
+        assertNull(route)
+    }
+
+    @Test
+    fun returnsNullForUnsupportedKelmahSchemeHost() {
+        val route = resolveKelmahDeepLink("kelmah://profile/69aa0b13e0a41572beebe499")
+
+        assertNull(route)
+    }
+
+    @Test
     fun returnsNullForUnsupportedPath() {
         val route = resolveKelmahDeepLink("https://kelmah-api-gateway-gf3g.onrender.com/profile")
 

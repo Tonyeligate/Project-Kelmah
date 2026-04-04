@@ -1,6 +1,7 @@
 package com.kelmah.mobile.features.notifications.data
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -45,5 +46,48 @@ class NotificationsRepositoryTest {
 
         assertTrue(target is NotificationActionTarget.Conversation)
         assertEquals("69aa0b13e0a41572beebe499", (target as NotificationActionTarget.Conversation).conversationId)
+    }
+
+    @Test
+    fun actionTarget_parsesConversationIdFromKelmahSchemePath() {
+        val notification = NotificationItem(
+            id = "notification-2",
+            type = "message_received",
+            title = "Message",
+            content = "",
+            actionUrl = "kelmah://messages/69aa0b13e0a41572beebe499",
+        )
+
+        val target = notification.actionTarget
+
+        assertTrue(target is NotificationActionTarget.Conversation)
+        assertEquals("69aa0b13e0a41572beebe499", (target as NotificationActionTarget.Conversation).conversationId)
+    }
+
+    @Test
+    fun actionTarget_returnsNullForInvalidIdInPath() {
+        val notification = NotificationItem(
+            id = "notification-3",
+            type = "job_offer",
+            title = "Job",
+            content = "",
+            actionUrl = "/jobs/not-valid-id",
+        )
+
+        assertNull(notification.actionTarget)
+    }
+
+    @Test
+    fun actionTarget_returnsNullForInvalidRelatedEntityId() {
+        val notification = NotificationItem(
+            id = "notification-4",
+            type = "job_offer",
+            title = "Job",
+            content = "",
+            relatedEntityType = "job",
+            relatedEntityId = "bad-id",
+        )
+
+        assertNull(notification.actionTarget)
     }
 }

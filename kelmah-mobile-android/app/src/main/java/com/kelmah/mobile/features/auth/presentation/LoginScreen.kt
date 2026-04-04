@@ -31,10 +31,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kelmah.mobile.R
 
 @Composable
 fun LoginScreen(
@@ -56,11 +58,11 @@ fun LoginScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             item {
-                Text(text = "Kelmah", style = MaterialTheme.typography.displaySmall)
+                Text(text = stringResource(id = R.string.app_name), style = MaterialTheme.typography.displaySmall)
             }
             item {
                 Text(
-                    text = "Find workers. Find jobs.",
+                    text = stringResource(id = R.string.auth_subtitle),
                     style = MaterialTheme.typography.bodyLarge,
                 )
             }
@@ -70,7 +72,17 @@ fun LoginScreen(
                         FilterChip(
                             selected = uiState.mode == mode,
                             onClick = { viewModel.switchMode(mode) },
-                            label = { Text(mode.label) },
+                            label = {
+                                Text(
+                                    when (mode) {
+                                        AuthMode.LOGIN -> stringResource(id = R.string.auth_mode_login)
+                                        AuthMode.REGISTER -> stringResource(id = R.string.auth_mode_register)
+                                        AuthMode.FORGOT_PASSWORD -> stringResource(id = R.string.auth_mode_forgot)
+                                        AuthMode.RESET_PASSWORD -> stringResource(id = R.string.auth_mode_reset)
+                                        AuthMode.VERIFY_EMAIL -> stringResource(id = R.string.auth_mode_verify)
+                                    },
+                                )
+                            },
                             leadingIcon = {
                                 Icon(
                                     imageVector = when (mode) {
@@ -116,7 +128,7 @@ fun LoginScreen(
                     OutlinedTextField(
                         value = uiState.firstName,
                         onValueChange = viewModel::onFirstNameChanged,
-                        label = { Text("First name") },
+                        label = { Text(stringResource(id = R.string.auth_first_name)) },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
                     )
@@ -125,7 +137,7 @@ fun LoginScreen(
                     OutlinedTextField(
                         value = uiState.lastName,
                         onValueChange = viewModel::onLastNameChanged,
-                        label = { Text("Last name") },
+                        label = { Text(stringResource(id = R.string.auth_last_name)) },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
                     )
@@ -137,7 +149,7 @@ fun LoginScreen(
                     OutlinedTextField(
                         value = uiState.email,
                         onValueChange = viewModel::onEmailChanged,
-                        label = { Text("Email address") },
+                        label = { Text(stringResource(id = R.string.auth_email_address)) },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
                     )
@@ -149,14 +161,17 @@ fun LoginScreen(
                     OutlinedTextField(
                         value = uiState.phone,
                         onValueChange = viewModel::onPhoneChanged,
-                        label = { Text("Phone (optional)") },
+                        label = { Text(stringResource(id = R.string.auth_phone_optional)) },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
                     )
                 }
                 item {
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        listOf("worker" to "Worker", "hirer" to "Hirer").forEach { (value, label) ->
+                        listOf(
+                            "worker" to stringResource(id = R.string.auth_role_worker),
+                            "hirer" to stringResource(id = R.string.auth_role_hirer),
+                        ).forEach { (value, label) ->
                             FilterChip(
                                 selected = uiState.role == value,
                                 onClick = { viewModel.onRoleChanged(value) },
@@ -172,7 +187,15 @@ fun LoginScreen(
                     OutlinedTextField(
                         value = uiState.token,
                         onValueChange = viewModel::onTokenChanged,
-                        label = { Text(if (uiState.mode == AuthMode.RESET_PASSWORD) "Reset code" else "Verification code") },
+                        label = {
+                            Text(
+                                if (uiState.mode == AuthMode.RESET_PASSWORD) {
+                                    stringResource(id = R.string.auth_reset_code)
+                                } else {
+                                    stringResource(id = R.string.auth_verification_code)
+                                },
+                            )
+                        },
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
@@ -183,7 +206,7 @@ fun LoginScreen(
                     OutlinedTextField(
                         value = uiState.password,
                         onValueChange = viewModel::onPasswordChanged,
-                        label = { Text("Password") },
+                        label = { Text(stringResource(id = R.string.auth_password)) },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
                         visualTransformation = PasswordVisualTransformation(),
@@ -196,7 +219,7 @@ fun LoginScreen(
                     OutlinedTextField(
                         value = uiState.confirmPassword,
                         onValueChange = viewModel::onConfirmPasswordChanged,
-                        label = { Text("Confirm password") },
+                        label = { Text(stringResource(id = R.string.auth_confirm_password)) },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
                         visualTransformation = PasswordVisualTransformation(),
@@ -215,11 +238,11 @@ fun LoginScreen(
                     } else {
                         Text(
                             when (uiState.mode) {
-                                AuthMode.LOGIN -> "Sign in"
-                                AuthMode.REGISTER -> "Create account"
-                                AuthMode.FORGOT_PASSWORD -> "Send reset link"
-                                AuthMode.RESET_PASSWORD -> "Reset password"
-                                AuthMode.VERIFY_EMAIL -> "Verify email"
+                                AuthMode.LOGIN -> stringResource(id = R.string.auth_action_sign_in)
+                                AuthMode.REGISTER -> stringResource(id = R.string.auth_action_create_account)
+                                AuthMode.FORGOT_PASSWORD -> stringResource(id = R.string.auth_action_send_reset_link)
+                                AuthMode.RESET_PASSWORD -> stringResource(id = R.string.auth_action_reset_password)
+                                AuthMode.VERIFY_EMAIL -> stringResource(id = R.string.auth_action_verify_email)
                             },
                         )
                     }
@@ -230,22 +253,22 @@ fun LoginScreen(
                 if (uiState.mode == AuthMode.LOGIN || uiState.mode == AuthMode.REGISTER) {
                     Column {
                         TextButton(onClick = { viewModel.switchMode(AuthMode.FORGOT_PASSWORD) }) {
-                            Text("Forgot password?")
+                            Text(stringResource(id = R.string.auth_forgot_password_cta))
                         }
                         TextButton(onClick = { viewModel.switchMode(AuthMode.VERIFY_EMAIL) }) {
-                            Text("Have a verification code?")
+                            Text(stringResource(id = R.string.auth_have_verification_code_cta))
                         }
                         TextButton(
                             onClick = viewModel::resendVerificationEmail,
                             enabled = !uiState.isLoading && uiState.email.isNotBlank(),
                         ) {
-                            Text("Resend verification email")
+                            Text(stringResource(id = R.string.auth_resend_verification_email))
                         }
                     }
                 } else {
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         TextButton(onClick = { viewModel.switchMode(AuthMode.LOGIN) }) {
-                            Text("Back to sign in")
+                            Text(stringResource(id = R.string.auth_back_to_sign_in))
                         }
                         if (uiState.mode == AuthMode.FORGOT_PASSWORD) {
                             Spacer(modifier = Modifier.width(8.dp))
@@ -253,7 +276,7 @@ fun LoginScreen(
                                 onClick = viewModel::resendVerificationEmail,
                                 enabled = !uiState.isLoading && uiState.email.isNotBlank(),
                             ) {
-                                Text("Resend email")
+                                Text(stringResource(id = R.string.auth_resend_email))
                             }
                         }
                     }

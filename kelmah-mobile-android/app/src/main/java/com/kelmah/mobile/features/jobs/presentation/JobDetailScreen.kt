@@ -40,10 +40,12 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kelmah.mobile.R
 import com.kelmah.mobile.core.utils.RelativeTimeFormatter
 import com.kelmah.mobile.core.session.KelmahUserRole
 import java.util.concurrent.CancellationException
@@ -106,34 +108,15 @@ fun JobDetailScreen(
         }
 
         if (job == null) {
-            Column(
+            JobDetailLoadErrorState(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
                     .padding(horizontal = 20.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(
-                    text = "Unable to open this job",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.SemiBold,
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = uiState.errorMessage ?: "We could not open this job. Check your connection and try again.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Spacer(modifier = Modifier.height(18.dp))
-                Button(onClick = { viewModel.loadJobDetail(jobId) }, modifier = Modifier.fillMaxWidth()) {
-                    Text("Retry")
-                }
-                Spacer(modifier = Modifier.height(10.dp))
-                OutlinedButton(onClick = onBack, modifier = Modifier.fillMaxWidth()) {
-                    Text("Back")
-                }
-            }
+                message = uiState.errorMessage,
+                onRetry = { viewModel.loadJobDetail(jobId) },
+                onBack = onBack,
+            )
             return@Scaffold
         }
 
@@ -264,6 +247,40 @@ fun JobDetailScreen(
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+internal fun JobDetailLoadErrorState(
+    modifier: Modifier = Modifier,
+    message: String?,
+    onRetry: () -> Unit,
+    onBack: () -> Unit,
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(
+            text = stringResource(id = R.string.jobs_detail_load_error_title),
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.SemiBold,
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = message ?: stringResource(id = R.string.jobs_detail_load_error_message),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(modifier = Modifier.height(18.dp))
+        Button(onClick = onRetry, modifier = Modifier.fillMaxWidth()) {
+            Text(stringResource(id = R.string.common_try_again))
+        }
+        Spacer(modifier = Modifier.height(10.dp))
+        OutlinedButton(onClick = onBack, modifier = Modifier.fillMaxWidth()) {
+            Text(stringResource(id = R.string.common_back))
         }
     }
 }

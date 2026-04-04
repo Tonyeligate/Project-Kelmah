@@ -53,6 +53,54 @@
           "mockApplications": true
         }
       ]
+    },
+    "protected-wave3": {
+      "description": "Wave 3 protected flows for jobs, applications, and messaging across worker and hirer roles.",
+      "routes": [
+        {
+          "id": "worker-find-work",
+          "path": "/worker/find-work",
+          "baselineId": "protected-wave3-worker-find-work",
+          "mockAuth": true,
+          "mockRole": "worker"
+        },
+        {
+          "id": "hirer-jobs",
+          "path": "/hirer/jobs",
+          "baselineId": "protected-wave3-hirer-jobs",
+          "mockAuth": true,
+          "mockRole": "hirer"
+        },
+        {
+          "id": "worker-applications",
+          "path": "/worker/applications",
+          "baselineId": "protected-wave3-worker-applications",
+          "mockAuth": true,
+          "mockRole": "worker"
+        },
+        {
+          "id": "hirer-applications",
+          "path": "/hirer/applications",
+          "baselineId": "protected-wave3-hirer-applications",
+          "mockAuth": true,
+          "mockRole": "hirer",
+          "mockApplications": true
+        },
+        {
+          "id": "worker-messages",
+          "path": "/messages",
+          "baselineId": "protected-wave3-worker-messages",
+          "mockAuth": true,
+          "mockRole": "worker"
+        },
+        {
+          "id": "hirer-messages",
+          "path": "/messages",
+          "baselineId": "protected-wave3-hirer-messages",
+          "mockAuth": true,
+          "mockRole": "hirer"
+        }
+      ]
     }
   }
 }
