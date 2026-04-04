@@ -46,6 +46,19 @@
                     android:host="${kelmahGatewayHost}"
                     android:pathPrefix="/jobs" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:scheme="kelmah"
+                    android:host="messages" />
+                <data
+                    android:scheme="kelmah"
+                    android:host="jobs" />
+            </intent-filter>
         </activity>
     </application>
 

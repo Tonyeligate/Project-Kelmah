@@ -316,6 +316,20 @@ a {
   color: inherit;
 }
 
+a[href]:not(.MuiLink-root):not(.MuiButtonBase-root) {
+  color: var(--k-gold-active);
+}
+
+a[href]:not(.MuiLink-root):not(.MuiButtonBase-root):hover {
+  color: var(--k-gold-dark);
+  text-decoration: underline;
+  text-underline-offset: 0.14em;
+}
+
+a[href]:not(.MuiLink-root):not(.MuiButtonBase-root):visited {
+  color: var(--k-gold-active);
+}
+
 /* Layout utilities - Minimal, let Material-UI handle most layout */
 .container {
   max-width: 1200px;

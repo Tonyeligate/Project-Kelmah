@@ -17,10 +17,6 @@ internal fun resolveKelmahDeepLink(rawUrl: String): String? {
     val trimmedUrl = rawUrl.trim()
     if (trimmedUrl.isEmpty()) return null
 
-    if (trimmedUrl.startsWith("/") && ALLOWED_PATH_PREFIXES.none { prefix -> trimmedUrl.startsWith(prefix) }) {
-        return null
-    }
-
     val normalizedUrl = if (trimmedUrl.startsWith("/")) {
         "https://placeholder.local$trimmedUrl"
     } else {
@@ -33,7 +29,11 @@ internal fun resolveKelmahDeepLink(rawUrl: String): String? {
     val scheme = uri.scheme?.lowercase()
     if (scheme != null && scheme !in ALLOWED_SCHEMES) return null
 
-    val path = uri.path.orEmpty()
+    val path = normalizedDeepLinkPath(uri)
+    if (ALLOWED_PATH_PREFIXES.none { prefix -> path.startsWith(prefix) } && queryParameter(uri.rawQuery, "conversation").isNullOrBlank()) {
+        return null
+    }
+
     val conversationId = queryParameter(uri.rawQuery, "conversation")
 
     return when {
@@ -43,6 +43,21 @@ internal fun resolveKelmahDeepLink(rawUrl: String): String? {
         path.startsWith("/jobs/") -> path.substringAfterLast('/').takeIf { it.isNotBlank() && isValidObjectId(it) }?.let(KelmahDestination::jobDetail)
         else -> null
     }
+}
+
+private fun normalizedDeepLinkPath(uri: URI): String {
+    val rawPath = uri.path.orEmpty()
+    if (uri.scheme?.lowercase() != "kelmah") {
+        return rawPath
+    }
+
+    val host = uri.host.orEmpty()
+    if (host.isBlank()) {
+        return rawPath
+    }
+
+    val pathTail = rawPath.takeIf { it != "/" }.orEmpty()
+    return "/$host$pathTail"
 }
 
 private fun queryParameter(rawQuery: String?, key: String): String? {

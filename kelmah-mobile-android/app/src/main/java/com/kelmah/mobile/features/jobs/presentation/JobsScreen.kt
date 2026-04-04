@@ -44,6 +44,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -51,6 +52,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kelmah.mobile.R
 import com.kelmah.mobile.core.utils.RelativeTimeFormatter
 import com.kelmah.mobile.core.session.KelmahUserRole
 import com.kelmah.mobile.features.jobs.data.JobSummary
@@ -73,18 +75,26 @@ fun JobsScreen(
         isWorker -> uiState.discoverJobs
         else -> uiState.hirerJobs
     }
-    val screenTitle = if (isWorker) "Find Work" else "Your Jobs"
-    val discoverLabel = if (isWorker) "Find" else "Jobs"
-    val savedLabel = if (isWorker) "Saved" else "Saved"
-    val emptySavedDescription = if (isWorker) {
-        "Jobs you save will stay here."
+    val screenTitle = if (isWorker) {
+        stringResource(id = R.string.jobs_title_find_work)
     } else {
-        "Saved jobs stay here so you can reopen them fast."
+        stringResource(id = R.string.jobs_title_your_jobs)
+    }
+    val discoverLabel = if (isWorker) {
+        stringResource(id = R.string.jobs_feed_find)
+    } else {
+        stringResource(id = R.string.jobs_feed_jobs)
+    }
+    val savedLabel = stringResource(id = R.string.jobs_feed_saved)
+    val emptySavedDescription = if (isWorker) {
+        stringResource(id = R.string.jobs_empty_saved_worker_desc)
+    } else {
+        stringResource(id = R.string.jobs_empty_saved_hirer_desc)
     }
     val emptyDiscoverDescription = if (isWorker) {
-        "Try fewer filters or tap refresh."
+        stringResource(id = R.string.jobs_empty_discover_worker_desc)
     } else {
-        "Your newest hiring posts will show here."
+        stringResource(id = R.string.jobs_empty_discover_hirer_desc)
     }
     val urgentCount = jobs.count { it.isUrgent }
     val highFitCount = if (isWorker) uiState.discoverJobs.count { (it.matchScore ?: 0.0) >= 80.0 } else 0
@@ -114,7 +124,10 @@ fun JobsScreen(
                     IconButton(onClick = {
                         if (uiState.activeFeed == JobsFeed.SAVED) viewModel.loadSavedJobs() else viewModel.refreshJobs()
                     }) {
-                        Icon(Icons.Outlined.Refresh, contentDescription = "Refresh")
+                        Icon(
+                            Icons.Outlined.Refresh,
+                            contentDescription = stringResource(id = R.string.jobs_refresh_content_description),
+                        )
                     }
                 },
             )
@@ -150,17 +163,25 @@ fun JobsScreen(
                 ) {
                     JobsMetricTile(
                         modifier = Modifier.weight(1f),
-                        label = if (uiState.activeFeed == JobsFeed.SAVED) "Saved" else "Jobs",
+                        label = if (uiState.activeFeed == JobsFeed.SAVED) {
+                            stringResource(id = R.string.jobs_metric_saved)
+                        } else {
+                            stringResource(id = R.string.jobs_metric_jobs)
+                        },
                         value = jobs.size,
                     )
                     JobsMetricTile(
                         modifier = Modifier.weight(1f),
-                        label = "Urgent",
+                        label = stringResource(id = R.string.jobs_metric_urgent),
                         value = urgentCount,
                     )
                     JobsMetricTile(
                         modifier = Modifier.weight(1f),
-                        label = if (isWorker) "80%+ fit" else "Bookmarked",
+                        label = if (isWorker) {
+                            stringResource(id = R.string.jobs_metric_high_fit)
+                        } else {
+                            stringResource(id = R.string.jobs_metric_bookmarked)
+                        },
                         value = if (isWorker) highFitCount else uiState.savedJobs.size,
                     )
                 }
@@ -171,21 +192,21 @@ fun JobsScreen(
                     AssistChip(
                         onClick = {},
                         enabled = false,
-                        label = { Text("Sort: ${uiState.filters.sort.label}") },
+                        label = { Text(stringResource(id = R.string.jobs_quick_sort, uiState.filters.sort.label)) },
                     )
                 }
                 item {
                     AssistChip(
                         onClick = {},
                         enabled = false,
-                        label = { Text("Page ${uiState.currentPage}/${uiState.totalPages}") },
+                        label = { Text(stringResource(id = R.string.jobs_quick_page, uiState.currentPage, uiState.totalPages)) },
                     )
                 }
                 item {
                     AssistChip(
                         onClick = {},
                         enabled = false,
-                        label = { Text("Total ${uiState.totalItems}") },
+                        label = { Text(stringResource(id = R.string.jobs_quick_total, uiState.totalItems)) },
                     )
                 }
                 if (uiState.savedJobs.isNotEmpty()) {
@@ -193,7 +214,7 @@ fun JobsScreen(
                         AssistChip(
                             onClick = {},
                             enabled = false,
-                            label = { Text("Saved ${uiState.savedJobs.size}") },
+                            label = { Text(stringResource(id = R.string.jobs_quick_saved, uiState.savedJobs.size)) },
                         )
                     }
                 }
@@ -202,7 +223,7 @@ fun JobsScreen(
             if (isWorker) {
                 Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
                     Text(
-                        text = "Find work. Open a job. Save it, or tap Apply Now.",
+                        text = stringResource(id = R.string.jobs_helper_worker),
                         modifier = Modifier.padding(16.dp),
                         style = MaterialTheme.typography.bodyMedium,
                     )
@@ -210,7 +231,7 @@ fun JobsScreen(
             } else {
                 Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
                     Text(
-                        text = "Open your jobs. Review details. Save important ones.",
+                        text = stringResource(id = R.string.jobs_helper_hirer),
                         modifier = Modifier.padding(16.dp),
                         style = MaterialTheme.typography.bodyMedium,
                     )
@@ -222,11 +243,25 @@ fun JobsScreen(
                     value = uiState.filters.search,
                     onValueChange = viewModel::updateSearch,
                     modifier = Modifier.fillMaxWidth(),
-                    label = { Text(if (isWorker) "Type job name" else "Search jobs") },
+                    label = {
+                        Text(
+                            if (isWorker) {
+                                stringResource(id = R.string.jobs_search_label_worker)
+                            } else {
+                                stringResource(id = R.string.jobs_search_label_hirer)
+                            },
+                        )
+                    },
                     leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
                     trailingIcon = {
                         TextButton(onClick = viewModel::applyFilters) {
-                            Text(if (isWorker) "Show" else "Go")
+                            Text(
+                                if (isWorker) {
+                                    stringResource(id = R.string.jobs_search_action_worker)
+                                } else {
+                                    stringResource(id = R.string.jobs_search_action_hirer)
+                                },
+                            )
                         }
                     },
                     singleLine = true,
@@ -235,7 +270,15 @@ fun JobsScreen(
                     value = uiState.filters.location,
                     onValueChange = viewModel::updateLocation,
                     modifier = Modifier.fillMaxWidth(),
-                    label = { Text(if (isWorker) "Town or area" else "Location") },
+                    label = {
+                        Text(
+                            if (isWorker) {
+                                stringResource(id = R.string.jobs_location_label_worker)
+                            } else {
+                                stringResource(id = R.string.jobs_location_label_hirer)
+                            },
+                        )
+                    },
                     leadingIcon = { Icon(Icons.Outlined.LocationOn, contentDescription = null) },
                     singleLine = true,
                 )
@@ -268,9 +311,17 @@ fun JobsScreen(
             } else if (jobs.isEmpty()) {
                 EmptyJobsState(
                     title = if (uiState.activeFeed == JobsFeed.SAVED) {
-                        if (isWorker) "No saved jobs" else "No saved jobs yet"
+                        if (isWorker) {
+                            stringResource(id = R.string.jobs_empty_saved_worker_title)
+                        } else {
+                            stringResource(id = R.string.jobs_empty_saved_hirer_title)
+                        }
                     } else {
-                        if (isWorker) "No jobs found" else "No jobs yet"
+                        if (isWorker) {
+                            stringResource(id = R.string.jobs_empty_discover_worker_title)
+                        } else {
+                            stringResource(id = R.string.jobs_empty_discover_hirer_title)
+                        }
                     },
                     description = if (uiState.activeFeed == JobsFeed.SAVED) {
                         emptySavedDescription
@@ -302,7 +353,13 @@ fun JobsScreen(
                                 if (uiState.isLoadingMore) {
                                     CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
                                 } else {
-                                    Text(if (isWorker) "Show More Jobs" else "Show More")
+                                    Text(
+                                        if (isWorker) {
+                                            stringResource(id = R.string.jobs_load_more_worker)
+                                        } else {
+                                            stringResource(id = R.string.jobs_load_more_hirer)
+                                        },
+                                    )
                                 }
                             }
                         }
@@ -338,10 +395,20 @@ private fun JobCard(
                 OutlinedButton(onClick = onSaveToggle) {
                     Icon(
                         if (job.isSaved) Icons.Outlined.Bookmark else Icons.Outlined.BookmarkBorder,
-                        contentDescription = if (job.isSaved) "Remove from saved" else "Save job",
+                        contentDescription = if (job.isSaved) {
+                            stringResource(id = R.string.jobs_remove_saved_content_description)
+                        } else {
+                            stringResource(id = R.string.jobs_save_content_description)
+                        },
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(if (job.isSaved) "Saved" else "Save")
+                    Text(
+                        if (job.isSaved) {
+                            stringResource(id = R.string.jobs_saved)
+                        } else {
+                            stringResource(id = R.string.jobs_save)
+                        },
+                    )
                 }
             }
             Text(job.description, maxLines = 3, overflow = TextOverflow.Ellipsis)
@@ -353,24 +420,28 @@ private fun JobCard(
                     label = {
                         Text(
                             if (job.paymentType.equals("hourly", ignoreCase = true)) {
-                                "Hourly"
+                                stringResource(id = R.string.jobs_chip_payment_hourly)
                             } else {
-                                "Fixed"
+                                stringResource(id = R.string.jobs_chip_payment_fixed)
                             },
                         )
                     },
                 )
                 if (job.isUrgent) {
-                    AssistChip(onClick = {}, label = { Text("Urgent") })
+                    AssistChip(onClick = {}, label = { Text(stringResource(id = R.string.common_urgent)) })
                 }
                 if (job.proposalCount > 0) {
-                    AssistChip(onClick = {}, enabled = false, label = { Text("${job.proposalCount} proposals") })
+                    AssistChip(
+                        onClick = {},
+                        enabled = false,
+                        label = { Text(stringResource(id = R.string.jobs_chip_proposals, job.proposalCount)) },
+                    )
                 }
                 if (isWorker && job.matchScore != null) {
                     AssistChip(
                         onClick = {},
                         enabled = false,
-                        label = { Text("${job.matchScore.toInt()}% fit") },
+                        label = { Text(stringResource(id = R.string.jobs_chip_fit, job.matchScore.toInt())) },
                     )
                 }
             }
@@ -378,7 +449,7 @@ private fun JobCard(
             Text(job.budgetLabel, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
             val activityMeta = listOfNotNull(
                 RelativeTimeFormatter.relativeOrFallback(job.postedAt),
-                if (job.isUrgent) "Urgent" else null,
+                if (job.isUrgent) stringResource(id = R.string.common_urgent) else null,
             )
             if (activityMeta.isNotEmpty()) {
                 Text(
@@ -389,13 +460,13 @@ private fun JobCard(
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedButton(onClick = onOpen, modifier = Modifier.weight(1f)) {
-                    Text(if (isWorker) "Open Job" else "Open Job")
+                    Text(stringResource(id = R.string.jobs_open_job))
                 }
                 if (isWorker) {
                     Button(onClick = onApply, modifier = Modifier.weight(1f)) {
                         Icon(Icons.AutoMirrored.Outlined.Send, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Apply Now")
+                        Text(stringResource(id = R.string.jobs_apply_now))
                     }
                 }
             }

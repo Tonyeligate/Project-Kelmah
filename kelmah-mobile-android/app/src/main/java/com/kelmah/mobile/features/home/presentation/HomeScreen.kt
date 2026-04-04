@@ -24,10 +24,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kelmah.mobile.R
 import com.kelmah.mobile.core.session.KelmahUserRole
 import com.kelmah.mobile.core.session.kelmahUserRole
 import com.kelmah.mobile.core.storage.SessionUser
@@ -59,11 +61,12 @@ fun HomeScreen(
     val jobsState by jobsViewModel.uiState.collectAsStateWithLifecycle()
     val messagesState by messagesViewModel.uiState.collectAsStateWithLifecycle()
     val notificationsState by notificationsViewModel.uiState.collectAsStateWithLifecycle()
-    val displayName = currentUser?.displayName ?: "Kelmah ${role.title}"
+    val displayName = currentUser?.displayName
+        ?: stringResource(id = R.string.home_display_name_fallback, role.title)
     val headline = if (role == KelmahUserRole.HIRER) {
-        "See active jobs, new chats, and alerts in one place."
+        stringResource(id = R.string.home_headline_hirer)
     } else {
-        "See your jobs, saved jobs, messages, and alerts in one place."
+        stringResource(id = R.string.home_headline_worker)
     }
     val primaryJobs = if (role == KelmahUserRole.HIRER) jobsState.hirerJobs else jobsState.recommendedJobs
     val unreadMessages = messagesState.conversations.sumOf { it.unreadCount }
@@ -71,25 +74,33 @@ fun HomeScreen(
     val savedJobs = jobsState.savedJobs.size
     val activeJobs = jobsState.hirerJobs.count { it.status.equals("open", ignoreCase = true) || it.status.equals("in-progress", ignoreCase = true) }
     val urgentJobs = primaryJobs.count { it.isUrgent }
+    val priorityUnreadChats = stringResource(id = R.string.home_priority_unread_chats)
+    val priorityNewAlerts = stringResource(id = R.string.home_priority_new_alerts)
+    val priorityUrgentJobs = stringResource(id = R.string.home_priority_urgent_jobs)
+    val priorityActiveJobs = stringResource(id = R.string.home_priority_active_jobs)
+    val nextActionReply = stringResource(id = R.string.home_next_action_reply_chats)
+    val nextActionAlerts = stringResource(id = R.string.home_next_action_review_alerts)
+    val nextActionApplyUrgent = stringResource(id = R.string.home_next_action_apply_urgent)
+    val nextActionTrackActive = stringResource(id = R.string.home_next_action_track_active)
     val prioritySignals = buildList {
         if (unreadMessages > 0) {
-            add(HomePrioritySignal("Unread chats", unreadMessages, onOpenMessages))
+            add(HomePrioritySignal(priorityUnreadChats, unreadMessages, onOpenMessages))
         }
         if (unreadAlerts > 0) {
-            add(HomePrioritySignal("New alerts", unreadAlerts, onOpenNotifications))
+            add(HomePrioritySignal(priorityNewAlerts, unreadAlerts, onOpenNotifications))
         }
         if (role == KelmahUserRole.WORKER && urgentJobs > 0) {
-            add(HomePrioritySignal("Urgent jobs", urgentJobs, onBrowseJobs))
+            add(HomePrioritySignal(priorityUrgentJobs, urgentJobs, onBrowseJobs))
         }
         if (role == KelmahUserRole.HIRER && activeJobs > 0) {
-            add(HomePrioritySignal("Active jobs", activeJobs, onBrowseJobs))
+            add(HomePrioritySignal(priorityActiveJobs, activeJobs, onBrowseJobs))
         }
     }
     val nextBestAction = when {
-        unreadMessages > 0 -> HomePrioritySignal("Reply to chats", unreadMessages, onOpenMessages)
-        unreadAlerts > 0 -> HomePrioritySignal("Review alerts", unreadAlerts, onOpenNotifications)
-        role == KelmahUserRole.WORKER && urgentJobs > 0 -> HomePrioritySignal("Apply urgent jobs", urgentJobs, onBrowseJobs)
-        role == KelmahUserRole.HIRER && activeJobs > 0 -> HomePrioritySignal("Track active jobs", activeJobs, onBrowseJobs)
+        unreadMessages > 0 -> HomePrioritySignal(nextActionReply, unreadMessages, onOpenMessages)
+        unreadAlerts > 0 -> HomePrioritySignal(nextActionAlerts, unreadAlerts, onOpenNotifications)
+        role == KelmahUserRole.WORKER && urgentJobs > 0 -> HomePrioritySignal(nextActionApplyUrgent, urgentJobs, onBrowseJobs)
+        role == KelmahUserRole.HIRER && activeJobs > 0 -> HomePrioritySignal(nextActionTrackActive, activeJobs, onBrowseJobs)
         else -> null
     }
 
@@ -124,31 +135,43 @@ fun HomeScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     Text(
-                        text = if (role == KelmahUserRole.HIRER) "Hiring overview" else "Your work today",
+                        text = if (role == KelmahUserRole.HIRER) {
+                            stringResource(id = R.string.home_overview_title_hirer)
+                        } else {
+                            stringResource(id = R.string.home_overview_title_worker)
+                        },
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.SemiBold,
                     )
                     Text(
                         text = if (role == KelmahUserRole.HIRER) {
-                            "Check jobs that need attention, keep chats moving, and open alerts faster."
+                            stringResource(id = R.string.home_overview_desc_hirer)
                         } else {
-                            "Check good jobs, saved jobs, and new alerts. Then open a job and apply."
+                            stringResource(id = R.string.home_overview_desc_worker)
                         },
                     )
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         SummaryCard(
                             modifier = Modifier.weight(1f),
-                            label = if (role == KelmahUserRole.HIRER) "Active jobs" else "Good jobs",
+                            label = if (role == KelmahUserRole.HIRER) {
+                                stringResource(id = R.string.home_summary_active_jobs)
+                            } else {
+                                stringResource(id = R.string.home_summary_good_jobs)
+                            },
                             value = if (role == KelmahUserRole.HIRER) activeJobs else primaryJobs.size,
                         )
                         SummaryCard(
                             modifier = Modifier.weight(1f),
-                            label = if (role == KelmahUserRole.HIRER) "New chats" else "Saved jobs",
+                            label = if (role == KelmahUserRole.HIRER) {
+                                stringResource(id = R.string.home_summary_new_chats)
+                            } else {
+                                stringResource(id = R.string.home_summary_saved_jobs)
+                            },
                             value = if (role == KelmahUserRole.HIRER) unreadMessages else savedJobs,
                         )
                         SummaryCard(
                             modifier = Modifier.weight(1f),
-                            label = "Alerts",
+                            label = stringResource(id = R.string.home_summary_alerts),
                             value = unreadAlerts,
                         )
                     }
@@ -172,7 +195,7 @@ fun HomeScreen(
                             ) {
                                 Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                                     Text(
-                                        text = "Next best action",
+                                        text = stringResource(id = R.string.home_next_best_action),
                                         style = MaterialTheme.typography.labelLarge,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
@@ -183,21 +206,27 @@ fun HomeScreen(
                                     )
                                 }
                                 Button(onClick = action.onOpen) {
-                                    Text("Open")
+                                    Text(stringResource(id = R.string.common_open))
                                 }
                             }
                         }
                     }
                     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         Button(onClick = onBrowseJobs, modifier = Modifier.fillMaxWidth()) {
-                            Text(if (role == KelmahUserRole.HIRER) "Open Market" else "Find Work")
+                            Text(
+                                if (role == KelmahUserRole.HIRER) {
+                                    stringResource(id = R.string.home_open_market)
+                                } else {
+                                    stringResource(id = R.string.home_find_work)
+                                },
+                            )
                         }
                         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                             OutlinedButton(onClick = onOpenMessages, modifier = Modifier.weight(1f)) {
-                                Text("Messages")
+                                Text(stringResource(id = R.string.home_messages))
                             }
                             OutlinedButton(onClick = onOpenNotifications, modifier = Modifier.weight(1f)) {
-                                Text("Alerts")
+                                Text(stringResource(id = R.string.home_alerts))
                             }
                         }
                     }
@@ -213,7 +242,7 @@ fun HomeScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         Text(
-                            text = "Priority queue",
+                            text = stringResource(id = R.string.home_priority_queue),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold,
                         )
@@ -245,17 +274,21 @@ fun HomeScreen(
         item {
             SectionHeader(
                 title = if (role == KelmahUserRole.HIRER) {
-                    "Recent hiring activity"
+                    stringResource(id = R.string.home_recent_hiring_activity)
                 } else if (jobsState.recommendationState == RecommendationFeedState.FALLBACK) {
-                    "Urgent jobs right now"
+                    stringResource(id = R.string.home_urgent_jobs_now)
                 } else if (jobsState.recommendationState == RecommendationFeedState.PROFILE_INCOMPLETE) {
-                    "More jobs while you finish your profile"
+                    stringResource(id = R.string.home_more_jobs_profile)
                 } else if (jobsState.recommendationState == RecommendationFeedState.FAILED) {
-                    "Jobs feed"
+                    stringResource(id = R.string.home_jobs_feed)
                 } else {
-                    "Jobs for you"
+                    stringResource(id = R.string.home_jobs_for_you)
                 },
-                actionLabel = if (role == KelmahUserRole.HIRER) "Open market" else "Find work",
+                actionLabel = if (role == KelmahUserRole.HIRER) {
+                    stringResource(id = R.string.home_open_market)
+                } else {
+                    stringResource(id = R.string.home_find_work)
+                },
                 onAction = onBrowseJobs,
             )
         }
@@ -282,7 +315,7 @@ fun HomeScreen(
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
                         CircularProgressIndicator(modifier = Modifier.width(20.dp))
-                        Text("Loading jobs for you...")
+                        Text(stringResource(id = R.string.home_loading_jobs))
                     }
                 }
             }
@@ -290,26 +323,26 @@ fun HomeScreen(
             item {
                 EmptyHomeSection(
                     title = if (role == KelmahUserRole.HIRER) {
-                        "No hiring activity yet"
+                        stringResource(id = R.string.home_empty_hiring_title)
                     } else if (jobsState.recommendationState == RecommendationFeedState.PROFILE_INCOMPLETE) {
-                        "Finish your profile for better job matches"
+                        stringResource(id = R.string.home_empty_profile_incomplete_title)
                     } else if (jobsState.recommendationState == RecommendationFeedState.FALLBACK) {
-                        "No urgent jobs available"
+                        stringResource(id = R.string.home_empty_fallback_title)
                     } else if (jobsState.recommendationState == RecommendationFeedState.FAILED) {
-                        "Jobs feed"
+                        stringResource(id = R.string.home_empty_failed_title)
                     } else {
-                        "No jobs yet"
+                        stringResource(id = R.string.home_empty_jobs_title)
                     },
                     description = if (role == KelmahUserRole.HIRER) {
-                        "Your most recent jobs will appear here once your hiring activity is available."
+                        stringResource(id = R.string.home_empty_hiring_desc)
                     } else if (jobsState.recommendationState == RecommendationFeedState.PROFILE_INCOMPLETE) {
-                        "Finish your profile to get better job matches."
+                        stringResource(id = R.string.home_empty_profile_incomplete_desc)
                     } else if (jobsState.recommendationState == RecommendationFeedState.FALLBACK) {
-                        "No urgent jobs right now. Tap Find Work to see all jobs."
+                        stringResource(id = R.string.home_empty_fallback_desc)
                     } else if (jobsState.recommendationState == RecommendationFeedState.FAILED) {
-                        "Job matches are not ready now. Tap Find Work."
+                        stringResource(id = R.string.home_empty_failed_desc)
                     } else {
-                        "Jobs for you will show here soon."
+                        stringResource(id = R.string.home_empty_jobs_desc)
                     },
                 )
             }
@@ -324,14 +357,26 @@ fun HomeScreen(
         }
 
         item {
-            SectionHeader(title = "Messages", actionLabel = if (role == KelmahUserRole.WORKER) "Open" else "Open messages", onAction = onOpenMessages)
+            SectionHeader(
+                title = stringResource(id = R.string.home_messages_section),
+                actionLabel = stringResource(id = R.string.home_messages_open_action),
+                onAction = onOpenMessages,
+            )
         }
 
         if (messagesState.conversations.isEmpty()) {
             item {
                 EmptyHomeSection(
-                    title = if (role == KelmahUserRole.WORKER) "No messages yet" else "No conversations yet",
-                    description = if (role == KelmahUserRole.WORKER) "New messages will show here." else "Messages created from job and hiring flows will appear here for quick follow-up.",
+                    title = if (role == KelmahUserRole.WORKER) {
+                        stringResource(id = R.string.home_empty_messages_worker_title)
+                    } else {
+                        stringResource(id = R.string.home_empty_messages_hirer_title)
+                    },
+                    description = if (role == KelmahUserRole.WORKER) {
+                        stringResource(id = R.string.home_empty_messages_worker_desc)
+                    } else {
+                        stringResource(id = R.string.home_empty_messages_hirer_desc)
+                    },
                 )
             }
         } else {
@@ -341,14 +386,22 @@ fun HomeScreen(
         }
 
         item {
-            SectionHeader(title = "Alerts", actionLabel = if (role == KelmahUserRole.WORKER) "Open" else "Open alerts", onAction = onOpenNotifications)
+            SectionHeader(
+                title = stringResource(id = R.string.home_alerts_section),
+                actionLabel = stringResource(id = R.string.home_alerts_open_action),
+                onAction = onOpenNotifications,
+            )
         }
 
         if (notificationsState.notifications.isEmpty()) {
             item {
                 EmptyHomeSection(
-                    title = if (role == KelmahUserRole.WORKER) "No alerts yet" else "No alerts yet",
-                    description = if (role == KelmahUserRole.WORKER) "New alerts will show here." else "Job, payment, and message alerts will appear here as activity comes in.",
+                    title = stringResource(id = R.string.home_empty_alerts_title),
+                    description = if (role == KelmahUserRole.WORKER) {
+                        stringResource(id = R.string.home_empty_alerts_desc_worker)
+                    } else {
+                        stringResource(id = R.string.home_empty_alerts_desc_hirer)
+                    },
                 )
             }
         } else {
@@ -419,7 +472,11 @@ private fun HomeJobCard(
                     overflow = TextOverflow.Ellipsis,
                 )
                 if (job.matchScore != null && role == KelmahUserRole.WORKER) {
-                    AssistChip(onClick = {}, enabled = false, label = { Text("${formatMatchScore(job.matchScore)}% fit") })
+                    AssistChip(
+                        onClick = {},
+                        enabled = false,
+                        label = { Text(stringResource(id = R.string.home_match_fit_chip, formatMatchScore(job.matchScore))) },
+                    )
                 } else if (!job.status.isNullOrBlank()) {
                     AssistChip(onClick = {}, enabled = false, label = { Text(job.status.replaceFirstChar { it.uppercase() }) })
                 }
@@ -435,18 +492,26 @@ private fun HomeJobCard(
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text(job.budgetLabel, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
                 if (role == KelmahUserRole.HIRER && job.proposalCount > 0) {
-                    Text("${job.proposalCount} proposals", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+                    Text(
+                        stringResource(id = R.string.home_proposals_count, job.proposalCount),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
                 }
             }
             val meta = listOfNotNull(
                 RelativeTimeFormatter.relativeOrFallback(job.postedAt),
-                if (job.isUrgent) "Urgent" else null,
+                if (job.isUrgent) stringResource(id = R.string.common_urgent) else null,
             )
             if (meta.isNotEmpty()) {
                 Text(meta.joinToString(" • "), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             if (role == KelmahUserRole.WORKER) {
-                Text("Tap to open job", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+                Text(
+                    stringResource(id = R.string.home_tap_open_job),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                )
             }
         }
     }
@@ -507,7 +572,11 @@ private fun ConversationPreviewCard(
                     overflow = TextOverflow.Ellipsis,
                 )
                 if (conversation.unreadCount > 0) {
-                    AssistChip(onClick = {}, enabled = false, label = { Text("${conversation.unreadCount} unread") })
+                    AssistChip(
+                        onClick = {},
+                        enabled = false,
+                        label = { Text(stringResource(id = R.string.home_unread_count, conversation.unreadCount)) },
+                    )
                 }
             }
             Text(
@@ -518,12 +587,13 @@ private fun ConversationPreviewCard(
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
-                text = RelativeTimeFormatter.relativeOrFallback(conversation.lastMessageAt) ?: "Just now",
+                text = RelativeTimeFormatter.relativeOrFallback(conversation.lastMessageAt)
+                    ?: stringResource(id = R.string.common_just_now),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Text(
-                text = "Tap to open chat",
+                text = stringResource(id = R.string.home_tap_open_chat),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.primary,
             )
@@ -553,7 +623,11 @@ private fun NotificationPreviewCard(
                     overflow = TextOverflow.Ellipsis,
                 )
                 if (!notification.isRead) {
-                    AssistChip(onClick = {}, enabled = false, label = { Text("New") })
+                    AssistChip(
+                        onClick = {},
+                        enabled = false,
+                        label = { Text(stringResource(id = R.string.common_new)) },
+                    )
                 }
             }
             Text(
@@ -565,7 +639,8 @@ private fun NotificationPreviewCard(
             )
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
-                    text = RelativeTimeFormatter.relativeOrFallback(notification.createdAt) ?: "Just now",
+                    text = RelativeTimeFormatter.relativeOrFallback(notification.createdAt)
+                        ?: stringResource(id = R.string.common_just_now),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -578,7 +653,7 @@ private fun NotificationPreviewCard(
                 }
             }
             Text(
-                text = "Tap to open alert",
+                text = stringResource(id = R.string.home_tap_open_alert),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.primary,
             )

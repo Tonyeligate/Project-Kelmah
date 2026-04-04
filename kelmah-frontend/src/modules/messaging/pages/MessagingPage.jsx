@@ -63,19 +63,6 @@ import useKeyboardVisible from '../../../hooks/useKeyboardVisible';
 import { HEADER_HEIGHT_MOBILE, TOUCH_TARGET_MIN } from '@/constants/layout';
 import { withBottomNavSafeArea, withSafeAreaBottom } from '@/utils/safeArea';
 
-const CHAT_ACCENT = '#FFD700';
-const CHAT_ACCENT_DARK = '#B8860B';
-const CHAT_HEADER = '#1B1C22';
-const CHAT_BG_LIGHT = '#F3E8CB';
-const CHAT_PANEL_BG = '#FFFDF4';
-const CHAT_PANEL_HEADER = '#F4EFE3';
-const CHAT_MESSAGE_BG = '#F9F7ED';
-const CHAT_OUTGOING_BUBBLE = '#F6E7BE';
-const CHAT_INCOMING_BUBBLE = '#FFFFFF';
-const CHAT_TEXT_PRIMARY = '#111111';
-const CHAT_TEXT_SECONDARY = '#4A453B';
-const CHAT_BORDER = '#D8CCAF';
-const CHAT_MUTED_FILL = '#E8DFC7';
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
 const MAX_ATTACHMENTS = 5;
 const DRAFT_STORAGE_KEY = 'kelmah.messaging.drafts.v1';
@@ -337,50 +324,71 @@ const getAttachmentKindLabel = (file) => {
   return 'File';
 };
 
-const ConversationSkeleton = () => (
-  <Box sx={{ px: 1.5, py: 1.5 }}>
-    {Array.from({ length: 6 }).map((_, index) => (
-      <Box
-        key={`conversation-skeleton-${index}`}
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1.5,
-          py: 1.25,
-          px: 1,
-          mb: 1,
-          borderRadius: 1.5,
-          border: '1px solid',
-          borderColor: CHAT_BORDER,
-          bgcolor: CHAT_PANEL_BG,
-        }}
-      >
-        <CircularProgress size={18} thickness={5} sx={{ color: CHAT_HEADER }} />
-        <Box sx={{ flex: 1 }}>
-          <Box
-            sx={{
-              width: '48%',
-              height: 14,
-              bgcolor: CHAT_MUTED_FILL,
-              borderRadius: 999,
-              mb: 1,
-            }}
-          />
-          <Box
-            sx={{
-              width: '84%',
-              height: 10,
-              bgcolor: CHAT_MUTED_FILL,
-              borderRadius: 999,
-            }}
-          />
+const ConversationSkeleton = ({ chatTheme }) => {
+  const { border, panelBg, header, mutedFill } = chatTheme;
+  return (
+    <Box sx={{ px: 1.5, py: 1.5 }}>
+      {Array.from({ length: 6 }).map((_, index) => (
+        <Box
+          key={`conversation-skeleton-${index}`}
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1.5,
+            py: 1.25,
+            px: 1,
+            mb: 1,
+            borderRadius: 1.5,
+            border: '1px solid',
+            borderColor: border,
+            bgcolor: panelBg,
+          }}
+        >
+          <CircularProgress size={18} thickness={5} sx={{ color: header }} />
+          <Box sx={{ flex: 1 }}>
+            <Box
+              sx={{
+                width: '48%',
+                height: 14,
+                bgcolor: mutedFill,
+                borderRadius: 999,
+                mb: 1,
+              }}
+            />
+            <Box
+              sx={{
+                width: '84%',
+                height: 10,
+                bgcolor: mutedFill,
+                borderRadius: 999,
+              }}
+            />
+          </Box>
         </Box>
-      </Box>
-    ))}
-  </Box>
-);
+      ))}
+    </Box>
+  );
+};
 
-const MessageBubble = ({ message, currentUserId }) => {
+ConversationSkeleton.propTypes = {
+  chatTheme: PropTypes.shape({
+    border: PropTypes.string,
+    panelBg: PropTypes.string,
+    header: PropTypes.string,
+    mutedFill: PropTypes.string,
+  }).isRequired,
+};
+
+const MessageBubble = ({ message, currentUserId, chatTheme }) => {
+  const {
+    accentDark,
+    header,
+    border,
+    outgoingBubble,
+    incomingBubble,
+    textPrimary,
+  } = chatTheme;
+
   const senderId = message.senderId || message.sender || null;
   const isOwn =
     senderId && currentUserId
@@ -414,11 +422,11 @@ const MessageBubble = ({ message, currentUserId }) => {
           px: { xs: 1.25, sm: 1.4, md: 1.55 },
           py: { xs: 0.85, sm: 0.95, md: 1.05 },
           borderRadius: isOwn ? '10px 10px 4px 10px' : '10px 10px 10px 4px',
-          bgcolor: isOwn ? CHAT_OUTGOING_BUBBLE : CHAT_INCOMING_BUBBLE,
-          color: CHAT_TEXT_PRIMARY,
+          bgcolor: isOwn ? outgoingBubble : incomingBubble,
+          color: textPrimary,
           boxShadow: '0 1px 1px rgba(11, 20, 26, 0.12)',
           border: '1px solid',
-          borderColor: isOwn ? alpha(CHAT_ACCENT_DARK, 0.35) : CHAT_BORDER,
+          borderColor: isOwn ? alpha(accentDark, 0.35) : border,
         }}
       >
         {text && (
@@ -476,9 +484,7 @@ const MessageBubble = ({ message, currentUserId }) => {
                     px: 1.25,
                     py: 0.75,
                     borderRadius: 2,
-                    bgcolor: isOwn
-                      ? alpha(CHAT_HEADER, 0.08)
-                      : alpha(CHAT_HEADER, 0.06),
+                    bgcolor: isOwn ? alpha(header, 0.08) : alpha(header, 0.06),
                   }}
                 >
                   <ImageIcon sx={{ fontSize: 18 }} />
@@ -510,7 +516,7 @@ const MessageBubble = ({ message, currentUserId }) => {
             variant="caption"
             sx={{
               opacity: 0.95,
-              color: alpha(CHAT_TEXT_PRIMARY, 0.74),
+              color: alpha(textPrimary, 0.74),
               fontSize: '0.72rem',
             }}
           >
@@ -523,13 +529,13 @@ const MessageBubble = ({ message, currentUserId }) => {
             <CloseIcon sx={{ fontSize: 14, color: '#D32F2F' }} />
           )}
           {isOwn && isRead && (
-            <DoneAllIcon sx={{ fontSize: 14, color: CHAT_ACCENT_DARK }} />
+            <DoneAllIcon sx={{ fontSize: 14, color: accentDark }} />
           )}
           {isOwn && isDelivered && (
-            <DoneAllIcon sx={{ fontSize: 14, color: CHAT_ACCENT_DARK }} />
+            <DoneAllIcon sx={{ fontSize: 14, color: accentDark }} />
           )}
           {isOwn && isSent && (
-            <CheckIcon sx={{ fontSize: 14, color: CHAT_ACCENT_DARK }} />
+            <CheckIcon sx={{ fontSize: 14, color: accentDark }} />
           )}
         </Stack>
       </Box>
@@ -567,35 +573,50 @@ MessageBubble.propTypes = {
     isRead: PropTypes.bool,
   }).isRequired,
   currentUserId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  chatTheme: PropTypes.shape({
+    accentDark: PropTypes.string,
+    header: PropTypes.string,
+    border: PropTypes.string,
+    outgoingBubble: PropTypes.string,
+    incomingBubble: PropTypes.string,
+    textPrimary: PropTypes.string,
+  }).isRequired,
 };
 
-const MessageDayDivider = ({ label }) => (
-  <Box
-    sx={{
-      display: 'flex',
-      alignItems: 'center',
-      gap: 1,
-      my: { xs: 1.25, md: 1.45 },
-    }}
-  >
-    <Divider sx={{ flex: 1, borderColor: alpha(CHAT_TEXT_PRIMARY, 0.15) }} />
-    <Chip
-      size="small"
-      label={label}
+const MessageDayDivider = ({ label, chatTheme }) => {
+  const { textPrimary, panelHeader } = chatTheme;
+  return (
+    <Box
       sx={{
-        fontWeight: 700,
-        color: alpha(CHAT_TEXT_PRIMARY, 0.78),
-        bgcolor: alpha(CHAT_PANEL_HEADER, 0.98),
-        border: '1px solid',
-        borderColor: alpha(CHAT_TEXT_PRIMARY, 0.18),
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1,
+        my: { xs: 1.25, md: 1.45 },
       }}
-    />
-    <Divider sx={{ flex: 1, borderColor: alpha(CHAT_TEXT_PRIMARY, 0.15) }} />
-  </Box>
-);
+    >
+      <Divider sx={{ flex: 1, borderColor: alpha(textPrimary, 0.15) }} />
+      <Chip
+        size="small"
+        label={label}
+        sx={{
+          fontWeight: 700,
+          color: alpha(textPrimary, 0.78),
+          bgcolor: alpha(panelHeader, 0.98),
+          border: '1px solid',
+          borderColor: alpha(textPrimary, 0.18),
+        }}
+      />
+      <Divider sx={{ flex: 1, borderColor: alpha(textPrimary, 0.15) }} />
+    </Box>
+  );
+};
 
 MessageDayDivider.propTypes = {
   label: PropTypes.string.isRequired,
+  chatTheme: PropTypes.shape({
+    textPrimary: PropTypes.string,
+    panelHeader: PropTypes.string,
+  }).isRequired,
 };
 
 const MessagingPage = () => {
@@ -605,6 +626,50 @@ const MessagingPage = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { user } = useSelector((state) => state.auth);
   const { isKeyboardVisible } = useKeyboardVisible();
+
+  const isDarkMode = theme.palette.mode === 'dark';
+  const chatTheme = useMemo(
+    () => ({
+      accent: '#FFD700',
+      accentDark: '#B8860B',
+      header: isDarkMode
+        ? alpha(theme.palette.background.paper, 0.12)
+        : '#1B1C22',
+      bgLight: isDarkMode ? theme.palette.background.default : '#F3E8CB',
+      panelBg: isDarkMode ? theme.palette.background.paper : '#FFFDF4',
+      panelHeader: isDarkMode
+        ? alpha(theme.palette.background.paper, 0.16)
+        : '#F4EFE3',
+      messageBg: isDarkMode
+        ? alpha(theme.palette.background.paper, 0.08)
+        : '#F9F7ED',
+      outgoingBubble: isDarkMode
+        ? alpha(theme.palette.primary.main, 0.16)
+        : '#F6E7BE',
+      incomingBubble: isDarkMode ? theme.palette.background.paper : '#FFFFFF',
+      textPrimary: theme.palette.text.primary,
+      textSecondary: theme.palette.text.secondary,
+      border: theme.palette.divider,
+      mutedFill: isDarkMode
+        ? alpha(theme.palette.text.secondary, 0.12)
+        : '#E8DFC7',
+    }),
+    [isDarkMode, theme],
+  );
+
+  const {
+    accent: CHAT_ACCENT,
+    accentDark: CHAT_ACCENT_DARK,
+    header: CHAT_HEADER,
+    bgLight: CHAT_BG_LIGHT,
+    panelBg: CHAT_PANEL_BG,
+    panelHeader: CHAT_PANEL_HEADER,
+    messageBg: CHAT_MESSAGE_BG,
+    textPrimary: CHAT_TEXT_PRIMARY,
+    textSecondary: CHAT_TEXT_SECONDARY,
+    border: CHAT_BORDER,
+    mutedFill: CHAT_MUTED_FILL,
+  } = chatTheme;
 
   const currentUserId = useMemo(() => getCurrentUserId(user), [user]);
   const searchDestination = useMemo(
@@ -1640,7 +1705,7 @@ const MessagingPage = () => {
 
       <Box sx={{ flex: 1, overflowY: 'auto' }}>
         {loadingConversations ? (
-          <ConversationSkeleton />
+          <ConversationSkeleton chatTheme={chatTheme} />
         ) : filteredConversations.length > 0 ? (
           <List disablePadding>
             {filteredConversations.map((conversation, index) => {
@@ -2413,11 +2478,15 @@ const MessagingPage = () => {
                 return (
                   <React.Fragment key={messageKey}>
                     {showDayDivider && dayLabel && (
-                      <MessageDayDivider label={dayLabel} />
+                      <MessageDayDivider
+                        label={dayLabel}
+                        chatTheme={chatTheme}
+                      />
                     )}
                     <MessageBubble
                       message={message}
                       currentUserId={currentUserId}
+                      chatTheme={chatTheme}
                     />
                   </React.Fragment>
                 );

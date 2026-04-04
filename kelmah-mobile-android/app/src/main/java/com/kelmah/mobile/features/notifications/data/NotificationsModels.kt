@@ -1,5 +1,9 @@
 package com.kelmah.mobile.features.notifications.data
 
+import java.net.URI
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
+
 data class NotificationItem(
     val id: String,
     val type: String,
@@ -19,6 +23,10 @@ sealed interface NotificationActionTarget {
     data class Conversation(val conversationId: String) : NotificationActionTarget
 }
 
+private val OBJECT_ID_REGEX = Regex("^[0-9a-fA-F]{24}$")
+
+private fun isValidObjectId(value: String): Boolean = OBJECT_ID_REGEX.matches(value)
+
 val NotificationItem.displayTag: String
     get() = when {
         priority.equals("high", ignoreCase = true) -> "High priority"
@@ -36,13 +44,15 @@ val NotificationItem.actionTarget: NotificationActionTarget?
         val rawActionUrl = actionUrl?.trim().orEmpty()
         val path = notificationActionPath(rawActionUrl)
         val conversationId = notificationActionQueryParameter(rawActionUrl, "conversation")
+        val relatedId = relatedEntityId?.trim().orEmpty().takeIf(::isValidObjectId)
 
         return when {
-            !conversationId.isNullOrBlank() -> NotificationActionTarget.Conversation(conversationId)
-            path.startsWith("/messages/") -> path.substringAfterLast('/').takeIf { it.isNotBlank() }?.let(NotificationActionTarget::Conversation)
-            path.startsWith("/jobs/") -> path.substringAfterLast('/').takeIf { it.isNotBlank() }?.let(NotificationActionTarget::Job)
-            relatedEntityType.equals("message", ignoreCase = true) -> relatedEntityId?.let(NotificationActionTarget::Conversation)
-            relatedEntityType.equals("job", ignoreCase = true) -> relatedEntityId?.let(NotificationActionTarget::Job)
+            !conversationId.isNullOrBlank() -> conversationId.takeIf(::isValidObjectId)?.let(NotificationActionTarget::Conversation)
+            path.startsWith("/messages/") -> path.substringAfterLast('/').takeIf(::isValidObjectId)?.let(NotificationActionTarget::Conversation)
+            path.startsWith("/jobs/detail/") -> path.substringAfterLast('/').takeIf(::isValidObjectId)?.let(NotificationActionTarget::Job)
+            path.startsWith("/jobs/") -> path.substringAfterLast('/').takeIf(::isValidObjectId)?.let(NotificationActionTarget::Job)
+            relatedEntityType.equals("message", ignoreCase = true) -> relatedId?.let(NotificationActionTarget::Conversation)
+            relatedEntityType.equals("job", ignoreCase = true) -> relatedId?.let(NotificationActionTarget::Job)
             else -> null
         }
     }
@@ -55,20 +65,45 @@ val NotificationItem.actionLabel: String?
     }
 
 private fun notificationActionPath(rawActionUrl: String): String {
-    val withoutQuery = rawActionUrl.substringBefore('?')
-    if (withoutQuery.startsWith("http://") || withoutQuery.startsWith("https://")) {
-        return "/" + withoutQuery.substringAfter("://").substringAfter('/', "").trimStart('/')
+    if (rawActionUrl.isBlank()) return ""
+
+    val normalizedUrl = if (rawActionUrl.startsWith("/")) {
+        "https://placeholder.local$rawActionUrl"
+    } else {
+        rawActionUrl
     }
-    return withoutQuery
+
+    val uri = runCatching { URI(normalizedUrl) }.getOrNull()
+        ?: return rawActionUrl.substringBefore('?')
+
+    val rawPath = uri.path.orEmpty()
+    val host = uri.host.orEmpty()
+    return if (uri.scheme?.lowercase() == "kelmah" && host.isNotBlank()) {
+        val pathTail = rawPath.takeIf { it != "/" }.orEmpty()
+        "/$host$pathTail"
+    } else {
+        rawPath
+    }
 }
 
 private fun notificationActionQueryParameter(rawActionUrl: String, key: String): String? =
-    rawActionUrl.substringAfter('?', "")
+    runCatching {
+        val normalizedUrl = if (rawActionUrl.startsWith("/")) {
+            "https://placeholder.local$rawActionUrl"
+        } else {
+            rawActionUrl
+        }
+        URI(normalizedUrl).rawQuery.orEmpty()
+    }.getOrDefault(rawActionUrl.substringAfter('?', ""))
         .split('&')
         .asSequence()
         .mapNotNull { part ->
             val name = part.substringBefore('=', "")
             val value = part.substringAfter('=', "")
-            if (name == key && value.isNotBlank()) value else null
+            if (name == key && value.isNotBlank()) {
+                URLDecoder.decode(value, StandardCharsets.UTF_8.name())
+            } else {
+                null
+            }
         }
         .firstOrNull()

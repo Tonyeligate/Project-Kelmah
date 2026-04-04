@@ -24,7 +24,10 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.Send
+import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Forum
+import androidx.compose.material.icons.outlined.Image
+import androidx.compose.material.icons.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.AssistChip
@@ -57,6 +60,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -436,6 +440,12 @@ private fun ThreadContent(
                 placeholder = { Text(stringResource(id = R.string.messages_attachment_url_placeholder)) },
                 singleLine = true,
             )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = stringResource(id = R.string.messages_attachment_link_hint),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
             Spacer(modifier = Modifier.height(8.dp))
             OutlinedTextField(
                 value = attachmentName,
@@ -513,6 +523,8 @@ private fun MessageBubble(
     message: ThreadMessage,
     isOwnMessage: Boolean,
 ) {
+    val uriHandler = LocalUriHandler.current
+
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = if (isOwnMessage) Alignment.End else Alignment.Start,
@@ -544,13 +556,53 @@ private fun MessageBubble(
                 if (message.attachments.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(4.dp))
                     message.attachments.forEach { attachment ->
-                        Text(
-                            text = "• ${attachment.name}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
+                        val openable = attachment.fileUrl.startsWith("https://") || attachment.fileUrl.startsWith("http://")
+                        Surface(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp),
+                            color = MaterialTheme.colorScheme.surface,
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 10.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Icon(
+                                    imageVector = if (attachment.fileType.startsWith("image/")) {
+                                        Icons.Outlined.Image
+                                    } else {
+                                        Icons.Outlined.Description
+                                    },
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(18.dp),
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = attachment.name,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                    Text(
+                                        text = attachment.fileType,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                }
+                                if (openable) {
+                                    TextButton(onClick = { runCatching { uriHandler.openUri(attachment.fileUrl) } }) {
+                                        Icon(Icons.Outlined.OpenInNew, contentDescription = null)
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(stringResource(id = R.string.common_open))
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
                 Spacer(modifier = Modifier.height(6.dp))

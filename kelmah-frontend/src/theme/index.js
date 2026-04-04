@@ -191,11 +191,11 @@ const darkTheme = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      // Brand rule: dark mode primary = dark/neutral foundation
-      main: SURFACE_TOKENS.dark.surface,
-      light: SURFACE_TOKENS.dark.overlay,
-      dark: SURFACE_TOKENS.dark.body,
-      contrastText: SURFACE_TOKENS.dark.textPrimary,
+      // Keep primary as an actionable accent for cross-app visibility.
+      main: BRAND_COLORS.gold,
+      light: BRAND_COLORS.goldLight,
+      dark: BRAND_COLORS.goldDark,
+      contrastText: BRAND_COLORS.black,
     },
     secondary: {
       // Brand rule: dark mode secondary = gold accent
@@ -476,6 +476,22 @@ const darkTheme = createTheme({
             '&:hover': {
               transform: 'none',
             },
+          },
+        },
+      },
+    },
+    MuiLink: {
+      styleOverrides: {
+        root: {
+          color: BRAND_COLORS.gold,
+          fontWeight: 600,
+          textUnderlineOffset: '0.15em',
+          '&:hover': {
+            color: BRAND_COLORS.goldLight,
+            textDecorationColor: BRAND_COLORS.goldLight,
+          },
+          '&:visited': {
+            color: BRAND_COLORS.gold,
           },
         },
       },
@@ -771,11 +787,11 @@ const lightTheme = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      // Brand rule: light mode primary = visible white foundation
-      main: SURFACE_TOKENS.light.surface,
-      light: '#FFFFFF',
-      dark: SURFACE_TOKENS.light.raised,
-      contrastText: SURFACE_TOKENS.light.textPrimary,
+      // Keep primary as an actionable accent for cross-app visibility.
+      main: '#8A6700',
+      light: BRAND_COLORS.goldDark,
+      dark: '#6E5200',
+      contrastText: BRAND_COLORS.black,
     },
     secondary: {
       // Brand rule: light mode secondary = gold accent
@@ -1033,6 +1049,22 @@ const lightTheme = createTheme({
             '&:hover': {
               transform: 'none',
             },
+          },
+        },
+      },
+    },
+    MuiLink: {
+      styleOverrides: {
+        root: {
+          color: '#8A6700',
+          fontWeight: 600,
+          textUnderlineOffset: '0.15em',
+          '&:hover': {
+            color: '#6E5200',
+            textDecorationColor: '#6E5200',
+          },
+          '&:visited': {
+            color: '#8A6700',
           },
         },
       },

@@ -7,10 +7,19 @@ jest.mock('axios', () => ({
   post: jest.fn(),
 }));
 
+const mockProxyHandler = jest.fn((req, res) => {
+  res.status(200).json({
+    success: true,
+    data: {
+      proxiedPath: req.originalUrl,
+    },
+  });
+});
+
+const mockCreateServiceProxy = jest.fn(() => mockProxyHandler);
+
 jest.mock('../proxy/serviceProxy', () => ({
-  createServiceProxy: jest.fn(() => (_req, res) => {
-    res.status(502).json({ success: false, message: 'proxy should not be used' });
-  }),
+  createServiceProxy: (...args) => mockCreateServiceProxy(...args),
 }));
 
 const messagingRoutes = require('./messaging.routes');
@@ -113,5 +122,59 @@ describe('messaging gateway trust headers', () => {
       },
     });
     expect(axios.post).not.toHaveBeenCalled();
+  });
+
+  test('proxies mobile conversation-by-id path through gateway conversation contract', async () => {
+    const conversationPayload = {
+      success: true,
+      data: {
+        conversation: {
+          id: '69aa0b13e0a41572beebe499',
+          participants: [],
+          messages: [],
+        },
+      },
+    };
+
+    mockProxyHandler.mockImplementationOnce((_req, res) => {
+      res.status(200).json(conversationPayload);
+    });
+
+    const response = await request(buildApp())
+      .get('/api/messages/conversations/69aa0b13e0a41572beebe499');
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual(conversationPayload);
+    expect(mockCreateServiceProxy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        target: 'http://messaging-service.test',
+        requireAuth: true,
+        pathRewrite: {
+          '^/api/messages/conversations': '/api/conversations',
+          '^/api/messaging/conversations': '/api/conversations',
+        },
+      }),
+    );
+    expect(mockProxyHandler).toHaveBeenCalled();
+  });
+
+  test('preserves 404 envelope for mobile conversation-by-id not-found responses', async () => {
+    const notFoundPayload = {
+      success: false,
+      error: {
+        code: 'CONVERSATION_NOT_FOUND',
+        message: 'Conversation not found or access denied',
+      },
+    };
+
+    mockProxyHandler.mockImplementationOnce((_req, res) => {
+      res.status(404).json(notFoundPayload);
+    });
+
+    const response = await request(buildApp())
+      .get('/api/messages/conversations/000000000000000000000000');
+
+    expect(response.status).toBe(404);
+    expect(response.body).toEqual(notFoundPayload);
   });
 });

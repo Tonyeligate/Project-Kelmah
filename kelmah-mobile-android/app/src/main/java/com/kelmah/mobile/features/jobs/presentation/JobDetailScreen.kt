@@ -38,6 +38,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -87,21 +88,55 @@ fun JobDetailScreen(
         },
         snackbarHost = { SnackbarHost(hostState = snackbars) },
     ) { padding ->
-        if (uiState.isDetailLoading || uiState.selectedJob?.summary?.id != jobId) {
+        val job = uiState.selectedJob?.takeIf { selected -> selected.summary.id == jobId }
+
+        if (uiState.isDetailLoading) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding),
                 verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                CircularProgressIndicator(modifier = Modifier.padding(horizontal = 24.dp))
+                CircularProgressIndicator()
                 Spacer(modifier = Modifier.height(12.dp))
-                Text(text = "Opening job...", modifier = Modifier.padding(horizontal = 24.dp))
+                Text(text = "Opening job...")
             }
             return@Scaffold
         }
 
-        val job = uiState.selectedJob
+        if (job == null) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .padding(horizontal = 20.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(
+                    text = "Unable to open this job",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = uiState.errorMessage ?: "We could not open this job. Check your connection and try again.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(modifier = Modifier.height(18.dp))
+                Button(onClick = { viewModel.loadJobDetail(jobId) }, modifier = Modifier.fillMaxWidth()) {
+                    Text("Retry")
+                }
+                Spacer(modifier = Modifier.height(10.dp))
+                OutlinedButton(onClick = onBack, modifier = Modifier.fillMaxWidth()) {
+                    Text("Back")
+                }
+            }
+            return@Scaffold
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -117,10 +152,18 @@ fun JobDetailScreen(
                     Text(text = job.summary.locationLabel, style = MaterialTheme.typography.bodyMedium)
                     Text(text = job.summary.budgetLabel, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
                     RelativeTimeFormatter.relativeOrFallback(job.summary.postedAt)?.let { posted ->
-                        Text(text = "Posted $posted", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(
+                            text = "Posted $posted",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
                     if (job.summary.isUrgent) {
-                        Text(text = "Urgent", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+                        Text(
+                            text = "Urgent",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
                     }
                     Text(text = job.fullDescription.ifBlank { job.summary.description }, style = MaterialTheme.typography.bodyLarge)
                 }
@@ -128,7 +171,11 @@ fun JobDetailScreen(
 
             Card {
                 Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text(text = "What you need", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
+                    Text(
+                        text = "What you need",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.SemiBold,
+                    )
                     if (job.requirements.isEmpty()) {
                         Text(text = "No extra requirements listed.")
                     } else {
@@ -140,7 +187,9 @@ fun JobDetailScreen(
                     Text(text = "${job.proposalCount} people applied")
                     Text(text = "${job.viewCount} people viewed")
                     job.deadline?.let {
-                        Text(text = "Apply by: ${RelativeTimeFormatter.deadlineLabel(it) ?: it}")
+                        Text(
+                            text = "Apply by: ${RelativeTimeFormatter.deadlineLabel(it) ?: it}",
+                        )
                     }
                 }
             }

@@ -28437,3 +28437,19 @@ Full visual and structural redesign of `kelmah-frontend/src/modules/jobs/pages/J
   - Playwright dark/light contrast check on `/login` links:
     - Dark mode: `Forgot password?` and `Create account` contrast `14.97:1`.
     - Light mode: `Forgot password?` and `Create account` contrast `4.86:1`.
+
+### [APR 04, 2026] ANDROID MILESTONE 1 TRUST/NAV HARDENING (IN PROGRESS)
+
+- Scope: start P0 Milestone 1 implementation for Android trust and navigation integrity.
+- Files in active implementation scope:
+  - `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/jobs/presentation/JobDetailScreen.kt`
+  - `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/app/navigation/KelmahDeepLinkResolver.kt`
+  - `kelmah-mobile-android/app/src/main/AndroidManifest.xml`
+  - `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/notifications/data/NotificationsModels.kt`
+  - `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/app/navigation/KelmahNavHost.kt`
+  - `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/app/KelmahApp.kt`
+- Planned outcomes in this pass:
+  - remove Job Detail infinite-loader trap and add explicit retry state;
+  - unify deep-link scheme behavior between resolver and manifest;
+  - validate notification targets before route navigation and apply safe fallback;
+  - standardize offline/timeout visibility in app shell.
