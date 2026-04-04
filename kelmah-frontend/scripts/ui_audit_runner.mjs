@@ -322,6 +322,20 @@ const buildMockApplicationsSummaryPayload = () => {
 };
 
 const wireMockRoutes = async ({ page, mockAuth, mockApplications, mockUser }) => {
+  await page.route('**/api/health/aggregate*', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        success: true,
+        data: {
+          gateway: { status: 'healthy' },
+          services: {},
+        },
+      }),
+    });
+  });
+
   if (mockAuth) {
     const authSuccessPayload = {
       success: true,
@@ -396,20 +410,6 @@ const wireMockRoutes = async ({ page, mockAuth, mockApplications, mockUser }) =>
   }
 
   if (mockAuth || mockApplications) {
-    await page.route('**/api/health/aggregate*', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({
-          success: true,
-          data: {
-            gateway: { status: 'healthy' },
-            services: {},
-          },
-        }),
-      });
-    });
-
     await page.route('**/api/messages/conversations*', async (route) => {
       await route.fulfill({
         status: 200,
@@ -871,6 +871,7 @@ const main = async () => {
         isMobile: viewport.mobile,
         hasTouch: viewport.mobile,
         deviceScaleFactor: 1,
+        serviceWorkers: 'block',
       });
 
       const page = await context.newPage();

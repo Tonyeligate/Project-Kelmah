@@ -715,7 +715,7 @@ const WorkerSearchResults = ({
               color="inherit"
               size="small"
               onClick={onRetry}
-              sx={{ minHeight: 36 }}
+              sx={{ minHeight: 44 }}
             >
               Retry
             </Button>

@@ -1,3 +1,80 @@
+### Session: Strict UI Pre-Push Gate Stabilization April 4 2026 ✅ COMPLETED
+
+**Date**: April 4, 2026  
+**Scope**: Close strict pre-push gate failures for `core-public` route pack, remove `/search` tap-target blocker, and stabilize audit determinism so gate compares are repeatable.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/search/components/results/WorkerSearchResults.jsx
+- kelmah-frontend/scripts/ui_audit_runner.mjs
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Fixed `/search` strict tap-target blocker:
+  - Raised error-state `Retry` action in `WorkerSearchResults` to `minHeight: 44`.
+- Stabilized strict audit runner behavior to prevent flaky compare deltas:
+  - Always mock `**/api/health/aggregate*` during UI audits (public and auth routes).
+  - Block service workers in Playwright audit contexts (`serviceWorkers: 'block'`) to avoid cached/offline variance.
+- Removed temporary diagnostic probe script after root-cause isolation and fix verification.
+
+**Verification**
+- PASS: strict baseline refresh
+  - `npm run ui:pack:baseline -- --pack core-public --task-id strict-fix-baseline-3 --base-url http://127.0.0.1:4175 --strict true`
+  - Result: all routes pass score thresholds (`/home` 25, `/jobs` 25, `/search` 25, `/support` 24, `/docs` 24, `/community` 24)
+- PASS: strict compare against updated baselines
+  - `npm run ui:pack:compare -- --pack core-public --task-id strict-fix-compare-3 --base-url http://127.0.0.1:4175 --strict true`
+  - Result: 0.00% mismatch at all audited breakpoints for all routes.
+- PASS: pre-push gate execution (stdin-closed hook simulation)
+  - `$env:UI_AUDIT_BASE_URL='http://127.0.0.1:4175'; '' | node scripts/ui-pre-push-gate.js --changed-files "kelmah-frontend/src/modules/search/components/results/WorkerSearchResults.jsx,kelmah-frontend/scripts/ui_audit_runner.mjs"`
+  - Result: `UI pre-push gate: PASS`
+
+### Session: Android Remaining Audit Gap Closure April 4 2026 ✅ COMPLETED
+
+**Date**: April 4, 2026  
+**Scope**: Close remaining Android gaps from the audit that were still open after P0 fixes: richer messaging composer flow, denser Home/Jobs decision UX, improved system-bar visual polish, and deeper mobile quality gates.
+
+**Files currently in scope**
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/messaging/data/MessagingModels.kt
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/messaging/data/MessagingRepository.kt
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/messaging/presentation/MessagesViewModel.kt
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/messaging/presentation/MessagesScreen.kt
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/home/presentation/HomeScreen.kt
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/jobs/presentation/JobsScreen.kt
+- kelmah-mobile-android/app/src/main/res/values/strings.xml
+- kelmah-mobile-android/app/src/main/res/values/themes.xml
+- kelmah-mobile-android/app/src/test/java/com/kelmah/mobile/features/messaging/presentation/MessagesViewModelTest.kt
+- kelmah-mobile-android/app/src/test/java/com/kelmah/mobile/features/jobs/presentation/JobsViewModelTest.kt
+- kelmah-mobile-android/app/src/test/java/com/kelmah/mobile/features/notifications/presentation/NotificationsViewModelTest.kt
+- kelmah-mobile-android/app/src/androidTest/java/com/kelmah/mobile/features/messaging/MessagingCriticalPathInstrumentationTest.kt
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Added attachment-capable messaging payload support end-to-end:
+  - `SendMessageRequest` now carries `attachments`.
+  - `ThreadMessage` now carries parsed attachments.
+  - Composer supports `Text`, `Photo`, and `File` modes with attachment link, name, and MIME fields.
+  - ViewModel validates attachment URL protocol and sends correct `messageType` + attachment payload.
+  - Conversation previews and message bubbles now render attachment-aware labels/metadata.
+- Increased Home/Jobs scanability and action density:
+  - Home overview card now includes in-card priority chips and a "next best action" block.
+  - Jobs screen now includes quick scan chips (sort/page/total/saved), richer job metadata chips, and a stronger primary apply CTA.
+- Improved visual polish baseline:
+  - Switched status and navigation bar colors from transparent to themed `colorSurface` for safer readability.
+- Improved typography hierarchy baseline:
+  - Split headline/display and body/label font families to strengthen scanability and visual intent.
+- Deepened mobile test gates:
+  - Added new unit tests for `JobsViewModel` application validation/success paths.
+  - Added new unit tests for `NotificationsViewModel` mutation/unread-sync flows.
+  - Extended messaging critical path instrumentation with attachment payload shape validation.
+
+**Verification**
+- PASS: Focused Android unit suites:
+  - `./gradlew testDebugUnitTest --tests "*MessagesViewModelTest*" --tests "*JobsViewModelTest*" --tests "*NotificationsViewModelTest*" --tests "*SessionCoordinatorTest*" --no-daemon --console=plain`
+  - Result: `BUILD SUCCESSFUL`
+- PASS: Android lint after changes:
+  - `./gradlew lintDebug --no-daemon --console=plain`
+  - Result: `BUILD SUCCESSFUL`
+  - Lint report shows: `No errors or warnings`
+
 ### Session: Final 7-Route UI Audit Closure April 3 2026 ✅ COMPLETED
 
 **Date**: April 3, 2026  
