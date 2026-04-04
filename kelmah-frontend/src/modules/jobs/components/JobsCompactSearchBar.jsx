@@ -82,8 +82,13 @@ const JobsCompactSearchBar = ({
             },
           }}
           sx={{
+            '& .MuiInputBase-root': {
+              minHeight: 44,
+            },
             '& .MuiInputBase-input': {
               fontSize: '0.95rem',
+              py: '12px',
+              lineHeight: 1.2,
               '&::placeholder': {
                 color: 'var(--k-text-muted)',
                 opacity: 1,

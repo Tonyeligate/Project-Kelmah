@@ -3,7 +3,8 @@
  * Clean, minimal design optimized for mobile devices
  */
 
-import React, { useState } from 'react';
+import { useState } from 'react';
+import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { login as loginAction } from '../../services/authSlice';
 import {
@@ -19,7 +20,6 @@ import {
   Checkbox,
   Stack,
   Fade,
-  Chip,
   useTheme,
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
@@ -184,7 +184,7 @@ const MobileLogin = ({ registrationSuccess = false }) => {
               fontSize: '13px',
             }}
           >
-            Ghana's Skilled Trades Platform
+            Ghana&apos;s Skilled Trades Platform
           </Typography>
         </motion.div>
       </Box>
@@ -242,18 +242,6 @@ const MobileLogin = ({ registrationSuccess = false }) => {
               </Typography>
             </Box>
           </Box>
-
-          <Stack
-            direction="row"
-            spacing={1}
-            useFlexGap
-            flexWrap="wrap"
-            sx={{ mb: 1.5 }}
-          >
-            <Chip label="Find work faster" size="small" variant="outlined" />
-            <Chip label="Track applications" size="small" variant="outlined" />
-            <Chip label="Reply to hirers" size="small" variant="outlined" />
-          </Stack>
 
           {/* Success Alert */}
           <AnimatePresence>
@@ -496,7 +484,7 @@ const MobileLogin = ({ registrationSuccess = false }) => {
             }}
           >
             <Typography sx={{ color: 'text.secondary', fontSize: '14px' }}>
-              Don't have an account?
+              Don&apos;t have an account?
             </Typography>
             <Button
               component={RouterLink}
@@ -523,6 +511,10 @@ const MobileLogin = ({ registrationSuccess = false }) => {
       </motion.div>
     </Box>
   );
+};
+
+MobileLogin.propTypes = {
+  registrationSuccess: PropTypes.bool,
 };
 
 export default MobileLogin;

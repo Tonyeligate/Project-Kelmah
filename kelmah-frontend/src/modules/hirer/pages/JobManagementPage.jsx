@@ -707,13 +707,17 @@ const JobManagementPage = () => {
               flexWrap: 'wrap',
               gap: 1,
               position: { xs: 'sticky', md: 'static' },
-              top: { xs: withSafeAreaTop(HEADER_HEIGHT_MOBILE), md: 'auto' },
+              top: {
+                xs: `calc(${withSafeAreaTop(HEADER_HEIGHT_MOBILE)} + var(--kelmah-network-banner-offset, 0px))`,
+                md: 'auto',
+              },
               zIndex: { xs: Z_INDEX.sticky, md: 'auto' },
               py: { xs: 0.5, md: 0 },
               backgroundColor: { xs: 'background.default', md: 'transparent' },
             }}
           >
             <Typography
+              component="h1"
               variant={isCompactMobile ? 'h5' : isMobile ? 'h5' : 'h4'}
               fontWeight="bold"
               sx={{ mb: 0, lineHeight: 1.1 }}
@@ -798,6 +802,11 @@ const JobManagementPage = () => {
                 flex: 1,
                 '& .MuiOutlinedInput-root': {
                   fontSize: '0.875rem',
+                  minHeight: 44,
+                },
+                '& .MuiInputBase-input': {
+                  py: '11px',
+                  lineHeight: 1.2,
                 },
               }}
             />
@@ -829,136 +838,161 @@ const JobManagementPage = () => {
             onChange={handleTabChange}
             indicatorColor="primary"
             textColor="primary"
-            variant="scrollable"
-            scrollButtons="auto"
-            allowScrollButtonsMobile
+            variant={isMobile ? 'fullWidth' : 'scrollable'}
+            scrollButtons={isMobile ? false : 'auto'}
+            allowScrollButtonsMobile={!isMobile}
             sx={{
               borderBottom: 1,
               borderColor: 'divider',
-              minHeight: { xs: 40, md: 48 },
+              minHeight: { xs: 44, md: 48 },
               '& .MuiTab-root': {
                 textTransform: 'none',
                 fontWeight: 500,
                 fontSize: { xs: '0.8rem', md: '0.9rem' },
-                minHeight: { xs: 40, md: 48 },
-                minWidth: { xs: 'auto', md: 100 },
-                px: { xs: 1.5, md: 2 },
+                minHeight: { xs: 44, md: 48 },
+                minWidth: { xs: 0, md: 100 },
+                px: { xs: 0.75, md: 2 },
               },
               '& .MuiTabs-scrollButtons': {
-                width: 28,
+                width: 44,
+                minHeight: 44,
               },
             }}
           >
             <Tab
               label={
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <span>All</span>
-                  {allJobsCount > 0 && (
-                    <Chip
-                      label={allJobsCount}
-                      size="small"
-                      sx={{
-                        height: 18,
-                        fontSize: '0.7rem',
-                        '& .MuiChip-label': { px: 0.75 },
-                      }}
-                    />
-                  )}
-                </Box>
+                isMobile ? (
+                  `All (${allJobsCount})`
+                ) : (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <span>All</span>
+                    {allJobsCount > 0 && (
+                      <Chip
+                        label={allJobsCount}
+                        size="small"
+                        sx={{
+                          height: 18,
+                          fontSize: '0.7rem',
+                          '& .MuiChip-label': { px: 0.75 },
+                        }}
+                      />
+                    )}
+                  </Box>
+                )
               }
             />
             <Tab
               label={
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <span>Open</span>
-                  {statusCounts.open > 0 && (
-                    <Chip
-                      label={statusCounts.open}
-                      size="small"
-                      color="success"
-                      sx={{
-                        height: 18,
-                        fontSize: '0.7rem',
-                        '& .MuiChip-label': { px: 0.75 },
-                      }}
-                    />
-                  )}
-                </Box>
+                isMobile ? (
+                  `Open (${statusCounts.open})`
+                ) : (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <span>Open</span>
+                    {statusCounts.open > 0 && (
+                      <Chip
+                        label={statusCounts.open}
+                        size="small"
+                        color="success"
+                        sx={{
+                          height: 18,
+                          fontSize: '0.7rem',
+                          '& .MuiChip-label': { px: 0.75 },
+                        }}
+                      />
+                    )}
+                  </Box>
+                )
               }
             />
             <Tab
               label={
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <span>{isMobile ? 'Active' : 'In Progress'}</span>
-                  {statusCounts['in-progress'] > 0 && (
-                    <Chip
-                      label={statusCounts['in-progress']}
-                      size="small"
-                      color="warning"
-                      sx={{
-                        height: 18,
-                        fontSize: '0.7rem',
-                        '& .MuiChip-label': { px: 0.75 },
-                      }}
-                    />
-                  )}
-                </Box>
+                isMobile ? (
+                  `Active (${statusCounts['in-progress']})`
+                ) : (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <span>In Progress</span>
+                    {statusCounts['in-progress'] > 0 && (
+                      <Chip
+                        label={statusCounts['in-progress']}
+                        size="small"
+                        color="warning"
+                        sx={{
+                          height: 18,
+                          fontSize: '0.7rem',
+                          '& .MuiChip-label': { px: 0.75 },
+                        }}
+                      />
+                    )}
+                  </Box>
+                )
               }
             />
             <Tab
               label={
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <span>Done</span>
-                  {statusCounts.completed > 0 && (
-                    <Chip
-                      label={statusCounts.completed}
-                      size="small"
-                      color="success"
-                      sx={{
-                        height: 18,
-                        fontSize: '0.7rem',
-                        '& .MuiChip-label': { px: 0.75 },
-                      }}
-                    />
-                  )}
-                </Box>
+                isMobile ? (
+                  `Done (${statusCounts.completed})`
+                ) : (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <span>Done</span>
+                    {statusCounts.completed > 0 && (
+                      <Chip
+                        label={statusCounts.completed}
+                        size="small"
+                        color="success"
+                        sx={{
+                          height: 18,
+                          fontSize: '0.7rem',
+                          '& .MuiChip-label': { px: 0.75 },
+                        }}
+                      />
+                    )}
+                  </Box>
+                )
               }
             />
             <Tab
               label={
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <span>{isMobile ? 'Closed' : 'Cancelled'}</span>
-                  {statusCounts.cancelled > 0 && (
-                    <Chip
-                      label={statusCounts.cancelled}
-                      size="small"
-                      color="error"
-                      sx={{
-                        height: 18,
-                        fontSize: '0.7rem',
-                        '& .MuiChip-label': { px: 0.75 },
-                      }}
-                    />
-                  )}
-                </Box>
+                isMobile ? (
+                  `Closed (${statusCounts.cancelled})`
+                ) : (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <span>Cancelled</span>
+                    {statusCounts.cancelled > 0 && (
+                      <Chip
+                        label={statusCounts.cancelled}
+                        size="small"
+                        color="error"
+                        sx={{
+                          height: 18,
+                          fontSize: '0.7rem',
+                          '& .MuiChip-label': { px: 0.75 },
+                        }}
+                      />
+                    )}
+                  </Box>
+                )
               }
             />
             <Tab
               label={
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <span>Drafts</span>
-                  {statusCounts.draft > 0 && (
-                    <Chip
-                      label={statusCounts.draft}
-                      size="small"
-                      sx={{
-                        height: 18,
-                        fontSize: '0.7rem',
-                        '& .MuiChip-label': { px: 0.75 },
-                      }}
-                    />
-                  )}
-                </Box>
+                isMobile ? (
+                  `Drafts (${statusCounts.draft})`
+                ) : (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <span>Drafts</span>
+                    {statusCounts.draft > 0 && (
+                      <Chip
+                        label={statusCounts.draft}
+                        size="small"
+                        sx={{
+                          height: 18,
+                          fontSize: '0.7rem',
+                          '& .MuiChip-label': { px: 0.75 },
+                        }}
+                      />
+                    )}
+                  </Box>
+                )
               }
             />
           </Tabs>

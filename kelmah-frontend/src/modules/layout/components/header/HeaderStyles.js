@@ -210,8 +210,8 @@ export const ActionButton = styled(IconButton)(({ theme }) => ({
 }));
 
 export const UserAvatar = styled(Avatar)(({ theme }) => ({
-  width: 40,
-  height: 40,
+  width: 44,
+  height: 44,
   backgroundColor:
     theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
   color: theme.palette.mode === 'dark' ? BRAND_COLORS.black : BRAND_COLORS.gold,
@@ -224,9 +224,9 @@ export const UserAvatar = styled(Avatar)(({ theme }) => ({
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   cursor: 'pointer',
   [theme.breakpoints.down('sm')]: {
-    width: 36,
-    height: 36,
-    fontSize: '0.9rem',
+    width: 44,
+    height: 44,
+    fontSize: '0.95rem',
     border:
       theme.palette.mode === 'dark'
         ? `1.5px solid rgba(255, 215, 0, 0.3)`

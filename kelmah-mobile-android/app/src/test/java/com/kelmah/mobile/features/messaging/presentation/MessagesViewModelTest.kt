@@ -5,6 +5,7 @@ import com.kelmah.mobile.core.realtime.RealtimeSignal
 import com.kelmah.mobile.core.realtime.RealtimeSocketManager
 import com.kelmah.mobile.features.messaging.data.ConversationDetailPayload
 import com.kelmah.mobile.features.messaging.data.ConversationSummary
+import com.kelmah.mobile.features.messaging.data.MessageAttachment
 import com.kelmah.mobile.features.messaging.data.MessagingParticipant
 import com.kelmah.mobile.features.messaging.data.MessagingRepository
 import com.kelmah.mobile.features.messaging.data.ThreadMessage
@@ -107,5 +108,116 @@ class MessagesViewModelTest {
         assertFalse(uiState.isLoadingMessages)
 
         coVerify(exactly = 1) { messagingRepository.getConversationById("missing-conversation") }
+    }
+
+    @Test
+    fun sendMessage_withFileAttachment_sendsAttachmentPayloadAndClearsDraft() = runTest {
+        val participant = MessagingParticipant(id = "worker-2", name = "Ama Worker")
+        val conversation = ConversationSummary(
+            id = "conversation-42",
+            participants = listOf(participant),
+            otherParticipant = participant,
+            unreadCount = 0,
+            lastMessagePreview = "Morning",
+        )
+        val sentMessage = ThreadMessage(
+            id = "message-2",
+            conversationId = "conversation-42",
+            senderId = "hirer-1",
+            senderName = "You",
+            content = "[Attachment]",
+            messageType = "file",
+            attachments = listOf(
+                MessageAttachment(
+                    name = "scope.pdf",
+                    fileUrl = "https://files.kelmah.test/scope.pdf",
+                    fileType = "application/pdf",
+                ),
+            ),
+            createdAt = "2026-04-03T09:05:00Z",
+        )
+
+        every { messagingRepository.currentUserId() } returns "hirer-1"
+        every { realtimeSocketManager.signals } returns MutableSharedFlow<RealtimeSignal>()
+        coEvery { messagingRepository.getMessages("conversation-42") } returns ApiResult.Success(emptyList())
+        coEvery {
+            messagingRepository.sendMessage(
+                conversationId = "conversation-42",
+                content = "",
+                messageType = "file",
+                attachments = match { list ->
+                    list.size == 1 &&
+                        list.first().name == "scope.pdf" &&
+                        list.first().fileUrl == "https://files.kelmah.test/scope.pdf"
+                },
+            )
+        } returns ApiResult.Success(sentMessage)
+
+        val viewModel = MessagesViewModel(
+            messagingRepository = messagingRepository,
+            realtimeSocketManager = realtimeSocketManager,
+        )
+
+        viewModel.openConversation(conversation)
+        viewModel.updateComposerMode(MessageComposerMode.FILE)
+        viewModel.updateAttachmentName("scope.pdf")
+        viewModel.updateAttachmentUrl("https://files.kelmah.test/scope.pdf")
+        viewModel.sendMessage()
+        advanceUntilIdle()
+
+        val uiState = viewModel.uiState.value
+        assertEquals("", uiState.draftMessage)
+        assertEquals("", uiState.attachmentName)
+        assertEquals("", uiState.attachmentUrl)
+        assertEquals(MessageComposerMode.TEXT, uiState.composerMode)
+        assertEquals("Attachment", uiState.selectedConversation?.lastMessagePreview)
+        assertEquals(1, uiState.messages.size)
+
+        coVerify(exactly = 1) {
+            messagingRepository.sendMessage(
+                conversationId = "conversation-42",
+                content = "",
+                messageType = "file",
+                attachments = any(),
+            )
+        }
+    }
+
+    @Test
+    fun sendMessage_withInvalidAttachmentUrl_setsValidationError() = runTest {
+        val participant = MessagingParticipant(id = "worker-2", name = "Ama Worker")
+        val conversation = ConversationSummary(
+            id = "conversation-42",
+            participants = listOf(participant),
+            otherParticipant = participant,
+        )
+
+        every { messagingRepository.currentUserId() } returns "hirer-1"
+        every { realtimeSocketManager.signals } returns MutableSharedFlow<RealtimeSignal>()
+        coEvery { messagingRepository.getMessages("conversation-42") } returns ApiResult.Success(emptyList())
+
+        val viewModel = MessagesViewModel(
+            messagingRepository = messagingRepository,
+            realtimeSocketManager = realtimeSocketManager,
+        )
+
+        viewModel.openConversation(conversation)
+        viewModel.updateComposerMode(MessageComposerMode.PHOTO)
+        viewModel.updateAttachmentUrl("ftp://bad-link")
+        viewModel.sendMessage()
+        advanceUntilIdle()
+
+        assertEquals(
+            "Attachment link must start with http:// or https://",
+            viewModel.uiState.value.errorMessage,
+        )
+        coVerify(exactly = 0) {
+            messagingRepository.sendMessage(
+                conversationId = any(),
+                content = any(),
+                messageType = any(),
+                attachments = any(),
+            )
+        }
     }
 }

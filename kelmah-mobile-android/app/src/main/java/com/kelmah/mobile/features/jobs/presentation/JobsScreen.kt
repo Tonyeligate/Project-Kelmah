@@ -20,6 +20,7 @@ import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.AssistChip
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -162,6 +163,39 @@ fun JobsScreen(
                         label = if (isWorker) "80%+ fit" else "Bookmarked",
                         value = if (isWorker) highFitCount else uiState.savedJobs.size,
                     )
+                }
+            }
+
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                item {
+                    AssistChip(
+                        onClick = {},
+                        enabled = false,
+                        label = { Text("Sort: ${uiState.filters.sort.label}") },
+                    )
+                }
+                item {
+                    AssistChip(
+                        onClick = {},
+                        enabled = false,
+                        label = { Text("Page ${uiState.currentPage}/${uiState.totalPages}") },
+                    )
+                }
+                item {
+                    AssistChip(
+                        onClick = {},
+                        enabled = false,
+                        label = { Text("Total ${uiState.totalItems}") },
+                    )
+                }
+                if (uiState.savedJobs.isNotEmpty()) {
+                    item {
+                        AssistChip(
+                            onClick = {},
+                            enabled = false,
+                            label = { Text("Saved ${uiState.savedJobs.size}") },
+                        )
+                    }
                 }
             }
 
@@ -313,8 +347,31 @@ private fun JobCard(
             Text(job.description, maxLines = 3, overflow = TextOverflow.Ellipsis)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 AssistChip(onClick = {}, label = { Text(job.category) })
+                AssistChip(
+                    onClick = {},
+                    enabled = false,
+                    label = {
+                        Text(
+                            if (job.paymentType.equals("hourly", ignoreCase = true)) {
+                                "Hourly"
+                            } else {
+                                "Fixed"
+                            },
+                        )
+                    },
+                )
                 if (job.isUrgent) {
                     AssistChip(onClick = {}, label = { Text("Urgent") })
+                }
+                if (job.proposalCount > 0) {
+                    AssistChip(onClick = {}, enabled = false, label = { Text("${job.proposalCount} proposals") })
+                }
+                if (isWorker && job.matchScore != null) {
+                    AssistChip(
+                        onClick = {},
+                        enabled = false,
+                        label = { Text("${job.matchScore.toInt()}% fit") },
+                    )
                 }
             }
             Text(job.locationLabel, style = MaterialTheme.typography.bodyMedium)
@@ -335,7 +392,7 @@ private fun JobCard(
                     Text(if (isWorker) "Open Job" else "Open Job")
                 }
                 if (isWorker) {
-                    OutlinedButton(onClick = onApply, modifier = Modifier.weight(1f)) {
+                    Button(onClick = onApply, modifier = Modifier.weight(1f)) {
                         Icon(Icons.AutoMirrored.Outlined.Send, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
                         Text("Apply Now")

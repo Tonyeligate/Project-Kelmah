@@ -1306,7 +1306,7 @@ function ApplicationManagementPage() {
           PaperProps={{
             sx: {
               width: { xs: '100%', sm: 440, lg: 520 },
-              maxWidth: '100vw',
+              maxWidth: '100%',
               borderLeft: `1px solid ${theme.palette.divider}`,
             },
           }}

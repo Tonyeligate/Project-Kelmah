@@ -35,6 +35,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -44,6 +45,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -155,9 +157,18 @@ fun MessagesScreen(
                 conversation = state.selectedConversation,
                 messages = state.messages,
                 draftMessage = state.draftMessage,
+                composerMode = state.composerMode,
+                attachmentName = state.attachmentName,
+                attachmentUrl = state.attachmentUrl,
+                attachmentMimeType = state.attachmentMimeType,
                 isLoading = state.isLoadingMessages,
                 isSending = state.isSending,
                 onDraftChange = viewModel::updateDraft,
+                onComposerModeChange = viewModel::updateComposerMode,
+                onAttachmentNameChange = viewModel::updateAttachmentName,
+                onAttachmentUrlChange = viewModel::updateAttachmentUrl,
+                onAttachmentMimeTypeChange = viewModel::updateAttachmentMimeType,
+                onAttachmentClear = viewModel::clearAttachmentDraft,
                 onSend = viewModel::sendMessage,
             )
         }
@@ -293,9 +304,18 @@ private fun ThreadContent(
     conversation: ConversationSummary?,
     messages: List<ThreadMessage>,
     draftMessage: String,
+    composerMode: MessageComposerMode,
+    attachmentName: String,
+    attachmentUrl: String,
+    attachmentMimeType: String,
     isLoading: Boolean,
     isSending: Boolean,
     onDraftChange: (String) -> Unit,
+    onComposerModeChange: (MessageComposerMode) -> Unit,
+    onAttachmentNameChange: (String) -> Unit,
+    onAttachmentUrlChange: (String) -> Unit,
+    onAttachmentMimeTypeChange: (String) -> Unit,
+    onAttachmentClear: () -> Unit,
     onSend: () -> Unit,
 ) {
     val listState = rememberLazyListState()
@@ -311,6 +331,13 @@ private fun ThreadContent(
         if (messages.isNotEmpty()) {
             listState.animateScrollToItem(messages.lastIndex)
         }
+    }
+
+    val canSend = draftMessage.trim().isNotEmpty() || attachmentUrl.trim().isNotEmpty()
+    val sendLabel = when (composerMode) {
+        MessageComposerMode.TEXT -> stringResource(id = R.string.messages_send)
+        MessageComposerMode.PHOTO -> stringResource(id = R.string.messages_send_photo)
+        MessageComposerMode.FILE -> stringResource(id = R.string.messages_send_file)
     }
 
     Column(modifier = modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
@@ -381,6 +408,59 @@ private fun ThreadContent(
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            items(MessageComposerMode.entries, key = { it.name }) { mode ->
+                FilterChip(
+                    selected = composerMode == mode,
+                    onClick = { onComposerModeChange(mode) },
+                    label = {
+                        Text(
+                            when (mode) {
+                                MessageComposerMode.TEXT -> stringResource(id = R.string.messages_mode_text)
+                                MessageComposerMode.PHOTO -> stringResource(id = R.string.messages_mode_photo)
+                                MessageComposerMode.FILE -> stringResource(id = R.string.messages_mode_file)
+                            },
+                        )
+                    },
+                )
+            }
+        }
+
+        if (composerMode != MessageComposerMode.TEXT) {
+            Spacer(modifier = Modifier.height(8.dp))
+            OutlinedTextField(
+                value = attachmentUrl,
+                onValueChange = onAttachmentUrlChange,
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text(stringResource(id = R.string.messages_attachment_url_label)) },
+                placeholder = { Text(stringResource(id = R.string.messages_attachment_url_placeholder)) },
+                singleLine = true,
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            OutlinedTextField(
+                value = attachmentName,
+                onValueChange = onAttachmentNameChange,
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text(stringResource(id = R.string.messages_attachment_name_label)) },
+                singleLine = true,
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            OutlinedTextField(
+                value = attachmentMimeType,
+                onValueChange = onAttachmentMimeTypeChange,
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text(stringResource(id = R.string.messages_attachment_type_label)) },
+                singleLine = true,
+            )
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                TextButton(onClick = onAttachmentClear) {
+                    Text(stringResource(id = R.string.messages_attachment_clear))
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
         Row(verticalAlignment = Alignment.Bottom) {
             OutlinedTextField(
                 value = draftMessage,
@@ -403,7 +483,7 @@ private fun ThreadContent(
 
             Button(
                 onClick = onSend,
-                enabled = isSending.not() && draftMessage.trim().isNotEmpty(),
+                enabled = isSending.not() && canSend,
                 modifier = Modifier.height(52.dp),
             ) {
                 if (isSending) {
@@ -421,7 +501,7 @@ private fun ThreadContent(
                         tint = MaterialTheme.colorScheme.onPrimary,
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(stringResource(id = R.string.messages_send))
+                    Text(sendLabel)
                 }
             }
         }
@@ -450,14 +530,29 @@ private fun MessageBubble(
             color = if (isOwnMessage) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
         ) {
             Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)) {
-                Text(
-                    text = when (message.messageType) {
-                        "image" -> if (message.content == "[Attachment]") "Photo" else message.content
-                        "file" -> if (message.content == "[Attachment]") "Attachment" else message.content
-                        else -> message.content
-                    },
-                    style = MaterialTheme.typography.bodyLarge,
-                )
+                val visibleText = when (message.messageType) {
+                    "image" -> if (message.content == "[Attachment]") "Photo" else message.content
+                    "file", "mixed" -> if (message.content == "[Attachment]") "Attachment" else message.content
+                    else -> message.content
+                }
+                if (visibleText.isNotBlank()) {
+                    Text(
+                        text = visibleText,
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                }
+                if (message.attachments.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    message.attachments.forEach { attachment ->
+                        Text(
+                            text = "• ${attachment.name}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                }
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
                     text = message.createdAt?.let { RelativeTimeFormatter.relativeOrFallback(it) ?: it } ?: "Just now",

@@ -82,7 +82,9 @@ const App = () => {
   const [swUpdateAvailable, setSwUpdateAvailable] = useState(false);
   const [pwaInstallAvailable, setPwaInstallAvailable] = useState(false);
   const [apiRecoveryNotice, setApiRecoveryNotice] = useState(null);
-  const hasTopNetworkBanner = servicesWakingUp;
+  const [backendWarningOpen, setBackendWarningOpen] = useState(false);
+  // Keep layout offsets disabled so status notices do not push page content.
+  const hasTopNetworkBanner = false;
 
   // Auto-connect/disconnect the global websocket singleton based on auth state
   useWebSocketConnect();
@@ -231,6 +233,17 @@ const App = () => {
       root.style.setProperty('--kelmah-network-banner-offset', '0px');
     };
   }, [hasTopNetworkBanner]);
+
+  useEffect(() => {
+    if (!isHealthy && !servicesWakingUp) {
+      setBackendWarningOpen(true);
+      return;
+    }
+
+    if (isHealthy) {
+      setBackendWarningOpen(false);
+    }
+  }, [isHealthy, servicesWakingUp]);
 
   // Warm up backend services on app load (prevents Render free tier sleep)
   // Defer work until after first render/idle to avoid delaying first paint.
@@ -393,32 +406,11 @@ const App = () => {
               position: 'fixed',
               top: 'env(safe-area-inset-top, 0px)',
               left: 0,
-              zIndex: Z_INDEX.backdrop,
+              zIndex: Z_INDEX.sticky,
             }}
           >
             <LinearProgress color="warning" />
-            <Alert severity="info" sx={{ borderRadius: 0 }}>
-              Waking up backend services... This may take up to 30 seconds on
-              first load.
-            </Alert>
           </Box>
-        )}
-        {!isHealthy && !servicesWakingUp && (
-          <Alert severity="warning" sx={{ mb: 2 }}>
-            Backend services are currently unreachable. Some features may be
-            limited.
-          </Alert>
-        )}
-        {servicesWakingUp && (
-          <Box
-            aria-hidden="true"
-            sx={{
-              height: {
-                xs: 'calc(56px + env(safe-area-inset-top, 0px))',
-                md: '56px',
-              },
-            }}
-          />
         )}
         <Box
           component="main"
@@ -429,6 +421,37 @@ const App = () => {
           <AppRoutes />
         </Box>
         <OfflineBanner />
+        <Snackbar
+          open={!isHealthy && !servicesWakingUp && backendWarningOpen}
+          onClose={() => setBackendWarningOpen(false)}
+          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+          sx={{
+            top: {
+              xs: 'calc(env(safe-area-inset-top, 0px) + 8px) !important',
+              md: '12px !important',
+            },
+            zIndex: Z_INDEX.snackbar,
+          }}
+        >
+          <Alert
+            severity="warning"
+            onClose={() => setBackendWarningOpen(false)}
+            action={
+              <Button
+                color="inherit"
+                size="small"
+                onClick={handleRecoverableNoticeRetry}
+                sx={{ minHeight: 44 }}
+              >
+                Retry
+              </Button>
+            }
+            sx={{ width: '100%' }}
+          >
+            Backend services are currently unreachable. Some features may be
+            limited.
+          </Alert>
+        </Snackbar>
         {/* SW update notification — replaces native confirm() dialog */}
         <Snackbar
           open={swUpdateAvailable}

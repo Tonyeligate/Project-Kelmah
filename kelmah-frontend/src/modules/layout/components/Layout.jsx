@@ -39,6 +39,15 @@ const DASHBOARD_EXACT_PATHS = [
   '/reviews',
 ];
 
+const SMART_NAV_EXCLUDED_PREFIXES = [
+  '/worker/find-work',
+  '/worker/job-search',
+  '/worker/applications',
+  '/hirer/jobs',
+  '/hirer/find-talents',
+  '/hirer/applications',
+];
+
 const isDashboardRoute = (path = '') => {
   if (
     !path ||
@@ -131,6 +140,9 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
     currentPath === '/chat' ||
     currentPath.startsWith('/chat');
   const isDashboardPage = isDashboardRoute(currentPath);
+  const hideSmartNavigation = SMART_NAV_EXCLUDED_PREFIXES.some(
+    (prefix) => currentPath === prefix || currentPath.startsWith(`${prefix}/`),
+  );
 
   // Session expired banner state - moved outside conditional blocks
   const [sessionExpired, setSessionExpired] = useState(false);
@@ -356,7 +368,7 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
           {sessionExpired && sessionExpiredBanner}
           {content}
         </Box>
-        {!isMessagesPage && (
+        {!isMessagesPage && !hideSmartNavigation && (
           <Box component="nav" aria-label="Quick navigation suggestions">
             <SmartNavigation />
           </Box>
@@ -409,7 +421,7 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
             overflowX: 'hidden',
             overflowY: 'visible',
             '@media (min-width: 1px)': {
-              maxWidth: '100vw',
+              maxWidth: '100%',
               boxSizing: 'border-box',
             },
           }}

@@ -12,4 +12,14 @@
     <string name="messages_draft_placeholder">Type message</string>
     <string name="messages_send">Send</string>
     <string name="messages_sending">Sending</string>
+    <string name="messages_send_photo">Send photo</string>
+    <string name="messages_send_file">Send file</string>
+    <string name="messages_mode_text">Text</string>
+    <string name="messages_mode_photo">Photo</string>
+    <string name="messages_mode_file">File</string>
+    <string name="messages_attachment_url_label">Attachment link</string>
+    <string name="messages_attachment_url_placeholder">https://example.com/file.jpg</string>
+    <string name="messages_attachment_name_label">Attachment name (optional)</string>
+    <string name="messages_attachment_type_label">MIME type (optional)</string>
+    <string name="messages_attachment_clear">Clear attachment</string>
 </resources>

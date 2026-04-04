@@ -3,7 +3,7 @@
  * Clean, step-based design optimized for mobile devices
  */
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -27,7 +27,6 @@ import { alpha } from '@mui/material/styles';
 import {
   Visibility,
   VisibilityOff,
-  Person as PersonIcon,
   Email as EmailIcon,
   Phone as PhoneIcon,
   Lock as LockIcon,
@@ -97,8 +96,8 @@ const MobileRegister = () => {
   const authError = useSelector(selectAuthError);
 
   // Step state
-  const [step, setStep] = useState(1); // 1: Role, 2: Info, 3: Security
-  const totalSteps = 3;
+  const [step, setStep] = useState(1); // 1: Role, 2: Info, 3: Security, 4: Review
+  const totalSteps = 4;
 
   // Form state
   const [formData, setFormData] = useState({
@@ -521,6 +520,7 @@ const MobileRegister = () => {
                 renderTags={(value, getTagProps) =>
                   value.map((option, index) => (
                     <Chip
+                      key={option}
                       label={option}
                       size="small"
                       {...getTagProps({ index })}
@@ -573,9 +573,7 @@ const MobileRegister = () => {
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <LockIcon
-                      sx={{ color: 'rgba(255,255,255,0.4)', fontSize: 18 }}
-                    />
+                    <LockIcon sx={{ color: 'text.disabled', fontSize: 18 }} />
                   </InputAdornment>
                 ),
                 endAdornment: (
@@ -615,7 +613,7 @@ const MobileRegister = () => {
                   sx={{
                     height: 6,
                     borderRadius: 3,
-                    backgroundColor: 'rgba(255,255,255,0.1)',
+                    backgroundColor: alpha(theme.palette.text.primary, 0.1),
                     '& .MuiLinearProgress-bar': {
                       backgroundColor:
                         passwordStrength <= 2
@@ -628,7 +626,7 @@ const MobileRegister = () => {
                 />
                 <Typography
                   sx={{
-                    color: 'rgba(255,255,255,0.6)',
+                    color: 'text.secondary',
                     fontSize: '13px',
                     mt: 0.5,
                   }}
@@ -655,9 +653,7 @@ const MobileRegister = () => {
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <LockIcon
-                      sx={{ color: 'rgba(255,255,255,0.4)', fontSize: 18 }}
-                    />
+                    <LockIcon sx={{ color: 'text.disabled', fontSize: 18 }} />
                   </InputAdornment>
                 ),
                 endAdornment: (
@@ -750,6 +746,138 @@ const MobileRegister = () => {
           </Stack>
         );
 
+      case 4:
+        return (
+          <Stack spacing={1.5}>
+            <Alert
+              severity="info"
+              sx={{
+                borderRadius: 2,
+                '& .MuiAlert-message': { fontSize: '0.85rem' },
+              }}
+            >
+              Review your details before creating your account.
+            </Alert>
+
+            <Box
+              sx={{
+                p: 1.5,
+                borderRadius: 2,
+                border: `1px solid ${alpha(theme.palette.text.primary, 0.14)}`,
+                backgroundColor: alpha(theme.palette.text.primary, 0.03),
+              }}
+            >
+              <Typography sx={{ color: 'text.secondary', fontSize: '12px' }}>
+                Account Type
+              </Typography>
+              <Typography sx={{ color: 'text.primary', fontWeight: 600 }}>
+                {formData.role === 'worker' ? 'Worker' : 'Hirer'}
+              </Typography>
+            </Box>
+
+            <Box
+              sx={{
+                p: 1.5,
+                borderRadius: 2,
+                border: `1px solid ${alpha(theme.palette.text.primary, 0.14)}`,
+                backgroundColor: alpha(theme.palette.text.primary, 0.03),
+              }}
+            >
+              <Typography sx={{ color: 'text.secondary', fontSize: '12px' }}>
+                Full Name
+              </Typography>
+              <Typography sx={{ color: 'text.primary', fontWeight: 600 }}>
+                {[formData.firstName, formData.lastName]
+                  .filter(Boolean)
+                  .join(' ') || '-'}
+              </Typography>
+            </Box>
+
+            <Box
+              sx={{
+                p: 1.5,
+                borderRadius: 2,
+                border: `1px solid ${alpha(theme.palette.text.primary, 0.14)}`,
+                backgroundColor: alpha(theme.palette.text.primary, 0.03),
+              }}
+            >
+              <Typography sx={{ color: 'text.secondary', fontSize: '12px' }}>
+                Contact
+              </Typography>
+              <Typography sx={{ color: 'text.primary', fontWeight: 600 }}>
+                {formData.email || '-'}
+              </Typography>
+              <Typography sx={{ color: 'text.secondary', fontSize: '13px' }}>
+                {formData.phone || '-'}
+              </Typography>
+            </Box>
+
+            {formData.role === 'hirer' && (
+              <Box
+                sx={{
+                  p: 1.5,
+                  borderRadius: 2,
+                  border: `1px solid ${alpha(theme.palette.text.primary, 0.14)}`,
+                  backgroundColor: alpha(theme.palette.text.primary, 0.03),
+                }}
+              >
+                <Typography sx={{ color: 'text.secondary', fontSize: '12px' }}>
+                  Company
+                </Typography>
+                <Typography sx={{ color: 'text.primary', fontWeight: 600 }}>
+                  {formData.companyName || '-'}
+                </Typography>
+              </Box>
+            )}
+
+            {formData.role === 'worker' && (
+              <Box
+                sx={{
+                  p: 1.5,
+                  borderRadius: 2,
+                  border: `1px solid ${alpha(theme.palette.text.primary, 0.14)}`,
+                  backgroundColor: alpha(theme.palette.text.primary, 0.03),
+                }}
+              >
+                <Typography
+                  sx={{ color: 'text.secondary', fontSize: '12px', mb: 1 }}
+                >
+                  Skills / Trades
+                </Typography>
+                <Stack
+                  direction="row"
+                  spacing={0.75}
+                  useFlexGap
+                  flexWrap="wrap"
+                >
+                  {formData.trades.length > 0 ? (
+                    formData.trades.map((trade) => (
+                      <Chip
+                        key={trade}
+                        size="small"
+                        label={trade}
+                        sx={{
+                          backgroundColor: alpha(
+                            theme.palette.primary.main,
+                            0.16,
+                          ),
+                          color: 'primary.main',
+                        }}
+                      />
+                    ))
+                  ) : (
+                    <Typography
+                      sx={{ color: 'text.secondary', fontSize: '13px' }}
+                    >
+                      No trade selected yet
+                    </Typography>
+                  )}
+                </Stack>
+              </Box>
+            )}
+          </Stack>
+        );
+
       default:
         return null;
     }
@@ -794,7 +922,9 @@ const MobileRegister = () => {
               ? 'Account Type'
               : step === 2
                 ? 'Your Info'
-                : 'Security'}
+                : step === 3
+                  ? 'Security'
+                  : 'Review'}
           </Typography>
         </Box>
         <LinearProgress
@@ -810,19 +940,14 @@ const MobileRegister = () => {
           }}
         />
 
-        <Alert
-          severity="info"
-          sx={{
-            mt: 1.25,
-            borderRadius: 2,
-            py: 0.5,
-            '& .MuiAlert-message': {
-              fontSize: '0.82rem',
-            },
-          }}
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ display: 'block', mt: 1.25, lineHeight: 1.4 }}
         >
-          1) Pick role 2) Add your real details 3) Create password.
-        </Alert>
+          1) Pick role 2) Add real details 3) Set password 4) Review and create
+          account.
+        </Typography>
       </Box>
 
       {/* Main Card */}

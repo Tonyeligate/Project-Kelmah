@@ -85,6 +85,13 @@ fun HomeScreen(
             add(HomePrioritySignal("Active jobs", activeJobs, onBrowseJobs))
         }
     }
+    val nextBestAction = when {
+        unreadMessages > 0 -> HomePrioritySignal("Reply to chats", unreadMessages, onOpenMessages)
+        unreadAlerts > 0 -> HomePrioritySignal("Review alerts", unreadAlerts, onOpenNotifications)
+        role == KelmahUserRole.WORKER && urgentJobs > 0 -> HomePrioritySignal("Apply urgent jobs", urgentJobs, onBrowseJobs)
+        role == KelmahUserRole.HIRER && activeJobs > 0 -> HomePrioritySignal("Track active jobs", activeJobs, onBrowseJobs)
+        else -> null
+    }
 
     LaunchedEffect(currentUser?.id, role) {
         jobsViewModel.refreshHome(role)
@@ -144,6 +151,42 @@ fun HomeScreen(
                             label = "Alerts",
                             value = unreadAlerts,
                         )
+                    }
+                    if (prioritySignals.isNotEmpty()) {
+                        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            items(prioritySignals.take(4), key = { signal -> signal.label }) { signal ->
+                                AssistChip(
+                                    onClick = signal.onOpen,
+                                    label = { Text("${signal.label} ${signal.count}") },
+                                )
+                            }
+                        }
+                    }
+                    nextBestAction?.let { action ->
+                        Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                    Text(
+                                        text = "Next best action",
+                                        style = MaterialTheme.typography.labelLarge,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                    Text(
+                                        text = "${action.label} (${action.count})",
+                                        style = MaterialTheme.typography.titleSmall,
+                                        fontWeight = FontWeight.SemiBold,
+                                    )
+                                }
+                                Button(onClick = action.onOpen) {
+                                    Text("Open")
+                                }
+                            }
+                        }
                     }
                     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         Button(onClick = onBrowseJobs, modifier = Modifier.fillMaxWidth()) {

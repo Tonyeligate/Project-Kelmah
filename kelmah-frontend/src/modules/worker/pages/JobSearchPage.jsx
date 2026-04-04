@@ -150,6 +150,7 @@ const SearchHeader = ({
   resultCount,
   isLoading,
   hasFilters,
+  isMobile,
 }) => {
   const theme = useTheme();
 
@@ -172,12 +173,18 @@ const SearchHeader = ({
     >
       <Stack spacing={1.5}>
         <Typography
-          variant="h5"
+          component="h1"
+          variant={isMobile ? 'h6' : 'h5'}
           fontWeight={700}
-          sx={{ display: { xs: 'none', md: 'block' } }}
+          sx={{ display: 'block' }}
         >
           Find Work
         </Typography>
+        {isMobile && (
+          <Typography variant="caption" color="text.secondary">
+            Start with trade and location, then refine with filters.
+          </Typography>
+        )}
         <Box component="form" onSubmit={handleSubmit} noValidate>
           <Stack
             direction="row"
@@ -190,6 +197,15 @@ const SearchHeader = ({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               size="small"
+              sx={{
+                '& .MuiInputBase-root': {
+                  minHeight: 44,
+                },
+                '& .MuiInputBase-input': {
+                  py: '11px',
+                  lineHeight: 1.2,
+                },
+              }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -299,16 +315,19 @@ const CategoryChips = ({ selected, onChange }) => {
       direction="row"
       spacing={1}
       sx={{
-        overflowX: 'auto',
+        flexWrap: 'wrap',
+        overflowX: 'hidden',
         py: 1,
         px: 0.5,
-        pr: 1,
-        scrollSnapType: 'x proximity',
+        pr: 0.5,
+        rowGap: 1,
+        scrollSnapType: 'none',
         '&::-webkit-scrollbar': { display: 'none' },
         scrollbarWidth: 'none',
         '& .MuiChip-root': {
           minHeight: 44,
-          scrollSnapAlign: 'start',
+          minWidth: 44,
+          maxWidth: '100%',
         },
       }}
     >
@@ -1052,6 +1071,7 @@ const JobSearchPage = () => {
             resultCount={jobsData?.totalJobs || jobs.length}
             isLoading={isLoading}
             hasFilters={hasFilters}
+            isMobile={isMobile}
           />
 
           {/* ─── Category Chips ────────────────────────── */}
@@ -1077,7 +1097,10 @@ const JobSearchPage = () => {
             sx={{
               mt: 1.5,
               position: { xs: 'sticky', md: 'static' },
-              top: { xs: HEADER_HEIGHT_MOBILE + 12, md: 'auto' },
+              top: {
+                xs: `calc(${HEADER_HEIGHT_MOBILE + 12}px + var(--kelmah-network-banner-offset, 0px))`,
+                md: 'auto',
+              },
               zIndex: Z_INDEX.sticky,
               py: 0.75,
               bgcolor: { xs: 'background.default', md: 'transparent' },
@@ -1132,14 +1155,14 @@ const JobSearchPage = () => {
               <ToggleButton
                 value="grid"
                 aria-label="Grid view"
-                sx={{ px: 1.5 }}
+                sx={{ px: 1.5, minWidth: 44, minHeight: 44 }}
               >
                 <GridViewIcon fontSize="small" />
               </ToggleButton>
               <ToggleButton
                 value="list"
                 aria-label="List view"
-                sx={{ px: 1.5 }}
+                sx={{ px: 1.5, minWidth: 44, minHeight: 44 }}
               >
                 <ListViewIcon fontSize="small" />
               </ToggleButton>

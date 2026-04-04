@@ -13,7 +13,6 @@ import {
   Chip,
   Stack,
   CircularProgress,
-  alpha,
 } from '@mui/material';
 import {
   Brightness4 as Brightness4Icon,
@@ -21,7 +20,6 @@ import {
   ColorLens as ColorLensIcon,
   Menu as MenuIcon,
   ArrowBack as ArrowBackIcon,
-  ExitToApp as LogoutIcon,
 } from '@mui/icons-material';
 import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
 import { useBreakpointDown } from '@/hooks/useResponsive';
@@ -657,33 +655,6 @@ const Header = ({
               <CircularProgress color="inherit" size={24} thickness={5} />
             </Box>
           ) : null}
-
-          {/* Mobile Menu Button — right-aligned */}
-          {isMobile && showUserFeatures && (
-            <Tooltip title="Sign out" arrow>
-              <ActionButton
-                aria-label="Sign out"
-                onClick={handleLogout}
-                sx={{
-                  ml: { xs: 0.25, sm: 0.5 },
-                  p: { xs: 0.9, sm: 1.1 },
-                  color: 'error.main',
-                  borderColor: alpha(theme.palette.error.main, 0.5),
-                  '&:focus-visible': {
-                    outline: `3px solid ${theme.palette.error.main}`,
-                    outlineOffset: 2,
-                  },
-                  '&:hover': {
-                    backgroundColor: alpha(theme.palette.error.main, 0.16),
-                  },
-                }}
-              >
-                <LogoutIcon
-                  sx={{ fontSize: { xs: '1.15rem', sm: '1.25rem' } }}
-                />
-              </ActionButton>
-            </Tooltip>
-          )}
 
           {isMobile && (
             <ActionButton

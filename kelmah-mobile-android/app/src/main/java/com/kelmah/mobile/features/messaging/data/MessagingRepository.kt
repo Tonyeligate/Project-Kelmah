@@ -77,12 +77,16 @@ class MessagingRepository @Inject constructor(
     suspend fun sendMessage(
         conversationId: String,
         content: String,
+        messageType: String = "text",
+        attachments: List<MessageAttachment> = emptyList(),
     ): ApiResult<ThreadMessage> = executeAuthorizedApiCall(sessionCoordinator) {
         val response = messagingApiService.sendMessage(
             conversationId = conversationId,
             request = SendMessageRequest(
                 conversationId = conversationId,
                 content = content.trim(),
+                messageType = messageType,
+                attachments = attachments,
             ),
         )
         ApiResult.Success(parseSentMessage(response, conversationId))
@@ -193,6 +197,7 @@ class MessagingRepository @Inject constructor(
             ?: if (senderId == resolvedUserId) "You" else "Kelmah User"
         val messageType = obj.string("messageType") ?: "text"
         val content = obj.string("content") ?: obj.string("text") ?: previewFor(obj)
+        val attachments = parseAttachments(obj.nestedArray("attachments"))
 
         return ThreadMessage(
             id = id,
@@ -201,10 +206,24 @@ class MessagingRepository @Inject constructor(
             senderName = senderName,
             content = content,
             messageType = messageType,
+            attachments = attachments,
             createdAt = obj.string("createdAt") ?: obj.string("timestamp"),
             isRead = obj.bool("isRead") ?: obj.nestedObject("readStatus")?.bool("isRead") ?: false,
         )
     }
+
+    private fun parseAttachments(values: JsonArray?): List<MessageAttachment> =
+        values?.mapNotNull { item ->
+            val obj = item as? JsonObject ?: return@mapNotNull null
+            val fileUrl = obj.string("fileUrl") ?: return@mapNotNull null
+            MessageAttachment(
+                name = obj.string("name") ?: obj.string("fileName") ?: "Attachment",
+                fileUrl = fileUrl,
+                fileType = obj.string("fileType") ?: "application/octet-stream",
+                fileSize = obj.string("fileSize")?.toLongOrNull(),
+                uploadDate = obj.string("uploadDate"),
+            )
+        } ?: emptyList()
 
     private fun previewFor(lastMessage: JsonObject?): String {
         if (lastMessage == null) return "No messages yet"
@@ -212,6 +231,7 @@ class MessagingRepository @Inject constructor(
         return when {
             lastMessage.string("messageType") == "image" -> "Photo"
             lastMessage.string("messageType") == "file" -> "Attachment"
+            lastMessage.string("messageType") == "mixed" -> "Attachment"
             content.isBlank() -> "Attachment"
             else -> content
         }

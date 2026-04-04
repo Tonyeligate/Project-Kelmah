@@ -4,7 +4,7 @@
  * Expandable on user request for full messaging
  */
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Box, Typography, Button, Collapse } from '@mui/material';
 import {
   ExpandMore as ExpandMoreIcon,
@@ -46,7 +46,7 @@ const CollapsibleHeroSection = ({ isAuthenticated = false }) => {
             gap: 1,
           }}
         >
-          🔍 Discover Skilled Workers in Ghana
+          Discover Skilled Workers in Ghana
         </Typography>
         <Typography
           variant="body1"
@@ -100,7 +100,7 @@ const CollapsibleHeroSection = ({ isAuthenticated = false }) => {
             textAlign: 'left',
           }}
         >
-          🔍 Discover Workers
+          Discover Workers
         </Typography>
         <Button
           size="small"
@@ -140,7 +140,7 @@ const CollapsibleHeroSection = ({ isAuthenticated = false }) => {
               color="text.secondary"
               sx={{ display: 'block', fontStyle: 'italic' }}
             >
-              💡 Sign up to contact workers and post jobs when you are ready.
+              Sign up to contact workers and post jobs when you are ready.
             </Typography>
           )}
         </Box>

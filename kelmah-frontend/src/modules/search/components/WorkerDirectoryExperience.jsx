@@ -10,7 +10,7 @@ import {
   IconButton,
   Typography,
 } from '@mui/material';
-import { styled, useTheme } from '@mui/material/styles';
+import { styled } from '@mui/material/styles';
 import {
   FilterList as FilterListIcon,
   Map as MapIcon,
@@ -21,6 +21,7 @@ import {
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useSnackbar } from 'notistack';
+import PropTypes from 'prop-types';
 import { hasRole } from '../../../utils/userUtils';
 import workerService from '../../worker/services/workerService';
 import JobSearchForm from '../components/common/JobSearchForm';
@@ -266,7 +267,6 @@ const WorkerDirectoryExperience = ({
   seoDescription = 'Search for skilled workers by location, skills, experience level, and more. Find carpenters, plumbers, electricians, and other professionals in Ghana.',
   showHero = variant === 'public',
 }) => {
-  const theme = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useBreakpointDown('md');
@@ -414,6 +414,51 @@ const WorkerDirectoryExperience = ({
     [sortOrder],
   );
 
+  const updateSearchURL = useCallback(
+    (params, sortOverride) => {
+      const queryParams = new URLSearchParams();
+
+      Object.entries(params).forEach(([key, value]) => {
+        if (value === null || value === undefined || value === '') {
+          return;
+        }
+
+        if (key === 'location' && typeof value === 'object') {
+          queryParams.set(key, JSON.stringify(value));
+        } else if (Array.isArray(value)) {
+          if (value.length > 0) {
+            queryParams.set(key, value.join(','));
+          }
+        } else {
+          queryParams.set(key, value.toString());
+        }
+      });
+
+      const effectiveSort = sortOverride || params.sort || sortOrder;
+      if (effectiveSort && effectiveSort !== 'relevance') {
+        queryParams.set('sort', effectiveSort);
+      } else {
+        queryParams.delete('sort');
+      }
+
+      const nextSearch = queryParams.toString();
+      const currentSearch = (location.search || '').replace(/^[?]/, '');
+
+      if (location.pathname === basePath && nextSearch === currentSearch) {
+        return;
+      }
+
+      navigate(
+        {
+          pathname: basePath,
+          search: nextSearch,
+        },
+        { replace: true },
+      );
+    },
+    [basePath, location.pathname, location.search, navigate, sortOrder],
+  );
+
   const handleMobileKeywordChange = useCallback((value) => {
     setSearchParams((prev) => ({
       ...prev,
@@ -434,7 +479,7 @@ const WorkerDirectoryExperience = ({
 
     setSearchParams(mergedParams);
     updateSearchURL(mergedParams, mergedParams.sort || sortOrder);
-  }, [searchParams, sortOrder]);
+  }, [searchParams, sortOrder, updateSearchURL]);
 
   const performSearch = useCallback(
     async (params) => {
@@ -496,48 +541,6 @@ const WorkerDirectoryExperience = ({
       performSearch(params);
     }
   }, [location.search, performSearch]);
-
-  const updateSearchURL = (params, sortOverride) => {
-    const queryParams = new URLSearchParams();
-
-    Object.entries(params).forEach(([key, value]) => {
-      if (value === null || value === undefined || value === '') {
-        return;
-      }
-
-      if (key === 'location' && typeof value === 'object') {
-        queryParams.set(key, JSON.stringify(value));
-      } else if (Array.isArray(value)) {
-        if (value.length > 0) {
-          queryParams.set(key, value.join(','));
-        }
-      } else {
-        queryParams.set(key, value.toString());
-      }
-    });
-
-    const effectiveSort = sortOverride || params.sort || sortOrder;
-    if (effectiveSort && effectiveSort !== 'relevance') {
-      queryParams.set('sort', effectiveSort);
-    } else {
-      queryParams.delete('sort');
-    }
-
-    const nextSearch = queryParams.toString();
-    const currentSearch = (location.search || '').replace(/^[?]/, '');
-
-    if (location.pathname === basePath && nextSearch === currentSearch) {
-      return;
-    }
-
-    navigate(
-      {
-        pathname: basePath,
-        search: nextSearch,
-      },
-      { replace: true },
-    );
-  };
 
   const handleSearch = (filters) => {
     const nextSort = filters.sort || searchParams.sort || sortOrder;
@@ -721,6 +724,16 @@ const WorkerDirectoryExperience = ({
     }
   }, [canUseHirerTools, isMobile]);
 
+  const showResultFilterShortcut =
+    isMobile || canUseHirerTools || isAuthenticated;
+
+  const contextHeading = canUseHirerTools
+    ? 'Find Talent for Your Jobs'
+    : 'Find Skilled Workers in Ghana';
+  const contextCopy = canUseHirerTools
+    ? 'Search by trade, location, and availability to shortlist workers quickly.'
+    : 'Search trusted workers by trade, location, and rate in one focused flow.';
+
   const renderResults = (isPublicView = false) => (
     <WorkerSearchResults
       workers={searchResults}
@@ -733,7 +746,9 @@ const WorkerDirectoryExperience = ({
       onPageChange={handlePageChange}
       showMap={WORKER_DIRECTORY_MAP_ENABLED && showMap}
       onToggleView={WORKER_DIRECTORY_MAP_ENABLED ? handleToggleView : undefined}
-      onOpenFilters={handleOpenFilterControls}
+      onOpenFilters={
+        showResultFilterShortcut ? handleOpenFilterControls : undefined
+      }
       onRetry={() =>
         executeWorkerSearch(searchParams, { sortOption: sortOrder })
       }
@@ -787,7 +802,20 @@ const WorkerDirectoryExperience = ({
           />
         )}
 
-        {canUseHirerTools && (
+        <Box sx={{ mb: 2 }}>
+          <Typography
+            component="h1"
+            variant={isMobile ? 'h5' : 'h4'}
+            sx={{ fontWeight: 800, mb: 0.5 }}
+          >
+            {contextHeading}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            {contextCopy}
+          </Typography>
+        </Box>
+
+        {canUseHirerTools && !isMobile && (
           <Box display="flex" gap={1} mb={2} flexWrap="wrap">
             <Button
               variant={showAdvancedFilters ? 'contained' : 'outlined'}
@@ -821,7 +849,7 @@ const WorkerDirectoryExperience = ({
         {isAuthenticated && (
           <Box mb={2}>
             <Box display="flex" gap={1} flexWrap="wrap">
-              {!canUseHirerTools && (
+              {!canUseHirerTools && !isMobile && (
                 <Button
                   variant="outlined"
                   size="small"
@@ -1059,6 +1087,14 @@ const WorkerDirectoryExperience = ({
       </Dialog>
     </PageWrapper>
   );
+};
+
+WorkerDirectoryExperience.propTypes = {
+  variant: PropTypes.oneOf(['public', 'hirer']),
+  basePath: PropTypes.string,
+  seoTitle: PropTypes.string,
+  seoDescription: PropTypes.string,
+  showHero: PropTypes.bool,
 };
 
 export default WorkerDirectoryExperience;

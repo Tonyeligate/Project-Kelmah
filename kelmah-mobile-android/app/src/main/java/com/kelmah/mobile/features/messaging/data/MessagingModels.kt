@@ -14,6 +14,16 @@ data class SendMessageRequest(
     val conversationId: String,
     val content: String,
     val messageType: String = "text",
+    val attachments: List<MessageAttachment> = emptyList(),
+)
+
+@Serializable
+data class MessageAttachment(
+    val name: String,
+    val fileUrl: String,
+    val fileType: String,
+    val fileSize: Long? = null,
+    val uploadDate: String? = null,
 )
 
 data class MessagingParticipant(
@@ -46,6 +56,7 @@ data class ThreadMessage(
     val senderName: String,
     val content: String,
     val messageType: String,
+    val attachments: List<MessageAttachment> = emptyList(),
     val createdAt: String? = null,
     val isRead: Boolean = false,
 )

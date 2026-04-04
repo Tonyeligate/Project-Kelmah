@@ -114,6 +114,7 @@ coverage-summary.json
 
 # PowerShell scripts (cleanup completed)
 *.ps1
+!kelmah-mobile-android/scripts/validate-android.ps1
 
 # Custom project ignores
 cleanup_plan/

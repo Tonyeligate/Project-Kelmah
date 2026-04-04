@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import Login from '../components/login/Login';
 import AuthWrapper from '../components/common/AuthWrapper';
 import MobileLogin from '../components/mobile/MobileLogin';
@@ -6,7 +6,6 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Alert } from '@mui/material';
 import { Helmet } from 'react-helmet-async';
 import { useBreakpointDown } from '@/hooks/useResponsive';
-import { Typography } from '@mui/material';
 import PageCanvas from '@/modules/common/components/PageCanvas';
 import { withSafeAreaBottom } from '@/utils/safeArea';
 
@@ -35,13 +34,6 @@ const LoginPage = () => {
           pb: { xs: withSafeAreaBottom(20), md: 6 },
         }}
       >
-        <Typography
-          component="h1"
-          variant="h5"
-          sx={{ px: 2, mb: 1, fontWeight: 800 }}
-        >
-          Sign In to Kelmah
-        </Typography>
         <MobileLogin registrationSuccess={registered} />
       </PageCanvas>
     );
@@ -57,9 +49,6 @@ const LoginPage = () => {
         <Helmet>
           <title>Log In | Kelmah</title>
         </Helmet>
-        <Typography component="h1" variant="h4" sx={{ mb: 2, fontWeight: 800 }}>
-          Sign In to Kelmah
-        </Typography>
         {registered && (
           <Alert severity="success" sx={{ mb: 2 }}>
             Registration complete. Check your email for a verification link,
@@ -71,15 +60,6 @@ const LoginPage = () => {
             {infoMessage}
           </Alert>
         )}
-        <Alert severity="info" sx={{ mb: 2 }}>
-          <Typography variant="body2" sx={{ fontWeight: 600 }}>
-            Sign in with the email and password used during registration.
-          </Typography>
-          <Typography variant="caption" sx={{ display: 'block', mt: 0.5 }}>
-            If login fails after two attempts, use Forgot password to reset
-            access securely.
-          </Typography>
-        </Alert>
         <Login />
       </AuthWrapper>
     </PageCanvas>

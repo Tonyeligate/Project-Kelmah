@@ -60,7 +60,7 @@ const StyledBottomNavigationAction = styled(BottomNavigationAction)(
   ({ theme }) => ({
     color: theme.palette.mode === 'dark' ? '#888' : '#666',
     flex: 1,
-    maxWidth: 120,
+    maxWidth: 'none',
     minHeight: BOTTOM_NAV_HEIGHT,
     minWidth: TOUCH_TARGET_MIN,
     padding: '6px 6px 8px',
@@ -83,7 +83,7 @@ const StyledBottomNavigationAction = styled(BottomNavigationAction)(
           ? 'rgba(255, 215, 0, 0.12)'
           : 'rgba(17, 24, 39, 0.07)',
       '& .MuiBottomNavigationAction-label': {
-        fontSize: '0.8rem',
+        fontSize: '0.82rem',
         fontWeight: 700,
         opacity: 1,
       },
@@ -92,14 +92,19 @@ const StyledBottomNavigationAction = styled(BottomNavigationAction)(
       },
     },
     '& .MuiBottomNavigationAction-label': {
-      fontSize: '0.68rem',
-      fontWeight: 500,
+      fontSize: '0.74rem',
+      fontWeight: 600,
       marginTop: 3,
       opacity: 0.9,
       maxWidth: '100%',
-      whiteSpace: 'nowrap',
+      whiteSpace: 'normal',
+      lineHeight: 1.05,
+      textAlign: 'center',
+      display: '-webkit-box',
+      WebkitLineClamp: 2,
+      WebkitBoxOrient: 'vertical',
       overflow: 'hidden',
-      textOverflow: 'ellipsis',
+      textOverflow: 'clip',
       transition: 'all 0.2s ease',
     },
     '& .MuiSvgIcon-root': {
@@ -117,10 +122,10 @@ const StyledBottomNavigationAction = styled(BottomNavigationAction)(
       padding: '6px 2px 8px',
       minHeight: 52,
       '& .MuiBottomNavigationAction-label': {
-        fontSize: '0.64rem',
+        fontSize: '0.7rem',
       },
       '&.Mui-selected .MuiBottomNavigationAction-label': {
-        fontSize: '0.72rem',
+        fontSize: '0.76rem',
       },
     },
   }),
@@ -221,7 +226,7 @@ const MobileBottomNav = () => {
           path: '/hirer/find-talents',
         },
         {
-          label: 'Applications',
+          label: 'Responses',
           value: 'applications',
           icon: <ApplicationsIcon />,
           path: '/hirer/applications',
@@ -250,7 +255,7 @@ const MobileBottomNav = () => {
         path: '/worker/find-work',
       },
       {
-        label: 'Applications',
+        label: 'Applied',
         value: 'applications',
         icon: <ApplicationsIcon />,
         path: '/worker/applications',

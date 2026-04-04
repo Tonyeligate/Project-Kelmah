@@ -557,6 +557,7 @@ function JobsPaginationControls({
 }
 
 function JobsResultsHeader({
+  isMobile,
   selectedCategory,
   hasActiveFilters,
   effectiveSearch,
@@ -574,6 +575,15 @@ function JobsResultsHeader({
   totalJobs,
   uniqueJobsLength,
 }) {
+  const activeQuickFiltersCount = Object.values(quickFilters).filter(Boolean)
+    .length;
+  const activeFilterCount = [
+    Boolean(effectiveSearch),
+    Boolean(selectedCategory),
+    Boolean(selectedLocation),
+    Boolean(budgetFilterActive),
+  ].filter(Boolean).length;
+
   return (
     <Box
       sx={{
@@ -605,113 +615,143 @@ function JobsResultsHeader({
           Sorted by {SORT_LABELS[sortBy] || SORT_LABELS.relevance}. Compare jobs
           quickly using budget, payment type, and applicant count on each card.
         </Typography>
-        {hasActiveFilters && (
-          <Box
-            sx={{
-              display: 'flex',
-              gap: 1,
-              flexWrap: 'wrap',
-              alignItems: 'center',
-            }}
-          >
-            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-              Active filters:
-            </Typography>
-            <Typography
-              variant="caption"
+        {hasActiveFilters &&
+          (isMobile ? (
+            <Box
               sx={{
-                color: 'text.secondary',
-                width: '100%',
-                lineHeight: 1.4,
-                display: { xs: 'none', md: 'block' },
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                gap: 1,
+                p: 1,
+                borderRadius: 1.5,
+                bgcolor: 'var(--k-accent-soft)',
+                border: '1px solid var(--k-accent-border)',
               }}
             >
-              Remove a chip to widen results, or clear everything if the list
-              feels too narrow.
-            </Typography>
-            {effectiveSearch && (
-              <Chip
-                label={`Search: "${effectiveSearch}"`}
+              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                {activeFilterCount + activeQuickFiltersCount} filters active
+              </Typography>
+              <Button
                 size="small"
-                onDelete={onClearSearch}
+                onClick={onClearAllFilters}
                 sx={{
-                  bgcolor: 'var(--k-accent-soft-strong)',
-                  color: 'var(--k-gold)',
-                  '& .MuiChip-deleteIcon': { color: 'var(--k-gold)' },
+                  color: 'error.main',
+                  fontSize: '0.75rem',
+                  textTransform: 'none',
+                  minWidth: 'auto',
                 }}
-              />
-            )}
-            {selectedCategory && (
-              <Chip
-                label={`Category: ${selectedCategory}`}
-                size="small"
-                onDelete={onClearCategory}
+              >
+                Clear all
+              </Button>
+            </Box>
+          ) : (
+            <Box
+              sx={{
+                display: 'flex',
+                gap: 1,
+                flexWrap: 'wrap',
+                alignItems: 'center',
+              }}
+            >
+              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                Active filters:
+              </Typography>
+              <Typography
+                variant="caption"
                 sx={{
-                  bgcolor: 'var(--k-accent-soft-strong)',
-                  color: 'var(--k-gold)',
-                  '& .MuiChip-deleteIcon': { color: 'var(--k-gold)' },
+                  color: 'text.secondary',
+                  width: '100%',
+                  lineHeight: 1.4,
+                  display: { xs: 'none', md: 'block' },
                 }}
-              />
-            )}
-            {selectedLocation && (
-              <Chip
-                label={`Location: ${selectedLocation}`}
-                size="small"
-                onDelete={onClearLocation}
-                sx={{
-                  bgcolor: 'var(--k-accent-soft-strong)',
-                  color: 'var(--k-gold)',
-                  '& .MuiChip-deleteIcon': { color: 'var(--k-gold)' },
-                }}
-              />
-            )}
-            {budgetFilterActive && (
-              <Chip
-                label={`Budget: ${formatGhanaCurrency(budgetRange[0])} – ${formatGhanaCurrency(budgetRange[1])}`}
-                size="small"
-                onDelete={onClearBudget}
-                sx={{
-                  bgcolor: 'var(--k-accent-soft-strong)',
-                  color: 'var(--k-gold)',
-                  '& .MuiChip-deleteIcon': { color: 'var(--k-gold)' },
-                }}
-              />
-            )}
-            {Object.entries(quickFilters)
-              .filter(([, v]) => v)
-              .map(([key]) => (
+              >
+                Remove a chip to widen results, or clear everything if the list
+                feels too narrow.
+              </Typography>
+              {effectiveSearch && (
                 <Chip
-                  key={key}
-                  label={
-                    key === 'fullTime'
-                      ? 'Hourly'
-                      : key === 'contract'
-                        ? 'Fixed Price'
-                        : key.charAt(0).toUpperCase() + key.slice(1)
-                  }
+                  label={`Search: "${effectiveSearch}"`}
                   size="small"
-                  onDelete={() => onToggleQuickFilter(key)}
+                  onDelete={onClearSearch}
                   sx={{
                     bgcolor: 'var(--k-accent-soft-strong)',
                     color: 'var(--k-gold)',
                     '& .MuiChip-deleteIcon': { color: 'var(--k-gold)' },
                   }}
                 />
-              ))}
-            <Button
-              size="small"
-              onClick={onClearAllFilters}
-              sx={{
-                color: 'error.main',
-                fontSize: '0.75rem',
-                textTransform: 'none',
-                minWidth: 'auto',
-              }}
-            >
-              Clear filters
-            </Button>
-          </Box>
-        )}
+              )}
+              {selectedCategory && (
+                <Chip
+                  label={`Category: ${selectedCategory}`}
+                  size="small"
+                  onDelete={onClearCategory}
+                  sx={{
+                    bgcolor: 'var(--k-accent-soft-strong)',
+                    color: 'var(--k-gold)',
+                    '& .MuiChip-deleteIcon': { color: 'var(--k-gold)' },
+                  }}
+                />
+              )}
+              {selectedLocation && (
+                <Chip
+                  label={`Location: ${selectedLocation}`}
+                  size="small"
+                  onDelete={onClearLocation}
+                  sx={{
+                    bgcolor: 'var(--k-accent-soft-strong)',
+                    color: 'var(--k-gold)',
+                    '& .MuiChip-deleteIcon': { color: 'var(--k-gold)' },
+                  }}
+                />
+              )}
+              {budgetFilterActive && (
+                <Chip
+                  label={`Budget: ${formatGhanaCurrency(budgetRange[0])} – ${formatGhanaCurrency(budgetRange[1])}`}
+                  size="small"
+                  onDelete={onClearBudget}
+                  sx={{
+                    bgcolor: 'var(--k-accent-soft-strong)',
+                    color: 'var(--k-gold)',
+                    '& .MuiChip-deleteIcon': { color: 'var(--k-gold)' },
+                  }}
+                />
+              )}
+              {Object.entries(quickFilters)
+                .filter(([, v]) => v)
+                .map(([key]) => (
+                  <Chip
+                    key={key}
+                    label={
+                      key === 'fullTime'
+                        ? 'Hourly'
+                        : key === 'contract'
+                          ? 'Fixed Price'
+                          : key.charAt(0).toUpperCase() + key.slice(1)
+                    }
+                    size="small"
+                    onDelete={() => onToggleQuickFilter(key)}
+                    sx={{
+                      bgcolor: 'var(--k-accent-soft-strong)',
+                      color: 'var(--k-gold)',
+                      '& .MuiChip-deleteIcon': { color: 'var(--k-gold)' },
+                    }}
+                  />
+                ))}
+              <Button
+                size="small"
+                onClick={onClearAllFilters}
+                sx={{
+                  color: 'error.main',
+                  fontSize: '0.75rem',
+                  textTransform: 'none',
+                  minWidth: 'auto',
+                }}
+              >
+                Clear filters
+              </Button>
+            </Box>
+          ))}
       </Box>
       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
         <Chip
@@ -1048,7 +1088,10 @@ function JobsFiltersPanel({
       <Box
         sx={{
           position: 'sticky',
-          top: { xs: HEADER_HEIGHT_MOBILE + 12, sm: HEADER_HEIGHT_MOBILE + 16 },
+          top: {
+            xs: `calc(${HEADER_HEIGHT_MOBILE + 12}px + var(--kelmah-network-banner-offset, 0px))`,
+            sm: `calc(${HEADER_HEIGHT_MOBILE + 16}px + var(--kelmah-network-banner-offset, 0px))`,
+          },
           zIndex: Z_INDEX.sticky,
           pb: 0.25,
           pt: 0.25,
@@ -1291,47 +1334,49 @@ function JobsFiltersPanel({
           }}
         >
           <Tooltip title="Search for jobs" placement="top">
-            <Button
-              fullWidth
-              variant="contained"
-              size="medium"
-              startIcon={
-                isJobsFetching ? (
-                  <CircularProgress size={16} sx={{ color: 'black' }} />
-                ) : (
-                  <SearchIcon />
-                )
-              }
-              disabled={isJobsFetching}
-              onClick={onSearchSubmit}
-              sx={{
-                bgcolor: 'var(--k-gold)',
-                color: 'var(--k-text-on-accent)',
-                fontWeight: 'bold',
-                fontSize: { xs: '1rem', sm: '0.875rem' },
-                height: { xs: '44px', sm: '40px' },
-                minWidth: { xs: '100%', sm: 'auto' },
-                padding: { xs: '10px 20px', sm: '8px 12px' },
-                boxShadow: '0 4px 12px rgba(212,175,55,0.4)',
-                whiteSpace: 'nowrap',
-                '&:hover': {
-                  bgcolor: 'var(--k-gold-dark)',
-                  boxShadow: '0 6px 16px rgba(212,175,55,0.6)',
-                  transform: {
-                    xs: 'none',
-                    sm: 'translateY(-2px)',
+            <Box component="span" sx={{ width: '100%', display: 'flex' }}>
+              <Button
+                fullWidth
+                variant="contained"
+                size="medium"
+                startIcon={
+                  isJobsFetching ? (
+                    <CircularProgress size={16} sx={{ color: 'black' }} />
+                  ) : (
+                    <SearchIcon />
+                  )
+                }
+                disabled={isJobsFetching}
+                onClick={onSearchSubmit}
+                sx={{
+                  bgcolor: 'var(--k-gold)',
+                  color: 'var(--k-text-on-accent)',
+                  fontWeight: 'bold',
+                  fontSize: { xs: '1rem', sm: '0.875rem' },
+                  height: { xs: '44px', sm: '40px' },
+                  minWidth: { xs: '100%', sm: 'auto' },
+                  padding: { xs: '10px 20px', sm: '8px 12px' },
+                  boxShadow: '0 4px 12px rgba(212,175,55,0.4)',
+                  whiteSpace: 'nowrap',
+                  '&:hover': {
+                    bgcolor: 'var(--k-gold-dark)',
+                    boxShadow: '0 6px 16px rgba(212,175,55,0.6)',
+                    transform: {
+                      xs: 'none',
+                      sm: 'translateY(-2px)',
+                    },
                   },
-                },
-                transition: 'all 0.3s ease',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                '&:active': {
-                  transform: 'scale(0.98)',
-                },
-              }}
-            >
-              Search
-            </Button>
+                  transition: 'all 0.3s ease',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  '&:active': {
+                    transform: 'scale(0.98)',
+                  },
+                }}
+              >
+                Search
+              </Button>
+            </Box>
           </Tooltip>
         </Grid>
       </Grid>
@@ -1596,10 +1641,12 @@ function JobsCategoryBrowseGrid({
       <Box
         sx={{
           display: 'flex',
+          flexWrap: 'wrap',
           gap: 0.75,
-          overflowX: 'auto',
+          overflowX: 'hidden',
           py: 0.25,
           px: 0.25,
+          width: '100%',
           scrollbarWidth: 'none',
           '&::-webkit-scrollbar': { display: 'none' },
         }}
@@ -1622,7 +1669,8 @@ function JobsCategoryBrowseGrid({
                   ? 'var(--k-accent-soft)'
                   : 'var(--k-bg-surface)',
                 color: isActive ? 'var(--k-gold)' : 'var(--k-text-secondary)',
-                height: 34,
+                height: 44,
+                maxWidth: '100%',
                 whiteSpace: 'nowrap',
                 '& .MuiChip-icon': {
                   color: isActive ? 'var(--k-gold)' : cat.color,
@@ -1631,6 +1679,8 @@ function JobsCategoryBrowseGrid({
                   px: 0.9,
                   fontSize: '0.75rem',
                   fontWeight: 700,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
                 },
               }}
             />
@@ -2306,6 +2356,22 @@ const JobsPage = () => {
                     px: { xs: 1, sm: 0 },
                   }}
                 >
+                  {isMobile && (
+                    <Box sx={{ mb: 1.5, px: 0.25 }}>
+                      <Typography
+                        component="h1"
+                        variant="h5"
+                        sx={{ fontWeight: 800, color: 'text.primary', mb: 0.5 }}
+                      >
+                        Find Jobs in Ghana
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                        Search by trade, location, and budget to find work that
+                        fits quickly.
+                      </Typography>
+                    </Box>
+                  )}
+
                   {/* Mobile-optimized hero section */}
                   <Grid
                     container
@@ -2442,6 +2508,7 @@ const JobsPage = () => {
                 {...motionProps}
               >
                 <JobsResultsHeader
+                  isMobile={isMobile}
                   selectedCategory={selectedCategory}
                   hasActiveFilters={hasActiveFilters}
                   effectiveSearch={effectiveSearch}

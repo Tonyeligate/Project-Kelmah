@@ -35,6 +35,27 @@ Native Android app root.
 - `./gradlew assembleDebug`
 - `./gradlew lintDebug`
 
+## One-command Windows validator (recommended)
+- Run from `kelmah-mobile-android`:
+	- `.\\scripts\\validate-android.cmd`
+	- `powershell -ExecutionPolicy Bypass -File .\\scripts\\validate-android.ps1`
+	- You can also double-click `scripts\\validate-android.cmd` from File Explorer.
+- What it does:
+	- Stops project-scoped Java/Kotlin and Gradle daemon processes
+	- Cleans transient KSP/lint/androidTest artifacts that commonly trigger flaky reruns on Windows
+	- Runs wrapper-based validation in one command:
+		- `clean`
+		- `:app:testDebugUnitTest`
+		- `:app:lintDebug`
+		- `:app:assembleDebug`
+		- `:app:assembleDebugAndroidTest`
+	- Retries once automatically after a second pre-clean if the first run fails
+
+Optional flags:
+- `-SkipClean` to skip the Gradle `clean` task
+- `-NoRetry` to disable the automatic one-time retry
+- `-ExtraGradleArgs "--console=plain"` to append extra Gradle arguments
+
 Using the wrapper keeps local and CI builds aligned without requiring a globally installed Gradle version.
 
 ## Auth and session hardening
