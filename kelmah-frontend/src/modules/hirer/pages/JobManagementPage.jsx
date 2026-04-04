@@ -805,7 +805,7 @@ const JobManagementPage = () => {
                   minHeight: 44,
                 },
                 '& .MuiInputBase-input': {
-                  py: '11px',
+                  py: '12px',
                   lineHeight: 1.2,
                 },
               }}
