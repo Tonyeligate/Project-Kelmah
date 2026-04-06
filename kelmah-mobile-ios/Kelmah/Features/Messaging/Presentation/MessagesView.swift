@@ -6,57 +6,128 @@ struct MessagesView: View {
     var onHandledPendingConversation: (() -> Void)? = nil
     @State private var path: [MessagesRoute] = []
 
+    private var headerStats: [KelmahHeroStat] {
+        [
+            KelmahHeroStat(label: "Chats", value: "\(viewModel.filteredConversations.count)", tint: KelmahTheme.cyan),
+            KelmahHeroStat(label: "Unread", value: "\(viewModel.totalUnreadCount)", tint: KelmahTheme.sun),
+            KelmahHeroStat(
+                label: "Active",
+                value: "\(viewModel.filteredConversations.filter { $0.otherParticipant?.isActive == true }.count)",
+                tint: KelmahTheme.success
+            ),
+        ]
+    }
+
+    private var headerChips: [String] {
+        var chips: [String] = ["Realtime enabled"]
+        if viewModel.searchQuery.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false {
+            chips.append("Search: \(viewModel.searchQuery)")
+        }
+        if viewModel.totalUnreadCount > 0 {
+            chips.append("\(viewModel.totalUnreadCount) unread messages")
+        }
+        return chips
+    }
+
     var body: some View {
         NavigationStack(path: $path) {
-            List {
-                Section {
-                    TextField("Search messages", text: $viewModel.searchQuery)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                }
-
-                if let message = viewModel.errorMessage {
-                    Section {
-                        MessageBannerView(message: message, tint: .red.opacity(0.12))
-                    }
-                }
-
-                if let message = viewModel.infoMessage {
-                    Section {
-                        MessageBannerView(message: message, tint: KelmahTheme.accent.opacity(0.18))
-                    }
-                }
-
-                Section("Messages") {
-                    if viewModel.isLoadingConversations, viewModel.filteredConversations.isEmpty {
-                        ProgressView("Loading messages...")
-                            .frame(maxWidth: .infinity, alignment: .center)
-                    } else if viewModel.filteredConversations.isEmpty {
-                        ContentUnavailableView(
-                            "No messages yet",
-                            systemImage: "message",
-                            description: Text("Your job messages will show here.")
-                        )
-                    } else {
-                        ForEach(viewModel.filteredConversations) { conversation in
-                            Button {
-                                Task {
-                                    await viewModel.openConversation(conversation)
-                                    path.append(.thread(conversation.id))
+            KelmahPremiumBackground {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
+                        KelmahCommandDeck(
+                            eyebrow: "MESSAGING DESK",
+                            title: "Stay on top of every conversation",
+                            subtitle: "Open chats quickly, respond faster, and keep hiring or work momentum alive.",
+                            stats: headerStats,
+                            chips: headerChips
+                        ) {
+                            HStack(spacing: 10) {
+                                Button {
+                                    Task { await viewModel.refreshConversations() }
+                                } label: {
+                                    Text("Refresh")
+                                        .fontWeight(.bold)
+                                        .frame(maxWidth: .infinity)
+                                        .frame(minHeight: 48)
                                 }
-                            } label: {
-                                ConversationRowView(conversation: conversation)
+                                .buttonStyle(.borderedProminent)
+                                .tint(KelmahTheme.sun)
+                                .foregroundStyle(Color.black)
+
+                                Button {
+                                    viewModel.searchQuery = ""
+                                } label: {
+                                    Text("Clear Search")
+                                        .fontWeight(.semibold)
+                                        .frame(maxWidth: .infinity)
+                                        .frame(minHeight: 46)
+                                }
+                                .buttonStyle(.bordered)
+                                .tint(KelmahTheme.cyan)
                             }
-                            .buttonStyle(.plain)
-                            .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
-                            .listRowBackground(Color.clear)
+                            .controlSize(.large)
+                        }
+
+                        KelmahPanel {
+                            VStack(alignment: .leading, spacing: 8) {
+                                KelmahSectionHeader(title: "Search", subtitle: "Find people or message previews")
+                                TextField("Search messages", text: $viewModel.searchQuery)
+                                    .textInputAutocapitalization(.never)
+                                    .autocorrectionDisabled()
+                                    .textFieldStyle(.roundedBorder)
+                            }
+                        }
+
+                        if let message = viewModel.errorMessage {
+                            KelmahBannerMessage(message: message, tint: KelmahTheme.danger)
+                        }
+
+                        if let message = viewModel.infoMessage {
+                            KelmahBannerMessage(message: message, tint: KelmahTheme.success)
+                        }
+
+                        KelmahPanel {
+                            KelmahSectionHeader(
+                                title: "Conversations",
+                                subtitle: "Recent messages with unread signals"
+                            )
+                        }
+
+                        if viewModel.isLoadingConversations, viewModel.filteredConversations.isEmpty {
+                            KelmahPanel {
+                                HStack(spacing: 10) {
+                                    ProgressView()
+                                        .tint(KelmahTheme.sun)
+                                    Text("Loading messages...")
+                                        .foregroundStyle(KelmahTheme.textMuted)
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                        } else if viewModel.filteredConversations.isEmpty {
+                            KelmahBannerMessage(
+                                message: "No messages yet. Job conversations will appear here.",
+                                tint: KelmahTheme.cyan
+                            )
+                        } else {
+                            ForEach(viewModel.filteredConversations) { conversation in
+                                Button {
+                                    Task {
+                                        await viewModel.openConversation(conversation)
+                                        path.append(.thread(conversation.id))
+                                    }
+                                } label: {
+                                    ConversationRowView(conversation: conversation)
+                                }
+                                .buttonStyle(.plain)
+                            }
                         }
                     }
+                        .padding(.horizontal, 16)
+                        .padding(.top, 18)
+                    .padding(.bottom, 20)
                 }
+                .scrollIndicators(.hidden)
             }
-            .listStyle(.insetGrouped)
-            .scrollContentBackground(.hidden)
-            .background(KelmahTheme.background)
             .navigationTitle("Messages")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -97,50 +168,50 @@ private struct ConversationRowView: View {
     let conversation: MessageConversation
 
     var body: some View {
-        HStack(spacing: 12) {
-            Circle()
-                .fill(KelmahTheme.accent.opacity(0.18))
-                .frame(width: 44, height: 44)
-                .overlay(
-                    Text(String(conversation.displayTitle.prefix(1)).uppercased())
-                        .font(.headline)
-                        .foregroundStyle(KelmahTheme.accent)
-                )
+        KelmahPanel {
+            HStack(spacing: 13) {
+                Circle()
+                    .fill(KelmahTheme.sun.opacity(0.18))
+                    .frame(width: 44, height: 44)
+                    .overlay(
+                        Text(String(conversation.displayTitle.prefix(1)).uppercased())
+                            .font(.headline)
+                            .foregroundStyle(KelmahTheme.sun)
+                    )
 
-            VStack(alignment: .leading, spacing: 6) {
-                Text(conversation.displayTitle)
-                    .font(.headline)
-                    .foregroundStyle(.primary)
-                    .lineLimit(1)
-                Text(conversation.lastMessagePreview)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(2)
-            }
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack {
+                        Text(conversation.displayTitle)
+                            .font(.headline)
+                            .foregroundStyle(KelmahTheme.textPrimary)
+                            .lineLimit(1)
+                        Spacer()
+                        if conversation.unreadCount > 0 {
+                            KelmahSignalChip(
+                                text: "\(conversation.unreadCount) unread",
+                                accent: KelmahTheme.success
+                            )
+                        }
+                    }
 
-            Spacer()
+                    Text(conversation.lastMessagePreview)
+                        .font(.subheadline)
+                        .foregroundStyle(KelmahTheme.textMuted)
+                        .lineLimit(2)
 
-            if conversation.unreadCount > 0 {
-                Text("\(conversation.unreadCount) new")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 5)
-                    .background(KelmahTheme.accent)
-                    .clipShape(Capsule())
+                    HStack {
+                        Text(RelativeTimeFormatter.relativeOrFallback(conversation.lastMessageAt) ?? "Just now")
+                            .font(.caption)
+                            .foregroundStyle(KelmahTheme.textMuted)
+                        Spacer()
+                        Text("Tap to open chat")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(KelmahTheme.sun)
+                    }
+                }
             }
         }
-        .padding()
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(KelmahTheme.card)
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .overlay(alignment: .bottomTrailing) {
-            Text("Tap to open chat")
-                .font(.caption2.weight(.semibold))
-                .foregroundStyle(KelmahTheme.accent)
-                .padding(.trailing, 14)
-                .padding(.bottom, 12)
-        }
+        .contentShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
     }
 }
 
@@ -149,56 +220,66 @@ private struct MessageThreadView: View {
     let conversationId: String
 
     var body: some View {
-        VStack(spacing: 0) {
-            if let participant = viewModel.selectedConversation?.otherParticipant {
-                HStack {
-                    Text(participant.isActive == true ? "\(participant.name) • online" : participant.name)
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.secondary)
-                    Spacer()
-                }
-                .padding(.horizontal)
-                .padding(.top, 12)
-            }
-
-            if viewModel.isLoadingMessages, viewModel.messages.isEmpty {
-                Spacer()
-                ProgressView("Opening messages...")
-                Spacer()
-            } else if viewModel.messages.isEmpty {
-                Spacer()
-                ContentUnavailableView(
-                    "No messages yet",
-                    systemImage: "ellipsis.message",
-                    description: Text("Send the first message.")
-                )
-                Spacer()
-            } else {
-                ScrollViewReader { proxy in
-                    ScrollView {
-                        LazyVStack(spacing: 10) {
-                            ForEach(viewModel.messages) { message in
-                                MessageBubbleView(
-                                    message: message,
-                                    isOwnMessage: message.senderId == viewModel.currentUserId
-                                )
-                                .id(message.id)
-                            }
+        KelmahPremiumBackground {
+            VStack(spacing: 0) {
+                if let participant = viewModel.selectedConversation?.otherParticipant {
+                    KelmahPanel {
+                        HStack {
+                            Text(participant.isActive == true ? "\(participant.name) | online" : participant.name)
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(KelmahTheme.textPrimary)
+                            Spacer()
+                            KelmahSignalChip(
+                                text: participant.isActive == true ? "Live" : "Offline",
+                                accent: participant.isActive == true ? KelmahTheme.success : KelmahTheme.cyan
+                            )
                         }
-                        .padding()
                     }
-                    .scrollDismissesKeyboard(.interactively)
-                    .onChange(of: viewModel.messages.count) { _ in
-                        if let last = viewModel.messages.last?.id {
-                            withAnimation {
-                                proxy.scrollTo(last, anchor: .bottom)
+                    .padding(.horizontal, 16)
+                    .padding(.top, 10)
+                    .padding(.bottom, 2)
+                }
+
+                if viewModel.isLoadingMessages, viewModel.messages.isEmpty {
+                    Spacer()
+                    ProgressView("Opening messages...")
+                        .tint(KelmahTheme.sun)
+                    Spacer()
+                } else if viewModel.messages.isEmpty {
+                    Spacer()
+                    KelmahBannerMessage(
+                        message: "No messages yet. Send the first message.",
+                        tint: KelmahTheme.cyan
+                    )
+                    .padding(.horizontal, 16)
+                    Spacer()
+                } else {
+                    ScrollViewReader { proxy in
+                        ScrollView {
+                            LazyVStack(spacing: 10) {
+                                ForEach(viewModel.messages) { message in
+                                    MessageBubbleView(
+                                        message: message,
+                                        isOwnMessage: message.senderId == viewModel.currentUserId
+                                    )
+                                    .id(message.id)
+                                }
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
+                        }
+                        .scrollDismissesKeyboard(.interactively)
+                        .onChange(of: viewModel.messages.count) { _ in
+                            if let last = viewModel.messages.last?.id {
+                                withAnimation {
+                                    proxy.scrollTo(last, anchor: .bottom)
+                                }
                             }
                         }
                     }
                 }
             }
         }
-        .background(KelmahTheme.background)
         .navigationTitle(viewModel.selectedConversation?.displayTitle ?? "Messages")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -212,30 +293,36 @@ private struct MessageThreadView: View {
             }
         }
         .safeAreaInset(edge: .bottom) {
-            HStack(spacing: 10) {
-                TextField("Type message", text: $viewModel.draftMessage, axis: .vertical)
-                    .textFieldStyle(.roundedBorder)
-                    .lineLimit(1...4)
+            KelmahPanel {
+                HStack(spacing: 10) {
+                    TextField("Type message", text: $viewModel.draftMessage, axis: .vertical)
+                        .textFieldStyle(.roundedBorder)
+                        .lineLimit(1...4)
 
-                Button {
-                    Task { await viewModel.sendMessage() }
-                } label: {
-                    if viewModel.isSending {
-                        HStack(spacing: 8) {
-                            ProgressView()
-                                .progressViewStyle(.circular)
-                                .tint(.white)
-                            Text("Sending")
+                    Button {
+                        Task { await viewModel.sendMessage() }
+                    } label: {
+                        if viewModel.isSending {
+                            HStack(spacing: 8) {
+                                ProgressView()
+                                    .progressViewStyle(.circular)
+                                    .tint(.black)
+                                Text("Sending")
+                            }
+                        } else {
+                            Label("Send", systemImage: "paperplane.fill")
                         }
-                    } else {
-                        Label("Send", systemImage: "paperplane.fill")
                     }
+                    .buttonStyle(.borderedProminent)
+                    .tint(KelmahTheme.sun)
+                    .foregroundStyle(Color.black)
+                    .disabled(viewModel.isSending || viewModel.draftMessage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    .frame(minHeight: 48)
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(KelmahTheme.accent)
-                .disabled(viewModel.isSending || viewModel.draftMessage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             }
-            .padding()
+            .padding(.horizontal, 12)
+            .padding(.top, 8)
+            .padding(.bottom, 8)
             .background(.ultraThinMaterial)
         }
         .task(id: conversationId) {
@@ -253,22 +340,28 @@ private struct MessageBubbleView: View {
             if isOwnMessage == false {
                 Text(message.senderName)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(KelmahTheme.textMuted)
             }
 
             VStack(alignment: .leading, spacing: 8) {
                 Text(displayText)
                     .font(.body)
+                    .foregroundStyle(KelmahTheme.textPrimary)
+                    .lineSpacing(1.2)
                 if let createdAt = message.createdAt {
                     Text(RelativeTimeFormatter.relativeOrFallback(createdAt) ?? createdAt)
                         .font(.caption2)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(KelmahTheme.textMuted)
                 }
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 10)
-            .background(isOwnMessage ? KelmahTheme.accent.opacity(0.18) : KelmahTheme.card)
-            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .background(isOwnMessage ? KelmahTheme.sun.opacity(0.2) : KelmahTheme.card)
+            .overlay(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .stroke(isOwnMessage ? KelmahTheme.sun.opacity(0.35) : KelmahTheme.borderSoft, lineWidth: 1)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         }
         .frame(maxWidth: .infinity, alignment: isOwnMessage ? .trailing : .leading)
     }
@@ -282,18 +375,5 @@ private struct MessageBubbleView: View {
         default:
             return message.content
         }
-    }
-}
-
-private struct MessageBannerView: View {
-    let message: String
-    let tint: Color
-
-    var body: some View {
-        Text(message)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding()
-            .background(tint)
-            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 }

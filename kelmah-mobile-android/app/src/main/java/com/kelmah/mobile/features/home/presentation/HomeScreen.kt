@@ -7,11 +7,13 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -30,6 +32,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kelmah.mobile.R
+import com.kelmah.mobile.core.design.components.KelmahReveal
+import com.kelmah.mobile.core.design.components.KelmahScreenBackground
+import com.kelmah.mobile.core.design.components.KelmahPrimaryActionMinHeight
+import com.kelmah.mobile.core.design.components.KelmahSecondaryActionMinHeight
+import com.kelmah.mobile.core.design.components.kelmahMutedPanelColors
+import com.kelmah.mobile.core.design.components.kelmahPanelColors
 import com.kelmah.mobile.core.session.KelmahUserRole
 import com.kelmah.mobile.core.session.kelmahUserRole
 import com.kelmah.mobile.core.storage.SessionUser
@@ -103,130 +111,180 @@ fun HomeScreen(
         role == KelmahUserRole.HIRER && activeJobs > 0 -> HomePrioritySignal(nextActionTrackActive, activeJobs, onBrowseJobs)
         else -> null
     }
+    val panelColors = kelmahPanelColors()
+    val mutedPanelColors = kelmahMutedPanelColors()
 
     LaunchedEffect(currentUser?.id, role) {
         jobsViewModel.refreshHome(role)
     }
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(20.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
+    KelmahScreenBackground {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 18.dp, vertical = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(18.dp),
+        ) {
         item {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    text = displayName,
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold,
-                )
-                Text(
-                    text = headline,
-                    style = MaterialTheme.typography.bodyLarge,
-                )
+            KelmahReveal(index = 0) {
+                Card(colors = mutedPanelColors, shape = MaterialTheme.shapes.large) {
+                    Column(
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Text(
+                            text = displayName,
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.Bold,
+                        )
+                        Text(
+                            text = headline,
+                            style = MaterialTheme.typography.bodyLarge,
+                        )
+                        Text(
+                            text = "Live market signals and priority actions",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            HomeSignalPill(
+                                modifier = Modifier.weight(1f),
+                                label = "Chats",
+                                count = unreadMessages,
+                            )
+                            HomeSignalPill(
+                                modifier = Modifier.weight(1f),
+                                label = "Alerts",
+                                count = unreadAlerts,
+                            )
+                            HomeSignalPill(
+                                modifier = Modifier.weight(1f),
+                                label = if (role == KelmahUserRole.HIRER) "Active" else "Urgent",
+                                count = if (role == KelmahUserRole.HIRER) activeJobs else urgentJobs,
+                            )
+                        }
+                    }
+                }
             }
         }
 
         item {
-            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    Text(
-                        text = if (role == KelmahUserRole.HIRER) {
-                            stringResource(id = R.string.home_overview_title_hirer)
-                        } else {
-                            stringResource(id = R.string.home_overview_title_worker)
-                        },
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.SemiBold,
-                    )
-                    Text(
-                        text = if (role == KelmahUserRole.HIRER) {
-                            stringResource(id = R.string.home_overview_desc_hirer)
-                        } else {
-                            stringResource(id = R.string.home_overview_desc_worker)
-                        },
-                    )
-                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        SummaryCard(
-                            modifier = Modifier.weight(1f),
-                            label = if (role == KelmahUserRole.HIRER) {
-                                stringResource(id = R.string.home_summary_active_jobs)
+            KelmahReveal(index = 1) {
+                Card(colors = panelColors) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        Text(
+                            text = if (role == KelmahUserRole.HIRER) {
+                                stringResource(id = R.string.home_overview_title_hirer)
                             } else {
-                                stringResource(id = R.string.home_summary_good_jobs)
+                                stringResource(id = R.string.home_overview_title_worker)
                             },
-                            value = if (role == KelmahUserRole.HIRER) activeJobs else primaryJobs.size,
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.SemiBold,
                         )
-                        SummaryCard(
-                            modifier = Modifier.weight(1f),
-                            label = if (role == KelmahUserRole.HIRER) {
-                                stringResource(id = R.string.home_summary_new_chats)
+                        Text(
+                            text = if (role == KelmahUserRole.HIRER) {
+                                stringResource(id = R.string.home_overview_desc_hirer)
                             } else {
-                                stringResource(id = R.string.home_summary_saved_jobs)
+                                stringResource(id = R.string.home_overview_desc_worker)
                             },
-                            value = if (role == KelmahUserRole.HIRER) unreadMessages else savedJobs,
                         )
-                        SummaryCard(
-                            modifier = Modifier.weight(1f),
-                            label = stringResource(id = R.string.home_summary_alerts),
-                            value = unreadAlerts,
-                        )
-                    }
-                    if (prioritySignals.isNotEmpty()) {
-                        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            items(prioritySignals.take(4), key = { signal -> signal.label }) { signal ->
-                                AssistChip(
-                                    onClick = signal.onOpen,
-                                    label = { Text("${signal.label} ${signal.count}") },
-                                )
-                            }
-                        }
-                    }
-                    nextBestAction?.let { action ->
-                        Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 12.dp, vertical = 10.dp),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            ) {
-                                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                                    Text(
-                                        text = stringResource(id = R.string.home_next_best_action),
-                                        style = MaterialTheme.typography.labelLarge,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
-                                    Text(
-                                        text = "${action.label} (${action.count})",
-                                        style = MaterialTheme.typography.titleSmall,
-                                        fontWeight = FontWeight.SemiBold,
-                                    )
-                                }
-                                Button(onClick = action.onOpen) {
-                                    Text(stringResource(id = R.string.common_open))
-                                }
-                            }
-                        }
-                    }
-                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        Button(onClick = onBrowseJobs, modifier = Modifier.fillMaxWidth()) {
-                            Text(
-                                if (role == KelmahUserRole.HIRER) {
-                                    stringResource(id = R.string.home_open_market)
+                        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            SummaryCard(
+                                modifier = Modifier.weight(1f),
+                                label = if (role == KelmahUserRole.HIRER) {
+                                    stringResource(id = R.string.home_summary_active_jobs)
                                 } else {
-                                    stringResource(id = R.string.home_find_work)
+                                    stringResource(id = R.string.home_summary_good_jobs)
                                 },
+                                value = if (role == KelmahUserRole.HIRER) activeJobs else primaryJobs.size,
+                            )
+                            SummaryCard(
+                                modifier = Modifier.weight(1f),
+                                label = if (role == KelmahUserRole.HIRER) {
+                                    stringResource(id = R.string.home_summary_new_chats)
+                                } else {
+                                    stringResource(id = R.string.home_summary_saved_jobs)
+                                },
+                                value = if (role == KelmahUserRole.HIRER) unreadMessages else savedJobs,
+                            )
+                            SummaryCard(
+                                modifier = Modifier.weight(1f),
+                                label = stringResource(id = R.string.home_summary_alerts),
+                                value = unreadAlerts,
                             )
                         }
-                        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                            OutlinedButton(onClick = onOpenMessages, modifier = Modifier.weight(1f)) {
-                                Text(stringResource(id = R.string.home_messages))
+                        if (prioritySignals.isNotEmpty()) {
+                            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                items(prioritySignals.take(4), key = { signal -> signal.label }) { signal ->
+                                    AssistChip(
+                                        onClick = signal.onOpen,
+                                        modifier = Modifier.heightIn(min = KelmahSecondaryActionMinHeight),
+                                        label = { Text("${signal.label} ${signal.count}") },
+                                    )
+                                }
                             }
-                            OutlinedButton(onClick = onOpenNotifications, modifier = Modifier.weight(1f)) {
-                                Text(stringResource(id = R.string.home_alerts))
+                        }
+                        nextBestAction?.let { action ->
+                            Card(colors = mutedPanelColors) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 12.dp, vertical = 10.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                ) {
+                                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                        Text(
+                                            text = stringResource(id = R.string.home_next_best_action),
+                                            style = MaterialTheme.typography.labelLarge,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        )
+                                        Text(
+                                            text = "${action.label} (${action.count})",
+                                            style = MaterialTheme.typography.titleSmall,
+                                            fontWeight = FontWeight.SemiBold,
+                                        )
+                                    }
+                                    Button(onClick = action.onOpen) {
+                                        Text(stringResource(id = R.string.common_open))
+                                    }
+                                }
+                            }
+                        }
+                        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                            Button(
+                                onClick = onBrowseJobs,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(min = KelmahPrimaryActionMinHeight),
+                            ) {
+                                Text(
+                                    if (role == KelmahUserRole.HIRER) {
+                                        stringResource(id = R.string.home_open_market)
+                                    } else {
+                                        stringResource(id = R.string.home_find_work)
+                                    },
+                                )
+                            }
+                            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                OutlinedButton(
+                                    onClick = onOpenMessages,
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .heightIn(min = KelmahSecondaryActionMinHeight),
+                                ) {
+                                    Text(stringResource(id = R.string.home_messages))
+                                }
+                                OutlinedButton(
+                                    onClick = onOpenNotifications,
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .heightIn(min = KelmahSecondaryActionMinHeight),
+                                ) {
+                                    Text(stringResource(id = R.string.home_alerts))
+                                }
                             }
                         }
                     }
@@ -236,22 +294,25 @@ fun HomeScreen(
 
         if (prioritySignals.isNotEmpty()) {
             item {
-                Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
-                    Column(
-                        modifier = Modifier.padding(14.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.home_priority_queue),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold,
-                        )
-                        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            items(prioritySignals, key = { signal -> signal.label }) { signal ->
-                                AssistChip(
-                                    onClick = signal.onOpen,
-                                    label = { Text("${signal.label}: ${signal.count}") },
-                                )
+                KelmahReveal(index = 2) {
+                    Card(colors = mutedPanelColors) {
+                        Column(
+                            modifier = Modifier.padding(14.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.home_priority_queue),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                items(prioritySignals, key = { signal -> signal.label }) { signal ->
+                                    AssistChip(
+                                        onClick = signal.onOpen,
+                                        modifier = Modifier.heightIn(min = KelmahSecondaryActionMinHeight),
+                                        label = { Text("${signal.label}: ${signal.count}") },
+                                    )
+                                }
                             }
                         }
                     }
@@ -347,12 +408,14 @@ fun HomeScreen(
                 )
             }
         } else {
-            items(primaryJobs, key = { it.id }) { job ->
-                HomeJobCard(
-                    role = role,
-                    job = job,
-                    onOpen = { onOpenJob(job.id) },
-                )
+            itemsIndexed(primaryJobs, key = { _, job -> job.id }) { index, job ->
+                KelmahReveal(index = 3 + index) {
+                    HomeJobCard(
+                        role = role,
+                        job = job,
+                        onOpen = { onOpenJob(job.id) },
+                    )
+                }
             }
         }
 
@@ -380,8 +443,10 @@ fun HomeScreen(
                 )
             }
         } else {
-            items(messagesState.conversations.take(3), key = { it.id }) { conversation ->
-                ConversationPreviewCard(conversation = conversation, onOpen = { onOpenConversation(conversation.id) })
+            itemsIndexed(messagesState.conversations.take(3), key = { _, conversation -> conversation.id }) { index, conversation ->
+                KelmahReveal(index = 10 + index) {
+                    ConversationPreviewCard(conversation = conversation, onOpen = { onOpenConversation(conversation.id) })
+                }
             }
         }
 
@@ -405,11 +470,14 @@ fun HomeScreen(
                 )
             }
         } else {
-            items(notificationsState.notifications.take(3), key = { it.id }) { notification ->
-                NotificationPreviewCard(notification = notification, onOpen = { onOpenNotification(notification) })
+            itemsIndexed(notificationsState.notifications.take(3), key = { _, notification -> notification.id }) { index, notification ->
+                KelmahReveal(index = 14 + index) {
+                    NotificationPreviewCard(notification = notification, onOpen = { onOpenNotification(notification) })
+                }
             }
         }
     }
+}
 }
 
 @Composable
@@ -420,7 +488,7 @@ private fun SummaryCard(
 ) {
     Card(
         modifier = modifier,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        colors = kelmahMutedPanelColors(),
     ) {
         Column(
             modifier = Modifier.padding(12.dp),
@@ -428,6 +496,34 @@ private fun SummaryCard(
         ) {
             Text(value.toString(), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
             Text(label, style = MaterialTheme.typography.bodySmall)
+        }
+    }
+}
+
+@Composable
+private fun HomeSignalPill(
+    modifier: Modifier = Modifier,
+    label: String,
+    count: Int,
+) {
+    Card(
+        modifier = modifier,
+        colors = kelmahPanelColors(),
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            Text(
+                text = count.toString(),
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }
@@ -459,7 +555,7 @@ private fun HomeJobCard(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onOpen),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        colors = kelmahPanelColors(),
     ) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -559,7 +655,7 @@ private fun ConversationPreviewCard(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onOpen),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        colors = kelmahPanelColors(),
     ) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -610,7 +706,7 @@ private fun NotificationPreviewCard(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onOpen),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        colors = kelmahPanelColors(),
     ) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -666,7 +762,7 @@ private fun EmptyHomeSection(
     title: String,
     description: String,
 ) {
-    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+    Card(colors = kelmahPanelColors()) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
             Text(description, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)

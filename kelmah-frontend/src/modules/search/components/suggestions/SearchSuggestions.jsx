@@ -94,7 +94,7 @@ const SearchSuggestions = ({
                     onSuggestionSelected({ type: 'search', text: term })
                   }
                   sx={{
-                    minHeight: { xs: 44, sm: 36 },
+                    minHeight: 44,
                     maxWidth: '100%',
                     '& .MuiChip-label': { overflowWrap: 'anywhere' },
                   }}

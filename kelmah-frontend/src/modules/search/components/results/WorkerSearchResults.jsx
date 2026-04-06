@@ -255,7 +255,11 @@ const WorkerSearchResults = ({
               variant="outlined"
               size="small"
               sx={{
+                minHeight: 44,
                 maxWidth: '100%',
+                '& .MuiChip-deleteIcon': {
+                  fontSize: '1.1rem',
+                },
                 '& .MuiChip-label': { overflowWrap: 'anywhere' },
               }}
             />
@@ -520,9 +524,18 @@ const WorkerSearchResults = ({
           page={pagination.page || 1}
           onChange={handlePageChange}
           color="primary"
-          size={isMobile ? 'small' : 'medium'}
-          showFirstButton
-          showLastButton
+          size="medium"
+          showFirstButton={!isMobile}
+          showLastButton={!isMobile}
+          sx={{
+            '& .MuiPagination-ul': {
+              gap: { xs: 0.5, sm: 0.75 },
+            },
+            '& .MuiPaginationItem-root': {
+              minWidth: 44,
+              minHeight: 44,
+            },
+          }}
         />
       </Box>
     );
@@ -545,6 +558,8 @@ const WorkerSearchResults = ({
         <Typography
           variant="body2"
           color="text.secondary"
+          role="status"
+          aria-live="polite"
           sx={{ fontSize: { xs: '0.85rem', sm: '0.875rem' } }}
         >
           {(() => {
@@ -656,7 +671,7 @@ const WorkerSearchResults = ({
               sx={{
                 display: 'flex',
                 minWidth: { xs: '100%', sm: 'auto' },
-                minHeight: { xs: 44, sm: 40 },
+                minHeight: 44,
                 px: { xs: 1.25, sm: 1.5 },
                 whiteSpace: 'nowrap',
               }}

@@ -56,6 +56,7 @@ const getEmployerAvatar = (job = {}) =>
 
 function JobsCardsGrid({
   uniqueJobs,
+  isMobile,
   isSmallMobile,
   motionProps,
   navigate,
@@ -70,6 +71,10 @@ function JobsCardsGrid({
     <Grid container spacing={{ xs: 1.25, sm: 3 }}>
       {uniqueJobs.map((job, index) => {
         const jobHeroImage = getJobHeroImage(job);
+        const useDeterministicTabletHero = isMobile && !isSmallMobile;
+        const effectiveHeroImage = useDeterministicTabletHero
+          ? ''
+          : jobHeroImage;
         const jobVisuals = getJobVisuals(job);
         const employerAvatar = getEmployerAvatar(job);
         const jobId = job._id || job.id;
@@ -143,8 +148,8 @@ function JobsCardsGrid({
                   sx={{
                     position: 'relative',
                     height: { xs: 122, sm: 148 },
-                    background: jobHeroImage
-                      ? `linear-gradient(180deg, rgba(15,23,42,0.18) 0%, rgba(15,23,42,0.72) 100%), url(${jobHeroImage})`
+                    background: effectiveHeroImage
+                      ? `linear-gradient(180deg, rgba(15,23,42,0.18) 0%, rgba(15,23,42,0.72) 100%), url(${effectiveHeroImage})`
                       : 'linear-gradient(135deg, rgba(212,175,55,0.18) 0%, rgba(15,118,110,0.35) 100%)',
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
@@ -177,7 +182,7 @@ function JobsCardsGrid({
                         height: { xs: 22, sm: 24 },
                         '& .MuiChip-label': {
                           px: 0.9,
-                          fontSize: { xs: '0.64rem', sm: '0.72rem' },
+                          fontSize: { xs: '0.75rem', sm: '0.8rem' },
                           color: '#111827',
                           fontWeight: 800,
                         },
@@ -217,10 +222,10 @@ function JobsCardsGrid({
                       sx={{
                         fontWeight: 700,
                         letterSpacing: 0.15,
-                        fontSize: { xs: '0.64rem', sm: '0.74rem' },
+                        fontSize: { xs: '0.75rem', sm: '0.8rem' },
                       }}
                     >
-                      {jobHeroImage
+                      {effectiveHeroImage
                         ? 'Image-backed job brief ready for quick review'
                         : 'Clear trade context helps workers decide faster'}
                     </Typography>
@@ -341,7 +346,7 @@ function JobsCardsGrid({
                               bgcolor: job.urgent ? '#ff4444' : 'warning.main',
                               color: 'white',
                               fontWeight: 'bold',
-                              fontSize: '0.7rem',
+                              fontSize: '0.78rem',
                               animation: 'pulse 2s infinite',
                               '@keyframes pulse': {
                                 '0%, 100%': { opacity: 1 },
@@ -369,7 +374,7 @@ function JobsCardsGrid({
                               bgcolor: 'rgba(76,175,80,0.2)',
                               color: 'success.main',
                               border: `1px solid ${theme.palette.success.main}`,
-                              fontSize: '0.7rem',
+                              fontSize: '0.78rem',
                               cursor: 'help',
                             }}
                           />
@@ -446,7 +451,7 @@ function JobsCardsGrid({
                         variant="body2"
                         sx={{
                           color: isUrgentJob ? '#ff6b6b' : 'text.secondary',
-                          fontSize: '0.82rem',
+                          fontSize: '0.875rem',
                           fontWeight: isUrgentJob ? 700 : 500,
                         }}
                       >
@@ -641,7 +646,7 @@ function JobsCardsGrid({
                       fontWeight: 'bold',
                       fontSize: { xs: '1rem', sm: '0.875rem' },
                       padding: { xs: '10px 16px', sm: '8px 16px' },
-                      minHeight: { xs: '44px', sm: '40px' },
+                      minHeight: 44,
                       '&:hover': {
                         bgcolor: 'var(--k-gold-dark)',
                       },

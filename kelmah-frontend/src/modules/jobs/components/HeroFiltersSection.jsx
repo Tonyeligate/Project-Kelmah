@@ -30,7 +30,6 @@ import { motion } from 'framer-motion';
 import tradeCategories from '../data/tradeCategories.json';
 import ghanaLocations from '../data/ghanaLocations.json';
 import { formatGhanaCurrency } from '@/utils/formatters';
-import { formatGhanaCurrency } from '@/utils/formatters';
 
 const CATEGORY_ICONS = {
   Electrical: ElectricalIcon,
@@ -51,6 +50,7 @@ const HeroFiltersSection = ({
   onBudgetRangeChange,
   showFilters,
   onToggleFilters,
+  onSearchSubmit,
   isSmallMobile,
 }) => {
   const [categoryOptions, setCategoryOptions] = useState([
@@ -168,7 +168,7 @@ const HeroFiltersSection = ({
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         color: 'white',
-                        height: { xs: '44px', sm: '40px' },
+                        height: '44px',
                         '& fieldset': {
                           borderColor: 'rgba(212,175,55,0.3)',
                         },
@@ -181,7 +181,7 @@ const HeroFiltersSection = ({
                       },
                       '& .MuiInputBase-input': {
                         fontSize: { xs: '0.95rem', sm: '0.875rem' },
-                        padding: { xs: '10px 14px', sm: '8.5px 14px' },
+                        padding: '10px 14px',
                         '&::placeholder': {
                           color: 'rgba(255,255,255,0.6)',
                           opacity: 1,
@@ -226,7 +226,7 @@ const HeroFiltersSection = ({
                       sx={{
                         color: 'white',
                         fontSize: { xs: '0.9rem', sm: '0.875rem' },
-                        height: { xs: '44px', sm: '40px' },
+                        height: '44px',
                         '& .MuiOutlinedInput-notchedOutline': {
                           borderColor: 'rgba(212,175,55,0.3)',
                         },
@@ -240,7 +240,7 @@ const HeroFiltersSection = ({
                           color: '#D4AF37',
                         },
                         '& .MuiSelect-select': {
-                          padding: { xs: '10px 14px', sm: '8.5px 14px' },
+                          padding: '10px 14px',
                         },
                       }}
                     >
@@ -284,7 +284,7 @@ const HeroFiltersSection = ({
                       sx={{
                         color: 'white',
                         fontSize: { xs: '0.9rem', sm: '0.875rem' },
-                        height: { xs: '44px', sm: '40px' },
+                        height: '44px',
                         '& .MuiOutlinedInput-notchedOutline': {
                           borderColor: 'rgba(212,175,55,0.3)',
                         },
@@ -298,7 +298,7 @@ const HeroFiltersSection = ({
                           color: '#D4AF37',
                         },
                         '& .MuiSelect-select': {
-                          padding: { xs: '10px 14px', sm: '8.5px 14px' },
+                          padding: '10px 14px',
                         },
                       }}
                     >
@@ -328,15 +328,21 @@ const HeroFiltersSection = ({
                       variant="contained"
                       size="medium"
                       startIcon={<SearchIcon />}
-                      onClick={() => onSearchChange(searchQuery)}
+                      onClick={() => {
+                        if (onSearchSubmit) {
+                          onSearchSubmit();
+                          return;
+                        }
+                        onSearchChange(searchQuery);
+                      }}
                       sx={{
                         bgcolor: '#D4AF37',
                         color: 'black',
                         fontWeight: 'bold',
                         fontSize: { xs: '0.9rem', sm: '0.875rem' },
-                        height: { xs: '44px', sm: '40px' },
+                        height: '44px',
                         minWidth: { xs: '100%', sm: 'auto' },
-                        padding: { xs: '10px 20px', sm: '8px 12px' },
+                        padding: '10px 14px',
                         boxShadow: '0 4px 12px rgba(212,175,55,0.4)',
                         '&:hover': {
                           bgcolor: '#B8941F',
@@ -364,7 +370,7 @@ const HeroFiltersSection = ({
                     color: '#D4AF37',
                     fontSize: { xs: '0.8rem', sm: '0.75rem' },
                     padding: { xs: '6px 12px', sm: '4px 8px' },
-                    minHeight: { xs: '36px', sm: 'auto' },
+                    minHeight: 44,
                     '&:hover': {
                       bgcolor: 'rgba(212,175,55,0.1)',
                     },
@@ -451,7 +457,14 @@ const HeroFiltersSection = ({
                                 borderColor: '#D4AF37',
                                 color: '#D4AF37',
                                 fontSize: '0.7rem',
+                                minHeight: 44,
+                                minWidth: 44,
                                 '&:hover': { bgcolor: 'rgba(212,175,55,0.1)' },
+                                '& .MuiChip-label': {
+                                  px: 1,
+                                  whiteSpace: 'normal',
+                                  lineHeight: 1.2,
+                                },
                               }}
                             />
                           ),
@@ -480,6 +493,7 @@ HeroFiltersSection.propTypes = {
   onBudgetRangeChange: PropTypes.func.isRequired,
   showFilters: PropTypes.bool.isRequired,
   onToggleFilters: PropTypes.func.isRequired,
+  onSearchSubmit: PropTypes.func,
   isSmallMobile: PropTypes.bool.isRequired,
 };
 

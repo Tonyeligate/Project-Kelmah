@@ -8,7 +8,11 @@ import {
   IconButton,
   useTheme,
 } from '@mui/material';
-import { Search as SearchIcon, Tune as FilterIcon } from '@mui/icons-material';
+import {
+  Search as SearchIcon,
+  Tune as FilterIcon,
+  Close as CloseIcon,
+} from '@mui/icons-material';
 import PropTypes from 'prop-types';
 import { HEADER_HEIGHT_MOBILE, Z_INDEX } from '@/constants/layout';
 import { withSafeAreaTop } from '@/utils/safeArea';
@@ -68,22 +72,42 @@ const CompactSearchBar = ({
             ),
             endAdornment: (
               <InputAdornment position="end">
-                <IconButton
-                  size="small"
-                  onClick={onSearchSubmit}
-                  aria-label="Run worker search"
-                  sx={{
-                    width: 44,
-                    height: 44,
-                    '&:focus-visible': {
-                      outline: '3px solid',
-                      outlineColor: 'primary.main',
-                      outlineOffset: '2px',
-                    },
-                  }}
-                >
-                  <SearchIcon fontSize="small" />
-                </IconButton>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
+                  {keyword?.trim() && (
+                    <IconButton
+                      size="small"
+                      onClick={() => onKeywordChange('')}
+                      aria-label="Clear worker search input"
+                      sx={{
+                        width: 44,
+                        height: 44,
+                        '&:focus-visible': {
+                          outline: '3px solid',
+                          outlineColor: 'primary.main',
+                          outlineOffset: '2px',
+                        },
+                      }}
+                    >
+                      <CloseIcon fontSize="small" />
+                    </IconButton>
+                  )}
+                  <IconButton
+                    size="small"
+                    onClick={onSearchSubmit}
+                    aria-label="Run worker search"
+                    sx={{
+                      width: 44,
+                      height: 44,
+                      '&:focus-visible': {
+                        outline: '3px solid',
+                        outlineColor: 'primary.main',
+                        outlineOffset: '2px',
+                      },
+                    }}
+                  >
+                    <SearchIcon fontSize="small" />
+                  </IconButton>
+                </Box>
               </InputAdornment>
             ),
             sx: {
@@ -99,6 +123,7 @@ const CompactSearchBar = ({
           inputProps={{
             'aria-label': 'Search workers by trade and location',
             maxLength: 120,
+            autoComplete: 'off',
           }}
           sx={{
             '& .MuiOutlinedInput-root': {

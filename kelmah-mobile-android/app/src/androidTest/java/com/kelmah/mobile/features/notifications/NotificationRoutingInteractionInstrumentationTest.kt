@@ -1,7 +1,8 @@
 package com.kelmah.mobile.features.notifications
 
-import androidx.compose.ui.test.assertHasNoClickAction
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import com.kelmah.mobile.features.notifications.data.NotificationItem
@@ -60,6 +61,6 @@ class NotificationRoutingInteractionInstrumentationTest {
             )
         }
 
-        composeRule.onNodeWithText("Invalid target").assertHasNoClickAction()
+        composeRule.onAllNodesWithText("Tap to open alert").assertCountEquals(0)
     }
 }

@@ -77,7 +77,7 @@ Using the wrapper keeps local and CI builds aligned without requiring a globally
 
 ## Backend target
 - Gateway origin is configured once through `KELMAH_GATEWAY_ORIGIN`
-- Default gateway origin: `https://kelmah-api-gateway-gf3g.onrender.com`
+- Default gateway origin: `https://kelmah-api-gateway-hvif.onrender.com`
 - API base is derived internally as `<gateway-origin>/api`
 - Realtime base is derived internally as `<gateway-origin>/socket.io`
 

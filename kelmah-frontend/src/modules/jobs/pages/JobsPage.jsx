@@ -639,6 +639,7 @@ function JobsResultsHeader({
                   fontSize: '0.75rem',
                   textTransform: 'none',
                   minWidth: 'auto',
+                  minHeight: 44,
                 }}
               >
                 Clear all
@@ -651,6 +652,14 @@ function JobsResultsHeader({
                 gap: 1,
                 flexWrap: 'wrap',
                 alignItems: 'center',
+                '& .MuiChip-root': {
+                  minHeight: 44,
+                  maxWidth: '100%',
+                },
+                '& .MuiChip-label': {
+                  whiteSpace: 'normal',
+                  lineHeight: 1.2,
+                },
               }}
             >
               <Typography variant="body2" sx={{ color: 'text.secondary' }}>
@@ -745,6 +754,7 @@ function JobsResultsHeader({
                   fontSize: '0.75rem',
                   textTransform: 'none',
                   minWidth: 'auto',
+                  minHeight: 44,
                 }}
               >
                 Clear filters
@@ -1172,7 +1182,7 @@ function JobsFiltersPanel({
             sx={{
               '& .MuiOutlinedInput-root': {
                 color: 'var(--k-text-primary)',
-                height: { xs: '44px', sm: '40px' },
+                height: '44px',
                 '& fieldset': {
                   borderColor: 'var(--k-accent-border)',
                 },
@@ -1185,7 +1195,7 @@ function JobsFiltersPanel({
               },
               '& .MuiInputBase-input': {
                 fontSize: { xs: '1rem', sm: '0.875rem' },
-                padding: { xs: '10px 14px', sm: '8.5px 14px' },
+                padding: '10px 14px',
                 '&::placeholder': {
                   color: 'var(--k-text-muted)',
                   opacity: 1,
@@ -1231,7 +1241,7 @@ function JobsFiltersPanel({
               sx={{
                 color: 'var(--k-text-primary)',
                 fontSize: { xs: '1rem', sm: '0.875rem' },
-                height: { xs: '44px', sm: '40px' },
+                height: '44px',
                 '& .MuiOutlinedInput-notchedOutline': {
                   borderColor: 'var(--k-accent-border)',
                 },
@@ -1245,7 +1255,7 @@ function JobsFiltersPanel({
                   color: 'var(--k-gold)',
                 },
                 '& .MuiSelect-select': {
-                  padding: { xs: '10px 14px', sm: '8.5px 14px' },
+                  padding: '10px 14px',
                 },
               }}
             >
@@ -1294,7 +1304,7 @@ function JobsFiltersPanel({
               sx={{
                 color: 'var(--k-text-primary)',
                 fontSize: { xs: '1rem', sm: '0.875rem' },
-                height: { xs: '44px', sm: '40px' },
+                height: '44px',
                 '& .MuiOutlinedInput-notchedOutline': {
                   borderColor: 'var(--k-accent-border)',
                 },
@@ -1308,7 +1318,7 @@ function JobsFiltersPanel({
                   color: 'var(--k-gold)',
                 },
                 '& .MuiSelect-select': {
-                  padding: { xs: '10px 14px', sm: '8.5px 14px' },
+                  padding: '10px 14px',
                 },
               }}
             >
@@ -1352,9 +1362,9 @@ function JobsFiltersPanel({
                   color: 'var(--k-text-on-accent)',
                   fontWeight: 'bold',
                   fontSize: { xs: '1rem', sm: '0.875rem' },
-                  height: { xs: '44px', sm: '40px' },
+                  height: '44px',
                   minWidth: { xs: '100%', sm: 'auto' },
-                  padding: { xs: '10px 20px', sm: '8px 12px' },
+                  padding: '10px 14px',
                   boxShadow: '0 4px 12px rgba(212,175,55,0.4)',
                   whiteSpace: 'nowrap',
                   '&:hover': {
@@ -1389,7 +1399,7 @@ function JobsFiltersPanel({
             color: 'var(--k-gold)',
             fontSize: { xs: '0.875rem', sm: '0.75rem' },
             padding: { xs: '8px 14px', sm: '4px 8px' },
-            minHeight: { xs: '44px', sm: 'auto' },
+            minHeight: 44,
             '&:hover': {
               bgcolor: 'var(--k-accent-soft)',
             },
@@ -1558,12 +1568,19 @@ function JobsFiltersPanel({
                         ? 'var(--k-gold)'
                         : 'transparent',
                       fontSize: '0.8rem',
+                      minHeight: 44,
+                      minWidth: 44,
                       cursor: 'pointer',
                       fontWeight: quickFilters[key] ? 'bold' : 'normal',
                       '&:hover': {
                         bgcolor: quickFilters[key]
                           ? 'var(--k-gold-dark)'
                           : 'var(--k-accent-soft)',
+                      },
+                      '& .MuiChip-label': {
+                        px: 1,
+                        whiteSpace: 'normal',
+                        lineHeight: 1.2,
                       },
                       transition: 'all 0.2s ease',
                     }}
@@ -1585,7 +1602,8 @@ function JobsFiltersPanel({
                   sx={{
                     color: 'var(--k-text-primary)',
                     fontSize: '0.875rem',
-                    height: '36px',
+                    minHeight: 44,
+                    height: 44,
                     '& .MuiOutlinedInput-notchedOutline': {
                       borderColor: 'var(--k-accent-border)',
                     },
@@ -1596,6 +1614,12 @@ function JobsFiltersPanel({
                       borderColor: 'var(--k-gold)',
                     },
                     '& .MuiSvgIcon-root': { color: 'var(--k-gold)' },
+                    '& .MuiSelect-select': {
+                      minHeight: 44,
+                      display: 'flex',
+                      alignItems: 'center',
+                      boxSizing: 'border-box',
+                    },
                   }}
                 >
                   <MenuItem value="relevance">Most Relevant</MenuItem>
@@ -1613,6 +1637,7 @@ function JobsFiltersPanel({
                     color: 'error.main',
                     fontSize: '0.75rem',
                     textTransform: 'none',
+                    minHeight: 44,
                     '&:hover': {
                       bgcolor: (theme) => alpha(theme.palette.error.main, 0.1),
                     },
@@ -2472,6 +2497,7 @@ const JobsPage = () => {
                 {!loading && !error && (
                   <JobsCardsGrid
                     uniqueJobs={uniqueJobs}
+                    isMobile={isMobile}
                     isSmallMobile={isSmallMobile}
                     motionProps={motionProps}
                     navigate={navigate}

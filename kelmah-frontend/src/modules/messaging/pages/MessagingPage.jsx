@@ -794,6 +794,32 @@ const MessagingPage = () => {
   );
 
   const messageCharacterCount = messageText.length;
+  const composerHintText = useMemo(() => {
+    if (isMobile) {
+      if (selectedFiles.length > 0) {
+        return `${selectedFiles.length} attached | ${messageCharacterCount}/1000 chars | Enter sends`;
+      }
+
+      return `Enter sends | Shift+Enter new line | ${messageCharacterCount}/1000 chars`;
+    }
+
+    if (selectedFiles.length > 0) {
+      return `${selectedFiles.length} attached | ${remainingAttachmentSlots} slot${remainingAttachmentSlots === 1 ? '' : 's'} left | ${messageCharacterCount}/1000 chars | Press Enter to send`;
+    }
+
+    if (hasSelectedDraft) {
+      return `Press Enter for quick send | Shift+Enter for new line | ${messageCharacterCount}/1000 chars | Draft ${selectedDraftSavedLabel}`;
+    }
+
+    return `Press Enter for quick send | Shift+Enter for new line | ${messageCharacterCount}/1000 chars | Max ${MAX_ATTACHMENTS} files (10MB limit)`;
+  }, [
+    hasSelectedDraft,
+    isMobile,
+    messageCharacterCount,
+    remainingAttachmentSlots,
+    selectedDraftSavedLabel,
+    selectedFiles.length,
+  ]);
   const selectedDraftEntry = useMemo(
     () =>
       selectedConversationKey
@@ -2109,8 +2135,6 @@ const MessagingPage = () => {
     const jobTitle = selectedConversation.jobRelated?.title;
     const sendDisabled =
       isSending || (!messageText.trim() && selectedFiles.length === 0);
-    const mobileComposerOffset =
-      mobile && !isKeyboardVisible ? withBottomNavSafeArea(0) : 0;
     const quickReplyBarVisible = messageText.trim().length === 0;
 
     return (
@@ -2242,7 +2266,7 @@ const MessagingPage = () => {
                     color="inherit"
                     onClick={handleDiscardSelectedDraft}
                     sx={{
-                      minHeight: 20,
+                      minHeight: mobile ? TOUCH_TARGET_MIN : 24,
                       px: 0.75,
                       lineHeight: 1,
                       color: 'rgba(255,255,255,0.84)',
@@ -2342,6 +2366,7 @@ const MessagingPage = () => {
             flex: 1,
             minHeight: 0,
             overflowY: 'auto',
+            overflowX: 'hidden',
             scrollPaddingTop: { xs: 72, sm: 78, md: 92 },
             px: {
               xs: 0.65,
@@ -2352,8 +2377,8 @@ const MessagingPage = () => {
             },
             py: { xs: 1.05, sm: 1.2, md: 1.35, lg: 1.5, xl: 1.6 },
             pb: {
-              xs: mobile && !isKeyboardVisible ? 1.55 : 0.9,
-              sm: mobile && !isKeyboardVisible ? 1.9 : 1.2,
+              xs: 0.9,
+              sm: 1.2,
               md: 1.5,
               lg: 1.75,
             },
@@ -2501,19 +2526,19 @@ const MessagingPage = () => {
           data-testid="messages-composer"
           onSubmit={handleSendMessage}
           sx={{
-            position: mobile ? 'sticky' : 'relative',
+            position: 'relative',
             flexShrink: 0,
-            bottom: mobile ? mobileComposerOffset : 0,
+            bottom: 0,
             zIndex: 2,
             px: { xs: 0.65, sm: 1, md: 1.15, lg: 1.35, xl: 1.5 },
             py: { xs: 0.65, sm: 0.8, md: 0.9, lg: 1 },
             pb: {
               xs: isKeyboardVisible
                 ? withSafeAreaBottom(6)
-                : withSafeAreaBottom(10),
+                : withBottomNavSafeArea(6),
               sm: isKeyboardVisible
                 ? withSafeAreaBottom(8)
-                : withSafeAreaBottom(12),
+                : withBottomNavSafeArea(8),
               md: 1,
               lg: 1.15,
             },
@@ -2596,7 +2621,13 @@ const MessagingPage = () => {
                 <Stack
                   direction="row"
                   spacing={1}
-                  sx={{ overflowX: 'auto', pb: 0.5 }}
+                  useFlexGap
+                  sx={{
+                    overflowX: { xs: 'visible', sm: 'auto' },
+                    flexWrap: { xs: 'wrap', sm: 'nowrap' },
+                    pb: 0.5,
+                    rowGap: 1,
+                  }}
                 >
                   {selectedFiles.map((file, index) => {
                     const fileType = String(file.type || '').toLowerCase();
@@ -2615,9 +2646,10 @@ const MessagingPage = () => {
                       <Box
                         key={`${file.name}-${index}`}
                         sx={{
-                          minWidth: 136,
-                          maxWidth: 190,
+                          minWidth: { xs: '100%', sm: 136 },
+                          maxWidth: { xs: '100%', sm: 190 },
                           flexShrink: 0,
+                          flexBasis: { xs: '100%', sm: 'auto' },
                           borderRadius: 2,
                           border: '1px solid',
                           borderColor: 'divider',
@@ -2634,14 +2666,14 @@ const MessagingPage = () => {
                             position: 'absolute',
                             top: -8,
                             right: -8,
-                            width: 36,
-                            height: 36,
+                            width: TOUCH_TARGET_MIN,
+                            height: TOUCH_TARGET_MIN,
                             bgcolor: 'error.main',
                             color: 'error.contrastText',
                             '&:hover': { bgcolor: 'error.dark' },
                           }}
                         >
-                          <CloseIcon sx={{ fontSize: 14 }} />
+                          <CloseIcon sx={{ fontSize: 16 }} />
                         </IconButton>
 
                         {fileType.startsWith('image/') ? (
@@ -2725,7 +2757,14 @@ const MessagingPage = () => {
                 data-testid="messages-quick-replies"
                 direction="row"
                 spacing={0.75}
-                sx={{ mb: 1, overflowX: 'auto', pb: 0.25 }}
+                useFlexGap
+                sx={{
+                  mb: 1,
+                  overflowX: 'visible',
+                  flexWrap: 'wrap',
+                  pb: 0.25,
+                  rowGap: 0.75,
+                }}
               >
                 {quickReplyTemplates.map((template) => (
                   <Chip
@@ -2738,7 +2777,16 @@ const MessagingPage = () => {
                       fontWeight: 700,
                       bgcolor: alpha(CHAT_HEADER, 0.05),
                       borderColor: alpha(CHAT_HEADER, 0.22),
-                      '& .MuiChip-label': { px: { xs: 1, sm: 1.2 } },
+                      maxWidth: { xs: '100%', sm: 'unset' },
+                      height: 'auto',
+                      '& .MuiChip-label': {
+                        px: { xs: 1, sm: 1.2 },
+                        py: { xs: 0.45, sm: 0.35 },
+                        whiteSpace: 'normal',
+                        lineHeight: 1.2,
+                        textAlign: 'left',
+                        display: 'block',
+                      },
                     }}
                   />
                 ))}
@@ -2781,7 +2829,9 @@ const MessagingPage = () => {
                 placeholder={
                   selectedFiles.length > 0
                     ? 'Add a note for these attachments (optional)'
-                    : 'Type your message (price, timing, and next step)'
+                    : isMobile
+                      ? 'Type your message'
+                      : 'Type your message (price, timing, and next step)'
                 }
                 value={messageText}
                 onChange={(event) => {
@@ -2877,13 +2927,19 @@ const MessagingPage = () => {
             <Typography
               variant="caption"
               color="text.secondary"
-              sx={{ display: 'block', mt: 0.75, pl: 0.5 }}
+              component="p"
+              aria-live="polite"
+              sx={{
+                display: 'block',
+                mt: 0.75,
+                pl: 0.5,
+                pr: 0.5,
+                whiteSpace: 'normal',
+                wordBreak: 'break-word',
+                lineHeight: 1.35,
+              }}
             >
-              {selectedFiles.length > 0
-                ? `${selectedFiles.length} attached | ${remainingAttachmentSlots} slot${remainingAttachmentSlots === 1 ? '' : 's'} left | ${messageCharacterCount}/1000 chars | Press Enter to send`
-                : hasSelectedDraft
-                  ? `Press Enter for quick send | Shift+Enter for new line | ${messageCharacterCount}/1000 chars | Draft ${selectedDraftSavedLabel}`
-                  : `Press Enter for quick send | Shift+Enter for new line | ${messageCharacterCount}/1000 chars | Max ${MAX_ATTACHMENTS} files (10MB limit)`}
+              {composerHintText}
             </Typography>
             {isKeyboardVisible && (
               <Typography

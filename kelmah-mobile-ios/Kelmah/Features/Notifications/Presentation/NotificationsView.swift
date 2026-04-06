@@ -4,92 +4,154 @@ struct NotificationsView: View {
     @ObservedObject var viewModel: NotificationsViewModel
     var onOpenTarget: (NotificationActionTarget) -> Void = { _ in }
 
+    private var totalAlerts: Int {
+        viewModel.notifications.count
+    }
+
+    private var actionableAlerts: Int {
+        viewModel.notifications.filter { $0.actionTarget != nil }.count
+    }
+
+    private var headerStats: [KelmahHeroStat] {
+        [
+            KelmahHeroStat(label: "Total", value: "\(totalAlerts)", tint: KelmahTheme.cyan),
+            KelmahHeroStat(label: "Unread", value: "\(viewModel.unreadCount)", tint: KelmahTheme.sun),
+            KelmahHeroStat(label: "Action", value: "\(actionableAlerts)", tint: KelmahTheme.success),
+        ]
+    }
+
+    private var headerChips: [String] {
+        [
+            viewModel.unreadOnly ? "Filter: new" : "Filter: all",
+            "Live alert sync",
+        ]
+    }
+
     var body: some View {
         NavigationStack {
-            List {
-                Section {
-                    Picker("Filter", selection: Binding(
-                        get: { viewModel.unreadOnly },
-                        set: { value in
-                            Task { await viewModel.setUnreadOnly(value) }
-                        }
-                    )) {
-                        Text("All").tag(false)
-                        Text("New").tag(true)
-                    }
-                    .pickerStyle(.segmented)
-
-                    HStack {
-                        Label("New alerts", systemImage: "bell.badge")
-                            .font(.subheadline.weight(.semibold))
-                        Spacer()
-                        Text("\(viewModel.unreadCount)")
-                            .font(.headline)
-                            .foregroundStyle(KelmahTheme.accent)
-                    }
-                }
-
-                if let message = viewModel.errorMessage {
-                    Section {
-                        NotificationBannerView(message: message, tint: .red.opacity(0.12))
-                    }
-                }
-
-                if let message = viewModel.infoMessage {
-                    Section {
-                        NotificationBannerView(message: message, tint: KelmahTheme.accent.opacity(0.16))
-                    }
-                }
-
-                Section("Alerts") {
-                    if viewModel.isLoading, viewModel.notifications.isEmpty {
-                        ProgressView("Loading alerts...")
-                            .frame(maxWidth: .infinity, alignment: .center)
-                    } else if viewModel.notifications.isEmpty {
-                        ContentUnavailableView(
-                            viewModel.unreadOnly ? "No new alerts" : "No alerts yet",
-                            systemImage: "bell",
-                            description: Text("New job and message updates will show here.")
-                        )
-                    } else {
-                        ForEach(viewModel.notifications) { notification in
-                            NotificationRowView(notification: notification)
-                                .contentShape(Rectangle())
-                                .onTapGesture {
-                                    Task {
-                                        if notification.isRead == false {
-                                            await viewModel.markAsRead(notificationId: notification.id)
-                                        }
-                                        if let target = notification.actionTarget {
-                                            onOpenTarget(target)
-                                        }
-                                    }
+            KelmahPremiumBackground {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
+                        KelmahCommandDeck(
+                            eyebrow: "ALERT CENTER",
+                            title: "Keep every critical signal in view",
+                            subtitle: "Messages, jobs, contracts, and payments in one action-ready stream.",
+                            stats: headerStats,
+                            chips: headerChips
+                        ) {
+                            HStack(spacing: 10) {
+                                Button {
+                                    Task { await viewModel.refresh() }
+                                } label: {
+                                    Text("Refresh")
+                                        .fontWeight(.bold)
+                                        .frame(maxWidth: .infinity)
+                                        .frame(minHeight: 48)
                                 }
-                                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                                    Button(role: .destructive) {
+                                .buttonStyle(.borderedProminent)
+                                .tint(KelmahTheme.sun)
+                                .foregroundStyle(Color.black)
+
+                                Button {
+                                    Task { await viewModel.markAllAsRead() }
+                                } label: {
+                                    Text("Mark All Read")
+                                        .fontWeight(.semibold)
+                                        .frame(maxWidth: .infinity)
+                                        .frame(minHeight: 46)
+                                }
+                                .buttonStyle(.bordered)
+                                .tint(KelmahTheme.cyan)
+                                .disabled(viewModel.unreadCount == 0 || viewModel.isMutating)
+                            }
+                            .controlSize(.large)
+                        }
+
+                        KelmahPanel {
+                            VStack(alignment: .leading, spacing: 10) {
+                                Picker("Filter", selection: Binding(
+                                    get: { viewModel.unreadOnly },
+                                    set: { value in
+                                        Task { await viewModel.setUnreadOnly(value) }
+                                    }
+                                )) {
+                                    Text("All").tag(false)
+                                    Text("New").tag(true)
+                                }
+                                .pickerStyle(.segmented)
+
+                                KelmahBannerMessage(
+                                    message: viewModel.unreadOnly
+                                        ? "Showing unread alerts only."
+                                        : "Showing all alerts in chronological order.",
+                                    tint: KelmahTheme.cyan
+                                )
+                            }
+                        }
+
+                        if let message = viewModel.errorMessage {
+                            KelmahBannerMessage(message: message, tint: KelmahTheme.danger)
+                        }
+
+                        if let message = viewModel.infoMessage {
+                            KelmahBannerMessage(message: message, tint: KelmahTheme.success)
+                        }
+
+                        KelmahPanel {
+                            KelmahSectionHeader(
+                                title: "Alerts",
+                                subtitle: "Tap an alert to navigate to the right screen"
+                            )
+                        }
+
+                        if viewModel.isLoading, viewModel.notifications.isEmpty {
+                            KelmahPanel {
+                                HStack(spacing: 10) {
+                                    ProgressView()
+                                        .tint(KelmahTheme.sun)
+                                    Text("Loading alerts...")
+                                        .foregroundStyle(KelmahTheme.textMuted)
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                        } else if viewModel.notifications.isEmpty {
+                            KelmahBannerMessage(
+                                message: viewModel.unreadOnly
+                                    ? "No new alerts right now."
+                                    : "No alerts yet. New activity will appear here.",
+                                tint: KelmahTheme.cyan
+                            )
+                        } else {
+                            ForEach(viewModel.notifications) { notification in
+                                NotificationRowView(
+                                    notification: notification,
+                                    isMutating: viewModel.isMutating,
+                                    onOpen: {
+                                        Task {
+                                            if notification.isRead == false {
+                                                await viewModel.markAsRead(notificationId: notification.id)
+                                            }
+                                            if let target = notification.actionTarget {
+                                                onOpenTarget(target)
+                                            }
+                                        }
+                                    },
+                                    onMarkRead: {
+                                        Task { await viewModel.markAsRead(notificationId: notification.id) }
+                                    },
+                                    onDelete: {
                                         Task { await viewModel.deleteNotification(notificationId: notification.id) }
-                                    } label: {
-                                        Label("Delete", systemImage: "trash")
                                     }
-
-                                    if notification.isRead == false {
-                                        Button {
-                                            Task { await viewModel.markAsRead(notificationId: notification.id) }
-                                        } label: {
-                                            Label("Mark as read", systemImage: "checkmark.circle")
-                                        }
-                                        .tint(KelmahTheme.accent)
-                                    }
-                                }
-                                .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
-                                .listRowBackground(Color.clear)
+                                )
+                            }
                         }
                     }
+                        .padding(.horizontal, 16)
+                        .padding(.top, 18)
+                    .padding(.bottom, 20)
                 }
+                .scrollIndicators(.hidden)
             }
-            .listStyle(.insetGrouped)
-            .scrollContentBackground(.hidden)
-            .background(KelmahTheme.background)
             .navigationTitle("Alerts")
             .toolbar {
                 ToolbarItemGroup(placement: .topBarTrailing) {
@@ -121,72 +183,77 @@ struct NotificationsView: View {
 
 private struct NotificationRowView: View {
     let notification: AppNotificationItem
+    let isMutating: Bool
+    let onOpen: () -> Void
+    let onMarkRead: () -> Void
+    let onDelete: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 10) {
-                Text(notification.displayTag)
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(notification.isRead ? .secondary : KelmahTheme.accent)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 6)
-                    .background((notification.isRead ? Color.secondary.opacity(0.1) : KelmahTheme.accent.opacity(0.12)))
-                    .clipShape(Capsule())
+        Button(action: onOpen) {
+            KelmahPanel {
+                VStack(alignment: .leading, spacing: 9) {
+                    HStack {
+                        KelmahSignalChip(
+                            text: notification.displayTag,
+                            accent: notification.isRead ? KelmahTheme.cyan : KelmahTheme.sun
+                        )
+                        Spacer()
+                        if notification.isRead == false {
+                            KelmahSignalChip(text: "New", accent: KelmahTheme.sun)
+                        }
+                    }
 
-                Spacer()
+                    Text(notification.title)
+                        .font(.headline)
+                        .foregroundStyle(KelmahTheme.textPrimary)
+                        .multilineTextAlignment(.leading)
 
-                if notification.isRead == false {
-                    Text("New")
-                        .font(.caption.weight(.bold))
-                        .foregroundStyle(KelmahTheme.accent)
+                    Text(notification.content)
+                        .font(.subheadline)
+                        .foregroundStyle(KelmahTheme.textMuted)
+                        .multilineTextAlignment(.leading)
+
+                    HStack {
+                        Text(RelativeTimeFormatter.relativeOrFallback(notification.createdAt) ?? notification.createdAt ?? "Just now")
+                            .font(.caption)
+                            .foregroundStyle(KelmahTheme.textMuted)
+                        Spacer()
+                        if let target = notification.actionTarget {
+                            Text(target.label)
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(KelmahTheme.cyan)
+                        }
+                    }
+
+                    HStack(spacing: 10) {
+                        if notification.isRead == false {
+                            Button(action: onMarkRead) {
+                                Text("Mark read")
+                                    .frame(maxWidth: .infinity)
+                                    .frame(minHeight: 44)
+                            }
+                            .buttonStyle(.bordered)
+                            .tint(KelmahTheme.cyan)
+                            .disabled(isMutating)
+                        }
+
+                        Button(role: .destructive, action: onDelete) {
+                            Text("Delete")
+                                .frame(maxWidth: .infinity)
+                                .frame(minHeight: 44)
+                        }
+                        .buttonStyle(.bordered)
+                        .disabled(isMutating)
+                    }
+
+                    Text("Tap to open alert")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(KelmahTheme.sun)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
-
-            Text(notification.title)
-                .font(.headline)
-                .foregroundStyle(.primary)
-
-            Text(notification.content)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-
-            HStack {
-                Text(RelativeTimeFormatter.relativeOrFallback(notification.createdAt) ?? notification.createdAt ?? "Just now")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-
-                Spacer()
-
-                if let target = notification.actionTarget {
-                    Text(target.label)
-                        .font(.caption2)
-                        .foregroundStyle(KelmahTheme.accent)
-                        .lineLimit(1)
-                }
-            }
-
-            if notification.actionTarget != nil {
-                Text("Tap to open alert")
-                    .font(.caption2.weight(.semibold))
-                    .foregroundStyle(KelmahTheme.accent)
-            }
+            .contentShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
         }
-        .padding()
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(notification.isRead ? KelmahTheme.card : KelmahTheme.accent.opacity(0.08))
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-    }
-}
-
-private struct NotificationBannerView: View {
-    let message: String
-    let tint: Color
-
-    var body: some View {
-        Text(message)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding()
-            .background(tint)
-            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .buttonStyle(.plain)
     }
 }

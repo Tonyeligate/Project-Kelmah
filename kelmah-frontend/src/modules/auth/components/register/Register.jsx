@@ -661,6 +661,7 @@ const Register = () => {
             fullWidth
             required
             placeholder="e.g. Kwame"
+            autoComplete="given-name"
             {...formRegister('firstName')}
             error={Boolean(errors.firstName)}
             helperText={errors.firstName?.message}
@@ -680,6 +681,7 @@ const Register = () => {
             fullWidth
             required
             placeholder="e.g. Asante"
+            autoComplete="family-name"
             {...formRegister('lastName')}
             error={Boolean(errors.lastName)}
             helperText={errors.lastName?.message}
@@ -700,6 +702,7 @@ const Register = () => {
             required
             type="email"
             placeholder="e.g. kwame@email.com"
+            autoComplete="email"
             {...formRegister('email')}
             error={Boolean(errors.email)}
             helperText={errors.email?.message}
@@ -719,7 +722,8 @@ const Register = () => {
             fullWidth
             required
             placeholder="e.g. +233 24 123 4567"
-            inputProps={{ inputMode: 'tel' }}
+            autoComplete="tel"
+            inputProps={{ inputMode: 'tel', maxLength: 20 }}
             {...formRegister('phone')}
             error={Boolean(errors.phone)}
             helperText={errors.phone?.message}
@@ -741,6 +745,7 @@ const Register = () => {
               fullWidth
               required
               placeholder="e.g. Asante Construction"
+              autoComplete="organization"
               {...formRegister('companyName')}
               error={Boolean(errors.companyName)}
               helperText={errors.companyName?.message}
@@ -789,6 +794,7 @@ const Register = () => {
                         {...params}
                         label="Trades or skills"
                         placeholder="Add your primary skills"
+                        autoComplete="off"
                         error={Boolean(errors.trades)}
                         helperText={errors.trades?.message}
                         sx={fieldSx}
@@ -867,6 +873,7 @@ const Register = () => {
         required
         type={showPassword ? 'text' : 'password'}
         placeholder="Create a strong password"
+        autoComplete="new-password"
         {...formRegister('password')}
         error={Boolean(errors.password)}
         helperText={errors.password?.message}
@@ -884,6 +891,8 @@ const Register = () => {
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
                 sx={{
                   color: formPanelSoft,
+                  minWidth: 44,
+                  minHeight: 44,
                   '&:focus-visible': {
                     outline: '3px solid',
                     outlineColor: 'primary.main',
@@ -940,6 +949,7 @@ const Register = () => {
         required
         type={showConfirmPassword ? 'text' : 'password'}
         placeholder="Re-enter your password"
+        autoComplete="new-password"
         {...formRegister('confirmPassword')}
         error={Boolean(errors.confirmPassword)}
         helperText={errors.confirmPassword?.message}
@@ -961,6 +971,8 @@ const Register = () => {
                 }
                 sx={{
                   color: formPanelSoft,
+                  minWidth: 44,
+                  minHeight: 44,
                   '&:focus-visible': {
                     outline: '3px solid',
                     outlineColor: 'primary.main',

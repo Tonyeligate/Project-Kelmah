@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -19,6 +20,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -46,6 +48,12 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kelmah.mobile.R
+import com.kelmah.mobile.core.design.components.KelmahReveal
+import com.kelmah.mobile.core.design.components.KelmahScreenBackground
+import com.kelmah.mobile.core.design.components.KelmahPrimaryActionMinHeight
+import com.kelmah.mobile.core.design.components.KelmahSecondaryActionMinHeight
+import com.kelmah.mobile.core.design.components.kelmahMutedPanelColors
+import com.kelmah.mobile.core.design.components.kelmahPanelColors
 import com.kelmah.mobile.features.profile.data.AvailabilityDay
 import com.kelmah.mobile.features.profile.data.WorkerProfileSnapshot
 
@@ -95,98 +103,190 @@ fun ProfileScreen(
         }
     }
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(20.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
+    KelmahScreenBackground {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 18.dp, vertical = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
         item {
-            Text(
-                stringResource(id = R.string.profile_title),
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-            )
+            KelmahReveal(index = 0) {
+                Card(
+                    colors = kelmahMutedPanelColors(),
+                    shape = MaterialTheme.shapes.large,
+                ) {
+                    Column(
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        Text(
+                            stringResource(id = R.string.profile_title),
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.Bold,
+                        )
+                        Text(
+                            "Identity, security, and work reputation in one place",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
         }
         item {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)),
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
+            KelmahReveal(index = 1) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(20.dp),
+                    colors = kelmahPanelColors(),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)),
                 ) {
-                    Text(
-                        uiState.currentUser?.displayName
-                            ?: stringResource(id = R.string.profile_default_user_name),
-                        style = MaterialTheme.typography.titleLarge,
-                    )
-                    Text(uiState.currentUser?.email ?: stringResource(id = R.string.profile_no_email_added))
-                    Text(
-                        stringResource(
-                            id = R.string.profile_role_label,
-                            (uiState.currentUser?.role ?: "worker").replaceFirstChar { it.uppercase() },
-                        ),
-                    )
-                    Text(
-                        if (uiState.currentUser?.isEmailVerified == true) {
-                            stringResource(id = R.string.profile_email_verified)
-                        } else {
-                            stringResource(id = R.string.profile_email_not_verified)
-                        },
-                        color = if (uiState.currentUser?.isEmailVerified == true) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
-                    )
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Text(
+                            uiState.currentUser?.displayName
+                                ?: stringResource(id = R.string.profile_default_user_name),
+                            style = MaterialTheme.typography.titleLarge,
+                        )
+                        Text(uiState.currentUser?.email ?: stringResource(id = R.string.profile_no_email_added))
+                        Text(
+                            stringResource(
+                                id = R.string.profile_role_label,
+                                (uiState.currentUser?.role ?: "worker").replaceFirstChar { it.uppercase() },
+                            ),
+                        )
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            ProfileStatusPill(
+                                label = if (uiState.currentUser?.isEmailVerified == true) "Verified" else "Unverified",
+                                isPositive = uiState.currentUser?.isEmailVerified == true,
+                            )
+                            ProfileStatusPill(
+                                label = (uiState.currentUser?.role ?: "worker").replaceFirstChar { it.uppercase() },
+                                isPositive = true,
+                            )
+                        }
+                        Text(
+                            if (uiState.currentUser?.isEmailVerified == true) {
+                                stringResource(id = R.string.profile_email_verified)
+                            } else {
+                                stringResource(id = R.string.profile_email_not_verified)
+                            },
+                            color = if (uiState.currentUser?.isEmailVerified == true) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+                        )
+                    }
                 }
             }
         }
         if (uiState.currentUser?.role.equals("worker", ignoreCase = true)) {
             item {
+                KelmahReveal(index = 2) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(20.dp),
+                        colors = kelmahPanelColors(),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.32f)),
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            Text(stringResource(id = R.string.profile_work_details_title), style = MaterialTheme.typography.titleLarge)
+                            Text(
+                                stringResource(id = R.string.profile_work_details_subtitle),
+                                style = MaterialTheme.typography.bodyMedium,
+                            )
+
+                            when {
+                                uiState.isLoadingProfileSignals -> {
+                                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                                        CircularProgressIndicator(modifier = Modifier.width(32.dp), strokeWidth = 2.dp)
+                                    }
+                                }
+                                uiState.profileErrorMessage != null -> {
+                                    Text(
+                                        uiState.profileErrorMessage
+                                            ?: stringResource(id = R.string.profile_work_details_error),
+                                        color = MaterialTheme.colorScheme.error,
+                                    )
+                                    Button(onClick = viewModel::refreshWorkerProfileSignals) {
+                                        Text(stringResource(id = R.string.common_try_again))
+                                    }
+                                }
+                                uiState.profileSnapshot != null -> {
+                                    uiState.profileSnapshot?.let { snapshot ->
+                                        WorkerProfileSignalsContent(
+                                            snapshot = snapshot,
+                                            onHireNow = onHireNow,
+                                            onMessageWorker = onMessageWorker,
+                                        )
+                                    }
+                                }
+                                else -> {
+                                    Text(stringResource(id = R.string.profile_work_details_placeholder))
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        item {
+            KelmahReveal(index = 3) {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.32f)),
+                    colors = kelmahPanelColors(),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.24f)),
                 ) {
                     Column(
                         modifier = Modifier.padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
-                        Text(stringResource(id = R.string.profile_work_details_title), style = MaterialTheme.typography.titleLarge)
-                        Text(
-                            stringResource(id = R.string.profile_work_details_subtitle),
-                            style = MaterialTheme.typography.bodyMedium,
+                        Text(stringResource(id = R.string.profile_password_title), style = MaterialTheme.typography.titleLarge)
+                        Text(stringResource(id = R.string.profile_password_subtitle))
+
+                        uiState.infoMessage?.let { Text(it, color = MaterialTheme.colorScheme.primary) }
+                        uiState.errorMessage?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+
+                        OutlinedTextField(
+                            value = uiState.currentPassword,
+                            onValueChange = viewModel::onCurrentPasswordChanged,
+                            modifier = Modifier.fillMaxWidth(),
+                            label = { Text(stringResource(id = R.string.profile_current_password)) },
+                            visualTransformation = PasswordVisualTransformation(),
+                            singleLine = true,
+                        )
+                        OutlinedTextField(
+                            value = uiState.newPassword,
+                            onValueChange = viewModel::onNewPasswordChanged,
+                            modifier = Modifier.fillMaxWidth(),
+                            label = { Text(stringResource(id = R.string.profile_new_password)) },
+                            visualTransformation = PasswordVisualTransformation(),
+                            singleLine = true,
+                        )
+                        OutlinedTextField(
+                            value = uiState.confirmPassword,
+                            onValueChange = viewModel::onConfirmPasswordChanged,
+                            modifier = Modifier.fillMaxWidth(),
+                            label = { Text(stringResource(id = R.string.profile_confirm_new_password)) },
+                            visualTransformation = PasswordVisualTransformation(),
+                            singleLine = true,
                         )
 
-                        when {
-                            uiState.isLoadingProfileSignals -> {
-                                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                                    CircularProgressIndicator(modifier = Modifier.width(32.dp), strokeWidth = 2.dp)
-                                }
-                            }
-                            uiState.profileErrorMessage != null -> {
-                                Text(
-                                    uiState.profileErrorMessage
-                                        ?: stringResource(id = R.string.profile_work_details_error),
-                                    color = MaterialTheme.colorScheme.error,
-                                )
-                                Button(onClick = viewModel::refreshWorkerProfileSignals) {
-                                    Text(stringResource(id = R.string.common_try_again))
-                                }
-                            }
-                            uiState.profileSnapshot != null -> {
-                                uiState.profileSnapshot?.let { snapshot ->
-                                    WorkerProfileSignalsContent(
-                                        snapshot = snapshot,
-                                        onHireNow = onHireNow,
-                                        onMessageWorker = onMessageWorker,
-                                    )
-                                }
-                            }
-                            else -> {
-                                Text(stringResource(id = R.string.profile_work_details_placeholder))
+                        Button(
+                            onClick = viewModel::changePassword,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(min = KelmahPrimaryActionMinHeight),
+                            enabled = !uiState.isSaving,
+                        ) {
+                            if (uiState.isSaving) {
+                                CircularProgressIndicator(strokeWidth = 2.dp)
+                            } else {
+                                Text(stringResource(id = R.string.profile_change_password))
                             }
                         }
                     }
@@ -194,80 +294,31 @@ fun ProfileScreen(
             }
         }
         item {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.24f)),
-            ) {
+            KelmahReveal(index = 4) {
                 Column(
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    Text(stringResource(id = R.string.profile_password_title), style = MaterialTheme.typography.titleLarge)
-                    Text(stringResource(id = R.string.profile_password_subtitle))
-
-                    uiState.infoMessage?.let { Text(it, color = MaterialTheme.colorScheme.primary) }
-                    uiState.errorMessage?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-
-                    OutlinedTextField(
-                        value = uiState.currentPassword,
-                        onValueChange = viewModel::onCurrentPasswordChanged,
-                        modifier = Modifier.fillMaxWidth(),
-                        label = { Text(stringResource(id = R.string.profile_current_password)) },
-                        visualTransformation = PasswordVisualTransformation(),
-                        singleLine = true,
-                    )
-                    OutlinedTextField(
-                        value = uiState.newPassword,
-                        onValueChange = viewModel::onNewPasswordChanged,
-                        modifier = Modifier.fillMaxWidth(),
-                        label = { Text(stringResource(id = R.string.profile_new_password)) },
-                        visualTransformation = PasswordVisualTransformation(),
-                        singleLine = true,
-                    )
-                    OutlinedTextField(
-                        value = uiState.confirmPassword,
-                        onValueChange = viewModel::onConfirmPasswordChanged,
-                        modifier = Modifier.fillMaxWidth(),
-                        label = { Text(stringResource(id = R.string.profile_confirm_new_password)) },
-                        visualTransformation = PasswordVisualTransformation(),
-                        singleLine = true,
-                    )
-
                     Button(
-                        onClick = viewModel::changePassword,
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = !uiState.isSaving,
+                        onClick = { showLogoutDialog = true },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = KelmahSecondaryActionMinHeight),
                     ) {
-                        if (uiState.isSaving) {
-                            CircularProgressIndicator(strokeWidth = 2.dp)
-                        } else {
-                            Text(stringResource(id = R.string.profile_change_password))
-                        }
+                        Text(stringResource(id = R.string.profile_sign_out))
+                    }
+                    Button(
+                        onClick = { showLogoutAllDialog = true },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = KelmahSecondaryActionMinHeight),
+                    ) {
+                        Text(stringResource(id = R.string.profile_sign_out_everywhere))
                     }
                 }
             }
         }
-        item {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                Button(
-                    onClick = { showLogoutDialog = true },
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(stringResource(id = R.string.profile_sign_out))
-                }
-                Button(
-                    onClick = { showLogoutAllDialog = true },
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(stringResource(id = R.string.profile_sign_out_everywhere))
-                }
-            }
-        }
+    }
     }
 }
 
@@ -514,7 +565,9 @@ private fun WorkerProfileSignalsContent(
             Button(
                 onClick = { onHireNow?.invoke() },
                 enabled = onHireNow != null,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = KelmahPrimaryActionMinHeight),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary,
@@ -526,7 +579,9 @@ private fun WorkerProfileSignalsContent(
             OutlinedButton(
                 onClick = { onMessageWorker?.invoke() },
                 enabled = onMessageWorker != null,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = KelmahPrimaryActionMinHeight),
                 colors = ButtonDefaults.outlinedButtonColors(
                     contentColor = MaterialTheme.colorScheme.primary
                 ),
@@ -568,6 +623,31 @@ private fun ProfileFact(label: String, value: String) {
         Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
         Text(value, style = MaterialTheme.typography.bodyMedium)
     }
+}
+
+@Composable
+private fun ProfileStatusPill(
+    label: String,
+    isPositive: Boolean,
+) {
+    AssistChip(
+        onClick = {},
+        enabled = false,
+        modifier = Modifier.heightIn(min = KelmahSecondaryActionMinHeight),
+        label = { Text(label) },
+        colors = androidx.compose.material3.AssistChipDefaults.assistChipColors(
+            disabledContainerColor = if (isPositive) {
+                MaterialTheme.colorScheme.secondaryContainer
+            } else {
+                MaterialTheme.colorScheme.errorContainer
+            },
+            disabledLabelColor = if (isPositive) {
+                MaterialTheme.colorScheme.onSecondaryContainer
+            } else {
+                MaterialTheme.colorScheme.onErrorContainer
+            },
+        ),
+    )
 }
 
 private fun formatRate(value: Double): String =

@@ -1,10 +1,5 @@
-import React, {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  useCallback,
-} from 'react';
+import PropTypes from 'prop-types';
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { normalizeUser } from '../../../utils/userUtils';
 import PullToRefresh from '../../../components/common/PullToRefresh';
@@ -116,11 +111,14 @@ const LoadingTimeoutWarning = ({ onRefresh }) => (
   </Alert>
 );
 
+LoadingTimeoutWarning.propTypes = {
+  onRefresh: PropTypes.func.isRequired,
+};
+
 const WorkerDashboardPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const theme = useTheme();
-  const isMobile = useBreakpointDown('md');
   const isCompactMobile = useBreakpointDown('sm');
   const dashboardFontFamily =
     '"Plus Jakarta Sans", "Manrope", "Segoe UI", sans-serif';
@@ -141,10 +139,10 @@ const WorkerDashboardPage = () => {
   const selectCompletedJobs = useMemo(() => selectWorkerJobs('completed'), []);
 
   // Redux selectors for real data
-  const pendingApplications = useSelector(selectPending) || [];
-  const acceptedApplications = useSelector(selectAccepted) || [];
-  const rejectedApplications = useSelector(selectRejected) || [];
-  const completedJobs = useSelector(selectCompletedJobs) || [];
+  const pendingApplications = useSelector(selectPending);
+  const acceptedApplications = useSelector(selectAccepted);
+  const rejectedApplications = useSelector(selectRejected);
+  const completedJobs = useSelector(selectCompletedJobs);
   // Memoize curried loading/error selectors to avoid selector recreation on every render
   const selectLoadingApps = useMemo(
     () => selectWorkerLoading('applications'),
@@ -261,7 +259,7 @@ const WorkerDashboardPage = () => {
         setSnackbarSeverity('warning');
         setSnackbarOpen(true);
       }
-    } catch (err) {
+    } catch {
       clearTimeout(timeoutId);
       if (loadingTimeoutRef.current === timeoutId) {
         loadingTimeoutRef.current = null;
@@ -304,7 +302,7 @@ const WorkerDashboardPage = () => {
             ],
           });
         }
-      } catch (_) {
+      } catch {
         // Non-blocking — profile widget will simply not display
         // Intentionally swallowed: profile completion is supplementary data
       }
@@ -325,7 +323,7 @@ const WorkerDashboardPage = () => {
           limit: 6,
         });
         if (!cancelled) setRecommendations(Array.isArray(jobs) ? jobs : []);
-      } catch (_) {
+      } catch {
         // Non-blocking — recommendations section will show empty state
       } finally {
         if (!cancelled) setRecsLoading(false);
@@ -410,7 +408,10 @@ const WorkerDashboardPage = () => {
   // Calculate real stats from Redux state
   const stats = useMemo(
     () => ({
-      applications: pendingApplications.length + acceptedApplications.length,
+      applications:
+        pendingApplications.length +
+        acceptedApplications.length +
+        rejectedApplications.length,
       completedJobs: completedJobs.length,
       earnings: earningsSummary.total,
       // rating is not in the auth user object; sourced from review service at a later point
@@ -419,6 +420,7 @@ const WorkerDashboardPage = () => {
     [
       pendingApplications,
       acceptedApplications,
+      rejectedApplications,
       completedJobs,
       earningsSummary,
       user,
@@ -503,7 +505,7 @@ const WorkerDashboardPage = () => {
         color: theme.palette.error.main,
       },
     ],
-    [acceptedApplications, pendingApplications, rejectedApplications],
+    [acceptedApplications, pendingApplications, rejectedApplications, theme],
   );
 
   const formatGhanaCurrencyLabel = (value) => {
@@ -685,7 +687,8 @@ const WorkerDashboardPage = () => {
                 : 'linear-gradient(180deg, #f7f9fd 0%, #eef3fa 55%, #edf2fb 100%)',
             minHeight: '100dvh',
             fontFamily: dashboardFontFamily,
-            p: { xs: 0, sm: 1.5, md: 3 },
+            px: { xs: 1.5, sm: 1.5, md: 3 },
+            py: { xs: 1.25, sm: 1.5, md: 3 },
             pb: withBottomNavSafeArea(56),
           }}
         >

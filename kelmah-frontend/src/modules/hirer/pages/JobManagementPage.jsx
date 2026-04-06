@@ -67,6 +67,7 @@ import { deleteHirerJob, updateJobStatus } from '../services/hirerSlice';
 import { isBiddingJob as isBiddingModeJob } from '../utils/applicationManagementUtils';
 
 import PageCanvas from '@/modules/common/components/PageCanvas';
+import DiscoveryShellFrame from '@/modules/jobs/components/DiscoveryShellFrame';
 import {
   HEADER_HEIGHT_MOBILE,
   TOUCH_TARGET_MIN,
@@ -697,8 +698,11 @@ const JobManagementPage = () => {
             );
           })()}
 
-        {/* Mobile-optimized header */}
-        <Box sx={{ mb: { xs: 2, md: 4 }, px: { xs: 0.5, md: 0 } }}>
+        <DiscoveryShellFrame
+          heading={isMobile ? 'My Jobs' : 'Job Management'}
+          subheading="Manage your job postings and track bids or applications"
+          isMobile={isMobile}
+        >
           <Box
             sx={{
               display: 'flex',
@@ -706,46 +710,74 @@ const JobManagementPage = () => {
               alignItems: 'center',
               flexWrap: 'wrap',
               gap: 1,
-              position: { xs: 'sticky', md: 'static' },
-              top: {
-                xs: `calc(${withSafeAreaTop(HEADER_HEIGHT_MOBILE)} + var(--kelmah-network-banner-offset, 0px))`,
-                md: 'auto',
-              },
-              zIndex: { xs: Z_INDEX.sticky, md: 'auto' },
-              py: { xs: 0.5, md: 0 },
-              backgroundColor: { xs: 'background.default', md: 'transparent' },
+              width: '100%',
             }}
           >
-            <Typography
-              component="h1"
-              variant={isCompactMobile ? 'h5' : isMobile ? 'h5' : 'h4'}
-              fontWeight="bold"
-              sx={{ mb: 0, lineHeight: 1.1 }}
-            >
-              {isMobile ? 'My Jobs' : 'Job Management'}
-            </Typography>
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <TextField
+                placeholder="Search jobs..."
+                value={searchText}
+                onChange={handleSearchChange}
+                size="small"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon fontSize="small" />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{
+                  width: '100%',
+                  '& .MuiOutlinedInput-root': {
+                    fontSize: '0.875rem',
+                    minHeight: 44,
+                  },
+                  '& .MuiInputBase-input': {
+                    py: '12px',
+                    lineHeight: 1.2,
+                  },
+                }}
+              />
+            </Box>
 
-            <Button
-              variant="contained"
-              color="primary"
-              startIcon={!isMobile && <AddIcon />}
-              onClick={handleCreateJob}
-              size={isMobile ? 'small' : 'medium'}
-              sx={{
-                display: { xs: 'none', sm: 'inline-flex' },
-                minWidth: isMobile ? 'auto' : undefined,
-                px: isMobile ? 2 : 3,
-              }}
-            >
-              {isMobile ? '+ New Job' : 'Post a New Job'}
-            </Button>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <IconButton
+                onClick={handleRefresh}
+                disabled={loading}
+                size="small"
+                aria-label="Refresh jobs"
+                sx={{
+                  bgcolor: 'action.hover',
+                  minWidth: 44,
+                  minHeight: 44,
+                  '&:hover': { bgcolor: 'action.selected' },
+                  '&:focus-visible': {
+                    outline: '3px solid',
+                    outlineColor: 'primary.main',
+                    outlineOffset: '2px',
+                  },
+                }}
+              >
+                <RefreshIcon fontSize="small" />
+              </IconButton>
+
+              <Button
+                variant="contained"
+                color="primary"
+                startIcon={!isMobile && <AddIcon />}
+                onClick={handleCreateJob}
+                size={isMobile ? 'small' : 'medium'}
+                sx={{
+                  display: { xs: 'none', sm: 'inline-flex' },
+                  minWidth: isMobile ? 'auto' : undefined,
+                  px: isMobile ? 2 : 3,
+                }}
+              >
+                {isMobile ? '+ New Job' : 'Post a New Job'}
+              </Button>
+            </Box>
           </Box>
-          {!isMobile && (
-            <Typography variant="body1" color="text.secondary">
-              Manage your job postings and track bids or applications
-            </Typography>
-          )}
-        </Box>
+        </DiscoveryShellFrame>
 
         {error && (
           <Alert severity="error" sx={{ mb: 2, mx: { xs: 0.5, md: 0 } }}>
@@ -774,63 +806,6 @@ const JobManagementPage = () => {
           sx={{ mb: 2, borderRadius: 2, mx: { xs: 0, md: 0 } }}
           elevation={isMobile ? 0 : 1}
         >
-          {/* Search and filter bar */}
-          <Box
-            sx={{
-              p: { xs: 1.5, md: 3 },
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              flexWrap: 'wrap',
-              gap: 1,
-            }}
-          >
-            <TextField
-              placeholder="Search jobs..."
-              value={searchText}
-              onChange={handleSearchChange}
-              size="small"
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon fontSize="small" />
-                  </InputAdornment>
-                ),
-              }}
-              sx={{
-                width: '100%',
-                flex: 1,
-                '& .MuiOutlinedInput-root': {
-                  fontSize: '0.875rem',
-                  minHeight: 44,
-                },
-                '& .MuiInputBase-input': {
-                  py: '12px',
-                  lineHeight: 1.2,
-                },
-              }}
-            />
-
-            <IconButton
-              onClick={handleRefresh}
-              disabled={loading}
-              size="small"
-              aria-label="Refresh jobs"
-              sx={{
-                bgcolor: 'action.hover',
-                minWidth: 44,
-                minHeight: 44,
-                '&:hover': { bgcolor: 'action.selected' },
-                '&:focus-visible': {
-                  outline: '3px solid',
-                  outlineColor: 'primary.main',
-                  outlineOffset: '2px',
-                },
-              }}
-            >
-              <RefreshIcon fontSize="small" />
-            </IconButton>
-          </Box>
 
           {/* Simplified tabs for mobile */}
           <Tabs

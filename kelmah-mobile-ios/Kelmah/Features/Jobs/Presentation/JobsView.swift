@@ -12,137 +12,260 @@ struct JobsView: View {
         userRole == .worker
     }
 
+    private var urgentCount: Int {
+        viewModel.displayedJobs.filter(\.isUrgent).count
+    }
+
+    private var fitCount: Int {
+        viewModel.displayedJobs.filter { ($0.matchScore ?? 0) >= 80 }.count
+    }
+
+    private var headerStats: [KelmahHeroStat] {
+        [
+            KelmahHeroStat(
+                label: viewModel.activeFeed == .saved ? "Saved" : (isWorker ? "Open jobs" : "Live jobs"),
+                value: "\(viewModel.displayedJobs.count)",
+                tint: KelmahTheme.cyan
+            ),
+            KelmahHeroStat(
+                label: "Urgent",
+                value: "\(urgentCount)",
+                tint: KelmahTheme.danger
+            ),
+            KelmahHeroStat(
+                label: isWorker ? "High fit" : "Bookmarked",
+                value: "\(isWorker ? fitCount : viewModel.savedJobs.count)",
+                tint: KelmahTheme.sun
+            ),
+        ]
+    }
+
+    private var headerChips: [String] {
+        [
+            "Page \(viewModel.currentPage) of \(max(viewModel.totalPages, 1))",
+            "Total \(viewModel.totalItems)",
+            "Sort: \(viewModel.filters.sort.label)",
+        ]
+    }
+
     var body: some View {
         NavigationStack(path: $path) {
-            List {
-                Section {
-                    Picker("Feed", selection: Binding(
-                        get: { viewModel.activeFeed },
-                        set: { newValue in
-                            Task { await viewModel.switchFeed(newValue) }
+            KelmahPremiumBackground {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
+                        KelmahCommandDeck(
+                            eyebrow: isWorker ? "WORK MARKET" : "HIRING MARKET",
+                            title: isWorker ? "Find high-fit work fast" : "Manage your hiring pipeline",
+                            subtitle: isWorker
+                                ? "Filter by trade, location, urgency, and fit score."
+                                : "Track active listings and move quickly from review to hire.",
+                            stats: headerStats,
+                            chips: headerChips
+                        ) {
+                            HStack(spacing: 10) {
+                                Button {
+                                    Task {
+                                        if viewModel.activeFeed == .saved {
+                                            await viewModel.loadSavedJobs()
+                                        } else {
+                                            await viewModel.refreshJobs()
+                                        }
+                                    }
+                                } label: {
+                                    Text("Refresh")
+                                        .fontWeight(.bold)
+                                        .frame(maxWidth: .infinity)
+                                        .frame(minHeight: 48)
+                                }
+                                .buttonStyle(.borderedProminent)
+                                .tint(KelmahTheme.sun)
+                                .foregroundStyle(Color.black)
+
+                                Button {
+                                    Task {
+                                        await viewModel.switchFeed(viewModel.activeFeed == .discover ? .saved : .discover)
+                                    }
+                                } label: {
+                                    Text(viewModel.activeFeed == .saved ? "Open Live Feed" : "Open Saved Feed")
+                                        .fontWeight(.semibold)
+                                        .frame(maxWidth: .infinity)
+                                        .frame(minHeight: 46)
+                                }
+                                .buttonStyle(.bordered)
+                                .tint(KelmahTheme.cyan)
+                            }
+                            .controlSize(.large)
                         }
-                    )) {
-                        ForEach(JobsFeed.allCases, id: \.self) { feed in
-                            Text(feedTitle(for: feed)).tag(feed)
+
+                        KelmahPanel {
+                            VStack(alignment: .leading, spacing: 10) {
+                                Picker("Feed", selection: Binding(
+                                    get: { viewModel.activeFeed },
+                                    set: { newValue in
+                                        Task { await viewModel.switchFeed(newValue) }
+                                    }
+                                )) {
+                                    ForEach(JobsFeed.allCases, id: \.self) { feed in
+                                        Text(feedTitle(for: feed)).tag(feed)
+                                    }
+                                }
+                                .pickerStyle(.segmented)
+
+                                KelmahBannerMessage(
+                                    message: isWorker
+                                        ? "Open a job, save it, or apply in one tap."
+                                        : "Open your jobs and review live hiring activity.",
+                                    tint: KelmahTheme.cyan
+                                )
+                            }
                         }
-                    }
-                    .pickerStyle(.segmented)
-                }
 
-                if isWorker {
-                    Section {
-                        MessageBannerView(
-                            message: "Find work. Open a job. Save it, or tap Apply Now.",
-                            tint: KelmahTheme.accent.opacity(0.12)
-                        )
-                    }
-                } else {
-                    Section {
-                        MessageBannerView(
-                            message: "Open your jobs. Review details. Save important ones.",
-                            tint: KelmahTheme.accent.opacity(0.12)
-                        )
-                    }
-                }
+                        if let message = viewModel.errorMessage {
+                            KelmahBannerMessage(message: message, tint: KelmahTheme.danger)
+                        }
 
-                if isWorker, viewModel.activeFeed == .discover {
-                    Section("Quick Search") {
-                        TextField(isWorker ? "Type job name" : "Search jobs", text: $viewModel.filters.search)
-                        TextField(isWorker ? "Town or area" : "Location", text: $viewModel.filters.location)
+                        if let message = viewModel.infoMessage {
+                            KelmahBannerMessage(message: message, tint: KelmahTheme.success)
+                        }
 
-                        Menu {
-                            ForEach(viewModel.categories) { category in
-                                Button(category.name) {
-                                    viewModel.filters.category = category.name
+                        if isWorker, viewModel.activeFeed == .discover {
+                            KelmahPanel {
+                                VStack(alignment: .leading, spacing: 10) {
+                                    KelmahSectionHeader(
+                                        title: "Quick search",
+                                        subtitle: "Tune location, trade, and ranking",
+                                        actionLabel: "Apply",
+                                        onAction: {
+                                            Task { await viewModel.refreshJobs() }
+                                        }
+                                    )
+
+                                    TextField("Type job name", text: $viewModel.filters.search)
+                                        .textInputAutocapitalization(.never)
+                                        .autocorrectionDisabled()
+                                        .textFieldStyle(.roundedBorder)
+
+                                    TextField("Town or area", text: $viewModel.filters.location)
+                                        .textInputAutocapitalization(.never)
+                                        .autocorrectionDisabled()
+                                        .textFieldStyle(.roundedBorder)
+
+                                    Menu {
+                                        ForEach(viewModel.categories) { category in
+                                            Button(category.name) {
+                                                viewModel.filters.category = category.name
+                                            }
+                                        }
+                                    } label: {
+                                        HStack {
+                                            Text("Category")
+                                            Spacer()
+                                            Text(viewModel.filters.category)
+                                                .foregroundStyle(KelmahTheme.textMuted)
+                                        }
+                                        .padding(11)
+                                        .background(KelmahTheme.card)
+                                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                                    }
+
+                                    Menu {
+                                        ForEach(JobSortOption.allCases) { option in
+                                            Button(option.label) {
+                                                viewModel.filters.sort = option
+                                            }
+                                        }
+                                    } label: {
+                                        HStack {
+                                            Text("Sort")
+                                            Spacer()
+                                            Text(viewModel.filters.sort.label)
+                                                .foregroundStyle(KelmahTheme.textMuted)
+                                        }
+                                        .padding(11)
+                                        .background(KelmahTheme.card)
+                                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                                    }
+
+                                    Button {
+                                        Task { await viewModel.refreshJobs() }
+                                    } label: {
+                                        Text("Show Jobs")
+                                            .fontWeight(.bold)
+                                            .frame(maxWidth: .infinity)
+                                            .frame(minHeight: 48)
+                                    }
+                                    .buttonStyle(.borderedProminent)
+                                    .tint(KelmahTheme.sun)
+                                    .foregroundStyle(Color.black)
                                 }
                             }
-                        } label: {
-                            HStack {
-                                Text(isWorker ? "Job type" : "Category")
-                                Spacer()
-                                Text(viewModel.filters.category)
-                                    .foregroundStyle(.secondary)
-                            }
                         }
 
-                        Menu {
-                            ForEach(JobSortOption.allCases) { option in
-                                Button(option.label) {
-                                    viewModel.filters.sort = option
-                                }
-                            }
-                        } label: {
-                            HStack {
-                                Text(isWorker ? "Show first" : "Sort")
-                                Spacer()
-                                Text(viewModel.filters.sort.label)
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-
-                        Button("Show Jobs") {
-                            Task { await viewModel.refreshJobs() }
-                        }
-                    }
-                }
-
-                if let message = viewModel.errorMessage {
-                    Section {
-                        MessageBannerView(message: message, tint: .red.opacity(0.12))
-                    }
-                }
-
-                if let message = viewModel.infoMessage {
-                    Section {
-                        MessageBannerView(message: message, tint: KelmahTheme.accent.opacity(0.18))
-                    }
-                }
-
-                Section(viewModel.activeFeed == .saved ? (isWorker ? "Saved Jobs" : "Saved Market Listings") : (isWorker ? "Open Jobs" : "Live Market Listings")) {
-                    if viewModel.isLoading && viewModel.displayedJobs.isEmpty {
-                        ProgressView(isWorker ? "Finding jobs..." : "Loading jobs...")
-                            .frame(maxWidth: .infinity, alignment: .center)
-                    } else if viewModel.displayedJobs.isEmpty {
-                        ContentUnavailableView(
-                            viewModel.activeFeed == .saved ? (isWorker ? "No saved jobs" : "No saved jobs yet") : (isWorker ? "No jobs found" : "No jobs yet"),
-                            systemImage: "briefcase",
-                            description: Text(viewModel.activeFeed == .saved ? (isWorker ? "Jobs you save will stay here." : "Saved jobs stay here so you can reopen them fast.") : (isWorker ? "Try fewer filters or tap refresh." : "Your newest hiring posts will show here."))
-                        )
-                    } else {
-                        ForEach(viewModel.displayedJobs) { job in
-                            JobCardView(
-                                userRole: userRole,
-                                job: job,
-                                onOpen: { path.append(.detail(job.id)) },
-                                onToggleSave: {
-                                    Task { await viewModel.toggleSaved(jobId: job.id, shouldSave: job.isSaved == false) }
-                                },
-                                onApply: { path.append(.apply(job.id)) }
+                        KelmahPanel {
+                            KelmahSectionHeader(
+                                title: viewModel.activeFeed == .saved
+                                    ? (isWorker ? "Saved jobs" : "Saved listings")
+                                    : (isWorker ? "Open jobs" : "Live market listings"),
+                                subtitle: "Action-first cards tuned for quick scanning"
                             )
-                            .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
-                            .listRowBackground(Color.clear)
                         }
 
-                        if viewModel.activeFeed == .discover, viewModel.currentPage < viewModel.totalPages {
-                            Button {
-                                Task { await viewModel.loadMoreJobs() }
-                            } label: {
-                                if viewModel.isLoadingMore {
+                        if viewModel.isLoading && viewModel.displayedJobs.isEmpty {
+                            KelmahPanel {
+                                HStack(spacing: 10) {
                                     ProgressView()
-                                        .frame(maxWidth: .infinity)
-                                } else {
-                                    Text(isWorker ? "Show More Jobs" : "Show More")
-                                        .frame(maxWidth: .infinity)
+                                        .tint(KelmahTheme.sun)
+                                    Text(isWorker ? "Finding jobs..." : "Loading jobs...")
+                                        .foregroundStyle(KelmahTheme.textMuted)
                                 }
+                                .frame(maxWidth: .infinity, alignment: .leading)
                             }
-                            .buttonStyle(.bordered)
+                        } else if viewModel.displayedJobs.isEmpty {
+                            KelmahBannerMessage(
+                                message: viewModel.activeFeed == .saved
+                                    ? (isWorker ? "No saved jobs yet. Save jobs to keep them here." : "No saved listings yet.")
+                                    : (isWorker ? "No jobs found. Try fewer filters." : "No jobs yet. New listings appear here."),
+                                tint: KelmahTheme.cyan
+                            )
+                        } else {
+                            ForEach(viewModel.displayedJobs) { job in
+                                JobCardView(
+                                    userRole: userRole,
+                                    job: job,
+                                    onOpen: { path.append(.detail(job.id)) },
+                                    onToggleSave: {
+                                        Task {
+                                            await viewModel.toggleSaved(jobId: job.id, shouldSave: job.isSaved == false)
+                                        }
+                                    },
+                                    onApply: { path.append(.apply(job.id)) }
+                                )
+                            }
+
+                            if viewModel.activeFeed == .discover, viewModel.currentPage < viewModel.totalPages {
+                                Button {
+                                    Task { await viewModel.loadMoreJobs() }
+                                } label: {
+                                    if viewModel.isLoadingMore {
+                                        ProgressView()
+                                            .frame(maxWidth: .infinity)
+                                    } else {
+                                        Text(isWorker ? "Show More Jobs" : "Show More")
+                                            .fontWeight(.semibold)
+                                            .frame(maxWidth: .infinity)
+                                    }
+                                }
+                                .buttonStyle(.bordered)
+                                .tint(KelmahTheme.cyan)
+                            }
                         }
                     }
+                        .padding(.horizontal, 16)
+                        .padding(.top, 18)
+                    .padding(.bottom, 20)
                 }
+                .scrollIndicators(.hidden)
             }
-            .listStyle(.insetGrouped)
-            .scrollContentBackground(.hidden)
-            .background(KelmahTheme.background)
             .navigationTitle(isWorker ? "Find Work" : "Your Jobs")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -215,77 +338,100 @@ private struct JobCardView: View {
     let onApply: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(job.title)
-                        .font(.headline)
-                        .lineLimit(2)
-                    Text(job.employerName)
+        Button(action: onOpen) {
+            KelmahPanel {
+                VStack(alignment: .leading, spacing: 11) {
+                    HStack(alignment: .top, spacing: 10) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(job.title)
+                                .font(.headline.weight(.bold))
+                                .foregroundStyle(KelmahTheme.textPrimary)
+                                .lineLimit(2)
+                                .multilineTextAlignment(.leading)
+                            Text(job.employerName)
+                                .font(.subheadline)
+                                .foregroundStyle(KelmahTheme.textMuted)
+                        }
+                        Spacer(minLength: 0)
+                        if let matchScore = job.matchScore, userRole == .worker {
+                            KelmahSignalChip(
+                                text: "\(formatMatchScore(matchScore))% fit",
+                                accent: KelmahTheme.success
+                            )
+                        }
+                    }
+
+                    Text(job.description)
                         .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-                Spacer()
-                Button(action: onToggleSave) {
-                    Label(job.isSaved ? "Saved" : "Save", systemImage: job.isSaved ? "bookmark.fill" : "bookmark")
-                }
-                .buttonStyle(.bordered)
-            }
+                        .foregroundStyle(KelmahTheme.textMuted)
+                        .lineLimit(3)
+                        .multilineTextAlignment(.leading)
 
-            Text(job.description)
-                .font(.body)
-                .foregroundStyle(.secondary)
-                .lineLimit(3)
-            Text(job.category)
-                .font(.caption.weight(.semibold))
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
-                .background(KelmahTheme.accent.opacity(0.14))
-                .clipShape(Capsule())
-            Text(job.locationLabel)
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-            Text(job.budgetLabel)
-                .font(.headline)
-                .foregroundStyle(KelmahTheme.accent)
+                    HStack(spacing: 8) {
+                        KelmahSignalChip(text: job.category, accent: KelmahTheme.cyan)
+                        if job.isUrgent {
+                            KelmahSignalChip(text: "Urgent", accent: KelmahTheme.danger)
+                        }
+                        if job.isSaved {
+                            KelmahSignalChip(text: "Saved", accent: KelmahTheme.sun)
+                        }
+                    }
 
-            let meta = [
-                RelativeTimeFormatter.relativeOrFallback(job.postedAt),
-                job.isUrgent ? "Urgent" : nil,
-            ].compactMap { $0 }
-            if meta.isEmpty == false {
-                Text(meta.joined(separator: " • "))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
+                    Text(job.locationLabel)
+                        .font(.footnote)
+                        .foregroundStyle(KelmahTheme.textMuted)
 
-            HStack(spacing: 10) {
-                Button("Open Job", action: onOpen)
-                    .buttonStyle(.bordered)
-                if userRole == .worker {
-                    Button("Apply Now", action: onApply)
-                        .buttonStyle(.borderedProminent)
-                        .tint(KelmahTheme.accent)
+                    Text(job.budgetLabel)
+                        .font(.subheadline.weight(.bold))
+                        .foregroundStyle(KelmahTheme.sun)
+
+                    let meta = [
+                        RelativeTimeFormatter.relativeOrFallback(job.postedAt),
+                        job.isUrgent ? "Urgent" : nil,
+                    ].compactMap { $0 }
+                    if meta.isEmpty == false {
+                        Text(meta.joined(separator: " | "))
+                            .font(.caption)
+                            .foregroundStyle(KelmahTheme.textMuted)
+                    }
+
+                    HStack(spacing: 10) {
+                        Button(action: onToggleSave) {
+                            Label(job.isSaved ? "Saved" : "Save", systemImage: job.isSaved ? "bookmark.fill" : "bookmark")
+                                .frame(maxWidth: .infinity)
+                                .frame(minHeight: 46)
+                        }
+                        .buttonStyle(.bordered)
+                        .tint(KelmahTheme.cyan)
+
+                        if userRole == .worker {
+                            Button(action: onApply) {
+                                Text("Apply")
+                                    .fontWeight(.bold)
+                                    .frame(maxWidth: .infinity)
+                                    .frame(minHeight: 46)
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .tint(KelmahTheme.sun)
+                            .foregroundStyle(Color.black)
+                        }
+                    }
+
+                    Text("Tap card to open full details")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(KelmahTheme.sun)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
+            .contentShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
         }
-        .padding()
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(KelmahTheme.card)
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .contentShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .buttonStyle(.plain)
     }
 }
 
-private struct MessageBannerView: View {
-    let message: String
-    let tint: Color
-
-    var body: some View {
-        Text(message)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding()
-            .background(tint)
-            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+private func formatMatchScore(_ score: Double) -> String {
+    if score.truncatingRemainder(dividingBy: 1) == 0 {
+        return String(Int(score))
     }
+    return String(format: "%.1f", score)
 }

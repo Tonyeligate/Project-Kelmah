@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 private enum RootTab: Hashable {
     case home
@@ -13,6 +14,42 @@ struct RootTabView: View {
     @State private var selectedTab: RootTab = .home
     @State private var pendingConversationId: String?
     @State private var pendingJobId: String?
+
+    init() {
+        let appearance = UITabBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        appearance.backgroundColor = UIColor(red: 10 / 255, green: 16 / 255, blue: 28 / 255, alpha: 0.98)
+        appearance.shadowColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.26)
+
+        let normalItemColor = UIColor(red: 186 / 255, green: 183 / 255, blue: 171 / 255, alpha: 0.92)
+        let selectedItemColor = UIColor(red: 255 / 255, green: 209 / 255, blue: 102 / 255, alpha: 1.0)
+        let normalAttributes: [NSAttributedString.Key: Any] = [
+            .foregroundColor: normalItemColor,
+            .font: UIFont.systemFont(ofSize: 11, weight: .semibold),
+        ]
+        let selectedAttributes: [NSAttributedString.Key: Any] = [
+            .foregroundColor: selectedItemColor,
+            .font: UIFont.systemFont(ofSize: 11, weight: .bold),
+        ]
+
+        appearance.stackedLayoutAppearance.normal.iconColor = normalItemColor
+        appearance.stackedLayoutAppearance.normal.titleTextAttributes = normalAttributes
+        appearance.stackedLayoutAppearance.selected.iconColor = selectedItemColor
+        appearance.stackedLayoutAppearance.selected.titleTextAttributes = selectedAttributes
+
+        appearance.inlineLayoutAppearance.normal.iconColor = normalItemColor
+        appearance.inlineLayoutAppearance.normal.titleTextAttributes = normalAttributes
+        appearance.inlineLayoutAppearance.selected.iconColor = selectedItemColor
+        appearance.inlineLayoutAppearance.selected.titleTextAttributes = selectedAttributes
+
+        appearance.compactInlineLayoutAppearance.normal.iconColor = normalItemColor
+        appearance.compactInlineLayoutAppearance.normal.titleTextAttributes = normalAttributes
+        appearance.compactInlineLayoutAppearance.selected.iconColor = selectedItemColor
+        appearance.compactInlineLayoutAppearance.selected.titleTextAttributes = selectedAttributes
+
+        UITabBar.appearance().standardAppearance = appearance
+        UITabBar.appearance().scrollEdgeAppearance = appearance
+    }
 
     private var sessionTaskKey: String {
         let token = environment.sessionStore.accessToken ?? "guest"
@@ -119,7 +156,8 @@ struct RootTabView: View {
                         .tag(RootTab.profile)
                         .tabItem { Label("Profile", systemImage: "person") }
                 }
-                .tint(KelmahTheme.accent)
+                .tint(KelmahTheme.sun)
+                .background(KelmahTheme.background.ignoresSafeArea())
             } else if case let .recoverableFailure(message) = environment.sessionStore.phase {
                 SessionRecoveryView(
                     userName: environment.sessionStore.currentUser?.displayName,

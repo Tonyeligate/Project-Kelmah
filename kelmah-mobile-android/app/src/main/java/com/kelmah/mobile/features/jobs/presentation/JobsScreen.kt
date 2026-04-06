@@ -8,10 +8,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Send
 import androidx.compose.material.icons.outlined.Bookmark
@@ -22,8 +24,8 @@ import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -44,6 +46,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -53,6 +56,13 @@ import androidx.compose.foundation.layout.width
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kelmah.mobile.R
+import com.kelmah.mobile.core.design.components.KelmahReveal
+import com.kelmah.mobile.core.design.components.KelmahScreenBackground
+import com.kelmah.mobile.core.design.components.KelmahPrimaryActionMinHeight
+import com.kelmah.mobile.core.design.components.KelmahSecondaryActionMinHeight
+import com.kelmah.mobile.core.design.components.kelmahMutedPanelColors
+import com.kelmah.mobile.core.design.components.kelmahPanelColors
+import com.kelmah.mobile.core.design.components.kelmahTopAppBarColors
 import com.kelmah.mobile.core.utils.RelativeTimeFormatter
 import com.kelmah.mobile.core.session.KelmahUserRole
 import com.kelmah.mobile.features.jobs.data.JobSummary
@@ -98,6 +108,8 @@ fun JobsScreen(
     }
     val urgentCount = jobs.count { it.isUrgent }
     val highFitCount = if (isWorker) uiState.discoverJobs.count { (it.matchScore ?: 0.0) >= 80.0 } else 0
+    val panelColors = kelmahPanelColors()
+    val mutedPanelColors = kelmahMutedPanelColors()
 
     LaunchedEffect(userRole) {
         viewModel.bootstrap(userRole)
@@ -116,74 +128,98 @@ fun JobsScreen(
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(screenTitle) },
-                actions = {
-                    IconButton(onClick = {
-                        if (uiState.activeFeed == JobsFeed.SAVED) viewModel.loadSavedJobs() else viewModel.refreshJobs()
-                    }) {
-                        Icon(
-                            Icons.Outlined.Refresh,
-                            contentDescription = stringResource(id = R.string.jobs_refresh_content_description),
-                        )
-                    }
-                },
-            )
-        },
-        snackbarHost = { SnackbarHost(snackbars) },
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
+    KelmahScreenBackground {
+        Scaffold(
+            containerColor = Color.Transparent,
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            Text(screenTitle, style = MaterialTheme.typography.titleLarge)
+                            Text(
+                                text = if (isWorker) "Realtime opportunities and fit scores" else "Track active hiring with live signals",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    },
+                    colors = kelmahTopAppBarColors(),
+                    actions = {
+                        IconButton(onClick = {
+                            if (uiState.activeFeed == JobsFeed.SAVED) viewModel.loadSavedJobs() else viewModel.refreshJobs()
+                        }) {
+                            Icon(
+                                Icons.Outlined.Refresh,
+                                contentDescription = stringResource(id = R.string.jobs_refresh_content_description),
+                            )
+                        }
+                    },
+                )
+            },
+            snackbarHost = { SnackbarHost(snackbars) },
+        ) { padding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .padding(horizontal = 16.dp, vertical = 14.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 FilterChip(
                     selected = uiState.activeFeed == JobsFeed.DISCOVER,
                     onClick = { viewModel.switchFeed(JobsFeed.DISCOVER) },
+                    modifier = Modifier.heightIn(min = KelmahSecondaryActionMinHeight),
                     label = { Text(discoverLabel) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = MaterialTheme.colorScheme.secondary,
+                        selectedLabelColor = MaterialTheme.colorScheme.onSecondary,
+                    ),
                 )
                 FilterChip(
                     selected = uiState.activeFeed == JobsFeed.SAVED,
                     onClick = { viewModel.switchFeed(JobsFeed.SAVED) },
+                    modifier = Modifier.heightIn(min = KelmahSecondaryActionMinHeight),
                     label = { Text(savedLabel) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = MaterialTheme.colorScheme.secondary,
+                        selectedLabelColor = MaterialTheme.colorScheme.onSecondary,
+                    ),
                 )
             }
 
-            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    JobsMetricTile(
-                        modifier = Modifier.weight(1f),
-                        label = if (uiState.activeFeed == JobsFeed.SAVED) {
-                            stringResource(id = R.string.jobs_metric_saved)
-                        } else {
-                            stringResource(id = R.string.jobs_metric_jobs)
-                        },
-                        value = jobs.size,
-                    )
-                    JobsMetricTile(
-                        modifier = Modifier.weight(1f),
-                        label = stringResource(id = R.string.jobs_metric_urgent),
-                        value = urgentCount,
-                    )
-                    JobsMetricTile(
-                        modifier = Modifier.weight(1f),
-                        label = if (isWorker) {
-                            stringResource(id = R.string.jobs_metric_high_fit)
-                        } else {
-                            stringResource(id = R.string.jobs_metric_bookmarked)
-                        },
-                        value = if (isWorker) highFitCount else uiState.savedJobs.size,
-                    )
+            KelmahReveal(index = 0) {
+                Card(colors = panelColors) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        JobsMetricTile(
+                            modifier = Modifier.weight(1f),
+                            label = if (uiState.activeFeed == JobsFeed.SAVED) {
+                                stringResource(id = R.string.jobs_metric_saved)
+                            } else {
+                                stringResource(id = R.string.jobs_metric_jobs)
+                            },
+                            value = jobs.size,
+                        )
+                        JobsMetricTile(
+                            modifier = Modifier.weight(1f),
+                            label = stringResource(id = R.string.jobs_metric_urgent),
+                            value = urgentCount,
+                        )
+                        JobsMetricTile(
+                            modifier = Modifier.weight(1f),
+                            label = if (isWorker) {
+                                stringResource(id = R.string.jobs_metric_high_fit)
+                            } else {
+                                stringResource(id = R.string.jobs_metric_bookmarked)
+                            },
+                            value = if (isWorker) highFitCount else uiState.savedJobs.size,
+                        )
+                    }
                 }
             }
 
@@ -191,6 +227,7 @@ fun JobsScreen(
                 item {
                     AssistChip(
                         onClick = {},
+                        modifier = Modifier.heightIn(min = KelmahSecondaryActionMinHeight),
                         enabled = false,
                         label = { Text(stringResource(id = R.string.jobs_quick_sort, uiState.filters.sort.label)) },
                     )
@@ -198,6 +235,7 @@ fun JobsScreen(
                 item {
                     AssistChip(
                         onClick = {},
+                        modifier = Modifier.heightIn(min = KelmahSecondaryActionMinHeight),
                         enabled = false,
                         label = { Text(stringResource(id = R.string.jobs_quick_page, uiState.currentPage, uiState.totalPages)) },
                     )
@@ -205,6 +243,7 @@ fun JobsScreen(
                 item {
                     AssistChip(
                         onClick = {},
+                        modifier = Modifier.heightIn(min = KelmahSecondaryActionMinHeight),
                         enabled = false,
                         label = { Text(stringResource(id = R.string.jobs_quick_total, uiState.totalItems)) },
                     )
@@ -213,6 +252,7 @@ fun JobsScreen(
                     item {
                         AssistChip(
                             onClick = {},
+                            modifier = Modifier.heightIn(min = KelmahSecondaryActionMinHeight),
                             enabled = false,
                             label = { Text(stringResource(id = R.string.jobs_quick_saved, uiState.savedJobs.size)) },
                         )
@@ -221,20 +261,24 @@ fun JobsScreen(
             }
 
             if (isWorker) {
-                Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
-                    Text(
-                        text = stringResource(id = R.string.jobs_helper_worker),
-                        modifier = Modifier.padding(16.dp),
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
+                KelmahReveal(index = 1) {
+                    Card(colors = mutedPanelColors) {
+                        Text(
+                            text = stringResource(id = R.string.jobs_helper_worker),
+                            modifier = Modifier.padding(16.dp),
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                    }
                 }
             } else {
-                Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
-                    Text(
-                        text = stringResource(id = R.string.jobs_helper_hirer),
-                        modifier = Modifier.padding(16.dp),
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
+                KelmahReveal(index = 1) {
+                    Card(colors = mutedPanelColors) {
+                        Text(
+                            text = stringResource(id = R.string.jobs_helper_hirer),
+                            modifier = Modifier.padding(16.dp),
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                    }
                 }
             }
 
@@ -242,7 +286,9 @@ fun JobsScreen(
                 OutlinedTextField(
                     value = uiState.filters.search,
                     onValueChange = viewModel::updateSearch,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = KelmahPrimaryActionMinHeight),
                     label = {
                         Text(
                             if (isWorker) {
@@ -269,7 +315,9 @@ fun JobsScreen(
                 OutlinedTextField(
                     value = uiState.filters.location,
                     onValueChange = viewModel::updateLocation,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = KelmahPrimaryActionMinHeight),
                     label = {
                         Text(
                             if (isWorker) {
@@ -287,6 +335,7 @@ fun JobsScreen(
                         FilterChip(
                             selected = uiState.filters.category == category.name,
                             onClick = { viewModel.updateCategory(category.name) },
+                            modifier = Modifier.heightIn(min = KelmahSecondaryActionMinHeight),
                             label = { Text(category.name) },
                         )
                     }
@@ -296,13 +345,14 @@ fun JobsScreen(
                         FilterChip(
                             selected = uiState.filters.sort == sort,
                             onClick = { viewModel.updateSort(sort) },
+                            modifier = Modifier.heightIn(min = KelmahSecondaryActionMinHeight),
                             label = { Text(sort.label) },
                         )
                     }
                 }
             }
 
-            HorizontalDivider()
+            HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.45f))
 
             if (uiState.isLoading && jobs.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -334,20 +384,24 @@ fun JobsScreen(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    items(jobs, key = { it.id }) { job ->
-                        JobCard(
-                            userRole = userRole,
-                            job = job,
-                            onOpen = { onOpenJob(job.id) },
-                            onSaveToggle = { viewModel.toggleSaved(job.id, !job.isSaved) },
-                            onApply = { onApplyToJob(job.id) },
-                        )
+                    itemsIndexed(jobs, key = { _, job -> job.id }) { index, job ->
+                        KelmahReveal(index = 2 + index) {
+                            JobCard(
+                                userRole = userRole,
+                                job = job,
+                                onOpen = { onOpenJob(job.id) },
+                                onSaveToggle = { viewModel.toggleSaved(job.id, !job.isSaved) },
+                                onApply = { onApplyToJob(job.id) },
+                            )
+                        }
                     }
                     if (uiState.activeFeed == JobsFeed.DISCOVER && uiState.currentPage < uiState.totalPages) {
                         item {
                             OutlinedButton(
                                 onClick = viewModel::loadMoreJobs,
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(min = KelmahPrimaryActionMinHeight),
                                 enabled = !uiState.isLoadingMore,
                             ) {
                                 if (uiState.isLoadingMore) {
@@ -367,6 +421,7 @@ fun JobsScreen(
                 }
             }
         }
+        }
     }
 }
 
@@ -384,7 +439,7 @@ private fun JobCard(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onOpen),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        colors = kelmahPanelColors(),
     ) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -392,7 +447,10 @@ private fun JobCard(
                     Text(job.title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                     Text(job.employerName, style = MaterialTheme.typography.titleSmall)
                 }
-                OutlinedButton(onClick = onSaveToggle) {
+                OutlinedButton(
+                    onClick = onSaveToggle,
+                    modifier = Modifier.heightIn(min = KelmahSecondaryActionMinHeight),
+                ) {
                     Icon(
                         if (job.isSaved) Icons.Outlined.Bookmark else Icons.Outlined.BookmarkBorder,
                         contentDescription = if (job.isSaved) {
@@ -459,11 +517,21 @@ private fun JobCard(
                 )
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(onClick = onOpen, modifier = Modifier.weight(1f)) {
+                OutlinedButton(
+                    onClick = onOpen,
+                    modifier = Modifier
+                        .weight(1f)
+                        .heightIn(min = KelmahSecondaryActionMinHeight),
+                ) {
                     Text(stringResource(id = R.string.jobs_open_job))
                 }
                 if (isWorker) {
-                    Button(onClick = onApply, modifier = Modifier.weight(1f)) {
+                    Button(
+                        onClick = onApply,
+                        modifier = Modifier
+                            .weight(1f)
+                            .heightIn(min = KelmahPrimaryActionMinHeight),
+                    ) {
                         Icon(Icons.AutoMirrored.Outlined.Send, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(stringResource(id = R.string.jobs_apply_now))
@@ -499,7 +567,7 @@ private fun JobsMetricTile(
 ) {
     Card(
         modifier = modifier,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        colors = kelmahMutedPanelColors(),
     ) {
         Column(
             modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),

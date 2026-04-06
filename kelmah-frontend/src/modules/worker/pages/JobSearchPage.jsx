@@ -12,6 +12,7 @@
  *   useUnsaveJobMutation()→ jobsService.unsaveJob()  → DELETE /api/jobs/:id/save
  */
 
+import PropTypes from 'prop-types';
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import {
   Box,
@@ -57,7 +58,6 @@ import {
   Bookmark as BookmarkIcon,
   LocationOn as LocationOnIcon,
   AttachMoney as MoneyIcon,
-  AccessTime as TimeIcon,
   WorkOutline as WorkIcon,
   TuneRounded as TuneIcon,
   SortRounded as SortIcon,
@@ -833,13 +833,60 @@ const EmptyState = ({ hasFilters, onReset }) => (
   </Box>
 );
 
+SearchHeader.propTypes = {
+  search: PropTypes.string.isRequired,
+  setSearch: PropTypes.func.isRequired,
+  onSearch: PropTypes.func.isRequired,
+  resultCount: PropTypes.number.isRequired,
+  isLoading: PropTypes.bool.isRequired,
+  hasFilters: PropTypes.bool.isRequired,
+  isMobile: PropTypes.bool.isRequired,
+  showHeading: PropTypes.bool,
+};
+
+CategoryChips.propTypes = {
+  selected: PropTypes.string,
+  onChange: PropTypes.func.isRequired,
+};
+
+FilterPanel.propTypes = {
+  category: PropTypes.string,
+  setCategory: PropTypes.func.isRequired,
+  location: PropTypes.string,
+  setLocation: PropTypes.func.isRequired,
+  budgetRange: PropTypes.arrayOf(PropTypes.number).isRequired,
+  setBudgetRange: PropTypes.func.isRequired,
+  sortBy: PropTypes.string.isRequired,
+  setSortBy: PropTypes.func.isRequired,
+  onReset: PropTypes.func.isRequired,
+};
+
+FindWorkJobCard.propTypes = {
+  job: PropTypes.object.isRequired,
+  isSaved: PropTypes.bool,
+  onSave: PropTypes.func.isRequired,
+  onUnsave: PropTypes.func.isRequired,
+};
+
+StatsBar.propTypes = {
+  data: PropTypes.shape({
+    jobs: PropTypes.array,
+    data: PropTypes.array,
+    totalJobs: PropTypes.number,
+  }),
+};
+
+EmptyState.propTypes = {
+  hasFilters: PropTypes.bool.isRequired,
+  onReset: PropTypes.func.isRequired,
+};
+
 // ═══════════════════════════════════════════════════════════
 // MAIN COMPONENT
 // ═══════════════════════════════════════════════════════════
 const JobSearchPage = () => {
   const theme = useTheme();
   const isMobile = useBreakpointDown('md');
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Auth state
@@ -926,7 +973,7 @@ const JobSearchPage = () => {
       togglingBookmarksRef.current.add(payload.jobId);
       try {
         await saveMutation.mutateAsync(payload);
-      } catch (_) {
+      } catch {
         /* error handled by mutation callbacks */
       } finally {
         togglingBookmarksRef.current.delete(payload.jobId);
@@ -941,7 +988,7 @@ const JobSearchPage = () => {
       togglingBookmarksRef.current.add(payload.jobId);
       try {
         await unsaveMutation.mutateAsync(payload);
-      } catch (_) {
+      } catch {
         /* error handled by mutation callbacks */
       } finally {
         togglingBookmarksRef.current.delete(payload.jobId);
@@ -1267,7 +1314,7 @@ const JobSearchPage = () => {
               {/* Loading skeletons */}
               {isLoading && (
                 <Grid container spacing={2}>
-                  {Array.from({ length: 6 }).map((_, i) => (
+                  {Array.from({ length: 6 }, (_, i) => i).map((i) => (
                     <Grid
                       item
                       xs={12}
@@ -1372,6 +1419,7 @@ const JobSearchPage = () => {
             borderTopLeftRadius: 20,
             borderTopRightRadius: 20,
             maxHeight: '82vh',
+            overflowY: 'auto',
             p: 1.5,
             pb: 'calc(env(safe-area-inset-bottom, 0px) + 12px)',
             border: '1px solid',

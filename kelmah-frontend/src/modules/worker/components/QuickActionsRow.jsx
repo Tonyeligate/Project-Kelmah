@@ -1,4 +1,3 @@
-import React from 'react';
 import { Box, ButtonBase, Typography, useTheme, alpha } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import SearchIcon from '@mui/icons-material/Search';

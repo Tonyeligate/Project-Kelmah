@@ -187,7 +187,8 @@ const MobileRegister = () => {
         newErrors.confirmPassword = 'Passwords do not match — try again';
       }
       if (!formData.acceptTerms) {
-        newErrors.acceptTerms = 'Must accept terms';
+        newErrors.acceptTerms =
+          'Accept Terms and Privacy Policy to continue';
       }
     }
 
@@ -431,6 +432,7 @@ const MobileRegister = () => {
                 fullWidth
                 label="First Name"
                 placeholder="e.g. Kwame"
+                autoComplete="given-name"
                 value={formData.firstName}
                 onChange={handleChange('firstName')}
                 error={Boolean(errors.firstName)}
@@ -442,6 +444,7 @@ const MobileRegister = () => {
                 fullWidth
                 label="Last Name"
                 placeholder="e.g. Asante"
+                autoComplete="family-name"
                 value={formData.lastName}
                 onChange={handleChange('lastName')}
                 error={Boolean(errors.lastName)}
@@ -455,6 +458,7 @@ const MobileRegister = () => {
               type="email"
               label="Email"
               placeholder="e.g. kwame@email.com"
+              autoComplete="email"
               value={formData.email}
               onChange={handleChange('email')}
               error={Boolean(errors.email)}
@@ -478,6 +482,8 @@ const MobileRegister = () => {
               helperText={errors.phone}
               placeholder="+233 or 0XX XXX XXXX"
               size="small"
+              autoComplete="tel"
+              inputProps={{ inputMode: 'tel', maxLength: 20 }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -492,6 +498,7 @@ const MobileRegister = () => {
                 fullWidth
                 label="Company Name"
                 placeholder="e.g. Asante Construction"
+                autoComplete="organization"
                 value={formData.companyName}
                 onChange={handleChange('companyName')}
                 error={Boolean(errors.companyName)}
@@ -514,9 +521,12 @@ const MobileRegister = () => {
                 multiple
                 options={COMMON_TRADES}
                 value={formData.trades}
-                onChange={(_, newValue) =>
-                  setFormData((p) => ({ ...p, trades: newValue }))
-                }
+                onChange={(_, newValue) => {
+                  setFormData((p) => ({ ...p, trades: newValue }));
+                  if (errors.trades) {
+                    setErrors((prev) => ({ ...prev, trades: '' }));
+                  }
+                }}
                 renderTags={(value, getTagProps) =>
                   value.map((option, index) => (
                     <Chip
@@ -537,6 +547,7 @@ const MobileRegister = () => {
                     label="Your Skills/Trades"
                     error={Boolean(errors.trades)}
                     helperText={errors.trades}
+                    autoComplete="off"
                     size="small"
                     sx={inputStyles}
                   />
@@ -565,6 +576,7 @@ const MobileRegister = () => {
               type={showPassword ? 'text' : 'password'}
               label="Password"
               placeholder="Create a strong password"
+              autoComplete="new-password"
               value={formData.password}
               onChange={handleChange('password')}
               error={Boolean(errors.password)}
@@ -645,6 +657,7 @@ const MobileRegister = () => {
               type={showConfirmPassword ? 'text' : 'password'}
               label="Confirm Password"
               placeholder="Re-enter your password"
+              autoComplete="new-password"
               value={formData.confirmPassword}
               onChange={handleChange('confirmPassword')}
               error={Boolean(errors.confirmPassword)}
@@ -710,8 +723,9 @@ const MobileRegister = () => {
                     sx={{
                       color: 'primary.main',
                       fontSize: '14px',
-                      py: 0.5,
+                      py: 0.75,
                       px: 0.5,
+                      minHeight: 44,
                       minWidth: 'auto',
                       textTransform: 'none',
                       verticalAlign: 'baseline',
@@ -726,8 +740,9 @@ const MobileRegister = () => {
                     sx={{
                       color: 'primary.main',
                       fontSize: '14px',
-                      py: 0.5,
+                      py: 0.75,
                       px: 0.5,
+                      minHeight: 44,
                       minWidth: 'auto',
                       textTransform: 'none',
                       verticalAlign: 'baseline',

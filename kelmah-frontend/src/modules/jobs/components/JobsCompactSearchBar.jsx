@@ -12,10 +12,12 @@ import {
   Box,
   InputAdornment,
   Typography,
+  IconButton,
 } from '@mui/material';
 import {
   Search as SearchIcon,
   FilterList as FilterListIcon,
+  Close as CloseIcon,
 } from '@mui/icons-material';
 import PropTypes from 'prop-types';
 
@@ -60,6 +62,8 @@ const JobsCompactSearchBar = ({
           placeholder={placeholder}
           inputProps={{
             'aria-label': 'Search jobs by trade, skill, or location',
+            maxLength: 120,
+            autoComplete: 'off',
           }}
           InputProps={{
             startAdornment: (
@@ -67,6 +71,26 @@ const JobsCompactSearchBar = ({
                 <SearchIcon sx={{ color: 'var(--k-gold)' }} />
               </InputAdornment>
             ),
+            endAdornment: searchValue?.trim() ? (
+              <InputAdornment position="end">
+                <IconButton
+                  size="small"
+                  onClick={() => onSearchChange && onSearchChange('')}
+                  aria-label="Clear job search input"
+                  sx={{
+                    width: 44,
+                    height: 44,
+                    '&:focus-visible': {
+                      outline: '3px solid',
+                      outlineColor: 'primary.main',
+                      outlineOffset: '2px',
+                    },
+                  }}
+                >
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              </InputAdornment>
+            ) : null,
             sx: {
               height: '44px',
               color: 'var(--k-text-primary)',

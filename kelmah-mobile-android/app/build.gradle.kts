@@ -10,7 +10,7 @@ plugins {
 
 val gatewayOrigin = providers.gradleProperty("KELMAH_GATEWAY_ORIGIN")
     .orElse(providers.environmentVariable("KELMAH_GATEWAY_ORIGIN"))
-    .orElse("https://kelmah-api-gateway-gf3g.onrender.com")
+    .orElse("https://kelmah-api-gateway-hvif.onrender.com")
     .get()
     .trimEnd('/')
 

@@ -9,8 +9,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
@@ -19,6 +22,7 @@ import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -32,6 +36,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -181,6 +186,7 @@ fun KelmahApp(
         val currentRoute = backStackEntry?.destination?.route
 
         Scaffold(
+            containerColor = Color.Transparent,
             topBar = {
                 shellBannerMessage?.let { message ->
                     AppShellStatusBanner(
@@ -190,45 +196,82 @@ fun KelmahApp(
                 }
             },
             bottomBar = {
-                NavigationBar {
-                    destinations.forEach { item ->
-                        val destination = item.destination
-                        val isSelected = when (destination) {
-                            KelmahDestination.Jobs -> currentRoute?.startsWith("jobs") == true
-                            KelmahDestination.Messages -> currentRoute?.startsWith(KelmahDestination.Messages.route) == true
-                            else -> currentRoute == destination.route
-                        }
-                        NavigationBarItem(
-                            selected = isSelected,
-                            onClick = {
-                                if (!isSelected) {
-                                    navController.navigate(destination.route) {
-                                        launchSingleTop = true
-                                        restoreState = true
-                                        popUpTo(navController.graph.startDestinationId) {
-                                            saveState = true
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                    color = MaterialTheme.colorScheme.surface.copy(alpha = if (isSystemInDarkTheme()) 0.94f else 0.98f),
+                    shape = RoundedCornerShape(26.dp),
+                    tonalElevation = 0.dp,
+                    shadowElevation = 10.dp,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.52f)),
+                ) {
+                    NavigationBar(
+                        modifier = Modifier.heightIn(min = 70.dp),
+                        containerColor = Color.Transparent,
+                        tonalElevation = 0.dp,
+                    ) {
+                        destinations.forEach { item ->
+                            val destination = item.destination
+                            val isSelected = when (destination) {
+                                KelmahDestination.Jobs -> currentRoute?.startsWith("jobs") == true
+                                KelmahDestination.Messages -> currentRoute?.startsWith(KelmahDestination.Messages.route) == true
+                                else -> currentRoute == destination.route
+                            }
+                            NavigationBarItem(
+                                selected = isSelected,
+                                onClick = {
+                                    if (!isSelected) {
+                                        navController.navigate(destination.route) {
+                                            launchSingleTop = true
+                                            restoreState = true
+                                            popUpTo(navController.graph.startDestinationId) {
+                                                saveState = true
+                                            }
                                         }
                                     }
-                                }
-                            },
-                            icon = {
-                                val badgeCount = when (destination) {
-                                    KelmahDestination.Messages -> messagesState.conversations.sumOf { it.unreadCount }
-                                    KelmahDestination.Notifications -> notificationsState.unreadCount
-                                    else -> 0
-                                }
-                                BadgedBox(
-                                    badge = {
-                                        if (badgeCount > 0) {
-                                            Badge { Text(badgeCount.toString()) }
-                                        }
-                                    },
-                                ) {
-                                    androidx.compose.material3.Icon(destination.icon, contentDescription = destination.label)
-                                }
-                            },
-                            label = { Text(item.label) },
-                        )
+                                },
+                                icon = {
+                                    val badgeCount = when (destination) {
+                                        KelmahDestination.Messages -> messagesState.conversations.sumOf { it.unreadCount }
+                                        KelmahDestination.Notifications -> notificationsState.unreadCount
+                                        else -> 0
+                                    }
+                                    BadgedBox(
+                                        badge = {
+                                            if (badgeCount > 0) {
+                                                val compactCount = if (badgeCount > 99) "99+" else badgeCount.toString()
+                                                Badge(
+                                                    containerColor = MaterialTheme.colorScheme.secondary,
+                                                    contentColor = MaterialTheme.colorScheme.onSecondary,
+                                                ) {
+                                                    Text(compactCount)
+                                                }
+                                            }
+                                        },
+                                    ) {
+                                        androidx.compose.material3.Icon(
+                                            destination.icon,
+                                            contentDescription = destination.label,
+                                        )
+                                    }
+                                },
+                                label = {
+                                    Text(
+                                        text = item.label,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        maxLines = 1,
+                                    )
+                                },
+                                colors = NavigationBarItemDefaults.colors(
+                                    selectedIconColor = MaterialTheme.colorScheme.onSecondary,
+                                    selectedTextColor = MaterialTheme.colorScheme.onBackground,
+                                    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    indicatorColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.9f),
+                                ),
+                            )
+                        }
                     }
                 }
             },
@@ -310,9 +353,9 @@ private fun AppShellStatusBanner(
     isCritical: Boolean,
 ) {
     val containerColor = if (isCritical) {
-        MaterialTheme.colorScheme.errorContainer
+        MaterialTheme.colorScheme.errorContainer.copy(alpha = if (isSystemInDarkTheme()) 0.92f else 1f)
     } else {
-        MaterialTheme.colorScheme.secondaryContainer
+        MaterialTheme.colorScheme.secondaryContainer.copy(alpha = if (isSystemInDarkTheme()) 0.85f else 1f)
     }
     val contentColor = if (isCritical) {
         MaterialTheme.colorScheme.onErrorContainer
@@ -323,7 +366,11 @@ private fun AppShellStatusBanner(
     Surface(
         color = containerColor,
         contentColor = contentColor,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 4.dp),
+        shape = RoundedCornerShape(14.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.45f)),
     ) {
         Text(
             text = message,

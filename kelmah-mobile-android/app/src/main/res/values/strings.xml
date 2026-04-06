@@ -32,6 +32,9 @@
     <string name="messages_attachment_pick">Choose file</string>
     <string name="messages_attachment_replace">Replace file</string>
     <string name="messages_attachment_retry">Retry upload</string>
+    <string name="messages_attachment_view_fullscreen">View full screen</string>
+    <string name="messages_attachment_preview_unavailable">Preview unavailable. Open file directly.</string>
+    <string name="messages_attachment_close_preview">Close preview</string>
     <string name="jobs_detail_title">Job Details</string>
     <string name="jobs_detail_opening">Opening job...</string>
     <string name="jobs_detail_posted">Posted %1$s</string>

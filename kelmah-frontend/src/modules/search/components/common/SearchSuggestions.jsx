@@ -98,7 +98,7 @@ const SearchSuggestions = ({ recentSearches = [], onSuggestionClick }) => {
               variant="outlined"
               onClick={() => handleClick(term)}
               aria-label={`Use popular category ${term}`}
-              sx={{ cursor: 'pointer', minHeight: 36 }}
+              sx={{ cursor: 'pointer', minHeight: 44 }}
             />
           ))}
         </Box>

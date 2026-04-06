@@ -112,191 +112,209 @@ struct ProfileView: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                Text("Profile")
-                    .font(.largeTitle.bold())
-                    .foregroundStyle(KelmahTheme.textPrimary)
+        let roleLabel = (sessionStore.currentUser?.role ?? "worker").capitalized
+        let isVerified = sessionStore.currentUser?.isEmailVerified == true
+        let workerDetailsReady = viewModel.profileSnapshot != nil
+        let heroStats = [
+            KelmahHeroStat(label: "Role", value: roleLabel, tint: KelmahTheme.cyan),
+            KelmahHeroStat(label: "Email", value: isVerified ? "Verified" : "Pending", tint: isVerified ? KelmahTheme.success : KelmahTheme.sun),
+            KelmahHeroStat(label: "Worker Data", value: workerDetailsReady ? "Ready" : "Syncing", tint: KelmahTheme.sun),
+        ]
+        let heroChips = [
+            isVerified ? "Identity verified" : "Verify email for full trust",
+            "Security controls enabled",
+        ]
 
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(sessionStore.currentUser?.displayName ?? "Kelmah User")
-                        .font(.title2.bold())
-                        .foregroundStyle(KelmahTheme.textPrimary)
-                    Text(sessionStore.currentUser?.email ?? "No email added")
-                        .foregroundStyle(KelmahTheme.textMuted)
-                    Text("Role: \((sessionStore.currentUser?.role ?? "worker").capitalized)")
-                        .foregroundStyle(KelmahTheme.textPrimary)
-                    Text(sessionStore.currentUser?.isEmailVerified == true ? "Email verified" : "Email not verified yet")
-                        .foregroundStyle(sessionStore.currentUser?.isEmailVerified == true ? KelmahTheme.primary : .red)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding()
-                .background(KelmahTheme.card)
-                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .stroke(KelmahTheme.primary.opacity(0.24), lineWidth: 1)
-                )
-
-                if sessionStore.currentUser?.kelmahUserRole == .worker {
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Your work details")
-                            .font(.headline)
-                            .foregroundStyle(KelmahTheme.textPrimary)
-                        Text("These details help Kelmah show you better jobs.")
-                            .foregroundStyle(KelmahTheme.textMuted)
-
-                        if viewModel.isLoadingProfileSignals {
-                            HStack {
-                                Spacer()
-                                ProgressView()
-                                Spacer()
-                            }
-                            .padding(.vertical, 12)
-                        } else if let profileErrorMessage = viewModel.profileErrorMessage {
-                            Text(profileErrorMessage.isEmpty ? "We could not load your work details." : profileErrorMessage)
-                                .foregroundStyle(.red)
-                                .font(.footnote)
-                            Button {
-                                Task { await viewModel.refreshProfileSignals(user: sessionStore.currentUser) }
+        KelmahPremiumBackground {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    KelmahCommandDeck(
+                        eyebrow: "PROFILE HUB",
+                        title: sessionStore.currentUser?.displayName ?? "Kelmah User",
+                        subtitle: "Manage identity, reputation, and security from one command center.",
+                        stats: heroStats,
+                        chips: heroChips
+                    ) {
+                        HStack(spacing: 10) {
+                            Button(role: .destructive) {
+                                showSignOutAlert = true
                             } label: {
-                                Text("Try again")
+                                Text("Sign out")
                                     .fontWeight(.semibold)
                                     .frame(maxWidth: .infinity)
-                                    .padding()
-                                    .background(KelmahTheme.primary)
-                                    .foregroundStyle(.white)
-                                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                                    .frame(minHeight: 46)
                             }
-                        } else if let snapshot = viewModel.profileSnapshot {
-                            WorkerProfileSignalsView(
-                                snapshot: snapshot,
-                                onHireNow: onHireNow,
-                                onMessageWorker: onMessageWorker
-                            )
-                        } else {
-                            Text("Your work details will show here.")
-                                .foregroundStyle(KelmahTheme.textMuted)
-                        }
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding()
-                    .background(KelmahTheme.card)
-                    .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 20, style: .continuous)
-                            .stroke(KelmahTheme.primary.opacity(0.24), lineWidth: 1)
-                    )
-                }
+                            .buttonStyle(.bordered)
+                            .tint(KelmahTheme.cyan)
 
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Password")
-                        .font(.headline)
-                        .foregroundStyle(KelmahTheme.textPrimary)
-                    Text("Change your password.")
-                        .foregroundStyle(KelmahTheme.textMuted)
-
-                    if let infoMessage = viewModel.infoMessage {
-                        Text(infoMessage)
-                            .foregroundStyle(KelmahTheme.primary)
-                            .font(.footnote)
-                    }
-
-                    if let errorMessage = viewModel.errorMessage {
-                        Text(errorMessage)
-                            .foregroundStyle(.red)
-                            .font(.footnote)
-                    }
-
-                    SecureField("Current password", text: $viewModel.currentPassword)
-                        .textContentType(.password)
-                        .padding()
-                        .background(KelmahTheme.card)
-                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                    SecureField("New password", text: $viewModel.newPassword)
-                        .textContentType(.newPassword)
-                        .padding()
-                        .background(KelmahTheme.card)
-                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                    SecureField("Confirm new password", text: $viewModel.confirmPassword)
-                        .textContentType(.newPassword)
-                        .padding()
-                        .background(KelmahTheme.card)
-                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-
-                    Button {
-                        Task {
-                            let changed = await viewModel.changePassword()
-                            if changed {
-                                showPasswordChangedAlert = true
-                            }
-                        }
-                    } label: {
-                        HStack {
-                            Spacer()
-                            if viewModel.isSaving {
-                                ProgressView()
-                                    .tint(.white)
-                            } else {
-                                Text("Change password")
+                            Button(role: .destructive) {
+                                showSignOutAllAlert = true
+                            } label: {
+                                Text("Sign out all")
                                     .fontWeight(.semibold)
+                                    .frame(maxWidth: .infinity)
+                                    .frame(minHeight: 46)
                             }
-                            Spacer()
+                            .buttonStyle(.bordered)
+                            .tint(KelmahTheme.danger)
                         }
-                        .padding()
-                        .background(KelmahTheme.primary)
-                        .foregroundStyle(.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                        .controlSize(.large)
                     }
-                    .disabled(viewModel.isSaving)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding()
-                .background(KelmahTheme.card)
-                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .stroke(KelmahTheme.primary.opacity(0.24), lineWidth: 1)
-                )
 
-                Button(role: .destructive) {
-                    showSignOutAlert = true
-                } label: {
-                    Label("Sign out", systemImage: "rectangle.portrait.and.arrow.right")
-                        .fontWeight(.semibold)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                }
-                .background(KelmahTheme.card)
-                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .stroke(KelmahTheme.primary.opacity(0.2), lineWidth: 1)
-                )
+                    KelmahPanel {
+                        VStack(alignment: .leading, spacing: 8) {
+                            KelmahSectionHeader(title: "Account", subtitle: "Identity and verification status")
+                            Text(sessionStore.currentUser?.email ?? "No email added")
+                                .foregroundStyle(KelmahTheme.textMuted)
+                            Text("Role: \(roleLabel)")
+                                .foregroundStyle(KelmahTheme.textPrimary)
+                            KelmahSignalChip(
+                                text: isVerified ? "Email verified" : "Email not verified",
+                                accent: isVerified ? KelmahTheme.success : KelmahTheme.sun
+                            )
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
 
-                Button(role: .destructive) {
-                    showSignOutAllAlert = true
-                } label: {
-                    Label("Sign out everywhere", systemImage: "iphone.and.arrow.forward")
-                        .fontWeight(.semibold)
-                        .frame(maxWidth: .infinity)
-                        .padding()
+                    if sessionStore.currentUser?.kelmahUserRole == .worker {
+                        KelmahPanel {
+                            VStack(alignment: .leading, spacing: 12) {
+                                KelmahSectionHeader(
+                                    title: "Your work details",
+                                    subtitle: "These details improve your job matching quality"
+                                )
+
+                                if viewModel.isLoadingProfileSignals {
+                                    HStack {
+                                        Spacer()
+                                        ProgressView()
+                                            .tint(KelmahTheme.sun)
+                                        Spacer()
+                                    }
+                                    .padding(.vertical, 12)
+                                } else if let profileErrorMessage = viewModel.profileErrorMessage {
+                                    KelmahBannerMessage(
+                                        message: profileErrorMessage.isEmpty
+                                            ? "We could not load your work details."
+                                            : profileErrorMessage,
+                                        tint: KelmahTheme.danger
+                                    )
+                                    Button {
+                                        Task { await viewModel.refreshProfileSignals(user: sessionStore.currentUser) }
+                                    } label: {
+                                        Text("Try again")
+                                            .fontWeight(.semibold)
+                                            .frame(maxWidth: .infinity)
+                                    }
+                                    .buttonStyle(.borderedProminent)
+                                    .tint(KelmahTheme.sun)
+                                    .foregroundStyle(Color.black)
+                                } else if let snapshot = viewModel.profileSnapshot {
+                                    WorkerProfileSignalsView(
+                                        snapshot: snapshot,
+                                        onHireNow: onHireNow,
+                                        onMessageWorker: onMessageWorker
+                                    )
+                                } else {
+                                    KelmahBannerMessage(
+                                        message: "Your work details will show here.",
+                                        tint: KelmahTheme.cyan
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    KelmahPanel {
+                        VStack(alignment: .leading, spacing: 12) {
+                            KelmahSectionHeader(
+                                title: "Password",
+                                subtitle: "Update your password and keep your account secure"
+                            )
+
+                            if let infoMessage = viewModel.infoMessage {
+                                KelmahBannerMessage(message: infoMessage, tint: KelmahTheme.success)
+                            }
+
+                            if let errorMessage = viewModel.errorMessage {
+                                KelmahBannerMessage(message: errorMessage, tint: KelmahTheme.danger)
+                            }
+
+                            SecureField("Current password", text: $viewModel.currentPassword)
+                                .textContentType(.password)
+                                .textFieldStyle(.roundedBorder)
+                            SecureField("New password", text: $viewModel.newPassword)
+                                .textContentType(.newPassword)
+                                .textFieldStyle(.roundedBorder)
+                            SecureField("Confirm new password", text: $viewModel.confirmPassword)
+                                .textContentType(.newPassword)
+                                .textFieldStyle(.roundedBorder)
+
+                            Button {
+                                Task {
+                                    let changed = await viewModel.changePassword()
+                                    if changed {
+                                        showPasswordChangedAlert = true
+                                    }
+                                }
+                            } label: {
+                                if viewModel.isSaving {
+                                    ProgressView()
+                                        .tint(.black)
+                                        .frame(maxWidth: .infinity)
+                                        .frame(minHeight: 48)
+                                } else {
+                                    Text("Change password")
+                                        .fontWeight(.bold)
+                                        .frame(maxWidth: .infinity)
+                                        .frame(minHeight: 48)
+                                }
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .tint(KelmahTheme.sun)
+                            .foregroundStyle(Color.black)
+                            .disabled(viewModel.isSaving)
+                        }
+                    }
+
+                    KelmahPanel {
+                        VStack(alignment: .leading, spacing: 10) {
+                            KelmahSectionHeader(title: "Session controls", subtitle: "Protect this device and all linked sessions")
+
+                            Button(role: .destructive) {
+                                showSignOutAlert = true
+                            } label: {
+                                Label("Sign out this device", systemImage: "rectangle.portrait.and.arrow.right")
+                                    .fontWeight(.semibold)
+                                    .frame(maxWidth: .infinity)
+                                    .frame(minHeight: 46)
+                            }
+                            .buttonStyle(.bordered)
+                            .tint(KelmahTheme.cyan)
+
+                            Button(role: .destructive) {
+                                showSignOutAllAlert = true
+                            } label: {
+                                Label("Sign out all devices", systemImage: "iphone.and.arrow.forward")
+                                    .fontWeight(.semibold)
+                                    .frame(maxWidth: .infinity)
+                                    .frame(minHeight: 46)
+                            }
+                            .buttonStyle(.bordered)
+                            .tint(KelmahTheme.danger)
+                        }
+                    }
                 }
-                .background(KelmahTheme.card)
-                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .stroke(KelmahTheme.primary.opacity(0.2), lineWidth: 1)
-                )
+                .padding(.horizontal, 16)
+                .padding(.top, 18)
+                .padding(.bottom, 20)
             }
-            .padding(20)
+            .scrollIndicators(.hidden)
         }
         .scrollDismissesKeyboard(.interactively)
-        .background(KelmahTheme.background.ignoresSafeArea())
         .task(id: sessionStore.currentUser?.resolvedID) {
             await viewModel.bootstrap(user: sessionStore.currentUser)
         }
-        // Confirm sign out (this device)
         .alert("Sign out?", isPresented: $showSignOutAlert) {
             Button("Sign out", role: .destructive) {
                 Task { await sessionCoordinator.logout() }
@@ -305,7 +323,6 @@ struct ProfileView: View {
         } message: {
             Text("You will be signed out of this device.")
         }
-        // Confirm sign out (all devices)
         .alert("Sign out everywhere?", isPresented: $showSignOutAllAlert) {
             Button("Sign out all", role: .destructive) {
                 Task { await sessionCoordinator.logout(logoutAll: true) }
@@ -314,7 +331,6 @@ struct ProfileView: View {
         } message: {
             Text("You will be signed out everywhere.")
         }
-        // Warn user before auto-logout after password change
         .alert("Password changed", isPresented: $showPasswordChangedAlert) {
             Button("Sign in again") {
                 Task { await sessionCoordinator.logout() }
@@ -503,6 +519,7 @@ private struct WorkerProfileSignalsView: View {
                         .font(.caption.bold())
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
+                        .frame(minHeight: 48)
                 }
                 .background(KelmahTheme.primary)
                 .foregroundStyle(Color.black)
@@ -513,6 +530,7 @@ private struct WorkerProfileSignalsView: View {
                         .font(.caption.bold())
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
+                        .frame(minHeight: 48)
                 }
                 .background(KelmahTheme.primary.opacity(0.18))
                 .foregroundStyle(KelmahTheme.textPrimary)
