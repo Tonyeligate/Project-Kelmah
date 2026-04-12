@@ -117,6 +117,44 @@ const formatGhanaCurrencyLabel = (value) => {
   }).format(amount);
 };
 
+const WORKER_PROFILE_SCROLL_STATE_PREFIX = 'kelmah.worker.profile.scroll.v1';
+
+const formatTravelReadinessLabel = (value) => {
+  const normalized = String(value || '')
+    .trim()
+    .toLowerCase();
+
+  switch (normalized) {
+    case 'none':
+      return 'On-site only';
+    case 'local':
+      return 'Local area only';
+    case 'regional':
+      return 'Regional travel available';
+    case 'national':
+      return 'Can travel nationally';
+    default:
+      return 'Confirm travel range in chat';
+  }
+};
+
+const formatResponseSpeedLabel = (value) => {
+  const amount = Number(value);
+  if (!Number.isFinite(amount) || amount <= 0) {
+    return 'Not enough data';
+  }
+
+  if (amount < 1) {
+    return '<1h average';
+  }
+
+  if (amount < 24) {
+    return `${amount % 1 === 0 ? amount.toFixed(0) : amount.toFixed(1)}h average`;
+  }
+
+  return `${Math.round(amount / 24)}d average`;
+};
+
 const Input = styled('input')({
   display: 'none',
 });
@@ -353,10 +391,16 @@ function WorkerProfile({ workerId: workerIdProp }) {
   const [showFullBio, setShowFullBio] = useState(false);
   const [activePortfolioIndex, setActivePortfolioIndex] = useState(0);
   const [mobileHeroParallaxOffset, setMobileHeroParallaxOffset] = useState(0);
+  const [lastVisitedSection, setLastVisitedSection] = useState('overview');
 
+  const readinessSectionRef = useRef(null);
   const aboutSectionRef = useRef(null);
   const portfolioSectionRef = useRef(null);
   const reviewsSectionRef = useRef(null);
+
+  const profileScrollStateStorageKey = resolvedWorkerId
+    ? `${WORKER_PROFILE_SCROLL_STATE_PREFIX}:${resolvedWorkerId}`
+    : null;
 
   const getPortfolioPreviewImage = useCallback((item) => {
     return (
@@ -385,11 +429,36 @@ function WorkerProfile({ workerId: workerIdProp }) {
       : false;
   const canHireWorker = hasRole(authUser, ['hirer', 'admin']);
 
-  const scrollToSection = useCallback((sectionRef) => {
+  const persistScrollState = useCallback(
+    (section = 'overview') => {
+      if (typeof window === 'undefined' || !profileScrollStateStorageKey) {
+        return;
+      }
+
+      try {
+        window.sessionStorage.setItem(
+          profileScrollStateStorageKey,
+          JSON.stringify({
+            scrollY: window.scrollY || 0,
+            section,
+            updatedAt: Date.now(),
+          }),
+        );
+      } catch {
+        // Ignore storage failures and continue navigation.
+      }
+    },
+    [profileScrollStateStorageKey],
+  );
+
+  const scrollToSection = useCallback((sectionRef, section = 'overview') => {
+    setLastVisitedSection(section);
+    persistScrollState(section);
+
     if (sectionRef?.current) {
       sectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-  }, []);
+  }, [persistScrollState]);
 
   const handleHireAction = useCallback(() => {
     if (!authUser) {
@@ -634,6 +703,50 @@ function WorkerProfile({ workerId: workerIdProp }) {
     };
   }, [isActualMobile]);
 
+  useEffect(() => {
+    if (
+      !isActualMobile ||
+      loading ||
+      typeof window === 'undefined' ||
+      !profileScrollStateStorageKey
+    ) {
+      return;
+    }
+
+    try {
+      const storedState = window.sessionStorage.getItem(
+        profileScrollStateStorageKey,
+      );
+      if (!storedState) {
+        return;
+      }
+
+      const parsedState = JSON.parse(storedState);
+      const savedAt = Number(parsedState?.updatedAt || 0);
+      if (savedAt && Date.now() - savedAt > 30 * 60 * 1000) {
+        window.sessionStorage.removeItem(profileScrollStateStorageKey);
+        return;
+      }
+
+      const restoredScrollY = Number(parsedState?.scrollY || 0);
+      window.requestAnimationFrame(() => {
+        window.scrollTo({
+          top: Number.isFinite(restoredScrollY) ? restoredScrollY : 0,
+          left: 0,
+          behavior: 'auto',
+        });
+      });
+
+      if (parsedState?.section) {
+        setLastVisitedSection(String(parsedState.section));
+      }
+
+      window.sessionStorage.removeItem(profileScrollStateStorageKey);
+    } catch {
+      window.sessionStorage.removeItem(profileScrollStateStorageKey);
+    }
+  }, [isActualMobile, loading, profileScrollStateStorageKey]);
+
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
   };
@@ -645,6 +758,9 @@ function WorkerProfile({ workerId: workerIdProp }) {
       });
       return;
     }
+
+    persistScrollState(lastVisitedSection || 'overview');
+
     const recipientId =
       profile?.user?.id ||
       profile?.user?._id ||
@@ -2065,7 +2181,8 @@ function WorkerProfile({ workerId: workerIdProp }) {
         ? `${aboutText.slice(0, 160).trim()}...`
         : aboutText;
     const compactReviews = reviews.slice(0, 3);
-    const primaryActionLabel = isOwner ? 'EDIT PROFILE' : 'HIRE NOW';
+    const primaryActionLabel = isOwner ? 'Edit Profile' : 'Request Hire';
+    const secondaryActionLabel = isOwner ? 'Open Messages' : 'Send Question';
     const averageRatingValue = Number(
       ratingSummary?.averageRating ?? profile.average_rating ?? 0,
     );
@@ -2081,6 +2198,57 @@ function WorkerProfile({ workerId: workerIdProp }) {
     const responseTimeValue = Number(stats?.averageResponseTime ?? 0);
     const availabilityLabel =
       availability?.status || availability?.availabilityStatus || 'available';
+    const availabilityUpdatedAt =
+      availability?.lastUpdated || profile?.updatedAt || null;
+    const availabilityUpdatedLabel = availabilityUpdatedAt
+      ? new Date(availabilityUpdatedAt).toLocaleDateString()
+      : 'today';
+    const profileLocationLabel =
+      profile?.location?.city ||
+      profile?.location?.address ||
+      profile?.location ||
+      'Location not set';
+    const priceLabel = formatGhanaCurrencyLabel(profile.hourly_rate || 0);
+    const serviceRadiusValue = Number(
+      profile?.serviceRadius ?? profile?.travelRadius ?? 0,
+    );
+    const serviceAreaLabel =
+      serviceRadiusValue > 0
+        ? `${profileLocationLabel} + ${serviceRadiusValue} km`
+        : profileLocationLabel;
+    const languageSupportLabel =
+      Array.isArray(profile?.languages) && profile.languages.length > 0
+        ? profile.languages
+            .map((entry) => {
+              if (typeof entry === 'string') {
+                return entry;
+              }
+
+              if (entry && typeof entry === 'object') {
+                return entry.language || entry.name || entry.label || '';
+              }
+
+              return '';
+            })
+            .filter(Boolean)
+            .slice(0, 3)
+            .join(', ')
+        : 'English';
+    const materialsResponsibilityLabel =
+      profile?.materialsResponsibility ||
+      profile?.materialResponsibility ||
+      (Array.isArray(profile?.tools) && profile.tools.length > 0
+        ? 'Worker brings own tools. Confirm material sourcing in chat.'
+        : 'Confirm tools and materials in chat before hire.');
+    const travelReadinessLabel = formatTravelReadinessLabel(
+      profile?.travelWillingness,
+    );
+    const activeJobsValue = Number(
+      stats?.jobsInProgress ?? profile?.successStats?.jobsInProgress ?? 0,
+    );
+    const responseRateValue = Number(
+      stats?.responseRate ?? profile?.responseRate ?? 0,
+    );
     const mobilePortfolioItems = (
       portfolio.length > 0 ? portfolio : [{ title: 'Project work' }]
     ).slice(0, 6);
@@ -2112,8 +2280,6 @@ function WorkerProfile({ workerId: workerIdProp }) {
       },
     ];
 
-    const effectiveBottomNavHeight = isAuthenticated ? BOTTOM_NAV_HEIGHT : 0;
-
     const handleMobilePortfolioScroll = (event) => {
       const target = event.currentTarget;
       const cardSpan = 172;
@@ -2134,8 +2300,8 @@ function WorkerProfile({ workerId: workerIdProp }) {
         sx={{
           pb: {
             xs: isAuthenticated
-              ? withBottomNavSafeArea(60)
-              : withSafeAreaBottom(60),
+              ? withBottomNavSafeArea(28)
+              : withSafeAreaBottom(28),
             md: 4,
           },
           fontFamily: dashboardFontFamily,
@@ -2216,7 +2382,9 @@ function WorkerProfile({ workerId: workerIdProp }) {
                     size="small"
                     icon={<VerifiedIcon sx={{ fontSize: 14 }} />}
                     label={
-                      profile.is_verified ? 'Verified' : 'Pending verification'
+                      profile.is_verified
+                        ? 'Verified by Kelmah'
+                        : 'Verification pending'
                     }
                     sx={{
                       bgcolor: alpha(accent, 0.14),
@@ -2257,6 +2425,12 @@ function WorkerProfile({ workerId: workerIdProp }) {
                     ({totalReviewsValue} reviews)
                   </Typography>
                 </Stack>
+                <Typography
+                  variant="caption"
+                  sx={{ color: textMuted, display: 'block', mt: 0.7 }}
+                >
+                  Verified status means Kelmah completed platform identity checks.
+                </Typography>
               </Box>
 
               <Stack direction="row" spacing={0.5}>
@@ -2335,6 +2509,46 @@ function WorkerProfile({ workerId: workerIdProp }) {
                 ))}
             </Stack>
 
+            <Box
+              sx={{
+                mt: 1.2,
+                p: 1,
+                borderRadius: 2,
+                border: `1px solid ${alpha(accent, 0.3)}`,
+                background: alpha(accent, 0.08),
+              }}
+            >
+              <Grid container spacing={0.75}>
+                <Grid item xs={6}>
+                  <Typography variant="caption" sx={{ color: textMuted }}>
+                    Hourly guide
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{ color: textPrimary, fontWeight: 700 }}
+                  >
+                    {priceLabel}
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="caption" sx={{ color: textMuted }}>
+                    Location
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{ color: textPrimary, fontWeight: 700 }}
+                  >
+                    {profileLocationLabel}
+                  </Typography>
+                </Grid>
+                <Grid item xs={12}>
+                  <Typography variant="caption" sx={{ color: textMuted }}>
+                    Availability updated {availabilityUpdatedLabel}
+                  </Typography>
+                </Grid>
+              </Grid>
+            </Box>
+
             <Stack
               direction="row"
               spacing={0.8}
@@ -2344,28 +2558,42 @@ function WorkerProfile({ workerId: workerIdProp }) {
             >
               {[
                 {
-                  label: 'About',
+                  label: 'Readiness',
+                  icon: <BusinessCenterIcon sx={{ fontSize: 15 }} />,
+                  ref: readinessSectionRef,
+                  section: 'readiness',
+                },
+                {
+                  label: 'Work Summary',
                   icon: <InfoIcon sx={{ fontSize: 15 }} />,
                   ref: aboutSectionRef,
+                  section: 'summary',
                 },
                 {
-                  label: 'Portfolio',
+                  label: 'Photos',
                   icon: <AutoAwesomeIcon sx={{ fontSize: 15 }} />,
                   ref: portfolioSectionRef,
+                  section: 'photos',
                 },
                 {
-                  label: 'Reviews',
+                  label: 'Feedback',
                   icon: <ReviewsIcon sx={{ fontSize: 15 }} />,
                   ref: reviewsSectionRef,
+                  section: 'feedback',
                 },
               ].map((jumpItem) => (
                 <Chip
                   key={jumpItem.label}
                   icon={jumpItem.icon}
                   label={jumpItem.label}
-                  onClick={() => scrollToSection(jumpItem.ref)}
+                  onClick={() =>
+                    scrollToSection(jumpItem.ref, jumpItem.section)
+                  }
                   sx={{
-                    bgcolor: alpha(accent, 0.1),
+                    bgcolor:
+                      lastVisitedSection === jumpItem.section
+                        ? alpha(accent, 0.22)
+                        : alpha(accent, 0.1),
                     color: accent,
                     border: `1px solid ${alpha(accent, 0.35)}`,
                     '& .MuiChip-icon': { color: accent },
@@ -2448,6 +2676,157 @@ function WorkerProfile({ workerId: workerIdProp }) {
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.24, delay: 0.02, ease: motionEase }}
+        >
+          <Paper
+            ref={readinessSectionRef}
+            elevation={0}
+            sx={{
+              mt: compactGap,
+              p: 1.5,
+              borderRadius: sectionRadius,
+              background: panelMuted,
+              border: `1px solid ${alpha(accent, 0.2)}`,
+            }}
+          >
+            <Typography sx={{ color: accent, fontWeight: 700, mb: 0.55 }}>
+              Hire Readiness
+            </Typography>
+            <Typography variant="caption" sx={{ color: textMuted }}>
+              Check these first so you can hire confidently in one pass.
+            </Typography>
+
+            <Grid container spacing={0.9} sx={{ mt: 0.35 }}>
+              {[
+                {
+                  label: 'Rate guide',
+                  value: priceLabel,
+                  icon: <PriceIcon sx={{ fontSize: 15 }} />,
+                },
+                {
+                  label: 'Reply speed',
+                  value: formatResponseSpeedLabel(responseTimeValue),
+                  icon: <MessageIcon sx={{ fontSize: 15 }} />,
+                },
+                {
+                  label: 'Current load',
+                  value:
+                    activeJobsValue > 0
+                      ? `${activeJobsValue} active job${activeJobsValue > 1 ? 's' : ''}`
+                      : 'Open for new work',
+                  icon: <WorkIcon sx={{ fontSize: 15 }} />,
+                },
+                {
+                  label: 'Response rate',
+                  value:
+                    responseRateValue > 0
+                      ? `${responseRateValue}%`
+                      : 'Not enough data',
+                  icon: <CollabIcon sx={{ fontSize: 15 }} />,
+                },
+              ].map((item) => (
+                <Grid item xs={6} key={`readiness-${item.label}`}>
+                  <Box
+                    sx={{
+                      minHeight: 70,
+                      borderRadius: 2,
+                      border: `1px solid ${alpha(accent, 0.24)}`,
+                      background: alpha(accent, 0.1),
+                      px: 1,
+                      py: 0.85,
+                    }}
+                  >
+                    <Stack direction="row" spacing={0.5} alignItems="center">
+                      <Box
+                        sx={{
+                          color: accent,
+                          display: 'flex',
+                          alignItems: 'center',
+                        }}
+                      >
+                        {item.icon}
+                      </Box>
+                      <Typography variant="caption" sx={{ color: textMuted }}>
+                        {item.label}
+                      </Typography>
+                    </Stack>
+                    <Typography
+                      variant="body2"
+                      sx={{ color: textPrimary, fontWeight: 700, mt: 0.35 }}
+                    >
+                      {item.value}
+                    </Typography>
+                  </Box>
+                </Grid>
+              ))}
+            </Grid>
+
+            <Stack spacing={0.8} sx={{ mt: 1.15 }}>
+              {[
+                {
+                  label: 'Service area',
+                  value: serviceAreaLabel,
+                  icon: <LocationIcon sx={{ fontSize: 17 }} />,
+                },
+                {
+                  label: 'Language support',
+                  value: languageSupportLabel,
+                  icon: <WebsiteIcon sx={{ fontSize: 17 }} />,
+                },
+                {
+                  label: 'Tools & materials',
+                  value: materialsResponsibilityLabel,
+                  icon: <BuildIcon sx={{ fontSize: 17 }} />,
+                },
+                {
+                  label: 'Travel readiness',
+                  value: travelReadinessLabel,
+                  icon: <TimeIcon sx={{ fontSize: 17 }} />,
+                },
+              ].map((item) => (
+                <Box
+                  key={`readiness-row-${item.label}`}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: 0.9,
+                    borderRadius: 2,
+                    border: `1px solid ${alpha(accent, 0.22)}`,
+                    background: alpha(accent, 0.06),
+                    px: 1,
+                    py: 0.8,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      color: accent,
+                      display: 'flex',
+                      alignItems: 'center',
+                      pt: 0.1,
+                    }}
+                  >
+                    {item.icon}
+                  </Box>
+                  <Box sx={{ minWidth: 0 }}>
+                    <Typography variant="caption" sx={{ color: textMuted }}>
+                      {item.label}
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{ color: textPrimary, fontWeight: 700, lineHeight: 1.35 }}
+                    >
+                      {item.value}
+                    </Typography>
+                  </Box>
+                </Box>
+              ))}
+            </Stack>
+          </Paper>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.24, delay: 0.03, ease: motionEase }}
         >
           <Paper
@@ -2461,13 +2840,20 @@ function WorkerProfile({ workerId: workerIdProp }) {
               border: `1px solid ${alpha(accent, 0.2)}`,
             }}
           >
-            <Typography sx={{ color: accent, fontWeight: 700, mb: 0.7 }}>
-              About Me
+            <Typography sx={{ color: accent, fontWeight: 700, mb: 0.6 }}>
+              Work Summary
             </Typography>
             <Typography
               sx={{ color: textPrimary, fontSize: 14, lineHeight: 1.55 }}
             >
               {aboutPreview}
+            </Typography>
+            <Typography
+              variant="caption"
+              sx={{ color: textMuted, display: 'block', mt: 0.6 }}
+            >
+              Include job location, budget, and deadline when sending your first
+              message.
             </Typography>
             {canTruncate && (
               <Button
@@ -2507,8 +2893,11 @@ function WorkerProfile({ workerId: workerIdProp }) {
               border: `1px solid ${alpha(accent, 0.2)}`,
             }}
           >
-            <Typography sx={{ color: accent, fontWeight: 700, mb: 1.1 }}>
-              Portfolio
+            <Typography sx={{ color: accent, fontWeight: 700, mb: 0.55 }}>
+              Recent Work Photos
+            </Typography>
+            <Typography variant="caption" sx={{ color: textMuted, mb: 1, display: 'block' }}>
+              Tap a photo to open full details before requesting hire.
             </Typography>
             <Box
               sx={{
@@ -2670,8 +3059,11 @@ function WorkerProfile({ workerId: workerIdProp }) {
               border: `1px solid ${alpha(accent, 0.2)}`,
             }}
           >
-            <Typography sx={{ color: accent, fontWeight: 700, mb: 1.1 }}>
-              Reviews
+            <Typography sx={{ color: accent, fontWeight: 700, mb: 0.55 }}>
+              Client Feedback
+            </Typography>
+            <Typography variant="caption" sx={{ color: textMuted, mb: 1, display: 'block' }}>
+              Recent comments help you confirm quality and communication style.
             </Typography>
 
             {compactReviews.length > 0 ? (
@@ -2764,15 +3156,15 @@ function WorkerProfile({ workerId: workerIdProp }) {
           </Paper>
         </motion.div>
 
-        <Box
+        <Paper
+          elevation={0}
           sx={{
-            position: 'fixed',
-            left: 12,
-            right: 12,
+            position: 'sticky',
+            mt: compactGap,
             bottom: isAuthenticated
-              ? withBottomNavSafeArea(12)
-              : withSafeAreaBottom(12),
-            zIndex: theme.zIndex.modal - 2,
+              ? withBottomNavSafeArea(8)
+              : withSafeAreaBottom(8),
+            zIndex: theme.zIndex.sticky,
             p: 1,
             borderRadius: 3,
             background: alpha('#0E1014', 0.96),
@@ -2837,10 +3229,18 @@ function WorkerProfile({ workerId: workerIdProp }) {
                 transition: 'transform 120ms ease, background-color 180ms ease',
               }}
             >
-              MESSAGE
+              {secondaryActionLabel}
             </Button>
+            {!isOwner && (
+              <Typography
+                variant="caption"
+                sx={{ color: alpha('#fff', 0.72), textAlign: 'center' }}
+              >
+                Request hire opens the contract flow before payment.
+              </Typography>
+            )}
           </Stack>
-        </Box>
+        </Paper>
       </Box>
     );
   };

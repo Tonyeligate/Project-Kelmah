@@ -727,6 +727,7 @@ const MessagingPage = () => {
   const [isSending, setIsSending] = useState(false);
   const [draftRestoreNotice, setDraftRestoreNotice] = useState('');
   const [showScrollToLatest, setShowScrollToLatest] = useState(false);
+  const [lastConversationSyncAt, setLastConversationSyncAt] = useState(null);
   const [draftsByConversation, setDraftsByConversation] = useState(() => {
     if (typeof window === 'undefined') {
       return {};
@@ -793,6 +794,23 @@ const MessagingPage = () => {
     [user?.role],
   );
 
+  const selectedDraftEntry = useMemo(
+    () =>
+      selectedConversationKey
+        ? getDraftEntry(draftsByConversation[selectedConversationKey])
+        : null,
+    [draftsByConversation, selectedConversationKey],
+  );
+  const selectedDraftText = selectedDraftEntry?.text || '';
+  const hasSelectedDraft = selectedDraftText.trim().length > 0;
+  const selectedDraftSavedLabel = hasSelectedDraft
+    ? formatDraftSavedLabel(selectedDraftEntry?.updatedAt)
+    : '';
+  const selectedDraftPreview = hasSelectedDraft
+    ? selectedDraftText.length > 180
+      ? `${selectedDraftText.slice(0, 180).trim()}...`
+      : selectedDraftText
+    : '';
   const messageCharacterCount = messageText.length;
   const composerHintText = useMemo(() => {
     if (isMobile) {
@@ -820,23 +838,6 @@ const MessagingPage = () => {
     selectedDraftSavedLabel,
     selectedFiles.length,
   ]);
-  const selectedDraftEntry = useMemo(
-    () =>
-      selectedConversationKey
-        ? getDraftEntry(draftsByConversation[selectedConversationKey])
-        : null,
-    [draftsByConversation, selectedConversationKey],
-  );
-  const selectedDraftText = selectedDraftEntry?.text || '';
-  const hasSelectedDraft = selectedDraftText.trim().length > 0;
-  const selectedDraftSavedLabel = hasSelectedDraft
-    ? formatDraftSavedLabel(selectedDraftEntry?.updatedAt)
-    : '';
-  const selectedDraftPreview = hasSelectedDraft
-    ? selectedDraftText.length > 180
-      ? `${selectedDraftText.slice(0, 180).trim()}...`
-      : selectedDraftText
-    : '';
   const unsentDraftCount = useMemo(
     () =>
       Object.values(draftsByConversation).filter((entry) =>
@@ -876,6 +877,24 @@ const MessagingPage = () => {
       return hasDraft ? count + 1 : count;
     }, 0);
   }, [currentUserId, draftsByConversation, safeConversations]);
+
+  const lastConversationSyncLabel = useMemo(() => {
+    if (!lastConversationSyncAt) {
+      return 'Sync pending';
+    }
+
+    return `Updated ${formatDistanceToNow(lastConversationSyncAt, { addSuffix: true })}`;
+  }, [lastConversationSyncAt]);
+
+  useEffect(() => {
+    if (loadingConversations) {
+      return;
+    }
+
+    if (Array.isArray(conversations)) {
+      setLastConversationSyncAt(Date.now());
+    }
+  }, [conversations, loadingConversations]);
 
   const handleDiscardSelectedDraft = useCallback(() => {
     if (!selectedConversationKey) {
@@ -1718,6 +1737,12 @@ const MessagingPage = () => {
             ? `Showing ${filteredConversations.length} of ${totalConversationCount} conversations | ${activeFilterLabel}`
             : `Showing all ${totalConversationCount} conversations`}
         </Typography>
+        <Typography
+          variant="caption"
+          sx={{ display: 'block', mt: 0.15, color: CHAT_TEXT_SECONDARY }}
+        >
+          {isConnected ? lastConversationSyncLabel : 'Connection unstable'}
+        </Typography>
       </Box>
 
       {(realtimeIssue || !isConnected) && (
@@ -2039,6 +2064,15 @@ const MessagingPage = () => {
                   }
                 >
                   {deepLinkError}
+                  {lastConversationSyncAt && (
+                    <Typography
+                      component="span"
+                      variant="caption"
+                      sx={{ display: 'block', mt: 0.5 }}
+                    >
+                      Last successful inbox sync: {lastConversationSyncLabel}
+                    </Typography>
+                  )}
                 </Alert>
               </Box>
             ) : (

@@ -44,6 +44,18 @@ class RouteErrorBoundary extends React.Component {
     this.setState({ hasError: false, error: null });
   };
 
+  hardReload = () => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    try {
+      window.location.reload();
+    } catch {
+      window.location.assign(window.location.href);
+    }
+  };
+
   navigateToDashboard = () => {
     if (typeof window === 'undefined') {
       return;
@@ -69,6 +81,8 @@ class RouteErrorBoundary extends React.Component {
 
   render() {
     if (this.state.hasError) {
+      const chunkFailure = this.isChunkLoadFailure();
+
       return (
         <Box
           display="flex"
@@ -90,15 +104,17 @@ class RouteErrorBoundary extends React.Component {
           >
             <ErrorIcon color="error" sx={{ fontSize: 48, mb: 2 }} />
             <Typography variant="h6" gutterBottom>
-              Something went wrong
+              {chunkFailure ? 'Unable to load this screen' : 'Something went wrong'}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              {this.props.label
-                ? `The "${this.props.label}" section encountered an error.`
-                : 'This section encountered an unexpected error.'}{' '}
+              {chunkFailure
+                ? 'A temporary app loading issue occurred. Retry first. If it persists, reload the app to fetch the latest files.'
+                : this.props.label
+                  ? `The "${this.props.label}" section encountered an error.`
+                  : 'This section encountered an unexpected error.'}{' '}
               You can try again or go back to the dashboard.
             </Typography>
-            <Box display="flex" gap={2} justifyContent="center">
+            <Box display="flex" gap={2} justifyContent="center" flexWrap="wrap">
               <Button
                 variant="contained"
                 onClick={this.handleReset}
@@ -110,7 +126,39 @@ class RouteErrorBoundary extends React.Component {
                   },
                 }}
               >
-                {this.isChunkLoadFailure() ? 'Retry Route' : 'Try Again'}
+                {chunkFailure ? 'Retry Route' : 'Try Again'}
+              </Button>
+              {chunkFailure && (
+                <Button
+                  variant="outlined"
+                  onClick={this.hardReload}
+                  sx={{
+                    minHeight: 44,
+                    '&:focus-visible': {
+                      outline: '3px solid currentColor',
+                      outlineOffset: 2,
+                    },
+                  }}
+                >
+                  Reload App
+                </Button>
+              )}
+              <Button
+                variant="text"
+                onClick={() => {
+                  if (typeof window !== 'undefined') {
+                    window.location.assign('/help');
+                  }
+                }}
+                sx={{
+                  minHeight: 44,
+                  '&:focus-visible': {
+                    outline: '3px solid currentColor',
+                    outlineOffset: 2,
+                  },
+                }}
+              >
+                Help
               </Button>
               <Button
                 variant="outlined"

@@ -59,11 +59,12 @@ import { alpha, useTheme } from '@mui/material/styles';
 import {
   Z_INDEX,
   STICKY_CTA_HEIGHT,
-  BOTTOM_NAV_HEIGHT,
 } from '../../../constants/layout';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 import { formatGhanaCurrency } from '@/utils/formatters';
 import PageCanvas from '@/modules/common/components/PageCanvas';
+import useKeyboardVisible from '../../../hooks/useKeyboardVisible';
+import { withBottomNavSafeArea } from '@/utils/safeArea';
 const steps = [
   { label: 'Job Details', icon: <Work /> },
   { label: 'Description & Skills', icon: <Description /> },
@@ -74,6 +75,72 @@ const steps = [
 
 const DESCRIPTION_MIN_CHARS = 120;
 const DESCRIPTION_MAX_CHARS = 1200;
+const JOB_POST_DRAFT_STORAGE_PREFIX = 'kelmah.hirer.job-posting.draft.v1';
+const JOB_CATEGORY_OPTIONS = [
+  'Plumbing',
+  'Electrical',
+  'Carpentry',
+  'Masonry',
+  'Welding',
+  'Painting',
+  'HVAC',
+  'Roofing',
+  'Tiling',
+  'Interior Design',
+  'Landscaping',
+];
+const STEP_COACHING = [
+  {
+    title: 'Step 1 tip',
+    body: 'Use the exact task name workers search for, then pick the closest trade category.',
+  },
+  {
+    title: 'Step 2 tip',
+    body: 'Explain the problem, expected finish, and safety needs in plain words.',
+  },
+  {
+    title: 'Step 3 tip',
+    body: 'Set a realistic budget range so serious workers can apply faster.',
+  },
+  {
+    title: 'Step 4 tip',
+    body: 'Add a landmark or city and choose who should see this posting.',
+  },
+  {
+    title: 'Step 5 tip',
+    body: 'Review the checklist before publishing to avoid delays from incomplete details.',
+  },
+];
+
+const formatDraftSavedTime = (timestamp) => {
+  if (!timestamp) {
+    return 'just now';
+  }
+
+  const date = new Date(timestamp);
+  if (Number.isNaN(date.getTime())) {
+    return 'recently';
+  }
+
+  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+};
+
+const createDefaultFormData = () => ({
+  title: '',
+  category: '',
+  skills: [],
+  description: '',
+  requirements: '',
+  paymentType: 'hourly',
+  budget: { min: '', max: '', fixed: '' },
+  duration: '',
+  locationType: 'remote',
+  location: '',
+  visibility: 'public',
+  biddingEnabled: false,
+  biddingMaxBidders: 5,
+  coverImage: '',
+});
 
 const toSafeText = (value = '') => {
   if (typeof value === 'string') return value;
@@ -217,34 +284,26 @@ const JobPostingPage = () => {
   const dispatch = useDispatch();
   const theme = useTheme();
   const isMobile = useBreakpointDown('md');
+  const { isKeyboardVisible } = useKeyboardVisible();
   const { jobId } = useParams();
   const isEditMode = Boolean(jobId);
+  const localDraftStorageKey = isEditMode
+    ? null
+    : `${JOB_POST_DRAFT_STORAGE_PREFIX}:new`;
   const hirerJobsByStatus = useSelector((state) => state.hirer?.jobs);
   const isLoading = useSelector(selectHirerLoading('jobs'));
   const error = useSelector(selectHirerError('jobs'));
   const [activeStep, setActiveStep] = useState(0);
-  const [formData, setFormData] = useState({
-    title: '',
-    category: '',
-    skills: [],
-    description: '',
-    requirements: '',
-    paymentType: 'hourly',
-    budget: { min: '', max: '', fixed: '' },
-    duration: '',
-    locationType: 'remote',
-    location: '',
-    visibility: 'public',
-    biddingEnabled: false,
-    biddingMaxBidders: 5,
-    coverImage: '',
-  });
+  const [formData, setFormData] = useState(createDefaultFormData);
   const [coverImagePreview, setCoverImagePreview] = useState('');
   const [coverImageFile, setCoverImageFile] = useState(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
   const [touchedFields, setTouchedFields] = useState({});
   const [stepAttempts, setStepAttempts] = useState({});
+  const [lastDraftSavedAt, setLastDraftSavedAt] = useState(null);
+  const [draftRestored, setDraftRestored] = useState(false);
+  const [categoryQuery, setCategoryQuery] = useState('');
 
   useEffect(() => {
     if (!isEditMode) return;
@@ -307,6 +366,139 @@ const JobPostingPage = () => {
       visibility: existing?.visibility || 'public',
     }));
   }, [isEditMode, hirerJobsByStatus, jobId]);
+
+  useEffect(() => {
+    if (!localDraftStorageKey) {
+      return;
+    }
+
+    try {
+      const stored = window.localStorage.getItem(localDraftStorageKey);
+      if (!stored) {
+        return;
+      }
+
+      const parsed = JSON.parse(stored);
+      if (parsed?.formData && typeof parsed.formData === 'object') {
+        setFormData((prev) => ({
+          ...prev,
+          ...parsed.formData,
+          skills: Array.isArray(parsed.formData.skills)
+            ? parsed.formData.skills
+            : prev.skills,
+          budget: {
+            ...prev.budget,
+            ...(parsed.formData.budget || {}),
+          },
+        }));
+      }
+
+      if (typeof parsed?.activeStep === 'number') {
+        setActiveStep(Math.max(0, Math.min(parsed.activeStep, steps.length - 1)));
+      }
+
+      if (parsed?.savedAt) {
+        setLastDraftSavedAt(parsed.savedAt);
+      }
+
+      setDraftRestored(true);
+    } catch {
+      // Ignore local draft parsing issues silently.
+    }
+  }, [localDraftStorageKey]);
+
+  useEffect(() => {
+    if (!localDraftStorageKey || submitSuccess) {
+      return;
+    }
+
+    try {
+      const savedAt = Date.now();
+      const payload = {
+        formData,
+        activeStep,
+        savedAt,
+      };
+      window.localStorage.setItem(localDraftStorageKey, JSON.stringify(payload));
+      setLastDraftSavedAt(savedAt);
+    } catch {
+      // Ignore local storage write failures.
+    }
+  }, [activeStep, formData, localDraftStorageKey, submitSuccess]);
+
+  const hasUnsavedChanges = useMemo(() => {
+    if (isEditMode || submitSuccess) {
+      return false;
+    }
+
+    return Boolean(
+      normalizeDescription(formData.title) ||
+        formData.category ||
+        formData.skills.length > 0 ||
+        normalizeDescription(formData.description) ||
+        normalizeDescription(formData.requirements) ||
+        normalizeDescription(formData.duration) ||
+        normalizeDescription(formData.location) ||
+        String(formData.budget.min || '').trim() ||
+        String(formData.budget.max || '').trim() ||
+        String(formData.budget.fixed || '').trim() ||
+        formData.locationType !== 'remote' ||
+        formData.visibility !== 'public' ||
+        formData.biddingEnabled ||
+        Boolean(coverImageFile) ||
+        Boolean(coverImagePreview) ||
+        activeStep > 0,
+    );
+  }, [
+    activeStep,
+    coverImageFile,
+    coverImagePreview,
+    formData,
+    isEditMode,
+    submitSuccess,
+  ]);
+
+  useEffect(() => {
+    if (!hasUnsavedChanges) {
+      return;
+    }
+
+    const handleBeforeUnload = (event) => {
+      event.preventDefault();
+      event.returnValue = '';
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasUnsavedChanges]);
+
+  useEffect(() => {
+    if (!draftRestored) {
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      setDraftRestored(false);
+    }, 6000);
+
+    return () => clearTimeout(timeoutId);
+  }, [draftRestored]);
+
+  const clearLocalDraft = () => {
+    if (!localDraftStorageKey) {
+      return;
+    }
+
+    try {
+      window.localStorage.removeItem(localDraftStorageKey);
+    } catch {
+      // Ignore local storage cleanup failures.
+    }
+
+    setLastDraftSavedAt(null);
+    setDraftRestored(false);
+  };
+
   const previewSnapshot = useMemo(() => {
     const normalized = normalizeDescription(formData.description || '');
     const cleanSkills = Array.isArray(formData.skills)
@@ -357,6 +549,94 @@ const JobPostingPage = () => {
     100,
     Math.round((descriptionLength / DESCRIPTION_MIN_CHARS) * 100),
   );
+  const normalizedCategoryQuery = categoryQuery.trim().toLowerCase();
+  const filteredCategoryOptions = useMemo(() => {
+    if (!normalizedCategoryQuery) {
+      return JOB_CATEGORY_OPTIONS;
+    }
+
+    return JOB_CATEGORY_OPTIONS.filter((category) =>
+      category.toLowerCase().includes(normalizedCategoryQuery),
+    );
+  }, [normalizedCategoryQuery]);
+
+  const categoryOptionsForMenu = useMemo(() => {
+    if (!formData.category) {
+      return filteredCategoryOptions;
+    }
+
+    if (filteredCategoryOptions.includes(formData.category)) {
+      return filteredCategoryOptions;
+    }
+
+    return [formData.category, ...filteredCategoryOptions];
+  }, [filteredCategoryOptions, formData.category]);
+
+  const publishReadinessChecks = useMemo(() => {
+    const titleIsClear = normalizeDescription(formData.title).length >= 12;
+    const hasCategory = Boolean(formData.category);
+    const hasDescription =
+      descriptionLength >= DESCRIPTION_MIN_CHARS && !descriptionTooLong;
+    const budgetReady =
+      formData.paymentType === 'hourly'
+        ? Number(formData.budget.min || 0) > 0 &&
+          Number(formData.budget.max || 0) >= Number(formData.budget.min || 0)
+        : Number(formData.budget.fixed || 0) > 0;
+    const hasDuration = Boolean(String(formData.duration || '').trim());
+    const hasLocation = Boolean(normalizeDescription(formData.location));
+    const hasRequirementsContext =
+      formData.skills.length > 0 ||
+      Boolean(normalizeDescription(formData.requirements || ''));
+
+    return [
+      {
+        key: 'title',
+        label: 'Job title is clear and specific',
+        passed: titleIsClear,
+      },
+      {
+        key: 'category',
+        label: 'Trade category is selected',
+        passed: hasCategory,
+      },
+      {
+        key: 'description',
+        label: 'Description has enough detail for workers',
+        passed: hasDescription,
+      },
+      {
+        key: 'budget',
+        label: 'Budget and duration are set',
+        passed: budgetReady && hasDuration,
+      },
+      {
+        key: 'location',
+        label: 'Location and visibility are confirmed',
+        passed: hasLocation,
+      },
+      {
+        key: 'requirements',
+        label: 'Skills or requirements are included',
+        passed: hasRequirementsContext,
+      },
+    ];
+  }, [
+    descriptionLength,
+    descriptionTooLong,
+    formData.budget.fixed,
+    formData.budget.max,
+    formData.budget.min,
+    formData.category,
+    formData.duration,
+    formData.location,
+    formData.paymentType,
+    formData.requirements,
+    formData.skills.length,
+    formData.title,
+  ]);
+  const incompletePublishChecksCount = publishReadinessChecks.filter(
+    (check) => !check.passed,
+  ).length;
 
   const getFieldError = (field, data = formData) => {
     switch (field) {
@@ -707,7 +987,10 @@ const JobPostingPage = () => {
 
     dispatch(action)
       .unwrap()
-      .then(() => setSubmitSuccess(true))
+      .then(() => {
+        setSubmitSuccess(true);
+        clearLocalDraft();
+      })
       .catch((err) => {
         setFieldErrors((prev) => ({
           ...prev,
@@ -726,6 +1009,8 @@ const JobPostingPage = () => {
   );
   const showStepErrors =
     (stepAttempts[activeStep] || stepHasTouchedField) && hasCurrentStepErrors;
+  const stepProgressPercent =
+    steps.length > 1 ? Math.round((activeStep / (steps.length - 1)) * 100) : 0;
 
   if (submitSuccess) {
     return (
@@ -755,23 +1040,12 @@ const JobPostingPage = () => {
             setSubmitSuccess(false);
             setActiveStep(0);
             setCoverImagePreview('');
+            setCoverImageFile(null);
             setFieldErrors({});
-            setFormData({
-              title: '',
-              category: '',
-              skills: [],
-              description: '',
-              requirements: '',
-              paymentType: 'hourly',
-              budget: { min: '', max: '', fixed: '' },
-              duration: '',
-              locationType: 'remote',
-              location: '',
-              visibility: 'public',
-              coverImage: '',
-              biddingEnabled: false,
-              biddingMaxBidders: 5,
-            });
+            setTouchedFields({});
+            setStepAttempts({});
+            setFormData(createDefaultFormData());
+            clearLocalDraft();
           }}
         >
           Post Another Job
@@ -802,23 +1076,35 @@ const JobPostingPage = () => {
                 'Keep it short and specific so workers understand the task quickly'
               }
             />
+            <TextField
+              label="Find Trade Category"
+              placeholder="Type plumbing, electrical, carpentry..."
+              value={categoryQuery}
+              onChange={(event) => setCategoryQuery(event.target.value)}
+              fullWidth
+              margin="normal"
+              helperText={
+                normalizedCategoryQuery
+                  ? `${filteredCategoryOptions.length} matching categories`
+                  : 'Type a keyword to filter categories faster'
+              }
+            />
             <FormControl
               fullWidth
               margin="normal"
               error={Boolean(touchedFields.category && fieldErrors.category)}
               sx={REQUIRED_LABEL_SX}
             >
-              <InputLabel>Category</InputLabel>
+              <InputLabel id="job-category-label" shrink={Boolean(formData.category)}>
+                Category
+              </InputLabel>
               <Select
+                labelId="job-category-label"
                 name="category"
                 value={formData.category}
                 label="Category"
                 onChange={handleChange}
                 onBlur={() => markFieldTouched('category')}
-                displayEmpty
-                renderValue={(selected) =>
-                  selected ? selected : 'Select a category'
-                }
                 sx={{
                   '& .MuiSelect-select.Mui-disabled': {
                     color: 'text.disabled',
@@ -833,27 +1119,22 @@ const JobPostingPage = () => {
                 <MenuItem value="" disabled>
                   Select a category
                 </MenuItem>
-                {[
-                  'Plumbing',
-                  'Electrical',
-                  'Carpentry',
-                  'Masonry',
-                  'Welding',
-                  'Painting',
-                  'HVAC',
-                  'Roofing',
-                  'Tiling',
-                  'Interior Design',
-                  'Landscaping',
-                ].map((cat) => (
+                {categoryOptionsForMenu.map((cat) => (
                   <MenuItem key={cat} value={cat}>
                     {cat}
                   </MenuItem>
                 ))}
+                {categoryOptionsForMenu.length === 0 && (
+                  <MenuItem value="__no-category-match" disabled>
+                    No category matches "{categoryQuery.trim()}"
+                  </MenuItem>
+                )}
               </Select>
               <FormHelperText>
                 {(touchedFields.category && fieldErrors.category) ||
-                  'Choose the main trade for this work'}
+                  (normalizedCategoryQuery
+                    ? 'Pick the closest trade match from the filtered list'
+                    : 'Choose the main trade for this work')}
               </FormHelperText>
             </FormControl>
 
@@ -1302,6 +1583,46 @@ const JobPostingPage = () => {
             <Typography variant="h6" gutterBottom>
               Review & Publish
             </Typography>
+            <Paper
+              variant="outlined"
+              sx={{
+                p: 2,
+                mb: 2,
+                backgroundColor: alpha(theme.palette.info.main, 0.04),
+              }}
+            >
+              <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1 }}>
+                Confidence Checklist
+              </Typography>
+              <Box component="ul" sx={{ m: 0, p: 0, listStyle: 'none' }}>
+                {publishReadinessChecks.map((check) => (
+                  <Box
+                    component="li"
+                    key={check.key}
+                    sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.5 }}
+                  >
+                    {check.passed ? (
+                      <CheckCircle color="success" sx={{ fontSize: 18 }} />
+                    ) : (
+                      <Close color="error" sx={{ fontSize: 18 }} />
+                    )}
+                    <Typography variant="body2">{check.label}</Typography>
+                  </Box>
+                ))}
+              </Box>
+              {incompletePublishChecksCount > 0 && (
+                <Alert severity="warning" sx={{ mt: 1.5, mb: 0 }}>
+                  Complete {incompletePublishChecksCount} more checklist
+                  {incompletePublishChecksCount > 1 ? ' items' : ' item'} to
+                  improve matching speed after publish.
+                </Alert>
+              )}
+            </Paper>
+            <Alert severity="info" sx={{ mb: 2 }}>
+              Kelmah reviews posts for safety and clarity before broad worker
+              distribution. Most approved jobs receive the first worker response
+              within 10-30 minutes during active hours.
+            </Alert>
             <JobPreview snapshot={previewSnapshot} />
           </>
         );
@@ -1329,6 +1650,34 @@ const JobPostingPage = () => {
             {error}
           </Alert>
         )}
+        {draftRestored && !isEditMode && (
+          <Alert
+            severity="info"
+            sx={{ mb: 2 }}
+            onClose={() => setDraftRestored(false)}
+            action={
+              <Button color="inherit" size="small" onClick={clearLocalDraft}>
+                Clear Draft
+              </Button>
+            }
+          >
+            Restored your unfinished job draft from this device.
+          </Alert>
+        )}
+        {!isEditMode && lastDraftSavedAt && hasUnsavedChanges && (
+          <Alert
+            severity="success"
+            icon={false}
+            sx={{ mb: 2, py: 0.5 }}
+            action={
+              <Button color="inherit" size="small" onClick={clearLocalDraft}>
+                Remove Local Draft
+              </Button>
+            }
+          >
+            Draft auto-saved at {formatDraftSavedTime(lastDraftSavedAt)}.
+          </Alert>
+        )}
         <Helmet>
           <title>{isEditMode ? 'Edit Job' : 'Post a Job'} | Kelmah</title>
         </Helmet>
@@ -1349,26 +1698,48 @@ const JobPostingPage = () => {
           )}
         </Box>
 
-        <Stepper
-          activeStep={activeStep}
-          orientation={isMobile ? 'vertical' : 'horizontal'}
-          sx={{
-            mb: { xs: 2, md: 4 },
-            '& .MuiStepLabel-label': {
-              fontSize: { xs: '0.75rem', md: '0.875rem' },
-            },
-          }}
-        >
-          {steps.map((step) => (
-            <Step key={step.label}>
-              <StepLabel icon={step.icon}>{step.label}</StepLabel>
-            </Step>
-          ))}
-        </Stepper>
+        {isMobile ? (
+          <Paper sx={{ p: 1.5, mb: 2 }}>
+            <Typography variant="caption" color="text.secondary">
+              Step {activeStep + 1} of {steps.length}
+            </Typography>
+            <Typography variant="subtitle2" sx={{ mt: 0.35, mb: 0.9 }}>
+              {steps[activeStep]?.label}
+            </Typography>
+            <LinearProgress variant="determinate" value={stepProgressPercent} />
+          </Paper>
+        ) : (
+          <Stepper
+            activeStep={activeStep}
+            orientation="horizontal"
+            sx={{
+              mb: { xs: 2, md: 4 },
+              '& .MuiStepLabel-label': {
+                fontSize: { xs: '0.75rem', md: '0.875rem' },
+              },
+            }}
+          >
+            {steps.map((step) => (
+              <Step key={step.label}>
+                <StepLabel icon={step.icon}>{step.label}</StepLabel>
+              </Step>
+            ))}
+          </Stepper>
+        )}
 
         <Grid container spacing={3}>
           <Grid item xs={12} md={8}>
             <Paper sx={{ p: { xs: 2, md: 3 }, mb: 3 }}>
+              {!!STEP_COACHING[activeStep] && (
+                <Alert severity="info" icon={false} sx={{ mb: 2, py: 0.7 }}>
+                  <Typography variant="subtitle2" fontWeight={700}>
+                    {STEP_COACHING[activeStep].title}
+                  </Typography>
+                  <Typography variant="body2">
+                    {STEP_COACHING[activeStep].body}
+                  </Typography>
+                </Alert>
+              )}
               {showStepErrors && (
                 <Alert severity="error" sx={{ mb: 2 }}>
                   <Typography variant="subtitle2" fontWeight={600} gutterBottom>
@@ -1411,7 +1782,7 @@ const JobPostingPage = () => {
           </Alert>
         )}
 
-        {activeStep !== 5 && (
+        {!isMobile && activeStep !== 5 && (
           <Box
             sx={{
               display: 'flex',
@@ -1483,11 +1854,11 @@ const JobPostingPage = () => {
         )}
 
         {/* Sticky bottom action bar for mobile */}
-        {isMobile && activeStep !== 5 && (
+        {isMobile && activeStep !== 5 && !isKeyboardVisible && (
           <Box
             sx={{
               position: 'fixed',
-              bottom: { xs: `${BOTTOM_NAV_HEIGHT}px`, md: 0 },
+              bottom: { xs: withBottomNavSafeArea(0), md: 0 },
               left: 0,
               right: 0,
               zIndex: Z_INDEX.stickyCta,
@@ -1512,7 +1883,16 @@ const JobPostingPage = () => {
               Back
             </Button>
             {activeStep === steps.length - 1 ? (
-              <Button
+              <>
+                <Button
+                  variant="outlined"
+                  onClick={() => handleSubmit(true)}
+                  disabled={isLoading}
+                  sx={{ minHeight: 44, flex: 1 }}
+                >
+                  Save Draft
+                </Button>
+                <Button
                 variant="contained"
                 onClick={() => handleSubmit(false)}
                 endIcon={<Publish />}
@@ -1528,6 +1908,7 @@ const JobPostingPage = () => {
                   'Post Job'
                 )}
               </Button>
+              </>
             ) : (
               <Button
                 variant="contained"

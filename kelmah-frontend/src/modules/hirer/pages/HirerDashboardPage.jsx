@@ -63,7 +63,7 @@ import {
 import RecentActivityFeed from '../components/RecentActivityFeed';
 import dashboardService from '../../dashboard/services/dashboardService';
 import { useVisibilityPolling } from '../../../hooks/useVisibilityPolling';
-import { TOUCH_TARGET_MIN, Z_INDEX } from '../../../constants/layout';
+import { TOUCH_TARGET_MIN } from '../../../constants/layout';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 import { formatGhanaCurrency } from '@/utils/formatters';
 import PageCanvas from '@/modules/common/components/PageCanvas';
@@ -76,6 +76,27 @@ const MAX_APPLICATION_HYDRATE_PER_CYCLE = 2;
 
 const isGatewayPressureStatus = (status) =>
   [429, 502, 503, 504].includes(status);
+
+const toValidTimestamp = (value) => {
+  if (!value) {
+    return null;
+  }
+
+  const parsed = new Date(value).getTime();
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
+const extractActiveJobDeadline = (job = {}) => {
+  const candidate =
+    job?.deadline ||
+    job?.dueDate ||
+    job?.expectedCompletionDate ||
+    job?.timeline?.deadline ||
+    job?.timeline?.endDate ||
+    null;
+
+  return toValidTimestamp(candidate);
+};
 
 const HirerDashboardPage = () => {
   const theme = useTheme();
@@ -92,6 +113,7 @@ const HirerDashboardPage = () => {
   const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true); // DASH-001: Auto-refresh state
   const [timeSinceRefresh, setTimeSinceRefresh] = useState('Just now'); // DASH-001: Human-readable time
   const [recentActivity, setRecentActivity] = useState([]);
+  const [partialLoadWarning, setPartialLoadWarning] = useState('');
 
   const timeoutRef = useRef(null);
   const fetchPromiseRef = useRef(null);
@@ -190,6 +212,7 @@ const HirerDashboardPage = () => {
         }
         setError(null);
         setLoadingTimeout(false);
+        setPartialLoadWarning('');
 
         clearLoadingTimeout();
         timeoutRef.current = setTimeout(() => {
@@ -210,15 +233,18 @@ const HirerDashboardPage = () => {
         }, DASHBOARD_LOADING_TIMEOUT_MS);
 
         let gatewayUnderPressure = false;
+        const failedModules = new Set();
 
-        const runDashboardRequest = async (requestFactory) => {
+        const runDashboardRequest = async (moduleLabel, requestFactory) => {
           if (gatewayUnderPressure) {
+            failedModules.add(moduleLabel);
             return null;
           }
 
           try {
             return await requestFactory();
           } catch (requestError) {
+            failedModules.add(moduleLabel);
             if (isGatewayPressureStatus(requestError?.response?.status)) {
               gatewayUnderPressure = true;
             }
@@ -226,19 +252,19 @@ const HirerDashboardPage = () => {
           }
         };
 
-        const profilePayload = await runDashboardRequest(() =>
+        const profilePayload = await runDashboardRequest('profile', () =>
           dispatch(fetchHirerProfile()).unwrap(),
         );
-        const activePayload = await runDashboardRequest(() =>
+        const activePayload = await runDashboardRequest('active jobs', () =>
           dispatch(fetchHirerJobs('active')).unwrap(),
         );
-        const completedPayload = await runDashboardRequest(() =>
+        const completedPayload = await runDashboardRequest('completed jobs', () =>
           dispatch(fetchHirerJobs('completed')).unwrap(),
         );
-        await runDashboardRequest(() =>
+        await runDashboardRequest('payments', () =>
           dispatch(fetchPaymentSummary()).unwrap(),
         );
-        const activityPayload = await runDashboardRequest(() =>
+        const activityPayload = await runDashboardRequest('activity feed', () =>
           dashboardService.getRecentActivity(1, 5),
         );
 
@@ -278,12 +304,24 @@ const HirerDashboardPage = () => {
                 }),
               ).unwrap();
             } catch (applicationError) {
+              failedModules.add('applications');
               if (isGatewayPressureStatus(applicationError?.response?.status)) {
                 gatewayUnderPressure = true;
                 break;
               }
             }
           }
+        }
+
+        const partialFailureList = Array.from(failedModules);
+        const hasAnySnapshot = Boolean(
+          profilePayload || activePayload || completedPayload || activityPayload,
+        );
+
+        if (partialFailureList.length > 0 && hasAnySnapshot) {
+          setPartialLoadWarning(
+            `Some sections are showing last available data (${partialFailureList.slice(0, 3).join(', ')}).`,
+          );
         }
 
         if (!profilePayload && !activePayload && !completedPayload) {
@@ -298,6 +336,7 @@ const HirerDashboardPage = () => {
         }
         clearLoadingTimeout();
         setLoadingTimeout(false);
+        setPartialLoadWarning('');
         setError('Failed to load hirer data. Please try again.');
       } finally {
         if (isMountedRef.current && isInitialHydration) {
@@ -419,6 +458,237 @@ const HirerDashboardPage = () => {
     return 'Good Evening';
   };
 
+  const lastRefreshedClockLabel = useMemo(
+    () =>
+      new Date(lastRefreshed).toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
+    [lastRefreshed],
+  );
+
+  const overdueActiveJobsCount = useMemo(() => {
+    const now = Date.now();
+    return (Array.isArray(activeJobs) ? activeJobs : []).filter((job) => {
+      const deadline = extractActiveJobDeadline(job);
+      return Boolean(deadline && deadline < now);
+    }).length;
+  }, [activeJobs]);
+
+  const jobsWithoutApplicationsCount = useMemo(() => {
+    const records = applicationRecords || {};
+
+    return (Array.isArray(activeJobs) ? activeJobs : []).filter((job) => {
+      const jobId = job?.id || job?._id;
+      if (!jobId) {
+        return false;
+      }
+
+      const record = records[jobId];
+      if (!record) {
+        return true;
+      }
+
+      if (typeof record.total === 'number') {
+        return record.total <= 0;
+      }
+
+      if (record?.buckets && typeof record.buckets === 'object') {
+        const bucketTotal = Object.values(record.buckets).reduce(
+          (count, bucket) => count + (Array.isArray(bucket) ? bucket.length : 0),
+          0,
+        );
+        return bucketTotal <= 0;
+      }
+
+      return true;
+    }).length;
+  }, [activeJobs, applicationRecords]);
+
+  const todayPriorityQueue = useMemo(() => {
+    const items = [];
+
+    if (summaryData.pendingProposals > 0) {
+      items.push({
+        id: 'priority-applications',
+        title: `${summaryData.pendingProposals} pending application${summaryData.pendingProposals > 1 ? 's' : ''} to review`,
+        detail: 'Approve or decline quickly to keep workers engaged.',
+        ctaLabel: 'Review queue',
+        path: '/hirer/applications',
+        toneKey: 'warning',
+        icon: <ProposalIcon fontSize="small" />,
+      });
+    }
+
+    if (overdueActiveJobsCount > 0) {
+      items.push({
+        id: 'priority-overdue',
+        title: `${overdueActiveJobsCount} live job${overdueActiveJobsCount > 1 ? 's' : ''} may be overdue`,
+        detail: 'Update timelines so workers and applicants see accurate urgency.',
+        ctaLabel: 'Update jobs',
+        path: '/hirer/jobs?status=active',
+        toneKey: 'error',
+        icon: <WorkIcon fontSize="small" />,
+      });
+    }
+
+    if (summaryData.pendingPayments > 0) {
+      items.push({
+        id: 'priority-payments',
+        title: `${summaryData.pendingPayments} payment release${summaryData.pendingPayments > 1 ? 's' : ''} pending`,
+        detail: 'Clear pending payouts to maintain worker trust and response speed.',
+        ctaLabel: 'Open payments',
+        path: '/hirer/payments',
+        toneKey: 'info',
+        icon: <PaymentIcon fontSize="small" />,
+      });
+    }
+
+    if (jobsWithoutApplicationsCount > 0) {
+      items.push({
+        id: 'priority-no-applications',
+        title: `${jobsWithoutApplicationsCount} live job${jobsWithoutApplicationsCount > 1 ? 's' : ''} still without applicants`,
+        detail: 'Refresh title, scope, or budget to improve match visibility.',
+        ctaLabel: 'Improve listings',
+        path: '/hirer/jobs?status=active',
+        toneKey: 'secondary',
+        icon: <PeopleIcon fontSize="small" />,
+      });
+    }
+
+    if (items.length === 0) {
+      items.push({
+        id: 'priority-clear',
+        title: 'No urgent blockers in your queue',
+        detail: 'Post a new role or scout talent while momentum is high.',
+        ctaLabel: 'Post new job',
+        path: '/hirer/jobs/post',
+        toneKey: 'success',
+        icon: <CheckCircleIcon fontSize="small" />,
+      });
+    }
+
+    return items.slice(0, 3);
+  }, [
+    jobsWithoutApplicationsCount,
+    overdueActiveJobsCount,
+    summaryData.pendingPayments,
+    summaryData.pendingProposals,
+  ]);
+
+  const renderTodayPriorityStrip = useCallback(
+    (compact = false) => (
+      <Paper
+        elevation={0}
+        sx={{
+          mb: compact ? 1.3 : 2,
+          p: compact ? 1.1 : 1.4,
+          borderRadius: 2.5,
+          border: '1px solid',
+          borderColor: alpha(theme.palette.warning.main, 0.24),
+          background: `linear-gradient(145deg, ${alpha(
+            theme.palette.warning.main,
+            theme.palette.mode === 'dark' ? 0.16 : 0.08,
+          )} 0%, ${alpha(theme.palette.background.paper, 0.96)} 100%)`,
+        }}
+      >
+        <Stack spacing={compact ? 0.75 : 1}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: compact ? 'flex-start' : 'center',
+              justifyContent: 'space-between',
+              gap: 1,
+              flexWrap: 'wrap',
+            }}
+          >
+            <Box>
+              <Typography
+                variant={compact ? 'subtitle2' : 'subtitle1'}
+                sx={{ fontWeight: 800 }}
+              >
+                Today Priority Queue
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                Handle these items first to keep hiring decisions moving.
+              </Typography>
+            </Box>
+            <Chip
+              size="small"
+              variant="outlined"
+              label={`Last sync ${lastRefreshedClockLabel}`}
+              sx={{ fontWeight: 700 }}
+            />
+          </Box>
+
+          <Stack spacing={0.75}>
+            {todayPriorityQueue.map((item, index) => {
+              const tone =
+                theme.palette[item.toneKey]?.main || theme.palette.primary.main;
+
+              return (
+                <Box
+                  key={item.id}
+                  sx={{
+                    p: compact ? 0.8 : 1,
+                    borderRadius: 2,
+                    border: '1px solid',
+                    borderColor: alpha(tone, 0.3),
+                    backgroundColor: alpha(
+                      tone,
+                      theme.palette.mode === 'dark' ? 0.18 : 0.1,
+                    ),
+                  }}
+                >
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Box
+                      sx={{
+                        color: tone,
+                        display: 'flex',
+                        alignItems: 'center',
+                      }}
+                    >
+                      {item.icon}
+                    </Box>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Typography
+                        variant="body2"
+                        sx={{ fontWeight: 700, lineHeight: 1.3 }}
+                      >
+                        {item.title}
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ display: 'block', mt: 0.2 }}
+                      >
+                        {item.detail}
+                      </Typography>
+                    </Box>
+                    <Button
+                      size="small"
+                      variant={index === 0 ? 'contained' : 'outlined'}
+                      onClick={() => navigate(item.path)}
+                      sx={{
+                        minHeight: TOUCH_TARGET_MIN,
+                        textTransform: 'none',
+                        fontWeight: 700,
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {item.ctaLabel}
+                    </Button>
+                  </Stack>
+                </Box>
+              );
+            })}
+          </Stack>
+        </Stack>
+      </Paper>
+    ),
+    [lastRefreshedClockLabel, navigate, theme, todayPriorityQueue],
+  );
+
   // LC Portal-inspired Dashboard Overview - IMPROVED with empty state CTAs
   const renderDashboardOverview = () =>
     isMobile ? (
@@ -514,26 +784,35 @@ const HirerDashboardPage = () => {
                 '& .MuiChip-label': { px: 1.25 },
               }}
             />
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ display: 'block', mt: 0.7 }}
+            >
+              Last sync {lastRefreshedClockLabel}
+            </Typography>
           </Paper>
+
+          {renderTodayPriorityStrip(true)}
 
           <Grid container spacing={1.25} sx={{ mb: 2 }}>
             {[
               {
-                title: 'Pipeline',
+                title: 'Review queue',
                 value: summaryData.pendingProposals,
-                helper: 'Applications waiting for review',
+                helper: 'Pending applications to decide',
                 tone: theme.palette.warning.main,
               },
               {
-                title: 'Active jobs',
+                title: 'Live jobs',
                 value: summaryData.activeJobs,
-                helper: 'Open listings currently running',
+                helper: 'Open listings currently hiring',
                 tone: theme.palette.info.main,
               },
               {
-                title: 'Completed jobs',
+                title: 'Completed',
                 value: summaryData.completedJobs,
-                helper: 'Contracts delivered successfully',
+                helper: 'Jobs delivered successfully',
                 tone: theme.palette.success.main,
               },
             ].map((item, index) => (
@@ -625,7 +904,7 @@ const HirerDashboardPage = () => {
                   fontWeight: 700,
                 }}
               >
-                Applications
+                Review Queue
               </Button>
             </Grid>
             <Grid item xs={6}>
@@ -640,7 +919,7 @@ const HirerDashboardPage = () => {
                   fontWeight: 700,
                 }}
               >
-                Messages
+                Open Messages
               </Button>
             </Grid>
           </Grid>
@@ -843,6 +1122,13 @@ const HirerDashboardPage = () => {
                     onClick={() => setAutoRefreshEnabled((prev) => !prev)}
                     sx={{ fontWeight: 700, cursor: 'pointer' }}
                   />
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: 'block', width: '100%', mt: -0.1 }}
+                  >
+                    Last sync {lastRefreshedClockLabel}
+                  </Typography>
                   <Box
                     component="span"
                     role="status"
@@ -860,7 +1146,7 @@ const HirerDashboardPage = () => {
                     }}
                   >
                     {autoRefreshEnabled
-                      ? `Live updates enabled. Last refresh ${timeSinceRefresh}.`
+                      ? `Live updates enabled. Last refresh ${timeSinceRefresh}. Last sync ${lastRefreshedClockLabel}.`
                       : 'Live updates are paused.'}
                   </Box>
                 </Box>
@@ -913,7 +1199,7 @@ const HirerDashboardPage = () => {
                     textTransform: 'none',
                   }}
                 >
-                  Applications
+                  Review Queue
                 </Button>
                 <Button
                   variant="outlined"
@@ -926,28 +1212,28 @@ const HirerDashboardPage = () => {
                     textTransform: 'none',
                   }}
                 >
-                  Messages
+                  Open Messages
                 </Button>
               </Box>
 
               <Grid container spacing={1}>
                 {[
                   {
-                    title: 'Pipeline',
+                    title: 'Review queue',
                     value: summaryData.pendingProposals,
-                    helper: 'Applications waiting for review',
+                    helper: 'Pending applications to decide',
                     tone: theme.palette.warning.main,
                   },
                   {
-                    title: 'Active jobs',
+                    title: 'Live jobs',
                     value: summaryData.activeJobs,
-                    helper: 'Open listings currently running',
+                    helper: 'Open listings currently hiring',
                     tone: theme.palette.info.main,
                   },
                   {
-                    title: 'Completed jobs',
+                    title: 'Completed',
                     value: summaryData.completedJobs,
-                    helper: 'Contracts delivered successfully',
+                    helper: 'Jobs delivered successfully',
                     tone: theme.palette.success.main,
                   },
                 ].map((item, index) => (
@@ -1007,6 +1293,8 @@ const HirerDashboardPage = () => {
             </Stack>
           </Paper>
 
+          {renderTodayPriorityStrip(false)}
+
           {/* New Hirer Welcome Banner - Shows when no activity */}
           {isNewHirer && (
             <Paper
@@ -1054,7 +1342,7 @@ const HirerDashboardPage = () => {
           >
             {[
               {
-                title: 'Active Jobs',
+                title: 'Live Jobs',
                 value: summaryData.activeJobs,
                 tone: '#F39C12',
                 icon: (
@@ -1066,10 +1354,11 @@ const HirerDashboardPage = () => {
                   />
                 ),
                 onClick: () => navigate('/hirer/jobs'),
-                tooltip: 'Active Jobs: ' + summaryData.activeJobs,
+                tooltip: 'Live Jobs: ' + summaryData.activeJobs,
+                actionLabel: 'Manage jobs',
               },
               {
-                title: 'Completed Jobs',
+                title: 'Completed',
                 value: summaryData.completedJobs,
                 tone: '#1ABC9C',
                 icon: (
@@ -1082,9 +1371,10 @@ const HirerDashboardPage = () => {
                 ),
                 onClick: () => navigate('/hirer/jobs?status=completed'),
                 tooltip: 'Completed Jobs: ' + summaryData.completedJobs,
+                actionLabel: 'View history',
               },
               {
-                title: 'Applications',
+                title: 'Review Queue',
                 value: summaryData.pendingProposals,
                 tone: '#3498DB',
                 icon: (
@@ -1096,10 +1386,11 @@ const HirerDashboardPage = () => {
                   />
                 ),
                 onClick: () => navigate('/hirer/applications'),
-                tooltip: 'Applications: ' + summaryData.pendingProposals,
+                tooltip: 'Pending applications: ' + summaryData.pendingProposals,
+                actionLabel: 'Open queue',
               },
               {
-                title: 'Total Spent',
+                title: 'Budget Spent',
                 value: formatGhanaCurrency(summaryData.totalSpent),
                 tone: theme.palette.info.main,
                 icon: (
@@ -1111,7 +1402,8 @@ const HirerDashboardPage = () => {
                   />
                 ),
                 onClick: () => navigate('/hirer/payments'),
-                tooltip: 'Total Spent: ' + summaryData.totalSpent,
+                tooltip: 'Budget spent: ' + summaryData.totalSpent,
+                actionLabel: 'Open payments',
               },
             ].map((card, index) => (
               <Fade
@@ -1239,7 +1531,7 @@ const HirerDashboardPage = () => {
                             display: { xs: 'none', sm: 'inline' },
                           }}
                         >
-                          Open details
+                          {card.actionLabel}
                         </Typography>
                       </Paper>
                     </ButtonBase>
@@ -1643,7 +1935,7 @@ const HirerDashboardPage = () => {
             <Helmet>
               <title>Dashboard | Kelmah</title>
             </Helmet>
-            {/* Minimal Top Bar - Only shows last updated time */}
+            {/* Minimal Top Bar - shows live-state and last sync context */}
             <Box
               sx={{
                 display: { xs: 'none', sm: 'flex' },
@@ -1708,14 +2000,18 @@ const HirerDashboardPage = () => {
                     />
                   </IconButton>
                 </Tooltip>
-                {/* DASH-001: Human-readable time since refresh */}
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{ minWidth: 80 }}
-                >
-                  {timeSinceRefresh}
-                </Typography>
+                <Box sx={{ minWidth: 120, textAlign: 'right' }}>
+                  <Typography variant="caption" color="text.secondary">
+                    {timeSinceRefresh}
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: 'block' }}
+                  >
+                    Last sync {lastRefreshedClockLabel}
+                  </Typography>
+                </Box>
               </Box>
             </Box>
             {/* Main Content (full-width container) */}
@@ -1732,6 +2028,24 @@ const HirerDashboardPage = () => {
               {error && (
                 <Alert severity="error" sx={{ mb: 3 }}>
                   {error}
+                </Alert>
+              )}
+              {partialLoadWarning && (
+                <Alert
+                  severity="warning"
+                  sx={{ mb: 3 }}
+                  action={
+                    <Button
+                      color="inherit"
+                      size="small"
+                      onClick={handleRefresh}
+                      disabled={refreshing}
+                    >
+                      Refresh
+                    </Button>
+                  }
+                >
+                  {partialLoadWarning} Last reliable sync: {lastRefreshedClockLabel}.
                 </Alert>
               )}
               {/* Dashboard Overview - Direct content without tabs (navigation via sidebar) */}
@@ -1775,47 +2089,6 @@ const HirerDashboardPage = () => {
               />
             </SpeedDial>
 
-            <Paper
-              elevation={8}
-              sx={(theme) => ({
-                display: { xs: 'flex', sm: 'none' },
-                position: 'fixed',
-                left: 0,
-                right: 0,
-                bottom: withBottomNavSafeArea(0),
-                zIndex: Z_INDEX.stickyCta,
-                px: 1,
-                py: 1,
-                gap: 1,
-                borderTop: `1px solid ${theme.palette.divider}`,
-                backgroundColor: theme.palette.background.paper,
-              })}
-            >
-              <Button
-                fullWidth
-                variant="outlined"
-                color="secondary"
-                sx={{ minHeight: TOUCH_TARGET_MIN }}
-                startIcon={<RefreshIcon />}
-                onClick={handleRefresh}
-                disabled={refreshing}
-              >
-                Refresh
-              </Button>
-              <Button
-                fullWidth
-                variant="contained"
-                color="secondary"
-                sx={{
-                  minHeight: TOUCH_TARGET_MIN,
-                  boxShadow: '0 2px 8px rgba(255,215,0,0.35)',
-                }}
-                startIcon={<PostAddIcon />}
-                onClick={() => navigate('/hirer/jobs/post')}
-              >
-                Post Job
-              </Button>
-            </Paper>
           </Box>
         </Grow>
       </PullToRefresh>

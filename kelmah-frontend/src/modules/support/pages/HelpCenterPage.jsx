@@ -297,6 +297,7 @@ const HelpCenterPage = () => {
               </Stack>
               <Box>
                 <Typography
+                  component="h1"
                   variant={isMobile ? 'h5' : 'h3'}
                   fontWeight={800}
                   gutterBottom

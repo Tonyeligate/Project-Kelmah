@@ -108,6 +108,7 @@ export const lazyWithRetry = (factory, options = {}) => {
       const module = await factory();
       if (isBrowser()) {
         sessionStorage.removeItem(storageKey);
+        sessionStorage.removeItem(RELOAD_GUARD_KEY);
       }
       return module;
     } catch (error) {
@@ -148,6 +149,22 @@ export const lazyWithRetry = (factory, options = {}) => {
       }
 
       purgeChunkCaches();
+
+      try {
+        const now = Date.now();
+        const lastReloadAt = Number(
+          sessionStorage.getItem(RELOAD_GUARD_KEY) || 0,
+        );
+        const shouldReload = now - lastReloadAt > RELOAD_GUARD_WINDOW_MS;
+
+        if (shouldReload) {
+          sessionStorage.setItem(RELOAD_GUARD_KEY, String(now));
+          window.location.reload();
+          return new Promise(() => {});
+        }
+      } catch (reloadError) {
+        lazyRetryWarn('lazyWithRetry guarded reload failed:', reloadError);
+      }
 
       throw error;
     }

@@ -14,6 +14,7 @@ import {
   DialogContent,
   DialogActions,
   TextField,
+  InputAdornment,
   CircularProgress,
   Alert,
   Rating,
@@ -40,6 +41,7 @@ import {
   Badge as BadgeIcon,
   Close,
   Work,
+  Search,
   OpenInNew,
 } from '@mui/icons-material';
 import { formatDistanceToNow } from 'date-fns';
@@ -70,7 +72,6 @@ import {
 import { ApplicationCard } from '../components/ApplicationManagementCards';
 import { useBreakpointDown } from '../../../hooks/useResponsive';
 import {
-  HEADER_HEIGHT_MOBILE,
   TOUCH_TARGET_MIN,
   Z_INDEX,
 } from '../../../constants/layout';
@@ -78,7 +79,6 @@ import PageCanvas from '@/modules/common/components/PageCanvas';
 import {
   withBottomNavSafeArea,
   withSafeAreaBottom,
-  withSafeAreaTop,
 } from '@/utils/safeArea';
 
 /* ─── helpers ─────────────────────────────────────────────────────── */
@@ -159,6 +159,7 @@ function ApplicationManagementPage() {
     totalApplications: 0,
     countsByStatus: DEFAULT_APPLICATION_COUNTS,
   });
+  const [searchQuery, setSearchQuery] = useState('');
   const [pageSize, setPageSize] = useState(urlPageSize);
   const [sortBy, setSortBy] = useState(urlSortBy);
   const [currentPage, setCurrentPage] = useState(urlCurrentPage);
@@ -384,7 +385,26 @@ function ApplicationManagementPage() {
   }, [loadApplicationsView]);
 
   // ── Derived data ───────────────────────────────────────────────
-  const filteredApps = useMemo(() => applications, [applications]);
+  const normalizedSearchQuery = searchQuery.trim().toLowerCase();
+
+  const filteredApps = useMemo(() => {
+    if (!normalizedSearchQuery) {
+      return applications;
+    }
+
+    return applications.filter((application) =>
+      [
+        application.workerName,
+        application.jobTitle,
+        application.coverLetter,
+        application.status,
+      ].some((value) =>
+        String(value || '').toLowerCase().includes(normalizedSearchQuery),
+      ),
+    );
+  }, [applications, normalizedSearchQuery]);
+
+  const hasActiveSearch = normalizedSearchQuery.length > 0;
 
   const tabCounts = useMemo(() => {
     const sourceCounts = summary?.countsByStatus || DEFAULT_APPLICATION_COUNTS;
@@ -984,6 +1004,10 @@ function ApplicationManagementPage() {
           pb: { xs: withSafeAreaBottom(12), md: 0 },
           width: '100%',
           minWidth: 0,
+            '& .MuiButtonBase-root': {
+              minHeight: { xs: TOUCH_TARGET_MIN, md: 'unset' },
+              minWidth: { xs: TOUCH_TARGET_MIN, md: 'unset' },
+            },
         }}
       >
         <Helmet>
@@ -991,69 +1015,77 @@ function ApplicationManagementPage() {
         </Helmet>
 
         {/* ── Header ────────────────────────────────────────────── */}
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            mb: 1.25,
-            flexWrap: 'wrap',
-            gap: 0.75,
-            position: { xs: 'sticky', md: 'static' },
-            top: { xs: withSafeAreaTop(HEADER_HEIGHT_MOBILE), md: 'auto' },
-            zIndex: { xs: Z_INDEX.sticky, md: 'auto' },
-            py: { xs: 0.35, md: 0 },
-            backgroundColor: { xs: 'background.default', md: 'transparent' },
-          }}
-        >
-          <Box>
-            <Typography
-              component="h1"
-              variant={isCompactMobile ? 'h5' : isMobile ? 'h5' : 'h4'}
-              fontWeight={700}
-              sx={{ lineHeight: 1.1 }}
-            >
-              Job Applications
-            </Typography>
-            {biddingJobsCount > 0 && (
+        <Box sx={{ mb: { xs: 1, md: 1.5 } }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              justifyContent: 'space-between',
+              gap: 0.9,
+              flexWrap: 'wrap',
+            }}
+          >
+            <Box sx={{ minWidth: 0 }}>
+              <Typography
+                component="h1"
+                variant={isCompactMobile ? 'h5' : isMobile ? 'h5' : 'h4'}
+                fontWeight={700}
+                sx={{ lineHeight: 1.1 }}
+              >
+                Job Applications
+              </Typography>
+              {biddingJobsCount > 0 && (
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mt: 0.5 }}
+                >
+                  Bid-based jobs are reviewed from the dedicated bids screen and
+                  are excluded here.
+                </Typography>
+              )}
               <Typography
                 variant="body2"
                 color="text.secondary"
                 sx={{ mt: 0.5 }}
               >
-                Bid-based jobs are reviewed from the dedicated bids screen and
-                are excluded here.
+                {selectedScopeTotal} application
+                {selectedScopeTotal !== 1 ? 's' : ''} in this update queue.
               </Typography>
+            </Box>
+            {!isMobile && selectedApplication && (
+              <Chip
+                size="small"
+                variant="outlined"
+                label={`Reviewing ${selectedApplication.workerName || 'application'}`}
+                sx={{ alignSelf: 'center' }}
+              />
             )}
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-              {selectedScopeTotal} application
-              {selectedScopeTotal !== 1 ? 's' : ''} in this update queue.
-            </Typography>
           </Box>
         </Box>
 
-        {!isMobile && !hasNoStandardJobs && (
+        {!hasNoStandardJobs && (
           <Paper
             variant="outlined"
             sx={{
-              mb: 1.5,
-              px: 1.5,
+              mb: 1.25,
+              px: { xs: 1, sm: 1.5 },
               py: 1,
               borderRadius: 2,
               display: 'flex',
-              alignItems: 'center',
+              alignItems: 'flex-start',
               justifyContent: 'space-between',
               gap: 1,
               flexWrap: 'wrap',
-              bgcolor: alpha(theme.palette.primary.main, 0.03),
+              bgcolor: alpha(theme.palette.primary.main, 0.035),
             }}
           >
             <Typography
               variant="caption"
               color="text.secondary"
-              sx={{ fontWeight: 700 }}
+              sx={{ fontWeight: 700, pt: 0.4 }}
             >
-              Applications Snapshot
+              Queue snapshot
             </Typography>
             <Box
               sx={{
@@ -1061,12 +1093,20 @@ function ApplicationManagementPage() {
                 alignItems: 'center',
                 gap: 0.75,
                 flexWrap: 'wrap',
+                overflowX: { xs: 'auto', sm: 'visible' },
+                pb: { xs: 0.35, sm: 0 },
+                width: { xs: '100%', sm: 'auto' },
               }}
             >
               <Chip
                 size="small"
                 variant="outlined"
                 label={`${selectedScopeTotal} in scope`}
+              />
+              <Chip
+                size="small"
+                variant="outlined"
+                label={`${filteredApps.length} shown`}
               />
               {activeTab === 'pending' && (
                 <Chip
@@ -1144,51 +1184,114 @@ function ApplicationManagementPage() {
                   px: { xs: 1, sm: 1.5 },
                   py: 1,
                   display: 'flex',
-                  alignItems: 'center',
-                  gap: 0.75,
-                  flexWrap: 'wrap',
+                  flexDirection: 'column',
+                  gap: 0.9,
                 }}
               >
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{ fontWeight: 700, mr: 0.25 }}
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 0.75,
+                    flexWrap: 'wrap',
+                    width: '100%',
+                  }}
                 >
-                  Filter
-                </Typography>
-                <Chip
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ fontWeight: 700 }}
+                  >
+                    Filter applications
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {filteredApps.length} shown
+                    {hasActiveSearch ? ` for "${searchQuery.trim()}"` : ''}
+                  </Typography>
+                </Box>
+
+                <TextField
                   size="small"
-                  color={activeTab === 'pending' ? 'warning' : 'default'}
-                  variant={activeTab === 'pending' ? 'filled' : 'outlined'}
-                  label={`Pending (${tabCounts.pending})`}
-                  onClick={() => handleStatusFilterChange('pending')}
+                  fullWidth
+                  value={searchQuery}
+                  placeholder="Search worker, job title, note, or status"
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  inputProps={{
+                    'aria-label': 'Search applications list',
+                  }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Search fontSize="small" color="action" />
+                      </InputAdornment>
+                    ),
+                    endAdornment: hasActiveSearch ? (
+                      <InputAdornment position="end">
+                        <IconButton
+                          size="small"
+                          onClick={() => setSearchQuery('')}
+                          aria-label="Clear applications search"
+                        >
+                          <Close fontSize="small" />
+                        </IconButton>
+                      </InputAdornment>
+                    ) : null,
+                  }}
                   sx={{
-                    minHeight: TOUCH_TARGET_MIN,
-                    '& .MuiChip-label': { px: 1.1 },
+                    '& .MuiInputBase-root': {
+                      minHeight: TOUCH_TARGET_MIN,
+                    },
+                    '& .MuiInputBase-input': {
+                      minHeight: TOUCH_TARGET_MIN,
+                      boxSizing: 'border-box',
+                    },
                   }}
                 />
-                <Chip
-                  size="small"
-                  color={activeTab === 'accepted' ? 'success' : 'default'}
-                  variant={activeTab === 'accepted' ? 'filled' : 'outlined'}
-                  label={`Accepted (${tabCounts.accepted})`}
-                  onClick={() => handleStatusFilterChange('accepted')}
+
+                <Box
                   sx={{
-                    minHeight: TOUCH_TARGET_MIN,
-                    '& .MuiChip-label': { px: 1.1 },
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 0.75,
+                    flexWrap: 'wrap',
+                    width: '100%',
                   }}
-                />
-                <Chip
-                  size="small"
-                  color={activeTab === 'rejected' ? 'error' : 'default'}
-                  variant={activeTab === 'rejected' ? 'filled' : 'outlined'}
-                  label={`Rejected (${tabCounts.rejected})`}
-                  onClick={() => handleStatusFilterChange('rejected')}
-                  sx={{
-                    minHeight: TOUCH_TARGET_MIN,
-                    '& .MuiChip-label': { px: 1.1 },
-                  }}
-                />
+                >
+                  <Chip
+                    size="small"
+                    color={activeTab === 'pending' ? 'warning' : 'default'}
+                    variant={activeTab === 'pending' ? 'filled' : 'outlined'}
+                    label={`Pending (${tabCounts.pending})`}
+                    onClick={() => handleStatusFilterChange('pending')}
+                    sx={{
+                      minHeight: TOUCH_TARGET_MIN,
+                      '& .MuiChip-label': { px: 1.1 },
+                    }}
+                  />
+                  <Chip
+                    size="small"
+                    color={activeTab === 'accepted' ? 'success' : 'default'}
+                    variant={activeTab === 'accepted' ? 'filled' : 'outlined'}
+                    label={`Accepted (${tabCounts.accepted})`}
+                    onClick={() => handleStatusFilterChange('accepted')}
+                    sx={{
+                      minHeight: TOUCH_TARGET_MIN,
+                      '& .MuiChip-label': { px: 1.1 },
+                    }}
+                  />
+                  <Chip
+                    size="small"
+                    color={activeTab === 'rejected' ? 'error' : 'default'}
+                    variant={activeTab === 'rejected' ? 'filled' : 'outlined'}
+                    label={`Rejected (${tabCounts.rejected})`}
+                    onClick={() => handleStatusFilterChange('rejected')}
+                    sx={{
+                      minHeight: TOUCH_TARGET_MIN,
+                      '& .MuiChip-label': { px: 1.1 },
+                    }}
+                  />
+                </Box>
               </Box>
 
               <ApplicationsListContent
@@ -1209,6 +1312,9 @@ function ApplicationManagementPage() {
                   openReviewDialogForApplication(application, 'rejected')
                 }
                 onQuickMessage={startConversationForApplication}
+                hasActiveSearch={hasActiveSearch}
+                searchQuery={searchQuery}
+                onClearSearch={() => setSearchQuery('')}
               />
 
               <ApplicationsListFooter
@@ -1376,7 +1482,7 @@ function ApplicationManagementPage() {
         <Paper
           elevation={8}
           sx={(theme) => ({
-            display: { xs: 'flex', md: 'none' },
+            display: { xs: selectedApplication ? 'flex' : 'none', md: 'none' },
             flexDirection: 'column',
             position: 'fixed',
             left: 0,
@@ -1384,9 +1490,9 @@ function ApplicationManagementPage() {
             bottom: withBottomNavSafeArea(0),
             zIndex: Z_INDEX.stickyCta,
             px: 1,
-            pt: 0.55,
+            pt: 0.65,
             pb: withSafeAreaBottom(6),
-            gap: 0.6,
+            gap: 0.7,
             borderTop: `1px solid ${theme.palette.divider}`,
             backgroundColor: theme.palette.background.paper,
             boxShadow:
@@ -1395,7 +1501,7 @@ function ApplicationManagementPage() {
                 : '0 -6px 18px rgba(16, 17, 19, 0.12)',
           })}
         >
-          {selectedApplication ? (
+          {selectedApplication && (
             <>
               <Box
                 sx={{
@@ -1423,7 +1529,7 @@ function ApplicationManagementPage() {
                     flex: 1,
                     minWidth: 0,
                     textAlign: 'center',
-                    fontSize: { xs: '0.66rem', sm: '0.75rem' },
+                    fontSize: { xs: '0.68rem', sm: '0.75rem' },
                   }}
                 >
                   {selectedApplicationIndex >= 0
@@ -1440,20 +1546,38 @@ function ApplicationManagementPage() {
                   <NavigateNext fontSize="small" />
                 </IconButton>
               </Box>
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                noWrap
+
+              <Box
                 sx={{
                   px: 0.5,
-                  maxWidth: '100%',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 0.75,
                 }}
               >
-                Quick decision for{' '}
-                {selectedApplication.workerName || 'selected applicant'}
-              </Typography>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  noWrap
+                  sx={{
+                    flex: 1,
+                    minWidth: 0,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  Reviewing {selectedApplication.workerName || 'selected applicant'}
+                </Typography>
+                <Chip
+                  size="small"
+                  color={STATUS_COLORS[selectedApplication.status] || 'default'}
+                  variant="outlined"
+                  label={formatStatusLabel(selectedApplication.status)}
+                  sx={{ minHeight: 28 }}
+                />
+              </Box>
+
               {macroTelemetryBadgeMeta && (
                 <Box
                   sx={{
@@ -1494,7 +1618,14 @@ function ApplicationManagementPage() {
                   </Tooltip>
                 </Box>
               )}
-              <Box sx={{ display: 'flex', gap: 1 }}>
+
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+                  gap: 1,
+                }}
+              >
                 <Button
                   fullWidth
                   variant="outlined"
@@ -1521,6 +1652,7 @@ function ApplicationManagementPage() {
                       : 'Accept + Message'}
                 </Button>
               </Box>
+
               <Button
                 fullWidth
                 color="error"
@@ -1549,22 +1681,6 @@ function ApplicationManagementPage() {
                 }
               >
                 Add custom rejection note
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button
-                fullWidth
-                variant="contained"
-                color="secondary"
-                sx={{
-                  minHeight: 40,
-                  boxShadow: '0 2px 8px rgba(25,118,210,0.28)',
-                }}
-                startIcon={<ArrowForward />}
-                onClick={() => navigate('/hirer/jobs/post')}
-              >
-                Post Job
               </Button>
             </>
           )}
@@ -1648,6 +1764,11 @@ function ApplicationsListFooter({
           <FormControl
             sx={{
               minWidth: { xs: 128, sm: 150 },
+              '& .MuiOutlinedInput-root': {
+                minHeight: 44,
+                display: 'flex',
+                alignItems: 'center',
+              },
               '& .MuiSelect-select': {
                 minHeight: 44,
                 display: 'flex',
@@ -1671,6 +1792,11 @@ function ApplicationsListFooter({
           <FormControl
             sx={{
               minWidth: { xs: 84, sm: 92 },
+              '& .MuiOutlinedInput-root': {
+                minHeight: 44,
+                display: 'flex',
+                alignItems: 'center',
+              },
               '& .MuiSelect-select': {
                 minHeight: 44,
                 display: 'flex',
@@ -1721,6 +1847,9 @@ function ApplicationsListContent({
   onQuickAccept,
   onQuickReject,
   onQuickMessage,
+  hasActiveSearch,
+  searchQuery,
+  onClearSearch,
 }) {
   return (
     <Box sx={{ flex: 1, p: { xs: 1, sm: 1.5 } }}>
@@ -1764,6 +1893,9 @@ function ApplicationsListContent({
                 tab={activeTab}
                 hasAnyApps={(summary?.totalApplications || 0) > 0}
                 navigate={navigate}
+                hasActiveSearch={hasActiveSearch}
+                searchQuery={searchQuery}
+                onClearSearch={onClearSearch}
               />
             );
           }
@@ -2292,7 +2424,59 @@ function NoStandardJobsPanel({
   );
 }
 
-function EmptyAppsPanel({ tab, hasAnyApps, navigate }) {
+function EmptyAppsPanel({
+  tab,
+  hasAnyApps,
+  navigate,
+  hasActiveSearch = false,
+  searchQuery = '',
+  onClearSearch,
+}) {
+  const normalizedSearchQuery = String(searchQuery || '').trim();
+
+  if (hasActiveSearch) {
+    return (
+      <Box sx={{ textAlign: 'center', mt: 4, py: 4, px: 2 }}>
+        <Box
+          sx={{
+            width: 72,
+            height: 72,
+            borderRadius: '50%',
+            background: (t) =>
+              `linear-gradient(135deg, ${t.palette.primary.light}22, ${t.palette.primary.main}18)`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            mx: 'auto',
+            mb: 2,
+          }}
+        >
+          <Search sx={{ fontSize: 36, color: 'primary.main' }} />
+        </Box>
+        <Typography variant="h6" fontWeight={600} gutterBottom>
+          {normalizedSearchQuery
+            ? `No results for "${normalizedSearchQuery}"`
+            : 'No matching applications'}
+        </Typography>
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ mb: 3, maxWidth: 320, mx: 'auto' }}
+        >
+          Try another keyword or clear search to view all {tab} applications in
+          this page.
+        </Typography>
+        <Button
+          variant="outlined"
+          onClick={() => onClearSearch?.()}
+          sx={{ minHeight: 44 }}
+        >
+          Clear search
+        </Button>
+      </Box>
+    );
+  }
+
   return (
     <Box sx={{ textAlign: 'center', mt: 4, py: 4, px: 2 }}>
       <Box

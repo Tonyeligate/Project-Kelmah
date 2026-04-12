@@ -2,15 +2,14 @@
 import {
   Avatar,
   Box,
+  Button,
   Card,
   CardContent,
   Chip,
-  IconButton,
   ListItemButton,
   ListItemIcon,
   ListItemText,
   Rating,
-  Tooltip,
   Typography,
   useTheme,
   Badge,
@@ -238,74 +237,58 @@ export const ApplicationCard = ({
           {showQuickActions && (
             <Box
               sx={{
-                mt: 0.75,
-                pt: 0.75,
+                mt: 0.85,
+                pt: 0.85,
                 borderTop: `1px dashed ${alpha(theme.palette.divider, 0.7)}`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: 0.35,
+                display: 'grid',
+                gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+                gap: 0.6,
               }}
             >
-              <Typography variant="caption" color="text.secondary">
-                Quick actions
-              </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
-                <Tooltip title="Message worker">
-                  <span>
-                    <IconButton
-                      size="small"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        onMessage?.(application);
-                      }}
-                      disabled={!canMessage}
-                      aria-label={`Message ${application.workerName || 'worker'}`}
-                      sx={{ width: 44, height: 44 }}
-                    >
-                      <Message fontSize="small" />
-                    </IconButton>
-                  </span>
-                </Tooltip>
-                <Tooltip
-                  title={isAccepted ? 'Already accepted' : 'Accept application'}
-                >
-                  <span>
-                    <IconButton
-                      size="small"
-                      color="success"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        onAccept?.(application);
-                      }}
-                      disabled={isAccepted}
-                      aria-label={`Accept ${application.workerName || 'application'}`}
-                      sx={{ width: 44, height: 44 }}
-                    >
-                      <CheckCircleOutline fontSize="small" />
-                    </IconButton>
-                  </span>
-                </Tooltip>
-                <Tooltip
-                  title={isRejected ? 'Already rejected' : 'Reject application'}
-                >
-                  <span>
-                    <IconButton
-                      size="small"
-                      color="error"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        onReject?.(application);
-                      }}
-                      disabled={isRejected}
-                      aria-label={`Reject ${application.workerName || 'application'}`}
-                      sx={{ width: 44, height: 44 }}
-                    >
-                      <CancelOutlined fontSize="small" />
-                    </IconButton>
-                  </span>
-                </Tooltip>
-              </Box>
+              <Button
+                size="small"
+                variant="outlined"
+                startIcon={<Message fontSize="small" />}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onMessage?.(application);
+                }}
+                disabled={!canMessage}
+                aria-label={`Message ${application.workerName || 'worker'}`}
+                sx={{ minHeight: 44, fontSize: '0.72rem', px: 0.5 }}
+              >
+                Message
+              </Button>
+              <Button
+                size="small"
+                color="success"
+                variant="contained"
+                startIcon={<CheckCircleOutline fontSize="small" />}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onAccept?.(application);
+                }}
+                disabled={isAccepted}
+                aria-label={`Accept ${application.workerName || 'application'}`}
+                sx={{ minHeight: 44, fontSize: '0.72rem', px: 0.5 }}
+              >
+                {isAccepted ? 'Accepted' : 'Accept'}
+              </Button>
+              <Button
+                size="small"
+                color="error"
+                variant="outlined"
+                startIcon={<CancelOutlined fontSize="small" />}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onReject?.(application);
+                }}
+                disabled={isRejected}
+                aria-label={`Reject ${application.workerName || 'application'}`}
+                sx={{ minHeight: 44, fontSize: '0.72rem', px: 0.5 }}
+              >
+                {isRejected ? 'Rejected' : 'Reject'}
+              </Button>
             </Box>
           )}
         </CardContent>
