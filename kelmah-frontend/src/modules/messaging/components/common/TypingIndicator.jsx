@@ -40,18 +40,37 @@ const Dot = styled(Box)(({ theme, delay }) => ({
   borderRadius: '50%',
   margin: theme.spacing(0, 0.25),
   animation: `${bounce} 1.5s infinite ${delay}s`,
+  '@media (prefers-reduced-motion: reduce)': {
+    animation: 'none',
+  },
 }));
+
+const screenReaderOnlySx = {
+  position: 'absolute',
+  width: 1,
+  height: 1,
+  p: 0,
+  m: -1,
+  overflow: 'hidden',
+  clip: 'rect(0, 0, 0, 0)',
+  whiteSpace: 'nowrap',
+  border: 0,
+};
 
 /**
  * A component that displays an animated typing indicator
  */
 const TypingIndicator = ({ user }) => {
+  const userLabel = user?.name || 'Someone';
+  const typingAnnouncement = `${userLabel} is typing`;
+
   return (
-    <TypingContainer>
+    <TypingContainer role="status" aria-live="polite" aria-atomic="true">
       <Avatar
         src={user?.avatar || ''}
         alt={user?.name || 'User'}
         sx={{ width: 32, height: 32 }}
+        aria-hidden="true"
       />
 
       <Box sx={{ display: 'flex', flexDirection: 'column' }}>
@@ -59,16 +78,21 @@ const TypingIndicator = ({ user }) => {
           <Typography
             variant="caption"
             sx={{ ml: 1, mb: 0.2, fontSize: '0.7rem', color: 'text.secondary' }}
+            aria-hidden="true"
           >
             {user.name}
           </Typography>
         )}
 
-        <BubbleContainer>
+        <BubbleContainer aria-hidden="true">
           <Dot delay={0} />
           <Dot delay={0.2} />
           <Dot delay={0.4} />
         </BubbleContainer>
+      </Box>
+
+      <Box component="span" sx={screenReaderOnlySx}>
+        {typingAnnouncement}
       </Box>
     </TypingContainer>
   );

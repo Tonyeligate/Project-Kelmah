@@ -144,6 +144,8 @@ Implemented in current batch:
 - Added message-menu control relationships and polite delivery-state announcements in `Message.jsx`.
 - Added explicit preview-dialog title/description wiring in `MessageAttachments.jsx`.
 - Added modal semantics and Escape-key support to fullscreen preview overlay in `AttachmentPreview.jsx`.
+- Added message-composer form/dialog/live-region accessibility wiring in `MessageInput.jsx`.
+- Added typing-indicator screen-reader semantics and reduced-motion behavior in `TypingIndicator.jsx`.
 - Verified this pass with focused lint and production build smoke checks.
 
 Planned changes:

@@ -1,3 +1,34 @@
+### Session: P2-01 Messaging Input + Typing Indicator Accessibility Pass 2 April 13 2026 ✅ IN PROGRESS
+
+**Date**: April 13, 2026  
+**Scope**: Continue `P2-01` with a focused pass on messaging composer and typing indicator accessibility consistency.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/messaging/components/common/MessageInput.jsx
+- kelmah-frontend/src/modules/messaging/components/common/TypingIndicator.jsx
+- spec-kit/HIRER_MOBILE_UI_IMPLEMENTATION_BATCH_PLAN_APR12_2026.md
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- `MessageInput.jsx` accessibility upgrades:
+  - added deterministic element IDs via `useId` for message input, file input, and attachment dialog wiring,
+  - linked attachment dialog heading/description semantics (`aria-labelledby`, `aria-describedby`),
+  - converted composer wrapper to form semantics and submit handling,
+  - improved assistive descriptions for message input and attachment policy hints,
+  - added polite live updates for attachment count changes and stronger alert semantics for attachment validation errors.
+- `TypingIndicator.jsx` accessibility consistency upgrades:
+  - added polite status semantics (`role="status"`, `aria-live="polite"`, `aria-atomic="true"`),
+  - exposed explicit typing announcement text for screen readers,
+  - marked decorative avatar and animation bubble visuals as hidden from assistive output,
+  - added reduced-motion support for typing dots under `prefers-reduced-motion`.
+
+**Verification**
+- PASS: focused lint validation:
+  - `npx eslint src/modules/messaging/components/common/MessageInput.jsx src/modules/messaging/components/common/TypingIndicator.jsx`
+- PASS: frontend production build smoke check:
+  - `cd kelmah-frontend && npm run build`
+  - Result: `vite build` completed successfully (`13974 modules transformed`, `built in 1m 22s`).
+
 ### Session: P2-01 Messaging Accessibility and Consistency Pass 1 April 13 2026 ✅ IN PROGRESS
 
 **Date**: April 13, 2026  

@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars, react/prop-types */
-import { useState, useRef } from 'react';
+import { useId, useRef, useState } from 'react';
 import {
   Box,
   TextField,
@@ -116,6 +116,18 @@ const RemoveFileButton = styled(IconButton)(({ theme }) => ({
   zIndex: 1,
 }));
 
+const screenReaderOnlySx = {
+  position: 'absolute',
+  width: 1,
+  height: 1,
+  p: 0,
+  m: -1,
+  overflow: 'hidden',
+  clip: 'rect(0, 0, 0, 0)',
+  whiteSpace: 'nowrap',
+  border: 0,
+};
+
 // Helper function to get file icon based on file type
 const getFileIcon = (fileType) => {
   if (fileType.includes('image')) {
@@ -151,6 +163,15 @@ const MessageInput = ({
   const [showAttachmentDialog, setShowAttachmentDialog] = useState(false);
   const [fileError, setFileError] = useState('');
   const fileInputRef = useRef(null);
+  const composerId = useId();
+  const messageInputId = `${composerId}-message-input`;
+  const fileInputId = `${composerId}-file-input`;
+  const attachmentsDialogTitleId = `${composerId}-attachments-dialog-title`;
+  const attachmentsDialogDescriptionId = `${composerId}-attachments-dialog-description`;
+  const messageHintId = `${composerId}-message-hint`;
+  const attachmentsPolicyId = `${composerId}-attachments-policy`;
+  const attachmentsCountLiveId = `${composerId}-attachments-count-live`;
+  const canSend = Boolean(message.trim()) || attachments.length > 0;
 
   // Handle typing in the message input
   const handleChange = (e) => {
@@ -159,11 +180,16 @@ const MessageInput = ({
 
   // Handle sending a message
   const handleSend = () => {
-    if (message.trim() || attachments.length > 0) {
+    if (canSend) {
       onSendMessage(message.trim(), attachments);
       setMessage('');
       setAttachments([]);
     }
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    handleSend();
   };
 
   // Handle pressing Enter to send
@@ -231,16 +257,23 @@ const MessageInput = ({
         onClose={() => setShowAttachmentDialog(false)}
         maxWidth="sm"
         fullWidth
-        aria-labelledby="attachments-dialog-title"
+        aria-labelledby={attachmentsDialogTitleId}
+        aria-describedby={attachmentsDialogDescriptionId}
       >
-        <DialogTitle id="attachments-dialog-title">Attachments</DialogTitle>
+        <DialogTitle id={attachmentsDialogTitleId}>Attachments</DialogTitle>
         <DialogContent>
+          <Typography
+            id={attachmentsDialogDescriptionId}
+            sx={screenReaderOnlySx}
+          >
+            Review selected attachments before sending your message.
+          </Typography>
           {fileError && (
-            <Typography color="error" sx={{ mb: 2 }}>
+            <Typography color="error" sx={{ mb: 2 }} role="alert">
               {fileError}
             </Typography>
           )}
-          <List>
+          <List aria-label="Selected attachments">
             {attachments.map((file, index) => (
               <ListItem key={`${file.name}-${file.size}-${index}`}>
                 <ListItemText
@@ -282,6 +315,8 @@ const MessageInput = ({
 
       {/* Message Input */}
       <Paper
+        component="form"
+        onSubmit={handleSubmit}
         elevation={0}
         sx={{
           p: 2,
@@ -291,6 +326,7 @@ const MessageInput = ({
           border: 1,
           borderColor: 'divider',
         }}
+        aria-label="Message composer"
       >
         {/* Attachment Button */}
         <IconButton
@@ -300,6 +336,8 @@ const MessageInput = ({
           }}
           disabled={disabled || loading}
           aria-label="Add attachment"
+          aria-controls={fileInputId}
+          aria-describedby={attachmentsPolicyId}
           sx={{
             width: 44,
             height: 44,
@@ -316,6 +354,7 @@ const MessageInput = ({
         {/* Hidden File Input */}
         <input
           type="file"
+          id={fileInputId}
           ref={fileInputRef}
           onChange={handleFileSelect}
           multiple
@@ -326,6 +365,7 @@ const MessageInput = ({
 
         {/* Message Text Field */}
         <TextField
+          id={messageInputId}
           fullWidth
           multiline
           maxRows={4}
@@ -335,17 +375,19 @@ const MessageInput = ({
           placeholder={placeholder}
           disabled={disabled || loading}
           sx={{ mx: 1 }}
-          inputProps={{ 'aria-label': 'Message input' }}
+          inputProps={{
+            'aria-label': 'Message input',
+            'aria-describedby': `${messageHintId} ${attachmentsPolicyId}`,
+          }}
         />
 
         {/* Send Button */}
         <IconButton
           color="primary"
-          onClick={handleSend}
-          disabled={
-            disabled || loading || (!message.trim() && attachments.length === 0)
-          }
-          aria-label="Send message"
+          type="submit"
+          disabled={disabled || loading || !canSend}
+          aria-label={loading ? 'Sending message' : 'Send message'}
+          aria-busy={loading ? 'true' : undefined}
           sx={{
             width: 44,
             height: 44,
@@ -361,6 +403,7 @@ const MessageInput = ({
       </Paper>
 
       <Typography
+        id={messageHintId}
         variant="caption"
         color="text.secondary"
         sx={{ display: 'block', mt: 0.75 }}
@@ -368,6 +411,7 @@ const MessageInput = ({
         Tip: include the job title or request details for faster replies.
       </Typography>
       <Typography
+        id={attachmentsPolicyId}
         variant="caption"
         color="text.secondary"
         sx={{ display: 'block', mt: 0.25 }}
@@ -386,7 +430,12 @@ const MessageInput = ({
       {/* Attachment Preview */}
       {attachments.length > 0 && (
         <Box sx={{ mt: 1 }}>
-          <Typography variant="caption" color="text.secondary">
+          <Typography
+            id={attachmentsCountLiveId}
+            variant="caption"
+            color="text.secondary"
+            aria-live="polite"
+          >
             {attachments.length} attachment{attachments.length !== 1 ? 's' : ''}{' '}
             selected
           </Typography>
@@ -405,6 +454,12 @@ const MessageInput = ({
           </Button>
         </Box>
       )}
+
+      <Box component="span" sx={screenReaderOnlySx} aria-live="polite">
+        {attachments.length > 0
+          ? `${attachments.length} attachment${attachments.length === 1 ? '' : 's'} selected.`
+          : 'No attachments selected.'}
+      </Box>
     </Box>
   );
 };
