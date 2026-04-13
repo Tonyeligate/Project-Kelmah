@@ -65,6 +65,8 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import InboxOutlinedIcon from '@mui/icons-material/InboxOutlined';
 import { useVisibilityPolling } from '../../../hooks/useVisibilityPolling';
 import { useBreakpointDown } from '@/hooks/useResponsive';
+import useOnlineStatus from '@/hooks/useOnlineStatus';
+import useNetworkSpeed from '@/hooks/useNetworkSpeed';
 import { TOUCH_TARGET_MIN, Z_INDEX } from '@/constants/layout';
 import PageCanvas from '@/modules/common/components/PageCanvas';
 import { withBottomNavSafeArea } from '@/utils/safeArea';
@@ -115,11 +117,69 @@ LoadingTimeoutWarning.propTypes = {
   onRefresh: PropTypes.func.isRequired,
 };
 
+const WORKER_DASHBOARD_POLL_INTERVAL_MS = 90_000;
+const WORKER_DASHBOARD_LOW_BANDWIDTH_POLL_INTERVAL_MS = 3 * 60 * 1000;
+
 const WorkerDashboardPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const theme = useTheme();
   const isCompactMobile = useBreakpointDown('sm');
+  const { isOnline, wasOffline } = useOnlineStatus();
+  const { isSlow, effectiveType, downlink, rtt, saveData } = useNetworkSpeed();
+  const lowBandwidthModeActive = isOnline && (isSlow || saveData);
+  const dashboardPollingIntervalMs = lowBandwidthModeActive
+    ? WORKER_DASHBOARD_LOW_BANDWIDTH_POLL_INTERVAL_MS
+    : WORKER_DASHBOARD_POLL_INTERVAL_MS;
+  const networkSnapshotLabel = useMemo(() => {
+    const effectiveTypeLabel =
+      effectiveType && effectiveType !== 'unknown'
+        ? String(effectiveType).toUpperCase()
+        : 'unknown link';
+    const downlinkLabel = Number.isFinite(downlink)
+      ? `${downlink.toFixed(1)} Mbps`
+      : 'downlink n/a';
+    const latencyLabel = Number.isFinite(rtt) ? `${rtt} ms RTT` : 'latency n/a';
+
+    return `${effectiveTypeLabel} • ${downlinkLabel} • ${latencyLabel}`;
+  }, [downlink, effectiveType, rtt]);
+  const workerDashboardNetworkBanner = useMemo(() => {
+    if (!isOnline) {
+      return {
+        severity: 'error',
+        title: 'Offline mode',
+        detail:
+          'You are offline. Dashboard keeps your last synced insights and refresh resumes after internet returns.',
+      };
+    }
+
+    if (lowBandwidthModeActive) {
+      return {
+        severity: 'warning',
+        title: saveData
+          ? 'Data saver mode detected'
+          : 'Low bandwidth mode active',
+        detail: `Network is constrained (${networkSnapshotLabel}). Background refresh is throttled and chart animation is reduced to keep the dashboard responsive.`,
+      };
+    }
+
+    if (wasOffline) {
+      return {
+        severity: 'success',
+        title: 'Connection restored',
+        detail:
+          'You are back online. Full chart updates and normal refresh cadence are active again.',
+      };
+    }
+
+    return null;
+  }, [
+    isOnline,
+    lowBandwidthModeActive,
+    networkSnapshotLabel,
+    saveData,
+    wasOffline,
+  ]);
   const dashboardFontFamily =
     '"Plus Jakarta Sans", "Manrope", "Segoe UI", sans-serif';
 
@@ -276,10 +336,11 @@ const WorkerDashboardPage = () => {
   }, [fetchDashboardData]);
 
   useVisibilityPolling({
-    enabled: true,
-    intervalMs: 90_000,
-    maxIntervalMs: 6 * 60 * 1000,
-    shouldPause: () => isLoading || isRetryingRef.current || Boolean(error),
+    enabled: isOnline,
+    intervalMs: dashboardPollingIntervalMs,
+    maxIntervalMs: dashboardPollingIntervalMs * 4,
+    shouldPause: () =>
+      isLoading || isRetryingRef.current || Boolean(error) || !isOnline,
     callback: async () => {
       await fetchDashboardData();
     },
@@ -903,6 +964,25 @@ const WorkerDashboardPage = () => {
                       backgroundColor: alpha(theme.palette.info.main, 0.12),
                     }}
                   />
+                  <Chip
+                    label={
+                      !isOnline
+                        ? 'Offline mode'
+                        : lowBandwidthModeActive
+                          ? 'Low bandwidth mode'
+                          : 'Live sync'
+                    }
+                    size="small"
+                    color={
+                      !isOnline
+                        ? 'error'
+                        : lowBandwidthModeActive
+                          ? 'warning'
+                          : 'success'
+                    }
+                    variant="outlined"
+                    sx={{ fontWeight: 700 }}
+                  />
                 </Box>
 
                 <Box
@@ -1090,6 +1170,35 @@ const WorkerDashboardPage = () => {
 
             {/* Error Display - Shows inline instead of blocking */}
             {error && renderErrorDisplay()}
+
+            {workerDashboardNetworkBanner && (
+              <Alert
+                severity={workerDashboardNetworkBanner.severity}
+                sx={{ mb: 2.5, borderRadius: 2 }}
+                action={
+                  <Button
+                    color="inherit"
+                    size="small"
+                    onClick={handleRefresh}
+                    disabled={isLoading || !isOnline}
+                    sx={{ minHeight: TOUCH_TARGET_MIN }}
+                  >
+                    {isLoading
+                      ? 'Refreshing...'
+                      : isOnline
+                        ? 'Refresh now'
+                        : 'Retry online'}
+                  </Button>
+                }
+              >
+                <Typography variant="body2" fontWeight={700}>
+                  {workerDashboardNetworkBanner.title}
+                </Typography>
+                <Typography variant="caption" sx={{ display: 'block' }}>
+                  {workerDashboardNetworkBanner.detail}
+                </Typography>
+              </Alert>
+            )}
 
             {/* New Worker Welcome Banner - Shows when no activity */}
             {!isLoading && isNewWorker && (
@@ -1498,6 +1607,16 @@ const WorkerDashboardPage = () => {
                     >
                       Earnings Overview
                     </Typography>
+                    {lowBandwidthModeActive && (
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ display: 'block', mt: -1, mb: 1.1 }}
+                      >
+                        Low-bandwidth mode: chart animation is reduced for
+                        smoother loading.
+                      </Typography>
+                    )}
                     <Box sx={{ height: { xs: 158, md: 280 } }}>
                       {earningsData.some((d) => d.value > 0) ? (
                         <ResponsiveContainer width="100%" height="100%">
@@ -1510,6 +1629,7 @@ const WorkerDashboardPage = () => {
                               outerRadius={isCompactMobile ? 58 : 100}
                               paddingAngle={2}
                               dataKey="value"
+                              isAnimationActive={!lowBandwidthModeActive}
                             >
                               {earningsData.map((entry, index) => (
                                 <Cell
@@ -1601,6 +1721,16 @@ const WorkerDashboardPage = () => {
                     >
                       Applications Overview
                     </Typography>
+                    {lowBandwidthModeActive && (
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ display: 'block', mt: -1, mb: 1.1 }}
+                      >
+                        Low-bandwidth mode: chart animation is reduced for
+                        smoother loading.
+                      </Typography>
+                    )}
                     <Box sx={{ height: { xs: 158, md: 280 } }}>
                       {applicationsData.some((d) => d.value > 0) ? (
                         <ResponsiveContainer width="100%" height="100%">
@@ -1613,6 +1743,7 @@ const WorkerDashboardPage = () => {
                               outerRadius={isCompactMobile ? 58 : 100}
                               paddingAngle={2}
                               dataKey="value"
+                              isAnimationActive={!lowBandwidthModeActive}
                             >
                               {applicationsData.map((entry, index) => (
                                 <Cell

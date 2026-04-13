@@ -1,4 +1,5 @@
 ﻿import React, { useMemo, useState } from 'react';
+import PropTypes from 'prop-types';
 import {
   Box,
   ButtonBase,
@@ -8,7 +9,6 @@ import {
   IconButton,
   ImageList,
   ImageListItem,
-  ImageListItemBar,
   Typography,
   Chip,
   Stack,
@@ -18,7 +18,6 @@ import {
 } from '@mui/material';
 import {
   Close as CloseIcon,
-  ZoomIn as ZoomInIcon,
   Download as DownloadIcon,
   Share as ShareIcon,
   NavigateNext as NextIcon,
@@ -26,6 +25,8 @@ import {
 } from '@mui/icons-material';
 import { resolveMediaAssetUrls } from '../../common/utils/mediaAssets';
 import { useBreakpointDown } from '@/hooks/useResponsive';
+import useOnlineStatus from '@/hooks/useOnlineStatus';
+import useNetworkSpeed from '@/hooks/useNetworkSpeed';
 import { devError } from '@/modules/common/utils/devLogger';
 
 const ProjectGallery = ({
@@ -37,14 +38,24 @@ const ProjectGallery = ({
 }) => {
   const theme = useTheme();
   const isMobile = useBreakpointDown('md');
+  const { isOnline } = useOnlineStatus();
+  const { isSlow, saveData } = useNetworkSpeed();
+  const constrainedNetworkMode = !isOnline || isSlow || saveData;
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [allowConstrainedImageLoad, setAllowConstrainedImageLoad] =
+    useState(false);
   const galleryImages = useMemo(() => resolveMediaAssetUrls(images), [images]);
+  const canRenderCurrentImage =
+    !constrainedNetworkMode || allowConstrainedImageLoad;
 
   // Handle navigation
   const handleNext = () => {
     setCurrentIndex((prev) => (prev + 1) % galleryImages.length);
     setImageLoaded(false);
+    if (constrainedNetworkMode) {
+      setAllowConstrainedImageLoad(false);
+    }
   };
 
   const handlePrevious = () => {
@@ -52,19 +63,32 @@ const ProjectGallery = ({
       (prev) => (prev - 1 + galleryImages.length) % galleryImages.length,
     );
     setImageLoaded(false);
+    if (constrainedNetworkMode) {
+      setAllowConstrainedImageLoad(false);
+    }
   };
 
   // Handle keyboard navigation
   React.useEffect(() => {
     const handleKeyPress = (event) => {
-      if (!open) return;
+      if (!open || galleryImages.length === 0) return;
 
       switch (event.key) {
         case 'ArrowRight':
-          handleNext();
+          setCurrentIndex((prev) => (prev + 1) % galleryImages.length);
+          setImageLoaded(false);
+          if (constrainedNetworkMode) {
+            setAllowConstrainedImageLoad(false);
+          }
           break;
         case 'ArrowLeft':
-          handlePrevious();
+          setCurrentIndex(
+            (prev) => (prev - 1 + galleryImages.length) % galleryImages.length,
+          );
+          setImageLoaded(false);
+          if (constrainedNetworkMode) {
+            setAllowConstrainedImageLoad(false);
+          }
           break;
         case 'Escape':
           onClose();
@@ -76,15 +100,16 @@ const ProjectGallery = ({
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [open, onClose]);
+  }, [open, onClose, galleryImages.length, constrainedNetworkMode]);
 
   // Reset index when dialog opens
   React.useEffect(() => {
     if (open) {
       setCurrentIndex(initialIndex >= galleryImages.length ? 0 : initialIndex);
       setImageLoaded(false);
+      setAllowConstrainedImageLoad(!constrainedNetworkMode);
     }
-  }, [open, initialIndex, galleryImages.length]);
+  }, [open, initialIndex, galleryImages.length, constrainedNetworkMode]);
 
   // Handle image download
   const handleDownload = async (imageUrl, filename) => {
@@ -187,6 +212,13 @@ const ProjectGallery = ({
           <Typography variant="body2" sx={{ opacity: 0.7 }}>
             {currentIndex + 1} of {galleryImages.length}
           </Typography>
+          {constrainedNetworkMode && (
+            <Chip
+              size="small"
+              label={isOnline ? 'Low-bandwidth mode' : 'Offline preview mode'}
+              sx={{ mt: 1 }}
+            />
+          )}
         </Box>
 
         <Stack direction="row" spacing={1}>
@@ -198,6 +230,7 @@ const ProjectGallery = ({
                 `${projectTitle}_${currentIndex + 1}`,
               )
             }
+            disabled={constrainedNetworkMode && !allowConstrainedImageLoad}
             aria-label="Download current image"
             sx={{
               color: 'white',
@@ -214,6 +247,7 @@ const ProjectGallery = ({
           <IconButton
             color="inherit"
             onClick={() => handleShare(galleryImages[currentIndex])}
+            disabled={constrainedNetworkMode && !allowConstrainedImageLoad}
             aria-label="Share current image"
             sx={{
               color: 'white',
@@ -314,25 +348,51 @@ const ProjectGallery = ({
         )}
 
         {/* Main Image */}
-        <Fade in={imageLoaded} timeout={300}>
-          <Box
-            component="img"
-            src={galleryImages[currentIndex]}
-            alt={`${projectTitle} - Image ${currentIndex + 1}`}
-            loading="eager"
-            decoding="async"
-            onLoad={() => setImageLoaded(true)}
-            sx={{
-              maxWidth: '100%',
-              maxHeight: '100%',
-              objectFit: 'contain',
-              display: imageLoaded ? 'block' : 'none',
-            }}
-          />
-        </Fade>
+        {canRenderCurrentImage ? (
+          <>
+            <Fade in={imageLoaded} timeout={300}>
+              <Box
+                component="img"
+                src={galleryImages[currentIndex]}
+                alt={`${projectTitle} - Image ${currentIndex + 1}`}
+                loading={constrainedNetworkMode ? 'lazy' : 'eager'}
+                decoding="async"
+                onLoad={() => setImageLoaded(true)}
+                sx={{
+                  maxWidth: '100%',
+                  maxHeight: '100%',
+                  objectFit: 'contain',
+                  display: imageLoaded ? 'block' : 'none',
+                }}
+              />
+            </Fade>
 
-        {/* Loading placeholder */}
-        {!imageLoaded && (
+            {/* Loading placeholder */}
+            {!imageLoaded && (
+              <Box
+                sx={{
+                  width: '100%',
+                  height: '60vh',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  borderRadius: 1,
+                }}
+                role="status"
+                aria-live="polite"
+                aria-busy="true"
+              >
+                <Typography
+                  variant="body1"
+                  sx={{ color: 'white', opacity: 0.7 }}
+                >
+                  Loading...
+                </Typography>
+              </Box>
+            )}
+          </>
+        ) : (
           <Box
             sx={{
               width: '100%',
@@ -340,21 +400,38 @@ const ProjectGallery = ({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              flexDirection: 'column',
+              gap: 1,
+              backgroundColor: 'rgba(255, 255, 255, 0.08)',
               borderRadius: 1,
+              px: 2,
             }}
-            role="status"
-            aria-live="polite"
-            aria-busy="true"
           >
-            <Typography variant="body1" sx={{ color: 'white', opacity: 0.7 }}>
-              Loading...
+            <Typography
+              variant="body2"
+              sx={{ color: 'white', opacity: 0.8, textAlign: 'center' }}
+            >
+              {isOnline
+                ? 'Low-bandwidth mode is pausing image preview to reduce data usage.'
+                : 'Offline mode is pausing image preview until connection is restored.'}
             </Typography>
+            <ButtonBase
+              onClick={() => setAllowConstrainedImageLoad(true)}
+              sx={{
+                color: 'white',
+                border: '1px solid rgba(255, 255, 255, 0.4)',
+                borderRadius: 1,
+                px: 1.5,
+                py: 0.75,
+              }}
+            >
+              <Typography variant="button">Load current image</Typography>
+            </ButtonBase>
           </Box>
         )}
 
         {/* Thumbnail Strip */}
-        {galleryImages.length > 1 && !isMobile && (
+        {galleryImages.length > 1 && !isMobile && !constrainedNetworkMode && (
           <Box
             sx={{
               position: 'absolute',
@@ -428,7 +505,7 @@ const ProjectGallery = ({
         )}
 
         {/* Mobile Thumbnail Dots */}
-        {galleryImages.length > 1 && isMobile && (
+        {galleryImages.length > 1 && isMobile && !constrainedNetworkMode && (
           <Box
             sx={{
               position: 'absolute',
@@ -477,6 +554,16 @@ const ProjectGallery = ({
       </DialogContent>
     </Dialog>
   );
+};
+
+ProjectGallery.propTypes = {
+  images: PropTypes.arrayOf(
+    PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
+  ),
+  projectTitle: PropTypes.string,
+  open: PropTypes.bool,
+  onClose: PropTypes.func,
+  initialIndex: PropTypes.number,
 };
 
 export default ProjectGallery;

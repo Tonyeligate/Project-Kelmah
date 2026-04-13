@@ -14,6 +14,7 @@ import {
   Stack,
   IconButton,
   useTheme,
+  alpha,
 } from '@mui/material';
 import {
   LocationOn,
@@ -29,6 +30,8 @@ import {
   resolveProfileImageUrl,
 } from '../../../common/utils/mediaAssets';
 import { useBreakpointDown } from '@/hooks/useResponsive';
+import useOnlineStatus from '@/hooks/useOnlineStatus';
+import useNetworkSpeed from '@/hooks/useNetworkSpeed';
 
 /**
  * Unified JobCard Component
@@ -62,7 +65,10 @@ const JobCard = ({
 }) => {
   const theme = useTheme();
   const isMobile = useBreakpointDown('sm');
+  const { isOnline } = useOnlineStatus();
+  const { isSlow, saveData } = useNetworkSpeed();
   const navigate = useNavigate();
+  const constrainedNetworkMode = !isOnline || isSlow || saveData;
 
   const derivedIsSaved = useMemo(() => {
     if (typeof isSavedProp === 'boolean') {
@@ -104,6 +110,15 @@ const JobCard = ({
       profilePicture: hirerAvatar,
       avatar: hirerAvatar,
     }) || null;
+  const shouldRenderCoverImage =
+    Boolean(resolvedCoverImage) &&
+    variant !== 'compact' &&
+    !constrainedNetworkMode;
+  const shouldRenderCoverPlaceholder =
+    Boolean(resolvedCoverImage) &&
+    variant !== 'compact' &&
+    constrainedNetworkMode;
+  const hirerAvatarSrc = constrainedNetworkMode ? null : resolvedHirerAvatar;
 
   // Handle save/unsave job
   const handleSaveToggle = async (e) => {
@@ -199,7 +214,7 @@ const JobCard = ({
       aria-label={title ? `Open job details for ${title}` : 'Open job details'}
     >
       {/* Cover image */}
-      {resolvedCoverImage && variant !== 'compact' && (
+      {shouldRenderCoverImage && (
         <CardMedia
           component="img"
           loading="lazy"
@@ -218,6 +233,29 @@ const JobCard = ({
             e.target.style.display = 'none';
           }}
         />
+      )}
+      {shouldRenderCoverPlaceholder && (
+        <Box
+          sx={{
+            height: variant === 'detailed' ? 200 : 160,
+            aspectRatio: variant === 'detailed' ? '16 / 9' : '5 / 3',
+            borderBottom: `1px solid ${theme.palette.divider}`,
+            backgroundColor: alpha(theme.palette.action.hover, 0.8),
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexDirection: 'column',
+            gap: 0.5,
+            px: 2,
+          }}
+        >
+          <AccessTime sx={{ color: 'text.secondary' }} />
+          <Typography variant="caption" color="text.secondary" align="center">
+            {isOnline
+              ? 'Preview paused to reduce data use.'
+              : 'Preview paused while offline.'}
+          </Typography>
+        </Box>
       )}
       <CardContent sx={{ pb: variant === 'compact' ? 1 : 2 }}>
         {/* Header with title and category */}
@@ -301,6 +339,16 @@ const JobCard = ({
           </Typography>
         )}
 
+        {variant !== 'compact' && constrainedNetworkMode && (
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ mb: 1.5, display: 'block' }}
+          >
+            Low-bandwidth mode: media previews are reduced for smoother loading.
+          </Typography>
+        )}
+
         {/* Budget and Location */}
         <Stack
           direction={isMobile ? 'column' : 'row'}
@@ -360,7 +408,7 @@ const JobCard = ({
             <Divider sx={{ my: 2 }} />
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Avatar
-                src={resolvedHirerAvatar}
+                src={hirerAvatarSrc}
                 alt={hirerName}
                 sx={{ width: 32, height: 32 }}
               >

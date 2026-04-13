@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import { useParams, useNavigate, Link as RouterLink } from 'react-router-dom';
@@ -16,29 +16,20 @@ import {
   List,
   ListItem,
   ListItemText,
-  ListItemAvatar,
-  Divider,
   Alert,
   Card,
   CardContent,
   CardMedia,
   Chip,
   IconButton,
-  LinearProgress,
   Tabs,
   Tab,
   Stack,
   Badge,
   Tooltip,
-  Menu,
-  MenuItem,
   Skeleton,
-  CircularProgress,
   Container,
   alpha,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
   SpeedDial,
   SpeedDialAction,
   SpeedDialIcon,
@@ -52,38 +43,26 @@ import {
 import {
   Edit as EditIcon,
   LocationOn as LocationIcon,
-  Email as EmailIcon,
-  Phone as PhoneIcon,
-  LinkedIn as LinkedInIcon,
   Language as WebsiteIcon,
   Work as WorkIcon,
   AttachMoney as MoneyIcon,
   AccessTime as TimeIcon,
   Verified as VerifiedIcon,
-  Add as AddIcon,
-  PhotoCamera as CameraIcon,
-  Upload as UploadIcon,
-  MoreVert as MoreIcon,
   Star as StarIcon,
   Message as MessageIcon,
   Bookmark as BookmarkIcon,
   BookmarkBorder as BookmarkBorderIcon,
   Share as ShareIcon,
-  GetApp as DownloadIcon,
   Visibility as ViewIcon,
   Build as BuildIcon,
   School as SchoolIcon,
   EmojiEvents as AwardIcon,
-  Security as SecurityIcon,
   Schedule as ScheduleIcon,
   TrendingUp as TrendingIcon,
-  ExpandMore as ExpandMoreIcon,
   Close as CloseIcon,
   Check as CheckIcon,
   BusinessCenter as BusinessCenterIcon,
   LocalOffer as PriceIcon,
-  CalendarToday as CalendarIcon,
-  Timeline as TimelineIcon,
   Assessment as AssessmentIcon,
   GroupWork as CollabIcon,
   Home as HomeIcon,
@@ -101,6 +80,8 @@ import { BOTTOM_NAV_HEIGHT } from '../../../constants/layout';
 import reviewService from '../../reviews/services/reviewService';
 import { hasRole } from '../../../utils/userUtils';
 import { useBreakpointDown } from '../../../hooks/useResponsive';
+import useOnlineStatus from '../../../hooks/useOnlineStatus';
+import useNetworkSpeed from '../../../hooks/useNetworkSpeed';
 import {
   resolveMediaAssetUrl,
   resolveProfileImageUrl,
@@ -154,10 +135,6 @@ const formatResponseSpeedLabel = (value) => {
 
   return `${Math.round(amount / 24)}d average`;
 };
-
-const Input = styled('input')({
-  display: 'none',
-});
 
 const ProfileAvatar = styled(Avatar)(({ theme }) => ({
   width: 200,
@@ -364,8 +341,60 @@ function WorkerProfile({ workerId: workerIdProp }) {
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useBreakpointDown('md');
-  const isTablet = useBreakpointDown('lg');
   const isActualMobile = isMobile;
+  const { isOnline, wasOffline } = useOnlineStatus();
+  const { isSlow, effectiveType, downlink, rtt, saveData } = useNetworkSpeed();
+  const lowBandwidthModeActive = isOnline && (isSlow || saveData);
+  const shouldRenderPortfolioPreviews = isOnline && !lowBandwidthModeActive;
+  const networkSnapshotLabel = useMemo(() => {
+    const effectiveTypeLabel =
+      effectiveType && effectiveType !== 'unknown'
+        ? String(effectiveType).toUpperCase()
+        : 'unknown link';
+    const downlinkLabel = Number.isFinite(downlink)
+      ? `${downlink.toFixed(1)} Mbps`
+      : 'downlink n/a';
+    const latencyLabel = Number.isFinite(rtt) ? `${rtt} ms RTT` : 'latency n/a';
+
+    return `${effectiveTypeLabel} • ${downlinkLabel} • ${latencyLabel}`;
+  }, [downlink, effectiveType, rtt]);
+  const workerProfileNetworkBanner = useMemo(() => {
+    if (!isOnline) {
+      return {
+        severity: 'error',
+        title: 'Offline mode',
+        detail:
+          'You are offline. Worker details remain visible, and photos will resume loading after internet returns.',
+      };
+    }
+
+    if (lowBandwidthModeActive) {
+      return {
+        severity: 'warning',
+        title: saveData
+          ? 'Data saver mode detected'
+          : 'Low bandwidth mode active',
+        detail: `Network is constrained (${networkSnapshotLabel}). Portfolio previews are reduced to keep profile loading stable.`,
+      };
+    }
+
+    if (wasOffline) {
+      return {
+        severity: 'success',
+        title: 'Connection restored',
+        detail:
+          'You are back online. Full profile previews and refresh actions are available again.',
+      };
+    }
+
+    return null;
+  }, [
+    isOnline,
+    lowBandwidthModeActive,
+    networkSnapshotLabel,
+    saveData,
+    wasOffline,
+  ]);
 
   const [profile, setProfile] = useState(null);
   const [skills, setSkills] = useState([]);
@@ -373,7 +402,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
   const [certificates, setCertificates] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [ratingSummary, setRatingSummary] = useState(null);
-  const [workHistory, setWorkHistory] = useState([]);
+  const [, setWorkHistory] = useState([]);
   const [availability, setAvailability] = useState(null);
   const [stats, setStats] = useState({});
   const [profileCompletion, setProfileCompletion] = useState(null);
@@ -451,14 +480,20 @@ function WorkerProfile({ workerId: workerIdProp }) {
     [profileScrollStateStorageKey],
   );
 
-  const scrollToSection = useCallback((sectionRef, section = 'overview') => {
-    setLastVisitedSection(section);
-    persistScrollState(section);
+  const scrollToSection = useCallback(
+    (sectionRef, section = 'overview') => {
+      setLastVisitedSection(section);
+      persistScrollState(section);
 
-    if (sectionRef?.current) {
-      sectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  }, [persistScrollState]);
+      if (sectionRef?.current) {
+        sectionRef.current.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+      }
+    },
+    [persistScrollState],
+  );
 
   const handleHireAction = useCallback(() => {
     if (!authUser) {
@@ -808,7 +843,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
       setFeedbackMessage(
         nextState ? 'Worker saved for later' : 'Worker removed from saved',
       );
-    } catch (_) {
+    } catch {
       setIsBookmarked(!nextState);
       setFeedbackMessage('Unable to update saved worker right now');
     }
@@ -924,6 +959,9 @@ function WorkerProfile({ workerId: workerIdProp }) {
       profile.profilePicture,
       portfolio[0],
     ]) || '';
+  const selectedPortfolioPreviewImage = selectedPortfolioItem
+    ? getPortfolioPreviewImage(selectedPortfolioItem)
+    : null;
 
   const renderProfileHeader = () => (
     <motion.div
@@ -934,9 +972,10 @@ function WorkerProfile({ workerId: workerIdProp }) {
       <GlassCard sx={{ mb: 4, overflow: 'visible', position: 'relative' }}>
         <Box
           sx={{
-            background: profileHeroImage
-              ? `linear-gradient(180deg, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.6) 100%), url(${profileHeroImage})`
-              : `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+            background:
+              shouldRenderPortfolioPreviews && profileHeroImage
+                ? `linear-gradient(180deg, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.6) 100%), url(${profileHeroImage})`
+                : `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             height: 200,
@@ -1489,7 +1528,10 @@ function WorkerProfile({ workerId: workerIdProp }) {
                 variant="h4"
                 fontWeight={700}
                 color="primary"
-                sx={{ fontSize: { xs: '1.25rem', md: '1.65rem' }, lineHeight: 1.2 }}
+                sx={{
+                  fontSize: { xs: '1.25rem', md: '1.65rem' },
+                  lineHeight: 1.2,
+                }}
               >
                 {profile.experience_years || 0}
               </Typography>
@@ -1509,7 +1551,10 @@ function WorkerProfile({ workerId: workerIdProp }) {
                 variant="h4"
                 fontWeight={700}
                 color="primary"
-                sx={{ fontSize: { xs: '1.25rem', md: '1.65rem' }, lineHeight: 1.2 }}
+                sx={{
+                  fontSize: { xs: '1.25rem', md: '1.65rem' },
+                  lineHeight: 1.2,
+                }}
               >
                 {jobsCompleted}
               </Typography>
@@ -1553,7 +1598,10 @@ function WorkerProfile({ workerId: workerIdProp }) {
                 variant="h4"
                 fontWeight={700}
                 color="primary"
-                sx={{ fontSize: { xs: '1.25rem', md: '1.65rem' }, lineHeight: 1.2 }}
+                sx={{
+                  fontSize: { xs: '1.25rem', md: '1.65rem' },
+                  lineHeight: 1.2,
+                }}
               >
                 {completionRate}%
               </Typography>
@@ -1693,6 +1741,16 @@ function WorkerProfile({ workerId: workerIdProp }) {
           <ViewIcon color="primary" />
           Portfolio & Previous Work
         </Typography>
+        {lowBandwidthModeActive && (
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ mb: 1, display: 'block' }}
+          >
+            Low-bandwidth mode: previews are reduced to save data. Open an item
+            to view details.
+          </Typography>
+        )}
 
         {portfolio.length > 0 ? (
           <Grid container spacing={2}>
@@ -1718,7 +1776,8 @@ function WorkerProfile({ workerId: workerIdProp }) {
                     setPortfolioDialogOpen(true);
                   }}
                 >
-                  {getPortfolioPreviewImage(item) ? (
+                  {shouldRenderPortfolioPreviews &&
+                  getPortfolioPreviewImage(item) ? (
                     <CardMedia
                       component="img"
                       height="200"
@@ -1730,7 +1789,36 @@ function WorkerProfile({ workerId: workerIdProp }) {
                         e.target.style.display = 'none';
                       }}
                     />
-                  ) : null}
+                  ) : (
+                    <Box
+                      sx={{
+                        height: 200,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexDirection: 'column',
+                        gap: 0.6,
+                        bgcolor: alpha(theme.palette.primary.main, 0.08),
+                        px: 1,
+                      }}
+                    >
+                      {lowBandwidthModeActive &&
+                      getPortfolioPreviewImage(item) ? (
+                        <>
+                          <TimeIcon sx={{ color: 'text.secondary' }} />
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            align="center"
+                          >
+                            Preview paused to reduce data use.
+                          </Typography>
+                        </>
+                      ) : (
+                        <ViewIcon sx={{ color: 'text.secondary' }} />
+                      )}
+                    </Box>
+                  )}
                   <CardContent>
                     <Typography
                       variant="h6"
@@ -1764,7 +1852,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
               No portfolio items available yet
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Check back later to see this worker's completed projects
+              Check back later to see this worker&apos;s completed projects
             </Typography>
           </Box>
         )}
@@ -2429,7 +2517,8 @@ function WorkerProfile({ workerId: workerIdProp }) {
                   variant="caption"
                   sx={{ color: textMuted, display: 'block', mt: 0.7 }}
                 >
-                  Verified status means Kelmah completed platform identity checks.
+                  Verified status means Kelmah completed platform identity
+                  checks.
                 </Typography>
               </Box>
 
@@ -2813,7 +2902,11 @@ function WorkerProfile({ workerId: workerIdProp }) {
                     </Typography>
                     <Typography
                       variant="body2"
-                      sx={{ color: textPrimary, fontWeight: 700, lineHeight: 1.35 }}
+                      sx={{
+                        color: textPrimary,
+                        fontWeight: 700,
+                        lineHeight: 1.35,
+                      }}
                     >
                       {item.value}
                     </Typography>
@@ -2896,9 +2989,21 @@ function WorkerProfile({ workerId: workerIdProp }) {
             <Typography sx={{ color: accent, fontWeight: 700, mb: 0.55 }}>
               Recent Work Photos
             </Typography>
-            <Typography variant="caption" sx={{ color: textMuted, mb: 1, display: 'block' }}>
+            <Typography
+              variant="caption"
+              sx={{ color: textMuted, mb: 1, display: 'block' }}
+            >
               Tap a photo to open full details before requesting hire.
             </Typography>
+            {lowBandwidthModeActive && (
+              <Typography
+                variant="caption"
+                sx={{ color: textMuted, mb: 0.75, display: 'block' }}
+              >
+                Low-bandwidth mode is reducing image previews to keep this page
+                responsive.
+              </Typography>
+            )}
             <Box
               sx={{
                 display: 'flex',
@@ -2965,7 +3070,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                           'transform 120ms ease, box-shadow 200ms ease, border-color 200ms ease',
                       }}
                     >
-                      {image ? (
+                      {shouldRenderPortfolioPreviews && image ? (
                         <CardMedia
                           component="img"
                           image={image}
@@ -2979,10 +3084,29 @@ function WorkerProfile({ workerId: workerIdProp }) {
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
+                            flexDirection: 'column',
+                            gap: 0.4,
                             bgcolor: alpha(accent, 0.14),
+                            px: 0.8,
                           }}
                         >
-                          <WorkIcon sx={{ color: accent }} />
+                          {lowBandwidthModeActive && image ? (
+                            <>
+                              <TimeIcon sx={{ color: accent, fontSize: 17 }} />
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  color: textMuted,
+                                  textAlign: 'center',
+                                  lineHeight: 1.2,
+                                }}
+                              >
+                                Preview paused
+                              </Typography>
+                            </>
+                          ) : (
+                            <WorkIcon sx={{ color: accent }} />
+                          )}
                         </Box>
                       )}
                       <Box
@@ -3062,7 +3186,10 @@ function WorkerProfile({ workerId: workerIdProp }) {
             <Typography sx={{ color: accent, fontWeight: 700, mb: 0.55 }}>
               Client Feedback
             </Typography>
-            <Typography variant="caption" sx={{ color: textMuted, mb: 1, display: 'block' }}>
+            <Typography
+              variant="caption"
+              sx={{ color: textMuted, mb: 1, display: 'block' }}
+            >
               Recent comments help you confirm quality and communication style.
             </Typography>
 
@@ -3262,6 +3389,36 @@ function WorkerProfile({ workerId: workerIdProp }) {
           px: isActualMobile ? 1 : undefined,
         }}
       >
+        {workerProfileNetworkBanner && (
+          <Alert
+            severity={workerProfileNetworkBanner.severity}
+            sx={{ mb: 2, borderRadius: 2 }}
+            action={
+              <Button
+                color="inherit"
+                size="small"
+                onClick={() => {
+                  fetchAllData();
+                }}
+                disabled={loading || !isOnline}
+              >
+                {loading
+                  ? 'Syncing...'
+                  : isOnline
+                    ? 'Refresh profile'
+                    : 'Retry online'}
+              </Button>
+            }
+          >
+            <Typography variant="body2" fontWeight={700}>
+              {workerProfileNetworkBanner.title}
+            </Typography>
+            <Typography variant="caption" sx={{ display: 'block' }}>
+              {workerProfileNetworkBanner.detail}
+            </Typography>
+          </Alert>
+        )}
+
         {isActualMobile ? (
           renderMobileProfileLayout()
         ) : (
@@ -3385,12 +3542,18 @@ function WorkerProfile({ workerId: workerIdProp }) {
               </DialogTitle>
               <DialogContent>
                 <Box sx={{ mb: 2 }}>
-                  {getPortfolioPreviewImage(selectedPortfolioItem) ? (
+                  {selectedPortfolioPreviewImage &&
+                  shouldRenderPortfolioPreviews ? (
                     <img
-                      src={getPortfolioPreviewImage(selectedPortfolioItem)}
+                      src={selectedPortfolioPreviewImage}
                       alt={selectedPortfolioItem.title}
                       style={{ width: '100%', height: 'auto', borderRadius: 8 }}
                     />
+                  ) : selectedPortfolioPreviewImage ? (
+                    <Alert severity="info" sx={{ borderRadius: 2 }}>
+                      Image preview is paused while low-bandwidth mode is
+                      active.
+                    </Alert>
                   ) : null}
                 </Box>
                 <Typography variant="body1" sx={{ mb: 2 }}>
@@ -3446,5 +3609,9 @@ function WorkerProfile({ workerId: workerIdProp }) {
     </>
   );
 }
+
+WorkerProfile.propTypes = {
+  workerId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+};
 
 export default WorkerProfile;

@@ -63,6 +63,8 @@ import {
 import RecentActivityFeed from '../components/RecentActivityFeed';
 import dashboardService from '../../dashboard/services/dashboardService';
 import { useVisibilityPolling } from '../../../hooks/useVisibilityPolling';
+import useOnlineStatus from '../../../hooks/useOnlineStatus';
+import useNetworkSpeed from '../../../hooks/useNetworkSpeed';
 import { TOUCH_TARGET_MIN } from '../../../constants/layout';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 import { formatGhanaCurrency } from '@/utils/formatters';
@@ -72,6 +74,7 @@ import { withBottomNavSafeArea } from '@/utils/safeArea';
 const DASHBOARD_LOADING_TIMEOUT_MS = 10000;
 const APPLICATION_REFRESH_TTL_MS = 2 * 60 * 1000; // 2 minutes
 const AUTO_REFRESH_INTERVAL_MS = 60 * 1000; // DASH-001: Auto-refresh every 60 seconds
+const LOW_BANDWIDTH_REFRESH_INTERVAL_MS = 3 * 60 * 1000;
 const MAX_APPLICATION_HYDRATE_PER_CYCLE = 2;
 
 const isGatewayPressureStatus = (status) =>
@@ -135,6 +138,8 @@ const HirerDashboardPage = () => {
   const jobsError = useSelector(selectHirerError('jobs'));
   const isMobile = useBreakpointDown('md');
   const isCompactMobile = useBreakpointDown('sm');
+  const { isOnline, wasOffline } = useOnlineStatus();
+  const { isSlow, effectiveType, downlink, rtt, saveData } = useNetworkSpeed();
 
   // Fetch hirer data on component mount
   const clearLoadingTimeout = useCallback(() => {
@@ -258,8 +263,9 @@ const HirerDashboardPage = () => {
         const activePayload = await runDashboardRequest('active jobs', () =>
           dispatch(fetchHirerJobs('active')).unwrap(),
         );
-        const completedPayload = await runDashboardRequest('completed jobs', () =>
-          dispatch(fetchHirerJobs('completed')).unwrap(),
+        const completedPayload = await runDashboardRequest(
+          'completed jobs',
+          () => dispatch(fetchHirerJobs('completed')).unwrap(),
         );
         await runDashboardRequest('payments', () =>
           dispatch(fetchPaymentSummary()).unwrap(),
@@ -315,7 +321,10 @@ const HirerDashboardPage = () => {
 
         const partialFailureList = Array.from(failedModules);
         const hasAnySnapshot = Boolean(
-          profilePayload || activePayload || completedPayload || activityPayload,
+          profilePayload ||
+            activePayload ||
+            completedPayload ||
+            activityPayload,
         );
 
         if (partialFailureList.length > 0 && hasAnySnapshot) {
@@ -402,22 +411,6 @@ const HirerDashboardPage = () => {
     }
   };
 
-  useVisibilityPolling({
-    enabled: autoRefreshEnabled && !isHydrating,
-    intervalMs: AUTO_REFRESH_INTERVAL_MS,
-    maxIntervalMs: AUTO_REFRESH_INTERVAL_MS * 4,
-    shouldPause: () => refreshing || !isMountedRef.current || Boolean(error),
-    immediate: false,
-    resumeImmediately: false,
-    callback: async () => {
-      await dispatch(fetchHirerJobs('active')).unwrap();
-      if (isMountedRef.current) {
-        setLastRefreshed(Date.now());
-        setTimeSinceRefresh('Just now');
-      }
-    },
-  });
-
   // DASH-001: Update "time since refresh" display
   useEffect(() => {
     const updateTimeSinceRefresh = () => {
@@ -466,6 +459,84 @@ const HirerDashboardPage = () => {
       }),
     [lastRefreshed],
   );
+  const lowBandwidthModeActive = isOnline && (isSlow || saveData);
+  const dashboardRefreshIntervalMs = lowBandwidthModeActive
+    ? LOW_BANDWIDTH_REFRESH_INTERVAL_MS
+    : AUTO_REFRESH_INTERVAL_MS;
+  const refreshCadenceLabel = lowBandwidthModeActive
+    ? 'every 3 minutes in low-bandwidth mode'
+    : 'every 60 seconds';
+  const liveStatusChipLabel = autoRefreshEnabled
+    ? lowBandwidthModeActive
+      ? `Reduced data • ${timeSinceRefresh}`
+      : `Live • ${timeSinceRefresh}`
+    : 'Live updates paused';
+  const networkSnapshotLabel = useMemo(() => {
+    const effectiveTypeLabel =
+      effectiveType && effectiveType !== 'unknown'
+        ? String(effectiveType).toUpperCase()
+        : 'unknown link';
+    const downlinkLabel = Number.isFinite(downlink)
+      ? `${downlink.toFixed(1)} Mbps`
+      : 'downlink n/a';
+    const latencyLabel = Number.isFinite(rtt) ? `${rtt} ms RTT` : 'latency n/a';
+
+    return `${effectiveTypeLabel} • ${downlinkLabel} • ${latencyLabel}`;
+  }, [downlink, effectiveType, rtt]);
+  const dashboardNetworkBanner = useMemo(() => {
+    if (!isOnline) {
+      return {
+        severity: 'error',
+        title: 'Offline mode',
+        detail:
+          'You are offline. Dashboard keeps the last synced values and refresh resumes after internet returns.',
+      };
+    }
+
+    if (lowBandwidthModeActive) {
+      return {
+        severity: 'warning',
+        title: saveData
+          ? 'Data saver mode detected'
+          : 'Low bandwidth mode active',
+        detail: `Network is constrained (${networkSnapshotLabel}). Live refresh is throttled and chart rendering is simplified to stay responsive.`,
+      };
+    }
+
+    if (wasOffline) {
+      return {
+        severity: 'success',
+        title: 'Connection restored',
+        detail:
+          'You are back online. Normal live-refresh cadence and full chart updates are active again.',
+      };
+    }
+
+    return null;
+  }, [
+    isOnline,
+    lowBandwidthModeActive,
+    networkSnapshotLabel,
+    saveData,
+    wasOffline,
+  ]);
+
+  useVisibilityPolling({
+    enabled: autoRefreshEnabled && !isHydrating && isOnline,
+    intervalMs: dashboardRefreshIntervalMs,
+    maxIntervalMs: dashboardRefreshIntervalMs * 4,
+    shouldPause: () =>
+      refreshing || !isMountedRef.current || Boolean(error) || !isOnline,
+    immediate: false,
+    resumeImmediately: false,
+    callback: async () => {
+      await dispatch(fetchHirerJobs('active')).unwrap();
+      if (isMountedRef.current) {
+        setLastRefreshed(Date.now());
+        setTimeSinceRefresh('Just now');
+      }
+    },
+  });
 
   const overdueActiveJobsCount = useMemo(() => {
     const now = Date.now();
@@ -495,7 +566,8 @@ const HirerDashboardPage = () => {
 
       if (record?.buckets && typeof record.buckets === 'object') {
         const bucketTotal = Object.values(record.buckets).reduce(
-          (count, bucket) => count + (Array.isArray(bucket) ? bucket.length : 0),
+          (count, bucket) =>
+            count + (Array.isArray(bucket) ? bucket.length : 0),
           0,
         );
         return bucketTotal <= 0;
@@ -524,7 +596,8 @@ const HirerDashboardPage = () => {
       items.push({
         id: 'priority-overdue',
         title: `${overdueActiveJobsCount} live job${overdueActiveJobsCount > 1 ? 's' : ''} may be overdue`,
-        detail: 'Update timelines so workers and applicants see accurate urgency.',
+        detail:
+          'Update timelines so workers and applicants see accurate urgency.',
         ctaLabel: 'Update jobs',
         path: '/hirer/jobs?status=active',
         toneKey: 'error',
@@ -536,7 +609,8 @@ const HirerDashboardPage = () => {
       items.push({
         id: 'priority-payments',
         title: `${summaryData.pendingPayments} payment release${summaryData.pendingPayments > 1 ? 's' : ''} pending`,
-        detail: 'Clear pending payouts to maintain worker trust and response speed.',
+        detail:
+          'Clear pending payouts to maintain worker trust and response speed.',
         ctaLabel: 'Open payments',
         path: '/hirer/payments',
         toneKey: 'info',
@@ -769,11 +843,7 @@ const HirerDashboardPage = () => {
             </Stack>
             <Chip
               size="small"
-              label={
-                autoRefreshEnabled
-                  ? `Live • ${timeSinceRefresh}`
-                  : 'Live updates paused'
-              }
+              label={liveStatusChipLabel}
               color={autoRefreshEnabled ? 'success' : 'default'}
               variant="outlined"
               onClick={() => setAutoRefreshEnabled((prev) => !prev)}
@@ -1112,11 +1182,7 @@ const HirerDashboardPage = () => {
                   />
                   <Chip
                     size="small"
-                    label={
-                      autoRefreshEnabled
-                        ? `Live • ${timeSinceRefresh}`
-                        : 'Live updates paused'
-                    }
+                    label={liveStatusChipLabel}
                     color={autoRefreshEnabled ? 'success' : 'default'}
                     variant="outlined"
                     onClick={() => setAutoRefreshEnabled((prev) => !prev)}
@@ -1146,7 +1212,7 @@ const HirerDashboardPage = () => {
                     }}
                   >
                     {autoRefreshEnabled
-                      ? `Live updates enabled. Last refresh ${timeSinceRefresh}. Last sync ${lastRefreshedClockLabel}.`
+                      ? `Live updates enabled (${refreshCadenceLabel}). Last refresh ${timeSinceRefresh}. Last sync ${lastRefreshedClockLabel}.`
                       : 'Live updates are paused.'}
                   </Box>
                 </Box>
@@ -1386,7 +1452,8 @@ const HirerDashboardPage = () => {
                   />
                 ),
                 onClick: () => navigate('/hirer/applications'),
-                tooltip: 'Pending applications: ' + summaryData.pendingProposals,
+                tooltip:
+                  'Pending applications: ' + summaryData.pendingProposals,
                 actionLabel: 'Open queue',
               },
               {
@@ -1566,6 +1633,16 @@ const HirerDashboardPage = () => {
                 >
                   Jobs Overview
                 </Typography>
+                {lowBandwidthModeActive && (
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: 'block', mt: -2, mb: 1.2 }}
+                  >
+                    Low-bandwidth mode: chart animation is reduced for smoother
+                    loading.
+                  </Typography>
+                )}
                 {/* Recharts BarChart replacing manual Box bars */}
                 <Box sx={{ height: { xs: 150, sm: 205 }, width: '100%' }}>
                   {summaryData.totalSpent > 0 ||
@@ -1607,7 +1684,11 @@ const HirerDashboardPage = () => {
                             borderRadius: 8,
                           }}
                         />
-                        <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                        <Bar
+                          dataKey="value"
+                          radius={[4, 4, 0, 0]}
+                          isAnimationActive={!lowBandwidthModeActive}
+                        >
                           {[
                             {
                               name: 'Completed',
@@ -1676,6 +1757,16 @@ const HirerDashboardPage = () => {
                 >
                   Applications Overview
                 </Typography>
+                {lowBandwidthModeActive && (
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: 'block', mt: -2, mb: 1.2 }}
+                  >
+                    Low-bandwidth mode: chart animation is reduced for smoother
+                    loading.
+                  </Typography>
+                )}
                 {(() => {
                   const appDonutData = [
                     {
@@ -1792,6 +1883,7 @@ const HirerDashboardPage = () => {
                                 outerRadius={isCompactMobile ? 67 : 85}
                                 paddingAngle={2}
                                 stroke="none"
+                                isAnimationActive={!lowBandwidthModeActive}
                               >
                                 {appDonutData.map((entry, idx) => (
                                   <RechartsCell
@@ -1952,14 +2044,20 @@ const HirerDashboardPage = () => {
                 <Tooltip
                   title={
                     autoRefreshEnabled
-                      ? 'Auto-refresh enabled (every 60s)'
+                      ? `Auto-refresh enabled (${refreshCadenceLabel})`
                       : 'Auto-refresh disabled'
                   }
                   arrow
                 >
                   <Chip
                     size="small"
-                    label={autoRefreshEnabled ? 'Live' : 'Paused'}
+                    label={
+                      autoRefreshEnabled
+                        ? lowBandwidthModeActive
+                          ? 'Low-data'
+                          : 'Live'
+                        : 'Paused'
+                    }
                     color={autoRefreshEnabled ? 'success' : 'default'}
                     variant="outlined"
                     onClick={() => setAutoRefreshEnabled(!autoRefreshEnabled)}
@@ -2030,6 +2128,33 @@ const HirerDashboardPage = () => {
                   {error}
                 </Alert>
               )}
+              {dashboardNetworkBanner && (
+                <Alert
+                  severity={dashboardNetworkBanner.severity}
+                  sx={{ mb: 3 }}
+                  action={
+                    <Button
+                      color="inherit"
+                      size="small"
+                      onClick={handleRefresh}
+                      disabled={refreshing || !isOnline}
+                    >
+                      {refreshing
+                        ? 'Refreshing...'
+                        : isOnline
+                          ? 'Refresh now'
+                          : 'Retry online'}
+                    </Button>
+                  }
+                >
+                  <Typography variant="body2" fontWeight={700}>
+                    {dashboardNetworkBanner.title}
+                  </Typography>
+                  <Typography variant="caption" sx={{ display: 'block' }}>
+                    {dashboardNetworkBanner.detail}
+                  </Typography>
+                </Alert>
+              )}
               {partialLoadWarning && (
                 <Alert
                   severity="warning"
@@ -2045,7 +2170,8 @@ const HirerDashboardPage = () => {
                     </Button>
                   }
                 >
-                  {partialLoadWarning} Last reliable sync: {lastRefreshedClockLabel}.
+                  {partialLoadWarning} Last reliable sync:{' '}
+                  {lastRefreshedClockLabel}.
                 </Alert>
               )}
               {/* Dashboard Overview - Direct content without tabs (navigation via sidebar) */}
@@ -2088,7 +2214,6 @@ const HirerDashboardPage = () => {
                 onClick={() => navigate('/hirer/payments')}
               />
             </SpeedDial>
-
           </Box>
         </Grow>
       </PullToRefresh>
