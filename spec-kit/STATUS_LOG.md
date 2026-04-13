@@ -1,3 +1,35 @@
+### Session: P2-01 Messaging Accessibility and Consistency Pass 1 April 13 2026 ✅ IN PROGRESS
+
+**Date**: April 13, 2026  
+**Scope**: Execute the first messaging-focused `P2-01` implementation slice by improving assistive-technology semantics and keyboard accessibility without changing messaging delivery behavior.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx
+- kelmah-frontend/src/modules/messaging/components/common/Message.jsx
+- kelmah-frontend/src/modules/messaging/components/common/MessageAttachments.jsx
+- kelmah-frontend/src/modules/messaging/components/common/AttachmentPreview.jsx
+- spec-kit/HIRER_MOBILE_UI_IMPLEMENTATION_BATCH_PLAN_APR12_2026.md
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Conversation-list accessibility improvements in `MessagingPage.jsx`:
+  - added screen-reader live summary text for filtered conversation counts, unread state, draft state, and sync status,
+  - added explicit per-conversation `aria-label` metadata for unread/draft/job/presence context,
+  - marked the not-yet-wired conversation-menu icon as unavailable to avoid a dead-end focus target.
+- Message-level semantics improvements in `Message.jsx`:
+  - linked message options trigger and menu via `aria-haspopup`, `aria-controls`, and `aria-expanded`,
+  - added polite screen-reader status announcements for outgoing message delivery state (`sending`, `failed`, `sent`, `delivered`, `read`).
+- Attachment preview accessibility improvements:
+  - `MessageAttachments.jsx`: added explicit dialog title/description linkage for image preview modal,
+  - `AttachmentPreview.jsx`: added focusable modal semantics (`role="dialog"`, `aria-modal`) and Escape-key close handling for fullscreen preview overlay.
+
+**Verification**
+- PASS: focused messaging lint validation on touched files:
+  - `npx eslint src/modules/messaging/pages/MessagingPage.jsx src/modules/messaging/components/common/Message.jsx src/modules/messaging/components/common/MessageAttachments.jsx src/modules/messaging/components/common/AttachmentPreview.jsx`
+- PASS: frontend production build smoke check:
+  - `cd kelmah-frontend && npm run build`
+  - Result: `vite build` completed successfully (`13974 modules transformed`, `built in 1m 17s`).
+
 ### Session: P2-01 Accessibility and Consistency Pass Kickoff April 13 2026 ⏳ IN PROGRESS
 
 **Date**: April 13, 2026  

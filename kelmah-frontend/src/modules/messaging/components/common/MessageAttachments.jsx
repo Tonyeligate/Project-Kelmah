@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useId } from 'react';
 import PropTypes from 'prop-types';
 import {
   Box,
@@ -86,6 +86,18 @@ const FileName = styled(Typography)({
   maxWidth: '150px',
 });
 
+const screenReaderOnlySx = {
+  position: 'absolute',
+  width: 1,
+  height: 1,
+  p: 0,
+  m: -1,
+  overflow: 'hidden',
+  clip: 'rect(0, 0, 0, 0)',
+  whiteSpace: 'nowrap',
+  border: 0,
+};
+
 /**
  * Component to display message attachments
  * @param {Object} props
@@ -103,9 +115,12 @@ const MessageAttachments = ({
   readonly = false,
 }) => {
   const [previewUrl, setPreviewUrl] = useState(null);
+  const previewDialogId = useId();
   const { isOnline } = useOnlineStatus();
   const { isSlow, saveData } = useNetworkSpeed();
   const constrainedNetworkMode = !isOnline || isSlow || saveData;
+  const previewDialogTitleId = `${previewDialogId}-title`;
+  const previewDialogDescriptionId = `${previewDialogId}-description`;
   const hasImageAttachments = attachments.some((attachment) => {
     const type =
       attachment?.type ||
@@ -415,7 +430,8 @@ const MessageAttachments = ({
         open={!!previewUrl}
         onClose={handleClosePreview}
         maxWidth="lg"
-        aria-label="Attachment preview"
+        aria-labelledby={previewDialogTitleId}
+        aria-describedby={previewDialogDescriptionId}
       >
         <IconButton
           sx={{
@@ -440,6 +456,13 @@ const MessageAttachments = ({
           <Close />
         </IconButton>
         <DialogContent sx={{ p: 1 }}>
+          <Typography id={previewDialogTitleId} sx={screenReaderOnlySx}>
+            Attachment image preview
+          </Typography>
+          <Typography id={previewDialogDescriptionId} sx={screenReaderOnlySx}>
+            Image preview dialog. Use the close button to return to the
+            conversation.
+          </Typography>
           <img
             src={previewUrl}
             alt="Attachment preview"

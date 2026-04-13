@@ -78,6 +78,18 @@ const FILTER_LABELS = {
   'unread-drafts': 'Unread + drafts',
 };
 
+const screenReaderOnlySx = {
+  position: 'absolute',
+  width: 1,
+  height: 1,
+  p: 0,
+  m: -1,
+  overflow: 'hidden',
+  clip: 'rect(0, 0, 0, 0)',
+  whiteSpace: 'nowrap',
+  border: 0,
+};
+
 const getCurrentUserId = (user) =>
   user?.id || user?._id || user?.userId || user?.sub || null;
 
@@ -1461,6 +1473,27 @@ const MessagingPage = () => {
     realtimeIssue,
   ]);
 
+  const conversationListLiveSummary = useMemo(() => {
+    const shownCount = filteredConversations.length;
+    const unreadConversationCount = Number(unreadCount || 0);
+    const searchState = searchQuery.trim()
+      ? `Search keyword ${searchQuery.trim()} is active.`
+      : 'Search is not active.';
+    const draftState = unsentDraftCount
+      ? `${unsentDraftCount} unsent drafts saved locally.`
+      : 'No unsent drafts.';
+
+    return `${shownCount} of ${totalConversationCount} conversations shown. ${unreadConversationCount} unread conversations. Active filter: ${activeFilterLabel}. ${searchState} ${draftState} ${connectionStatusCopy.summary}.`;
+  }, [
+    activeFilterLabel,
+    connectionStatusCopy.summary,
+    filteredConversations.length,
+    searchQuery,
+    totalConversationCount,
+    unreadCount,
+    unsentDraftCount,
+  ]);
+
   useEffect(() => {
     if (!selectedConversationId || activeFilter === 'all') {
       return;
@@ -1840,6 +1873,8 @@ const MessagingPage = () => {
           direction="row"
           spacing={0.75}
           useFlexGap
+          role="group"
+          aria-label="Conversation filters"
           sx={{
             mt: { xs: 1, sm: 1.25, md: 1.35 },
             pb: 0.15,
@@ -1970,6 +2005,9 @@ const MessagingPage = () => {
         >
           {connectionStatusCopy.summary}
         </Typography>
+        <Box component="p" aria-live="polite" sx={screenReaderOnlySx}>
+          {conversationListLiveSummary}
+        </Box>
       </Box>
 
       {(realtimeIssue ||
@@ -2055,6 +2093,17 @@ const MessagingPage = () => {
                 : false;
               const jobContextLabel =
                 conversation.jobRelated?.title || conversation.jobTitle || '';
+              const conversationItemAriaLabel = [
+                `${title}.`,
+                unread > 0
+                  ? `${unread} unread messages.`
+                  : 'No unread messages.',
+                hasDraftPreview ? `Draft saved ${draftSavedLabel}.` : null,
+                jobContextLabel ? `Job context ${jobContextLabel}.` : null,
+                isOnline ? 'Participant online.' : 'Participant offline.',
+              ]
+                .filter(Boolean)
+                .join(' ');
 
               return (
                 <React.Fragment
@@ -2067,6 +2116,7 @@ const MessagingPage = () => {
                   <ListItemButton
                     onClick={() => handleSelectConversation(conversation)}
                     selected={isSelected}
+                    aria-label={conversationItemAriaLabel}
                     sx={{
                       py: mobile
                         ? { xs: 0.85, sm: 1.05 }
@@ -2587,18 +2637,24 @@ const MessagingPage = () => {
               )}
             </Box>
 
-            <Tooltip title="More options">
-              <IconButton
-                aria-label="Open conversation menu"
-                sx={{
-                  ml: 1,
-                  minWidth: TOUCH_TARGET_MIN,
-                  minHeight: TOUCH_TARGET_MIN,
-                  color: '#fff',
-                }}
-              >
-                <MoreVertIcon />
-              </IconButton>
+            <Tooltip title="Conversation options coming soon">
+              <span>
+                <IconButton
+                  aria-label="Conversation menu unavailable"
+                  disabled
+                  sx={{
+                    ml: 1,
+                    minWidth: TOUCH_TARGET_MIN,
+                    minHeight: TOUCH_TARGET_MIN,
+                    color: '#fff',
+                    '&.Mui-disabled': {
+                      color: 'rgba(255,255,255,0.68)',
+                    },
+                  }}
+                >
+                  <MoreVertIcon />
+                </IconButton>
+              </span>
             </Tooltip>
           </Toolbar>
         </AppBar>

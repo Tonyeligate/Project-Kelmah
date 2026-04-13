@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import {
   Box,
@@ -37,6 +37,18 @@ const PreviewContainer = styled(Paper)(({ theme }) => ({
   },
 }));
 
+const screenReaderOnlySx = {
+  position: 'absolute',
+  width: 1,
+  height: 1,
+  p: 0,
+  m: -1,
+  overflow: 'hidden',
+  clip: 'rect(0, 0, 0, 0)',
+  whiteSpace: 'nowrap',
+  border: 0,
+};
+
 const FileTypeIcon = ({ type }) => {
   if (type.startsWith('image/')) return <ImageIcon color="info" />;
   if (type.startsWith('video/')) return <VideocamIcon color="secondary" />;
@@ -61,6 +73,8 @@ const AttachmentPreview = ({
   showDownload = true,
 }) => {
   const [showPreview, setShowPreview] = useState(false);
+  const previewOverlayRef = useRef(null);
+  const previewDialogId = useId();
   const { isOnline } = useOnlineStatus();
   const { isSlow, saveData } = useNetworkSpeed();
   const attachmentType = attachment.type || 'application/octet-stream';
@@ -68,6 +82,25 @@ const AttachmentPreview = ({
   const isPdfAttachment = attachmentType === 'application/pdf';
   const constrainedImagePreview =
     (!isOnline || isSlow || saveData) && isImageAttachment;
+  const previewDialogTitleId = `${previewDialogId}-title`;
+  const previewDialogDescriptionId = `${previewDialogId}-description`;
+
+  useEffect(() => {
+    if (!showPreview) {
+      return undefined;
+    }
+
+    previewOverlayRef.current?.focus();
+
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') {
+        setShowPreview(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [showPreview]);
 
   // Get file size in human readable format
   const formatSize = (size) => {
@@ -235,6 +268,7 @@ const AttachmentPreview = ({
 
       {showPreview && isImageAttachment && !constrainedImagePreview && (
         <Box
+          ref={previewOverlayRef}
           sx={{
             position: 'fixed',
             top: 0,
@@ -249,8 +283,16 @@ const AttachmentPreview = ({
             flexDirection: 'column',
             p: 2,
           }}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={previewDialogTitleId}
+          aria-describedby={previewDialogDescriptionId}
+          tabIndex={-1}
           onClick={() => setShowPreview(false)}
         >
+          <Typography id={previewDialogDescriptionId} sx={screenReaderOnlySx}>
+            Attachment preview. Press Escape or use the close button to return.
+          </Typography>
           <IconButton
             sx={{
               position: 'absolute',
@@ -266,7 +308,10 @@ const AttachmentPreview = ({
                 outlineOffset: '2px',
               },
             }}
-            onClick={() => setShowPreview(false)}
+            onClick={(event) => {
+              event.stopPropagation();
+              setShowPreview(false);
+            }}
             aria-label="Close attachment preview"
           >
             <CloseIcon />
@@ -275,6 +320,7 @@ const AttachmentPreview = ({
           <img
             src={attachment.url}
             alt={attachment.name}
+            onClick={(event) => event.stopPropagation()}
             style={{
               maxWidth: '90%',
               maxHeight: '80vh',
@@ -284,6 +330,7 @@ const AttachmentPreview = ({
           />
 
           <Typography
+            id={previewDialogTitleId}
             variant="body2"
             sx={{
               color: 'white',

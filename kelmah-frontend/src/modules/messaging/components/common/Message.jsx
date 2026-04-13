@@ -74,6 +74,18 @@ const MessageTime = styled(Typography)(({ theme }) => ({
   textAlign: 'right',
 }));
 
+const screenReaderOnlySx = {
+  position: 'absolute',
+  width: 1,
+  height: 1,
+  p: 0,
+  m: -1,
+  overflow: 'hidden',
+  clip: 'rect(0, 0, 0, 0)',
+  whiteSpace: 'nowrap',
+  border: 0,
+};
+
 const Message = ({
   message,
   isOwn,
@@ -191,6 +203,20 @@ const Message = ({
     !isRead &&
     (normalizedStatus === 'delivered' || normalizedStatus === 'received');
   const isSent = !isRead && !isDelivered && !isSending && !isFailed;
+  const deliveryStatusLabel = isSending
+    ? 'Message sending'
+    : isFailed
+      ? 'Message failed to send'
+      : isRead
+        ? 'Message read'
+        : isDelivered
+          ? 'Message delivered'
+          : isSent
+            ? 'Message sent'
+            : '';
+  const messageMenuId = `message-options-${String(
+    message.id || message._id || message.createdAt || 'item',
+  ).replace(/\s+/g, '-')}`;
 
   const formatTime = (timestamp) => {
     if (!timestamp) return '';
@@ -513,6 +539,17 @@ const Message = ({
               size="small"
               onClick={handleMenuOpen}
               aria-label="Open message options"
+              aria-haspopup="menu"
+              aria-controls={
+                Boolean(menuAnchorEl) || Boolean(menuPosition)
+                  ? messageMenuId
+                  : undefined
+              }
+              aria-expanded={
+                Boolean(menuAnchorEl) || Boolean(menuPosition)
+                  ? 'true'
+                  : undefined
+              }
               sx={{
                 position: 'absolute',
                 top: '50%',
@@ -547,10 +584,23 @@ const Message = ({
           <MessageTime>{formatTime(message.createdAt)}</MessageTime>
 
           {isOwn && (
-            <Box sx={{ display: 'flex', alignItems: 'center', ml: 0.5 }}>
+            <Box
+              sx={{ display: 'flex', alignItems: 'center', ml: 0.5 }}
+              role={deliveryStatusLabel ? 'status' : undefined}
+              aria-live={deliveryStatusLabel ? 'polite' : undefined}
+            >
+              {deliveryStatusLabel && (
+                <Box component="span" sx={screenReaderOnlySx}>
+                  {deliveryStatusLabel}
+                </Box>
+              )}
               {isSending && (
                 <Tooltip title="Sending...">
-                  <PendingIcon color="action" sx={{ fontSize: '0.9rem' }} />
+                  <PendingIcon
+                    color="action"
+                    sx={{ fontSize: '0.9rem' }}
+                    aria-hidden="true"
+                  />
                 </Tooltip>
               )}
               {isFailed && (
@@ -575,17 +625,29 @@ const Message = ({
               )}
               {isRead && (
                 <Tooltip title="Read">
-                  <ReadIcon color="primary" sx={{ fontSize: '0.9rem' }} />
+                  <ReadIcon
+                    color="primary"
+                    sx={{ fontSize: '0.9rem' }}
+                    aria-hidden="true"
+                  />
                 </Tooltip>
               )}
               {isDelivered && (
                 <Tooltip title="Delivered">
-                  <ReadIcon color="action" sx={{ fontSize: '0.9rem' }} />
+                  <ReadIcon
+                    color="action"
+                    sx={{ fontSize: '0.9rem' }}
+                    aria-hidden="true"
+                  />
                 </Tooltip>
               )}
               {isSent && (
                 <Tooltip title="Sent">
-                  <SentIcon color="action" sx={{ fontSize: '0.9rem' }} />
+                  <SentIcon
+                    color="action"
+                    sx={{ fontSize: '0.9rem' }}
+                    aria-hidden="true"
+                  />
                 </Tooltip>
               )}
             </Box>
@@ -595,6 +657,7 @@ const Message = ({
 
       {/* Message menu */}
       <Menu
+        id={messageMenuId}
         anchorReference={menuPosition ? 'anchorPosition' : 'anchorEl'}
         anchorPosition={menuPosition || undefined}
         anchorEl={menuPosition ? undefined : menuAnchorEl}
@@ -637,6 +700,7 @@ const Message = ({
 Message.propTypes = {
   message: PropTypes.shape({
     id: PropTypes.string.isRequired,
+    _id: PropTypes.string,
     content: PropTypes.string.isRequired,
     type: PropTypes.string,
     messageType: PropTypes.string,

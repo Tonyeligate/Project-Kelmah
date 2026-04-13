@@ -139,6 +139,13 @@ Kickoff in current batch:
 - Started with a messaging-first scope to keep changes isolated and auditable.
 - Captured a final validation baseline before kickoff (`npm run lint:messaging`, `npm run build`).
 
+Implemented in current batch:
+- Added conversation-list accessibility summaries and per-thread aria labeling in `MessagingPage.jsx`.
+- Added message-menu control relationships and polite delivery-state announcements in `Message.jsx`.
+- Added explicit preview-dialog title/description wiring in `MessageAttachments.jsx`.
+- Added modal semantics and Escape-key support to fullscreen preview overlay in `AttachmentPreview.jsx`.
+- Verified this pass with focused lint and production build smoke checks.
+
 Planned changes:
 - Focus order and ARIA audit per route.
 - Color and contrast pass against mobile sunlight scenarios.
