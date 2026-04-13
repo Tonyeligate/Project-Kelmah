@@ -23,6 +23,8 @@ import {
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import { getVirusScanDisplay } from '../../utils/virusScanUtils';
+import useOnlineStatus from '@/hooks/useOnlineStatus';
+import useNetworkSpeed from '@/hooks/useNetworkSpeed';
 
 const AttachmentContainer = styled(Box)(({ theme }) => ({
   marginTop: theme.spacing(1),
@@ -101,6 +103,17 @@ const MessageAttachments = ({
   readonly = false,
 }) => {
   const [previewUrl, setPreviewUrl] = useState(null);
+  const { isOnline } = useOnlineStatus();
+  const { isSlow, saveData } = useNetworkSpeed();
+  const constrainedNetworkMode = !isOnline || isSlow || saveData;
+  const hasImageAttachments = attachments.some((attachment) => {
+    const type =
+      attachment?.type ||
+      attachment?.mimeType ||
+      attachment?.virusScan?.metadata?.mimeType ||
+      '';
+    return String(type).startsWith('image/');
+  });
 
   // H54 fix: memoize blob URLs and revoke on unmount/change to prevent memory leaks
   const blobUrlsRef = useRef(new Map());
@@ -163,6 +176,18 @@ const MessageAttachments = ({
     <>
       {(attachments.length > 0 || isUploading) && (
         <AttachmentContainer>
+          {hasImageAttachments && constrainedNetworkMode && (
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ width: '100%', display: 'block', mb: 0.25 }}
+            >
+              {isOnline
+                ? 'Low-bandwidth mode: image previews are reduced to save data.'
+                : 'Offline mode: image previews are paused until connection returns.'}
+            </Typography>
+          )}
+
           {/* Handle uploading state */}
           {isUploading && (
             <AttachmentItem>
@@ -221,59 +246,98 @@ const MessageAttachments = ({
               <React.Fragment key={attachment.id || index}>
                 {fileType.startsWith('image/') ? (
                   <Box display="flex" flexDirection="column" gap={0.5}>
-                    <ImagePreview
-                      onClick={
-                        canInteract
-                          ? () =>
-                              handleOpenPreview(
-                                getAttachmentUrl(attachment, index),
-                              )
-                          : undefined
-                      }
-                      sx={{
-                        cursor: canInteract ? 'pointer' : 'not-allowed',
-                        opacity: canInteract ? 1 : 0.7,
-                      }}
-                    >
-                      <CardMedia
-                        component="img"
-                        height="100"
-                        image={getAttachmentUrl(attachment, index)}
-                        alt={displayName}
-                      />
-                      <ImageOverlay
-                        className="overlay"
-                        sx={{
-                          opacity: canInteract ? undefined : 1,
-                          background: canInteract
-                            ? 'rgba(0, 0, 0, 0.5)'
-                            : 'rgba(0, 0, 0, 0.7)',
-                        }}
-                      >
-                        {canInteract ? (
-                          <Tooltip title="View image">
-                            <IconButton
-                              size="small"
-                              color="primary"
-                              aria-label="View image attachment"
+                    {(() => {
+                      const attachmentUrl = getAttachmentUrl(attachment, index);
+                      const canOpenImagePreview =
+                        canInteract &&
+                        !constrainedNetworkMode &&
+                        !!attachmentUrl;
+
+                      return (
+                        <ImagePreview
+                          onClick={
+                            canOpenImagePreview
+                              ? () => handleOpenPreview(attachmentUrl)
+                              : undefined
+                          }
+                          sx={{
+                            cursor: canOpenImagePreview
+                              ? 'pointer'
+                              : 'not-allowed',
+                            opacity: canOpenImagePreview ? 1 : 0.7,
+                          }}
+                        >
+                          {!constrainedNetworkMode && attachmentUrl ? (
+                            <CardMedia
+                              component="img"
+                              height="100"
+                              image={attachmentUrl}
+                              alt={displayName}
+                            />
+                          ) : (
+                            <Box
                               sx={{
-                                width: 44,
-                                height: 44,
-                                '&:focus-visible': {
-                                  outline: '3px solid',
-                                  outlineColor: 'primary.main',
-                                  outlineOffset: '2px',
-                                },
+                                height: '100%',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                px: 1,
+                                gap: 0.4,
+                                bgcolor: 'action.hover',
                               }}
                             >
-                              <Visibility />
-                            </IconButton>
-                          </Tooltip>
-                        ) : (
-                          <Typography variant="caption">{label}</Typography>
-                        )}
-                      </ImageOverlay>
-                    </ImagePreview>
+                              <Image sx={{ color: 'text.secondary' }} />
+                              <Typography
+                                variant="caption"
+                                color="text.secondary"
+                                align="center"
+                              >
+                                {isOnline
+                                  ? 'Preview paused'
+                                  : 'Offline preview'}
+                              </Typography>
+                            </Box>
+                          )}
+                          <ImageOverlay
+                            className="overlay"
+                            sx={{
+                              opacity: canOpenImagePreview ? undefined : 1,
+                              background: canOpenImagePreview
+                                ? 'rgba(0, 0, 0, 0.5)'
+                                : 'rgba(0, 0, 0, 0.7)',
+                            }}
+                          >
+                            {canOpenImagePreview ? (
+                              <Tooltip title="View image">
+                                <IconButton
+                                  size="small"
+                                  color="primary"
+                                  aria-label="View image attachment"
+                                  sx={{
+                                    width: 44,
+                                    height: 44,
+                                    '&:focus-visible': {
+                                      outline: '3px solid',
+                                      outlineColor: 'primary.main',
+                                      outlineOffset: '2px',
+                                    },
+                                  }}
+                                >
+                                  <Visibility />
+                                </IconButton>
+                              </Tooltip>
+                            ) : (
+                              <Typography variant="caption">
+                                {constrainedNetworkMode
+                                  ? 'Preview paused'
+                                  : label}
+                              </Typography>
+                            )}
+                          </ImageOverlay>
+                        </ImagePreview>
+                      );
+                    })()}
                     {renderStatusChip}
                   </Box>
                 ) : (

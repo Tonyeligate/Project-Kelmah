@@ -1,3 +1,626 @@
+### Session: P2-01 Accessibility and Consistency Pass Kickoff April 13 2026 ⏳ IN PROGRESS
+
+**Date**: April 13, 2026  
+**Scope**: Move directly to the next backlog item after P2-02 messaging media closure by starting a messaging-first accessibility and consistency pass.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx
+- kelmah-frontend/src/modules/messaging/components/common/Message.jsx
+- kelmah-frontend/src/modules/messaging/components/common/MessageAttachments.jsx
+- kelmah-frontend/src/modules/messaging/components/common/AttachmentPreview.jsx
+- kelmah-frontend/src/modules/messaging/contexts/MessageContext.jsx
+- spec-kit/HIRER_MOBILE_UI_IMPLEMENTATION_BATCH_PLAN_APR12_2026.md
+- spec-kit/STATUS_LOG.md
+
+**Kickoff summary**
+- Final validation baseline for the just-closed messaging media hardening slice was captured before starting the next item:
+  - `npm run lint:messaging` -> PASS
+  - `npm run build` -> PASS
+- Next active backlog target is now `P2-01` (accessibility and consistency pass), beginning with the messaging route and shared messaging primitives.
+- First execution pass will focus on keyboard/focus order, semantic labeling, and consistency cleanup with no regressions to constrained-network behavior.
+
+**Verification**
+- PASS: focused messaging lint completed successfully.
+- PASS: frontend build smoke check completed successfully.
+
+### Session: P2-02 Messaging Media Hardening Closure Audit April 13 2026 ✅ COMPLETED
+
+**Date**: April 13, 2026  
+**Scope**: Run a final messaging-module audit to confirm there are no remaining ungated direct image/video render points after the P2-02 propagation sweeps.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/messaging/components/common/Message.jsx
+- kelmah-frontend/src/modules/messaging/components/common/MessageAttachments.jsx
+- kelmah-frontend/src/modules/messaging/components/common/AttachmentPreview.jsx
+- kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx
+- spec-kit/HIRER_MOBILE_UI_IMPLEMENTATION_BATCH_PLAN_APR12_2026.md
+- spec-kit/STATUS_LOG.md
+
+**Audit summary**
+- Verified constrained-network gating on remaining message-body media paths:
+  - `Message.jsx` raw/typed inline image/video branches are now constrained-network aware.
+  - `MessagingPage.jsx` local `MessageBubble` attachment-image rendering is constrained-network aware.
+  - composer image previews in `MessagingPage.jsx` remain gated by the existing `previewUrls` low-bandwidth path.
+- Verified residual direct `<img>` points are explicit user-triggered preview surfaces:
+  - `MessageAttachments.jsx` image dialog preview path,
+  - `AttachmentPreview.jsx` full preview overlay path.
+- Result: no additional code edits required to close messaging module direct media hardening for `P2-02`.
+
+**Verification**
+- PASS: direct media renderer inventory audit across `src/modules/messaging/**`.
+- PASS: no new frontend code changes required for this closure audit.
+
+### Session: P2-02 Messaging Inline Media Continuation (Message Body Renderers) April 13 2026 ✅ IN PROGRESS
+
+**Date**: April 13, 2026  
+**Scope**: Continue `P2-02` by extending constrained-network behavior from attachment-level previews to inline message-body media renderers.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/messaging/components/common/Message.jsx
+- kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx
+- spec-kit/HIRER_MOBILE_UI_IMPLEMENTATION_BATCH_PLAN_APR12_2026.md
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Inline message media propagation:
+  - `Message.jsx` now pauses raw URL and typed image/video inline previews during constrained-network/offline sessions while preserving message text and metadata.
+  - `MessagingPage.jsx` local `MessageBubble` now pauses inline attachment image preview rendering in constrained mode and shows explicit low-bandwidth/offline fallback messaging.
+- Existing constrained-mode composer behavior remains intact:
+  - composer image preview rendering continues to use the existing low-bandwidth gating path via `previewUrls`.
+
+**Verification**
+- PASS: focused lint validation on continued messaging sweep files:
+  - `npx eslint src/modules/messaging/components/common/Message.jsx src/modules/messaging/pages/MessagingPage.jsx`
+- PASS: edited-file diagnostics (`get_errors`) report no issues in both touched files.
+- PASS: frontend production build validation:
+  - `cd kelmah-frontend && npm run build`
+  - Result: `vite build` completed successfully (`13974 modules transformed`, `built in 47.39s`).
+
+### Session: P2-02 Shared Media Sweep (Messaging Attachments + Worker Gallery Surfaces) April 13 2026 ✅ IN PROGRESS
+
+**Date**: April 13, 2026  
+**Scope**: Continue `P2-02` by propagating constrained-network media behavior into remaining shared messaging attachment renderers and worker gallery/portfolio components.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/messaging/components/common/MessageAttachments.jsx
+- kelmah-frontend/src/modules/messaging/components/common/AttachmentPreview.jsx
+- kelmah-frontend/src/modules/worker/components/PortfolioGallery.jsx
+- kelmah-frontend/src/modules/worker/components/ProjectGallery.jsx
+- kelmah-frontend/src/modules/worker/components/ProjectShowcase.jsx
+- spec-kit/HIRER_MOBILE_UI_IMPLEMENTATION_BATCH_PLAN_APR12_2026.md
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Messaging attachment renderer propagation:
+  - `MessageAttachments.jsx` now applies constrained-network gating for image-heavy previews and adds explicit low-bandwidth/offline helper copy.
+  - `AttachmentPreview.jsx` now preserves attachment actions while pausing large image preview rendering in constrained mode.
+- Worker gallery/shared media propagation:
+  - `PortfolioGallery.jsx` now pauses tile image previews in constrained mode with explicit fallback messaging.
+  - `ProjectGallery.jsx` now pauses default full-image loading in constrained mode behind explicit user intent (`Load current image`) and suppresses thumbnail-strip overhead during constrained sessions.
+  - `ProjectShowcase.jsx` now applies constrained-mode pause/fallback behavior to before/after image cards.
+- Focused lint-hardening in touched files:
+  - resolved formatting drift introduced during propagation,
+  - added/normalized prop validation declarations in touched worker gallery components,
+  - corrected hook-order safety in `ProjectShowcase.jsx`.
+
+**Verification**
+- PASS: focused lint validation on all newly touched files:
+  - `npx eslint src/modules/messaging/components/common/MessageAttachments.jsx src/modules/messaging/components/common/AttachmentPreview.jsx src/modules/worker/components/PortfolioGallery.jsx src/modules/worker/components/ProjectGallery.jsx src/modules/worker/components/ProjectShowcase.jsx`
+- PASS: edited-file diagnostics (`get_errors`) report no issues in all five touched files.
+- PASS: frontend production build validation:
+  - `cd kelmah-frontend && npm run build`
+  - Result: `vite build` completed successfully (`13974 modules transformed`, `built in 1m`).
+
+### Session: P2-02 Remaining Heavy Route + Shared Media Primitive Propagation April 13 2026 ✅ IN PROGRESS
+
+**Date**: April 13, 2026  
+**Scope**: Continue `P2-02` by extending constrained-network guidance to remaining heavy frontend surfaces and close focused lint debt in the previously edited heavy routes.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/worker/components/WorkerProfile.jsx
+- kelmah-frontend/src/modules/hirer/pages/HirerDashboardPage.jsx
+- kelmah-frontend/src/modules/worker/pages/WorkerDashboardPage.jsx
+- kelmah-frontend/src/modules/common/components/cards/JobCard.jsx
+- spec-kit/HIRER_MOBILE_UI_IMPLEMENTATION_BATCH_PLAN_APR12_2026.md
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Focused lint debt cleanup completed for prior heavy-route targets:
+  - removed unused-symbol/import debt and prop validation gap in `WorkerProfile.jsx`,
+  - normalized formatting debt in `HirerDashboardPage.jsx`.
+- Worker Dashboard resilience propagation (heavy charts + polling):
+  - added `useOnlineStatus` + `useNetworkSpeed` awareness,
+  - added route-level network-mode alert (`offline`, `low bandwidth/data saver`, `restored`),
+  - adapted visibility polling cadence to slower refresh under constrained network and pause while offline,
+  - reduced pie-chart animation load in constrained-network mode.
+- Shared media primitive propagation (`JobCard.jsx`):
+  - added constrained-network cover-image fallback behavior (preview pause with explanatory copy),
+  - reduced avatar media loading in constrained-network mode,
+  - added low-bandwidth helper copy for non-compact card variants.
+
+**Verification**
+- PASS: focused lint validation on all affected heavy-route/media files:
+  - `npm --prefix kelmah-frontend run lint -- src/modules/worker/components/WorkerProfile.jsx src/modules/hirer/pages/HirerDashboardPage.jsx src/modules/worker/pages/WorkerDashboardPage.jsx src/modules/common/components/cards/JobCard.jsx`
+- PASS: edited-file diagnostics (`get_errors`) report no issues in all four affected files.
+- PASS: frontend production build validation:
+  - `npm --prefix kelmah-frontend run build`
+  - Result: `vite build` completed successfully (`13972 modules transformed`, `built in 39.34s`).
+
+### Session: P2-02 Low-Bandwidth Guidance Propagation (Worker Profile + Hirer Dashboard) April 13 2026 ✅ IN PROGRESS
+
+**Date**: April 13, 2026  
+**Scope**: Continue `P2-02` by extending low-bandwidth/offline guidance beyond messaging into additional heavy routes (Page 1 and Page 3).
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/worker/components/WorkerProfile.jsx
+- kelmah-frontend/src/modules/hirer/pages/HirerDashboardPage.jsx
+- spec-kit/HIRER_MOBILE_UI_IMPLEMENTATION_BATCH_PLAN_APR12_2026.md
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Worker Profile heavy-media resilience (`Page 1`):
+  - added `useOnlineStatus` + `useNetworkSpeed` awareness,
+  - added route-level offline/low-bandwidth/restored connectivity alert with explicit refresh action,
+  - reduced hero/portfolio image preview rendering in constrained-network mode,
+  - added low-bandwidth explanatory copy in portfolio list, mobile carousel, and portfolio dialog states.
+- Hirer Dashboard heavy-data resilience (`Page 3`):
+  - added `useOnlineStatus` + `useNetworkSpeed` awareness,
+  - added route-level network-mode alert (offline/low-bandwidth/restored),
+  - adapted auto-refresh cadence to slower interval under constrained network/data-saver mode,
+  - reduced Recharts animation load in dashboard chart panels during low-bandwidth mode,
+  - aligned live-status chips/tooltips and screen-reader status text with adaptive refresh cadence.
+
+**Verification**
+- PASS: edited-file diagnostics (`get_errors`) report no issues in:
+  - `kelmah-frontend/src/modules/worker/components/WorkerProfile.jsx`
+  - `kelmah-frontend/src/modules/hirer/pages/HirerDashboardPage.jsx`
+- PASS: frontend production build validation:
+  - `npm --prefix kelmah-frontend run build`
+  - Result: `vite build` completed successfully (`13972 modules transformed`, `built in 1m 14s`).
+- NOTE: focused lint on these two routes currently reports pre-existing baseline violations in these long-lived files (unused imports/symbols + formatting debt unrelated to this P2-02 feature intent), so lint remains non-clean despite successful compile/diagnostics verification:
+  - `npm --prefix kelmah-frontend run lint -- src/modules/worker/components/WorkerProfile.jsx src/modules/hirer/pages/HirerDashboardPage.jsx`
+
+### Session: Messaging P1-04 Low-Bandwidth Cues + Focused Lint Baseline April 12 2026 ✅ COMPLETED
+
+**Date**: April 12, 2026  
+**Scope**: Complete the next P1/P2 messaging polish slice by improving low-bandwidth/offline clarity and making targeted lint verification actionable.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx
+- kelmah-frontend/package.json
+- spec-kit/HIRER_MOBILE_UI_IMPLEMENTATION_BATCH_PLAN_APR12_2026.md
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Extended messaging route network awareness:
+  - integrated `useOnlineStatus` and `useNetworkSpeed` state into conversation list, thread panel, and composer guidance,
+  - added global network-mode banner for offline, low-bandwidth/data-saver, and connection-restored states,
+  - added clearer continuity/outage copy with preserved draft and queued-send reassurance.
+- Added stronger recovery and escalation actions in network degradation states:
+  - retry action now coordinates inbox refresh + realtime reconnect,
+  - help escalation is visible in low-bandwidth/offline and deep-link failure paths.
+- Added low-bandwidth attachment behavior and guidance:
+  - image previews are paused when `isSlow` or `saveData` is active,
+  - attachment review shows constrained-network indicator,
+  - composer now surfaces explicit low-bandwidth and offline hints.
+- Completed focused lint-baseline cleanup for this workflow:
+  - updated frontend scripts so lint can run file-scoped (`lint`, `lint:all`, `lint:messaging`),
+  - removed dependency on full-project lint noise for messaging-only verification.
+
+**Verification**
+- PASS: focused messaging lint validation:
+  - `npm --prefix kelmah-frontend run lint:messaging`
+  - Result: no lint or Prettier violations reported for `MessagingPage.jsx` and `MessageContext.jsx`.
+- PASS: frontend production build validation:
+  - `npm --prefix kelmah-frontend run build`
+  - Result: `vite build` completed successfully (`13972 modules transformed`).
+
+### Session: UI Pre-Push Gate Definitive Run April 12 2026 ⚠️ BLOCKED (Visual Compare)
+
+**Date**: April 12, 2026  
+**Scope**: Capture a definitive full pre-push gate result and isolate blocking sub-step.
+
+**Execution details**
+- Full gate invocation in interactive PowerShell initially stalled with no progress output because `scripts/ui-pre-push-gate.js` reads stdin and can block waiting for EOF in an interactive shell.
+- Definitive rerun executed with stdin closed:
+  - `cmd /c "npm run ui:pre-push-gate < NUL"`
+
+**Definitive result**
+- FAIL: `ui:pre-push-gate` exited with code `1`.
+- Blocking sub-step: strict route pack compare (`ui:pack:compare --pack core-public --strict true`).
+
+**Evidence**
+- Pack report: `.artifacts/ui/packs/pre-push-2026-04-12T19-19-23-023Z/pack-report.json`.
+- Route outcomes from this run:
+  - PASS: `/jobs`, `/support`, `/docs`
+  - FAIL: `/`, `/search`, `/community`
+- Key failure signals:
+  - `/` mismatch: `5.79%`, `5.58%`, `2.98%`, `2.11%` across `320/768/1024/1440`.
+  - `/search` mismatch: `40.56%`, `58.31%`, `44.31%`, `50.76%` across `320/768/1024/1440`.
+  - `/community` mismatch: `99.97%` at `1024` only, with console error `404` and zero heading/interactive detections at that breakpoint in capture metadata.
+
+**Current closure state**
+- Pre-push gate closure is blocked by deterministic visual compare failures in the core-public pack, not by terminal runtime instability.
+
+### Session: Messaging P1-04 Continuity + Status Transparency April 12 2026 ✅ IN PROGRESS
+
+**Date**: April 12, 2026  
+**Scope**: Start `P1-04` implementation for messaging continuity hardening, retry confidence, and support escalation clarity.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx
+- kelmah-frontend/src/modules/messaging/contexts/MessageContext.jsx
+- spec-kit/HIRER_MOBILE_UI_IMPLEMENTATION_BATCH_PLAN_APR12_2026.md
+- spec-kit/STATUS_LOG.md
+
+**Pre-implementation checkpoint**
+- Completed dry file-flow audit for messaging continuity path:
+  - route-level rendering and recovery UX in `MessagingPage.jsx`,
+  - conversation load/retry + realtime connection lifecycle in `MessageContext.jsx`,
+  - fallback API methods in `messagingService.js`.
+- Confirmed current batch goals:
+  - clearer connection/outage status language,
+  - stronger retry behavior that preserves current context,
+  - visible support escalation path from failure states,
+  - explicit continuity reassurance for drafts and queued sends.
+
+**Implementation summary (current P1-04 batch)**
+- Exposed explicit recovery actions from message context:
+  - `refreshConversations` (inbox reload),
+  - `reconnectRealtime` (socket reconnection attempt).
+- Hardened realtime reconnect behavior so manual retry can explicitly re-connect a disconnected shared socket instance instead of no-oping when a socket reference already exists.
+- Added continuity-oriented recovery UX in `MessagingPage.jsx`:
+  - richer connection copy with last-sync context,
+  - retry actions that preserve list/draft context while reconnecting,
+  - direct `Help` escalation in unstable connection and deep-link error states,
+  - recovery status banner confirming reconnect progress/outcome.
+- Improved deep-link failure messaging with empathetic continuity guidance that confirms context retention.
+
+**Verification**
+- PASS: edited-file diagnostics (`get_errors`) report no issues in:
+  - `kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx`
+  - `kelmah-frontend/src/modules/messaging/contexts/MessageContext.jsx`
+- PASS: frontend production build validation:
+  - `npm --prefix kelmah-frontend run build`
+  - Result: `vite build` completed successfully (`13972 modules transformed`, `built in 1m 6s`).
+- NOTE: `npm --prefix kelmah-frontend run lint -- src/modules/messaging/pages/MessagingPage.jsx src/modules/messaging/contexts/MessageContext.jsx` executes project-wide lint in this workspace script setup; it reports pre-existing issues in unrelated files, so lint output is not currently an isolated signal for the P1-04 file set.
+
+### Session: Hirer Dashboard P1-03 Decision-First Layout April 12 2026 ✅ IN PROGRESS
+
+**Date**: April 12, 2026  
+**Scope**: Start `P1-03` execution for the hirer dashboard mobile/desktop decision hierarchy improvements.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/hirer/pages/HirerDashboardPage.jsx
+- kelmah-frontend/src/modules/hirer/components/RecentActivityFeed.jsx
+- spec-kit/HIRER_MOBILE_UI_IMPLEMENTATION_BATCH_PLAN_APR12_2026.md
+- spec-kit/STATUS_LOG.md
+
+**Pre-implementation checkpoint**
+- Re-read all required instruction files (`api-design`, `backend`, `frontend`, `investigation`, `testing`) for compliance.
+- Completed dry file-flow audit for dashboard route and data path:
+  - route wiring in `src/routes/config.jsx`,
+  - dashboard rendering and data hydration in `HirerDashboardPage.jsx`,
+  - activity card composition in `RecentActivityFeed.jsx`,
+  - dashboard activity service path in `modules/dashboard/services/dashboardService.js`.
+- Confirmed `P1-03` target outcomes for this batch:
+  - add top urgent-priority strip,
+  - reduce decision density and clarify KPI wording,
+  - standardize action placement/labels,
+  - add explicit recency + partial-load visibility.
+
+**Implementation summary (current P1-03 batch)**
+- Added a reusable `Today Priority Queue` strip in `HirerDashboardPage.jsx` for mobile and desktop.
+- Prioritized action routing for:
+  - pending application decisions,
+  - overdue active jobs,
+  - pending payment releases,
+  - active jobs with no applicant records.
+- Standardized KPI and action language to decision-first phrasing (`Review queue`, `Live jobs`, `Open messages`, `Budget spent`).
+- Added explicit recency and resiliency feedback:
+  - `Last sync` clock label,
+  - shell-level warning banner when some dashboard modules fail and cached data is shown.
+
+**Verification**
+- PASS: edited-file diagnostics (`get_errors`) report no issues in `kelmah-frontend/src/modules/hirer/pages/HirerDashboardPage.jsx`.
+- NOTE: full task-level build/lint rerun remains constrained by the same session runtime instability previously observed (`-1073741819` Node process exit in prior frontend task runs), so this update currently has diagnostics-level verification.
+
+### Session: Hirer Worker Profile + Post Job P1 Batches April 12 2026 ✅ IN PROGRESS
+
+**Date**: April 12, 2026  
+**Scope**: Execute `P1-01` and `P1-02` from the hirer mobile audit by improving worker-profile decision architecture and Post Job completion guidance quality.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/worker/components/WorkerProfile.jsx
+- kelmah-frontend/src/modules/hirer/pages/JobPostingPage.jsx
+- spec-kit/HIRER_MOBILE_UI_IMPLEMENTATION_BATCH_PLAN_APR12_2026.md
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary (current P1-01 batch)**
+- Added mobile `Hire Readiness` architecture:
+  - compact readiness metrics (rate guide, reply speed, current load, response rate),
+  - explicit logistics rows for service area, language support, tools/material responsibility, and travel readiness.
+- Improved low-literacy section hierarchy in the mobile profile:
+  - renamed sections to `Work Summary`, `Recent Work Photos`, and `Client Feedback`,
+  - added concise helper copy to guide hirer action decisions.
+- Added persistent section-jump + return continuity:
+  - section chips now track active context,
+  - scroll position and section context are stored before opening messages,
+  - profile restores scroll context when user returns from the messaging route.
+
+**Implementation summary (current P1-02 batch)**
+- Added plain-language coaching banners per Job Posting step.
+- Added category keyword filtering (`Find Trade Category`) for faster trade selection.
+- Added final-step `Confidence Checklist` with pass/fail readiness indicators.
+- Added publish expectations for moderation review and first-response timing.
+
+**Verification**
+- PASS: edited-file diagnostics (`get_errors`) report no issues in `WorkerProfile.jsx` and `JobPostingPage.jsx`.
+- FAIL (environment/runtime): frontend build task exits with code `-1073741819` in this session while running:
+  - `npm --prefix kelmah-frontend run build`
+  - `cmd /c set NODE_OPTIONS=--max-old-space-size=8192&& npm --prefix kelmah-frontend run build`
+- FAIL (environment/runtime): targeted lint task also exits with `-1073741819`:
+  - `npm --prefix kelmah-frontend run lint -- src/modules/worker/components/WorkerProfile.jsx src/modules/hirer/pages/JobPostingPage.jsx`
+- NOTE: because of the task-runner process crash, this batch currently has diagnostics-level verification only and needs a clean build rerun once the Node runtime instability is resolved.
+
+### Session: Hirer Mobile Audit P0 Execution Batch (Worker/Profile/PostJob/Dashboard/Messages) April 12 2026 ✅ IN PROGRESS
+
+**Date**: April 12, 2026  
+**Scope**: Execute the first production-critical implementation batch mapped from the 800-point hirer mobile audit.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx
+- kelmah-frontend/src/modules/common/components/RouteErrorBoundary.jsx
+- kelmah-frontend/src/utils/lazyWithRetry.js
+- kelmah-frontend/src/modules/worker/components/WorkerProfile.jsx
+- kelmah-frontend/src/modules/hirer/pages/JobPostingPage.jsx
+- kelmah-frontend/src/modules/hirer/pages/HirerDashboardPage.jsx
+- spec-kit/HIRER_MOBILE_UI_IMPLEMENTATION_BATCH_PLAN_APR12_2026.md
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary (P0 batch)**
+- Messaging stability and recovery hardening:
+  - fixed runtime crash from variable initialization order in `MessagingPage.jsx`,
+  - upgraded route error fallback in `RouteErrorBoundary.jsx` with retry/reload/help actions,
+  - added guarded chunk mismatch auto-reload path in `lazyWithRetry.js`.
+- Worker profile mobile action safety:
+  - converted fixed bottom CTA to sticky in-flow panel,
+  - added clear trust and logistics summary (price/location/availability freshness),
+  - clarified action labels and pre-hire expectation copy.
+- Post Job mobile completion safety:
+  - reduced mobile process chrome (compact progress header),
+  - fixed category-field overlap state,
+  - added local autosave + restore UX + clear-draft actions,
+  - added unsaved-change protection on refresh/close,
+  - added mobile `Save Draft` parity action.
+- Dashboard mobile conflict reduction:
+  - removed redundant fixed bottom action bar competing with primary bottom navigation.
+
+**Verification**
+- PASS: IDE diagnostics (`get_errors`) report no issues in all touched frontend files.
+- PASS: frontend production build validation:
+  - `cd kelmah-frontend && npm run build`
+  - Result: `vite build` completed successfully.
+- PASS: UI strict compare batch run previously succeeded for generated artifacts during this session.
+- NOTE: `npm run ui:pre-push-gate` script is not available in this workspace package scripts (`Missing script: ui:pre-push-gate`).
+
+### Session: Hirer Applications Mobile Triage Redesign + Action Clarity April 12 2026 ✅ COMPLETED
+
+**Date**: April 12, 2026  
+**Scope**: Implement UX fixes for the hirer applications triage page with stronger mobile scanability, safer action context, search-driven triage, and clearer card-level quick actions.
+
+**Files currently in scope**
+- kelmah-frontend/src/modules/hirer/pages/ApplicationManagementPage.jsx
+- kelmah-frontend/src/modules/hirer/components/ApplicationManagementCards.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Improved triage controls in `ApplicationManagementPage.jsx`:
+  - added search-based filtering for worker name, job title, note text, and status,
+  - replaced dense single-row filter strip with a structured control rail (heading, result count, search input, status chips),
+  - removed sticky-title behavior that caused mobile crowding and replaced it with a cleaner static page heading,
+  - expanded queue snapshot visibility and surfaced filtered-results count.
+- Improved mobile fixed action rail behavior:
+  - fixed action bar now renders only when an application is selected (removed context-breaking fallback CTA),
+  - added applicant context + status badge in the action rail before decision actions.
+- Improved card-level quick actions in `ApplicationManagementCards.jsx`:
+  - replaced icon-only quick actions with labeled buttons (`Message`, `Accept`, `Reject`) to reduce ambiguity and improve tap confidence.
+- Added search-specific empty state:
+  - no-results panel now explains search miss and provides a direct `Clear search` recovery action.
+
+**Verification**
+- PASS: edited-file diagnostics (`get_errors`) show no issues in touched frontend files.
+- PASS: frontend production build validation:
+  - `cd kelmah-frontend && set NODE_OPTIONS=--max-old-space-size=8192 && npm run build`
+  - Result: `vite build` completed successfully.
+- PASS: route-level strict baseline capture for redesigned applications UI:
+  - `node scripts/ui_audit_runner.mjs baseline --task-id hirer-applications-redesign-20260412-baseline-seed --baseline-id hirer-applications-redesign-20260412 --route /hirer/applications --base-url http://127.0.0.1:3000 --mock-auth true --mock-role hirer --mock-applications true --strict true`
+  - Result: `Score: 25/25 | Pass: true`.
+- PASS: route-level strict compare evidence against redesign baseline:
+  - `node scripts/ui_audit_runner.mjs compare --task-id hirer-applications-redesign-20260412-evidence --baseline-id hirer-applications-redesign-20260412 --route /hirer/applications --base-url http://127.0.0.1:3000 --mock-auth true --mock-role hirer --mock-applications true --strict true`
+  - Result: `Score: 25/25 | Pass: true` with mismatch `0.00%` on `320`, `768`, `1024`, and `1440`.
+- FAIL: core-public strict pack compare currently reports baseline drift outside this protected-route redesign:
+  - `npm run ui:pack:compare -- --pack core-public --task-id core-public-compare-20260412-hirer-redesign-rerun --strict true`
+  - Result: pass on `/support` and `/docs`; fail on `/`, `/jobs`, `/search`, and `/community`.
+  - Pack report: `.artifacts/ui/packs/core-public-compare-20260412-hirer-redesign-rerun/pack-report.json`.
+- NOTE: full `npm run ui:pre-push-gate` did not complete within the terminal timeout window in this session and was manually terminated after repeated build output.
+
+### Session: Android Thread Bubble Hierarchy Tightening + Production Readiness Gate April 8 2026 ✅ COMPLETED
+
+**Date**: April 8, 2026  
+**Scope**: Final visual tightening pass on messaging thread bubbles (density + timestamp hierarchy) and full Android production-readiness validation across routing, debug/test, and release assembly.
+
+**Files currently in scope**
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/messaging/presentation/MessagesScreen.kt
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/app/navigation/KelmahNavHost.kt
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/app/navigation/KelmahDestination.kt
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Final thread bubble visual tightening in `MessagesScreen.kt`:
+  - reduced bubble padding/radius for denser scanability,
+  - reduced sender-label visual weight,
+  - promoted timestamp hierarchy with right-aligned compact timestamp row and role-aware contrast.
+- Routing/action safety audit:
+  - confirmed NavHost mappings and callback wiring remain intact for Home/Jobs/Messages/Notifications/Profile route actions,
+  - confirmed message-thread behavior path remains unchanged (`open conversation`, `draft`, `attachment actions`, `send message`).
+
+**Verification**
+- PASS: IDE diagnostics (`get_errors`) report no issues in touched files.
+- PASS: Android debug compile validation:
+  - `cd kelmah-mobile-android && .\\gradlew.bat :app:compileDebugKotlin --no-daemon --console=plain`
+  - Result: `BUILD SUCCESSFUL`.
+- PASS: Android debug unit test validation:
+  - `cd kelmah-mobile-android && .\\gradlew.bat :app:testDebugUnitTest --no-daemon --console=plain`
+  - Result: `BUILD SUCCESSFUL`.
+- PASS: Android release assembly validation:
+  - `cd kelmah-mobile-android && .\\gradlew.bat :app:assembleRelease --no-daemon --console=plain`
+  - Result: `BUILD SUCCESSFUL`.
+- PASS: Android lint validation:
+  - `cd kelmah-mobile-android && .\\gradlew.bat :app:lintDebug --no-daemon --console=plain`
+  - Result: `BUILD SUCCESSFUL` (report generated at `kelmah-mobile-android/app/build/reports/lint-results-debug.html`).
+  - Lint finding profile: `32 Warning`, `3 Information`; targeted touched files in this pass contain only `Information` findings and no `Warning`/`Error` findings.
+
+### Session: Android Composer + Notification Density and Motion Polish (Primary Flows) April 8 2026 ✅ COMPLETED
+
+**Date**: April 8, 2026  
+**Scope**: Redesign message thread composer and notification cards for compact decision density, and add subtle entry/state motion polish across core Android flows.
+
+**Files currently in scope**
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/core/design/components/KelmahPremiumUi.kt
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/messaging/presentation/MessagesScreen.kt
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/notifications/presentation/NotificationsScreen.kt
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/home/presentation/HomeScreen.kt
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/jobs/presentation/JobsScreen.kt
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/auth/presentation/LoginScreen.kt
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/profile/presentation/ProfileScreen.kt
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/app/KelmahApp.kt
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Messaging thread composer redesign in `MessagesScreen.kt`:
+  - rebuilt the thread composer into a compact command strip (`Composer` header + char counter + mode chips + quick replies),
+  - retained full thread-state behavior (loading, empty, message feed, attachment modes, send-state logic),
+  - wrapped thread root with content-size transitions for smoother state changes.
+- Notification card density polish in `NotificationsScreen.kt`:
+  - tightened card spacing and action alignment for faster scanning,
+  - preserved existing action callbacks and unread filtering behavior,
+  - added list/container size-transition polish for smoother grouped updates.
+- Shared and primary-flow motion polish:
+  - added `animateContentSize` driven transitions across premium/shared containers and major Android flow roots (`Login`, `Home`, `Jobs`, `Messages`, `Notifications`, `Profile`, `KelmahApp` shell host).
+- Stability fixes during verification:
+  - repaired malformed Kotlin block introduced during composer refactor in `MessagesScreen.kt`,
+  - corrected imports for `spring` in `KelmahPremiumUi.kt` and `width` in `NotificationsScreen.kt`.
+
+**Verification**
+- PASS: IDE diagnostics (`get_errors`) report no issues in touched Android files.
+- PASS: Android compile validation:
+  - `cd kelmah-mobile-android && .\\gradlew.bat :app:compileDebugKotlin --no-daemon --console=plain`
+  - Result: `BUILD SUCCESSFUL`.
+- PASS: Android unit test validation:
+  - `cd kelmah-mobile-android && .\\gradlew.bat :app:testDebugUnitTest --no-daemon --console=plain`
+  - Result: `BUILD SUCCESSFUL`.
+
+### Session: Android Command-Deck UX Redesign Iteration 2 (Shell + Job Detail Flow) April 8 2026 ✅ COMPLETED
+
+**Date**: April 8, 2026  
+**Scope**: Continue Android redesign by upgrading remaining high-impact surfaces (app shell, job detail, job application) to the shared command-deck visual system for consistent premium UX.
+
+**Files currently in scope**
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/app/KelmahApp.kt
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/jobs/presentation/JobDetailScreen.kt
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/jobs/presentation/JobApplicationScreen.kt
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- App shell polish in `KelmahApp.kt`:
+  - upgraded loading and session-recovery states to command-deck presentation,
+  - tightened bottom navigation visual weight (shape, elevation, spacing, clearer labels) for stronger premium parity with redesigned screens.
+- Job detail redesign in `JobDetailScreen.kt`:
+  - replaced legacy card stack with command-deck header + glass panels,
+  - improved information hierarchy for scope, requirements, and market metrics,
+  - kept worker actions (save/apply/message hirer) behavior intact while improving action sizing and readability.
+- Job application redesign in `JobApplicationScreen.kt`:
+  - introduced role-aware command-deck framing for worker and hirer paths,
+  - moved helper copy and form into premium panel structure,
+  - preserved submission flow and existing view-model integration.
+
+**Verification**
+- PASS: IDE diagnostics (`get_errors`) report no issues in edited files.
+- PASS: Android compile validation:
+  - `cd kelmah-mobile-android && .\\gradlew.bat :app:compileDebugKotlin --no-daemon --console=plain`
+  - Result: `BUILD SUCCESSFUL`.
+- PASS: Android unit test validation:
+  - `cd kelmah-mobile-android && .\\gradlew.bat :app:testDebugUnitTest --no-daemon --console=plain`
+  - Result: `BUILD SUCCESSFUL`.
+
+### Session: Android Command-Deck UX Redesign Iteration (Web-Aligned, Binance-Grade Density) April 6 2026 ✅ COMPLETED
+
+**Date**: April 6, 2026  
+**Scope**: Redesign Android core screens with stronger visual hierarchy, denser market-style signal presentation, and tighter shell coherence inspired by Kelmah web pages.
+
+**Files currently in scope**
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/core/design/components/KelmahPremiumUi.kt
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/auth/presentation/LoginScreen.kt
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/home/presentation/HomeScreen.kt
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/jobs/presentation/JobsScreen.kt
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/messaging/presentation/MessagesScreen.kt
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/notifications/presentation/NotificationsScreen.kt
+- kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/profile/presentation/ProfileScreen.kt
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Added a reusable Android premium command-deck system in `KelmahPremiumUi.kt`:
+  - richer layered background glows for stronger web parity,
+  - new shared panel border/elevation helpers,
+  - reusable `KelmahGlassPanel`, `KelmahCommandDeck`, and command metric/signal models.
+- Applied command-deck redesign across key Android screens:
+  - `LoginScreen`: replaced basic hero with secure-access command deck + premium auth mode switch container.
+  - `HomeScreen`: upgraded entry experience to role-aware command deck and glass-based overview/priority panels.
+  - `JobsScreen`: added operations command deck, premium feed toggle panel, and denser metric framing.
+  - `MessagesScreen`: redesigned conversation-list header/search into command-deck + glass search control.
+  - `NotificationsScreen`: converted alerts entry to command deck + premium filter panel.
+  - `ProfileScreen`: introduced profile command deck and migrated major sections to shared glass panels.
+
+**Verification**
+- PASS: IDE diagnostics (`get_errors`) report no issues in all edited Android files.
+- PASS: Android compile validation:
+  - `cd kelmah-mobile-android && .\\gradlew.bat :app:compileDebugKotlin --no-daemon --console=plain`
+  - Result: `BUILD SUCCESSFUL`.
+- PASS: Android unit test validation:
+  - `cd kelmah-mobile-android && .\\gradlew.bat :app:testDebugUnitTest --no-daemon --console=plain`
+  - Result: `BUILD SUCCESSFUL`.
+
+### Session: Core-Public Deployment Strict Compare Evidence April 6 2026 ⚠️ INCOMPLETE
+
+**Date**: April 6, 2026  
+**Scope**: Run strict `core-public` pack compare against deployed frontend URL to validate whether local UI fixes are reflected in deployment.
+
+**Files currently in scope**
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Executed strict deployed compare against:
+  - `https://kelmah-frontend-cyan.vercel.app`
+- Used existing strict baseline pack as reference to produce deployment-level mismatch evidence.
+
+**Verification**
+- FAIL: deployed strict pack compare
+  - `npm run ui:pack:compare -- --pack core-public --task-id core-public-compare-deployed-20260406-v1 --base-url https://kelmah-frontend-cyan.vercel.app --strict true`
+  - Pack report: `.artifacts/ui/packs/core-public-compare-deployed-20260406-v1/pack-report.json`
+  - Overall: `overallPass = false`
+  - Route results:
+    - FAIL: `/` score `9/25`
+    - FAIL: `/jobs` score `5/25`
+    - FAIL: `/search` score `5/25`
+    - PASS: `/support` score `24/25`
+    - PASS: `/docs` score `24/25`
+    - PASS: `/community` score `24/25`
+
+**Conclusion**
+- Deployment currently does not match the strict-locked local state.
+- Re-run this compare after deploying frontend changes to confirm production lock.
+
 ### Session: Frontend Discovery Wave 4 - Search Accessibility Delta April 6 2026 ✅ COMPLETED
 
 **Date**: April 6, 2026  
@@ -20,6 +643,50 @@
 - PASS: full frontend build validation:
   - `npm --prefix kelmah-frontend run build`
   - Result: `vite build` completed successfully (`13,972` modules transformed).
+
+### Session: Cross-Platform Mobile Refinement Pass (Micro-Spacing + Type Scale + Interaction Polish) April 6 2026 ✅ COMPLETED
+
+**Date**: April 6, 2026  
+**Scope**: Perform a second refinement pass over premium mobile redesigns, focusing on spacing rhythm, typography scale transitions, and interaction sizing polish on both iOS and Android for visual/behavioral parity.
+
+**Files currently in scope**
+- iOS
+  - `kelmah-mobile-ios/Kelmah/Core/Design/KelmahPremiumComponents.swift`
+  - `kelmah-mobile-ios/Kelmah/App/RootTabView.swift`
+  - `kelmah-mobile-ios/Kelmah/Features/Home/Presentation/HomeView.swift`
+  - `kelmah-mobile-ios/Kelmah/Features/Jobs/Presentation/JobsView.swift`
+  - `kelmah-mobile-ios/Kelmah/Features/Messaging/Presentation/MessagesView.swift`
+  - `kelmah-mobile-ios/Kelmah/Features/Notifications/Presentation/NotificationsView.swift`
+  - `kelmah-mobile-ios/Kelmah/Features/Profile/Presentation/ProfileView.swift`
+- Android
+  - `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/core/design/components/KelmahPremiumUi.kt`
+  - `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/core/design/theme/Type.kt`
+  - `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/app/KelmahApp.kt`
+  - `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/auth/presentation/LoginScreen.kt`
+  - `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/home/presentation/HomeScreen.kt`
+  - `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/jobs/presentation/JobsScreen.kt`
+  - `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/messaging/presentation/MessagesScreen.kt`
+  - `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/notifications/presentation/NotificationsScreen.kt`
+  - `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/profile/presentation/ProfileScreen.kt`
+- Documentation
+  - `spec-kit/STATUS_LOG.md`
+
+**Implementation summary**
+- iOS second-pass polish:
+  - tightened shared component rhythm in `KelmahPremiumComponents` (panel padding/corners, chip density, metric text scale, section-header typography, banner readability, command-deck spacing).
+  - normalized action sizing across Home/Jobs/Messages/Notifications/Profile (48px primary / 44-46px secondary feel), improved card tap content-shape consistency, and balanced top/bottom section spacing.
+  - refined tab-shell presentation in `RootTabView` with stronger title typography and richer tab appearance parity (stacked/inline/compact item text treatment).
+- Android parity pass:
+  - tuned shared premium layer (`KelmahPremiumUi`) with consistent action-height constants and surface alpha polish.
+  - adjusted global type rhythm in `Type.kt` to improve hierarchy continuity against iOS pass.
+  - applied interaction-size and spacing improvements to shell and core screens (`KelmahApp`, Login/Home/Jobs/Messages/Notifications/Profile), emphasizing minimum touch heights and cleaner vertical cadence.
+
+**Verification**
+- PASS: IDE diagnostics (`get_errors`) report no issues in all touched iOS and Android files.
+- PASS: Android compile verification:
+  - `cd kelmah-mobile-android && ./gradlew.bat :app:compileDebugKotlin --no-daemon --console=plain`
+  - Result: `BUILD SUCCESSFUL`.
+- NOTE: native iOS compile/test execution was not run in this Windows environment (Xcode/macOS required).
 
 ### Session: iOS Mobile UI/UX Redesign Pass (Web-Inspired Premium Command Deck) April 6 2026 ✅ COMPLETED
 

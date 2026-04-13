@@ -1461,6 +1461,34 @@ export const MessageProvider = ({ children }) => {
     [onlineUsers],
   );
 
+  const refreshConversations = useCallback(
+    async () => loadConversations(),
+    [loadConversations],
+  );
+
+  const reconnectRealtime = useCallback(async () => {
+    const activeSocket = socketRef.current || websocketService.socket;
+
+    if (activeSocket) {
+      if (
+        !activeSocket.connected &&
+        typeof activeSocket.connect === 'function'
+      ) {
+        try {
+          activeSocket.connect();
+        } catch (error) {
+          devWarn('Failed to trigger realtime reconnect:', error);
+          throw error;
+        }
+      }
+
+      return activeSocket;
+    }
+
+    await connectWebSocket();
+    return socketRef.current || websocketService.socket || null;
+  }, [connectWebSocket]);
+
   const value = {
     // Core messaging state
     conversations,
@@ -1479,6 +1507,8 @@ export const MessageProvider = ({ children }) => {
     createConversation,
     openTemporaryConversation,
     clearConversation,
+    refreshConversations,
+    reconnectRealtime,
 
     // Real-time WebSocket features
     isConnected,

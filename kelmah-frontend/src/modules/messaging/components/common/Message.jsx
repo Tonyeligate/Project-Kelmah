@@ -32,6 +32,8 @@ import {
 import { useInView } from 'react-intersection-observer';
 import MessageAttachments from './MessageAttachments';
 import { useBreakpointDown } from '@/hooks/useResponsive';
+import useOnlineStatus from '@/hooks/useOnlineStatus';
+import useNetworkSpeed from '@/hooks/useNetworkSpeed';
 import { devError } from '@/modules/common/utils/devLogger';
 
 // Styled components
@@ -88,6 +90,32 @@ const Message = ({
   const [isFocusWithin, setIsFocusWithin] = useState(false);
   const messageRef = useRef(null);
   const isMobile = useBreakpointDown('md');
+  const { isOnline } = useOnlineStatus();
+  const { isSlow, saveData } = useNetworkSpeed();
+  const constrainedNetworkMode = !isOnline || isSlow || saveData;
+
+  const renderConstrainedMediaPlaceholder = (label = 'Preview paused') => (
+    <Box
+      sx={{
+        mt: 0.25,
+        p: 1,
+        borderRadius: 1,
+        bgcolor: 'action.hover',
+        border: '1px solid',
+        borderColor: 'divider',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 0.75,
+      }}
+    >
+      <PendingIcon sx={{ fontSize: '1rem', color: 'text.secondary' }} />
+      <Typography variant="caption" color="text.secondary">
+        {isOnline
+          ? `${label} in low-bandwidth mode.`
+          : `${label} while offline.`}
+      </Typography>
+    </Box>
+  );
 
   // Long-press handler for mobile: opens context menu at touch coordinates
   const handleLongPress = useCallback((e) => {
@@ -207,6 +235,10 @@ const Message = ({
       (!message.attachments || message.attachments.length === 0);
 
     if (isRawImageUrl) {
+      if (constrainedNetworkMode) {
+        return renderConstrainedMediaPlaceholder('Image preview paused');
+      }
+
       return (
         <Box>
           <Box
@@ -220,6 +252,10 @@ const Message = ({
     }
 
     if (isRawVideoUrl) {
+      if (constrainedNetworkMode) {
+        return renderConstrainedMediaPlaceholder('Video preview paused');
+      }
+
       return (
         <Box>
           <Box
@@ -244,12 +280,18 @@ const Message = ({
               </Typography>
             )}
             {urlToUse && (
-              <Box
-                component="img"
-                src={urlToUse}
-                alt="Shared image"
-                sx={{ maxWidth: '100%', borderRadius: 1 }}
-              />
+              <>
+                {constrainedNetworkMode ? (
+                  renderConstrainedMediaPlaceholder('Image preview paused')
+                ) : (
+                  <Box
+                    component="img"
+                    src={urlToUse}
+                    alt="Shared image"
+                    sx={{ maxWidth: '100%', borderRadius: 1 }}
+                  />
+                )}
+              </>
             )}
           </Box>
         );
@@ -268,12 +310,18 @@ const Message = ({
                 </Typography>
               )}
             {fileUrlToUse && (
-              <Box
-                component="video"
-                controls
-                src={fileUrlToUse}
-                sx={{ maxWidth: '100%', borderRadius: 1 }}
-              />
+              <>
+                {constrainedNetworkMode ? (
+                  renderConstrainedMediaPlaceholder('Video preview paused')
+                ) : (
+                  <Box
+                    component="video"
+                    controls
+                    src={fileUrlToUse}
+                    sx={{ maxWidth: '100%', borderRadius: 1 }}
+                  />
+                )}
+              </>
             )}
           </Box>
         );

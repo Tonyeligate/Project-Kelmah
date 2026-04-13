@@ -60,6 +60,8 @@ import PageCanvas from '../../common/components/PageCanvas';
 import { useMessages } from '../contexts/MessageContext';
 import { messagingService } from '../services/messagingService';
 import useKeyboardVisible from '../../../hooks/useKeyboardVisible';
+import useOnlineStatus from '../../../hooks/useOnlineStatus';
+import useNetworkSpeed from '../../../hooks/useNetworkSpeed';
 import { HEADER_HEIGHT_MOBILE, TOUCH_TARGET_MIN } from '@/constants/layout';
 import { withBottomNavSafeArea, withSafeAreaBottom } from '@/utils/safeArea';
 
@@ -398,6 +400,9 @@ const MessageBubble = ({ message, currentUserId, chatTheme }) => {
   const attachments = Array.isArray(message.attachments)
     ? message.attachments
     : [];
+  const { isOnline } = useOnlineStatus();
+  const { isSlow, saveData } = useNetworkSpeed();
+  const constrainedNetworkMode = !isOnline || isSlow || saveData;
   const normalizedStatus = String(message.status || '').toLowerCase();
   const isSending = normalizedStatus === 'sending';
   const isFailed =
@@ -407,6 +412,35 @@ const MessageBubble = ({ message, currentUserId, chatTheme }) => {
     !isRead &&
     (normalizedStatus === 'delivered' || normalizedStatus === 'received');
   const isSent = !isRead && !isDelivered && !isSending && !isFailed;
+
+  const renderConstrainedAttachmentPreview = () => (
+    <Box
+      sx={{
+        width: '100%',
+        minHeight: 96,
+        borderRadius: 2,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 0.55,
+        px: 1,
+        bgcolor: isOwn ? alpha(header, 0.12) : alpha(header, 0.08),
+        border: '1px solid',
+        borderColor: border,
+      }}
+    >
+      <ScheduleIcon sx={{ fontSize: 18, color: alpha(textPrimary, 0.85) }} />
+      <Typography
+        variant="caption"
+        sx={{ color: alpha(textPrimary, 0.88), textAlign: 'center' }}
+      >
+        {isOnline
+          ? 'Image preview paused in low-bandwidth mode.'
+          : 'Image preview paused while offline.'}
+      </Typography>
+    </Box>
+  );
 
   return (
     <Box
@@ -457,6 +491,14 @@ const MessageBubble = ({ message, currentUserId, chatTheme }) => {
                 `Attachment ${index + 1}`;
 
               if (attachmentType.startsWith('image/') && attachmentUrl) {
+                if (constrainedNetworkMode) {
+                  return (
+                    <Box key={`${attachmentName}-${index}`}>
+                      {renderConstrainedAttachmentPreview()}
+                    </Box>
+                  );
+                }
+
                 return (
                   <Box
                     key={`${attachmentName}-${index}`}
@@ -626,6 +668,8 @@ const MessagingPage = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { user } = useSelector((state) => state.auth);
   const { isKeyboardVisible } = useKeyboardVisible();
+  const { isOnline, wasOffline } = useOnlineStatus();
+  const { isSlow, effectiveType, downlink, rtt, saveData } = useNetworkSpeed();
 
   const isDarkMode = theme.palette.mode === 'dark';
   const chatTheme = useMemo(
@@ -701,6 +745,8 @@ const MessagingPage = () => {
     loadingMessages,
     isConnected,
     realtimeIssue,
+    refreshConversations,
+    reconnectRealtime,
     startTyping,
     stopTyping,
     getTypingUsers,
@@ -726,6 +772,8 @@ const MessagingPage = () => {
   const [sendError, setSendError] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [draftRestoreNotice, setDraftRestoreNotice] = useState('');
+  const [connectionRecoveryNotice, setConnectionRecoveryNotice] = useState('');
+  const [isRetryingConnection, setIsRetryingConnection] = useState(false);
   const [showScrollToLatest, setShowScrollToLatest] = useState(false);
   const [lastConversationSyncAt, setLastConversationSyncAt] = useState(null);
   const [draftsByConversation, setDraftsByConversation] = useState(() => {
@@ -754,12 +802,16 @@ const MessagingPage = () => {
   const previousConversationKeyRef = useRef(null);
   const lastDraftNoticeRef = useRef('');
 
+  const shouldRenderImagePreviews = !(isSlow || saveData);
+
   const previewUrls = useMemo(
     () =>
       selectedFiles.map((file) =>
-        file.type.startsWith('image/') ? URL.createObjectURL(file) : null,
+        shouldRenderImagePreviews && file.type.startsWith('image/')
+          ? URL.createObjectURL(file)
+          : null,
       ),
-    [selectedFiles],
+    [selectedFiles, shouldRenderImagePreviews],
   );
 
   const totalAttachmentSize = useMemo(
@@ -813,6 +865,17 @@ const MessagingPage = () => {
     : '';
   const messageCharacterCount = messageText.length;
   const composerHintText = useMemo(() => {
+    if (!isOnline) {
+      return `Offline mode | Drafts are saved locally | ${messageCharacterCount}/1000 chars`;
+    }
+
+    if (isSlow || saveData) {
+      const networkLabel = saveData
+        ? 'Data saver enabled'
+        : `Low bandwidth (${effectiveType || 'unknown'})`;
+      return `${networkLabel} | Keep messages short and files small | ${messageCharacterCount}/1000 chars`;
+    }
+
     if (isMobile) {
       if (selectedFiles.length > 0) {
         return `${selectedFiles.length} attached | ${messageCharacterCount}/1000 chars | Enter sends`;
@@ -831,10 +894,14 @@ const MessagingPage = () => {
 
     return `Press Enter for quick send | Shift+Enter for new line | ${messageCharacterCount}/1000 chars | Max ${MAX_ATTACHMENTS} files (10MB limit)`;
   }, [
+    effectiveType,
     hasSelectedDraft,
+    isOnline,
     isMobile,
+    isSlow,
     messageCharacterCount,
     remainingAttachmentSlots,
+    saveData,
     selectedDraftSavedLabel,
     selectedFiles.length,
   ]);
@@ -981,6 +1048,18 @@ const MessagingPage = () => {
 
     return () => clearTimeout(timeoutId);
   }, [draftRestoreNotice]);
+
+  useEffect(() => {
+    if (!connectionRecoveryNotice) {
+      return undefined;
+    }
+
+    const timeoutId = setTimeout(() => {
+      setConnectionRecoveryNotice('');
+    }, 4200);
+
+    return () => clearTimeout(timeoutId);
+  }, [connectionRecoveryNotice]);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -1276,6 +1355,111 @@ const MessagingPage = () => {
   const selectedConversationId =
     selectedConversation?.id || selectedConversation?._id || null;
   const activeFilterLabel = FILTER_LABELS[activeFilter] || 'Filtered view';
+  const lowBandwidthModeActive = isOnline && (isSlow || saveData);
+  const networkSnapshotLabel = useMemo(() => {
+    const effectiveTypeLabel =
+      effectiveType && effectiveType !== 'unknown'
+        ? String(effectiveType).toUpperCase()
+        : 'unknown link';
+    const downlinkLabel = Number.isFinite(downlink)
+      ? `${downlink.toFixed(1)} Mbps`
+      : 'downlink n/a';
+    const latencyLabel = Number.isFinite(rtt) ? `${rtt} ms RTT` : 'latency n/a';
+
+    return `${effectiveTypeLabel} • ${downlinkLabel} • ${latencyLabel}`;
+  }, [downlink, effectiveType, rtt]);
+
+  const networkModeBanner = useMemo(() => {
+    if (!isOnline) {
+      return {
+        severity: 'error',
+        title: 'Offline mode',
+        detail:
+          'You are offline. Drafts stay on this device and queued sends retry after internet returns.',
+      };
+    }
+
+    if (lowBandwidthModeActive) {
+      return {
+        severity: 'warning',
+        title: saveData
+          ? 'Data saver mode detected'
+          : 'Low bandwidth mode active',
+        detail: `Network is constrained (${networkSnapshotLabel}). Prefer short text messages and smaller files for reliable delivery.`,
+      };
+    }
+
+    if (wasOffline) {
+      return {
+        severity: 'success',
+        title: 'Connection restored',
+        detail:
+          'You are back online. Queued messages are retrying in the background while drafts remain preserved.',
+      };
+    }
+
+    return null;
+  }, [
+    isOnline,
+    lowBandwidthModeActive,
+    networkSnapshotLabel,
+    saveData,
+    wasOffline,
+  ]);
+
+  const deepLinkTargetLabel = useMemo(() => {
+    const params = new URLSearchParams(location.search || '');
+    const conversationId = params.get('conversation');
+    const recipientId = params.get('recipient') || params.get('userId');
+
+    if (conversationId) {
+      return `conversation ${conversationId}`;
+    }
+
+    if (recipientId) {
+      return 'the requested recipient chat';
+    }
+
+    return 'the requested chat';
+  }, [location.search]);
+
+  const connectionStatusCopy = useMemo(() => {
+    if (!isOnline) {
+      return {
+        summary: `Offline • ${lastConversationSyncLabel}`,
+        detail:
+          'No internet connection detected. Drafts are saved locally and pending sends resume automatically after reconnect.',
+      };
+    }
+
+    if (lowBandwidthModeActive) {
+      return {
+        summary: `Low bandwidth • ${lastConversationSyncLabel}`,
+        detail: `Network is constrained (${networkSnapshotLabel}). Keep messages short and avoid large files until connection improves.`,
+      };
+    }
+
+    if (isConnected && !realtimeIssue) {
+      return {
+        summary: lastConversationSyncLabel,
+        detail:
+          'Connected. New messages should appear in real time and drafts remain auto-saved.',
+      };
+    }
+
+    return {
+      summary: `Connection unstable • ${lastConversationSyncLabel}`,
+      detail:
+        'Realtime sync is unstable. Your drafts stay saved on this device and outgoing messages retry when connection returns.',
+    };
+  }, [
+    isConnected,
+    isOnline,
+    lastConversationSyncLabel,
+    lowBandwidthModeActive,
+    networkSnapshotLabel,
+    realtimeIssue,
+  ]);
 
   useEffect(() => {
     if (!selectedConversationId || activeFilter === 'all') {
@@ -1330,6 +1514,49 @@ const MessagingPage = () => {
   const handleStartNewChat = useCallback(() => {
     navigate(searchDestination);
   }, [navigate, searchDestination]);
+
+  const handleOpenMessagingHelp = useCallback(() => {
+    navigate('/help?topic=messaging', {
+      state: {
+        from: '/messages',
+      },
+    });
+  }, [navigate]);
+
+  const handleRetryConnectionRecovery = useCallback(async () => {
+    if (isRetryingConnection) {
+      return;
+    }
+
+    setIsRetryingConnection(true);
+    setDeepLinkError('');
+    setSendError('');
+    setConnectionRecoveryNotice('Reconnecting your inbox...');
+    deepLinkHandledRef.current = '';
+
+    const [refreshResult, reconnectResult] = await Promise.allSettled([
+      refreshConversations?.(),
+      reconnectRealtime?.(),
+    ]);
+
+    if (
+      refreshResult.status === 'fulfilled' &&
+      Array.isArray(refreshResult.value)
+    ) {
+      setLastConversationSyncAt(Date.now());
+    }
+
+    const hasFailure =
+      refreshResult.status === 'rejected' ||
+      reconnectResult.status === 'rejected';
+
+    setConnectionRecoveryNotice(
+      hasFailure
+        ? 'Reconnect is partial. You can continue with saved drafts while we retry live sync.'
+        : 'Inbox refreshed. You can continue where you left off.',
+    );
+    setIsRetryingConnection(false);
+  }, [isRetryingConnection, reconnectRealtime, refreshConversations]);
 
   const handleTyping = useCallback(() => {
     startTyping();
@@ -1741,15 +1968,43 @@ const MessagingPage = () => {
           variant="caption"
           sx={{ display: 'block', mt: 0.15, color: CHAT_TEXT_SECONDARY }}
         >
-          {isConnected ? lastConversationSyncLabel : 'Connection unstable'}
+          {connectionStatusCopy.summary}
         </Typography>
       </Box>
 
-      {(realtimeIssue || !isConnected) && (
+      {(realtimeIssue ||
+        !isConnected ||
+        !isOnline ||
+        lowBandwidthModeActive) && (
         <Box sx={{ px: mobile ? 1.5 : 2, pt: 1.5 }}>
-          <Alert severity="warning" sx={{ borderRadius: 2 }}>
-            {realtimeIssue ||
-              'Weak connection detected. Chat updates may be delayed.'}
+          <Alert
+            severity={!isOnline ? 'error' : 'warning'}
+            sx={{ borderRadius: 2 }}
+            action={
+              <Stack direction="row" spacing={0.75}>
+                <Button
+                  color="inherit"
+                  size="small"
+                  onClick={handleRetryConnectionRecovery}
+                  disabled={isRetryingConnection || !isOnline}
+                >
+                  {isRetryingConnection
+                    ? 'Retrying...'
+                    : isOnline
+                      ? 'Retry now'
+                      : 'Retry online'}
+                </Button>
+                <Button
+                  color="inherit"
+                  size="small"
+                  onClick={handleOpenMessagingHelp}
+                >
+                  Help
+                </Button>
+              </Stack>
+            }
+          >
+            {realtimeIssue || connectionStatusCopy.detail}
           </Alert>
         </Box>
       )}
@@ -2051,19 +2306,27 @@ const MessagingPage = () => {
                 <Alert
                   severity="error"
                   action={
-                    <Button
-                      color="inherit"
-                      size="small"
-                      onClick={() => {
-                        setDeepLinkError('');
-                        navigate('/messages', { replace: true });
-                      }}
-                    >
-                      Retry
-                    </Button>
+                    <Stack direction="row" spacing={0.75}>
+                      <Button
+                        color="inherit"
+                        size="small"
+                        onClick={handleRetryConnectionRecovery}
+                        disabled={isRetryingConnection}
+                      >
+                        {isRetryingConnection ? 'Retrying...' : 'Retry'}
+                      </Button>
+                      <Button
+                        color="inherit"
+                        size="small"
+                        onClick={handleOpenMessagingHelp}
+                      >
+                        Help
+                      </Button>
+                    </Stack>
                   }
                 >
-                  {deepLinkError}
+                  {deepLinkError} We kept your current inbox context and saved
+                  drafts while reconnecting {deepLinkTargetLabel}.
                   {lastConversationSyncAt && (
                     <Typography
                       component="span"
@@ -2430,10 +2693,38 @@ const MessagingPage = () => {
               mx: mobile ? 0 : 'auto',
             }}
           >
-            {(realtimeIssue || !isConnected) && (
-              <Alert severity="warning" sx={{ mb: 2, borderRadius: 2 }}>
-                {realtimeIssue ||
-                  'Weak connection detected. Your messages will queue and send automatically.'}
+            {(realtimeIssue ||
+              !isConnected ||
+              !isOnline ||
+              lowBandwidthModeActive) && (
+              <Alert
+                severity={!isOnline ? 'error' : 'warning'}
+                sx={{ mb: 2, borderRadius: 2 }}
+                action={
+                  <Stack direction="row" spacing={0.75}>
+                    <Button
+                      color="inherit"
+                      size="small"
+                      onClick={handleRetryConnectionRecovery}
+                      disabled={isRetryingConnection || !isOnline}
+                    >
+                      {isRetryingConnection
+                        ? 'Retrying...'
+                        : isOnline
+                          ? 'Retry'
+                          : 'Retry online'}
+                    </Button>
+                    <Button
+                      color="inherit"
+                      size="small"
+                      onClick={handleOpenMessagingHelp}
+                    >
+                      Help
+                    </Button>
+                  </Stack>
+                }
+              >
+                {realtimeIssue || connectionStatusCopy.detail}
               </Alert>
             )}
 
@@ -2637,6 +2928,14 @@ const MessagingPage = () => {
                     Attachment review ({selectedFiles.length}/{MAX_ATTACHMENTS})
                   </Typography>
                   <Stack direction="row" spacing={1} alignItems="center">
+                    {lowBandwidthModeActive && (
+                      <Chip
+                        size="small"
+                        label={saveData ? 'Data saver mode' : 'Low bandwidth'}
+                        color="warning"
+                        sx={{ fontWeight: 700 }}
+                      />
+                    )}
                     <Typography variant="caption" color="text.secondary">
                       {formatFileSize(totalAttachmentSize)} total
                     </Typography>
@@ -2710,7 +3009,7 @@ const MessagingPage = () => {
                           <CloseIcon sx={{ fontSize: 16 }} />
                         </IconButton>
 
-                        {fileType.startsWith('image/') ? (
+                        {fileType.startsWith('image/') && previewUrls[index] ? (
                           <Box
                             component="img"
                             src={previewUrls[index] || ''}
@@ -2734,13 +3033,26 @@ const MessagingPage = () => {
                             <AttachmentIcon
                               sx={{ fontSize: 18, color: CHAT_ACCENT }}
                             />
-                            <Typography
-                              variant="caption"
-                              fontWeight={700}
-                              noWrap
-                            >
-                              {getAttachmentKindLabel(file)}
-                            </Typography>
+                            <Box sx={{ minWidth: 0 }}>
+                              <Typography
+                                variant="caption"
+                                fontWeight={700}
+                                noWrap
+                                sx={{ display: 'block' }}
+                              >
+                                {getAttachmentKindLabel(file)}
+                              </Typography>
+                              {fileType.startsWith('image/') &&
+                                lowBandwidthModeActive && (
+                                  <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                    sx={{ display: 'block' }}
+                                  >
+                                    Preview paused to reduce data use.
+                                  </Typography>
+                                )}
+                            </Box>
                           </Stack>
                         )}
 
@@ -2975,6 +3287,16 @@ const MessagingPage = () => {
             >
               {composerHintText}
             </Typography>
+            {lowBandwidthModeActive && (
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ display: 'block', mt: 0.2, pl: 0.5 }}
+              >
+                Low-bandwidth mode: attachment previews are reduced and retries
+                may take longer.
+              </Typography>
+            )}
             {isKeyboardVisible && (
               <Typography
                 variant="caption"
@@ -3025,6 +3347,57 @@ const MessagingPage = () => {
           description="Secure real-time conversations on Kelmah."
           openGraph={{ type: 'website' }}
         />
+
+        {connectionRecoveryNotice && (
+          <Box sx={{ px: { xs: 1.2, md: 2.2 }, pt: { xs: 1, md: 1.35 } }}>
+            <Alert
+              severity={isRetryingConnection ? 'info' : 'success'}
+              sx={{ borderRadius: 2 }}
+              onClose={() => setConnectionRecoveryNotice('')}
+            >
+              {connectionRecoveryNotice}
+            </Alert>
+          </Box>
+        )}
+
+        {networkModeBanner && (
+          <Box sx={{ px: { xs: 1.2, md: 2.2 }, pt: { xs: 0.75, md: 1 } }}>
+            <Alert
+              severity={networkModeBanner.severity}
+              sx={{ borderRadius: 2 }}
+              action={
+                <Stack direction="row" spacing={0.75}>
+                  <Button
+                    color="inherit"
+                    size="small"
+                    onClick={handleRetryConnectionRecovery}
+                    disabled={isRetryingConnection || !isOnline}
+                  >
+                    {isRetryingConnection
+                      ? 'Retrying...'
+                      : isOnline
+                        ? 'Retry now'
+                        : 'Retry online'}
+                  </Button>
+                  <Button
+                    color="inherit"
+                    size="small"
+                    onClick={handleOpenMessagingHelp}
+                  >
+                    Help
+                  </Button>
+                </Stack>
+              }
+            >
+              <Typography variant="body2" fontWeight={700}>
+                {networkModeBanner.title}
+              </Typography>
+              <Typography variant="caption" sx={{ display: 'block' }}>
+                {networkModeBanner.detail}
+              </Typography>
+            </Alert>
+          </Box>
+        )}
 
         <Box
           sx={{
@@ -3100,15 +3473,27 @@ const MessagingPage = () => {
                 <Alert
                   severity="error"
                   action={
-                    <Button
-                      color="inherit"
-                      onClick={() => navigate('/messages', { replace: true })}
-                    >
-                      Retry
-                    </Button>
+                    <Stack direction="row" spacing={0.75}>
+                      <Button
+                        color="inherit"
+                        size="small"
+                        onClick={handleRetryConnectionRecovery}
+                        disabled={isRetryingConnection}
+                      >
+                        {isRetryingConnection ? 'Retrying...' : 'Retry'}
+                      </Button>
+                      <Button
+                        color="inherit"
+                        size="small"
+                        onClick={handleOpenMessagingHelp}
+                      >
+                        Help
+                      </Button>
+                    </Stack>
                   }
                 >
-                  {deepLinkError}
+                  {deepLinkError} We preserved your conversation list and draft
+                  context while reconnecting {deepLinkTargetLabel}.
                 </Alert>
               ) : deepLinkLoading ? (
                 <Alert severity="info">Connecting securely...</Alert>

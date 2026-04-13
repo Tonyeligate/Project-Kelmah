@@ -17,6 +17,8 @@ import ImageIcon from '@mui/icons-material/Image';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import VideocamIcon from '@mui/icons-material/Videocam';
 import AudioFileIcon from '@mui/icons-material/AudioFile';
+import useOnlineStatus from '@/hooks/useOnlineStatus';
+import useNetworkSpeed from '@/hooks/useNetworkSpeed';
 
 // Styled components
 const PreviewContainer = styled(Paper)(({ theme }) => ({
@@ -59,6 +61,13 @@ const AttachmentPreview = ({
   showDownload = true,
 }) => {
   const [showPreview, setShowPreview] = useState(false);
+  const { isOnline } = useOnlineStatus();
+  const { isSlow, saveData } = useNetworkSpeed();
+  const attachmentType = attachment.type || 'application/octet-stream';
+  const isImageAttachment = attachmentType.startsWith('image/');
+  const isPdfAttachment = attachmentType === 'application/pdf';
+  const constrainedImagePreview =
+    (!isOnline || isSlow || saveData) && isImageAttachment;
 
   // Get file size in human readable format
   const formatSize = (size) => {
@@ -81,10 +90,7 @@ const AttachmentPreview = ({
   };
 
   const togglePreview = () => {
-    if (
-      attachment.type.startsWith('image/') ||
-      attachment.type === 'application/pdf'
-    ) {
+    if ((isImageAttachment || isPdfAttachment) && !constrainedImagePreview) {
       setShowPreview(!showPreview);
     }
   };
@@ -94,7 +100,7 @@ const AttachmentPreview = ({
       <PreviewContainer>
         <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
           <Box sx={{ display: 'flex', p: 0.5, mr: 1 }}>
-            <FileTypeIcon type={attachment.type} />
+            <FileTypeIcon type={attachmentType} />
           </Box>
 
           <Box sx={{ flexGrow: 1, minWidth: 0 }}>
@@ -104,6 +110,17 @@ const AttachmentPreview = ({
             <Typography variant="caption" color="text.secondary">
               {formatSize(attachment.size)}
             </Typography>
+            {constrainedImagePreview && (
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ display: 'block' }}
+              >
+                {isOnline
+                  ? 'Preview paused to reduce data use.'
+                  : 'Preview unavailable while offline.'}
+              </Typography>
+            )}
           </Box>
 
           {isUploading ? (
@@ -135,12 +152,20 @@ const AttachmentPreview = ({
             </Box>
           ) : (
             <Box sx={{ display: 'flex' }}>
-              {(attachment.type.startsWith('image/') ||
-                attachment.type === 'application/pdf') && (
-                <Tooltip title="Preview">
+              {(isImageAttachment || isPdfAttachment) && (
+                <Tooltip
+                  title={
+                    constrainedImagePreview
+                      ? isOnline
+                        ? 'Preview paused to reduce data use'
+                        : 'Preview unavailable while offline'
+                      : 'Preview'
+                  }
+                >
                   <IconButton
                     size="small"
                     onClick={togglePreview}
+                    disabled={constrainedImagePreview}
                     aria-label="Preview attachment"
                     sx={{
                       mr: 0.5,
@@ -208,7 +233,7 @@ const AttachmentPreview = ({
         </Box>
       </PreviewContainer>
 
-      {showPreview && attachment.type.startsWith('image/') && (
+      {showPreview && isImageAttachment && !constrainedImagePreview && (
         <Box
           sx={{
             position: 'fixed',
