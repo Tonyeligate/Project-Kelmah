@@ -1,3 +1,72 @@
+### Session: UI Pre-Push Gate Closure April 15 2026 ✅ COMPLETED
+
+**Date**: April 15, 2026  
+**Scope**: Close the previously blocked core-public strict visual gate by validating stdin-safe gate execution and deterministic public-route capture behavior.
+
+**Files currently in scope**
+- `scripts/ui-pre-push-gate.js`
+- `kelmah-frontend/scripts/ui_audit_runner.mjs`
+- `kelmah-frontend/scripts/ui_audit_pack_runner.mjs`
+- `kelmah-frontend/scripts/ui_audit_route_packs.json`
+- `spec-kit/STATUS_LOG.md`
+
+**Execution summary**
+- Re-ran full gate end-to-end in local PowerShell:
+  - `npm run ui:pre-push-gate`
+- Verified all mandatory pre-push sub-steps completed:
+  - `ui:auto-remediate -- --changed --apply`
+  - `ui:pack:ensure-baselines -- --pack core-public`
+  - `ui:pack:compare -- --pack core-public --strict true`
+- Confirmed strict compare closure for all core-public routes (`/`, `/jobs`, `/search`, `/support`, `/docs`, `/community`).
+
+**Verification**
+- PASS: `ui:pre-push-gate` finished with `UI pre-push gate: PASS`.
+- PASS: strict pack report indicates `overallPass: true` with every route scoring `25/25`.
+- Evidence:
+  - `.artifacts/ui/packs/pre-push-2026-04-15T23-08-31-990Z/pack-report.json`
+  - `.artifacts/ui/pre-push-2026-04-15T23-08-31-990Z-home/capture-report.json`
+  - `.artifacts/ui/pre-push-2026-04-15T23-08-31-990Z-search/capture-report.json`
+  - `.artifacts/ui/pre-push-2026-04-15T23-08-31-990Z-community/capture-report.json`
+
+### Session: Messaging Deep-Link 503 Investigation April 15 2026 ✅ COMPLETED
+
+**Date**: April 15, 2026  
+**Scope**: Investigate runtime errors on `/messages` (`503` during conversation deep-link load and `inject.js ... className.indexOf` TypeError), trace full request path, and apply targeted resilience fixes.
+
+**Files audited (end-to-end flow)**
+- `kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx`
+- `kelmah-frontend/src/modules/messaging/services/messagingService.js`
+- `kelmah-frontend/src/services/apiClient.js`
+- `kelmah-frontend/src/config/environment.js`
+- `kelmah-frontend/public/sw.js`
+- `kelmah-backend/api-gateway/routes/messaging.routes.js`
+- `kelmah-backend/api-gateway/proxy/serviceProxy.js`
+- `kelmah-backend/services/messaging-service/routes/conversation.routes.js`
+- `kelmah-backend/services/messaging-service/controllers/conversation.controller.js`
+
+**Root cause findings**
+- The `inject.js:304 ... className.indexOf` error is not from active app source or deployed frontend bundles; it is consistent with external script/extension injection.
+- Messaging deep-link 503s were reproducible as an environment-dependent API targeting problem:
+  - stale cached API base values (`kelmah:lastHealthyApiBase`) could override runtime `/api` config during early boot,
+  - this can point requests to dead/obsolete gateway origins and surface as synthetic 503s through service-worker fallback handling.
+
+**Implemented remediation**
+- `environment.js`:
+  - hardened cached API base handling so only trusted origins are accepted,
+  - automatically clears stale/untrusted cached API base entries instead of reusing them.
+- `apiClient.js`:
+  - added explicit detection for `X-Service-Worker-Fallback` responses,
+  - distinguishes SW synthetic 503/504 from actual backend cold-start conditions,
+  - sets accurate connection-oriented friendly messaging for SW fallback cases.
+- `MessagingPage.jsx`:
+  - deep-link error handling now uses normalized/friendly API messages,
+  - preserves specific 404 conversation-not-found copy.
+
+**Verification**
+- PASS: `npx eslint src/config/environment.js src/services/apiClient.js src/modules/messaging/pages/MessagingPage.jsx`
+- PASS: `cd kelmah-frontend && npm run build`
+  - Result: `vite build` completed successfully (`13974 modules transformed`, `built in 58.95s`).
+
 ### Session: P2-01 Messaging Input + Typing Indicator Accessibility Pass 2 April 13 2026 ✅ IN PROGRESS
 
 **Date**: April 13, 2026  

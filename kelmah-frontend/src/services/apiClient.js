@@ -69,8 +69,9 @@ let isForceLogoutInProgress = false;
 const AUTH_SYNC_STORAGE_KEY = 'kelmah_auth_sync';
 let authSyncListenersInitialized = false;
 
-const isTestRuntime =
-  typeof process !== 'undefined' && process.env?.NODE_ENV === 'test';
+const runtimeProcess =
+  typeof globalThis !== 'undefined' ? globalThis.process : undefined;
+const isTestRuntime = runtimeProcess?.env?.NODE_ENV === 'test';
 
 const createNoopInterceptorManager = () => ({
   use: () => 0,
@@ -365,7 +366,7 @@ const initializeCrossTabAuthSync = () => {
         handleLogoutSignal();
       }
     };
-  } catch (_) {
+  } catch {
     // BroadcastChannel may be unavailable; storage-event fallback below covers this.
   }
 
@@ -507,23 +508,47 @@ apiClient.interceptors.response.use(
 
     // Graceful degradation for sleeping Render backend (free tier)
     if (status === 502 || status === 503 || status === 504) {
+      const serviceWorkerFallbackHeader =
+        error?.response?.headers?.['x-service-worker-fallback'] ||
+        error?.response?.headers?.['X-Service-Worker-Fallback'] ||
+        null;
+
       const normalized = normalizeApiError(error, {
         phase: 'backend-sleep',
         endpoint: originalRequest?.url,
         method: originalRequest?.method,
       });
-      // Attach a user-friendly message so consumers can display it
-      error.isBackendSleeping = true;
       error.retryable = normalized.retryable;
       error.retryAfterMs = normalized.retryAfterMs;
-      error.friendlyMessage =
-        'The server is waking up — this usually takes 15-30 seconds. Please try again shortly.';
-      captureRecoverableApiError(error, {
-        phase: 'backend-sleep',
-        endpoint: originalRequest?.url,
-        method: originalRequest?.method,
-      });
-      apiClientWarn(`⏳ Backend returned ${status} — likely waking from sleep`);
+
+      if (serviceWorkerFallbackHeader) {
+        error.isServiceWorkerFallback = true;
+        error.friendlyMessage =
+          'Unable to reach the server right now. Please check your connection and try again.';
+        captureRecoverableApiError(error, {
+          phase: 'service-worker-fallback',
+          endpoint: originalRequest?.url,
+          method: originalRequest?.method,
+          fallbackSource: serviceWorkerFallbackHeader,
+        });
+        apiClientWarn(
+          `⚠️ API request intercepted by service worker fallback (${serviceWorkerFallbackHeader})`,
+        );
+      } else {
+        // Attach a user-friendly message so consumers can display it
+        error.isBackendSleeping = true;
+        error.friendlyMessage =
+          'The server is waking up — this usually takes 15-30 seconds. Please try again shortly.';
+        captureRecoverableApiError(error, {
+          phase: 'backend-sleep',
+          endpoint: originalRequest?.url,
+          method: originalRequest?.method,
+        });
+        apiClientWarn(
+          `⏳ Backend returned ${status} — likely waking from sleep`,
+        );
+      }
+
       return Promise.reject(error);
     }
 

@@ -106,7 +106,7 @@ const getCachedApiBaseUrl = () => {
     return null;
   }
 
-  return normalizeApiBaseUrl(cached);
+  return normalizeApiBaseUrl(cached) || null;
 };
 
 const resolveAllowedApiOrigins = () => {
@@ -124,7 +124,7 @@ const resolveAllowedApiOrigins = () => {
 
     try {
       allowedOrigins.add(new URL(candidate).origin);
-    } catch (_) {
+    } catch {
       // Ignore malformed candidates.
     }
   });
@@ -149,7 +149,7 @@ const isTrustedApiBaseUrl = (raw) => {
   try {
     const parsed = new URL(normalized);
     return resolveAllowedApiOrigins().has(parsed.origin);
-  } catch (_) {
+  } catch {
     return false;
   }
 };
@@ -210,7 +210,22 @@ const getApiBaseUrl = () => {
   // Priority 3: Cached healthy URL from localStorage
   const cachedApiBaseUrl = getCachedApiBaseUrl();
   if (cachedApiBaseUrl) {
-    return cachedApiBaseUrl || '/api';
+    if (isTrustedApiBaseUrl(cachedApiBaseUrl)) {
+      return cachedApiBaseUrl || '/api';
+    }
+
+    // Remove stale/untrusted cache entries so old gateways never shadow runtime config.
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('kelmah:lastHealthyApiBase');
+      }
+    } catch {
+      // Ignore storage access issues (private mode, security policy, etc.).
+    }
+
+    if (CONFIG_DEBUG) {
+      configLog('Ignoring stale cached API base URL:', cachedApiBaseUrl);
+    }
   }
 
   // Priority 4: Env-var-derived production URL (never hardcoded — set VITE_API_URL in Vercel dashboard)

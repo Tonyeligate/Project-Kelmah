@@ -1225,11 +1225,20 @@ const MessagingPage = () => {
             );
           }
         })
-        .catch(() => {
+        .catch((error) => {
           if (!cancelled) {
-            setDeepLinkError(
-              'Network error while loading this chat. Please try again.',
-            );
+            const status = error?.response?.status;
+            if (status === 404) {
+              setDeepLinkError(
+                'Conversation not found or connection is too weak to load.',
+              );
+              return;
+            }
+
+            const normalizedMessage =
+              error?.friendlyMessage ||
+              'Network error while loading this chat. Please try again.';
+            setDeepLinkError(normalizedMessage);
           }
         })
         .finally(() => {
