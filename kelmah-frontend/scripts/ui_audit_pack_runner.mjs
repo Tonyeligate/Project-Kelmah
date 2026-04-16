@@ -151,6 +151,10 @@ const buildAuditArgs = ({
     args.push('--mock-applications', 'true');
   }
 
+  if (route.mockPublicData) {
+    args.push('--mock-public-data', 'true');
+  }
+
   if (route.authEmail) {
     args.push('--auth-email', String(route.authEmail));
   }

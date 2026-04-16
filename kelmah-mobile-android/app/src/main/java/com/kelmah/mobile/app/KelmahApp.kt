@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -45,6 +46,12 @@ import com.kelmah.mobile.app.navigation.KelmahDestination
 import com.kelmah.mobile.app.navigation.KelmahNavHost
 import com.kelmah.mobile.app.navigation.mainDestinations
 import com.kelmah.mobile.R
+import com.kelmah.mobile.core.design.components.KelmahCommandDeck
+import com.kelmah.mobile.core.design.components.KelmahCommandMetric
+import com.kelmah.mobile.core.design.components.KelmahCommandSignal
+import com.kelmah.mobile.core.design.components.KelmahGlassPanel
+import com.kelmah.mobile.core.design.components.KelmahPrimaryActionMinHeight
+import com.kelmah.mobile.core.design.components.KelmahScreenBackground
 import com.kelmah.mobile.core.session.KelmahUserRole
 import com.kelmah.mobile.core.session.kelmahUserRole
 import com.kelmah.mobile.core.design.theme.KelmahTheme
@@ -129,16 +136,34 @@ fun KelmahApp(
 
         when (val state = sessionState) {
             SessionState.Loading -> {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    CircularProgressIndicator()
-                    Text(
-                        text = stringResource(id = R.string.app_shell_securing_session),
-                        modifier = Modifier.padding(top = 16.dp),
-                    )
+                KelmahScreenBackground {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 20.dp, vertical = 24.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(14.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            CircularProgressIndicator()
+                            KelmahCommandDeck(
+                                title = "Securing Session",
+                                subtitle = stringResource(id = R.string.app_shell_securing_session),
+                                eyebrow = "App Shell",
+                                metrics = listOf(
+                                    KelmahCommandMetric(label = "Auth", value = "Checking"),
+                                    KelmahCommandMetric(label = "Network", value = if (isNetworkAvailable) "Online" else "Offline"),
+                                    KelmahCommandMetric(label = "State", value = "Loading"),
+                                ),
+                                signals = listOf(
+                                    KelmahCommandSignal(label = "Secure"),
+                                    KelmahCommandSignal(label = "Encrypted"),
+                                ),
+                            )
+                        }
+                    }
                 }
                 return@KelmahTheme
             }
@@ -199,15 +224,17 @@ fun KelmahApp(
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                        .padding(horizontal = 10.dp, vertical = 8.dp),
                     color = MaterialTheme.colorScheme.surface.copy(alpha = if (isSystemInDarkTheme()) 0.94f else 0.98f),
-                    shape = RoundedCornerShape(26.dp),
+                    shape = RoundedCornerShape(28.dp),
                     tonalElevation = 0.dp,
-                    shadowElevation = 10.dp,
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.52f)),
+                    shadowElevation = 14.dp,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.58f)),
                 ) {
                     NavigationBar(
-                        modifier = Modifier.heightIn(min = 70.dp),
+                        modifier = Modifier
+                            .heightIn(min = 74.dp)
+                            .padding(horizontal = 2.dp),
                         containerColor = Color.Transparent,
                         tonalElevation = 0.dp,
                     ) {
@@ -259,7 +286,7 @@ fun KelmahApp(
                                 label = {
                                     Text(
                                         text = item.label,
-                                        style = MaterialTheme.typography.labelSmall,
+                                        style = MaterialTheme.typography.labelMedium,
                                         maxLines = 1,
                                     )
                                 },
@@ -276,7 +303,7 @@ fun KelmahApp(
                 }
             },
         ) { paddingValues ->
-            Box(modifier = Modifier.padding(paddingValues)) {
+            Box(modifier = Modifier.padding(paddingValues).animateContentSize()) {
                 KelmahNavHost(
                     navController = navController,
                     currentUser = currentUser,
@@ -303,44 +330,54 @@ private fun SessionRecoveryScreen(
     onRetry: () -> Unit,
     onSignInAgain: () -> Unit,
 ) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        Card {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(14.dp),
-            ) {
-                Text(
-                    stringResource(id = R.string.app_shell_session_check_needed),
-                    style = androidx.compose.material3.MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
-                )
-                userName?.takeIf { it.isNotBlank() }?.let {
+    KelmahScreenBackground {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 20.dp, vertical = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
+        ) {
+            KelmahCommandDeck(
+                title = stringResource(id = R.string.app_shell_session_check_needed),
+                subtitle = message,
+                eyebrow = "Session Recovery",
+                metrics = listOf(
+                    KelmahCommandMetric(label = "Account", value = userName?.takeIf { it.isNotBlank() } ?: "Saved"),
+                    KelmahCommandMetric(label = "Action", value = "Retry"),
+                    KelmahCommandMetric(label = "State", value = "Recovery"),
+                ),
+                signals = listOf(
+                    KelmahCommandSignal(label = "Secure"),
+                    KelmahCommandSignal(label = "Keep Signed In"),
+                ),
+            )
+            KelmahGlassPanel {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
                     Text(
-                        stringResource(id = R.string.app_shell_saved_account, it),
-                        style = androidx.compose.material3.MaterialTheme.typography.bodyMedium,
+                        text = stringResource(id = R.string.app_shell_recovery_hint),
+                        style = MaterialTheme.typography.bodyMedium,
                     )
-                }
-                Text(
-                    text = message,
-                    style = androidx.compose.material3.MaterialTheme.typography.bodyMedium,
-                    color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Text(
-                    text = stringResource(id = R.string.app_shell_recovery_hint),
-                    style = androidx.compose.material3.MaterialTheme.typography.bodyMedium,
-                )
-                Button(onClick = onRetry, modifier = Modifier.fillMaxWidth()) {
-                    Text(stringResource(id = R.string.app_shell_retry_session_check))
-                }
-                Button(onClick = onSignInAgain, modifier = Modifier.fillMaxWidth()) {
-                    Text(stringResource(id = R.string.app_shell_sign_in_again))
+                    Button(
+                        onClick = onRetry,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = KelmahPrimaryActionMinHeight),
+                    ) {
+                        Text(stringResource(id = R.string.app_shell_retry_session_check))
+                    }
+                    Button(
+                        onClick = onSignInAgain,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = KelmahPrimaryActionMinHeight),
+                    ) {
+                        Text(stringResource(id = R.string.app_shell_sign_in_again))
+                    }
                 }
             }
         }

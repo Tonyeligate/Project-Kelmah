@@ -1,5 +1,6 @@
 package com.kelmah.mobile.features.notifications.presentation
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -50,6 +52,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kelmah.mobile.core.design.components.KelmahCommandDeck
+import com.kelmah.mobile.core.design.components.KelmahCommandMetric
+import com.kelmah.mobile.core.design.components.KelmahCommandSignal
+import com.kelmah.mobile.core.design.components.KelmahGlassPanel
 import com.kelmah.mobile.core.design.components.KelmahScreenBackground
 import com.kelmah.mobile.core.design.components.KelmahReveal
 import com.kelmah.mobile.core.design.components.KelmahSecondaryActionMinHeight
@@ -73,6 +79,28 @@ fun NotificationsScreen(
     val snackbars = remember { SnackbarHostState() }
     val totalAlerts = state.notifications.size
     val actionableAlerts = state.notifications.count { it.actionTarget != null }
+    val commandMetrics = listOf(
+        KelmahCommandMetric(label = "Total", value = totalAlerts.toString()),
+        KelmahCommandMetric(label = "Unread", value = state.unreadCount.toString()),
+        KelmahCommandMetric(label = "Action", value = actionableAlerts.toString()),
+    )
+    val commandSignals = listOf(
+        KelmahCommandSignal(
+            label = "All",
+            value = if (!state.unreadOnly) "On" else "Off",
+            onClick = { viewModel.setUnreadOnly(false) },
+        ),
+        KelmahCommandSignal(
+            label = "New",
+            value = state.unreadCount.toString(),
+            onClick = { viewModel.setUnreadOnly(true) },
+        ),
+        KelmahCommandSignal(
+            label = "Refresh",
+            value = if (state.isLoading) "..." else "Now",
+            onClick = viewModel::refresh,
+        ),
+    )
 
     LaunchedEffect(state.errorMessage) {
         state.errorMessage?.let {
@@ -122,72 +150,60 @@ fun NotificationsScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
-                    .padding(horizontal = 16.dp, vertical = 14.dp),
+                    .padding(horizontal = 16.dp, vertical = 14.dp)
+                    .animateContentSize(),
             ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                FilterChip(
-                    selected = state.unreadOnly.not(),
-                    onClick = { viewModel.setUnreadOnly(false) },
-                    modifier = Modifier.heightIn(min = KelmahSecondaryActionMinHeight),
-                    label = { Text("All") },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = MaterialTheme.colorScheme.secondary,
-                        selectedLabelColor = MaterialTheme.colorScheme.onSecondary,
-                    ),
-                )
-                FilterChip(
-                    selected = state.unreadOnly,
-                    onClick = { viewModel.setUnreadOnly(true) },
-                    modifier = Modifier.heightIn(min = KelmahSecondaryActionMinHeight),
-                    label = { Text("New") },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = MaterialTheme.colorScheme.secondary,
-                        selectedLabelColor = MaterialTheme.colorScheme.onSecondary,
-                    ),
-                )
-                Spacer(modifier = Modifier.weight(1f))
-                AssistChip(
-                    onClick = {},
-                    enabled = false,
-                    modifier = Modifier.heightIn(min = KelmahSecondaryActionMinHeight),
-                    label = { Text("${state.unreadCount} new") },
-                )
-            }
+                KelmahReveal(index = 0) {
+                    KelmahCommandDeck(
+                        title = "Alerts",
+                        subtitle = "Priority updates from messages and jobs",
+                        eyebrow = "Notification Command Deck",
+                        metrics = commandMetrics,
+                        signals = commandSignals,
+                    )
+                }
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
-            KelmahReveal(index = 0) {
-                Card(colors = kelmahMutedPanelColors(), shape = MaterialTheme.shapes.large) {
+                KelmahGlassPanel(muted = true) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 12.dp, vertical = 10.dp),
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        NotificationDensityTile(
-                            modifier = Modifier.weight(1f),
-                            label = "Total",
-                            value = totalAlerts,
+                        FilterChip(
+                            selected = state.unreadOnly.not(),
+                            onClick = { viewModel.setUnreadOnly(false) },
+                            modifier = Modifier.heightIn(min = KelmahSecondaryActionMinHeight),
+                            label = { Text("All") },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = MaterialTheme.colorScheme.secondary,
+                                selectedLabelColor = MaterialTheme.colorScheme.onSecondary,
+                            ),
                         )
-                        NotificationDensityTile(
-                            modifier = Modifier.weight(1f),
-                            label = "Unread",
-                            value = state.unreadCount,
+                        FilterChip(
+                            selected = state.unreadOnly,
+                            onClick = { viewModel.setUnreadOnly(true) },
+                            modifier = Modifier.heightIn(min = KelmahSecondaryActionMinHeight),
+                            label = { Text("New") },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = MaterialTheme.colorScheme.secondary,
+                                selectedLabelColor = MaterialTheme.colorScheme.onSecondary,
+                            ),
                         )
-                        NotificationDensityTile(
-                            modifier = Modifier.weight(1f),
-                            label = "Action",
-                            value = actionableAlerts,
+                        Spacer(modifier = Modifier.weight(1f))
+                        AssistChip(
+                            onClick = {},
+                            enabled = false,
+                            modifier = Modifier.heightIn(min = KelmahSecondaryActionMinHeight),
+                            label = { Text("${state.unreadCount} new") },
                         )
                     }
                 }
-            }
 
-            Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
             when {
                 state.isLoading && state.notifications.isEmpty() -> {
@@ -235,15 +251,17 @@ internal fun NotificationCard(
     onOpen: () -> Unit,
 ) {
     val actionTarget = notification.actionTarget
+    val timeLabel = com.kelmah.mobile.core.utils.RelativeTimeFormatter.relativeOrFallback(notification.createdAt) ?: "Just now"
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .animateContentSize()
             .clickable(enabled = actionTarget != null) {
                 if (!notification.isRead) onMarkRead()
                 onOpen()
             },
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(
             containerColor = if (notification.isRead) {
                 MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
@@ -251,9 +269,9 @@ internal fun NotificationCard(
                 MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
             },
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
     ) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 AssistChip(
                     onClick = {},
@@ -261,10 +279,16 @@ internal fun NotificationCard(
                     label = { Text(notification.displayTag) },
                 )
                 Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = timeLabel,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(modifier = Modifier.width(8.dp))
                 if (!notification.isRead) {
                     Text(
                         text = "New",
-                        style = MaterialTheme.typography.labelMedium,
+                        style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.SemiBold,
                     )
@@ -282,16 +306,11 @@ internal fun NotificationCard(
                 text = notification.content,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis,
             )
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = com.kelmah.mobile.core.utils.RelativeTimeFormatter.relativeOrFallback(notification.createdAt) ?: "Just now",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Spacer(modifier = Modifier.weight(1f))
-
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 if (actionTarget != null) {
                     TextButton(
                         onClick = {
@@ -325,7 +344,7 @@ internal fun NotificationCard(
 
             if (actionTarget != null) {
                 Text(
-                    text = "Tap to open alert",
+                    text = "Tap card to open target",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.primary,
                 )
@@ -348,7 +367,10 @@ internal fun GroupedNotificationsList(
         groupNotifications(notifications, currentDate)
     }
 
-    LazyColumn(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+    LazyColumn(
+        modifier = Modifier.animateContentSize(),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
         itemsIndexed(groupedNotifications, key = { _, section -> section.key }) { sectionIndex, section ->
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text(

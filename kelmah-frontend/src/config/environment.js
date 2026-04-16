@@ -300,17 +300,35 @@ export const FEATURES = {
   mockDelay: parseInt(import.meta.env.VITE_MOCK_DELAY || '1000'),
 };
 
+const isCrossOriginApiBase = (() => {
+  try {
+    const resolvedApiBase = API_BASE_URL || '/api';
+    if (resolvedApiBase.startsWith('/')) {
+      return false;
+    }
+
+    if (typeof window === 'undefined' || !window.location?.origin) {
+      return false;
+    }
+
+    const apiOrigin = new URL(resolvedApiBase, window.location.origin).origin;
+    return apiOrigin !== window.location.origin;
+  } catch {
+    return false;
+  }
+})();
+
 const AUTH_HTTPONLY_COOKIES =
   import.meta.env.VITE_AUTH_HTTPONLY_COOKIES === undefined
-    ? isProduction
+    ? isProduction && !isCrossOriginApiBase
     : import.meta.env.VITE_AUTH_HTTPONLY_COOKIES === 'true';
 const AUTH_SEND_AUTH_HEADER =
   import.meta.env.VITE_SEND_AUTH_HEADER === undefined
-    ? !isProduction
+    ? !isProduction || isCrossOriginApiBase
     : import.meta.env.VITE_SEND_AUTH_HEADER === 'true';
 const AUTH_STORE_TOKENS_CLIENT_SIDE =
   import.meta.env.VITE_STORE_TOKENS_CLIENT_SIDE === undefined
-    ? !isProduction
+    ? !isProduction || isCrossOriginApiBase
     : import.meta.env.VITE_STORE_TOKENS_CLIENT_SIDE === 'true';
 
 // ===============================================

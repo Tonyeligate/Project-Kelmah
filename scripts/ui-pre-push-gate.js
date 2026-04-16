@@ -51,11 +51,28 @@ function parseCliArgs(argv) {
 }
 
 function parseRefUpdatesFromStdin() {
+  if (process.stdin.isTTY) {
+    return [];
+  }
+
   let input = '';
   try {
+    const stdinStats = fs.fstatSync(0);
+    const hasPipeInput =
+      (typeof stdinStats.isFIFO === 'function' && stdinStats.isFIFO()) ||
+      (typeof stdinStats.isFile === 'function' && stdinStats.isFile());
+
+    if (!hasPipeInput) {
+      return [];
+    }
+
     input = fs.readFileSync(0, 'utf8');
   } catch (_) {
-    input = '';
+    return [];
+  }
+
+  if (!input.trim()) {
+    return [];
   }
 
   return input

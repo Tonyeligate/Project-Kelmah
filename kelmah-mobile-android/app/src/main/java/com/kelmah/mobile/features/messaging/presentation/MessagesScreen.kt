@@ -34,6 +34,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.animation.animateContentSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
@@ -90,12 +91,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kelmah.mobile.R
+import com.kelmah.mobile.core.design.components.KelmahCommandDeck
+import com.kelmah.mobile.core.design.components.KelmahCommandMetric
+import com.kelmah.mobile.core.design.components.KelmahCommandSignal
+import com.kelmah.mobile.core.design.components.KelmahGlassPanel
 import com.kelmah.mobile.core.design.components.KelmahReveal
 import com.kelmah.mobile.core.design.components.KelmahScreenBackground
 import com.kelmah.mobile.core.design.components.KelmahPrimaryActionMinHeight
@@ -276,47 +282,43 @@ private fun ConversationListContent(
 ) {
     val unreadConversations = conversations.count { it.unreadCount > 0 }
     val unreadMessages = conversations.sumOf { it.unreadCount }
+    val commandMetrics = listOf(
+        KelmahCommandMetric(label = "Chats", value = conversations.size.toString()),
+        KelmahCommandMetric(label = "Unread", value = unreadConversations.toString()),
+        KelmahCommandMetric(label = "Msgs", value = unreadMessages.toString()),
+    )
+    val commandSignals = listOf(
+        KelmahCommandSignal(label = "Search", value = if (searchQuery.isBlank()) "Ready" else "On"),
+        KelmahCommandSignal(label = "Unread", value = unreadMessages.toString()),
+        KelmahCommandSignal(label = "Live", value = "Sync"),
+    )
 
-    Column(modifier = modifier) {
+    Column(modifier = modifier.animateContentSize()) {
         KelmahReveal(index = 0) {
-            Card(colors = kelmahMutedPanelColors(), shape = MaterialTheme.shapes.large) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 12.dp, vertical = 10.dp),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                ) {
-                    ConversationDensityTile(
-                        modifier = Modifier.weight(1f),
-                        label = "Chats",
-                        value = conversations.size,
-                    )
-                    ConversationDensityTile(
-                        modifier = Modifier.weight(1f),
-                        label = "Unread",
-                        value = unreadConversations,
-                    )
-                    ConversationDensityTile(
-                        modifier = Modifier.weight(1f),
-                        label = "Msgs",
-                        value = unreadMessages,
-                    )
-                }
-            }
+            KelmahCommandDeck(
+                title = stringResource(id = R.string.messages_title),
+                subtitle = "Conversations prioritized by unread pressure",
+                eyebrow = "Messaging Command Deck",
+                metrics = commandMetrics,
+                signals = commandSignals,
+            )
         }
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        OutlinedTextField(
-            value = searchQuery,
-            onValueChange = onSearchChange,
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = KelmahPrimaryActionMinHeight),
-            leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
-            placeholder = { Text(stringResource(id = R.string.messages_search_placeholder)) },
-            singleLine = true,
-        )
+        KelmahGlassPanel(muted = true) {
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = onSearchChange,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 10.dp)
+                    .heightIn(min = KelmahPrimaryActionMinHeight),
+                leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
+                placeholder = { Text(stringResource(id = R.string.messages_search_placeholder)) },
+                singleLine = true,
+            )
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -504,7 +506,11 @@ private fun ThreadContent(
         else -> stringResource(id = R.string.messages_send)
     }
 
-    Column(modifier = modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+    Column(
+        modifier = modifier
+            .padding(horizontal = 16.dp, vertical = 12.dp)
+            .animateContentSize(),
+    ) {
         conversation?.otherParticipant?.let { participant ->
             AssistChip(
                 onClick = {},
@@ -524,13 +530,23 @@ private fun ThreadContent(
 
         when {
             isLoading && messages.isEmpty() -> {
-                Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                    contentAlignment = Alignment.Center,
+                ) {
                     CircularProgressIndicator()
                 }
             }
 
             messages.isEmpty() -> {
-                Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                    contentAlignment = Alignment.Center,
+                ) {
                     EmptyStateCard(
                         title = stringResource(id = R.string.messages_empty_title),
                         subtitle = stringResource(id = R.string.messages_thread_empty_subtitle),
@@ -556,39 +572,66 @@ private fun ThreadContent(
             }
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
-
-        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            items(quickReplies, key = { it }) { reply ->
-                AssistChip(
-                    onClick = {
-                        val merged = if (draftMessage.isBlank()) reply else "$draftMessage $reply"
-                        onDraftChange(merged.take(500))
-                    },
-                    modifier = Modifier.heightIn(min = KelmahSecondaryActionMinHeight),
-                    label = { Text(reply) },
-                )
-            }
-        }
-
         Spacer(modifier = Modifier.height(8.dp))
 
-        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            items(MessageComposerMode.entries, key = { it.name }) { mode ->
-                FilterChip(
-                    selected = composerMode == mode,
-                    onClick = { onComposerModeChange(mode) },
-                    modifier = Modifier.heightIn(min = KelmahSecondaryActionMinHeight),
-                    label = {
-                        Text(
-                            when (mode) {
-                                MessageComposerMode.TEXT -> stringResource(id = R.string.messages_mode_text)
-                                MessageComposerMode.PHOTO -> stringResource(id = R.string.messages_mode_photo)
-                                MessageComposerMode.FILE -> stringResource(id = R.string.messages_mode_file)
+        KelmahGlassPanel(muted = true) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 10.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = "Composer",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                    Text(
+                        text = "${draftMessage.length}/500",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    items(MessageComposerMode.entries, key = { it.name }) { mode ->
+                        FilterChip(
+                            selected = composerMode == mode,
+                            onClick = { onComposerModeChange(mode) },
+                            modifier = Modifier.heightIn(min = KelmahSecondaryActionMinHeight),
+                            label = {
+                                Text(
+                                    when (mode) {
+                                        MessageComposerMode.TEXT -> stringResource(id = R.string.messages_mode_text)
+                                        MessageComposerMode.PHOTO -> stringResource(id = R.string.messages_mode_photo)
+                                        MessageComposerMode.FILE -> stringResource(id = R.string.messages_mode_file)
+                                    },
+                                )
                             },
                         )
-                    },
-                )
+                    }
+                }
+
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    items(quickReplies, key = { it }) { reply ->
+                        AssistChip(
+                            onClick = {
+                                val merged = if (draftMessage.isBlank()) reply else "$draftMessage $reply"
+                                onDraftChange(merged.take(500))
+                            },
+                            modifier = Modifier.heightIn(min = KelmahSecondaryActionMinHeight),
+                            label = {
+                                Text(
+                                    text = reply,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                            },
+                        )
+                    }
+                }
             }
         }
 
@@ -655,6 +698,7 @@ private fun ThreadContent(
                                     text = formatAttachmentSize(bytes),
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    textDecoration = TextDecoration.None,
                                 )
                             }
                         }
@@ -720,46 +764,48 @@ private fun ThreadContent(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Row(verticalAlignment = Alignment.Bottom) {
-            OutlinedTextField(
-                value = draftMessage,
-                onValueChange = { updated ->
-                    if (updated.length <= 500) {
-                        onDraftChange(updated)
-                    }
-                },
-                modifier = Modifier.weight(1f),
-                placeholder = { Text(stringResource(id = R.string.messages_draft_placeholder)) },
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
-                keyboardActions = KeyboardActions(onSend = { onSend() }),
-                maxLines = 4,
-                supportingText = {
-                    Text("${draftMessage.length}/500")
-                },
-            )
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            Button(
-                onClick = onSend,
-                enabled = isSending.not() && canSend,
-                modifier = Modifier.heightIn(min = KelmahPrimaryActionMinHeight),
+        KelmahGlassPanel {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 10.dp, vertical = 10.dp),
+                verticalAlignment = Alignment.Bottom,
             ) {
-                if (isSending) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(20.dp),
-                        strokeWidth = 2.dp,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(stringResource(id = R.string.messages_sending))
-                } else {
-                    Icon(
-                        Icons.AutoMirrored.Outlined.Send,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
+                OutlinedTextField(
+                    value = draftMessage,
+                    onValueChange = { updated ->
+                        if (updated.length <= 500) {
+                            onDraftChange(updated)
+                        }
+                    },
+                    modifier = Modifier.weight(1f),
+                    placeholder = { Text(stringResource(id = R.string.messages_draft_placeholder)) },
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
+                    keyboardActions = KeyboardActions(onSend = { onSend() }),
+                    maxLines = 4,
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Button(
+                    onClick = onSend,
+                    enabled = isSending.not() && canSend,
+                    modifier = Modifier.heightIn(min = KelmahPrimaryActionMinHeight),
+                ) {
+                    if (isSending) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.onPrimary,
+                        )
+                    } else {
+                        Icon(
+                            Icons.AutoMirrored.Outlined.Send,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(6.dp))
                     Text(sendLabel)
                 }
             }
@@ -774,6 +820,12 @@ private fun MessageBubble(
 ) {
     val uriHandler = LocalUriHandler.current
     var previewAttachment by remember(message.id) { mutableStateOf<MessageAttachment?>(null) }
+    val timestampText = message.createdAt?.let { RelativeTimeFormatter.relativeOrFallback(it) ?: it } ?: "Just now"
+    val timestampColor = if (isOwnMessage) {
+        MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.72f)
+    } else {
+        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.84f)
+    }
 
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -782,16 +834,16 @@ private fun MessageBubble(
         if (!isOwnMessage) {
             Text(
                 text = message.senderName,
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(bottom = 4.dp),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.9f),
+                modifier = Modifier.padding(bottom = 2.dp),
             )
         }
         Surface(
-            shape = RoundedCornerShape(18.dp),
+            shape = RoundedCornerShape(16.dp),
             color = if (isOwnMessage) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
         ) {
-            Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)) {
+            Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
                 val visibleText = when (message.messageType) {
                     "image" -> if (message.content == "[Attachment]") "Photo" else message.content
                     "file", "mixed" -> if (message.content == "[Attachment]") "Attachment" else message.content
@@ -800,7 +852,7 @@ private fun MessageBubble(
                 if (visibleText.isNotBlank()) {
                     Text(
                         text = visibleText,
-                        style = MaterialTheme.typography.bodyLarge,
+                        style = MaterialTheme.typography.bodyMedium,
                     )
                 }
                 if (message.attachments.isNotEmpty()) {
@@ -817,12 +869,18 @@ private fun MessageBubble(
                         )
                     }
                 }
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = message.createdAt?.let { RelativeTimeFormatter.relativeOrFallback(it) ?: it } ?: "Just now",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End,
+                ) {
+                    Text(
+                        text = timestampText,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = timestampColor,
+                        maxLines = 1,
+                    )
+                }
             }
         }
     }

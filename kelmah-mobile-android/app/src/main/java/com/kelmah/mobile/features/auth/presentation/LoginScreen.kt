@@ -1,5 +1,6 @@
 package com.kelmah.mobile.features.auth.presentation
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -42,6 +43,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kelmah.mobile.R
+import com.kelmah.mobile.core.design.components.KelmahCommandDeck
+import com.kelmah.mobile.core.design.components.KelmahCommandMetric
+import com.kelmah.mobile.core.design.components.KelmahCommandSignal
+import com.kelmah.mobile.core.design.components.KelmahGlassPanel
 import com.kelmah.mobile.core.design.components.KelmahReveal
 import com.kelmah.mobile.core.design.components.KelmahScreenBackground
 import com.kelmah.mobile.core.design.components.KelmahPrimaryActionMinHeight
@@ -67,76 +72,78 @@ fun LoginScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 20.dp, vertical = 22.dp),
+                .padding(horizontal = 20.dp, vertical = 22.dp)
+                .animateContentSize(),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             item {
                 KelmahReveal(index = 0) {
-                    Card(
-                        colors = kelmahMutedPanelColors(),
-                        shape = MaterialTheme.shapes.large,
-                        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 18.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                        ) {
-                            Text(
-                                text = stringResource(id = R.string.app_name),
-                                style = MaterialTheme.typography.displaySmall,
-                                fontWeight = FontWeight.ExtraBold,
-                            )
-                            Text(
-                                text = stringResource(id = R.string.auth_subtitle),
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                            Text(
-                                text = "Fast, trusted hiring flow for Ghana",
-                                style = MaterialTheme.typography.labelLarge,
-                                color = MaterialTheme.colorScheme.primary,
-                            )
-                        }
-                    }
+                    KelmahCommandDeck(
+                        title = stringResource(id = R.string.app_name),
+                        subtitle = stringResource(id = R.string.auth_subtitle),
+                        eyebrow = "Secure Access",
+                        metrics = listOf(
+                            KelmahCommandMetric(label = "Region", value = "Ghana"),
+                            KelmahCommandMetric(label = "Mode", value = uiState.mode.label),
+                            KelmahCommandMetric(label = "Flow", value = "Fast"),
+                        ),
+                        signals = listOf(
+                            KelmahCommandSignal(label = "Workers"),
+                            KelmahCommandSignal(label = "Hirers"),
+                            KelmahCommandSignal(label = "Verified"),
+                        ),
+                    )
                 }
             }
 
             item {
                 KelmahReveal(index = 1) {
-                    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        items(AuthMode.entries) { mode ->
-                            FilterChip(
-                                selected = uiState.mode == mode,
-                                onClick = { viewModel.switchMode(mode) },
-                                modifier = Modifier.heightIn(min = KelmahSecondaryActionMinHeight),
-                                label = {
-                                    Text(
-                                        when (mode) {
-                                            AuthMode.LOGIN -> stringResource(id = R.string.auth_mode_login)
-                                            AuthMode.REGISTER -> stringResource(id = R.string.auth_mode_register)
-                                            AuthMode.FORGOT_PASSWORD -> stringResource(id = R.string.auth_mode_forgot)
-                                            AuthMode.RESET_PASSWORD -> stringResource(id = R.string.auth_mode_reset)
-                                            AuthMode.VERIFY_EMAIL -> stringResource(id = R.string.auth_mode_verify)
-                                        },
-                                    )
-                                },
-                                leadingIcon = {
-                                    Icon(
-                                        imageVector = when (mode) {
-                                            AuthMode.LOGIN -> Icons.AutoMirrored.Outlined.Login
-                                            AuthMode.REGISTER -> Icons.Outlined.PersonAdd
-                                            AuthMode.FORGOT_PASSWORD -> Icons.Outlined.Lock
-                                            AuthMode.RESET_PASSWORD -> Icons.Outlined.Key
-                                            AuthMode.VERIFY_EMAIL -> Icons.Outlined.Email
-                                        },
-                                        contentDescription = null,
-                                    )
-                                },
-                                colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = MaterialTheme.colorScheme.secondary,
-                                    selectedLabelColor = MaterialTheme.colorScheme.onSecondary,
-                                ),
+                    KelmahGlassPanel(muted = true) {
+                        Column(
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            Text(
+                                text = "Choose access flow",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
+                            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                items(AuthMode.entries) { mode ->
+                                    FilterChip(
+                                        selected = uiState.mode == mode,
+                                        onClick = { viewModel.switchMode(mode) },
+                                        modifier = Modifier.heightIn(min = KelmahSecondaryActionMinHeight),
+                                        label = {
+                                            Text(
+                                                when (mode) {
+                                                    AuthMode.LOGIN -> stringResource(id = R.string.auth_mode_login)
+                                                    AuthMode.REGISTER -> stringResource(id = R.string.auth_mode_register)
+                                                    AuthMode.FORGOT_PASSWORD -> stringResource(id = R.string.auth_mode_forgot)
+                                                    AuthMode.RESET_PASSWORD -> stringResource(id = R.string.auth_mode_reset)
+                                                    AuthMode.VERIFY_EMAIL -> stringResource(id = R.string.auth_mode_verify)
+                                                },
+                                            )
+                                        },
+                                        leadingIcon = {
+                                            Icon(
+                                                imageVector = when (mode) {
+                                                    AuthMode.LOGIN -> Icons.AutoMirrored.Outlined.Login
+                                                    AuthMode.REGISTER -> Icons.Outlined.PersonAdd
+                                                    AuthMode.FORGOT_PASSWORD -> Icons.Outlined.Lock
+                                                    AuthMode.RESET_PASSWORD -> Icons.Outlined.Key
+                                                    AuthMode.VERIFY_EMAIL -> Icons.Outlined.Email
+                                                },
+                                                contentDescription = null,
+                                            )
+                                        },
+                                        colors = FilterChipDefaults.filterChipColors(
+                                            selectedContainerColor = MaterialTheme.colorScheme.secondary,
+                                            selectedLabelColor = MaterialTheme.colorScheme.onSecondary,
+                                        ),
+                                    )
+                                }
+                            }
                         }
                     }
                 }

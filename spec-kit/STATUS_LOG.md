@@ -1,3 +1,38 @@
+### Session: Cross-Origin Auth Refresh 401 Investigation April 15 2026 ✅ COMPLETED
+
+**Date**: April 15, 2026  
+**Scope**: Investigate repeated `401` on `/api/auth/verify` and `/api/auth/refresh-token` after page refresh, where users are forced out of authenticated state.
+
+**Files currently in scope**
+- `kelmah-frontend/src/config/environment.js`
+- `kelmah-frontend/src/services/apiClient.js`
+- `kelmah-frontend/src/modules/auth/services/authSlice.js`
+- `kelmah-frontend/src/modules/auth/services/authService.js`
+- `kelmah-frontend/src/App.jsx`
+- `kelmah-frontend/src/utils/secureStorage.js`
+- `spec-kit/STATUS_LOG.md`
+
+**Investigation findings**
+- App startup auth bootstrap (`App.jsx` -> `verifyAuth` thunk) is functioning as designed and correctly re-verifies sessions on refresh.
+- Session drop occurs when both verify and refresh return `401`, which currently triggers auth reset and storage cleanup.
+- Production defaults in `environment.js` are cookie-first (`httpOnlyCookieAuth=true`, `sendAuthHeader=false`, `storeTokensClientSide=false`).
+- When API base is cross-origin (for example direct Render gateway host), cookie-only auth is fragile because third-party cookies may be blocked or not persisted in some browser/privacy settings.
+- Under that cross-origin condition, refresh cannot recover session state unless token/header mode is enabled.
+
+**Remediation applied**
+- Updated auth default-mode selection in `environment.js`:
+  - detect cross-origin API base at runtime,
+  - keep cookie-first defaults for same-origin API bases,
+  - automatically switch defaults to token/header mode for cross-origin API bases:
+    - `httpOnlyCookieAuth=false`
+    - `sendAuthHeader=true`
+    - `storeTokensClientSide=true`
+
+**Verification**
+- PASS: `npm --prefix kelmah-frontend run lint -- src/config/environment.js`
+- PASS: `npm --prefix kelmah-frontend run build`
+  - Result: `vite build` completed successfully (`13974 modules transformed`, `built in 2m 1s`).
+
 ### Session: UI Pre-Push Gate Closure April 15 2026 ✅ COMPLETED
 
 **Date**: April 15, 2026  

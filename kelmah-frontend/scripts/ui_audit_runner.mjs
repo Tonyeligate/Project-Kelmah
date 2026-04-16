@@ -70,6 +70,9 @@ const OFFSCREEN_TAG_IGNORE = new Set([
   'polygon',
   'use',
 ]);
+const MAX_FAILED_REQUESTS_PER_VIEWPORT = 20;
+const RENDERABLE_UI_TIMEOUT_MS = 5000;
+const EMPTY_UI_RETRY_EXTRA_WAIT_MS = 800;
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 const toPosix = (value) => value.replace(/\\/g, '/');
@@ -161,6 +164,145 @@ const isLikelyProtectedRoute = (route = '/') => {
     (prefix) =>
       normalizedRoute === prefix || normalizedRoute.startsWith(`${prefix}/`)
   );
+};
+
+const isPublicRouteCapture = (route = '/') => !isLikelyProtectedRoute(route);
+
+const navigateWithFallback = async (page, url) => {
+  try {
+    await page.goto(url, {
+      waitUntil: 'networkidle',
+      timeout: 60000,
+    });
+    return;
+  } catch (primaryNavigationError) {
+    const primaryMessage =
+      primaryNavigationError?.message || String(primaryNavigationError);
+    const shouldFallbackToDomReady =
+      /waiting until "networkidle"/i.test(primaryMessage) ||
+      /Timeout\s*\d+ms exceeded/i.test(primaryMessage);
+
+    if (!shouldFallbackToDomReady) {
+      throw primaryNavigationError;
+    }
+  }
+
+  await page.goto(url, {
+    waitUntil: 'domcontentloaded',
+    timeout: 60000,
+  });
+};
+
+const waitForRenderableUi = async (
+  page,
+  timeoutMs = RENDERABLE_UI_TIMEOUT_MS,
+) => {
+  try {
+    await page.waitForFunction(
+      () => {
+        const isVisible = (el) => {
+          if (!el) return false;
+          const style = window.getComputedStyle(el);
+          if (
+            style.display === 'none' ||
+            style.visibility === 'hidden' ||
+            style.opacity === '0'
+          ) {
+            return false;
+          }
+
+          const rect = el.getBoundingClientRect();
+          return rect.width > 0 && rect.height > 0;
+        };
+
+        const auditRoot =
+          document.querySelector('[data-ui-audit-root]') || document.body;
+        if (!auditRoot) {
+          return false;
+        }
+
+        const hasVisibleHeading = Array.from(
+          auditRoot.querySelectorAll('h1, h2, h3'),
+        ).some((el) => isVisible(el));
+        if (hasVisibleHeading) {
+          return true;
+        }
+
+        const hasVisibleInteractive = Array.from(
+          auditRoot.querySelectorAll(
+            'a, button, input, select, textarea, [role="button"]',
+          ),
+        ).some((el) => isVisible(el));
+        if (hasVisibleInteractive) {
+          return true;
+        }
+
+        const text = (auditRoot.textContent || '').replace(/\s+/g, ' ').trim();
+        return text.length >= 60;
+      },
+      { timeout: timeoutMs },
+    );
+
+    return true;
+  } catch (_) {
+    return false;
+  }
+};
+
+const buildMockWorkerDirectoryPayload = (requestUrl) => {
+  let page = 1;
+  let limit = 12;
+
+  try {
+    const parsed = new URL(requestUrl);
+    page = Number(parsed.searchParams.get('page')) || 1;
+    limit = Number(parsed.searchParams.get('limit')) || 12;
+  } catch (_) {
+    // Keep defaults if URL parsing fails.
+  }
+
+  return {
+    success: true,
+    data: {
+      workers: [],
+      results: [],
+      items: [],
+      pagination: {
+        currentPage: page,
+        page,
+        totalPages: 1,
+        totalItems: 0,
+        totalWorkers: 0,
+        total: 0,
+        limit,
+      },
+      fallback: false,
+    },
+  };
+};
+
+const buildMockPublicJobsListPayload = (requestUrl) => {
+  let page = 1;
+  let limit = 12;
+
+  try {
+    const parsed = new URL(requestUrl);
+    page = Number(parsed.searchParams.get('page')) || 1;
+    limit = Number(parsed.searchParams.get('limit')) || 12;
+  } catch (_) {
+    // Keep defaults if URL parsing fails.
+  }
+
+  return {
+    success: true,
+    data: [],
+    pagination: {
+      currentPage: page,
+      totalPages: 1,
+      totalItems: 0,
+      limit,
+    },
+  };
 };
 
 const evaluateUiChecks = async (page, mobile) =>
@@ -321,7 +463,26 @@ const buildMockApplicationsSummaryPayload = () => {
   };
 };
 
-const wireMockRoutes = async ({ page, mockAuth, mockApplications, mockUser }) => {
+const wireMockRoutes = async ({
+  page,
+  mockAuth,
+  mockApplications,
+  mockUser,
+  routePath,
+}) => {
+  const normalizedRoutePath =
+    String(routePath || '/').split('?')[0] || '/';
+  const isPublicRoute = isPublicRouteCapture(normalizedRoutePath);
+  const shouldMockHomeStats =
+    isPublicRoute &&
+    (normalizedRoutePath === '/' || normalizedRoutePath === '/home');
+  const shouldMockWorkerSearch =
+    isPublicRoute &&
+    (normalizedRoutePath === '/search' ||
+      normalizedRoutePath === '/find-talents');
+  const shouldMockPublicJobsList =
+    isPublicRoute && (shouldMockHomeStats || shouldMockWorkerSearch);
+
   await page.route('**/api/health/aggregate*', async (route) => {
     await route.fulfill({
       status: 200,
@@ -335,6 +496,54 @@ const wireMockRoutes = async ({ page, mockAuth, mockApplications, mockUser }) =>
       }),
     });
   });
+
+  if (shouldMockHomeStats) {
+    await page.route('**/api/jobs/stats*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          data: null,
+        }),
+      });
+    });
+  }
+
+  if (shouldMockWorkerSearch) {
+    const workerSearchPatterns = [
+      '**/api/users/workers/search*',
+      '**/api/workers/search*',
+      '**/api/search/workers*',
+      '**/users/workers/search*',
+      '**/workers/search*',
+      '**/search/workers*',
+    ];
+
+    for (const pattern of workerSearchPatterns) {
+      await page.route(pattern, async (routeRequest) => {
+        await routeRequest.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify(
+            buildMockWorkerDirectoryPayload(routeRequest.request().url()),
+          ),
+        });
+      });
+    }
+  }
+
+  if (shouldMockPublicJobsList) {
+    await page.route(/\/api\/jobs(?:\?.*)?$/i, async (routeRequest) => {
+      await routeRequest.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(
+          buildMockPublicJobsListPayload(routeRequest.request().url()),
+        ),
+      });
+    });
+  }
 
   if (mockAuth) {
     const authSuccessPayload = {
@@ -882,6 +1091,7 @@ const main = async () => {
     for (const viewport of DEFAULT_VIEWPORTS) {
       const screenshotPath = path.resolve(taskDir, `${viewport.key}.png`);
       const consoleErrors = [];
+      const failedRequests = [];
 
       const context = await browser.newContext({
         viewport: { width: viewport.width, height: viewport.height },
@@ -902,11 +1112,32 @@ const main = async () => {
         }
       });
 
+      page.on('response', (response) => {
+        const status = response.status();
+        if (status < 400) {
+          return;
+        }
+
+        if (failedRequests.length >= MAX_FAILED_REQUESTS_PER_VIEWPORT) {
+          return;
+        }
+
+        const failedUrl = response.url();
+        if (/\/favicon\.ico(?:\?|$)/i.test(failedUrl)) {
+          return;
+        }
+
+        failedRequests.push(
+          `${status} ${response.request().method()} ${failedUrl}`,
+        );
+      });
+
       await wireMockRoutes({
         page,
         mockAuth,
         mockApplications,
         mockUser,
+        routePath: route,
       });
 
       let navigationError = null;
@@ -924,31 +1155,37 @@ const main = async () => {
           // Keep route-level console diagnostics focused on the audited screen,
           // not transitional login-view noise.
           consoleErrors.length = 0;
+          failedRequests.length = 0;
         }
 
-        try {
-          await page.goto(`${baseUrl}${route}`, {
-            waitUntil: 'networkidle',
-            timeout: 60000,
-          });
-        } catch (primaryNavigationError) {
-          const primaryMessage =
-            primaryNavigationError?.message || String(primaryNavigationError);
-          const shouldFallbackToDomReady =
-            /waiting until "networkidle"/i.test(primaryMessage) ||
-            /Timeout\s*\d+ms exceeded/i.test(primaryMessage);
-
-          if (!shouldFallbackToDomReady) {
-            throw primaryNavigationError;
-          }
-
-          await page.goto(`${baseUrl}${route}`, {
-            waitUntil: 'domcontentloaded',
-            timeout: 60000,
-          });
-        }
+        const targetUrl = `${baseUrl}${route}`;
+        await navigateWithFallback(page, targetUrl);
 
         await page.waitForTimeout(waitMs);
+
+        let hasRenderableUi = await waitForRenderableUi(page);
+        const sawTransient404Signal = () => {
+          const has404Console = consoleErrors.some((entry) =>
+            /404|chunk|dynamically imported module/i.test(entry),
+          );
+          const has404Request = failedRequests.some((entry) =>
+            /(^|\s)404(\s|$)/.test(entry),
+          );
+          return has404Console || has404Request;
+        };
+
+        if (!hasRenderableUi && sawTransient404Signal()) {
+          consoleErrors.length = 0;
+          failedRequests.length = 0;
+          await navigateWithFallback(page, targetUrl);
+          await page.waitForTimeout(waitMs + EMPTY_UI_RETRY_EXTRA_WAIT_MS);
+          hasRenderableUi = await waitForRenderableUi(page);
+        }
+
+        if (!hasRenderableUi) {
+          throw new Error('Route rendered no detectable UI content before capture');
+        }
+
         await page.addStyleTag({
           content:
             '*,:before,:after{animation:none !important;transition:none !important;caret-color:transparent !important;}',
@@ -999,6 +1236,7 @@ const main = async () => {
         navigationError,
         screenshotError,
         consoleErrors,
+        failedRequests,
         uiChecks,
       };
 

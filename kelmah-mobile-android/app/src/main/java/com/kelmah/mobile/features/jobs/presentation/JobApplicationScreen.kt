@@ -35,11 +35,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kelmah.mobile.core.design.components.KelmahCommandDeck
+import com.kelmah.mobile.core.design.components.KelmahCommandMetric
+import com.kelmah.mobile.core.design.components.KelmahCommandSignal
+import com.kelmah.mobile.core.design.components.KelmahGlassPanel
+import com.kelmah.mobile.core.design.components.KelmahPrimaryActionMinHeight
+import com.kelmah.mobile.core.design.components.KelmahScreenBackground
+import com.kelmah.mobile.core.design.components.kelmahTopAppBarColors
 import com.kelmah.mobile.core.session.KelmahUserRole
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -68,113 +76,166 @@ fun JobApplicationScreen(
         uiState.infoMessage?.let { snackbars.showSnackbar(it); viewModel.clearMessages() }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Apply Now") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back")
-                    }
-                },
-            )
-        },
-        snackbarHost = { SnackbarHost(snackbars) },
-    ) { padding ->
-        val jobTitle = uiState.selectedJob?.summary?.takeIf { it.id == jobId }?.title ?: "Kelmah Job"
-        val currency = uiState.selectedJob?.summary?.takeIf { it.id == jobId }?.currency ?: "GHS"
+    KelmahScreenBackground {
+        Scaffold(
+            containerColor = Color.Transparent,
+            topBar = {
+                TopAppBar(
+                    title = { Text("Apply Now") },
+                    colors = kelmahTopAppBarColors(),
+                    navigationIcon = {
+                        IconButton(onClick = onBack) {
+                            Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back")
+                        }
+                    },
+                )
+            },
+            snackbarHost = { SnackbarHost(snackbars) },
+        ) { padding ->
+            val jobTitle = uiState.selectedJob?.summary?.takeIf { it.id == jobId }?.title ?: "Kelmah Job"
+            val currency = uiState.selectedJob?.summary?.takeIf { it.id == jobId }?.currency ?: "GHS"
 
-        if (userRole == KelmahUserRole.HIRER) {
+            if (userRole == KelmahUserRole.HIRER) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding)
+                        .padding(horizontal = 16.dp, vertical = 14.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp),
+                ) {
+                    KelmahCommandDeck(
+                        title = "Worker-only flow",
+                        subtitle = "Applications are available to worker accounts only.",
+                        eyebrow = "Access Policy",
+                        metrics = listOf(
+                            KelmahCommandMetric(label = "Role", value = "Hirer"),
+                            KelmahCommandMetric(label = "Action", value = "Browse"),
+                            KelmahCommandMetric(label = "Flow", value = "Managed"),
+                        ),
+                        signals = listOf(KelmahCommandSignal(label = "Market", value = "Open")),
+                    )
+                    KelmahGlassPanel {
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            Text(
+                                text = "Only worker accounts can apply. Hirer accounts use this app to review the market and manage hiring.",
+                                style = MaterialTheme.typography.bodyLarge,
+                            )
+                            Button(
+                                onClick = onBack,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(KelmahPrimaryActionMinHeight),
+                            ) {
+                                Text("Back to Market")
+                            }
+                        }
+                    }
+                }
+                return@Scaffold
+            }
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
-                    .padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp, vertical = 14.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp),
             ) {
-                Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+                KelmahCommandDeck(
+                    title = "Apply to Job",
+                    subtitle = jobTitle,
+                    eyebrow = "Application Command Deck",
+                    metrics = listOf(
+                        KelmahCommandMetric(label = "Currency", value = currency),
+                        KelmahCommandMetric(label = "Role", value = "Worker"),
+                        KelmahCommandMetric(
+                            label = "Status",
+                            value = if (uiState.isSubmittingApplication) "Sending" else "Draft",
+                        ),
+                    ),
+                    signals = listOf(
+                        KelmahCommandSignal(label = "Price", value = if (proposedRate.isBlank()) "Set" else "Ready"),
+                        KelmahCommandSignal(label = "Time", value = if (estimatedDuration.isBlank()) "Set" else "Ready"),
+                        KelmahCommandSignal(label = "Message", value = if (coverLetter.isBlank()) "Set" else "Ready"),
+                    ),
+                )
+
+                KelmahGlassPanel(muted = true) {
                     Column(
-                        modifier = Modifier.padding(20.dp),
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        Text(text = "Add your price, time, and short message.")
+                        Text(
+                            text = "Write simple words about the work you can do.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+
+                KelmahGlassPanel {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
-                        Text(text = "Worker-only flow", style = MaterialTheme.typography.headlineSmall)
-                        Text(
-                            text = "Only worker accounts can apply. Hirer accounts use this app to review the market and manage hiring.",
-                            style = MaterialTheme.typography.bodyLarge,
+                        OutlinedTextField(
+                            value = proposedRate,
+                            onValueChange = { proposedRate = it },
+                            label = { Text("Your price ($currency)") },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
                         )
-                        Button(onClick = onBack, modifier = Modifier.fillMaxWidth()) {
-                            Text("Back to Market")
+                        OutlinedTextField(
+                            value = estimatedDuration,
+                            onValueChange = { estimatedDuration = it },
+                            label = { Text("How long it will take") },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
+                        )
+                        OutlinedTextField(
+                            value = coverLetter,
+                            onValueChange = { coverLetter = it },
+                            label = { Text("Short message") },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(220.dp),
+                            minLines = 8,
+                            maxLines = 10,
+                        )
+
+                        Button(
+                            onClick = {
+                                viewModel.submitApplication(
+                                    jobId = jobId,
+                                    proposedRate = proposedRate,
+                                    coverLetter = coverLetter,
+                                    estimatedDuration = estimatedDuration,
+                                    onSuccess = onSubmitted,
+                                )
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(KelmahPrimaryActionMinHeight),
+                            enabled = !uiState.isSubmittingApplication,
+                        ) {
+                            if (uiState.isSubmittingApplication) {
+                                CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Sending")
+                            } else {
+                                Text("Send Application")
+                            }
                         }
                     }
                 }
+                Spacer(modifier = Modifier.height(24.dp))
             }
-            return@Scaffold
-        }
-
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .verticalScroll(rememberScrollState())
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            Text(text = jobTitle, style = MaterialTheme.typography.headlineSmall)
-            Text(text = "Add your price, time, and short message.")
-            Text(
-                text = "Write simple words about the work you can do.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-
-            OutlinedTextField(
-                value = proposedRate,
-                onValueChange = { proposedRate = it },
-                label = { Text("Your price ($currency)") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-            )
-            OutlinedTextField(
-                value = estimatedDuration,
-                onValueChange = { estimatedDuration = it },
-                label = { Text("How long it will take") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-            )
-            OutlinedTextField(
-                value = coverLetter,
-                onValueChange = { coverLetter = it },
-                label = { Text("Short message") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(220.dp),
-                minLines = 8,
-                maxLines = 10,
-            )
-
-            Button(
-                onClick = {
-                    viewModel.submitApplication(
-                        jobId = jobId,
-                        proposedRate = proposedRate,
-                        coverLetter = coverLetter,
-                        estimatedDuration = estimatedDuration,
-                        onSuccess = onSubmitted,
-                    )
-                },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = !uiState.isSubmittingApplication,
-            ) {
-                if (uiState.isSubmittingApplication) {
-                    CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Sending")
-                } else {
-                    Text("Send Application")
-                }
-            }
-            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 }

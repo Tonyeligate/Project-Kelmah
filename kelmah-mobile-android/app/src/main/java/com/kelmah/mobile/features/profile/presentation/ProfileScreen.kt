@@ -1,5 +1,6 @@
 package com.kelmah.mobile.features.profile.presentation
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -48,6 +49,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kelmah.mobile.R
+import com.kelmah.mobile.core.design.components.KelmahCommandDeck
+import com.kelmah.mobile.core.design.components.KelmahCommandMetric
+import com.kelmah.mobile.core.design.components.KelmahCommandSignal
+import com.kelmah.mobile.core.design.components.KelmahGlassPanel
 import com.kelmah.mobile.core.design.components.KelmahReveal
 import com.kelmah.mobile.core.design.components.KelmahScreenBackground
 import com.kelmah.mobile.core.design.components.KelmahPrimaryActionMinHeight
@@ -68,6 +73,23 @@ fun ProfileScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var showLogoutDialog by remember { mutableStateOf(false) }
     var showLogoutAllDialog by remember { mutableStateOf(false) }
+    val roleLabel = (uiState.currentUser?.role ?: "worker").replaceFirstChar { it.uppercase() }
+    val commandMetrics = listOf(
+        KelmahCommandMetric(label = "Role", value = roleLabel),
+        KelmahCommandMetric(
+            label = "Verified",
+            value = if (uiState.currentUser?.isEmailVerified == true) "Yes" else "No",
+        ),
+        KelmahCommandMetric(
+            label = "Session",
+            value = if (uiState.isSaving) "Sync" else "Ready",
+        ),
+    )
+    val commandSignals = listOf(
+        KelmahCommandSignal(label = "Security", value = "Password"),
+        KelmahCommandSignal(label = "Profile", value = "Identity"),
+        KelmahCommandSignal(label = "Reputation", value = "Live"),
+    )
 
     if (showLogoutDialog) {
         AlertDialog(
@@ -107,41 +129,24 @@ fun ProfileScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 18.dp, vertical = 20.dp),
+                .padding(horizontal = 18.dp, vertical = 20.dp)
+                .animateContentSize(),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
         item {
             KelmahReveal(index = 0) {
-                Card(
-                    colors = kelmahMutedPanelColors(),
-                    shape = MaterialTheme.shapes.large,
-                ) {
-                    Column(
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
-                        verticalArrangement = Arrangement.spacedBy(6.dp),
-                    ) {
-                        Text(
-                            stringResource(id = R.string.profile_title),
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold,
-                        )
-                        Text(
-                            "Identity, security, and work reputation in one place",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                }
+                KelmahCommandDeck(
+                    title = stringResource(id = R.string.profile_title),
+                    subtitle = "Identity, security, and work reputation in one place",
+                    eyebrow = "Profile Command Deck",
+                    metrics = commandMetrics,
+                    signals = commandSignals,
+                )
             }
         }
         item {
             KelmahReveal(index = 1) {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(20.dp),
-                    colors = kelmahPanelColors(),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)),
-                ) {
+                KelmahGlassPanel(modifier = Modifier.fillMaxWidth()) {
                     Column(
                         modifier = Modifier.padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -183,12 +188,7 @@ fun ProfileScreen(
         if (uiState.currentUser?.role.equals("worker", ignoreCase = true)) {
             item {
                 KelmahReveal(index = 2) {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(20.dp),
-                        colors = kelmahPanelColors(),
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.32f)),
-                    ) {
+                    KelmahGlassPanel(modifier = Modifier.fillMaxWidth()) {
                         Column(
                             modifier = Modifier.padding(16.dp),
                             verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -235,12 +235,7 @@ fun ProfileScreen(
         }
         item {
             KelmahReveal(index = 3) {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(20.dp),
-                    colors = kelmahPanelColors(),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.24f)),
-                ) {
+                KelmahGlassPanel(modifier = Modifier.fillMaxWidth()) {
                     Column(
                         modifier = Modifier.padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp),

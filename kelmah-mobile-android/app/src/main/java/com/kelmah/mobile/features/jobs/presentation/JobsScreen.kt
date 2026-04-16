@@ -1,5 +1,6 @@
 package com.kelmah.mobile.features.jobs.presentation
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -56,6 +57,10 @@ import androidx.compose.foundation.layout.width
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kelmah.mobile.R
+import com.kelmah.mobile.core.design.components.KelmahCommandDeck
+import com.kelmah.mobile.core.design.components.KelmahCommandMetric
+import com.kelmah.mobile.core.design.components.KelmahCommandSignal
+import com.kelmah.mobile.core.design.components.KelmahGlassPanel
 import com.kelmah.mobile.core.design.components.KelmahReveal
 import com.kelmah.mobile.core.design.components.KelmahScreenBackground
 import com.kelmah.mobile.core.design.components.KelmahPrimaryActionMinHeight
@@ -108,8 +113,46 @@ fun JobsScreen(
     }
     val urgentCount = jobs.count { it.isUrgent }
     val highFitCount = if (isWorker) uiState.discoverJobs.count { (it.matchScore ?: 0.0) >= 80.0 } else 0
-    val panelColors = kelmahPanelColors()
-    val mutedPanelColors = kelmahMutedPanelColors()
+    val commandMetrics = listOf(
+        KelmahCommandMetric(
+            label = if (uiState.activeFeed == JobsFeed.SAVED) "Saved" else "Open",
+            value = jobs.size.toString(),
+        ),
+        KelmahCommandMetric(label = "Urgent", value = urgentCount.toString()),
+        KelmahCommandMetric(
+            label = if (isWorker) "High fit" else "Bookmarked",
+            value = if (isWorker) highFitCount.toString() else uiState.savedJobs.size.toString(),
+        ),
+    )
+    val commandSignals = buildList {
+        add(
+            KelmahCommandSignal(
+                label = discoverLabel,
+                value = if (uiState.activeFeed == JobsFeed.DISCOVER) "On" else "Off",
+                onClick = { viewModel.switchFeed(JobsFeed.DISCOVER) },
+            ),
+        )
+        add(
+            KelmahCommandSignal(
+                label = savedLabel,
+                value = uiState.savedJobs.size.toString(),
+                onClick = { viewModel.switchFeed(JobsFeed.SAVED) },
+            ),
+        )
+        add(
+            KelmahCommandSignal(
+                label = "Refresh",
+                value = if (uiState.isLoading) "..." else "Now",
+                onClick = {
+                    if (uiState.activeFeed == JobsFeed.SAVED) {
+                        viewModel.loadSavedJobs()
+                    } else {
+                        viewModel.refreshJobs()
+                    }
+                },
+            ),
+        )
+    }
 
     LaunchedEffect(userRole) {
         viewModel.bootstrap(userRole)
@@ -162,66 +205,88 @@ fun JobsScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
-                    .padding(horizontal = 16.dp, vertical = 14.dp),
+                    .padding(horizontal = 16.dp, vertical = 14.dp)
+                    .animateContentSize(),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                FilterChip(
-                    selected = uiState.activeFeed == JobsFeed.DISCOVER,
-                    onClick = { viewModel.switchFeed(JobsFeed.DISCOVER) },
-                    modifier = Modifier.heightIn(min = KelmahSecondaryActionMinHeight),
-                    label = { Text(discoverLabel) },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = MaterialTheme.colorScheme.secondary,
-                        selectedLabelColor = MaterialTheme.colorScheme.onSecondary,
-                    ),
-                )
-                FilterChip(
-                    selected = uiState.activeFeed == JobsFeed.SAVED,
-                    onClick = { viewModel.switchFeed(JobsFeed.SAVED) },
-                    modifier = Modifier.heightIn(min = KelmahSecondaryActionMinHeight),
-                    label = { Text(savedLabel) },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = MaterialTheme.colorScheme.secondary,
-                        selectedLabelColor = MaterialTheme.colorScheme.onSecondary,
-                    ),
-                )
-            }
+                KelmahReveal(index = 0) {
+                    KelmahCommandDeck(
+                        title = screenTitle,
+                        subtitle = if (isWorker) {
+                            "Realtime opportunities and fit signals"
+                        } else {
+                            "Track active hiring and candidate pressure"
+                        },
+                        eyebrow = if (isWorker) "Market Discovery" else "Hiring Operations",
+                        metrics = commandMetrics,
+                        signals = commandSignals,
+                    )
+                }
 
-            KelmahReveal(index = 0) {
-                Card(colors = panelColors) {
+                KelmahGlassPanel(muted = true) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(12.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            .padding(horizontal = 12.dp, vertical = 10.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
-                        JobsMetricTile(
-                            modifier = Modifier.weight(1f),
-                            label = if (uiState.activeFeed == JobsFeed.SAVED) {
-                                stringResource(id = R.string.jobs_metric_saved)
-                            } else {
-                                stringResource(id = R.string.jobs_metric_jobs)
-                            },
-                            value = jobs.size,
+                        FilterChip(
+                            selected = uiState.activeFeed == JobsFeed.DISCOVER,
+                            onClick = { viewModel.switchFeed(JobsFeed.DISCOVER) },
+                            modifier = Modifier.heightIn(min = KelmahSecondaryActionMinHeight),
+                            label = { Text(discoverLabel) },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = MaterialTheme.colorScheme.secondary,
+                                selectedLabelColor = MaterialTheme.colorScheme.onSecondary,
+                            ),
                         )
-                        JobsMetricTile(
-                            modifier = Modifier.weight(1f),
-                            label = stringResource(id = R.string.jobs_metric_urgent),
-                            value = urgentCount,
-                        )
-                        JobsMetricTile(
-                            modifier = Modifier.weight(1f),
-                            label = if (isWorker) {
-                                stringResource(id = R.string.jobs_metric_high_fit)
-                            } else {
-                                stringResource(id = R.string.jobs_metric_bookmarked)
-                            },
-                            value = if (isWorker) highFitCount else uiState.savedJobs.size,
+                        FilterChip(
+                            selected = uiState.activeFeed == JobsFeed.SAVED,
+                            onClick = { viewModel.switchFeed(JobsFeed.SAVED) },
+                            modifier = Modifier.heightIn(min = KelmahSecondaryActionMinHeight),
+                            label = { Text(savedLabel) },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = MaterialTheme.colorScheme.secondary,
+                                selectedLabelColor = MaterialTheme.colorScheme.onSecondary,
+                            ),
                         )
                     }
                 }
-            }
+
+                KelmahReveal(index = 1) {
+                    KelmahGlassPanel {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            JobsMetricTile(
+                                modifier = Modifier.weight(1f),
+                                label = if (uiState.activeFeed == JobsFeed.SAVED) {
+                                    stringResource(id = R.string.jobs_metric_saved)
+                                } else {
+                                    stringResource(id = R.string.jobs_metric_jobs)
+                                },
+                                value = jobs.size,
+                            )
+                            JobsMetricTile(
+                                modifier = Modifier.weight(1f),
+                                label = stringResource(id = R.string.jobs_metric_urgent),
+                                value = urgentCount,
+                            )
+                            JobsMetricTile(
+                                modifier = Modifier.weight(1f),
+                                label = if (isWorker) {
+                                    stringResource(id = R.string.jobs_metric_high_fit)
+                                } else {
+                                    stringResource(id = R.string.jobs_metric_bookmarked)
+                                },
+                                value = if (isWorker) highFitCount else uiState.savedJobs.size,
+                            )
+                        }
+                    }
+                }
 
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 item {
@@ -261,8 +326,8 @@ fun JobsScreen(
             }
 
             if (isWorker) {
-                KelmahReveal(index = 1) {
-                    Card(colors = mutedPanelColors) {
+                KelmahReveal(index = 2) {
+                    KelmahGlassPanel(muted = true) {
                         Text(
                             text = stringResource(id = R.string.jobs_helper_worker),
                             modifier = Modifier.padding(16.dp),
@@ -271,8 +336,8 @@ fun JobsScreen(
                     }
                 }
             } else {
-                KelmahReveal(index = 1) {
-                    Card(colors = mutedPanelColors) {
+                KelmahReveal(index = 2) {
+                    KelmahGlassPanel(muted = true) {
                         Text(
                             text = stringResource(id = R.string.jobs_helper_hirer),
                             modifier = Modifier.padding(16.dp),
@@ -385,7 +450,7 @@ fun JobsScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     itemsIndexed(jobs, key = { _, job -> job.id }) { index, job ->
-                        KelmahReveal(index = 2 + index) {
+                        KelmahReveal(index = 3 + index) {
                             JobCard(
                                 userRole = userRole,
                                 job = job,

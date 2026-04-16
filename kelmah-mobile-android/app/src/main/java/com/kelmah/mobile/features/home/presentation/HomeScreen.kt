@@ -1,5 +1,6 @@
 package com.kelmah.mobile.features.home.presentation
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -32,6 +33,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kelmah.mobile.R
+import com.kelmah.mobile.core.design.components.KelmahCommandDeck
+import com.kelmah.mobile.core.design.components.KelmahCommandMetric
+import com.kelmah.mobile.core.design.components.KelmahCommandSignal
+import com.kelmah.mobile.core.design.components.KelmahGlassPanel
 import com.kelmah.mobile.core.design.components.KelmahReveal
 import com.kelmah.mobile.core.design.components.KelmahScreenBackground
 import com.kelmah.mobile.core.design.components.KelmahPrimaryActionMinHeight
@@ -111,8 +116,26 @@ fun HomeScreen(
         role == KelmahUserRole.HIRER && activeJobs > 0 -> HomePrioritySignal(nextActionTrackActive, activeJobs, onBrowseJobs)
         else -> null
     }
-    val panelColors = kelmahPanelColors()
     val mutedPanelColors = kelmahMutedPanelColors()
+    val commandMetrics = listOf(
+        KelmahCommandMetric(label = "Jobs", value = primaryJobs.size.toString()),
+        KelmahCommandMetric(label = "Chats", value = unreadMessages.toString()),
+        KelmahCommandMetric(label = "Alerts", value = unreadAlerts.toString()),
+    )
+    val commandSignals = buildList {
+        prioritySignals.take(6).forEach { signal ->
+            add(
+                KelmahCommandSignal(
+                    label = signal.label,
+                    value = signal.count.toString(),
+                    onClick = signal.onOpen,
+                ),
+            )
+        }
+        if (isEmpty()) {
+            add(KelmahCommandSignal(label = "No pending signals", value = "Live"))
+        }
+    }
 
     LaunchedEffect(currentUser?.id, role) {
         jobsViewModel.refreshHome(role)
@@ -122,55 +145,25 @@ fun HomeScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 18.dp, vertical = 20.dp),
+                .padding(horizontal = 18.dp, vertical = 20.dp)
+                .animateContentSize(),
             verticalArrangement = Arrangement.spacedBy(18.dp),
         ) {
         item {
             KelmahReveal(index = 0) {
-                Card(colors = mutedPanelColors, shape = MaterialTheme.shapes.large) {
-                    Column(
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        Text(
-                            text = displayName,
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold,
-                        )
-                        Text(
-                            text = headline,
-                            style = MaterialTheme.typography.bodyLarge,
-                        )
-                        Text(
-                            text = "Live market signals and priority actions",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.primary,
-                        )
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            HomeSignalPill(
-                                modifier = Modifier.weight(1f),
-                                label = "Chats",
-                                count = unreadMessages,
-                            )
-                            HomeSignalPill(
-                                modifier = Modifier.weight(1f),
-                                label = "Alerts",
-                                count = unreadAlerts,
-                            )
-                            HomeSignalPill(
-                                modifier = Modifier.weight(1f),
-                                label = if (role == KelmahUserRole.HIRER) "Active" else "Urgent",
-                                count = if (role == KelmahUserRole.HIRER) activeJobs else urgentJobs,
-                            )
-                        }
-                    }
-                }
+                KelmahCommandDeck(
+                    title = displayName,
+                    subtitle = headline,
+                    eyebrow = if (role == KelmahUserRole.HIRER) "Hiring Command Deck" else "Worker Command Deck",
+                    metrics = commandMetrics,
+                    signals = commandSignals,
+                )
             }
         }
 
         item {
             KelmahReveal(index = 1) {
-                Card(colors = panelColors) {
+                KelmahGlassPanel {
                     Column(
                         modifier = Modifier.padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -295,7 +288,7 @@ fun HomeScreen(
         if (prioritySignals.isNotEmpty()) {
             item {
                 KelmahReveal(index = 2) {
-                    Card(colors = mutedPanelColors) {
+                    KelmahGlassPanel(muted = true) {
                         Column(
                             modifier = Modifier.padding(14.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp),
