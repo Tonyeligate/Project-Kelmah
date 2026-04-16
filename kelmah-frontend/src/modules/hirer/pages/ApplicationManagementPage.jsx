@@ -47,7 +47,7 @@ import {
 import { formatDistanceToNow } from 'date-fns';
 import { Helmet } from 'react-helmet-async';
 import { hirerService } from '../services/hirerService';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { messagingService } from '../../messaging/services/messagingService';
 import { useSnackbar } from 'notistack';
 import {
@@ -58,6 +58,7 @@ import {
 import {
   APPLICATIONS_PAGE_SIZE,
   APPLICATIONS_PAGE_SIZE_OPTIONS,
+  APPLICATION_STATUS_TABS,
   APPLICATION_SORT_OPTIONS,
   DEFAULT_APPLICATION_COUNTS,
   STATUS_COLORS,
@@ -114,15 +115,82 @@ const buildQuickRejectFeedbackTemplate = (application) => {
   return QUICK_REJECT_FEEDBACK_TEMPLATE;
 };
 
+const parseDateForSort = (value) => {
+  const timestamp = new Date(value).getTime();
+  return Number.isFinite(timestamp) ? timestamp : 0;
+};
+
+const sortApplicationsForReview = (applications, sortBy) => {
+  const sorted = [...applications];
+
+  sorted.sort((left, right) => {
+    if (sortBy === 'highest-rated') {
+      const leftRating = Number(left?.workerRating);
+      const rightRating = Number(right?.workerRating);
+      const normalizedLeftRating = Number.isFinite(leftRating) ? leftRating : -1;
+      const normalizedRightRating = Number.isFinite(rightRating)
+        ? rightRating
+        : -1;
+
+      if (normalizedRightRating !== normalizedLeftRating) {
+        return normalizedRightRating - normalizedLeftRating;
+      }
+    }
+
+    if (sortBy === 'proposed-rate') {
+      const leftRate = Number(left?.proposedRate);
+      const rightRate = Number(right?.proposedRate);
+      const normalizedLeftRate = Number.isFinite(leftRate) ? leftRate : -1;
+      const normalizedRightRate = Number.isFinite(rightRate) ? rightRate : -1;
+
+      if (normalizedRightRate !== normalizedLeftRate) {
+        return normalizedRightRate - normalizedLeftRate;
+      }
+    }
+
+    return parseDateForSort(right?.createdAt) - parseDateForSort(left?.createdAt);
+  });
+
+  return sorted;
+};
+
+const normalizeApplicationsStatusTab = (value, { allowAll = false } = {}) => {
+  if (allowAll) {
+    const normalizedValue =
+      typeof value === 'string' ? value.trim().toLowerCase() : '';
+    if (normalizedValue === 'all') {
+      return 'all';
+    }
+
+    return APPLICATION_STATUS_TABS.includes(normalizedValue)
+      ? normalizedValue
+      : 'all';
+  }
+
+  return normalizeApplicationsTab(value);
+};
+
 function ApplicationManagementPage() {
   const theme = useTheme();
   const isMobile = useBreakpointDown('md');
   const isCompactMobile = useBreakpointDown('sm');
   const navigate = useNavigate();
+  const { jobId: routeJobId } = useParams();
   const { enqueueSnackbar } = useSnackbar();
   const [searchParams, setSearchParams] = useSearchParams();
+  const isJobApplicantsPage = Boolean(routeJobId);
+  const defaultStatusTab = isJobApplicantsPage ? 'all' : 'pending';
+  const statusTabs = useMemo(
+    () =>
+      isJobApplicantsPage
+        ? ['all', ...APPLICATION_STATUS_TABS]
+        : APPLICATION_STATUS_TABS,
+    [isJobApplicantsPage],
+  );
   const urlJobId = searchParams.get('jobId');
-  const urlActiveTab = normalizeApplicationsTab(searchParams.get('tab'));
+  const urlActiveTab = normalizeApplicationsStatusTab(searchParams.get('tab'), {
+    allowAll: isJobApplicantsPage,
+  });
   const urlCurrentPage = normalizeApplicationsPage(searchParams.get('page'));
   const urlPageSize = normalizeApplicationsPageSize(searchParams.get('limit'));
   const urlSortBy = normalizeApplicationsSort(searchParams.get('sort'));
@@ -228,36 +296,29 @@ function ApplicationManagementPage() {
 
   // Sync URL-derived state and redirect bid-based jobs to the bid review screen.
   useEffect(() => {
-    const matchingJob = urlJobId
-      ? dedupedJobs.find((job) => (job.id || job._id) === urlJobId)
+    const scopedJobId = routeJobId || urlJobId;
+    const matchingJob = scopedJobId
+      ? dedupedJobs.find((job) => (job.id || job._id) === scopedJobId)
       : null;
     if (matchingJob && isBiddingJob(matchingJob)) {
-      navigate(`/hirer/jobs/${urlJobId}/bids`, { replace: true });
+      navigate(`/hirer/jobs/${scopedJobId}/bids`, { replace: true });
       return;
     }
 
-    if (urlActiveTab !== activeTab) {
-      setActiveTab(urlActiveTab);
-    }
-
-    if (urlCurrentPage !== currentPage) {
-      setCurrentPage(urlCurrentPage);
-    }
-
-    if (urlPageSize !== pageSize) {
-      setPageSize(urlPageSize);
-    }
-
-    if (urlSortBy !== sortBy) {
-      setSortBy(urlSortBy);
-    }
+    setActiveTab((prevActiveTab) =>
+      prevActiveTab === urlActiveTab ? prevActiveTab : urlActiveTab,
+    );
+    setCurrentPage((prevPage) =>
+      prevPage === urlCurrentPage ? prevPage : urlCurrentPage,
+    );
+    setPageSize((prevPageSize) =>
+      prevPageSize === urlPageSize ? prevPageSize : urlPageSize,
+    );
+    setSortBy((prevSortBy) => (prevSortBy === urlSortBy ? prevSortBy : urlSortBy));
   }, [
-    activeTab,
-    currentPage,
     dedupedJobs,
     navigate,
-    pageSize,
-    sortBy,
+    routeJobId,
     urlActiveTab,
     urlCurrentPage,
     urlJobId,
@@ -269,7 +330,7 @@ function ApplicationManagementPage() {
     const nextParams = new URLSearchParams(searchParams);
     nextParams.delete('jobId');
 
-    if (activeTab !== 'pending') {
+    if (activeTab !== defaultStatusTab) {
       nextParams.set('tab', activeTab);
     } else {
       nextParams.delete('tab');
@@ -296,7 +357,15 @@ function ApplicationManagementPage() {
     if (nextParams.toString() !== searchParams.toString()) {
       setSearchParams(nextParams, { replace: true });
     }
-  }, [activeTab, currentPage, pageSize, searchParams, setSearchParams, sortBy]);
+  }, [
+    activeTab,
+    currentPage,
+    defaultStatusTab,
+    pageSize,
+    searchParams,
+    setSearchParams,
+    sortBy,
+  ]);
 
   const loadApplicationsView = useCallback(
     async ({ isCancelled = () => false } = {}) => {
@@ -304,6 +373,72 @@ function ApplicationManagementPage() {
       setError(null);
 
       try {
+        if (isJobApplicantsPage) {
+          const scopeJobId = routeJobId || urlJobId;
+          const rawApplications = await hirerService.getJobApplications(scopeJobId);
+          if (isCancelled()) return;
+
+          const normalizedApplications = (
+            Array.isArray(rawApplications) ? rawApplications : []
+          ).map((app) =>
+            normalizeApplication(app, scopeJobId, app?.jobTitle || app?.job?.title),
+          );
+
+          const countsByStatus = {
+            ...DEFAULT_APPLICATION_COUNTS,
+            total: normalizedApplications.length,
+          };
+
+          normalizedApplications.forEach((application) => {
+            const status = String(application?.status || 'pending').toLowerCase();
+            if (Object.prototype.hasOwnProperty.call(countsByStatus, status)) {
+              countsByStatus[status] = (countsByStatus[status] || 0) + 1;
+            }
+          });
+
+          const scopedByStatus =
+            activeTab === 'all'
+              ? normalizedApplications
+              : normalizedApplications.filter(
+                  (application) =>
+                    String(application?.status || '').toLowerCase() === activeTab,
+                );
+
+          const sortedScopedApplications = sortApplicationsForReview(
+            scopedByStatus,
+            sortBy,
+          );
+
+          const totalItems = sortedScopedApplications.length;
+          const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+          const normalizedCurrentPage = Math.min(currentPage, totalPages);
+          const pageStart = (normalizedCurrentPage - 1) * pageSize;
+          const pagedApplications = sortedScopedApplications.slice(
+            pageStart,
+            pageStart + pageSize,
+          );
+
+          setJobs([]);
+          setSummary({
+            totalJobs: 1,
+            totalApplications: normalizedApplications.length,
+            countsByStatus,
+          });
+          setApplications(pagedApplications);
+          setPagination({
+            currentPage: normalizedCurrentPage,
+            totalPages,
+            totalItems,
+            limit: pageSize,
+          });
+
+          if (normalizedCurrentPage !== currentPage) {
+            setCurrentPage(normalizedCurrentPage);
+          }
+
+          return;
+        }
+
         const response = await hirerService.getApplicationsSummary({
           status: activeTab,
           page: currentPage,
@@ -372,7 +507,15 @@ function ApplicationManagementPage() {
         }
       }
     },
-    [activeTab, currentPage, pageSize, sortBy],
+    [
+      activeTab,
+      currentPage,
+      isJobApplicantsPage,
+      pageSize,
+      routeJobId,
+      sortBy,
+      urlJobId,
+    ],
   );
 
   // ── Fetch jobs and their applications ──────────────────────────
@@ -410,6 +553,7 @@ function ApplicationManagementPage() {
     const sourceCounts = summary?.countsByStatus || DEFAULT_APPLICATION_COUNTS;
 
     return {
+      all: summary?.totalApplications || 0,
       pending: sourceCounts.pending || 0,
       accepted: sourceCounts.accepted || 0,
       rejected: sourceCounts.rejected || 0,
@@ -431,7 +575,8 @@ function ApplicationManagementPage() {
 
   const selectedScopeTotal = summary?.totalApplications || 0;
 
-  const hasNoStandardJobs = !initialLoading && allJobs.length === 0;
+  const hasNoStandardJobs =
+    !isJobApplicantsPage && !initialLoading && allJobs.length === 0;
   const mobileDetailMode = isMobile && Boolean(selectedApplication);
 
   const selectedApplicationIndex = useMemo(() => {
@@ -1011,7 +1156,7 @@ function ApplicationManagementPage() {
         }}
       >
         <Helmet>
-          <title>Applications | Kelmah</title>
+          <title>{isJobApplicantsPage ? 'Job Applicants' : 'Applications'} | Kelmah</title>
         </Helmet>
 
         {/* ── Header ────────────────────────────────────────────── */}
@@ -1032,8 +1177,17 @@ function ApplicationManagementPage() {
                 fontWeight={700}
                 sx={{ lineHeight: 1.1 }}
               >
-                Job Applications
+                {isJobApplicantsPage ? 'Job Applicants' : 'Job Applications'}
               </Typography>
+              {isJobApplicantsPage && (
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mt: 0.5 }}
+                >
+                  Newest applicants appear first for this job-specific review queue.
+                </Typography>
+              )}
               {biddingJobsCount > 0 && (
                 <Typography
                   variant="body2"
@@ -1050,7 +1204,8 @@ function ApplicationManagementPage() {
                 sx={{ mt: 0.5 }}
               >
                 {selectedScopeTotal} application
-                {selectedScopeTotal !== 1 ? 's' : ''} in this update queue.
+                {selectedScopeTotal !== 1 ? 's' : ''}{' '}
+                {isJobApplicantsPage ? 'for this job.' : 'in this update queue.'}
               </Typography>
             </Box>
             {!isMobile && selectedApplication && (
@@ -1203,7 +1358,9 @@ function ApplicationManagementPage() {
                     color="text.secondary"
                     sx={{ fontWeight: 700 }}
                   >
-                    Filter applications
+                    {isJobApplicantsPage
+                      ? 'Filter applicants'
+                      : 'Filter applications'}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
                     {filteredApps.length} shown
@@ -1258,6 +1415,19 @@ function ApplicationManagementPage() {
                     width: '100%',
                   }}
                 >
+                  {isJobApplicantsPage && (
+                    <Chip
+                      size="small"
+                      color={activeTab === 'all' ? 'primary' : 'default'}
+                      variant={activeTab === 'all' ? 'filled' : 'outlined'}
+                      label={`All (${tabCounts.all})`}
+                      onClick={() => handleStatusFilterChange('all')}
+                      sx={{
+                        minHeight: TOUCH_TARGET_MIN,
+                        '& .MuiChip-label': { px: 1.1 },
+                      }}
+                    />
+                  )}
                   <Chip
                     size="small"
                     color={activeTab === 'pending' ? 'warning' : 'default'}
@@ -1300,6 +1470,7 @@ function ApplicationManagementPage() {
                 applicationsLoading={applicationsLoading}
                 filteredApps={filteredApps}
                 activeTab={activeTab}
+                statusTabs={statusTabs}
                 summary={summary}
                 navigate={navigate}
                 selectedApplicationId={selectedApplication?.id}
@@ -1839,6 +2010,7 @@ function ApplicationsListContent({
   applicationsLoading,
   filteredApps,
   activeTab,
+  statusTabs,
   summary,
   navigate,
   selectedApplicationId,
@@ -1891,6 +2063,7 @@ function ApplicationsListContent({
             return (
               <EmptyAppsPanel
                 tab={activeTab}
+                statusTabs={statusTabs}
                 hasAnyApps={(summary?.totalApplications || 0) > 0}
                 navigate={navigate}
                 hasActiveSearch={hasActiveSearch}
@@ -2426,6 +2599,7 @@ function NoStandardJobsPanel({
 
 function EmptyAppsPanel({
   tab,
+  statusTabs = APPLICATION_STATUS_TABS,
   hasAnyApps,
   navigate,
   hasActiveSearch = false,
@@ -2433,6 +2607,7 @@ function EmptyAppsPanel({
   onClearSearch,
 }) {
   const normalizedSearchQuery = String(searchQuery || '').trim();
+  const normalizedTabLabel = statusTabs.includes(tab) ? tab : 'all';
 
   if (hasActiveSearch) {
     return (
@@ -2463,8 +2638,8 @@ function EmptyAppsPanel({
           color="text.secondary"
           sx={{ mb: 3, maxWidth: 320, mx: 'auto' }}
         >
-          Try another keyword or clear search to view all {tab} applications in
-          this page.
+          Try another keyword or clear search to view all {normalizedTabLabel}{' '}
+          applications in this page.
         </Typography>
         <Button
           variant="outlined"
@@ -2496,7 +2671,9 @@ function EmptyAppsPanel({
         <InboxOutlined sx={{ fontSize: 36, color: 'primary.main' }} />
       </Box>
       <Typography variant="h6" fontWeight={600} gutterBottom>
-        {hasAnyApps ? `No ${tab} applications` : 'No applications yet'}
+        {hasAnyApps
+          ? `No ${normalizedTabLabel} applications`
+          : 'No applications yet'}
       </Typography>
       <Typography
         variant="body2"

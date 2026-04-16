@@ -190,11 +190,13 @@ export const verifyAuth = createAsyncThunk(
 
       if (!token) {
         try {
-          const refreshResult = await authService.refreshToken();
+          const refreshResult = await authService.refreshToken({
+            suppressUnauthorizedReset: true,
+          });
           if (refreshResult?.token) {
             token = refreshResult.token;
           }
-        } catch (_) {
+        } catch {
           // Cookie-backed sessions may remain valid even when token hydration fails.
         }
       }
@@ -307,7 +309,7 @@ const authSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(register.fulfilled, (state, action) => {
+      .addCase(register.fulfilled, (state) => {
         // Registration flow redirects to login; keep user unauthenticated
         state.isAuthenticated = false;
         state.user = null;

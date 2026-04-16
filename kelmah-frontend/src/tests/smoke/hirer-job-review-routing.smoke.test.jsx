@@ -120,7 +120,7 @@ describe('hirer review responses route and count consistency', () => {
     expect(bidRow.textContent).toContain('7');
 
     const appReviewButton = within(appRow).getByRole('button', {
-      name: /view applications/i,
+      name: /view applicants/i,
     });
     const bidReviewButton = within(bidRow).getByRole('button', {
       name: /review bids/i,
@@ -131,7 +131,10 @@ describe('hirer review responses route and count consistency', () => {
     fireEvent.click(bidReviewButton);
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenNthCalledWith(1, '/hirer/applications');
+      expect(mockNavigate).toHaveBeenNthCalledWith(
+        1,
+        '/hirer/jobs/job-app-1/applicants',
+      );
       expect(mockNavigate).toHaveBeenNthCalledWith(
         2,
         '/hirer/jobs/job-bids-1/bids',

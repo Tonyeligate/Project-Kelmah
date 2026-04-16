@@ -580,6 +580,14 @@ const routes = [
                 ),
               },
               {
+                path: ':jobId/applicants',
+                element: (
+                  <ProtectedRoute roles={['hirer', 'admin']}>
+                    <ApplicationManagementPage />
+                  </ProtectedRoute>
+                ),
+              },
+              {
                 path: ':jobId/bids',
                 element: (
                   <ProtectedRoute roles={['hirer', 'admin']}>

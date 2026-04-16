@@ -66,6 +66,8 @@ const MAX_PENDING_UNAUTHORIZED_REQUESTS = 50;
 let hasTriggeredAuthRedirect = false;
 let refreshBlockedUntil = 0;
 let isForceLogoutInProgress = false;
+const RECENT_VERIFY_SUCCESS_WINDOW_MS = 45_000;
+let lastSuccessfulAuthVerifyAt = 0;
 const AUTH_SYNC_STORAGE_KEY = 'kelmah_auth_sync';
 let authSyncListenersInitialized = false;
 
@@ -189,6 +191,18 @@ const isRefreshRequest = (request) =>
 
 const isAuthVerifyRequest = (request) =>
   typeof request?.url === 'string' && /\/auth\/(verify|me)$/.test(request.url);
+
+const markRecentAuthVerifySuccess = (request) => {
+  if (!isAuthVerifyRequest(request)) {
+    return;
+  }
+
+  lastSuccessfulAuthVerifyAt = Date.now();
+};
+
+const hasRecentAuthVerifySuccess = () =>
+  lastSuccessfulAuthVerifyAt > 0 &&
+  Date.now() - lastSuccessfulAuthVerifyAt <= RECENT_VERIFY_SUCCESS_WINDOW_MS;
 
 const isPublicAuthRequest = (request) =>
   typeof request?.url === 'string' &&
@@ -474,6 +488,8 @@ apiClient.interceptors.response.use(
       });
       throw envelopeError;
     }
+
+    markRecentAuthVerifySuccess(response?.config);
     return response;
   },
   async (error) => {
@@ -652,8 +668,17 @@ apiClient.interceptors.response.use(
       return queuedRetry.catch((refreshError) => {
         const refreshStatus = refreshError?.response?.status;
         const shouldForceLogout = [400, 401, 403].includes(refreshStatus);
+        const shouldSuppressForceLogout =
+          shouldForceLogout && hasRecentAuthVerifySuccess();
 
-        if (shouldForceLogout) {
+        if (shouldSuppressForceLogout) {
+          refreshBlockedUntil = Date.now() + 10_000;
+          apiClientWarn(
+            `Suppressing forced logout after refresh ${refreshStatus}: recent verify succeeded.`,
+          );
+        }
+
+        if (shouldForceLogout && !shouldSuppressForceLogout) {
           forceLogoutAndRedirect(refreshError);
         }
         throw refreshError;

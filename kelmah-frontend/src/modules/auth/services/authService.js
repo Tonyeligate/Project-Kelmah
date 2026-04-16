@@ -234,14 +234,26 @@ const authService = {
   },
 
   // Refresh token — uses shared lock with apiClient interceptor to prevent races
-  refreshToken: async () => {
+  refreshToken: async (options = {}) => {
+    const { suppressUnauthorizedReset = false } = options;
+
     // Reuse an in-flight refresh from the axios interceptor if one exists
     if (apiClient._refreshPromise) {
       try {
         const token = await apiClient._refreshPromise;
         return { token, success: true };
       } catch (e) {
-        return { success: false, error: e.message, shouldReset: true };
+        const status = e?.response?.status;
+        const shouldReset = suppressUnauthorizedReset
+          ? false
+          : status === 400 || status === 401 || status === 403;
+        return {
+          success: false,
+          error: e.message,
+          status,
+          shouldReset,
+          isNetworkError: !e?.response,
+        };
       }
     }
 
@@ -299,7 +311,9 @@ const authService = {
         'Failed to refresh session';
 
       const shouldReset =
-        !isNetworkError && (status === 400 || status === 401 || status === 403);
+        !suppressUnauthorizedReset &&
+        !isNetworkError &&
+        (status === 400 || status === 401 || status === 403);
 
       if (shouldReset) {
         secureStorage.clearAuthData();

@@ -395,7 +395,7 @@ const JobManagementPage = () => {
   };
 
   const getJobResponseLabel = (job) =>
-    isBiddingJob(job) ? 'bids' : 'applications';
+    isBiddingJob(job) ? 'bids' : 'applicants';
 
   const handleReviewResponses = (job) => {
     const jobId = job?.id || job?._id;
@@ -407,7 +407,7 @@ const JobManagementPage = () => {
     if (isBiddingJob(job)) {
       navigate(`/hirer/jobs/${jobId}/bids`);
     } else {
-      navigate('/hirer/applications');
+      navigate(`/hirer/jobs/${jobId}/applicants`);
     }
 
     handleMenuClose();
@@ -556,7 +556,24 @@ const JobManagementPage = () => {
             justifyContent: 'space-between',
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0.5,
+              cursor: 'pointer',
+              borderRadius: 1,
+              px: 0.5,
+              py: 0.25,
+              '&:hover': { bgcolor: 'action.hover' },
+            }}
+            onClick={(event) => {
+              event.stopPropagation();
+              handleReviewResponses(job);
+            }}
+            role="button"
+            aria-label={isBiddingJob(job) ? 'Review bids' : 'View applicants'}
+          >
             <Badge
               badgeContent={getJobResponseCount(job)}
               color="primary"
@@ -583,7 +600,7 @@ const JobManagementPage = () => {
                 handleReviewResponses(job);
               }}
               aria-label={
-                isBiddingJob(job) ? 'Review bids' : 'View applications'
+                isBiddingJob(job) ? 'Review bids' : 'View applicants'
               }
               sx={{
                 bgcolor: 'action.hover',
@@ -1076,7 +1093,7 @@ const JobManagementPage = () => {
                       <TableRow>
                         <TableCell>Job Title</TableCell>
                         <TableCell>Status</TableCell>
-                        <TableCell>Responses</TableCell>
+                        <TableCell>Applicants/Bids</TableCell>
                         <TableCell>Posted</TableCell>
                         <TableCell>Expiry</TableCell>
                         <TableCell align="right">Actions</TableCell>
@@ -1126,19 +1143,37 @@ const JobManagementPage = () => {
                               <VisibilityChip visibility={job.visibility} />
                             </Box>
                           </TableCell>
-                          <TableCell>
-                            <Badge
-                              badgeContent={getJobResponseCount(job)}
-                              color="primary"
-                              max={999}
-                              showZero
+                          <TableCell
+                            onClick={() => handleReviewResponses(job)}
+                            sx={{ cursor: 'pointer' }}
+                          >
+                            <Box
+                              sx={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 1,
+                                borderRadius: 1,
+                                px: 0.75,
+                                py: 0.4,
+                                '&:hover': { bgcolor: 'action.hover' },
+                              }}
                             >
-                              {isBiddingJob(job) ? (
-                                <BidIcon color="action" />
-                              ) : (
-                                <ApplicationIcon color="action" />
-                              )}
-                            </Badge>
+                              <Badge
+                                badgeContent={getJobResponseCount(job)}
+                                color="primary"
+                                max={999}
+                                showZero
+                              >
+                                {isBiddingJob(job) ? (
+                                  <BidIcon color="action" />
+                                ) : (
+                                  <ApplicationIcon color="action" />
+                                )}
+                              </Badge>
+                              <Typography variant="body2" color="text.secondary">
+                                {getJobResponseLabel(job)}
+                              </Typography>
+                            </Box>
                           </TableCell>
                           <TableCell>
                             {job.createdAt
@@ -1161,7 +1196,7 @@ const JobManagementPage = () => {
                                 title={
                                   isBiddingJob(job)
                                     ? 'Review Bids'
-                                    : 'View Applications'
+                                    : 'View Applicants'
                                 }
                               >
                                 <IconButton
@@ -1169,7 +1204,7 @@ const JobManagementPage = () => {
                                   aria-label={
                                     isBiddingJob(job)
                                       ? 'Review bids'
-                                      : 'View applications'
+                                      : 'View applicants'
                                   }
                                   onClick={() => handleReviewResponses(job)}
                                   sx={{
@@ -1290,7 +1325,7 @@ const JobManagementPage = () => {
             ) : (
               <PersonIcon fontSize="small" sx={{ mr: 1 }} />
             )}
-            {isBiddingJob(selectedJob) ? 'Review Bids' : 'View Applications'}
+            {isBiddingJob(selectedJob) ? 'Review Bids' : 'View Applicants'}
           </MenuItem>
 
           <Divider />

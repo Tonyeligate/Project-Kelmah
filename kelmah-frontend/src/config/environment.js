@@ -76,18 +76,36 @@ const getEnvConfiguredApiBaseUrl = () => {
   return null;
 };
 
+const getWindowRuntimeConfig = () => {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  return window.RUNTIME_CONFIG || window.__RUNTIME_CONFIG__ || null;
+};
+
 const getRuntimeConfiguredApiBaseUrl = () => {
-  if (typeof window !== 'undefined' && window.RUNTIME_CONFIG?.apiUrl) {
-    return normalizeApiBaseUrl(window.RUNTIME_CONFIG.apiUrl);
+  const browserRuntimeConfig = getWindowRuntimeConfig();
+  const browserRuntimeApiCandidate =
+    browserRuntimeConfig?.apiUrl ||
+    browserRuntimeConfig?.API_URL ||
+    browserRuntimeConfig?.API_BASE_URL ||
+    browserRuntimeConfig?.ngrokUrl ||
+    browserRuntimeConfig?.apiGatewayUrl;
+
+  if (browserRuntimeApiCandidate) {
+    return normalizeApiBaseUrl(browserRuntimeApiCandidate);
   }
 
   if (
     runtimeConfig?.API_URL ||
+    runtimeConfig?.API_BASE_URL ||
     runtimeConfig?.ngrokUrl ||
     runtimeConfig?.apiGatewayUrl
   ) {
     return normalizeApiBaseUrl(
       runtimeConfig.API_URL ||
+        runtimeConfig.API_BASE_URL ||
         runtimeConfig.ngrokUrl ||
         runtimeConfig.apiGatewayUrl,
     );
@@ -172,19 +190,28 @@ const loadRuntimeConfig = async () => {
       const response = await fetch('/runtime-config.json');
       runtimeConfig = await response.json();
       const envConfiguredUrl = getEnvConfiguredApiBaseUrl();
+      const existingRuntimeConfig = getWindowRuntimeConfig() || {};
       const runtimeConfiguredUrl = normalizeApiBaseUrl(
         runtimeConfig.API_URL ||
+          runtimeConfig.API_BASE_URL ||
           runtimeConfig.ngrokUrl ||
-          runtimeConfig.apiGatewayUrl,
+          runtimeConfig.apiGatewayUrl ||
+          existingRuntimeConfig.apiUrl ||
+          existingRuntimeConfig.API_URL ||
+          existingRuntimeConfig.API_BASE_URL,
       );
-      // Store in window for synchronous access
-      window.RUNTIME_CONFIG = {
+      const mergedRuntimeConfig = {
+        ...existingRuntimeConfig,
+        ...runtimeConfig,
         apiUrl:
           envConfiguredUrl ||
           runtimeConfiguredUrl ||
           PRODUCTION_API_URL ||
           '/api',
       };
+      // Store in window for synchronous access
+      window.RUNTIME_CONFIG = mergedRuntimeConfig;
+      window.__RUNTIME_CONFIG__ = mergedRuntimeConfig;
       if (CONFIG_DEBUG) configLog('Runtime config loaded:', runtimeConfig);
     } catch (error) {
       devWarn('⚠️ Failed to load runtime config:', error.message);
