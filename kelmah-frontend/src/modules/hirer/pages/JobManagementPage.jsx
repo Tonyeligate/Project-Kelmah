@@ -68,12 +68,8 @@ import { isBiddingJob as isBiddingModeJob } from '../utils/applicationManagement
 
 import PageCanvas from '@/modules/common/components/PageCanvas';
 import DiscoveryShellFrame from '@/modules/jobs/components/DiscoveryShellFrame';
-import {
-  HEADER_HEIGHT_MOBILE,
-  TOUCH_TARGET_MIN,
-  Z_INDEX,
-} from '../../../constants/layout';
-import { withBottomNavSafeArea, withSafeAreaTop } from '@/utils/safeArea';
+import { TOUCH_TARGET_MIN, Z_INDEX } from '../../../constants/layout';
+import { withBottomNavSafeArea } from '@/utils/safeArea';
 
 // Visibility chip — tells the hirer whether the job appears on the public Jobs page
 const formatGhanaCurrencyLabel = (value) => {
@@ -140,9 +136,9 @@ const VisibilityChip = ({ visibility }) => {
           size="small"
           color="default"
           sx={{
-            fontSize: '0.7rem',
-            height: 20,
-            '& .MuiChip-label': { px: 0.5 },
+            fontSize: '0.75rem',
+            height: 22,
+            '& .MuiChip-label': { px: 0.75 },
           }}
         />
       </Tooltip>
@@ -157,9 +153,9 @@ const VisibilityChip = ({ visibility }) => {
           size="small"
           color="info"
           sx={{
-            fontSize: '0.7rem',
-            height: 20,
-            '& .MuiChip-label': { px: 0.5 },
+            fontSize: '0.75rem',
+            height: 22,
+            '& .MuiChip-label': { px: 0.75 },
           }}
         />
       </Tooltip>
@@ -172,7 +168,11 @@ const VisibilityChip = ({ visibility }) => {
         label="Public"
         size="small"
         color="success"
-        sx={{ fontSize: '0.7rem', height: 20, '& .MuiChip-label': { px: 0.5 } }}
+        sx={{
+          fontSize: '0.75rem',
+          height: 22,
+          '& .MuiChip-label': { px: 0.75 },
+        }}
       />
     </Tooltip>
   );
@@ -226,7 +226,7 @@ const JobManagementPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const isMobile = useBreakpointDown('md');
-  const isCompactMobile = useBreakpointDown('sm');
+  const isNarrowDesktop = useBreakpointDown('lg');
 
   const emptyStatusCounts = useMemo(
     () => ({
@@ -407,7 +407,11 @@ const JobManagementPage = () => {
     if (isBiddingJob(job)) {
       navigate(`/hirer/jobs/${jobId}/bids`);
     } else {
-      navigate(`/hirer/jobs/${jobId}/applicants`);
+      navigate(`/hirer/jobs/${jobId}/applicants`, {
+        state: {
+          jobTitle: job?.title || job?.jobTitle || '',
+        },
+      });
     }
 
     handleMenuClose();
@@ -560,11 +564,12 @@ const JobManagementPage = () => {
             sx={{
               display: 'flex',
               alignItems: 'center',
-              gap: 0.5,
+              gap: 0.75,
               cursor: 'pointer',
               borderRadius: 1,
-              px: 0.5,
-              py: 0.25,
+              minHeight: 44,
+              px: 1,
+              py: 0.75,
               '&:hover': { bgcolor: 'action.hover' },
             }}
             onClick={(event) => {
@@ -579,7 +584,7 @@ const JobManagementPage = () => {
               color="primary"
               max={99}
               showZero
-              sx={{ '& .MuiBadge-badge': { fontSize: '0.7rem' } }}
+              sx={{ '& .MuiBadge-badge': { fontSize: '0.75rem' } }}
             >
               {isBiddingJob(job) ? (
                 <BidIcon fontSize="small" color="action" />
@@ -587,7 +592,7 @@ const JobManagementPage = () => {
                 <ApplicationIcon fontSize="small" color="action" />
               )}
             </Badge>
-            <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+            <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>
               {getJobResponseLabel(job)}
             </Typography>
           </Box>
@@ -599,9 +604,7 @@ const JobManagementPage = () => {
                 e.stopPropagation();
                 handleReviewResponses(job);
               }}
-              aria-label={
-                isBiddingJob(job) ? 'Review bids' : 'View applicants'
-              }
+              aria-label={isBiddingJob(job) ? 'Review bids' : 'View applicants'}
               sx={{
                 bgcolor: 'action.hover',
                 minWidth: 44,
@@ -672,7 +675,19 @@ const JobManagementPage = () => {
   return (
     <PageCanvas
       disableContainer
-      sx={{ pb: { xs: withBottomNavSafeArea(24), md: 6 } }}
+      sx={{
+        pb: { xs: withBottomNavSafeArea(24), md: 6 },
+        '& .MuiTypography-caption': {
+          fontSize: '12px',
+        },
+        '& .MuiChip-sizeSmall': {
+          fontSize: '12px',
+          lineHeight: 1.2,
+        },
+        '& .MuiChip-sizeSmall .MuiChip-label': {
+          fontSize: '12px',
+        },
+      }}
     >
       <Box sx={{ pt: { xs: 1, md: 2 } }}>
         <Helmet>
@@ -823,7 +838,6 @@ const JobManagementPage = () => {
           sx={{ mb: 2, borderRadius: 2, mx: { xs: 0, md: 0 } }}
           elevation={isMobile ? 0 : 1}
         >
-
           {/* Simplified tabs for mobile */}
           <Tabs
             value={tabValue}
@@ -864,7 +878,7 @@ const JobManagementPage = () => {
                         size="small"
                         sx={{
                           height: 18,
-                          fontSize: '0.7rem',
+                          fontSize: '0.75rem',
                           '& .MuiChip-label': { px: 0.75 },
                         }}
                       />
@@ -887,7 +901,7 @@ const JobManagementPage = () => {
                         color="success"
                         sx={{
                           height: 18,
-                          fontSize: '0.7rem',
+                          fontSize: '0.75rem',
                           '& .MuiChip-label': { px: 0.75 },
                         }}
                       />
@@ -910,7 +924,7 @@ const JobManagementPage = () => {
                         color="warning"
                         sx={{
                           height: 18,
-                          fontSize: '0.7rem',
+                          fontSize: '0.75rem',
                           '& .MuiChip-label': { px: 0.75 },
                         }}
                       />
@@ -933,7 +947,7 @@ const JobManagementPage = () => {
                         color="success"
                         sx={{
                           height: 18,
-                          fontSize: '0.7rem',
+                          fontSize: '0.75rem',
                           '& .MuiChip-label': { px: 0.75 },
                         }}
                       />
@@ -956,7 +970,7 @@ const JobManagementPage = () => {
                         color="error"
                         sx={{
                           height: 18,
-                          fontSize: '0.7rem',
+                          fontSize: '0.75rem',
                           '& .MuiChip-label': { px: 0.75 },
                         }}
                       />
@@ -978,7 +992,7 @@ const JobManagementPage = () => {
                         size="small"
                         sx={{
                           height: 18,
-                          fontSize: '0.7rem',
+                          fontSize: '0.75rem',
                           '& .MuiChip-label': { px: 0.75 },
                         }}
                       />
@@ -1088,15 +1102,25 @@ const JobManagementPage = () => {
               /* Desktop: Table layout */
               <>
                 <TableContainer sx={{ overflowX: 'auto' }}>
-                  <Table sx={{ minWidth: 650 }}>
+                  <Table
+                    sx={{
+                      minWidth: isNarrowDesktop ? 560 : 650,
+                      tableLayout: isNarrowDesktop ? 'fixed' : 'auto',
+                    }}
+                  >
                     <TableHead>
                       <TableRow>
                         <TableCell>Job Title</TableCell>
                         <TableCell>Status</TableCell>
                         <TableCell>Applicants/Bids</TableCell>
-                        <TableCell>Posted</TableCell>
-                        <TableCell>Expiry</TableCell>
-                        <TableCell align="right">Actions</TableCell>
+                        {!isNarrowDesktop && <TableCell>Posted</TableCell>}
+                        {!isNarrowDesktop && <TableCell>Expiry</TableCell>}
+                        <TableCell
+                          align="right"
+                          sx={{ width: isNarrowDesktop ? 170 : 232 }}
+                        >
+                          Actions
+                        </TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -1170,59 +1194,73 @@ const JobManagementPage = () => {
                                   <ApplicationIcon color="action" />
                                 )}
                               </Badge>
-                              <Typography variant="body2" color="text.secondary">
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                              >
                                 {getJobResponseLabel(job)}
                               </Typography>
                             </Box>
                           </TableCell>
-                          <TableCell>
-                            {job.createdAt
-                              ? new Date(job.createdAt).toLocaleDateString()
-                              : '—'}
-                          </TableCell>
-                          <TableCell>
-                            {job.endDate
-                              ? new Date(job.endDate).toLocaleDateString()
-                              : '—'}
-                          </TableCell>
-                          <TableCell align="right">
+                          {!isNarrowDesktop && (
+                            <TableCell>
+                              {job.createdAt
+                                ? new Date(job.createdAt).toLocaleDateString()
+                                : '—'}
+                            </TableCell>
+                          )}
+                          {!isNarrowDesktop && (
+                            <TableCell>
+                              {job.endDate
+                                ? new Date(job.endDate).toLocaleDateString()
+                                : '—'}
+                            </TableCell>
+                          )}
+                          <TableCell
+                            align="right"
+                            sx={{ width: isNarrowDesktop ? 170 : 232 }}
+                          >
                             <Box
                               sx={{
                                 display: 'flex',
                                 justifyContent: 'flex-end',
+                                gap: 0.5,
+                                flexWrap: isNarrowDesktop ? 'wrap' : 'nowrap',
                               }}
                             >
-                              <Tooltip
-                                title={
-                                  isBiddingJob(job)
-                                    ? 'Review Bids'
-                                    : 'View Applicants'
-                                }
-                              >
-                                <IconButton
-                                  size="small"
-                                  aria-label={
+                              {!isNarrowDesktop && (
+                                <Tooltip
+                                  title={
                                     isBiddingJob(job)
-                                      ? 'Review bids'
-                                      : 'View applicants'
+                                      ? 'Review Bids'
+                                      : 'View Applicants'
                                   }
-                                  onClick={() => handleReviewResponses(job)}
-                                  sx={{
-                                    mr: 1,
-                                    '&:focus-visible': {
-                                      outline: '3px solid',
-                                      outlineColor: 'primary.main',
-                                      outlineOffset: '2px',
-                                    },
-                                  }}
                                 >
-                                  {isBiddingJob(job) ? (
-                                    <BidIcon />
-                                  ) : (
-                                    <PersonIcon />
-                                  )}
-                                </IconButton>
-                              </Tooltip>
+                                  <IconButton
+                                    size="small"
+                                    aria-label={
+                                      isBiddingJob(job)
+                                        ? 'Review bids'
+                                        : 'View applicants'
+                                    }
+                                    onClick={() => handleReviewResponses(job)}
+                                    sx={{
+                                      mr: 1,
+                                      '&:focus-visible': {
+                                        outline: '3px solid',
+                                        outlineColor: 'primary.main',
+                                        outlineOffset: '2px',
+                                      },
+                                    }}
+                                  >
+                                    {isBiddingJob(job) ? (
+                                      <BidIcon />
+                                    ) : (
+                                      <PersonIcon />
+                                    )}
+                                  </IconButton>
+                                </Tooltip>
+                              )}
                               <Tooltip title="View Job">
                                 <IconButton
                                   size="small"
@@ -1231,7 +1269,7 @@ const JobManagementPage = () => {
                                     handleViewJob(job.id || job._id)
                                   }
                                   sx={{
-                                    mr: 1,
+                                    mr: isNarrowDesktop ? 0 : 1,
                                     '&:focus-visible': {
                                       outline: '3px solid',
                                       outlineColor: 'primary.main',
@@ -1250,7 +1288,7 @@ const JobManagementPage = () => {
                                     handleEditJob(job.id || job._id)
                                   }
                                   sx={{
-                                    mr: 1,
+                                    mr: isNarrowDesktop ? 0 : 1,
                                     '&:focus-visible': {
                                       outline: '3px solid',
                                       outlineColor: 'primary.main',

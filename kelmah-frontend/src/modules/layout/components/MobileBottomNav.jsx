@@ -9,7 +9,10 @@ import {
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import {
+  AdminPanelSettings as AdminPanelSettingsIcon,
   Home as HomeIcon,
+  NotificationsNone as NotificationsIcon,
+  Payments as PaymentsIcon,
   WorkOutline as JobsIcon,
   ChatBubbleOutline as MessagesIcon,
   PersonOutline as ProfileIcon,
@@ -83,7 +86,7 @@ const StyledBottomNavigationAction = styled(BottomNavigationAction)(
           ? 'rgba(255, 215, 0, 0.12)'
           : 'rgba(17, 24, 39, 0.07)',
       '& .MuiBottomNavigationAction-label': {
-        fontSize: '0.82rem',
+        fontSize: '0.84rem',
         fontWeight: 700,
         opacity: 1,
       },
@@ -92,7 +95,7 @@ const StyledBottomNavigationAction = styled(BottomNavigationAction)(
       },
     },
     '& .MuiBottomNavigationAction-label': {
-      fontSize: '0.74rem',
+      fontSize: '0.76rem',
       fontWeight: 600,
       marginTop: 3,
       opacity: 0.9,
@@ -122,10 +125,10 @@ const StyledBottomNavigationAction = styled(BottomNavigationAction)(
       padding: '6px 2px 8px',
       minHeight: 52,
       '& .MuiBottomNavigationAction-label': {
-        fontSize: '0.7rem',
+        fontSize: '0.75rem',
       },
       '&.Mui-selected .MuiBottomNavigationAction-label': {
-        fontSize: '0.76rem',
+        fontSize: '0.8rem',
       },
     },
   }),
@@ -144,6 +147,10 @@ const MobileBottomNav = () => {
   const { user, isAuthenticated } = useSelector((state) => state.auth);
 
   const userRole = user?.role || user?.userType || user?.userRole || null;
+  const isAdmin =
+    userRole === 'admin' ||
+    userRole === 'super_admin' ||
+    path.startsWith('/admin');
   const isHirer = userRole === 'hirer' || path.startsWith('/hirer');
 
   const isWorker = userRole === 'worker' || path.startsWith('/worker');
@@ -156,6 +163,21 @@ const MobileBottomNav = () => {
     }
 
     // Role-specific tab matching
+    if (isAdmin) {
+      if (path.startsWith('/admin/payouts')) {
+        return 'payouts';
+      }
+      if (path.startsWith('/admin')) {
+        return 'skills';
+      }
+      if (path.startsWith('/notifications')) {
+        return 'notifications';
+      }
+      if (path.startsWith('/settings')) {
+        return 'settings';
+      }
+    }
+
     if (isHirer) {
       if (path.startsWith('/hirer/jobs')) {
         return 'postJob';
@@ -193,7 +215,7 @@ const MobileBottomNav = () => {
 
     // Keep no tab selected on unrelated pages (wallet/contracts/etc.)
     return null;
-  }, [path, isHirer, isWorker]);
+  }, [path, isAdmin, isHirer, isWorker]);
 
   const getActionAriaLabel = useCallback((item) => {
     if (item.value === 'messages' && item.badge) {
@@ -205,6 +227,42 @@ const MobileBottomNav = () => {
 
   // Navigation items based on user role - capped at 5 primary actions for clean UX.
   const navigationItems = useMemo(() => {
+    if (isAdmin) {
+      return [
+        {
+          label: 'Skills',
+          value: 'skills',
+          icon: <AdminPanelSettingsIcon />,
+          path: '/admin/skills-management',
+        },
+        {
+          label: 'Payouts',
+          value: 'payouts',
+          icon: <PaymentsIcon />,
+          path: '/admin/payouts',
+        },
+        {
+          label: 'Messages',
+          value: 'messages',
+          icon: <MessagesIcon />,
+          path: '/messages',
+          badge: unreadCount > 0 ? unreadCount : null,
+        },
+        {
+          label: 'Alerts',
+          value: 'notifications',
+          icon: <NotificationsIcon />,
+          path: '/notifications',
+        },
+        {
+          label: 'Settings',
+          value: 'settings',
+          icon: <ProfileIcon />,
+          path: '/settings',
+        },
+      ];
+    }
+
     if (isHirer) {
       return [
         {
@@ -226,7 +284,7 @@ const MobileBottomNav = () => {
           path: '/hirer/find-talents',
         },
         {
-          label: 'Responses',
+          label: 'Applications',
           value: 'applications',
           icon: <ApplicationsIcon />,
           path: '/hirer/applications',
@@ -255,7 +313,7 @@ const MobileBottomNav = () => {
         path: '/worker/find-work',
       },
       {
-        label: 'Applied',
+        label: 'Applications',
         value: 'applications',
         icon: <ApplicationsIcon />,
         path: '/worker/applications',
@@ -274,7 +332,7 @@ const MobileBottomNav = () => {
         path: '/worker/profile',
       },
     ];
-  }, [isHirer, unreadCount]);
+  }, [isAdmin, isHirer, unreadCount]);
 
   const handleNavigation = (event, newValue) => {
     const item = navigationItems.find((i) => i.value === newValue);

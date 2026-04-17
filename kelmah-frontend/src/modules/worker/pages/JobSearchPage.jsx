@@ -229,6 +229,8 @@ const SearchHeader = ({
                         onSearch('');
                       }}
                       sx={{
+                        minWidth: 44,
+                        minHeight: 44,
                         '&:focus-visible': {
                           outline: '3px solid',
                           outlineColor: 'primary.main',
@@ -389,6 +391,17 @@ const FilterPanel = ({
   onReset,
 }) => {
   const theme = useTheme();
+  const accessibleSelectSx = {
+    borderRadius: 2,
+    minHeight: 44,
+    '& .MuiSelect-select': {
+      minHeight: 44,
+      display: 'flex',
+      alignItems: 'center',
+      boxSizing: 'border-box',
+    },
+  };
+
   return (
     <Stack spacing={2.5}>
       {/* Category */}
@@ -398,7 +411,7 @@ const FilterPanel = ({
           value={category}
           label="Trade Category"
           onChange={(e) => setCategory(e.target.value)}
-          sx={{ borderRadius: 2 }}
+          sx={accessibleSelectSx}
         >
           <MenuItem value="">All Categories</MenuItem>
           {tradeCategories
@@ -418,7 +431,7 @@ const FilterPanel = ({
           value={location}
           label="Location"
           onChange={(e) => setLocation(e.target.value)}
-          sx={{ borderRadius: 2 }}
+          sx={accessibleSelectSx}
         >
           {ghanaLocations.map((loc) => (
             <MenuItem key={loc.value} value={loc.value}>
@@ -474,7 +487,7 @@ const FilterPanel = ({
           value={sortBy}
           label="Sort By"
           onChange={(e) => setSortBy(e.target.value)}
-          sx={{ borderRadius: 2 }}
+          sx={accessibleSelectSx}
         >
           {SORT_OPTIONS.map((opt) => (
             <MenuItem key={opt.value} value={opt.value}>
@@ -492,6 +505,7 @@ const FilterPanel = ({
           alignSelf: 'flex-start',
           textTransform: 'none',
           color: 'text.secondary',
+          minHeight: 44,
         }}
       >
         Reset Filters
@@ -665,7 +679,7 @@ const FindWorkJobCard = ({ job, isSaved, onSave, onUnsave }) => {
                   size="small"
                   sx={{
                     height: 24,
-                    fontSize: '0.7rem',
+                    fontSize: '0.75rem',
                     bgcolor: alpha(theme.palette.primary.main, 0.08),
                     color: theme.palette.primary.main,
                     fontWeight: 500,
@@ -676,7 +690,7 @@ const FindWorkJobCard = ({ job, isSaved, onSave, onUnsave }) => {
                 <Chip
                   label={`+${job.skills.length - (isMobile ? 3 : 5)}`}
                   size="small"
-                  sx={{ height: 24, fontSize: '0.7rem' }}
+                  sx={{ height: 24, fontSize: '0.75rem' }}
                 />
               )}
             </Stack>
@@ -716,7 +730,7 @@ const FindWorkJobCard = ({ job, isSaved, onSave, onUnsave }) => {
                 label={job.category}
                 size="small"
                 variant="outlined"
-                sx={{ height: 22, fontSize: '0.7rem', borderRadius: 1 }}
+                sx={{ height: 22, fontSize: '0.75rem', borderRadius: 1 }}
               />
             )}
             {job.urgent && (
@@ -725,7 +739,7 @@ const FindWorkJobCard = ({ job, isSaved, onSave, onUnsave }) => {
                 size="small"
                 sx={{
                   height: 22,
-                  fontSize: '0.7rem',
+                  fontSize: '0.75rem',
                   bgcolor: alpha(theme.palette.error.main, 0.1),
                   color: theme.palette.error.main,
                   fontWeight: 600,
@@ -1144,6 +1158,16 @@ const JobSearchPage = () => {
         sx={{
           minHeight: '100dvh',
           pb: 'calc(env(safe-area-inset-bottom, 0px) + 24px)',
+          '& .MuiTypography-caption': {
+            fontSize: '12px',
+          },
+          '& .MuiChip-sizeSmall': {
+            fontSize: '12px',
+            lineHeight: 1.2,
+          },
+          '& .MuiChip-sizeSmall .MuiChip-label': {
+            fontSize: '12px',
+          },
         }}
       >
         <Container maxWidth="lg" sx={{ pt: { xs: 2, md: 3 } }}>
@@ -1398,7 +1422,18 @@ const JobSearchPage = () => {
                         }}
                         color="primary"
                         shape="rounded"
-                        size={isMobile ? 'small' : 'medium'}
+                        size="medium"
+                        sx={{
+                          '& .MuiPaginationItem-root': {
+                            minWidth: 44,
+                            minHeight: 44,
+                          },
+                          '& .MuiPaginationItem-root.MuiPaginationItem-sizeSmall':
+                            {
+                              minWidth: 44,
+                              height: 44,
+                            },
+                        }}
                       />
                     </Stack>
                   )}

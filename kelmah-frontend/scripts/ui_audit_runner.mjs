@@ -57,6 +57,11 @@ const MODES = new Set(['capture', 'baseline', 'compare']);
 const CONSOLE_IGNORE_PATTERNS = [
   /^Warning:/i,
   /Failed to load resource: the server responded with a status of 500/i,
+  /Failed to load resource: net::ERR_CONNECTION_RESET/i,
+  /Failed to load resource: net::ERR_SOCKET_NOT_CONNECTED/i,
+  /WebSocket connection to 'ws:\/\/.*\/socket\.io\/.*' failed: Connection closed before receiving a handshake response/i,
+  /WebSocket connection error: TransportError: websocket error/i,
+  /WebSocket connection error \(attempt \d+\): TransportError: websocket error/i,
 ];
 const OFFSCREEN_TAG_IGNORE = new Set([
   'path',
@@ -73,6 +78,10 @@ const OFFSCREEN_TAG_IGNORE = new Set([
 const MAX_FAILED_REQUESTS_PER_VIEWPORT = 20;
 const RENDERABLE_UI_TIMEOUT_MS = 5000;
 const EMPTY_UI_RETRY_EXTRA_WAIT_MS = 800;
+const UI_SETTLE_TIMEOUT_MS = 3200;
+const UI_SETTLE_POLL_MS = 120;
+const UI_SETTLE_RETRY_WAIT_MS = 450;
+const MOCK_JWT_EXPIRY_SECONDS = 8 * 60 * 60;
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 const toPosix = (value) => value.replace(/\\/g, '/');
@@ -139,6 +148,33 @@ const parseModeAndArgs = () => {
   const args = parseArgs(process.argv.slice(mode === 'capture' && !MODES.has(maybeMode) ? 2 : 3));
 
   return { mode, args };
+};
+
+const base64UrlEncodeJson = (value) =>
+  Buffer.from(JSON.stringify(value)).toString('base64url');
+
+const buildMockJwt = (
+  mockUser,
+  expiresInSeconds = MOCK_JWT_EXPIRY_SECONDS,
+) => {
+  const issuedAt = Math.floor(Date.now() / 1000);
+  const userId = mockUser?._id || mockUser?.id || 'ui-audit-user';
+
+  const header = {
+    alg: 'HS256',
+    typ: 'JWT',
+  };
+
+  const payload = {
+    sub: userId,
+    id: userId,
+    email: mockUser?.email || 'ui-audit@kelmah.test',
+    role: mockUser?.role || 'hirer',
+    iat: issuedAt,
+    exp: issuedAt + expiresInSeconds,
+  };
+
+  return `${base64UrlEncodeJson(header)}.${base64UrlEncodeJson(payload)}.ui-audit-signature`;
 };
 
 const isLikelyProtectedRoute = (route = '/') => {
@@ -249,6 +285,71 @@ const waitForRenderableUi = async (
   }
 };
 
+const waitForUiToSettle = async (
+  page,
+  {
+    timeoutMs = UI_SETTLE_TIMEOUT_MS,
+    pollingMs = UI_SETTLE_POLL_MS,
+  } = {},
+) => {
+  try {
+    await page.waitForFunction(
+      () => {
+        const root =
+          document.querySelector('[data-ui-audit-root]') || document.body;
+        if (!root) {
+          return false;
+        }
+
+        const hasSkeleton =
+          root.querySelector(
+            '.MuiSkeleton-root,[data-testid*="skeleton"],[data-skeleton="true"]',
+          ) !== null;
+        const hasBusyState =
+          root.querySelector('[aria-busy="true"]') !== null;
+        const hasLoadingLiveStatus = Array.from(
+          root.querySelectorAll('[role="status"], [aria-live]'),
+        ).some((node) =>
+          /\b(searching|loading)\b/i.test(node?.textContent || ''),
+        );
+
+        return !hasSkeleton && !hasBusyState && !hasLoadingLiveStatus;
+      },
+      { timeout: timeoutMs, polling: pollingMs },
+    );
+
+    return true;
+  } catch (_) {
+    return false;
+  }
+};
+
+const waitForFontAndLayoutStability = async (
+  page,
+  timeoutMs = UI_SETTLE_TIMEOUT_MS,
+) => {
+  try {
+    await page.evaluate(async (maxWaitMs) => {
+      if (document?.fonts?.ready) {
+        await Promise.race([
+          document.fonts.ready.catch(() => undefined),
+          new Promise((resolve) => {
+            window.setTimeout(resolve, maxWaitMs);
+          }),
+        ]);
+      }
+
+      await new Promise((resolve) =>
+        requestAnimationFrame(() =>
+          requestAnimationFrame(() => resolve()),
+        ),
+      );
+    }, timeoutMs);
+  } catch (_) {
+    // Best-effort stabilization only.
+  }
+};
+
 const buildMockWorkerDirectoryPayload = (requestUrl) => {
   let page = 1;
   let limit = 12;
@@ -305,6 +406,158 @@ const buildMockPublicJobsListPayload = (requestUrl) => {
   };
 };
 
+const buildMockUserCredentialsPayload = (mockUser) => ({
+  success: true,
+  data: {
+    _id: mockUser?._id || mockUser?.id || 'ui-audit-user',
+    id: mockUser?.id || mockUser?._id || 'ui-audit-user',
+    firstName: mockUser?.firstName || 'Kelmah',
+    lastName: mockUser?.lastName || 'User',
+    email: mockUser?.email || 'ui-audit@kelmah.test',
+    role: mockUser?.role || 'hirer',
+    isEmailVerified: true,
+    skills: [],
+    licenses: [],
+    certifications: [],
+  },
+});
+
+const buildMockWorkerAvailabilityPayload = () => ({
+  success: true,
+  data: {
+    status: 'available',
+    isAvailable: true,
+    timezone: 'Africa/Accra',
+    daySlots: [],
+    schedule: [],
+    nextAvailable: null,
+    message: null,
+    pausedUntil: null,
+    lastUpdated: new Date().toISOString(),
+  },
+});
+
+const buildMockWorkerCompletenessPayload = () => ({
+  success: true,
+  data: {
+    completionPercentage: 82,
+    percentage: 82,
+    requiredCompletion: 84,
+    optionalCompletion: 76,
+    missingRequired: [],
+    missingOptional: [],
+    recommendations: [],
+    source: {
+      worker: true,
+      workerProfile: true,
+    },
+  },
+});
+
+const buildMockMyJobsPayload = (requestUrl) => {
+  let page = 1;
+  let limit = 10;
+  let statusFilter = null;
+
+  try {
+    const parsed = new URL(requestUrl);
+    page = Number(parsed.searchParams.get('page')) || 1;
+    limit = Number(parsed.searchParams.get('limit')) || 10;
+    const rawStatus = String(parsed.searchParams.get('status') || '').trim();
+    statusFilter = rawStatus || null;
+  } catch (_) {
+    // Keep defaults when parsing fails.
+  }
+
+  const now = new Date();
+  const dayMs = 24 * 60 * 60 * 1000;
+  const allItems = [
+    {
+      _id: 'ui-audit-job-open-1',
+      id: 'ui-audit-job-open-1',
+      title: 'Electrical rewiring for 2-bedroom home',
+      status: 'open',
+      visibility: 'public',
+      location: 'Accra',
+      budget: 1500,
+      paymentType: 'fixed',
+      proposalCount: 3,
+      createdAt: new Date(now.getTime() - dayMs * 2).toISOString(),
+      endDate: new Date(now.getTime() + dayMs * 5).toISOString(),
+      responseMode: 'applications',
+    },
+    {
+      _id: 'ui-audit-job-draft-1',
+      id: 'ui-audit-job-draft-1',
+      title: 'Kitchen cabinet repair and refinishing',
+      status: 'draft',
+      visibility: 'private',
+      location: 'Kumasi',
+      budget: 900,
+      paymentType: 'fixed',
+      proposalCount: 0,
+      createdAt: new Date(now.getTime() - dayMs * 1).toISOString(),
+      endDate: null,
+      responseMode: 'applications',
+    },
+  ];
+
+  const filteredItems = statusFilter
+    ? allItems.filter(
+        (item) =>
+          String(item.status || '').toLowerCase() ===
+          String(statusFilter).toLowerCase(),
+      )
+    : allItems;
+
+  const start = Math.max(0, (page - 1) * limit);
+  const end = start + limit;
+  const pagedItems = filteredItems.slice(start, end);
+  const total = filteredItems.length;
+  const totalPages = Math.max(1, Math.ceil(total / Math.max(limit, 1)));
+
+  const countsByStatus = allItems.reduce(
+    (acc, item) => {
+      const key = String(item.status || '').toLowerCase();
+      if (Object.prototype.hasOwnProperty.call(acc, key)) {
+        acc[key] += 1;
+      }
+      return acc;
+    },
+    {
+      open: 0,
+      'in-progress': 0,
+      completed: 0,
+      cancelled: 0,
+      draft: 0,
+    },
+  );
+
+  return {
+    success: true,
+    data: {
+      items: pagedItems,
+      pagination: {
+        page,
+        currentPage: page,
+        limit,
+        total,
+        totalPages,
+      },
+    },
+    meta: {
+      pagination: {
+        page,
+        currentPage: page,
+        limit,
+        total,
+        totalPages,
+      },
+      countsByStatus,
+    },
+  };
+};
+
 const evaluateUiChecks = async (page, mobile) =>
   page.evaluate(({ mobileView, offscreenTagIgnore }) => {
     const auditRoot = document.querySelector('[data-ui-audit-root]') || document.body;
@@ -330,20 +583,51 @@ const evaluateUiChecks = async (page, mobile) =>
       return false;
     };
 
+    const normalizeText = (value) =>
+      String(value || '').replace(/\s+/g, ' ').trim();
+
+    const summarizeElement = (el) => {
+      const rect = el.getBoundingClientRect();
+      const className =
+        typeof el.className === 'string'
+          ? el.className
+          : (el.className && typeof el.className.baseVal === 'string'
+            ? el.className.baseVal
+            : '');
+
+      return {
+        tag: (el.tagName || '').toLowerCase(),
+        role: el.getAttribute('role') || '',
+        type: el.getAttribute('type') || '',
+        ariaLabel: normalizeText(el.getAttribute('aria-label')).slice(0, 120),
+        className: normalizeText(className).slice(0, 200),
+        text: normalizeText(el.textContent).slice(0, 120),
+        width: Number(rect.width.toFixed(1)),
+        height: Number(rect.height.toFixed(1)),
+        left: Number(rect.left.toFixed(1)),
+        right: Number(rect.right.toFixed(1)),
+      };
+    };
+
     const interactive = Array.from(
       auditRoot.querySelectorAll('a, button, input, select, textarea, [role="button"]')
     ).filter((el) => isVisible(el) && !isAuditNoiseElement(el));
 
     let smallTapTargets = 0;
+    const smallTapTargetSamples = [];
     for (const el of interactive) {
       const rect = el.getBoundingClientRect();
       if (mobileView && (rect.width < 44 || rect.height < 44)) {
         smallTapTargets += 1;
+        if (smallTapTargetSamples.length < 25) {
+          smallTapTargetSamples.push(summarizeElement(el));
+        }
       }
     }
 
     const allNodes = Array.from(auditRoot.querySelectorAll('*'));
     let offscreenElements = 0;
+    const offscreenSamples = [];
     let sampled = 0;
 
     for (const el of allNodes) {
@@ -360,6 +644,9 @@ const evaluateUiChecks = async (page, mobile) =>
 
       if (rect.right > window.innerWidth + 8 || rect.left < -8) {
         offscreenElements += 1;
+        if (offscreenSamples.length < 25) {
+          offscreenSamples.push(summarizeElement(el));
+        }
       }
     }
 
@@ -375,11 +662,18 @@ const evaluateUiChecks = async (page, mobile) =>
     });
 
     let textTooSmallCount = 0;
+    const textTooSmallSamples = [];
     const minSize = mobileView ? 12 : 12;
     for (const el of textCandidates.slice(0, 3000)) {
       const size = Number.parseFloat(window.getComputedStyle(el).fontSize || '0');
       if (size > 0 && size < minSize) {
         textTooSmallCount += 1;
+        if (textTooSmallSamples.length < 40) {
+          textTooSmallSamples.push({
+            ...summarizeElement(el),
+            fontSize: Number(size.toFixed(2)),
+          });
+        }
       }
     }
 
@@ -390,7 +684,10 @@ const evaluateUiChecks = async (page, mobile) =>
       uniqueHeadingFontSizes: headingFontSizes.size,
       interactiveCount: interactive.length,
       smallTapTargets,
+      smallTapTargetSamples,
       textTooSmallCount,
+      textTooSmallSamples,
+      offscreenSamples,
       bodyScrollHeight: document.documentElement.scrollHeight,
       viewportWidth: window.innerWidth,
       viewportHeight: window.innerHeight,
@@ -467,21 +764,30 @@ const wireMockRoutes = async ({
   page,
   mockAuth,
   mockApplications,
+  mockPublicData,
   mockUser,
   routePath,
 }) => {
   const normalizedRoutePath =
     String(routePath || '/').split('?')[0] || '/';
   const isPublicRoute = isPublicRouteCapture(normalizedRoutePath);
-  const shouldMockHomeStats =
+  const shouldMockPublicStats =
+    isPublicRoute &&
+    (normalizedRoutePath === '/' ||
+      normalizedRoutePath === '/home' ||
+      normalizedRoutePath === '/jobs' ||
+      mockPublicData);
+  const shouldMockHomeJobsList =
     isPublicRoute &&
     (normalizedRoutePath === '/' || normalizedRoutePath === '/home');
   const shouldMockWorkerSearch =
     isPublicRoute &&
     (normalizedRoutePath === '/search' ||
-      normalizedRoutePath === '/find-talents');
+      normalizedRoutePath === '/find-talents' ||
+      mockPublicData);
   const shouldMockPublicJobsList =
-    isPublicRoute && (shouldMockHomeStats || shouldMockWorkerSearch);
+    isPublicRoute &&
+    (shouldMockHomeJobsList || shouldMockWorkerSearch || mockPublicData);
 
   await page.route('**/api/health/aggregate*', async (route) => {
     await route.fulfill({
@@ -497,14 +803,19 @@ const wireMockRoutes = async ({
     });
   });
 
-  if (shouldMockHomeStats) {
+  if (shouldMockPublicStats) {
     await page.route('**/api/jobs/stats*', async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({
           success: true,
-          data: null,
+          data: {
+            availableJobs: 124,
+            activeEmployers: 32,
+            skilledWorkers: 980,
+            successRate: 94,
+          },
         }),
       });
     });
@@ -546,11 +857,20 @@ const wireMockRoutes = async ({
   }
 
   if (mockAuth) {
+    const accessToken = buildMockJwt(mockUser);
+    const refreshToken = buildMockJwt(
+      {
+        ...mockUser,
+        role: `${mockUser?.role || 'hirer'}-refresh`,
+      },
+      14 * 24 * 60 * 60,
+    );
+
     const authSuccessPayload = {
       success: true,
       data: {
-        token: 'ui-audit-mock-token',
-        refreshToken: 'ui-audit-mock-refresh-token',
+        token: accessToken,
+        refreshToken,
         user: mockUser,
       },
     };
@@ -569,7 +889,10 @@ const wireMockRoutes = async ({
         contentType: 'application/json',
         body: JSON.stringify({
           success: true,
-          data: { user: mockUser },
+          data: {
+            token: accessToken,
+            user: mockUser,
+          },
         }),
       });
     });
@@ -587,6 +910,144 @@ const wireMockRoutes = async ({
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({ success: true }),
+      });
+    });
+
+    await page.route('**/users/me/credentials*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(buildMockUserCredentialsPayload(mockUser)),
+      });
+    });
+
+    await page.route(/\/users\/profile\/activity(?:\?.*)?$/i, async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          data: {
+            items: [],
+          },
+        }),
+      });
+    });
+
+    await page.route(/\/users\/profile(?:\?.*)?$/i, async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(buildMockUserCredentialsPayload(mockUser)),
+      });
+    });
+
+    await page.route('**/users/dashboard/analytics*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          data: {
+            jobsPosted: 2,
+            activeJobs: 1,
+            totalApplications: 1,
+            responseRate: 100,
+          },
+        }),
+      });
+    });
+
+    await page.route('**/users/workers/*/availability*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(buildMockWorkerAvailabilityPayload()),
+      });
+    });
+
+    await page.route('**/users/workers/*/completeness*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(buildMockWorkerCompletenessPayload()),
+      });
+    });
+
+    await page.route('**/jobs/saved*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          data: {
+            jobs: [],
+            pagination: {
+              page: 1,
+              limit: 20,
+              total: 0,
+              totalPages: 1,
+            },
+          },
+        }),
+      });
+    });
+
+    await page.route('**/jobs/my-jobs*', async (routeRequest) => {
+      await routeRequest.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(
+          buildMockMyJobsPayload(routeRequest.request().url()),
+        ),
+      });
+    });
+
+    // Worker find-work and related protected views may request /api/jobs directly.
+    await page.route(/\/api\/jobs(?:\?.*)?$/i, async (routeRequest) => {
+      await routeRequest.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(
+          buildMockPublicJobsListPayload(routeRequest.request().url()),
+        ),
+      });
+    });
+
+    await page.route('**/payments/wallet*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          data: {
+            accounts: [
+              {
+                type: 'escrow',
+                balance: 0,
+              },
+            ],
+          },
+        }),
+      });
+    });
+
+    await page.route('**/payments/escrows*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify([]),
+      });
+    });
+
+    await page.route('**/payments/transactions/history*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          data: [],
+        }),
       });
     });
   }
@@ -1034,6 +1495,8 @@ const main = async () => {
   const rawTaskId = args['task-id'] || args.taskId;
   const rawBaselineId = args['baseline-id'] || args.baselineId;
   const route = String(args.route || '/');
+  const normalizedRoutePath = String(route || '/').split('?')[0] || '/';
+  const isPublicRoute = isPublicRouteCapture(normalizedRoutePath);
   const baseUrl = String(args['base-url'] || args.baseUrl || process.env.UI_AUDIT_BASE_URL || 'http://127.0.0.1:3000');
   const authEmail = args['auth-email'] || args.authEmail || process.env.UI_AUDIT_AUTH_EMAIL;
   const authPassword = args['auth-password'] || args.authPassword || process.env.UI_AUDIT_AUTH_PASSWORD;
@@ -1042,6 +1505,10 @@ const main = async () => {
   const mockApplications = asBoolean(
     args['mock-applications'] || args.mockApplications,
     false
+  );
+  const mockPublicData = asBoolean(
+    args['mock-public-data'] || args.mockPublicData,
+    false,
   );
   const loginPath = String(args['login-path'] || args.loginPath || '/login');
   const loginWaitMs = asNumber(args['login-wait-ms'] || args.loginWaitMs, 1200);
@@ -1136,6 +1603,7 @@ const main = async () => {
         page,
         mockAuth,
         mockApplications,
+        mockPublicData,
         mockUser,
         routePath: route,
       });
@@ -1185,6 +1653,19 @@ const main = async () => {
         if (!hasRenderableUi) {
           throw new Error('Route rendered no detectable UI content before capture');
         }
+
+        let settledUi = await waitForUiToSettle(page, {
+          timeoutMs: waitMs + UI_SETTLE_TIMEOUT_MS,
+        });
+
+        if (!settledUi && isPublicRoute) {
+          await page.waitForTimeout(UI_SETTLE_RETRY_WAIT_MS);
+          settledUi = await waitForUiToSettle(page, {
+            timeoutMs: UI_SETTLE_TIMEOUT_MS,
+          });
+        }
+
+        await waitForFontAndLayoutStability(page, UI_SETTLE_TIMEOUT_MS);
 
         await page.addStyleTag({
           content:
