@@ -110,20 +110,42 @@ const Sidebar = ({
   const showTooltips = variant === 'permanent' && collapsed;
 
   // Determine role for navigation
-  const navRole =
-    user?.role === 'hirer' ||
-    user?.userType === 'hirer' ||
-    user?.userRole === 'hirer'
+  const hasRole =
+    (role) =>
+      user?.role === role || user?.userType === role || user?.userRole === role;
+
+  const navRole = hasRole('admin')
+    ? 'admin'
+    : hasRole('hirer')
       ? 'hirer'
-      : user?.role === 'worker' ||
-          user?.userType === 'worker' ||
-          user?.userRole === 'worker'
+      : hasRole('worker')
         ? 'worker'
         : null;
 
   // LC Portal style menu items - role specific (mapped to actual routes)
   const menuItems =
-    navRole === 'hirer'
+    navRole === 'admin'
+      ? [
+          {
+            text: 'Skills Management',
+            icon: <MiscellaneousServicesIcon />,
+            path: '/admin/skills-management',
+            tooltip: 'Manage admin skills operations',
+          },
+          {
+            text: 'Payout Queue',
+            icon: <ReceiptLongIcon />,
+            path: '/admin/payouts',
+            tooltip: 'Manage queued worker payouts',
+          },
+          {
+            text: 'Support',
+            icon: <SupportAgentIcon />,
+            path: '/support',
+            tooltip: 'Get help and support',
+          },
+        ]
+      : navRole === 'hirer'
       ? [
           {
             text: 'Post a Job',
@@ -162,7 +184,8 @@ const Sidebar = ({
             tooltip: 'Get help and support',
           },
         ]
-      : [
+      : navRole === 'worker'
+        ? [
           {
             text: 'Find Work',
             icon: <WorkIcon />,
@@ -205,7 +228,8 @@ const Sidebar = ({
             path: '/support',
             tooltip: 'Get help and support',
           },
-        ];
+        ]
+        : [];
 
   // Common items at bottom
   const bottomItems = [
@@ -232,9 +256,17 @@ const Sidebar = ({
   ];
 
   const dashboardPath =
-    navRole === 'hirer' ? '/hirer/dashboard' : '/worker/dashboard';
+    navRole === 'admin'
+      ? '/admin/skills-management'
+      : navRole === 'hirer'
+        ? '/hirer/dashboard'
+        : navRole === 'worker'
+          ? '/worker/dashboard'
+          : '/dashboard';
   const isDashboardActive =
-    location.pathname === dashboardPath || location.pathname === '/dashboard';
+    navRole === 'admin'
+      ? location.pathname.startsWith('/admin')
+      : location.pathname === dashboardPath || location.pathname === '/dashboard';
 
   return (
     <Drawer

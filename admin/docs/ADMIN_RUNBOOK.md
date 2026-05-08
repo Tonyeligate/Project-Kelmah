@@ -1,5 +1,20 @@
 # Admin Runbook
 
+## Admin Portal UI
+
+### Start Admin Portal (Local)
+```bash
+cd admin
+npm install
+npm run dev
+```
+
+### Build Admin Portal
+```bash
+cd admin
+npm run build
+```
+
 ## Common Admin Operations
 
 ### 1. View Platform Statistics

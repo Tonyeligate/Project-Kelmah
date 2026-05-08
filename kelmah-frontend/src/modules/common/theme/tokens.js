@@ -6,28 +6,28 @@
 // Ghana-inspired color palette
 export const colors = {
   primary: {
+    50: '#fff9e6',
+    100: '#ffeeb3',
+    200: '#ffe080',
+    300: '#ffd24d',
+    400: '#ffc726',
+    500: '#ffd700', // Kelmah gold brand primary
+    600: '#f4c400',
+    700: '#d4af37',
+    800: '#b8860b',
+    900: '#8a6700',
+  },
+  secondary: {
     50: '#e8f5e8',
     100: '#c8e6c9',
     200: '#a5d6a7',
     300: '#81c784',
     400: '#66bb6a',
-    500: '#4caf50', // Ghana green
+    500: '#4caf50', // Ghana green secondary accent
     600: '#43a047',
     700: '#388e3c',
     800: '#2e7d32',
     900: '#1b5e20',
-  },
-  secondary: {
-    50: '#fff3e0',
-    100: '#ffe0b3',
-    200: '#ffcc80',
-    300: '#ffb74d',
-    400: '#ffa726',
-    500: '#ff9800', // Ghana gold
-    600: '#fb8c00',
-    700: '#f57c00',
-    800: '#ef6c00',
-    900: '#e65100',
   },
   error: {
     50: '#ffebee',

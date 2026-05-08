@@ -3,5 +3,12 @@
     "allow": [
       "Bash(tree:*)"
     ]
+  },
+  "env": {
+    "QUANTUM_PROVIDER_SIMULATION": "true",
+    "QUANTUM_LOCAL_QISKIT_ENABLED": "true",
+    "QUANTUM_LOCAL_QISKIT_ONLY": "true",
+    "QUANTUM_LOCAL_QISKIT_PYTHON": "c:/Users/OS/Desktop/Project-Kelmah-main/.venv/Scripts/python.exe",
+    "QUANTUM_LOCAL_QISKIT_TIMEOUT_MS": "20000"
   }
 }

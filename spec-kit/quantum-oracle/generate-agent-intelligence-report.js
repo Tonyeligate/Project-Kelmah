@@ -119,17 +119,42 @@ function main() {
       ? learningTasks.reduce((acc, t) => acc + (t.activatedEliteToolsCount || 0), 0) / (learningTasks.length * 20)
       : 0;
 
+    const runtimeTasks = agentTasks.filter((t) => (t.requiredRuntimeToolsCount || 0) > 0);
+    const runtimeCoverageRaw = runtimeTasks.length > 0
+      ? runtimeTasks.reduce((acc, t) => acc + ((t.runtimeCoveragePct || 0) / 100), 0) / runtimeTasks.length
+      : 0;
+
+    const runtimeExecutionEvidenceRaw = runtimeTasks.length > 0
+      ? runtimeTasks.filter((t) => (t.executedRuntimeCallsCount || 0) > 0).length / runtimeTasks.length
+      : 0;
+
+    const totalRuntimeCalls = runtimeTasks.reduce((acc, t) => acc + (t.executedRuntimeCallsCount || 0), 0);
+    const totalRequiredRuntimeTools = runtimeTasks.reduce((acc, t) => acc + (t.requiredRuntimeToolsCount || 0), 0);
+    const runtimeDepthRaw = totalRequiredRuntimeTools > 0
+      ? clamp(totalRuntimeCalls / totalRequiredRuntimeTools, 0, 1)
+      : 0;
+
+    const totalQuantumJobs = runtimeTasks.reduce((acc, t) => acc + (t.quantumProviderJobsCount || 0), 0);
+    const totalFallbackJobs = runtimeTasks.reduce((acc, t) => acc + (t.classicalFallbackJobsCount || 0), 0);
+    const runtimeJobDenominator = totalQuantumJobs + totalFallbackJobs;
+    const quantumProviderUtilizationRaw = runtimeJobDenominator > 0
+      ? clamp(totalQuantumJobs / runtimeJobDenominator, 0, 1)
+      : 0;
+
     const gateCount = countAgentGates(a.file, a.gatePrefix);
     const gateMaturityRaw = clamp(gateCount / 16, 0, 1);
 
     const immersiveReadinessRaw = immersiveReadinessGlobalRaw;
 
     let overallRaw =
-      (0.30 * growthVelocityRaw)
-      + (0.25 * transferRaw)
-      + (0.20 * preventionRaw)
+      (0.18 * growthVelocityRaw)
+      + (0.16 * transferRaw)
+      + (0.12 * preventionRaw)
       + (0.10 * gateMaturityRaw)
-      + (0.15 * toolchainDepthRaw);
+      + (0.10 * toolchainDepthRaw)
+      + (0.16 * runtimeCoverageRaw)
+      + (0.10 * runtimeExecutionEvidenceRaw)
+      + (0.08 * runtimeDepthRaw);
 
     if (typeof immersiveReadinessRaw === 'number') {
       overallRaw = (0.90 * overallRaw) + (0.10 * immersiveReadinessRaw);
@@ -144,6 +169,10 @@ function main() {
       regressionPreventionStrength: toPct(preventionRaw),
       gateMaturity: toPct(gateMaturityRaw),
       toolchainDepth: toPct(toolchainDepthRaw),
+      runtimeCoverage: toPct(runtimeCoverageRaw),
+      runtimeExecutionEvidence: toPct(runtimeExecutionEvidenceRaw),
+      runtimeDepth: toPct(runtimeDepthRaw),
+      quantumProviderUtilization: toPct(quantumProviderUtilizationRaw),
       immersiveSupportReadiness: typeof immersiveReadinessRaw === 'number' ? toPct(immersiveReadinessRaw) : null,
       overallScore: toPct(overallRaw),
     };
@@ -156,17 +185,23 @@ function main() {
     quarter: getQuarterLabel(new Date()),
     inputSummary: path.relative(process.cwd(), args.summaryPath).replace(/\\/g, '/'),
     learningEnabledTaskCount: summary.learningEnabledTaskCount || 0,
+    totalRuntimeCalls: summary.totalRuntimeCalls || 0,
+    totalQuantumProviderJobs: summary.totalQuantumProviderJobs || 0,
+    totalClassicalFallbackJobs: summary.totalClassicalFallbackJobs || 0,
     advancedMissingLearningEvidence: summary.advancedMissingLearningEvidence || [],
     methodology: {
       weights: {
-        growthVelocity: 0.30,
-        transferSuccess: 0.25,
-        regressionPreventionStrength: 0.20,
+        growthVelocity: 0.18,
+        transferSuccess: 0.16,
+        regressionPreventionStrength: 0.12,
         gateMaturity: 0.10,
-        toolchainDepth: 0.15,
+        toolchainDepth: 0.10,
+        runtimeCoverage: 0.16,
+        runtimeExecutionEvidence: 0.10,
+        runtimeDepth: 0.08,
         immersiveSupportReadinessBlend: 0.10,
       },
-      note: 'Scores are normalized from learning-ledger evidence, gate maturity, tool activation depth, and immersive readiness coverage.',
+      note: 'Scores are normalized from learning evidence, executed runtime telemetry coverage/depth, gate maturity, and immersive readiness coverage.',
     },
     immersiveReadinessGlobal: typeof immersiveReadinessGlobalRaw === 'number' ? toPct(immersiveReadinessGlobalRaw) : null,
     agents: ranked,

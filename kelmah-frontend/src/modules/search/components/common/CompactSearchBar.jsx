@@ -6,7 +6,6 @@ import {
   Typography,
   InputAdornment,
   IconButton,
-  useTheme,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -29,14 +28,15 @@ const CompactSearchBar = ({
   onFilterClick,
   placeholder = 'Try "plumber Accra" or "welder Tema"',
 }) => {
-  const theme = useTheme();
-
   return (
     <Paper
       elevation={2}
       sx={{
         p: { xs: 0.75, sm: 1 },
         mb: 2,
+        bgcolor: 'background.paper',
+        border: '1px solid',
+        borderColor: 'divider',
         position: 'sticky',
         top: `calc(${withSafeAreaTop(HEADER_HEIGHT_MOBILE + 8)} + var(--kelmah-network-banner-offset, 0px))`,
         zIndex: Z_INDEX.sticky,
@@ -144,10 +144,14 @@ const CompactSearchBar = ({
             width: { xs: '100%', sm: 'auto' },
             height: '48px',
             px: { xs: 1.5, sm: 2 },
-            bgcolor: theme.palette.mode === 'dark' ? '#FFD700' : '#000000',
-            color: theme.palette.mode === 'dark' ? '#000000' : '#FFD700',
+            bgcolor: 'var(--k-gold)',
+            color: 'var(--k-text-on-accent)',
+            fontWeight: 700,
+            '& .MuiButton-startIcon': {
+              color: 'inherit',
+            },
             '&:hover': {
-              bgcolor: theme.palette.mode === 'dark' ? '#FFC700' : '#1a1a1a',
+              bgcolor: 'var(--k-gold-dark)',
             },
           }}
         >

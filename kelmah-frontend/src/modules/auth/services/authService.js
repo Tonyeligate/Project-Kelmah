@@ -23,6 +23,21 @@ const devError = createDevLogger(import.meta.env.DEV, 'error');
 
 // Token refresh tracking
 let tokenRefreshTimeout = null;
+let tokenRefreshVisibilityHandler = null;
+
+const clearTokenRefreshVisibilityHandler = () => {
+  if (
+    tokenRefreshVisibilityHandler &&
+    typeof document !== 'undefined' &&
+    typeof document.removeEventListener === 'function'
+  ) {
+    document.removeEventListener(
+      'visibilitychange',
+      tokenRefreshVisibilityHandler,
+    );
+  }
+  tokenRefreshVisibilityHandler = null;
+};
 
 const persistNormalizedUser = (user, options = {}) => {
   if (!user) {
@@ -210,6 +225,7 @@ const authService = {
         clearTimeout(tokenRefreshTimeout);
         tokenRefreshTimeout = null;
       }
+      clearTokenRefreshVisibilityHandler();
 
       // Always clean up secure storage
       secureStorage.clearAuthData();
@@ -492,16 +508,42 @@ const authService = {
       if (tokenRefreshTimeout) {
         clearTimeout(tokenRefreshTimeout);
       }
+      clearTokenRefreshVisibilityHandler();
 
-      tokenRefreshTimeout = window.setTimeout(async () => {
+      const runRefresh = async () => {
         try {
           await authService.refreshToken();
         } catch (error) {
           devWarn('Automatic token refresh failed:', error.message);
         }
+      };
+
+      tokenRefreshTimeout = window.setTimeout(async () => {
+        if (
+          typeof document !== 'undefined' &&
+          document.visibilityState &&
+          document.visibilityState !== 'visible'
+        ) {
+          clearTokenRefreshVisibilityHandler();
+          tokenRefreshVisibilityHandler = () => {
+            if (document.visibilityState !== 'visible') {
+              return;
+            }
+            clearTokenRefreshVisibilityHandler();
+            runRefresh();
+          };
+          document.addEventListener(
+            'visibilitychange',
+            tokenRefreshVisibilityHandler,
+          );
+          return;
+        }
+
+        await runRefresh();
       }, refreshDelay);
     } catch (error) {
       devWarn('Failed to schedule token refresh:', error.message);
+      clearTokenRefreshVisibilityHandler();
     }
   },
 };

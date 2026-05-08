@@ -10,7 +10,6 @@ import {
   Button,
   Chip,
   Avatar,
-  IconButton,
   Stack,
   CircularProgress,
   Alert,
@@ -205,6 +204,7 @@ const ActionButton = styled(Button)(({ theme }) => ({
 
 const SkillChip = styled(Chip)(({ theme }) => ({
   margin: theme.spacing(0.5),
+  height: 'auto',
   background:
     theme.palette.mode === 'dark'
       ? 'rgba(255, 215, 0, 0.2)'
@@ -222,6 +222,12 @@ const SkillChip = styled(Chip)(({ theme }) => ({
       theme.palette.mode === 'dark'
         ? 'rgba(255, 215, 0, 0.3)'
         : 'rgba(212, 175, 55, 0.2)',
+  },
+  '& .MuiChip-label': {
+    whiteSpace: 'normal',
+    lineHeight: 1.25,
+    paddingTop: theme.spacing(0.45),
+    paddingBottom: theme.spacing(0.45),
   },
 }));
 
@@ -355,6 +361,69 @@ const normalizeSkillLabels = (skills) => {
     .filter(Boolean);
 };
 
+const toReadableStatus = (value, fallback = 'Open') => {
+  const normalized = toDisplayText(value).replace(/[_-]+/g, ' ').trim();
+  if (!normalized) return fallback;
+
+  return normalized
+    .split(' ')
+    .filter(Boolean)
+    .map(
+      (part) => `${part.charAt(0).toUpperCase()}${part.slice(1).toLowerCase()}`,
+    )
+    .join(' ');
+};
+
+const extractOverviewHighlights = (text, maxItems = 3) => {
+  const normalized = toDisplayText(text);
+  if (!normalized) return [];
+
+  const segments = normalized
+    .split(/(?:\r?\n|[.!?])+/)
+    .map((segment) => segment.trim())
+    .filter((segment) => segment.length >= 24);
+
+  const deduped = [];
+  const seen = new Set();
+
+  for (const segment of segments) {
+    const key = segment.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    deduped.push(
+      segment.length > 120 ? `${segment.slice(0, 117)}...` : segment,
+    );
+    if (deduped.length >= maxItems) break;
+  }
+
+  return deduped;
+};
+
+const truncateAtBoundary = (text, maxLength = 280) => {
+  const normalized = toDisplayText(text);
+  if (!normalized || normalized.length <= maxLength) {
+    return normalized;
+  }
+
+  const boundaryWindow = normalized.slice(0, maxLength + 1);
+  const sentenceBoundary = Math.max(
+    boundaryWindow.lastIndexOf('. '),
+    boundaryWindow.lastIndexOf('? '),
+    boundaryWindow.lastIndexOf('! '),
+  );
+
+  if (sentenceBoundary > maxLength * 0.55) {
+    return `${normalized.slice(0, sentenceBoundary + 1).trim()}...`;
+  }
+
+  const wordBoundary = boundaryWindow.lastIndexOf(' ');
+  if (wordBoundary > maxLength * 0.6) {
+    return `${normalized.slice(0, wordBoundary).trim()}...`;
+  }
+
+  return `${normalized.slice(0, maxLength).trim()}...`;
+};
+
 const JobDetailsPage = () => {
   const theme = useTheme();
   const isMobile = useBreakpointDown('md');
@@ -383,10 +452,7 @@ const JobDetailsPage = () => {
     job?.description,
     'No description available.',
   );
-  const condensedJobDescription =
-    fullJobDescription.length > 280
-      ? `${fullJobDescription.slice(0, 280)}...`
-      : fullJobDescription;
+  const condensedJobDescription = truncateAtBoundary(fullJobDescription, 280);
   const visibleOverviewText = job?.description
     ? showFullOverview
       ? fullJobDescription
@@ -619,6 +685,9 @@ const JobDetailsPage = () => {
           gap: 2,
         }}
       >
+        <Typography variant="h5" component="h1" fontWeight={700}>
+          Job Details Unavailable
+        </Typography>
         <Alert severity="error" role="alert">
           {import.meta.env.DEV
             ? error
@@ -644,6 +713,9 @@ const JobDetailsPage = () => {
           gap: 2,
         }}
       >
+        <Typography variant="h5" component="h1" fontWeight={700}>
+          Invalid Job Link
+        </Typography>
         <Alert severity="error" sx={{ maxWidth: 400 }}>
           Invalid job ID. Please select a valid job to view details.
         </Alert>
@@ -670,6 +742,9 @@ const JobDetailsPage = () => {
           gap: 2,
         }}
       >
+        <Typography variant="h5" component="h1" fontWeight={700}>
+          Job Not Found
+        </Typography>
         <Alert severity="error" sx={{ maxWidth: 400 }}>
           Job not found. The job you&apos;re looking for doesn&apos;t exist or
           has been removed.
@@ -770,6 +845,9 @@ const JobDetailsPage = () => {
     : deadlineLabel
       ? `Ends ${deadlineLabel}`
       : 'Flexible timeline';
+  const compactTimelineLabel = deadlineLabel
+    ? `Due ${deadlineLabel}`
+    : 'Flexible timeline';
   const hasClientDetails = Boolean(
     hirerId ||
       hirerName ||
@@ -861,6 +939,16 @@ const JobDetailsPage = () => {
     : isCompactMobile
       ? compactBudgetDisplay
       : budgetDisplay;
+  const mobileStickyFooterReserve = isCompactMobile ? 328 : 308;
+  const mobileStickyFooterSpacer = isCompactMobile ? 222 : 206;
+  const rawStatusLabel = toDisplayText(job?.status, 'open');
+  const jobStatusLabel = toReadableStatus(rawStatusLabel, 'Open');
+  const normalizedStatusLabel = rawStatusLabel.toLowerCase();
+  const statusIsOpen =
+    job?.bidding?.bidStatus === 'open' ||
+    normalizedStatusLabel === 'open' ||
+    normalizedStatusLabel === 'active';
+  const overviewHighlights = extractOverviewHighlights(fullJobDescription);
 
   const handleOpenClientProfile = () => {
     if (!hasClientDetails) {
@@ -876,7 +964,7 @@ const JobDetailsPage = () => {
   return (
     <PageCanvas
       disableContainer
-      sx={{ pb: { xs: withBottomNavSafeArea(24), md: 6 } }}
+      sx={{ pb: { xs: withBottomNavSafeArea(mobileStickyFooterReserve), md: 6 } }}
     >
       <Box
         sx={{
@@ -904,6 +992,8 @@ const JobDetailsPage = () => {
                 mb: { xs: 1.25, sm: 2.5 },
                 color: accentColor,
                 fontWeight: 700,
+                minHeight: 44,
+                minWidth: 44,
                 '&:hover': { background: accentSoftBg },
               }}
             >
@@ -920,67 +1010,94 @@ const JobDetailsPage = () => {
                   sm: `calc(${HEADER_HEIGHT_MOBILE}px + var(--kelmah-network-banner-offset, 0px) + 14px)`,
                 },
                 zIndex: Z_INDEX.stickyCta - 1,
-                mb: 1,
-                p: 0.75,
+                mb: 1.25,
+                p: 1,
                 borderRadius: 2,
                 border: '1px solid',
-                borderColor: 'divider',
+                borderColor:
+                  theme.palette.mode === 'dark'
+                    ? alpha(theme.palette.primary.main, 0.25)
+                    : alpha(theme.palette.divider, 0.95),
                 bgcolor:
                   theme.palette.mode === 'dark'
                     ? alpha(theme.palette.background.paper, 0.94)
                     : alpha(theme.palette.background.paper, 0.96),
                 backdropFilter: 'blur(8px)',
+                boxShadow: `0 8px 24px ${alpha(theme.palette.common.black, theme.palette.mode === 'dark' ? 0.26 : 0.1)}`,
                 display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: 1,
+                flexDirection: 'column',
+                gap: 0.85,
               }}
             >
               <Box
                 sx={{
                   display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  minWidth: 0,
+                  gap: 0.75,
+                }}
+              >
+                <Typography
+                  variant="subtitle2"
+                  sx={{
+                    fontWeight: 700,
+                    color: 'text.primary',
+                    minWidth: 0,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    flex: 1,
+                  }}
+                >
+                  {job?.title || 'Job Details'}
+                </Typography>
+                <Chip
+                  size="small"
+                  variant="outlined"
+                  label={`${job?.proposalCount || 0} applicants`}
+                  sx={{ fontWeight: 700, minHeight: 30, flexShrink: 0 }}
+                />
+              </Box>
+
+              <Box
+                sx={{
+                  display: 'flex',
                   gap: 0.75,
                   minWidth: 0,
-                  overflowX: 'auto',
-                  pr: 0.25,
-                  scrollbarWidth: 'none',
-                  '&::-webkit-scrollbar': { display: 'none' },
+                  flexWrap: 'wrap',
+                  alignItems: 'center',
                 }}
               >
                 <Chip
                   size="small"
-                  label={(job?.status || 'open').toUpperCase()}
-                  sx={{ fontWeight: 700 }}
+                  label={`Status: ${jobStatusLabel}`}
+                  sx={{
+                    fontWeight: 700,
+                    minHeight: 30,
+                    bgcolor: statusIsOpen
+                      ? alpha(theme.palette.success.main, 0.15)
+                      : alpha(theme.palette.warning.main, 0.15),
+                    color: statusIsOpen ? 'success.main' : 'warning.main',
+                    border: '1px solid',
+                    borderColor: statusIsOpen
+                      ? alpha(theme.palette.success.main, 0.35)
+                      : alpha(theme.palette.warning.main, 0.35),
+                  }}
                 />
                 <Chip
                   size="small"
-                  label={compactBudgetDisplay}
+                  label={`Budget: ${compactBudgetDisplay}`}
                   variant="outlined"
-                  sx={{ fontWeight: 700 }}
+                  sx={{ fontWeight: 700, minHeight: 30 }}
+                />
+                <Chip
+                  size="small"
+                  label={compactTimelineLabel}
+                  variant="outlined"
+                  sx={{ fontWeight: 700, minHeight: 30 }}
                 />
               </Box>
-              <Stack
-                direction="row"
-                spacing={0.25}
-                alignItems="center"
-                sx={{ flexShrink: 0 }}
-              >
-                <IconButton
-                  onClick={handleToggleSave}
-                  disabled={savingBookmark}
-                  aria-label={saved ? 'Remove from saved jobs' : 'Save job'}
-                  sx={{ minWidth: 44, minHeight: 44 }}
-                >
-                  {saved ? <Bookmark /> : <BookmarkBorder />}
-                </IconButton>
-                <IconButton
-                  onClick={handleShareJob}
-                  aria-label="Share job"
-                  sx={{ minWidth: 44, minHeight: 44 }}
-                >
-                  <Share />
-                </IconButton>
-              </Stack>
             </Box>
           )}
 
@@ -1014,25 +1131,20 @@ const JobDetailsPage = () => {
                     }}
                   >
                     <Chip
-                      label={(job?.status || 'unknown').toUpperCase()}
+                      label={`Status: ${jobStatusLabel}`}
                       size="small"
                       sx={{
                         fontWeight: 700,
                         fontSize: '0.7rem',
                         letterSpacing: 0.5,
-                        bgcolor:
-                          String(job?.status || '').toLowerCase() === 'open'
-                            ? alpha(theme.palette.success.main, 0.15)
-                            : alpha(theme.palette.warning.main, 0.15),
-                        color:
-                          String(job?.status || '').toLowerCase() === 'open'
-                            ? 'success.main'
-                            : 'warning.main',
+                        bgcolor: statusIsOpen
+                          ? alpha(theme.palette.success.main, 0.15)
+                          : alpha(theme.palette.warning.main, 0.15),
+                        color: statusIsOpen ? 'success.main' : 'warning.main',
                         border: '1px solid',
-                        borderColor:
-                          String(job?.status || '').toLowerCase() === 'open'
-                            ? alpha(theme.palette.success.main, 0.4)
-                            : alpha(theme.palette.warning.main, 0.4),
+                        borderColor: statusIsOpen
+                          ? alpha(theme.palette.success.main, 0.4)
+                          : alpha(theme.palette.warning.main, 0.4),
                       }}
                     />
                     {job?.category && (
@@ -1119,9 +1231,9 @@ const JobDetailsPage = () => {
                   <Box
                     sx={{
                       display: 'flex',
-                      flexWrap: { xs: 'nowrap', md: 'wrap' },
+                      flexWrap: 'wrap',
                       gap: 0.75,
-                      overflowX: { xs: 'auto', md: 'visible' },
+                      overflowX: 'visible',
                       pb: { xs: 0.35, md: 0 },
                       scrollbarWidth: 'none',
                       '&::-webkit-scrollbar': { display: 'none' },
@@ -1296,6 +1408,53 @@ const JobDetailsPage = () => {
                   <SectionHeading icon={WorkOutline}>
                     Job Description
                   </SectionHeading>
+                  {overviewHighlights.length > 0 && (
+                    <Box
+                      sx={{
+                        mb: 1.75,
+                        p: 1.35,
+                        borderRadius: 1.8,
+                        border: '1px solid',
+                        borderColor: alpha(theme.palette.primary.main, 0.22),
+                        bgcolor:
+                          theme.palette.mode === 'dark'
+                            ? alpha(theme.palette.primary.main, 0.1)
+                            : alpha(theme.palette.primary.main, 0.06),
+                      }}
+                    >
+                      <Typography
+                        variant="subtitle2"
+                        sx={{
+                          fontWeight: 800,
+                          color: 'text.primary',
+                          mb: 0.75,
+                        }}
+                      >
+                        Quick Summary
+                      </Typography>
+                      <Box
+                        component="ul"
+                        sx={{
+                          m: 0,
+                          pl: 2.25,
+                          display: 'grid',
+                          gap: 0.65,
+                          color: 'text.secondary',
+                        }}
+                      >
+                        {overviewHighlights.map((point) => (
+                          <Typography
+                            key={point}
+                            component="li"
+                            variant="body2"
+                            sx={{ lineHeight: 1.45, color: 'text.secondary' }}
+                          >
+                            {point}
+                          </Typography>
+                        ))}
+                      </Box>
+                    </Box>
+                  )}
                   <Typography
                     id="job-description-content"
                     variant="body1"
@@ -1306,6 +1465,7 @@ const JobDetailsPage = () => {
                       fontWeight: 500,
                       fontSize: { xs: '0.97rem', sm: '1.03rem' },
                       maxWidth: '72ch',
+                      mb: fullJobDescription.length > 320 ? 0 : 0.2,
                     }}
                   >
                     {showFullOverview
@@ -1339,10 +1499,42 @@ const JobDetailsPage = () => {
                 {/* Required Skills */}
                 {skillLabels.length > 0 && (
                   <DetailsPaper elevation={2} sx={{ mb: 3 }}>
-                    <SectionHeading icon={VerifiedUser}>
-                      Required Skills
+                    <SectionHeading
+                      icon={VerifiedUser}
+                      sx={{ mb: { xs: 1.15, sm: 1.6 } }}
+                    >
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1,
+                          flexWrap: 'wrap',
+                        }}
+                      >
+                        <span>Required Skills</span>
+                        <Chip
+                          size="small"
+                          label={`${skillLabels.length} skill${skillLabels.length > 1 ? 's' : ''}`}
+                          variant="outlined"
+                          sx={{ fontWeight: 700 }}
+                        />
+                      </Box>
                     </SectionHeading>
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                    <Typography
+                      variant="body2"
+                      sx={{ color: 'text.secondary', mb: 1.1 }}
+                    >
+                      Match these skills in your bid response to improve your
+                      fit.
+                    </Typography>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        alignItems: 'flex-start',
+                        gap: 0.8,
+                      }}
+                    >
                       {skillLabels.map((skill, index) => (
                         <SkillChip
                           key={`${skill}-${index}`}
@@ -1358,8 +1550,30 @@ const JobDetailsPage = () => {
                 {jobImageGallery.length > 0 && (
                   <DetailsPaper elevation={2} sx={{ mb: 3 }}>
                     <SectionHeading icon={Visibility}>
-                      Project Images
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1,
+                          flexWrap: 'wrap',
+                        }}
+                      >
+                        <span>Project Images</span>
+                        <Chip
+                          size="small"
+                          variant="outlined"
+                          label={`${jobImageGallery.length} image${jobImageGallery.length > 1 ? 's' : ''}`}
+                          sx={{ fontWeight: 700 }}
+                        />
+                      </Box>
                     </SectionHeading>
+                    <Typography
+                      variant="body2"
+                      sx={{ color: 'text.secondary', mb: 1.25 }}
+                    >
+                      Use these visuals to confirm project scope before placing
+                      your bid.
+                    </Typography>
                     <Grid container spacing={2}>
                       {jobImageGallery.map((image, index) => (
                         <Grid
@@ -1573,17 +1787,21 @@ const JobDetailsPage = () => {
                       >
                         {saved ? 'Saved Job' : 'Save Job'}
                       </Button>
-                      <IconButton
+                      <Button
+                        variant="outlined"
                         onClick={handleShareJob}
+                        startIcon={<Share />}
                         aria-label="Share job"
                         sx={{
                           border: '1px solid',
                           borderColor: 'divider',
                           borderRadius: 1.5,
                           color: 'text.primary',
-                          px: 1.5,
-                          minWidth: 44,
+                          px: 1.6,
+                          minWidth: 96,
                           minHeight: 44,
+                          fontWeight: 700,
+                          textTransform: 'none',
                           '&:hover': {
                             color: accentColor,
                             borderColor: accentColor,
@@ -1595,8 +1813,8 @@ const JobDetailsPage = () => {
                           },
                         }}
                       >
-                        <Share />
-                      </IconButton>
+                        Share
+                      </Button>
                     </Box>
 
                     {!isAuthenticated && (
@@ -1614,13 +1832,16 @@ const JobDetailsPage = () => {
                           type="button"
                           onClick={handleSignIn}
                           sx={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
                             color: accentColor,
                             cursor: 'pointer',
                             fontWeight: 700,
                             font: 'inherit',
                             background: 'none',
                             border: 0,
-                            padding: 0,
+                            padding: '0 4px',
+                            minHeight: 44,
                             textDecoration: 'underline',
                           }}
                         >
@@ -2329,6 +2550,16 @@ const JobDetailsPage = () => {
           )}
         </Container>
 
+        {isMobile && (
+          <Box
+            aria-hidden
+            sx={{
+              display: { xs: 'block', md: 'none' },
+              height: withBottomNavSafeArea(mobileStickyFooterSpacer),
+            }}
+          />
+        )}
+
         {/* Sticky bottom CTA bar for mobile */}
         {isMobile && job && (
           <Box
@@ -2343,53 +2574,68 @@ const JobDetailsPage = () => {
                   ? alpha(theme.palette.background.paper, 0.97)
                   : alpha(theme.palette.background.paper, 0.98),
               borderTop: `1px solid ${theme.palette.mode === 'dark' ? alpha(theme.palette.primary.main, 0.22) : alpha(theme.palette.divider, 0.85)}`,
-              px: 1.5,
-              py: 1,
-              pb: 1,
-              display: 'grid',
-              gridTemplateColumns: 'minmax(0, 1fr) auto',
-              alignItems: 'center',
-              gap: 0.75,
+              px: 1.25,
+              py: { xs: 0.72, sm: 0.85 },
+              pb: { xs: 0.82, sm: 0.95 },
+              display: 'flex',
+              flexDirection: 'column',
+              gap: { xs: 0.6, sm: 0.75 },
               backdropFilter: 'blur(8px)',
               boxShadow: `0 -12px 30px ${alpha(theme.palette.common.black, theme.palette.mode === 'dark' ? 0.35 : 0.12)}`,
             }}
           >
-            <Box sx={{ minWidth: 0, pr: 0.25 }}>
-              <Typography
-                variant="caption"
-                sx={{
-                  color: 'text.secondary',
-                  fontWeight: 700,
-                  display: 'block',
-                  mb: 0.2,
-                  letterSpacing: 0.24,
-                  lineHeight: 1.2,
-                }}
-              >
-                {mobileCtaLabel}
-              </Typography>
-              <Typography
-                variant="body2"
-                sx={{
-                  color: 'text.primary',
-                  fontWeight: 800,
-                  lineHeight: 1.2,
-                  fontSize: { xs: '0.9rem', sm: '0.98rem' },
-                  pr: 0.5,
-                  whiteSpace: isCompactMobile ? 'nowrap' : 'normal',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                }}
-              >
-                {mobileCtaValue}
-              </Typography>
-            </Box>
-            <Stack
-              direction="row"
-              spacing={0.25}
-              alignItems="center"
-              sx={{ flexShrink: 0 }}
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: 'minmax(0, 1fr) auto',
+                alignItems: 'center',
+                gap: 0.75,
+              }}
             >
+              <Box sx={{ minWidth: 0, pr: 0.25 }}>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: 'text.secondary',
+                    fontWeight: 700,
+                    display: 'block',
+                    mb: 0.18,
+                    letterSpacing: 0.24,
+                    lineHeight: 1.2,
+                  }}
+                >
+                  {mobileCtaLabel}
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: 'text.primary',
+                    fontWeight: 800,
+                    lineHeight: 1.2,
+                    fontSize: { xs: '0.9rem', sm: '0.98rem' },
+                    pr: 0.5,
+                    whiteSpace: 'normal',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    display: '-webkit-box',
+                    WebkitLineClamp: isCompactMobile ? 1 : 2,
+                    WebkitBoxOrient: 'vertical',
+                  }}
+                >
+                  {mobileCtaValue}
+                </Typography>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: 'text.secondary',
+                    lineHeight: 1.35,
+                    mt: 0.25,
+                    display: { xs: isCompactMobile ? 'none' : 'block', sm: 'block' },
+                  }}
+                >
+                  Review timeline and scope, then continue with your response.
+                </Typography>
+              </Box>
               <Button
                 variant="contained"
                 onClick={handlePrimaryAction}
@@ -2402,45 +2648,82 @@ const JobDetailsPage = () => {
                   fontSize: { xs: '0.88rem', sm: '0.95rem' },
                   minHeight: TOUCH_TARGET_MIN,
                   borderRadius: 2,
-                  minWidth: { xs: 96, sm: 156 },
+                  minWidth: { xs: 110, sm: 156 },
                   whiteSpace: 'nowrap',
                   '&:hover': { bgcolor: 'secondary.dark' },
                 }}
               >
                 {mobilePrimaryActionLabel}
               </Button>
-              <IconButton
+            </Box>
+
+            <Stack direction="row" spacing={0.75} alignItems="center">
+              <Button
+                variant="outlined"
                 onClick={handleToggleSave}
                 disabled={savingBookmark}
                 aria-label={saved ? 'Remove from saved jobs' : 'Save job'}
+                startIcon={
+                  savingBookmark ? (
+                    <CircularProgress size={16} />
+                  ) : saved ? (
+                    <Bookmark />
+                  ) : (
+                    <BookmarkBorder />
+                  )
+                }
                 sx={{
                   color: saved ? accentColor : 'text.primary',
-                  minWidth: 44,
                   minHeight: 44,
+                  px: 1.1,
+                  flex: 1,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  fontWeight: 700,
+                  textTransform: 'none',
                   '&:focus-visible': {
                     outline: `3px solid ${accentColor}`,
                     outlineOffset: '2px',
                   },
                 }}
               >
-                {saved ? <Bookmark /> : <BookmarkBorder />}
-              </IconButton>
-              <IconButton
+                {saved ? 'Saved Job' : 'Save Job'}
+              </Button>
+              <Button
+                variant="outlined"
                 onClick={handleShareJob}
                 aria-label="Share job"
+                startIcon={<Share />}
                 sx={{
                   color: 'text.primary',
-                  minWidth: 44,
                   minHeight: 44,
+                  px: 1.35,
+                  flex: 1,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  fontWeight: 700,
+                  textTransform: 'none',
                   '&:focus-visible': {
                     outline: `3px solid ${accentColor}`,
                     outlineOffset: '2px',
                   },
                 }}
               >
-                <Share />
-              </IconButton>
+                Share Job
+              </Button>
             </Stack>
+
+            <Typography
+              variant="caption"
+              sx={{
+                color: 'text.secondary',
+                lineHeight: 1.35,
+                display: { xs: 'none', sm: 'block' },
+              }}
+            >
+              Save to shortlist, or share this job with a teammate before
+              submitting.
+            </Typography>
           </Box>
         )}
 

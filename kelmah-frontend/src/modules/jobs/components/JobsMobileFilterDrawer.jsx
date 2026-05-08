@@ -25,6 +25,45 @@ import { formatGhanaCurrency } from '@/utils/formatters';
 import useKeyboardVisible from '@/hooks/useKeyboardVisible';
 import { withSafeAreaBottom } from '@/utils/safeArea';
 
+const MOBILE_MIN_BUDGET = 500;
+const MOBILE_MAX_BUDGET = 10000;
+const MOBILE_BUDGET_STEP = 100;
+const DEFAULT_SALARY_RANGE = [MOBILE_MIN_BUDGET, MOBILE_MAX_BUDGET];
+
+const clampBudgetValue = (value) => {
+  const numericValue = Number(value);
+  if (!Number.isFinite(numericValue)) {
+    return MOBILE_MIN_BUDGET;
+  }
+
+  return Math.min(MOBILE_MAX_BUDGET, Math.max(MOBILE_MIN_BUDGET, numericValue));
+};
+
+const normalizeSalaryRange = (value) => {
+  if (!Array.isArray(value) || value.length < 2) {
+    return [...DEFAULT_SALARY_RANGE];
+  }
+
+  const first = clampBudgetValue(value[0]);
+  const second = clampBudgetValue(value[1]);
+  const [minValue, maxValue] =
+    first <= second ? [first, second] : [second, first];
+
+  if (minValue !== maxValue) {
+    return [minValue, maxValue];
+  }
+
+  if (maxValue + MOBILE_BUDGET_STEP <= MOBILE_MAX_BUDGET) {
+    return [minValue, maxValue + MOBILE_BUDGET_STEP];
+  }
+
+  if (minValue - MOBILE_BUDGET_STEP >= MOBILE_MIN_BUDGET) {
+    return [minValue - MOBILE_BUDGET_STEP, maxValue];
+  }
+
+  return [...DEFAULT_SALARY_RANGE];
+};
+
 const JobsMobileFilterDrawer = ({
   open,
   onClose,
@@ -33,12 +72,17 @@ const JobsMobileFilterDrawer = ({
   tradeCategories = [],
   locations = [],
 }) => {
+  const normalizedInitialSalaryRange = normalizeSalaryRange(
+    initialFilters.salaryRange,
+  );
+  const salaryRangeMin = normalizedInitialSalaryRange[0];
+  const salaryRangeMax = normalizedInitialSalaryRange[1];
+
   const [filters, setFilters] = useState({
-    search: '',
-    category: '',
-    location: '',
-    salaryRange: [500, 10000],
-    ...initialFilters,
+    search: initialFilters.search || '',
+    category: initialFilters.category || '',
+    location: initialFilters.location || '',
+    salaryRange: [salaryRangeMin, salaryRangeMax],
   });
   const { isKeyboardVisible } = useKeyboardVisible();
   const drawerMaxHeight = isKeyboardVisible ? '92dvh' : '88dvh';
@@ -50,17 +94,24 @@ const JobsMobileFilterDrawer = ({
         search: initialFilters.search || '',
         category: initialFilters.category || '',
         location: initialFilters.location || '',
-        salaryRange: initialFilters.salaryRange || [500, 10000],
+        salaryRange: [salaryRangeMin, salaryRangeMax],
       });
     }
-  }, [open, initialFilters]);
+  }, [
+    open,
+    initialFilters.search,
+    initialFilters.category,
+    initialFilters.location,
+    salaryRangeMin,
+    salaryRangeMax,
+  ]);
 
   const handleClearFilters = () => {
     const clearedFilters = {
       search: '',
       category: '',
       location: '',
-      salaryRange: [500, 10000],
+      salaryRange: [...DEFAULT_SALARY_RANGE],
     };
     setFilters(clearedFilters);
   };
@@ -73,9 +124,12 @@ const JobsMobileFilterDrawer = ({
   const handleFieldChange = (field, value) => {
     setFilters((prev) => ({
       ...prev,
-      [field]: value,
+      [field]: field === 'salaryRange' ? normalizeSalaryRange(value) : value,
     }));
   };
+
+  const isSalaryRangeCollapsed =
+    filters.salaryRange[0] === filters.salaryRange[1];
 
   return (
     <Drawer
@@ -251,19 +305,38 @@ const JobsMobileFilterDrawer = ({
             </Typography>
             <Slider
               value={filters.salaryRange}
-              onChange={(e, newValue) =>
-                handleFieldChange('salaryRange', newValue)
-              }
+              onChange={(_, newValue) => {
+                if (Array.isArray(newValue)) {
+                  handleFieldChange('salaryRange', newValue);
+                }
+              }}
+              onChangeCommitted={(_, newValue) => {
+                if (Array.isArray(newValue)) {
+                  handleFieldChange('salaryRange', newValue);
+                }
+              }}
+              // Allow thumbs to separate when both values collapse to the same point.
+              disableSwap={!isSalaryRangeCollapsed}
               valueLabelDisplay="auto"
-              min={500}
-              max={10000}
-              step={100}
+              valueLabelFormat={(value) => formatGhanaCurrency(value)}
+              min={MOBILE_MIN_BUDGET}
+              max={MOBILE_MAX_BUDGET}
+              step={MOBILE_BUDGET_STEP}
               sx={{
                 color: 'var(--k-gold)',
+                px: 1,
                 '& .MuiSlider-thumb': {
-                  width: 24,
-                  height: 24,
+                  width: 28,
+                  height: 28,
+                  boxShadow: '0 0 0 2px #FFFFFF',
+                  '&::before': {
+                    boxShadow: 'none',
+                    width: 44,
+                    height: 44,
+                  },
                 },
+                '& .MuiSlider-track': { border: 'none' },
+                '& .MuiSlider-rail': { opacity: 0.42 },
               }}
             />
             <Box

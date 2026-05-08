@@ -190,6 +190,8 @@ const darkTheme = createTheme({
   ...baseTheme,
   palette: {
     mode: 'dark',
+    contrastThreshold: 4.5,
+    tonalOffset: 0.2,
     primary: {
       // Keep primary as an actionable accent for cross-app visibility.
       main: BRAND_COLORS.gold,
@@ -283,6 +285,19 @@ const darkTheme = createTheme({
           },
           backgroundImage:
             'radial-gradient(circle at top, rgba(255,215,0,0.08), transparent 40%)',
+          '@media (prefers-contrast: more)': {
+            backgroundImage: 'none',
+            color: '#ffffff',
+            '& a, & button, & [role="button"], & input, & textarea, & select, & [tabindex]:not([tabindex="-1"])':
+              {
+                outline: `3px solid ${BRAND_COLORS.goldLight}`,
+                outlineOffset: 2,
+              },
+            '& .MuiPaper-root, & .MuiCard-root, & .MuiOutlinedInput-notchedOutline, & .MuiDivider-root':
+              {
+                borderColor: 'rgba(255, 255, 255, 0.42) !important',
+              },
+          },
         },
         '*': {
           boxSizing: 'border-box',
@@ -786,12 +801,14 @@ const lightTheme = createTheme({
   ...baseTheme,
   palette: {
     mode: 'light',
+    contrastThreshold: 4.5,
+    tonalOffset: 0.2,
     primary: {
       // Keep primary as an actionable accent for cross-app visibility.
       main: '#8A6700',
       light: BRAND_COLORS.goldDark,
-      dark: '#6E5200',
-      contrastText: BRAND_COLORS.black,
+      dark: '#5E4500',
+      contrastText: '#FFFFFF',
     },
     secondary: {
       // Brand rule: light mode secondary = gold accent
@@ -873,6 +890,19 @@ const lightTheme = createTheme({
           },
           backgroundImage:
             'radial-gradient(circle at top, rgba(255,215,0,0.15), transparent 45%)',
+          '@media (prefers-contrast: more)': {
+            backgroundImage: 'none',
+            color: '#000000',
+            '& a, & button, & [role="button"], & input, & textarea, & select, & [tabindex]:not([tabindex="-1"])':
+              {
+                outline: `3px solid ${BRAND_COLORS.black}`,
+                outlineOffset: 2,
+              },
+            '& .MuiPaper-root, & .MuiCard-root, & .MuiOutlinedInput-notchedOutline, & .MuiDivider-root':
+              {
+                borderColor: 'rgba(0, 0, 0, 0.45) !important',
+              },
+          },
         },
         '*': {
           boxSizing: 'border-box',

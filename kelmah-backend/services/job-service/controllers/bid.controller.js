@@ -3,7 +3,7 @@
  */
 
 const mongoose = require('mongoose');
-const { Bid, Job, UserPerformance } = require('../models');
+const { Bid, Job, UserPerformance, Contract, User } = require('../models');
 const { successResponse, errorResponse, paginatedResponse } = require('../utils/response');
 const ServiceClient = require('../services/serviceClient');
 
@@ -376,6 +376,8 @@ exports.acceptBid = async (req, res, next) => {
     const session = await mongoose.startSession();
     try {
       let freshBid;
+      let autoContractCreated = false;
+      
       await session.withTransaction(async () => {
         // Atomically check status and update inside the transaction to prevent race conditions
         freshBid = await Bid.findOneAndUpdate(
@@ -397,6 +399,55 @@ exports.acceptBid = async (req, res, next) => {
         freshBid.job.worker = freshBid.worker;
         freshBid.job.bidding.bidStatus = 'closed';
         await freshBid.job.save({ session });
+
+        // Auto-create a Draft Contract for the accepted bid (similar to standard applications)
+        const existingContract = await Contract.findOne({
+          job: freshBid.job._id,
+          worker: freshBid.worker,
+        }).session(session).lean();
+
+        if (!existingContract) {
+          const worker = await User.findById(freshBid.worker)
+            .select('firstName lastName')
+            .session(session)
+            .lean();
+
+          const agreedValue = Number.isFinite(Number(freshBid.bidAmount))
+            ? Number(freshBid.bidAmount)
+            : Number(freshBid.job.budget || 0);
+
+          const contractPayload = {
+            job: freshBid.job._id,
+            hirer: freshBid.job.hirer,
+            worker: freshBid.worker,
+            title: `Contract for ${freshBid.job.title || 'job'}`,
+            description: `Service contract for ${freshBid.job.title || 'job'}`,
+            startDate: new Date(),
+            clientName:
+              `${req.user?.firstName || ''} ${req.user?.lastName || ''}`.trim() ||
+              'Client',
+            workerName:
+              `${worker?.firstName || ''} ${worker?.lastName || ''}`.trim() ||
+              'Worker',
+            value: agreedValue,
+            paymentTerms: {
+              type: freshBid.job.paymentType === 'hourly' ? 'hourly' : 'fixed',
+              rate: agreedValue,
+              currency: freshBid.job.currency || 'GHS',
+            },
+            milestones: [],
+            deliverables: [],
+            termsAndConditions: {
+              content: '',
+              acceptedByHirer: false,
+              acceptedByWorker: false,
+            },
+            status: 'draft',
+          };
+
+          await Contract.create([contractPayload], { session });
+          autoContractCreated = true;
+        }
       });
 
       // Keep job-level counters synchronized after status transitions.

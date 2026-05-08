@@ -24,5 +24,39 @@
     "AdversarialSelfPlayOrchestrator",
     "QuantumScoreboardUpdater"
   ],
+  "capabilityRegistry": {
+    "schemaVersion": "1.0.0",
+    "generatedAtUtc": "",
+    "path": "spec-kit/quantum-runtime/capability-registry.json",
+    "uniqueToolCount": 0
+  },
+  "runtimeExecutionEvidenceFile": "runtime_execution_telemetry.json",
+  "requiredHardTelemetryFields": [
+    "toolName",
+    "operation",
+    "backendCall",
+    "provider",
+    "providerJobId",
+    "executionPath",
+    "circuitDepth",
+    "shots",
+    "fidelity",
+    "errorRate",
+    "costUsd",
+    "latencyMs",
+    "startedAtUtc",
+    "finishedAtUtc"
+  ],
+  "runtimeExecutionSummary": {
+    "requiredRuntimeTools": [],
+    "requiredRuntimeToolsCount": 0,
+    "requiredRuntimeCapabilities": [],
+    "executedRuntimeCallsCount": 0,
+    "uniqueExecutedToolsCount": 0,
+    "runtimeCoveragePct": 0,
+    "missingRequiredTools": [],
+    "quantumProviderJobsCount": 0,
+    "classicalFallbackJobsCount": 0
+  },
   "notes": ""
 }

@@ -338,6 +338,105 @@ const getAttachmentKindLabel = (file) => {
   return 'File';
 };
 
+const getMessageAttachmentSignature = (message = {}) => {
+  const attachments = Array.isArray(message.attachments)
+    ? message.attachments
+    : [];
+
+  if (attachments.length === 0) {
+    return 'no-attachments';
+  }
+
+  return attachments
+    .map((attachment) => {
+      const name = String(
+        attachment?.name || attachment?.fileName || attachment?.filename || '',
+      )
+        .trim()
+        .toLowerCase();
+      const size = Number(attachment?.size || attachment?.fileSize || 0) || 0;
+      const type = String(
+        attachment?.type || attachment?.mimeType || attachment?.fileType || '',
+      )
+        .trim()
+        .toLowerCase();
+      const url = String(attachment?.url || attachment?.fileUrl || '')
+        .trim()
+        .toLowerCase();
+
+      return `${name}:${size}:${type}:${url}`;
+    })
+    .join('|');
+};
+
+const buildMessageRenderDedupeKey = (message = {}) => {
+  const canonicalId = message.id || message._id || null;
+  if (canonicalId) {
+    return `id:${canonicalId}`;
+  }
+
+  const senderId =
+    message.senderId || message.sender || message.senderInfo?.id || '';
+  const messageTime = new Date(
+    message.updatedAt || message.createdAt || message.timestamp || 0,
+  ).getTime();
+  const messageTimeBucket =
+    Number.isFinite(messageTime) && messageTime > 0
+      ? Math.floor(messageTime / 1000)
+      : 'unknown';
+  const normalizedText = String(message.text || message.content || '')
+    .trim()
+    .toLowerCase();
+  const attachmentSignature = getMessageAttachmentSignature(message);
+
+  if (
+    !senderId &&
+    !normalizedText &&
+    attachmentSignature === 'no-attachments'
+  ) {
+    return null;
+  }
+
+  return [
+    'fallback',
+    String(senderId || 'unknown-sender'),
+    String(messageTimeBucket),
+    normalizedText || '[attachment-only]',
+    attachmentSignature,
+  ].join(':');
+};
+
+const dedupeMessagesForRender = (list = []) => {
+  if (!Array.isArray(list) || list.length === 0) {
+    return [];
+  }
+
+  const deduped = [];
+  const seenKeys = new Set();
+
+  for (let index = list.length - 1; index >= 0; index -= 1) {
+    const message = list[index];
+    if (!message || typeof message !== 'object') {
+      continue;
+    }
+
+    const dedupeKey = buildMessageRenderDedupeKey(message);
+    if (!dedupeKey) {
+      deduped.push(message);
+      continue;
+    }
+
+    if (seenKeys.has(dedupeKey)) {
+      continue;
+    }
+
+    seenKeys.add(dedupeKey);
+    deduped.push(message);
+  }
+
+  return deduped.reverse();
+};
+
 const ConversationSkeleton = ({ chatTheme }) => {
   const { border, panelBg, header, mutedFill } = chatTheme;
   return (
@@ -957,6 +1056,11 @@ const MessagingPage = () => {
     }, 0);
   }, [currentUserId, draftsByConversation, safeConversations]);
 
+  const visibleMessages = useMemo(
+    () => dedupeMessagesForRender(messages),
+    [messages],
+  );
+
   const lastConversationSyncLabel = useMemo(() => {
     if (!lastConversationSyncAt) {
       return 'Sync pending';
@@ -1098,7 +1202,7 @@ const MessagingPage = () => {
     if (!messageEndRef.current) return;
     messageEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
     setShowScrollToLatest(false);
-  }, [messages, selectedConversation?.id]);
+  }, [selectedConversation?.id, visibleMessages]);
 
   const handleMessagesScroll = useCallback(() => {
     const node = messagesScrollRef.current;
@@ -1123,7 +1227,7 @@ const MessagingPage = () => {
     return () => {
       node.removeEventListener('scroll', handleMessagesScroll);
     };
-  }, [handleMessagesScroll, selectedConversation?.id, messages.length]);
+  }, [handleMessagesScroll, selectedConversation?.id, visibleMessages.length]);
 
   const handleScrollToLatest = useCallback(() => {
     if (!messageEndRef.current) {
@@ -1427,6 +1531,8 @@ const MessagingPage = () => {
     saveData,
     wasOffline,
   ]);
+
+  const mobileViewportHeight = isKeyboardVisible ? '100dvh' : '100svh';
 
   const deepLinkTargetLabel = useMemo(() => {
     const params = new URLSearchParams(location.search || '');
@@ -1889,7 +1995,7 @@ const MessagingPage = () => {
             pb: 0.15,
             pr: mobile ? 0.35 : 0,
             maxWidth: '100%',
-            overflowX: 'visible',
+            overflowX: 'hidden',
             flexWrap: 'wrap',
             rowGap: 0.75,
           }}
@@ -1910,6 +2016,8 @@ const MessagingPage = () => {
                 fontWeight: 700,
                 minWidth: mobile ? TOUCH_TARGET_MIN : undefined,
                 minHeight: mobile ? TOUCH_TARGET_MIN : undefined,
+                maxWidth: '100%',
+                height: 'auto',
                 borderColor: alpha(CHAT_HEADER, 0.28),
                 bgcolor:
                   activeFilter === chip.key ? CHAT_HEADER : CHAT_PANEL_BG,
@@ -1917,6 +2025,8 @@ const MessagingPage = () => {
                 opacity: activeFilter === chip.key ? 1 : 0.82,
                 '& .MuiChip-label': {
                   px: mobile ? 1.15 : undefined,
+                  whiteSpace: 'normal',
+                  lineHeight: 1.15,
                 },
               }}
             />
@@ -1936,6 +2046,8 @@ const MessagingPage = () => {
               fontWeight: 700,
               minWidth: mobile ? TOUCH_TARGET_MIN : undefined,
               minHeight: mobile ? TOUCH_TARGET_MIN : undefined,
+              maxWidth: '100%',
+              height: 'auto',
               borderColor: alpha(theme.palette.warning.main, 0.3),
               bgcolor:
                 activeFilter === 'drafts'
@@ -1945,6 +2057,8 @@ const MessagingPage = () => {
               opacity: activeFilter === 'drafts' ? 1 : 0.82,
               '& .MuiChip-label': {
                 px: mobile ? 1.15 : undefined,
+                whiteSpace: 'normal',
+                lineHeight: 1.15,
               },
               '& .MuiChip-icon': {
                 color:
@@ -1969,6 +2083,8 @@ const MessagingPage = () => {
               fontWeight: 700,
               minWidth: mobile ? TOUCH_TARGET_MIN : undefined,
               minHeight: mobile ? TOUCH_TARGET_MIN : undefined,
+              maxWidth: '100%',
+              height: 'auto',
               borderColor: alpha(theme.palette.error.main, 0.35),
               bgcolor:
                 activeFilter === 'unread-drafts'
@@ -1979,6 +2095,8 @@ const MessagingPage = () => {
               opacity: activeFilter === 'unread-drafts' ? 1 : 0.82,
               '& .MuiChip-label': {
                 px: mobile ? 1.15 : undefined,
+                whiteSpace: 'normal',
+                lineHeight: 1.15,
               },
               '& .MuiChip-icon': {
                 color:
@@ -2492,6 +2610,7 @@ const MessagingPage = () => {
     const sendDisabled =
       isSending || (!messageText.trim() && selectedFiles.length === 0);
     const quickReplyBarVisible = messageText.trim().length === 0;
+    const reserveQuickReplyHeight = mobile && selectedFiles.length === 0;
 
     return (
       <Paper
@@ -2601,18 +2720,27 @@ const MessagingPage = () => {
                     ? 'Online now'
                     : 'Offline')}
               </Typography>
-              {hasSelectedDraft && (
+              {hasSelectedDraft && !mobile && (
                 <Stack
+                  data-testid="messages-header-draft-status"
                   direction="row"
                   spacing={0.5}
                   alignItems="center"
-                  sx={{ mt: 0.2 }}
+                  useFlexGap
+                  sx={{ mt: 0.2, minWidth: 0, flexWrap: 'wrap' }}
                 >
                   <Typography
                     variant="caption"
                     color="warning.main"
-                    noWrap
-                    sx={{ display: 'flex', alignItems: 'center', gap: 0.4 }}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 0.4,
+                      minWidth: 0,
+                      whiteSpace: 'normal',
+                      overflowWrap: 'anywhere',
+                      lineHeight: 1.2,
+                    }}
                   >
                     <ScheduleIcon sx={{ fontSize: 12 }} />
                     Unsent changes, {selectedDraftSavedLabel}
@@ -2626,6 +2754,7 @@ const MessagingPage = () => {
                       px: 0.75,
                       lineHeight: 1,
                       color: 'rgba(255,255,255,0.84)',
+                      flexShrink: 0,
                     }}
                   >
                     Discard
@@ -2833,7 +2962,7 @@ const MessagingPage = () => {
                   </Box>
                 ))}
               </Box>
-            ) : messages.length === 0 ? (
+            ) : visibleMessages.length === 0 ? (
               <Box sx={{ py: 6 }}>
                 {hasSelectedDraft && (
                   <Paper
@@ -2875,9 +3004,10 @@ const MessagingPage = () => {
                 />
               </Box>
             ) : (
-              messages.map((message, index) => {
+              visibleMessages.map((message, index) => {
                 const messageTimestamp = message.timestamp || message.createdAt;
-                const previousMessage = index > 0 ? messages[index - 1] : null;
+                const previousMessage =
+                  index > 0 ? visibleMessages[index - 1] : null;
                 const previousTimestamp =
                   previousMessage?.timestamp || previousMessage?.createdAt;
                 const currentDayKey = getMessageDayKey(messageTimestamp);
@@ -2920,6 +3050,7 @@ const MessagingPage = () => {
             flexShrink: 0,
             bottom: 0,
             zIndex: 2,
+            overflowX: 'clip',
             px: { xs: 0.65, sm: 1, md: 1.15, lg: 1.35, xl: 1.5 },
             py: { xs: 0.65, sm: 0.8, md: 0.9, lg: 1 },
             pb: {
@@ -3163,48 +3294,110 @@ const MessagingPage = () => {
               </Alert>
             )}
 
-            {quickReplyBarVisible && (
-              <Stack
-                data-testid="messages-quick-replies"
-                direction="row"
-                spacing={0.75}
-                useFlexGap
+            {mobile && hasSelectedDraft && (
+              <Paper
+                data-testid="messages-mobile-draft-status"
+                variant="outlined"
                 sx={{
+                  p: 1,
                   mb: 1,
-                  overflowX: 'visible',
-                  flexWrap: 'wrap',
-                  pb: 0.25,
-                  rowGap: 0.75,
+                  borderRadius: 2,
+                  bgcolor: alpha(theme.palette.warning.main, 0.08),
+                  borderColor: alpha(theme.palette.warning.main, 0.35),
                 }}
               >
-                {quickReplyTemplates.map((template) => (
-                  <Chip
-                    key={template}
-                    label={template}
-                    onClick={() => handleQuickTemplateSelect(template)}
-                    clickable
-                    variant="outlined"
+                <Stack
+                  direction="row"
+                  spacing={0.75}
+                  useFlexGap
+                  alignItems="center"
+                  sx={{ flexWrap: 'wrap' }}
+                >
+                  <ScheduleIcon
+                    sx={{ fontSize: 14, color: theme.palette.warning.main }}
+                  />
+                  <Typography
+                    variant="caption"
+                    color="warning.main"
                     sx={{
                       fontWeight: 700,
-                      bgcolor: alpha(CHAT_HEADER, 0.05),
-                      borderColor: alpha(CHAT_HEADER, 0.22),
-                      maxWidth: { xs: '100%', sm: 'unset' },
-                      height: 'auto',
-                      '& .MuiChip-label': {
-                        px: { xs: 1, sm: 1.2 },
-                        py: { xs: 0.45, sm: 0.35 },
-                        whiteSpace: 'normal',
-                        lineHeight: 1.2,
-                        textAlign: 'left',
-                        display: 'block',
-                      },
+                      lineHeight: 1.2,
+                      minWidth: 0,
+                      overflowWrap: 'anywhere',
                     }}
-                  />
-                ))}
-              </Stack>
+                  >
+                    Unsent changes, {selectedDraftSavedLabel}
+                  </Typography>
+                  <Button
+                    size="small"
+                    color="inherit"
+                    onClick={handleDiscardSelectedDraft}
+                    sx={{ minHeight: TOUCH_TARGET_MIN, px: 1 }}
+                  >
+                    Discard
+                  </Button>
+                </Stack>
+              </Paper>
             )}
 
-            <Stack direction="row" spacing={1} alignItems="flex-end">
+            <Box
+              data-testid="messages-quick-replies-shell"
+              sx={{
+                mb: quickReplyBarVisible
+                  ? 1
+                  : reserveQuickReplyHeight
+                    ? 0.9
+                    : 0,
+                minHeight: reserveQuickReplyHeight ? TOUCH_TARGET_MIN + 4 : 0,
+              }}
+            >
+              {quickReplyBarVisible && (
+                <Stack
+                  data-testid="messages-quick-replies"
+                  direction="row"
+                  spacing={0.75}
+                  useFlexGap
+                  sx={{
+                    overflowX: 'hidden',
+                    flexWrap: 'wrap',
+                    pb: 0.25,
+                    rowGap: 0.75,
+                  }}
+                >
+                  {quickReplyTemplates.map((template) => (
+                    <Chip
+                      key={template}
+                      label={template}
+                      onClick={() => handleQuickTemplateSelect(template)}
+                      clickable
+                      variant="outlined"
+                      sx={{
+                        fontWeight: 700,
+                        bgcolor: alpha(CHAT_HEADER, 0.05),
+                        borderColor: alpha(CHAT_HEADER, 0.22),
+                        maxWidth: { xs: '100%', sm: 'unset' },
+                        height: 'auto',
+                        '& .MuiChip-label': {
+                          px: { xs: 1, sm: 1.2 },
+                          py: { xs: 0.45, sm: 0.35 },
+                          whiteSpace: 'normal',
+                          lineHeight: 1.2,
+                          textAlign: 'left',
+                          display: 'block',
+                        },
+                      }}
+                    />
+                  ))}
+                </Stack>
+              )}
+            </Box>
+
+            <Stack
+              direction="row"
+              spacing={1}
+              alignItems="flex-end"
+              sx={{ width: '100%', minWidth: 0, flexWrap: 'nowrap' }}
+            >
               <input
                 ref={fileInputRef}
                 type="file"
@@ -3223,6 +3416,8 @@ const MessagingPage = () => {
                     sx={{
                       minWidth: TOUCH_TARGET_MIN,
                       minHeight: TOUCH_TARGET_MIN,
+                      flex: '0 0 auto',
+                      flexShrink: 0,
                       color: CHAT_HEADER,
                       bgcolor: CHAT_PANEL_BG,
                       '&:hover': { bgcolor: CHAT_PANEL_HEADER },
@@ -3288,6 +3483,8 @@ const MessagingPage = () => {
                 }}
                 inputProps={{ 'aria-label': 'Type message', maxLength: 1000 }}
                 sx={{
+                  flex: 1,
+                  minWidth: 0,
                   '& .MuiOutlinedInput-root': {
                     borderRadius: 3,
                     bgcolor: CHAT_PANEL_BG,
@@ -3296,6 +3493,9 @@ const MessagingPage = () => {
                     '&.Mui-focused fieldset': {
                       borderColor: CHAT_ACCENT_DARK,
                     },
+                  },
+                  '& .MuiInputBase-root': {
+                    minWidth: 0,
                   },
                   '& .MuiInputBase-input': {
                     fontSize: {
@@ -3317,6 +3517,8 @@ const MessagingPage = () => {
                   sx={{
                     minWidth: TOUCH_TARGET_MIN,
                     minHeight: TOUCH_TARGET_MIN,
+                    flex: '0 0 auto',
+                    flexShrink: 0,
                     bgcolor: CHAT_HEADER,
                     color: '#fff',
                     '&:hover': { bgcolor: CHAT_ACCENT_DARK },
@@ -3391,7 +3593,7 @@ const MessagingPage = () => {
       <Box
         sx={{
           height: {
-            xs: 'calc(100dvh - var(--kelmah-network-banner-offset, 0px))',
+            xs: `calc(${mobileViewportHeight} - var(--kelmah-network-banner-offset, 0px))`,
             md: `calc(100dvh - ${HEADER_HEIGHT_MOBILE}px - var(--kelmah-network-banner-offset, 0px))`,
           },
           display: 'flex',

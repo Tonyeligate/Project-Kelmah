@@ -8,6 +8,7 @@ const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 
 let connectPromise = null;
+let hasConnectedOnce = false;
 const DEFAULT_READY_TIMEOUT_MS = Number(process.env.DB_READY_TIMEOUT_MS || 15000);
 
 /**
@@ -120,6 +121,7 @@ const connectDB = async () => {
 
     const conn = await Promise.race([connectPromise, connectionTimeout]);
     connectPromise = null;
+    hasConnectedOnce = true;
 
     // Handle connection events for ongoing management
     mongoose.connection.on('error', (error) => {
@@ -170,11 +172,14 @@ const connectDB = async () => {
     console.error('END OF ERROR REPORT');
     console.error('='.repeat(80));
 
-    // In production, we should exit if database connection fails
-    if (process.env.NODE_ENV === 'production') {
+    // In production, fail fast only before first successful DB connection.
+    // After startup, transient outages should not kill the running service.
+    if (process.env.NODE_ENV === 'production' && !hasConnectedOnce) {
       console.error('🚨 Production environment requires database connection');
       console.error('🚨 Service will exit in 5 seconds...');
       setTimeout(() => process.exit(1), 5000);
+    } else if (process.env.NODE_ENV === 'production') {
+        console.error('⚠️ Runtime MongoDB reconnect attempt failed; service will stay online and retry on next request.');
     }
 
     throw error;

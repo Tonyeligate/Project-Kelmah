@@ -23,11 +23,13 @@ import PropTypes from 'prop-types';
 import {
   Close as CloseIcon,
   Home as HomeIcon,
+  AdminPanelSettings as AdminPanelSettingsIcon,
   SupportAgent as SupportIcon,
   Work as WorkIcon,
   Search as SearchIcon,
   Message as MessageIcon,
   Notifications as NotificationsIcon,
+  Payments as PaymentsIcon,
   Person as PersonIcon,
   Settings as SettingsIcon,
   ExitToApp as LogoutIcon,
@@ -127,9 +129,10 @@ const MobileNav = ({ open, onClose }) => {
 
   const showUserMenu = canShowUserFeatures;
   const showAuthButtons = shouldShowAuthButtons;
-  const userRole = user?.role || 'user';
-  const isWorker = userRole === 'worker';
-  const isHirer = userRole === 'hirer';
+  const roleIdentity = user?.role || user?.userType || user?.userRole || 'user';
+  const isWorker = roleIdentity === 'worker';
+  const isHirer = roleIdentity === 'hirer';
+  const isAdmin = roleIdentity === 'admin' || roleIdentity === 'super_admin';
   const isOnAuthPage =
     location.pathname.includes('/login') ||
     location.pathname.includes('/register') ||
@@ -207,9 +210,10 @@ const MobileNav = ({ open, onClose }) => {
   }, [showAuthButtons, isOnAuthPage, isLoginPage, isRegisterPage]);
 
   const formatRoleLabel = () => {
+    if (isAdmin) return 'Administrator';
     if (isWorker) return 'Skilled Worker';
     if (isHirer) return 'Hirer';
-    const label = user?.roleDisplay || userRole;
+    const label = user?.roleDisplay || roleIdentity;
     if (!label) {
       return 'Member';
     }
@@ -268,7 +272,31 @@ const MobileNav = ({ open, onClose }) => {
     const baseItems = [];
 
     if (showUserMenu) {
-      if (isHirer) {
+      if (isAdmin) {
+        baseItems.push(
+          {
+            label: 'Admin Home',
+            icon: <DashboardIcon />,
+            path: '/admin/skills-management',
+          },
+          {
+            label: 'Skills Management',
+            icon: <AdminPanelSettingsIcon />,
+            path: '/admin/skills-management',
+          },
+          {
+            label: 'Payout Queue',
+            icon: <PaymentsIcon />,
+            path: '/admin/payouts',
+          },
+          {
+            label: 'Notifications',
+            icon: <NotificationsIcon />,
+            path: '/notifications',
+          },
+          { label: 'Settings', icon: <SettingsIcon />, path: '/settings' },
+        );
+      } else if (isHirer) {
         baseItems.push(
           {
             label: 'My Job Posts',
@@ -322,7 +350,7 @@ const MobileNav = ({ open, onClose }) => {
     }
 
     return baseItems;
-  }, [showUserMenu, isHirer, isWorker, unreadCount]);
+  }, [showUserMenu, isAdmin, isHirer, isWorker]);
 
   return (
     <StyledDrawer

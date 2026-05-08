@@ -10,6 +10,8 @@ function parseArgs(argv) {
     requireSkillEvidence: true,
     minActivatedEliteTools: 10,
     minImmersiveCoveragePct: 90,
+    minRuntimeCoveragePct: 100,
+    minRuntimeCalls: 1,
     strict: false,
   };
 
@@ -28,6 +30,12 @@ function parseArgs(argv) {
       i += 1;
     } else if (token === '--min-immersive-coverage-pct') {
       parsed.minImmersiveCoveragePct = Number(argv[i + 1] || parsed.minImmersiveCoveragePct);
+      i += 1;
+    } else if (token === '--min-runtime-coverage-pct') {
+      parsed.minRuntimeCoveragePct = Number(argv[i + 1] || parsed.minRuntimeCoveragePct);
+      i += 1;
+    } else if (token === '--min-runtime-calls') {
+      parsed.minRuntimeCalls = Number(argv[i + 1] || parsed.minRuntimeCalls);
       i += 1;
     } else if (token === '--strict') {
       parsed.strict = true;
@@ -98,6 +106,28 @@ function main() {
         errors.push(`${taskId}: activatedEliteToolsCount (${task.activatedEliteToolsCount || 0}) is below minimum required (${args.minActivatedEliteTools})`);
       }
 
+      if (task.runtimeTelemetryEnforced === true) {
+        if (task.hasRuntimeTelemetry !== true) {
+          errors.push(`${taskId}: hasRuntimeTelemetry must be true`);
+        }
+
+        if ((task.executedRuntimeCallsCount || 0) < args.minRuntimeCalls) {
+          errors.push(`${taskId}: executedRuntimeCallsCount (${task.executedRuntimeCallsCount || 0}) is below minimum required (${args.minRuntimeCalls})`);
+        }
+
+        if ((task.runtimeCoveragePct || 0) < args.minRuntimeCoveragePct) {
+          errors.push(`${taskId}: runtimeCoveragePct (${task.runtimeCoveragePct || 0}) is below minimum required (${args.minRuntimeCoveragePct})`);
+        }
+
+        if ((task.runtimeMissingRequiredToolsCount || 0) > 0) {
+          errors.push(`${taskId}: runtimeMissingRequiredToolsCount must be 0`);
+        }
+
+        if (((task.quantumProviderJobsCount || 0) + (task.classicalFallbackJobsCount || 0)) !== (task.executedRuntimeCallsCount || 0)) {
+          errors.push(`${taskId}: quantumProviderJobsCount + classicalFallbackJobsCount must equal executedRuntimeCallsCount`);
+        }
+      }
+
       if (args.requireSkillEvidence) {
         if ((task.skillAcquisitionsCount || 0) < 1) {
           errors.push(`${taskId}: skillAcquisitionsCount must be >= 1`);
@@ -123,6 +153,18 @@ function main() {
   if (!Array.isArray(trends.topImmersiveGaps) || trends.topImmersiveGaps.length === 0) {
     errors.push('topImmersiveGaps trend must be non-empty');
   }
+  const runtimeTelemetryEnforcedTaskCount = typeof summary.runtimeTelemetryEnforcedTaskCount === 'number'
+    ? summary.runtimeTelemetryEnforcedTaskCount
+    : 0;
+
+  if (runtimeTelemetryEnforcedTaskCount > 0) {
+    if (!Array.isArray(trends.topRuntimeOperations) || trends.topRuntimeOperations.length === 0) {
+      errors.push('topRuntimeOperations trend must be non-empty');
+    }
+    if (!Array.isArray(trends.topRuntimeProviders) || trends.topRuntimeProviders.length === 0) {
+      errors.push('topRuntimeProviders trend must be non-empty');
+    }
+  }
   if (args.requireSkillEvidence) {
     if (!Array.isArray(trends.topSkillAcquisitions) || trends.topSkillAcquisitions.length === 0) {
       errors.push('topSkillAcquisitions trend must be non-empty');
@@ -131,6 +173,22 @@ function main() {
 
   if (typeof summary.immersiveTaskCount !== 'number') {
     errors.push('immersiveTaskCount must be a number');
+  }
+
+  if (typeof summary.totalRuntimeCalls !== 'number' || summary.totalRuntimeCalls < 0) {
+    errors.push('totalRuntimeCalls must be a non-negative number');
+  }
+
+  if (typeof summary.runtimeTelemetryEnforcedTaskCount !== 'number' || summary.runtimeTelemetryEnforcedTaskCount < 0) {
+    errors.push('runtimeTelemetryEnforcedTaskCount must be a non-negative number');
+  }
+
+  if (typeof summary.totalQuantumProviderJobs !== 'number' || summary.totalQuantumProviderJobs < 0) {
+    errors.push('totalQuantumProviderJobs must be a non-negative number');
+  }
+
+  if (typeof summary.totalClassicalFallbackJobs !== 'number' || summary.totalClassicalFallbackJobs < 0) {
+    errors.push('totalClassicalFallbackJobs must be a non-negative number');
   }
 
   if (typeof summary.immersiveCoveragePct !== 'number' && summary.immersiveCoveragePct !== null) {

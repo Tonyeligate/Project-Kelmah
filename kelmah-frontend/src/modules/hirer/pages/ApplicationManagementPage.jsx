@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
   Container,
   Paper,
@@ -47,8 +47,9 @@ import {
 import { formatDistanceToNow } from 'date-fns';
 import { Helmet } from 'react-helmet-async';
 import { hirerService } from '../services/hirerService';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams, useLocation } from 'react-router-dom';
 import { messagingService } from '../../messaging/services/messagingService';
+import { contractService } from '@/modules/contracts/services/contractService';
 import { useSnackbar } from 'notistack';
 import {
   devError as logDevError,
@@ -170,13 +171,111 @@ const normalizeApplicationsStatusTab = (value, { allowAll = false } = {}) => {
   return normalizeApplicationsTab(value);
 };
 
+const isMeaningfulJobTitle = (value) => {
+  const normalizedValue =
+    typeof value === 'string' ? value.trim() : '';
+  return Boolean(normalizedValue) && normalizedValue.toLowerCase() !== 'unknown job';
+};
+
+const resolveScopedJobTitle = (applications, fallbackTitle) => {
+  if (isMeaningfulJobTitle(fallbackTitle)) {
+    return String(fallbackTitle).trim();
+  }
+
+  const titleFromApplications = (Array.isArray(applications) ? applications : [])
+    .map((application) => application?.jobTitle || application?.job?.title)
+    .find((title) => isMeaningfulJobTitle(title));
+
+  return isMeaningfulJobTitle(titleFromApplications)
+    ? String(titleFromApplications).trim()
+    : '';
+};
+
+const buildScopedJobFallbackLabel = (jobId) => {
+  if (!jobId) {
+    return 'This job';
+  }
+
+  return `Job #${String(jobId).slice(-8)}`;
+};
+
+const formatScopedJobReference = (jobId) => {
+  if (!jobId) {
+    return '';
+  }
+
+  const normalizedValue = String(jobId);
+  if (normalizedValue.length <= 10) {
+    return normalizedValue;
+  }
+
+  return `${normalizedValue.slice(0, 4)}...${normalizedValue.slice(-4)}`;
+};
+
+const normalizeLookupId = (value) => {
+  if (value === null || value === undefined) {
+    return '';
+  }
+
+  const normalized = String(value).trim();
+  return normalized.length > 0 ? normalized : '';
+};
+
+const resolveEntityId = (entity) => {
+  if (entity === null || entity === undefined) {
+    return '';
+  }
+
+  if (typeof entity === 'string' || typeof entity === 'number') {
+    return normalizeLookupId(entity);
+  }
+
+  if (typeof entity === 'object') {
+    return normalizeLookupId(entity.id || entity._id);
+  }
+
+  return '';
+};
+
+const resolveApplicationJobId = (application) =>
+  resolveEntityId(application?.jobId ?? application?.job);
+
+const resolveApplicationWorkerId = (application) =>
+  resolveEntityId(application?.workerId ?? application?.worker);
+
+const resolveContractJobId = (contract) =>
+  resolveEntityId(contract?.jobId ?? contract?.job);
+
+const resolveContractWorkerId = (contract) =>
+  resolveEntityId(contract?.workerId ?? contract?.worker);
+
+const buildDraftContractCueLabel = (application) => {
+  const workerName = String(application?.workerName || '').trim();
+  const jobTitle = String(application?.jobTitle || '').trim();
+
+  if (workerName && jobTitle) {
+    return `Draft contract ready for ${workerName} on "${jobTitle}".`;
+  }
+
+  if (workerName) {
+    return `Draft contract ready for ${workerName}.`;
+  }
+
+  if (jobTitle) {
+    return `Draft contract ready for "${jobTitle}".`;
+  }
+
+  return 'Draft contract ready for this application.';
+};
+
 function ApplicationManagementPage() {
   const theme = useTheme();
   const isMobile = useBreakpointDown('md');
   const isCompactMobile = useBreakpointDown('sm');
   const navigate = useNavigate();
+  const location = useLocation();
   const { jobId: routeJobId } = useParams();
-  const { enqueueSnackbar } = useSnackbar();
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const [searchParams, setSearchParams] = useSearchParams();
   const isJobApplicantsPage = Boolean(routeJobId);
   const defaultStatusTab = isJobApplicantsPage ? 'all' : 'pending';
@@ -194,8 +293,20 @@ function ApplicationManagementPage() {
   const urlCurrentPage = normalizeApplicationsPage(searchParams.get('page'));
   const urlPageSize = normalizeApplicationsPageSize(searchParams.get('limit'));
   const urlSortBy = normalizeApplicationsSort(searchParams.get('sort'));
+  const currentScopeJobId = routeJobId || urlJobId;
+  const routeStateJobTitle = useMemo(() => {
+    const candidateTitle =
+      typeof location?.state === 'object' && location.state
+        ? location.state.jobTitle
+        : '';
+    return isMeaningfulJobTitle(candidateTitle)
+      ? String(candidateTitle).trim()
+      : '';
+  }, [location.state]);
 
   const [jobs, setJobs] = useState([]);
+  const [scopedJobTitle, setScopedJobTitle] = useState(routeStateJobTitle);
+  const scopedJobTitleRef = useRef(routeStateJobTitle);
 
   // Flat deduplicated job list
   const dedupedJobs = useMemo(() => {
@@ -247,6 +358,17 @@ function ApplicationManagementPage() {
   const [actionType, setActionType] = useState('');
   const [macroAction, setMacroAction] = useState('');
   const [lastMacroTelemetry, setLastMacroTelemetry] = useState(null);
+
+  useEffect(() => {
+    if (!isJobApplicantsPage) {
+      scopedJobTitleRef.current = '';
+      setScopedJobTitle('');
+      return;
+    }
+
+    scopedJobTitleRef.current = routeStateJobTitle;
+    setScopedJobTitle(routeStateJobTitle);
+  }, [currentScopeJobId, isJobApplicantsPage, routeStateJobTitle]);
 
   const publishMacroTelemetry = useCallback((snapshot) => {
     if (!snapshot || typeof snapshot !== 'object') {
@@ -374,14 +496,54 @@ function ApplicationManagementPage() {
 
       try {
         if (isJobApplicantsPage) {
-          const scopeJobId = routeJobId || urlJobId;
+          const scopeJobId = currentScopeJobId;
           const rawApplications = await hirerService.getJobApplications(scopeJobId);
           if (isCancelled()) return;
+
+          let resolvedScopedJobTitle = resolveScopedJobTitle(
+            rawApplications,
+            scopedJobTitleRef.current,
+          );
+
+          if (!isMeaningfulJobTitle(resolvedScopedJobTitle) && scopeJobId) {
+            try {
+              const jobsPage = await hirerService.getJobsPage({
+                status: 'all',
+                page: 1,
+                limit: 50,
+              });
+
+              if (isCancelled()) return;
+
+              const matchingJob = (
+                Array.isArray(jobsPage?.jobs) ? jobsPage.jobs : []
+              ).find(
+                (job) => String(job?.id || job?._id) === String(scopeJobId),
+              );
+
+              if (isMeaningfulJobTitle(matchingJob?.title)) {
+                resolvedScopedJobTitle = String(matchingJob.title).trim();
+              }
+            } catch (jobTitleLookupError) {
+              logDevWarn('Scoped applicants title lookup fallback failed', {
+                scopeJobId,
+                error:
+                  jobTitleLookupError?.message || String(jobTitleLookupError),
+              });
+            }
+          }
+
+          const scopedJobTitleFallback =
+            resolvedScopedJobTitle || buildScopedJobFallbackLabel(scopeJobId);
 
           const normalizedApplications = (
             Array.isArray(rawApplications) ? rawApplications : []
           ).map((app) =>
-            normalizeApplication(app, scopeJobId, app?.jobTitle || app?.job?.title),
+            normalizeApplication(
+              app,
+              scopeJobId,
+              app?.jobTitle || app?.job?.title || scopedJobTitleFallback,
+            ),
           );
 
           const countsByStatus = {
@@ -424,6 +586,12 @@ function ApplicationManagementPage() {
             totalApplications: normalizedApplications.length,
             countsByStatus,
           });
+
+          if (scopedJobTitleRef.current !== scopedJobTitleFallback) {
+            scopedJobTitleRef.current = scopedJobTitleFallback;
+            setScopedJobTitle(scopedJobTitleFallback);
+          }
+
           setApplications(pagedApplications);
           setPagination({
             currentPage: normalizedCurrentPage,
@@ -509,12 +677,11 @@ function ApplicationManagementPage() {
     },
     [
       activeTab,
+      currentScopeJobId,
       currentPage,
       isJobApplicantsPage,
       pageSize,
-      routeJobId,
       sortBy,
-      urlJobId,
     ],
   );
 
@@ -574,6 +741,14 @@ function ApplicationManagementPage() {
   }, [filteredApps.length, pageSize, pagination.currentPage, pagination.limit]);
 
   const selectedScopeTotal = summary?.totalApplications || 0;
+  const scopedJobReference = formatScopedJobReference(currentScopeJobId);
+  const pendingTabDisabled = tabCounts.pending === 0 && activeTab !== 'pending';
+  const acceptedTabDisabled =
+    tabCounts.accepted === 0 && activeTab !== 'accepted';
+  const rejectedTabDisabled =
+    tabCounts.rejected === 0 && activeTab !== 'rejected';
+  const allTabDisabled =
+    isJobApplicantsPage && tabCounts.all === 0 && activeTab !== 'all';
 
   const hasNoStandardJobs =
     !isJobApplicantsPage && !initialLoading && allJobs.length === 0;
@@ -658,12 +833,88 @@ function ApplicationManagementPage() {
     [loadApplicationsView],
   );
 
+  const openDraftContractForApplication = useCallback(
+    async (application) => {
+      const jobId = resolveApplicationJobId(application);
+      const workerId = resolveApplicationWorkerId(application);
+      const openContractsFallback = (message) => {
+        enqueueSnackbar(message, { variant: 'warning' });
+        navigate('/contracts');
+      };
+
+      if (!jobId || !workerId) {
+        openContractsFallback(
+          'Draft contract not found yet. Opening contracts list instead.',
+        );
+        return;
+      }
+
+      try {
+        const contracts = await contractService.getContracts();
+        const match = (Array.isArray(contracts) ? contracts : []).find(
+          (contract) =>
+            resolveContractJobId(contract) === jobId &&
+            resolveContractWorkerId(contract) === workerId,
+        );
+
+        const contractId = match?.id || match?._id;
+        if (contractId) {
+          navigate(`/contracts/${contractId}`);
+          return;
+        }
+
+        openContractsFallback(
+          'Draft contract not found yet. Opening contracts list instead.',
+        );
+      } catch (lookupError) {
+        logDevWarn('[ApplicationManagementPage] draft contract lookup failed', {
+          jobId,
+          workerId,
+          error: lookupError?.message || String(lookupError),
+        });
+        openContractsFallback(
+          'Unable to load contracts right now. Opening contracts list instead.',
+        );
+      }
+    },
+    [enqueueSnackbar, navigate],
+  );
+
+  const enqueueDraftContractCue = useCallback(
+    (application, { message } = {}) => {
+      if (!application) {
+        return;
+      }
+
+      const label = message || buildDraftContractCueLabel(application);
+
+      enqueueSnackbar(label, {
+        variant: 'success',
+        action: (key) => (
+          <Button
+            color="inherit"
+            size="small"
+            startIcon={<OpenInNew fontSize="small" />}
+            onClick={() => {
+              closeSnackbar(key);
+              openDraftContractForApplication(application);
+            }}
+          >
+            Open contract
+          </Button>
+        ),
+      });
+    },
+    [closeSnackbar, enqueueSnackbar, openDraftContractForApplication],
+  );
+
   const handleStatusUpdate = useCallback(async () => {
     if (!selectedApplication) return;
     setUpdating(true);
+    const targetApplication = selectedApplication;
     try {
       await updateApplicationStatusAndRefresh({
-        application: selectedApplication,
+        application: targetApplication,
         status: actionType,
         feedbackText: feedback,
       });
@@ -671,10 +922,15 @@ function ApplicationManagementPage() {
       setFeedback('');
 
       setError(null);
-      enqueueSnackbar(
-        `Application ${actionType === 'accepted' ? 'accepted' : 'rejected'} successfully`,
-        { variant: 'success' },
-      );
+      if (actionType === 'accepted') {
+        enqueueDraftContractCue(targetApplication, {
+          message: 'Application accepted successfully. Draft contract ready.',
+        });
+      } else {
+        enqueueSnackbar('Application rejected successfully', {
+          variant: 'success',
+        });
+      }
     } catch {
       setError('Failed to update application status.');
       enqueueSnackbar('Failed to update application status', {
@@ -685,6 +941,7 @@ function ApplicationManagementPage() {
     }
   }, [
     actionType,
+    enqueueDraftContractCue,
     enqueueSnackbar,
     feedback,
     selectedApplication,
@@ -797,6 +1054,8 @@ function ApplicationManagementPage() {
 
     setMacroAction('accept-message');
     const targetApplication = selectedApplication;
+    const wasAlreadyAccepted = targetApplication.status === 'accepted';
+    let acceptedNow = false;
     const telemetry = {
       macro: 'accept+message',
       applicationId: targetApplication?.id,
@@ -817,12 +1076,17 @@ function ApplicationManagementPage() {
         status: 'running',
       });
 
-      if (targetApplication.status !== 'accepted') {
+      if (!wasAlreadyAccepted) {
         await updateApplicationStatusAndRefresh({
           application: targetApplication,
           status: 'accepted',
           feedbackText: QUICK_ACCEPT_FEEDBACK_TEMPLATE,
         });
+        acceptedNow = true;
+      }
+
+      if (wasAlreadyAccepted || acceptedNow) {
+        enqueueDraftContractCue(targetApplication);
       }
 
       telemetry.attempts += 1;
@@ -962,6 +1226,7 @@ function ApplicationManagementPage() {
     }
   }, [
     enqueueSnackbar,
+    enqueueDraftContractCue,
     filteredApps,
     publishMacroTelemetry,
     selectedApplication,
@@ -1188,6 +1453,40 @@ function ApplicationManagementPage() {
                   Newest applicants appear first for this job-specific review queue.
                 </Typography>
               )}
+              {isJobApplicantsPage && (
+                <Box
+                  sx={{
+                    mt: 0.75,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 0.65,
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  <Chip
+                    size="small"
+                    color="primary"
+                    variant="outlined"
+                    icon={<Work sx={{ fontSize: 16 }} />}
+                    label={`Reviewing: ${scopedJobTitle || buildScopedJobFallbackLabel(currentScopeJobId)}`}
+                    sx={{
+                      maxWidth: { xs: '100%', sm: 460 },
+                      '& .MuiChip-label': {
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      },
+                    }}
+                  />
+                  {scopedJobReference && (
+                    <Chip
+                      size="small"
+                      variant="outlined"
+                      label={`Ref ${scopedJobReference}`}
+                    />
+                  )}
+                </Box>
+              )}
               {biddingJobsCount > 0 && (
                 <Typography
                   variant="body2"
@@ -1208,14 +1507,46 @@ function ApplicationManagementPage() {
                 {isJobApplicantsPage ? 'for this job.' : 'in this update queue.'}
               </Typography>
             </Box>
-            {!isMobile && selectedApplication && (
-              <Chip
-                size="small"
-                variant="outlined"
-                label={`Reviewing ${selectedApplication.workerName || 'application'}`}
-                sx={{ alignSelf: 'center' }}
-              />
-            )}
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'flex-end',
+                gap: 0.75,
+                flexWrap: 'wrap',
+              }}
+            >
+              {isJobApplicantsPage && (
+                <Button
+                  size="small"
+                  variant="text"
+                  startIcon={<ArrowBack fontSize="small" />}
+                  onClick={() => navigate('/hirer/jobs')}
+                  sx={{ minHeight: TOUCH_TARGET_MIN }}
+                >
+                  Back to My Jobs
+                </Button>
+              )}
+              {isJobApplicantsPage && currentScopeJobId && (
+                <Button
+                  size="small"
+                  variant="outlined"
+                  startIcon={<OpenInNew fontSize="small" />}
+                  onClick={() => navigate(`/jobs/${currentScopeJobId}`)}
+                  sx={{ minHeight: TOUCH_TARGET_MIN }}
+                >
+                  View Job Post
+                </Button>
+              )}
+              {!isMobile && selectedApplication && (
+                <Chip
+                  size="small"
+                  variant="outlined"
+                  label={`Reviewing ${selectedApplication.workerName || 'application'}`}
+                  sx={{ alignSelf: 'center' }}
+                />
+              )}
+            </Box>
           </Box>
         </Box>
 
@@ -1248,9 +1579,7 @@ function ApplicationManagementPage() {
                 alignItems: 'center',
                 gap: 0.75,
                 flexWrap: 'wrap',
-                overflowX: { xs: 'auto', sm: 'visible' },
-                pb: { xs: 0.35, sm: 0 },
-                width: { xs: '100%', sm: 'auto' },
+                width: '100%',
               }}
             >
               <Chip
@@ -1282,12 +1611,15 @@ function ApplicationManagementPage() {
                 size="small"
                 variant="outlined"
                 label={`${triageSummary.ratedProfiles} rated profiles`}
+                sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
               />
-              <Chip
-                size="small"
-                variant="outlined"
-                label={`${triageSummary.recent48h} new in 48h`}
-              />
+              {triageSummary.recent48h > 0 && (
+                <Chip
+                  size="small"
+                  variant="outlined"
+                  label={`${triageSummary.recent48h} new in 48h`}
+                />
+              )}
               {macroTelemetryBadgeMeta && (
                 <Tooltip title={macroTelemetryBadgeMeta.tooltip}>
                   <Chip
@@ -1389,6 +1721,10 @@ function ApplicationManagementPage() {
                           size="small"
                           onClick={() => setSearchQuery('')}
                           aria-label="Clear applications search"
+                          sx={{
+                            minWidth: TOUCH_TARGET_MIN,
+                            minHeight: TOUCH_TARGET_MIN,
+                          }}
                         >
                           <Close fontSize="small" />
                         </IconButton>
@@ -1422,6 +1758,7 @@ function ApplicationManagementPage() {
                       variant={activeTab === 'all' ? 'filled' : 'outlined'}
                       label={`All (${tabCounts.all})`}
                       onClick={() => handleStatusFilterChange('all')}
+                      disabled={allTabDisabled}
                       sx={{
                         minHeight: TOUCH_TARGET_MIN,
                         '& .MuiChip-label': { px: 1.1 },
@@ -1434,6 +1771,7 @@ function ApplicationManagementPage() {
                     variant={activeTab === 'pending' ? 'filled' : 'outlined'}
                     label={`Pending (${tabCounts.pending})`}
                     onClick={() => handleStatusFilterChange('pending')}
+                    disabled={pendingTabDisabled}
                     sx={{
                       minHeight: TOUCH_TARGET_MIN,
                       '& .MuiChip-label': { px: 1.1 },
@@ -1445,6 +1783,7 @@ function ApplicationManagementPage() {
                     variant={activeTab === 'accepted' ? 'filled' : 'outlined'}
                     label={`Accepted (${tabCounts.accepted})`}
                     onClick={() => handleStatusFilterChange('accepted')}
+                    disabled={acceptedTabDisabled}
                     sx={{
                       minHeight: TOUCH_TARGET_MIN,
                       '& .MuiChip-label': { px: 1.1 },
@@ -1456,6 +1795,7 @@ function ApplicationManagementPage() {
                     variant={activeTab === 'rejected' ? 'filled' : 'outlined'}
                     label={`Rejected (${tabCounts.rejected})`}
                     onClick={() => handleStatusFilterChange('rejected')}
+                    disabled={rejectedTabDisabled}
                     sx={{
                       minHeight: TOUCH_TARGET_MIN,
                       '& .MuiChip-label': { px: 1.1 },
@@ -1845,7 +2185,7 @@ function ApplicationManagementPage() {
                 fullWidth
                 size="small"
                 variant="text"
-                sx={{ minHeight: 34 }}
+                sx={{ minHeight: TOUCH_TARGET_MIN }}
                 onClick={() => handleOpenReviewDialog('rejected')}
                 disabled={
                   macroInProgress || selectedApplication.status === 'rejected'
@@ -2745,7 +3085,7 @@ function EmptyAppsPanel({
             variant="text"
             size="small"
             onClick={() => navigate('/hirer/find-talents')}
-            sx={{ minHeight: 36, textTransform: 'none' }}
+            sx={{ minHeight: 44, textTransform: 'none' }}
           >
             Or browse available talent
           </Button>

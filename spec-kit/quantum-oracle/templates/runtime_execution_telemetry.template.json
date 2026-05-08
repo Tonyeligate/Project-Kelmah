@@ -1,0 +1,39 @@
+{
+  "taskId": "<task-id>",
+  "timestampUtc": "",
+  "closureVerdict": "PASS",
+  "capabilityRegistry": {
+    "schemaVersion": "1.0.0",
+    "generatedAtUtc": "",
+    "path": "spec-kit/quantum-runtime/capability-registry.json"
+  },
+  "requiredHardTelemetryFields": [
+    "toolName",
+    "operation",
+    "backendCall",
+    "provider",
+    "providerJobId",
+    "executionPath",
+    "circuitDepth",
+    "shots",
+    "fidelity",
+    "errorRate",
+    "costUsd",
+    "latencyMs",
+    "startedAtUtc",
+    "finishedAtUtc"
+  ],
+  "runtimeExecution": {
+    "requiredRuntimeTools": [],
+    "requiredRuntimeToolsCount": 0,
+    "executedRuntimeCallsCount": 0,
+    "uniqueExecutedToolsCount": 0,
+    "runtimeCoveragePct": 0,
+    "missingRequiredTools": [],
+    "quantumProviderJobsCount": 0,
+    "classicalFallbackJobsCount": 0,
+    "providerUsage": [],
+    "executedOperations": [],
+    "telemetryRecords": []
+  }
+}

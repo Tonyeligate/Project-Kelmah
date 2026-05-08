@@ -162,6 +162,26 @@ function main() {
   console.log(`Changed files detected: ${changedFiles.length}`);
   console.log(`Oracle bundles detected: ${bundleIds.length ? bundleIds.join(', ') : 'none'}`);
 
+  const capabilityRegistryCheck = runChecked(
+    'node spec-kit/quantum-runtime/sync-capability-registry.js --check',
+    'check capability registry freshness',
+  );
+  if (!capabilityRegistryCheck.ok) {
+    errors.push('capability registry freshness check failed');
+  }
+
+  // Materialize telemetry first so downstream learning/intelligence checks
+  // evaluate current runtime evidence instead of stale bundle snapshots.
+  bundleIds.forEach((taskId) => {
+    const telemetryMaterialization = runChecked(
+      `node spec-kit/quantum-runtime/materialize-runtime-telemetry.js --task-id ${taskId}`,
+      `materialize runtime telemetry for ${taskId}`,
+    );
+    if (!telemetryMaterialization.ok) {
+      errors.push(`runtime telemetry materialization failed for ${taskId}`);
+    }
+  });
+
   const learningResult = runChecked('node spec-kit/quantum-oracle/aggregate-learning-ledger.js', 'aggregate learning ledger');
   if (!learningResult.ok) {
     errors.push('learning ledger aggregation failed');

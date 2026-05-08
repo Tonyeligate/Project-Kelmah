@@ -55,7 +55,7 @@ function main() {
     });
 
     report.agents.forEach((a) => {
-      ['growthVelocity', 'transferSuccess', 'regressionPreventionStrength', 'gateMaturity', 'toolchainDepth', 'overallScore'].forEach((k) => {
+      ['growthVelocity', 'transferSuccess', 'regressionPreventionStrength', 'gateMaturity', 'toolchainDepth', 'runtimeCoverage', 'runtimeExecutionEvidence', 'runtimeDepth', 'quantumProviderUtilization', 'overallScore'].forEach((k) => {
         if (typeof a[k] !== 'number' || Number.isNaN(a[k])) {
           errors.push(`agent ${a.agent}: ${k} must be numeric`);
         }
@@ -70,6 +70,12 @@ function main() {
   if (!(report.immersiveReadinessGlobal === null || (typeof report.immersiveReadinessGlobal === 'number' && !Number.isNaN(report.immersiveReadinessGlobal)))) {
     errors.push('immersiveReadinessGlobal must be numeric or null');
   }
+
+  ['totalRuntimeCalls', 'totalQuantumProviderJobs', 'totalClassicalFallbackJobs'].forEach((field) => {
+    if (typeof report[field] !== 'number' || Number.isNaN(report[field]) || report[field] < 0) {
+      errors.push(`${field} must be a non-negative number`);
+    }
+  });
 
   if (!report.topAgent || typeof report.topAgent.overallScore !== 'number') {
     errors.push('topAgent with numeric overallScore is required');

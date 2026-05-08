@@ -75,6 +75,8 @@ function main() {
   const recurringPolicyAdjustments = new Map();
   const recurringSkillAcquisitions = new Map();
   const recurringSkillSources = new Map();
+  const recurringRuntimeOperations = new Map();
+  const recurringRuntimeProviders = new Map();
   const immersiveGapCounters = new Map([
     ['three_d_hd_design_report.json', 0],
     ['three_d_hd_render_budget.json', 0],
@@ -85,18 +87,72 @@ function main() {
   const advancedMissingLearningEvidence = [];
   let immersiveTaskCount = 0;
   let immersiveCompleteCount = 0;
+  let totalRuntimeCalls = 0;
+  let totalQuantumProviderJobs = 0;
+  let totalClassicalFallbackJobs = 0;
 
   taskDirs.forEach((taskId) => {
     const dir = path.join(root, taskId);
     const closure = readJson(path.join(dir, 'closure_oracle.json'));
     const learning = readJson(path.join(dir, 'learning_update.json'));
     const field = readJson(path.join(dir, 'field_experience_report.json'));
+    const runtimeTelemetry = readJson(path.join(dir, 'runtime_execution_telemetry.json'));
+
+    const runtimeExecution = runtimeTelemetry && runtimeTelemetry.runtimeExecution && typeof runtimeTelemetry.runtimeExecution === 'object'
+      ? runtimeTelemetry.runtimeExecution
+      : null;
+
+    const executedRuntimeCallsCount = runtimeExecution && typeof runtimeExecution.executedRuntimeCallsCount === 'number'
+      ? runtimeExecution.executedRuntimeCallsCount
+      : 0;
+    const uniqueExecutedToolsCount = runtimeExecution && typeof runtimeExecution.uniqueExecutedToolsCount === 'number'
+      ? runtimeExecution.uniqueExecutedToolsCount
+      : 0;
+    const requiredRuntimeToolsCount = runtimeExecution && typeof runtimeExecution.requiredRuntimeToolsCount === 'number'
+      ? runtimeExecution.requiredRuntimeToolsCount
+      : 0;
+    const runtimeCoveragePct = runtimeExecution && typeof runtimeExecution.runtimeCoveragePct === 'number'
+      ? runtimeExecution.runtimeCoveragePct
+      : 0;
+    const quantumProviderJobsCount = runtimeExecution && typeof runtimeExecution.quantumProviderJobsCount === 'number'
+      ? runtimeExecution.quantumProviderJobsCount
+      : 0;
+    const classicalFallbackJobsCount = runtimeExecution && typeof runtimeExecution.classicalFallbackJobsCount === 'number'
+      ? runtimeExecution.classicalFallbackJobsCount
+      : 0;
+    const runtimeMissingRequiredTools = runtimeExecution && Array.isArray(runtimeExecution.missingRequiredTools)
+      ? runtimeExecution.missingRequiredTools
+      : [];
+    const telemetryRecords = runtimeExecution && Array.isArray(runtimeExecution.telemetryRecords)
+      ? runtimeExecution.telemetryRecords
+      : [];
+
+    totalRuntimeCalls += executedRuntimeCallsCount;
+    totalQuantumProviderJobs += quantumProviderJobsCount;
+    totalClassicalFallbackJobs += classicalFallbackJobsCount;
+
+    telemetryRecords.forEach((record) => {
+      const operation = normalizeFact(record && record.operation);
+      if (operation) {
+        recurringRuntimeOperations.set(operation, (recurringRuntimeOperations.get(operation) || 0) + 1);
+      }
+
+      const provider = normalizeFact(record && record.provider);
+      if (provider) {
+        recurringRuntimeProviders.set(provider, (recurringRuntimeProviders.get(provider) || 0) + 1);
+      }
+    });
 
     const requiresLearning = !!(closure && closure.requiresLearningOracle === true);
     const taskType = closure && closure.taskType ? closure.taskType : 'unknown';
     const activatedEliteToolsCount = Array.isArray(closure && closure.activatedEliteTools)
       ? closure.activatedEliteTools.length
       : 0;
+    const runtimeTelemetryEnforced = !!(
+      closure
+      && typeof closure.runtimeExecutionEvidenceFile === 'string'
+      && Array.isArray(closure.requiredHardTelemetryFields)
+    );
 
     const isImmersiveTask = new Set(['ui-optimization', 'adaptive-interface', 'design-flow-optimization']).has(taskType);
     const hasThreeDHDDesignReport = exists(path.join(dir, 'three_d_hd_design_report.json'));
@@ -118,10 +174,6 @@ function main() {
 
     if (requiresLearning && (!learning || !field)) {
       advancedMissingLearningEvidence.push(taskId);
-    }
-
-    if (!learning && !field) {
-      return;
     }
 
     const mistakesObserved = Array.isArray(learning && learning.mistakesObserved) ? learning.mistakesObserved : [];
@@ -170,6 +222,15 @@ function main() {
       taskType,
       requiresLearningOracle: requiresLearning,
       activatedEliteToolsCount,
+      runtimeTelemetryEnforced,
+      hasRuntimeTelemetry: !!runtimeTelemetry,
+      executedRuntimeCallsCount,
+      uniqueExecutedToolsCount,
+      requiredRuntimeToolsCount,
+      runtimeCoveragePct,
+      quantumProviderJobsCount,
+      classicalFallbackJobsCount,
+      runtimeMissingRequiredToolsCount: runtimeMissingRequiredTools.length,
       mistakesCount: mistakesObserved.length,
       preventiveRulesCount: preventiveRulesAdded.length,
       oracleImprovementsCount: testOrOracleImprovements.length,
@@ -195,6 +256,11 @@ function main() {
     taskDirectoryCount: taskDirs.length,
     learningEnabledTaskCount: tasks.filter((t) => t.requiresLearningOracle).length,
     learningArtifactTaskCount: tasks.length,
+    runtimeExecutionTaskCount: tasks.filter((t) => t.executedRuntimeCallsCount > 0).length,
+    runtimeTelemetryEnforcedTaskCount: tasks.filter((t) => t.runtimeTelemetryEnforced === true).length,
+    totalRuntimeCalls,
+    totalQuantumProviderJobs,
+    totalClassicalFallbackJobs,
     immersiveTaskCount,
     immersiveCompleteCount,
     immersiveCoveragePct: immersiveTaskCount > 0
@@ -208,6 +274,8 @@ function main() {
       topPolicyAdjustments: toTopList(recurringPolicyAdjustments, 15),
       topSkillAcquisitions: toTopList(recurringSkillAcquisitions, 15),
       topSkillSources: toTopList(recurringSkillSources, 15),
+      topRuntimeOperations: toTopList(recurringRuntimeOperations, 20),
+      topRuntimeProviders: toTopList(recurringRuntimeProviders, 10),
       topImmersiveGaps: toTopList(immersiveGapCounters, 10),
     },
     tasks,

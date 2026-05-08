@@ -6,6 +6,11 @@ Root-level admin directory for platform administration tooling, scripts, and con
 
 ```
 admin/
+├── src/               # Standalone admin portal (React + Vite)
+├── index.html         # Admin portal entry HTML
+├── package.json       # Admin portal dependencies and scripts
+├── vite.config.js     # Admin portal Vite config
+├── .env.example       # Admin portal environment variables
 ├── scripts/           # Admin utility scripts (bulk operations, data migrations, etc.)
 ├── config/            # Admin-specific configuration
 ├── docs/              # Admin documentation and runbooks
@@ -35,7 +40,26 @@ used by platform operators.
 | Payment | `/api/payments/admin/payouts/process` | POST | Process payout batch |
 | Payment | `/api/payments/analytics/revenue` | GET | Revenue analytics |
 
-## Frontend Admin Module
+## Admin Portal (Standalone)
 
-The frontend admin UI lives at `kelmah-frontend/src/modules/admin/` and consumes
-the above endpoints via `adminService.js`.
+All new admin portal code is now maintained in this directory under `admin/src`.
+
+Run locally:
+
+```bash
+cd admin
+npm install
+npm run dev
+```
+
+Build for production:
+
+```bash
+cd admin
+npm run build
+```
+
+Environment variables:
+
+- `VITE_API_BASE_URL` (default: `http://localhost:5000/api`)
+- `VITE_GATEWAY_URL` (default: `http://localhost:5000`)

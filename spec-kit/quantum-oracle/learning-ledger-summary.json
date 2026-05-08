@@ -1,9 +1,14 @@
 {
-  "generatedAtUtc": "2026-04-01T18:15:51.034Z",
+  "generatedAtUtc": "2026-04-16T17:53:31.285Z",
   "rootDir": "C:\\Users\\OS\\Desktop\\Project-Kelmah-main\\spec-kit\\quantum-oracle",
   "taskDirectoryCount": 4,
   "learningEnabledTaskCount": 3,
-  "learningArtifactTaskCount": 3,
+  "learningArtifactTaskCount": 4,
+  "runtimeExecutionTaskCount": 1,
+  "runtimeTelemetryEnforcedTaskCount": 1,
+  "totalRuntimeCalls": 16,
+  "totalQuantumProviderJobs": 0,
+  "totalClassicalFallbackJobs": 16,
   "immersiveTaskCount": 2,
   "immersiveCompleteCount": 2,
   "immersiveCoveragePct": 100,
@@ -105,6 +110,26 @@
         "count": 1
       }
     ],
+    "topRuntimeOperations": [
+      {
+        "item": "classical-orchestration",
+        "count": 13
+      },
+      {
+        "item": "apply-gate-circuit",
+        "count": 2
+      },
+      {
+        "item": "hybrid-quantum-workflow",
+        "count": 1
+      }
+    ],
+    "topRuntimeProviders": [
+      {
+        "item": "classical-simulator",
+        "count": 16
+      }
+    ],
     "topImmersiveGaps": [
       {
         "item": "three_d_hd_design_report.json",
@@ -126,6 +151,15 @@
       "taskType": "backend-optimization",
       "requiresLearningOracle": true,
       "activatedEliteToolsCount": 16,
+      "runtimeTelemetryEnforced": true,
+      "hasRuntimeTelemetry": true,
+      "executedRuntimeCallsCount": 16,
+      "uniqueExecutedToolsCount": 16,
+      "requiredRuntimeToolsCount": 16,
+      "runtimeCoveragePct": 100,
+      "quantumProviderJobsCount": 0,
+      "classicalFallbackJobsCount": 16,
+      "runtimeMissingRequiredToolsCount": 0,
       "mistakesCount": 1,
       "preventiveRulesCount": 1,
       "oracleImprovementsCount": 1,
@@ -148,6 +182,15 @@
       "taskType": "adaptive-interface",
       "requiresLearningOracle": true,
       "activatedEliteToolsCount": 19,
+      "runtimeTelemetryEnforced": false,
+      "hasRuntimeTelemetry": false,
+      "executedRuntimeCallsCount": 0,
+      "uniqueExecutedToolsCount": 0,
+      "requiredRuntimeToolsCount": 0,
+      "runtimeCoveragePct": 0,
+      "quantumProviderJobsCount": 0,
+      "classicalFallbackJobsCount": 0,
+      "runtimeMissingRequiredToolsCount": 0,
       "mistakesCount": 1,
       "preventiveRulesCount": 1,
       "oracleImprovementsCount": 1,
@@ -166,10 +209,50 @@
       "hasFieldExperience": true
     },
     {
+      "taskId": "demo-task",
+      "taskType": "visible-ui-bug",
+      "requiresLearningOracle": false,
+      "activatedEliteToolsCount": 14,
+      "runtimeTelemetryEnforced": false,
+      "hasRuntimeTelemetry": false,
+      "executedRuntimeCallsCount": 0,
+      "uniqueExecutedToolsCount": 0,
+      "requiredRuntimeToolsCount": 0,
+      "runtimeCoveragePct": 0,
+      "quantumProviderJobsCount": 0,
+      "classicalFallbackJobsCount": 0,
+      "runtimeMissingRequiredToolsCount": 0,
+      "mistakesCount": 0,
+      "preventiveRulesCount": 0,
+      "oracleImprovementsCount": 0,
+      "realWorldSignalsCount": 0,
+      "userPainPointsCount": 0,
+      "policyAdjustmentsCount": 0,
+      "skillAcquisitionsCount": 0,
+      "skillSourcesCount": 0,
+      "skillTransferEvidenceCount": 0,
+      "immersiveEvidenceCount": 0,
+      "immersiveEvidenceComplete": false,
+      "hasThreeDHDDesignReport": false,
+      "hasThreeDHDRenderBudget": false,
+      "hasImmersiveInteractionMap": false,
+      "hasLearningUpdate": false,
+      "hasFieldExperience": false
+    },
+    {
       "taskId": "optimization-demo-task",
       "taskType": "ui-optimization",
       "requiresLearningOracle": true,
       "activatedEliteToolsCount": 19,
+      "runtimeTelemetryEnforced": false,
+      "hasRuntimeTelemetry": false,
+      "executedRuntimeCallsCount": 0,
+      "uniqueExecutedToolsCount": 0,
+      "requiredRuntimeToolsCount": 0,
+      "runtimeCoveragePct": 0,
+      "quantumProviderJobsCount": 0,
+      "classicalFallbackJobsCount": 0,
+      "runtimeMissingRequiredToolsCount": 0,
       "mistakesCount": 1,
       "preventiveRulesCount": 1,
       "oracleImprovementsCount": 1,

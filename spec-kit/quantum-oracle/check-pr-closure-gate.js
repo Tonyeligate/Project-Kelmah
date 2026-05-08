@@ -197,6 +197,28 @@ function runStrictBundleCheck(taskId) {
   }
 }
 
+function runCapabilityRegistryCheck() {
+  try {
+    run('node spec-kit/quantum-runtime/sync-capability-registry.js --check');
+    return { ok: true, output: '' };
+  } catch (err) {
+    const stdout = err && err.stdout ? String(err.stdout) : '';
+    const stderr = err && err.stderr ? String(err.stderr) : '';
+    return { ok: false, output: `${stdout}\n${stderr}`.trim() };
+  }
+}
+
+function runRuntimeTelemetryMaterialization(taskId) {
+  try {
+    run(`node spec-kit/quantum-runtime/materialize-runtime-telemetry.js --task-id ${taskId}`);
+    return { ok: true, output: '' };
+  } catch (err) {
+    const stdout = err && err.stdout ? String(err.stdout) : '';
+    const stderr = err && err.stderr ? String(err.stderr) : '';
+    return { ok: false, output: `${stdout}\n${stderr}`.trim() };
+  }
+}
+
 function validateDebuggerEvidence(taskId) {
   const packetsPath = path.join(process.cwd(), 'spec-kit', 'quantum-oracle', taskId, 'delegation_packets.json');
   const packets = readJson(packetsPath);
@@ -308,7 +330,23 @@ function main() {
     errors.push('Advanced optimization/reliability signal detected but no changed closure_oracle.json declares required task type or oracle flags.');
   }
 
+  const capabilityRegistryCheck = runCapabilityRegistryCheck();
+  if (!capabilityRegistryCheck.ok) {
+    errors.push('Capability registry freshness check failed.');
+    if (capabilityRegistryCheck.output) {
+      errors.push(capabilityRegistryCheck.output);
+    }
+  }
+
   optimizationBundles.forEach((taskId) => {
+    const telemetryMaterialization = runRuntimeTelemetryMaterialization(taskId);
+    if (!telemetryMaterialization.ok) {
+      errors.push(`Runtime telemetry materialization failed for task '${taskId}'.`);
+      if (telemetryMaterialization.output) {
+        errors.push(telemetryMaterialization.output);
+      }
+    }
+
     const strict = runStrictBundleCheck(taskId);
     if (!strict.ok) {
       errors.push(`Strict closure check failed for task '${taskId}'.`);

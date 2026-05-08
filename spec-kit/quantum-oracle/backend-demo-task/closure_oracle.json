@@ -26,5 +26,154 @@
     "GuardrailEvolutionEngine",
     "RegressionPreventionCompiler"
   ],
-  "notes": "Backend optimization demo bundle"
+  "notes": "Backend optimization demo bundle",
+  "capabilityRegistry": {
+    "schemaVersion": "1.0.0",
+    "generatedAtUtc": "2026-04-16T17:32:56.525Z",
+    "path": "spec-kit/quantum-runtime/capability-registry.json",
+    "uniqueToolCount": 300
+  },
+  "runtimeExecutionEvidenceFile": "runtime_execution_telemetry.json",
+  "requiredHardTelemetryFields": [
+    "toolName",
+    "operation",
+    "backendCall",
+    "provider",
+    "providerJobId",
+    "executionPath",
+    "circuitDepth",
+    "shots",
+    "fidelity",
+    "errorRate",
+    "costUsd",
+    "latencyMs",
+    "startedAtUtc",
+    "finishedAtUtc"
+  ],
+  "runtimeExecutionSummary": {
+    "requiredRuntimeTools": [
+      "EvidenceArtifactCompiler",
+      "CompletionOracleChecker",
+      "CounterfactualWorldScorer",
+      "DelegationPacketBuilder",
+      "VisualOracleRunner",
+      "AdversarialSelfPlayOrchestrator",
+      "QuantumScoreboardUpdater",
+      "APITopologyOptimizer",
+      "ContractEvolutionAnalyzer",
+      "ReliabilityChaosSimulator",
+      "GatewayPolicyVerifier",
+      "QueryPerformanceEstimator",
+      "MistakePatternMiner",
+      "FieldExperienceIngestor",
+      "GuardrailEvolutionEngine",
+      "RegressionPreventionCompiler"
+    ],
+    "requiredRuntimeToolsCount": 16,
+    "requiredRuntimeCapabilities": [
+      {
+        "toolName": "EvidenceArtifactCompiler",
+        "operation": "classical-orchestration",
+        "quantumComputing": false
+      },
+      {
+        "toolName": "CompletionOracleChecker",
+        "operation": "classical-orchestration",
+        "quantumComputing": false
+      },
+      {
+        "toolName": "CounterfactualWorldScorer",
+        "operation": "classical-orchestration",
+        "quantumComputing": false
+      },
+      {
+        "toolName": "DelegationPacketBuilder",
+        "operation": "classical-orchestration",
+        "quantumComputing": false
+      },
+      {
+        "toolName": "VisualOracleRunner",
+        "operation": "classical-orchestration",
+        "quantumComputing": false
+      },
+      {
+        "toolName": "AdversarialSelfPlayOrchestrator",
+        "operation": "classical-orchestration",
+        "quantumComputing": false
+      },
+      {
+        "toolName": "QuantumScoreboardUpdater",
+        "operation": "classical-orchestration",
+        "quantumComputing": false
+      },
+      {
+        "toolName": "APITopologyOptimizer",
+        "operation": "classical-orchestration",
+        "quantumComputing": false
+      },
+      {
+        "toolName": "ContractEvolutionAnalyzer",
+        "operation": "classical-orchestration",
+        "quantumComputing": false
+      },
+      {
+        "toolName": "ReliabilityChaosSimulator",
+        "operation": "classical-orchestration",
+        "quantumComputing": false
+      },
+      {
+        "toolName": "GatewayPolicyVerifier",
+        "operation": "classical-orchestration",
+        "quantumComputing": false
+      },
+      {
+        "toolName": "QueryPerformanceEstimator",
+        "operation": "classical-orchestration",
+        "quantumComputing": false
+      },
+      {
+        "toolName": "MistakePatternMiner",
+        "operation": "classical-orchestration",
+        "quantumComputing": false
+      },
+      {
+        "toolName": "FieldExperienceIngestor",
+        "operation": "classical-orchestration",
+        "quantumComputing": false
+      },
+      {
+        "toolName": "GuardrailEvolutionEngine",
+        "operation": "classical-orchestration",
+        "quantumComputing": false
+      },
+      {
+        "toolName": "RegressionPreventionCompiler",
+        "operation": "classical-orchestration",
+        "quantumComputing": false
+      }
+    ],
+    "executedRuntimeCallsCount": 0,
+    "uniqueExecutedToolsCount": 0,
+    "runtimeCoveragePct": 0,
+    "missingRequiredTools": [
+      "EvidenceArtifactCompiler",
+      "CompletionOracleChecker",
+      "CounterfactualWorldScorer",
+      "DelegationPacketBuilder",
+      "VisualOracleRunner",
+      "AdversarialSelfPlayOrchestrator",
+      "QuantumScoreboardUpdater",
+      "APITopologyOptimizer",
+      "ContractEvolutionAnalyzer",
+      "ReliabilityChaosSimulator",
+      "GatewayPolicyVerifier",
+      "QueryPerformanceEstimator",
+      "MistakePatternMiner",
+      "FieldExperienceIngestor",
+      "GuardrailEvolutionEngine",
+      "RegressionPreventionCompiler"
+    ],
+    "quantumProviderJobsCount": 0,
+    "classicalFallbackJobsCount": 0
+  }
 }

@@ -1,5 +1,65 @@
-// IconButton focus-visible styling is enforced globally via MuiIconButton theme overrides.
+import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Alert,
+  Avatar,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  Container,
+  Divider,
+  FormControl,
+  FormControlLabel,
+  Grid,
+  IconButton,
+  InputAdornment,
+  InputLabel,
+  MenuItem,
+  Paper,
+  Select,
+  Skeleton,
+  Snackbar,
+  Switch,
+  TextField,
+  Tooltip,
+  Typography,
+  useTheme,
+} from '@mui/material';
+import {
+  AddCircleOutline as AddIcon,
+  Build as SkillsIcon,
+  BusinessCenter as BusinessIcon,
+  Cancel as CancelIcon,
+  Delete as DeleteIcon,
+  Description as DescriptionIcon,
+  ExpandMore as ExpandMoreIcon,
+  Language as LanguageIcon,
+  LocationOn as LocationIcon,
+  MonetizationOn as RateIcon,
+  Person as PersonIcon,
+  PhotoCamera as CameraIcon,
+  Save as SaveIcon,
+  School as EducationIcon,
+} from '@mui/icons-material';
+import { styled } from '@mui/material/styles';
+import { Helmet } from 'react-helmet-async';
+import { useBreakpointDown } from '@/hooks/useResponsive';
+import { createFeatureLogger } from '@/modules/common/utils/devLogger';
+import { api } from '../../../services/apiClient';
+import { normalizeUser } from '../../../utils/userUtils';
+import fileUploadService from '../../common/services/fileUploadService';
 import PageCanvas from '../../common/components/PageCanvas';
+import {
+  fetchWorkerProfile,
+  updateWorkerAvailability,
+  updateWorkerProfile,
+} from '../services/workerSlice';
 
 const Input = styled('input')({
   display: 'none',
@@ -104,6 +164,89 @@ const normalizeSuggestionText = (suggestion) => {
   return String(suggestion || '').trim();
 };
 
+const toFormText = (value, fallback = '') => {
+  if (value === null || value === undefined) {
+    return fallback;
+  }
+
+  if (typeof value === 'string') {
+    return value;
+  }
+
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value);
+  }
+
+  if (typeof value === 'object') {
+    const candidate =
+      value.label ||
+      value.name ||
+      value.address ||
+      value.city ||
+      value.text ||
+      value.title ||
+      value.value;
+
+    if (candidate !== undefined && candidate !== null) {
+      return String(candidate);
+    }
+  }
+
+  return fallback;
+};
+
+const getTrimmedText = (value) => toFormText(value).trim();
+
+const PROFILE_EDIT_SIMULATION_STATES = new Set([
+  'route-fallback',
+  'in-app-fallback',
+  'global-fallback',
+]);
+
+const isProfileEditSimulationEnabled = () => {
+  if (import.meta.env.DEV || import.meta.env.MODE === 'test') {
+    return true;
+  }
+
+  if (typeof window === 'undefined') {
+    return false;
+  }
+
+  return window.__KELMAH_UI_AUDIT__ === true;
+};
+
+const resolveProfileEditSimulationState = (searchValue) => {
+  if (!isProfileEditSimulationEnabled()) {
+    return null;
+  }
+
+  const searchParams = new URLSearchParams(searchValue || '');
+  const stateValue = String(searchParams.get('state') || '')
+    .trim()
+    .toLowerCase();
+
+  if (!PROFILE_EDIT_SIMULATION_STATES.has(stateValue)) {
+    return null;
+  }
+
+  return stateValue;
+};
+
+const buildProfileEditSimulationError = (simulationState) => {
+  const isGlobalFallback = simulationState === 'global-fallback';
+  const error = new Error(
+    isGlobalFallback
+      ? '[kelmah-global-fallback] Simulated profile editor crash for global fallback validation.'
+      : '[kelmah-route-fallback] Simulated profile editor crash for route fallback validation.',
+  );
+
+  error.name = isGlobalFallback
+    ? 'KelmahProfileGlobalFallbackSimulationError'
+    : 'KelmahProfileRouteFallbackSimulationError';
+
+  return error;
+};
+
 const WorkerProfileEditPage = () => {
   const theme = useTheme();
   const navigate = useNavigate();
@@ -115,7 +258,7 @@ const WorkerProfileEditPage = () => {
   const { user: rawUser } = useSelector((state) => state.auth);
   const user = normalizeUser(rawUser);
   // loading and error are objects with domain keys; access specific flags to avoid passing objects into UI props
-  const { profile, loading, error } = useSelector((state) => state.worker);
+  const { loading, error } = useSelector((state) => state.worker);
 
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -194,7 +337,7 @@ const WorkerProfileEditPage = () => {
           setCompleteness(json.data?.completion ?? 0);
           setSuggestions(json.data?.suggestions ?? []);
         }
-      } catch (_) {
+      } catch {
         // Non-critical: silently ignored to avoid blocking primary UX
         // Profile completeness is supplementary — the edit form works without it
       }
@@ -211,17 +354,17 @@ const WorkerProfileEditPage = () => {
       .then((profile) => {
         // Populate form with existing profile data
         setFormData({
-          firstName: profile.firstName || user?.firstName || '',
-          lastName: profile.lastName || user?.lastName || '',
-          title: profile.title || '',
-          bio: profile.bio || '',
+          firstName: toFormText(profile.firstName ?? user?.firstName, ''),
+          lastName: toFormText(profile.lastName ?? user?.lastName, ''),
+          title: toFormText(profile.title, ''),
+          bio: toFormText(profile.bio, ''),
           hourlyRate: profile.hourlyRate || '',
           experience: profile.experience || '',
           skills: normalizeSkillsForForm(profile.skills),
           education: Array.isArray(profile.education) ? profile.education : [],
           languages: Array.isArray(profile.languages) ? profile.languages : [],
-          location: profile.location || '',
-          phone: profile.phone || '',
+          location: toFormText(profile.location, ''),
+          phone: toFormText(profile.phone, ''),
           profileImage: null, // Will be populated only when user changes it
           portfolio: Array.isArray(profile.portfolio) ? profile.portfolio : [],
           availabilityStatus: profile?.availability?.status || 'available',
@@ -471,21 +614,21 @@ const WorkerProfileEditPage = () => {
     e.preventDefault();
 
     const profilePayload = {
-      firstName: formData.firstName,
-      lastName: formData.lastName,
-      title: formData.title,
-      bio: formData.bio,
+      firstName: toFormText(formData.firstName, ''),
+      lastName: toFormText(formData.lastName, ''),
+      title: toFormText(formData.title, ''),
+      bio: toFormText(formData.bio, ''),
       hourlyRate: formData.hourlyRate,
       experience: formData.experience,
       skills: normalizeSkillsForForm(formData.skills),
       education: Array.isArray(formData.education) ? formData.education : [],
       languages: Array.isArray(formData.languages) ? formData.languages : [],
-      location: formData.location,
-      phone: formData.phone,
+      location: toFormText(formData.location, ''),
+      phone: toFormText(formData.phone, ''),
       portfolio: Array.isArray(formData.portfolio)
         ? formData.portfolio.map((item) => ({
-            title: item?.title || '',
-            description: item?.description || '',
+            title: toFormText(item?.title, ''),
+            description: toFormText(item?.description, ''),
             imageUrl: typeof item?.imageUrl === 'string' ? item.imageUrl : '',
           }))
         : [],
@@ -595,7 +738,7 @@ const WorkerProfileEditPage = () => {
         message: 'Availability updated!',
         severity: 'success',
       });
-    } catch (err) {
+    } catch {
       setSnackbar({
         open: true,
         message: 'Failed to update availability. Please try again.',
@@ -625,15 +768,17 @@ const WorkerProfileEditPage = () => {
   const checklistItems = [
     {
       label: 'Full name',
-      done: Boolean(formData.firstName.trim() && formData.lastName.trim()),
+      done: Boolean(
+        getTrimmedText(formData.firstName) && getTrimmedText(formData.lastName),
+      ),
     },
     {
       label: 'Professional title',
-      done: Boolean(formData.title.trim()),
+      done: Boolean(getTrimmedText(formData.title)),
     },
     {
       label: 'Short bio',
-      done: Boolean(formData.bio.trim().length >= 60),
+      done: Boolean(getTrimmedText(formData.bio).length >= 60),
     },
     {
       label: 'At least 3 skills',
@@ -641,13 +786,95 @@ const WorkerProfileEditPage = () => {
     },
     {
       label: 'Location and phone',
-      done: Boolean(formData.location.trim() && formData.phone.trim()),
+      done: Boolean(
+        getTrimmedText(formData.location) && getTrimmedText(formData.phone),
+      ),
     },
   ];
 
   const completedChecklistCount = checklistItems.filter(
     (item) => item.done,
   ).length;
+  const fallbackSimulationState = resolveProfileEditSimulationState(
+    location.search,
+  );
+  const shouldSimulateRouteFallback =
+    fallbackSimulationState === 'route-fallback' ||
+    fallbackSimulationState === 'global-fallback';
+  const shouldSimulateInAppFallback =
+    fallbackSimulationState === 'in-app-fallback';
+
+  if (shouldSimulateRouteFallback) {
+    throw buildProfileEditSimulationError(fallbackSimulationState);
+  }
+
+  if (shouldSimulateInAppFallback) {
+    return (
+      <PageCanvas
+        disableContainer
+        sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}
+      >
+        <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
+          <Helmet>
+            <title>Edit Profile | Kelmah</title>
+          </Helmet>
+
+          <Box sx={{ mb: { xs: 2, md: 4 } }}>
+            <Typography
+              variant={isMobile ? 'h5' : 'h4'}
+              component="h1"
+              gutterBottom
+              fontWeight="bold"
+            >
+              Edit Your Profile
+            </Typography>
+            <Typography variant="body1" color="text.secondary">
+              This editor section is temporarily unavailable. Your profile data
+              is safe.
+            </Typography>
+          </Box>
+
+          <Paper
+            role="alert"
+            elevation={3}
+            sx={{ p: { xs: 2, md: 3 }, borderRadius: 2 }}
+          >
+            <Alert severity="error" sx={{ mb: 2 }}>
+              We could not render the in-page profile editor controls.
+            </Alert>
+
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              Try reloading this editor first. If the issue persists, continue
+              from your profile summary while support investigates.
+            </Typography>
+
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: { xs: 'column', sm: 'row' },
+                gap: 1.25,
+              }}
+            >
+              <Button
+                variant="contained"
+                onClick={() => navigate('/worker/profile/edit')}
+                sx={{ minHeight: 44 }}
+              >
+                Retry Editor
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={() => navigate('/worker/profile')}
+                sx={{ minHeight: 44 }}
+              >
+                Open Profile Summary
+              </Button>
+            </Box>
+          </Paper>
+        </Container>
+      </PageCanvas>
+    );
+  }
 
   return (
     <PageCanvas
@@ -673,6 +900,7 @@ const WorkerProfileEditPage = () => {
             <Box sx={{ mb: { xs: 2, md: 4 } }}>
               <Typography
                 variant={isMobile ? 'h5' : 'h4'}
+                component="h1"
                 gutterBottom
                 fontWeight="bold"
               >
@@ -1201,6 +1429,15 @@ const WorkerProfileEditPage = () => {
                             onDelete={() => handleRemoveSkill(skillName)}
                             color="primary"
                             variant="outlined"
+                            sx={{
+                              minHeight: 44,
+                              '& .MuiChip-label': {
+                                py: 0.5,
+                              },
+                              '& .MuiChip-deleteIcon': {
+                                fontSize: 20,
+                              },
+                            }}
                           />
                         );
                       })}

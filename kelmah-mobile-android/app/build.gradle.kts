@@ -114,6 +114,7 @@ dependencies {
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
     ksp("androidx.room:room-compiler:2.6.1")
+    implementation("androidx.tracing:tracing:1.3.0")
 
     implementation("androidx.work:work-runtime-ktx:2.9.1")
     implementation("io.coil-kt:coil-compose:2.7.0")
@@ -127,6 +128,7 @@ dependencies {
     testImplementation("io.mockk:mockk:1.13.12")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
+    androidTestImplementation("androidx.tracing:tracing:1.3.0")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 }

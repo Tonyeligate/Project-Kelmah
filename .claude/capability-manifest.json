@@ -1,0 +1,4951 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAtUtc": "2026-04-16T17:53:20.230Z",
+  "sourceRegistryPath": "spec-kit/quantum-runtime/capability-registry.json",
+  "sourceRegistryGeneratedAtUtc": "2026-04-16T17:53:20.211Z",
+  "summary": {
+    "uniqueToolCount": 331,
+    "quantumComputingToolCount": 113,
+    "classicalToolCount": 218,
+    "operationCount": 14,
+    "sourceBreakdown": {
+      "agent": 300,
+      "oracle": 31,
+      "mixed": 0,
+      "other": 0
+    }
+  },
+  "agentCoverage": [
+    {
+      "agentFile": "security.agent.md",
+      "declaredToolCount": 209
+    },
+    {
+      "agentFile": "claudecode.agent.md",
+      "declaredToolCount": 149
+    },
+    {
+      "agentFile": "backend.agent.md",
+      "declaredToolCount": 147
+    },
+    {
+      "agentFile": "frontend.agent.md",
+      "declaredToolCount": 147
+    },
+    {
+      "agentFile": "devops.agent.md",
+      "declaredToolCount": 70
+    },
+    {
+      "agentFile": "realtime.agent.md",
+      "declaredToolCount": 66
+    },
+    {
+      "agentFile": "debugger.agent.md",
+      "declaredToolCount": 62
+    },
+    {
+      "agentFile": "database.agent.md",
+      "declaredToolCount": 52
+    }
+  ],
+  "operationCoverage": [
+    {
+      "operation": "classical-orchestration",
+      "toolCount": 218,
+      "quantumComputing": false
+    },
+    {
+      "operation": "hybrid-quantum-workflow",
+      "toolCount": 35,
+      "quantumComputing": true
+    },
+    {
+      "operation": "exploit-interference",
+      "toolCount": 23,
+      "quantumComputing": true
+    },
+    {
+      "operation": "apply-gate-circuit",
+      "toolCount": 18,
+      "quantumComputing": true
+    },
+    {
+      "operation": "measure-output",
+      "toolCount": 10,
+      "quantumComputing": true
+    },
+    {
+      "operation": "surface-code-error-correction",
+      "toolCount": 6,
+      "quantumComputing": true
+    },
+    {
+      "operation": "logical-qubit-fault-tolerant-execution",
+      "toolCount": 5,
+      "quantumComputing": true
+    },
+    {
+      "operation": "annealing-optimization",
+      "toolCount": 4,
+      "quantumComputing": true
+    },
+    {
+      "operation": "phase-estimation",
+      "toolCount": 3,
+      "quantumComputing": true
+    },
+    {
+      "operation": "shor-factorization",
+      "toolCount": 3,
+      "quantumComputing": true
+    },
+    {
+      "operation": "amplitude-estimation",
+      "toolCount": 2,
+      "quantumComputing": true
+    },
+    {
+      "operation": "grover-search",
+      "toolCount": 2,
+      "quantumComputing": true
+    },
+    {
+      "operation": "prepare-qubit-state",
+      "toolCount": 1,
+      "quantumComputing": true
+    },
+    {
+      "operation": "qaoa-optimization",
+      "toolCount": 1,
+      "quantumComputing": true
+    }
+  ],
+  "preview": {
+    "sampleQuantumTools": [
+      "AggregationGateReorderer",
+      "AmplitudeAmplification",
+      "AnnealingFixSelector",
+      "AnnealingScheduleManager",
+      "APITopologyOptimizer",
+      "AttackSurfaceSuperposition",
+      "BellMeasurementGate",
+      "BellPairCreator",
+      "BellStateConversationArchitect",
+      "CircuitDepthOptimizer",
+      "ContinuousMeasurementProtocol",
+      "ControllerCircuitModel",
+      "ConversationEntanglementVerifier",
+      "DefenseEntanglementVerification",
+      "EntanglementGraphMapping",
+      "EntanglementStatusChecker",
+      "ErrorDetectionGateInserter",
+      "GateOrderVerifier",
+      "GatewayPolicyVerifier",
+      "GatewayProxyDiagnostic",
+      "GroverPathAuditor",
+      "GroverSearch",
+      "HHLConstraintSolver",
+      "HypothesisAmplitudeTracker",
+      "InterServicePropagator"
+    ],
+    "sampleClassicalTools": [
+      "AccessibilityCloudAnalyzer",
+      "AdaptiveInterfaceController",
+      "AdversarialSelfPlayOrchestrator",
+      "Agent",
+      "AggregationPipelineDesign",
+      "AllPathSummation",
+      "AllWorldsVerifier",
+      "AnnihilationOperatorDisconnect",
+      "AnonymousWorldTester",
+      "AntiPatternDetector",
+      "AntiZenoHeisenbugDetector",
+      "AntiZenoThrottleCalibrator",
+      "AsymmetricStateDetector",
+      "AtlasWhitelistVerifier",
+      "AttackerPayoffMatrix",
+      "AttackSurfaceScanning",
+      "AuthenticatedWorldTester",
+      "AuthenticationProber",
+      "AuthFlowTracing",
+      "AuthorizationVerifier",
+      "Bash",
+      "BayesianCausalNetwork",
+      "BehavioralTwinSimulator",
+      "BifurcationDiagnoser",
+      "BifurcationPointDetector"
+    ]
+  },
+  "capabilities": [
+    {
+      "toolName": "AccessibilityCloudAnalyzer",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "oracle",
+      "agents": []
+    },
+    {
+      "toolName": "AdaptiveInterfaceController",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "oracle",
+      "agents": []
+    },
+    {
+      "toolName": "AdversarialSelfPlayOrchestrator",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "oracle",
+      "agents": []
+    },
+    {
+      "toolName": "Agent",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "claudecode.agent.md"
+      ]
+    },
+    {
+      "toolName": "AggregationGateReorderer",
+      "operation": "apply-gate-circuit",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "database.agent.md"
+      ]
+    },
+    {
+      "toolName": "AggregationPipelineDesign",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "database.agent.md"
+      ]
+    },
+    {
+      "toolName": "AllPathSummation",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "AllWorldsVerifier",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "AmplitudeAmplification",
+      "operation": "amplitude-estimation",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "database.agent.md",
+        "debugger.agent.md",
+        "devops.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "AnnealingFixSelector",
+      "operation": "annealing-optimization",
+      "quantumComputing": true,
+      "providerPreference": [
+        "d-wave",
+        "aws-braket"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "AnnealingScheduleManager",
+      "operation": "annealing-optimization",
+      "quantumComputing": true,
+      "providerPreference": [
+        "d-wave",
+        "aws-braket"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "AnnihilationOperatorDisconnect",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "AnonymousWorldTester",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "AntiPatternDetector",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "database.agent.md"
+      ]
+    },
+    {
+      "toolName": "AntiZenoHeisenbugDetector",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "debugger.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "AntiZenoThrottleCalibrator",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "APITopologyOptimizer",
+      "operation": "apply-gate-circuit",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum"
+      ],
+      "sourceCategory": "oracle",
+      "agents": []
+    },
+    {
+      "toolName": "AsymmetricStateDetector",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "AtlasWhitelistVerifier",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "AttackerPayoffMatrix",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "AttackSurfaceScanning",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "AttackSurfaceSuperposition",
+      "operation": "exploit-interference",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "azure-quantum",
+        "aws-braket"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "AuthenticatedWorldTester",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "AuthenticationProber",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "AuthFlowTracing",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "AuthorizationVerifier",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "Bash",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "database.agent.md",
+        "debugger.agent.md",
+        "devops.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "BayesianCausalNetwork",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "debugger.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "BehavioralTwinSimulator",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "oracle",
+      "agents": []
+    },
+    {
+      "toolName": "BellMeasurementGate",
+      "operation": "apply-gate-circuit",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "BellPairCreator",
+      "operation": "exploit-interference",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "azure-quantum",
+        "aws-braket"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "BellStateConversationArchitect",
+      "operation": "exploit-interference",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "azure-quantum",
+        "aws-braket"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "BifurcationDiagnoser",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "BifurcationPointDetector",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "BoundaryViolationDetector",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "BroadcastVsPointToPointDecider",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "CaseSensitivityAuditor",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "CausalChainReconstruction",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "debugger.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "CausalClosureVerifier",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "debugger.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "CausalDAGBuilder",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "debugger.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "ChaosAttractorDetector",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "ChaosClassifier",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "CircuitDepthOptimizer",
+      "operation": "apply-gate-circuit",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "ClassicalCorrectionVerifier",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "CollectionPurityCalculator",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "database.agent.md"
+      ]
+    },
+    {
+      "toolName": "COLLSCANDetector",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "database.agent.md"
+      ]
+    },
+    {
+      "toolName": "ColorVisionSimulator",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "oracle",
+      "agents": []
+    },
+    {
+      "toolName": "CompletionOracleChecker",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "oracle",
+      "agents": []
+    },
+    {
+      "toolName": "ConfigCoherenceVerification",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "ConfigCoherenceWorldTester",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "ContinuousMeasurementProtocol",
+      "operation": "measure-output",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "debugger.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "ContractEvolutionAnalyzer",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "oracle",
+      "agents": []
+    },
+    {
+      "toolName": "ControllerCircuitModel",
+      "operation": "apply-gate-circuit",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "ControllerLogicAnalyzer",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "ConversationCoherenceChecker",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "ConversationEntanglementVerifier",
+      "operation": "exploit-interference",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "azure-quantum",
+        "aws-braket"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "ConversationFlowAnalyzer",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md"
+      ]
+    },
+    {
+      "toolName": "ConversationObservableTracker",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "CounterfactualWorldScorer",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "oracle",
+      "agents": []
+    },
+    {
+      "toolName": "CoveredIndexOptimizer",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "database.agent.md"
+      ]
+    },
+    {
+      "toolName": "CreationOperatorConnect",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "CredentialCommitmentVerifier",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "CriticalEventMaxZeno",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "CRYSTALSDilithiumAdvisor",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "CRYSTALSDilithiumParameterAdvisor",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "CRYSTALSKyberAdvisor",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "CRYSTALSKyberParameterAdvisor",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "DeepNestingScanner",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "database.agent.md"
+      ]
+    },
+    {
+      "toolName": "DefenderStrategyOptimizer",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "DefenseEntanglementVerification",
+      "operation": "exploit-interference",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "azure-quantum",
+        "aws-braket"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "DefenseLayerAuditor",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "DelegationPacketBuilder",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "oracle",
+      "agents": []
+    },
+    {
+      "toolName": "DeliveryGuaranteeVerification",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "DensityMatrixDocumentModel",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "database.agent.md"
+      ]
+    },
+    {
+      "toolName": "DeploymentBitFlipCorrector",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "DeploymentStateVerification",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "DeterministicFallbackVerifier",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "oracle",
+      "agents": []
+    },
+    {
+      "toolName": "DevDependencyChecker",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "DifferentialDebuggingMatrix",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "debugger.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "DifferentialDiagnosisEngine",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "debugger.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "DoCalculusEngine",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "debugger.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "DocumentEigenstateAnalysis",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "database.agent.md"
+      ]
+    },
+    {
+      "toolName": "Edit",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "database.agent.md",
+        "debugger.agent.md",
+        "devops.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "EmbedVsReferenceOracle",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "database.agent.md"
+      ]
+    },
+    {
+      "toolName": "EndpointEnergyMinimizer",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "EntanglementGraphMapping",
+      "operation": "exploit-interference",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "azure-quantum",
+        "aws-braket"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "EntanglementStatusChecker",
+      "operation": "exploit-interference",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "azure-quantum",
+        "aws-braket"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "EntropyBasedTestSelector",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "debugger.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "EntropyMaximumDetector",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "EnvVarMissingDetector",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "EPRPairConversationModeler",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "ErrorDetectionGateInserter",
+      "operation": "surface-code-error-correction",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "azure-quantum",
+        "aws-braket"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "EventEntropyMinimizer",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "EventIdDeduplicationSet",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "EventPropagationTracing",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "EvidenceArtifactCompiler",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "oracle",
+      "agents": []
+    },
+    {
+      "toolName": "EvidenceFileChain",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "debugger.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "ExtendedFailureModeCatalog",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "debugger.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "FailureModeAnalysis",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "debugger.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "FeynmanPathIntegral",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "FieldExperienceIngestor",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "oracle",
+      "agents": []
+    },
+    {
+      "toolName": "FieldPurityScanner",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "database.agent.md"
+      ]
+    },
+    {
+      "toolName": "FiveDifferentialMandator",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "debugger.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "FM013ResponseShapeMismatch",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "debugger.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "FM014UseEffectInfiniteLoop",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "debugger.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "FM015AsyncRaceCondition",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "debugger.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "FM016MongooseLeanMisuse",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "debugger.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "FM017CORSPreflightOrdering",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "debugger.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "FM018ViteStaleBuildCache",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "debugger.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "FM019JWTSecretMismatch",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "debugger.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "FM020RenderColdStartTimeout",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "debugger.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "GameTheoryThreatRanker",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "GateOrderVerifier",
+      "operation": "apply-gate-circuit",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "GatewayPolicyVerifier",
+      "operation": "apply-gate-circuit",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum"
+      ],
+      "sourceCategory": "oracle",
+      "agents": []
+    },
+    {
+      "toolName": "GatewayProxyDiagnostic",
+      "operation": "apply-gate-circuit",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "GhostConversationCleaner",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "GhostPresenceDetector",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "Glob",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "database.agent.md",
+        "debugger.agent.md",
+        "devops.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "Grep",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "database.agent.md",
+        "debugger.agent.md",
+        "devops.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "GroverPathAuditor",
+      "operation": "grover-search",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum"
+      ],
+      "sourceCategory": "oracle",
+      "agents": []
+    },
+    {
+      "toolName": "GroverSearch",
+      "operation": "grover-search",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "database.agent.md",
+        "debugger.agent.md",
+        "devops.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "GrowingArrayDetector",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "database.agent.md"
+      ]
+    },
+    {
+      "toolName": "GuardrailEvolutionEngine",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "oracle",
+      "agents": []
+    },
+    {
+      "toolName": "HealthCheckDiagnostics",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "HealthCheckOracleRunner",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "HeisenbergReadWriteBalancer",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "database.agent.md"
+      ]
+    },
+    {
+      "toolName": "HHLConstraintSolver",
+      "operation": "logical-qubit-fault-tolerant-execution",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "azure-quantum",
+        "aws-braket"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "HHLConstraintSolver.",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "frontend.agent.md"
+      ]
+    },
+    {
+      "toolName": "HHLQueryOptimizer",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "database.agent.md"
+      ]
+    },
+    {
+      "toolName": "HolevoBoundCalculator",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "HypothesisAmplitudeTracker",
+      "operation": "amplitude-estimation",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "debugger.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "HypothesisProbabilityUpdater",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "debugger.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "IdempotencyGuaranteeChecker",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "IdempotencyVerifier",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "ImmersiveInteractionAuditor",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "oracle",
+      "agents": []
+    },
+    {
+      "toolName": "IndexAmplification",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "database.agent.md"
+      ]
+    },
+    {
+      "toolName": "IndexCoverageVerifier",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "database.agent.md"
+      ]
+    },
+    {
+      "toolName": "InformationGainCalculator",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "debugger.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "InfrastructureCoherenceScanning",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "InteractionVertexAnalyzer",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "InterServicePropagator",
+      "operation": "apply-gate-circuit",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "InterventionProbabilityComputer",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "debugger.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "IXSCANOptimizer",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "database.agent.md"
+      ]
+    },
+    {
+      "toolName": "JWTAsZKPAnalyzer",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "LayoutConstraintAnnealer",
+      "operation": "annealing-optimization",
+      "quantumComputing": true,
+      "providerPreference": [
+        "d-wave",
+        "aws-braket"
+      ],
+      "sourceCategory": "oracle",
+      "agents": []
+    },
+    {
+      "toolName": "ListenerCoherenceChecker",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "LocalVsProductionDiffer",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "LockFileCommitChecker",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "LookupCardinalityMinimizer",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "database.agent.md"
+      ]
+    },
+    {
+      "toolName": "LyapunovBlastRadiusAssessor",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "LyapunovExponentCalculator",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "ManyWorldsDeploymentVerifier",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "ManyWorldsDifferentialDebugger",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "debugger.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "MarginalProbabilityComputer",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "debugger.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "mcp__ide__getDiagnostics",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "database.agent.md",
+        "debugger.agent.md",
+        "devops.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "MeasurementFrequencyCalibrator",
+      "operation": "measure-output",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "MemoryLeakPhaseTransition",
+      "operation": "phase-estimation",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "azure-quantum",
+        "aws-braket"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "MiddlewareChainTracer",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "MiddlewareGateSequencer",
+      "operation": "apply-gate-circuit",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "MigrationTeleportation",
+      "operation": "exploit-interference",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "azure-quantum",
+        "aws-braket"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "database.agent.md"
+      ]
+    },
+    {
+      "toolName": "MinimaxSolver",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "MinimumVerificationCriterionRunner",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "debugger.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "MissingEnvVarCorrector",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "MistakePatternMiner",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "oracle",
+      "agents": []
+    },
+    {
+      "toolName": "MixedStateDetector",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "database.agent.md"
+      ]
+    },
+    {
+      "toolName": "MixedStrategyNashFinder",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "ModelImportVerifier",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "MongoDBConnectivityThreshold",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "MonolithFactorizer",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "MotionSafetyAnalyzer",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "oracle",
+      "agents": []
+    },
+    {
+      "toolName": "MutualInformationEmbedDecider",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "database.agent.md"
+      ]
+    },
+    {
+      "toolName": "NashEquilibriumComputer",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "NashEquilibriumVerifier",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "NDimensionalHypothesis",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "debugger.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "NodeVersionMatcher",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "NonCriticalEventMinZeno",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "NonInvasiveMeasurementTool",
+      "operation": "measure-output",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "debugger.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "NotebookEdit",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "claudecode.agent.md"
+      ]
+    },
+    {
+      "toolName": "OptimalTestOrderingEngine",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "debugger.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "ParallelHypothesisExecutor",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "debugger.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "ParallelStageGrouper",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "ParallelWorldSuperpositionDiff",
+      "operation": "exploit-interference",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "azure-quantum",
+        "aws-braket"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "PayloadCompressionOptimizer",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "PerceptualContrastOracle",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "oracle",
+      "agents": []
+    },
+    {
+      "toolName": "PhaseEstimation",
+      "operation": "phase-estimation",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "azure-quantum",
+        "aws-braket"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "database.agent.md",
+        "debugger.agent.md",
+        "devops.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "PipelineCircuitAnalyzer",
+      "operation": "apply-gate-circuit",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "database.agent.md"
+      ]
+    },
+    {
+      "toolName": "PipelineEnergyFunction",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "PipelineOptimization",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "PortConflictCorrector",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "PostQuantumAlgorithmRecommender",
+      "operation": "hybrid-quantum-workflow",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum",
+        "d-wave"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "PostQuantumCryptography",
+      "operation": "hybrid-quantum-workflow",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum",
+        "d-wave"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "PQCImplementationVerifier",
+      "operation": "hybrid-quantum-workflow",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum",
+        "d-wave"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "PQCSensitivityChecker",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "PQCVulnerabilityScanner",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "PresenceDebouncer",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "PresenceFieldOperator",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "PresenceFieldStrengthChecker",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "PresenceQuantumField",
+      "operation": "hybrid-quantum-workflow",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum",
+        "d-wave"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "PresenceStabilityMeasurer",
+      "operation": "measure-output",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "PropagatorCalculator",
+      "operation": "apply-gate-circuit",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QAOALayoutOptimizer",
+      "operation": "qaoa-optimization",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum"
+      ],
+      "sourceCategory": "oracle",
+      "agents": []
+    },
+    {
+      "toolName": "QAV001GatewayHeaderForge",
+      "operation": "apply-gate-circuit",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QAV002JWTClaimElevation",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QAV003MongoOperatorInjection",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QAV004MassAssignment",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QAV005SocketRoomInfiltration",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QAV006TimingAttack",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QAV007RateLimitBypass",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QAV008ObjectIdEnumeration",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QCoTAPIDebugger",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QCoTDevOpsDebugger",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "QCoTRealtimeDebugger",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QCoTSecurityAuditor",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "qRAMIndexDesigner",
+      "operation": "logical-qubit-fault-tolerant-execution",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "azure-quantum",
+        "aws-braket"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "database.agent.md"
+      ]
+    },
+    {
+      "toolName": "QRNGIntegrationAdvisor",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QRNGRecommender",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QuantumAlgorithmOptimizer",
+      "operation": "hybrid-quantum-workflow",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum",
+        "d-wave"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QuantumAnnealingPipeline",
+      "operation": "annealing-optimization",
+      "quantumComputing": true,
+      "providerPreference": [
+        "d-wave",
+        "aws-braket"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "QuantumAttackVectorCatalog",
+      "operation": "hybrid-quantum-workflow",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum",
+        "d-wave"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QuantumBayesian",
+      "operation": "hybrid-quantum-workflow",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum",
+        "d-wave"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "debugger.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QuantumBluffDetector",
+      "operation": "hybrid-quantum-workflow",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum",
+        "d-wave"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QuantumCausalInference",
+      "operation": "hybrid-quantum-workflow",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum",
+        "d-wave"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "debugger.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QuantumChannelMonitor",
+      "operation": "hybrid-quantum-workflow",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum",
+        "d-wave"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QuantumChannelNoiseAnalyzer",
+      "operation": "hybrid-quantum-workflow",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum",
+        "d-wave"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QuantumCircuitSynthesis",
+      "operation": "apply-gate-circuit",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QuantumComplexityAnalyzer",
+      "operation": "hybrid-quantum-workflow",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum",
+        "d-wave"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QuantumCountingAffectedFiles",
+      "operation": "hybrid-quantum-workflow",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum",
+        "d-wave"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QuantumCryptographyAdvisor",
+      "operation": "hybrid-quantum-workflow",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum",
+        "d-wave"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QuantumDataIntegrity",
+      "operation": "hybrid-quantum-workflow",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum",
+        "d-wave"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "database.agent.md"
+      ]
+    },
+    {
+      "toolName": "QuantumDecoherence",
+      "operation": "surface-code-error-correction",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "azure-quantum",
+        "aws-braket"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "database.agent.md",
+        "debugger.agent.md",
+        "devops.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QuantumDifferentialDiagnosis",
+      "operation": "hybrid-quantum-workflow",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum",
+        "d-wave"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "debugger.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QuantumEfficiencyRatioComputer",
+      "operation": "hybrid-quantum-workflow",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum",
+        "d-wave"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "database.agent.md"
+      ]
+    },
+    {
+      "toolName": "QuantumEntanglement",
+      "operation": "exploit-interference",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "azure-quantum",
+        "aws-braket"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "database.agent.md",
+        "debugger.agent.md",
+        "devops.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QuantumErrorCorrection",
+      "operation": "surface-code-error-correction",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "azure-quantum",
+        "aws-braket"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "database.agent.md",
+        "debugger.agent.md",
+        "devops.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QuantumErrorMitigationAdvisor",
+      "operation": "surface-code-error-correction",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "azure-quantum",
+        "aws-braket"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QuantumExplainAnalyzer",
+      "operation": "hybrid-quantum-workflow",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum",
+        "d-wave"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "database.agent.md"
+      ]
+    },
+    {
+      "toolName": "QuantumFluctuationFilter",
+      "operation": "hybrid-quantum-workflow",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum",
+        "d-wave"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QuantumFuzzer",
+      "operation": "hybrid-quantum-workflow",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum",
+        "d-wave"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QuantumGameTheory",
+      "operation": "hybrid-quantum-workflow",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum",
+        "d-wave"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QuantumMonteCarlo",
+      "operation": "hybrid-quantum-workflow",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum",
+        "d-wave"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "debugger.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QuantumNoiseCharacterization",
+      "operation": "hybrid-quantum-workflow",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum",
+        "d-wave"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QuantumOracle",
+      "operation": "apply-gate-circuit",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "database.agent.md",
+        "debugger.agent.md",
+        "devops.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QuantumPenetrationTester",
+      "operation": "hybrid-quantum-workflow",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum",
+        "d-wave"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QuantumProcessTomography",
+      "operation": "logical-qubit-fault-tolerant-execution",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "azure-quantum",
+        "aws-braket"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QuantumRAM",
+      "operation": "logical-qubit-fault-tolerant-execution",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "azure-quantum",
+        "aws-braket"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "database.agent.md"
+      ]
+    },
+    {
+      "toolName": "QuantumResourceEstimator",
+      "operation": "hybrid-quantum-workflow",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum",
+        "d-wave"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QuantumRESTEigenstateOptimizer",
+      "operation": "hybrid-quantum-workflow",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum",
+        "d-wave"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QuantumScoreboardUpdater",
+      "operation": "hybrid-quantum-workflow",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum",
+        "d-wave"
+      ],
+      "sourceCategory": "oracle",
+      "agents": []
+    },
+    {
+      "toolName": "QuantumServiceMesh",
+      "operation": "hybrid-quantum-workflow",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum",
+        "d-wave"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QuantumStateTomography",
+      "operation": "logical-qubit-fault-tolerant-execution",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "azure-quantum",
+        "aws-braket"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QuantumSuperposition",
+      "operation": "prepare-qubit-state",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "azure-quantum",
+        "aws-braket"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "database.agent.md",
+        "debugger.agent.md",
+        "devops.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QuantumTeleportationProtocol",
+      "operation": "exploit-interference",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "azure-quantum",
+        "aws-braket"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QuantumTunneling",
+      "operation": "exploit-interference",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "azure-quantum",
+        "aws-braket"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "database.agent.md",
+        "debugger.agent.md",
+        "devops.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QuantumTunnelingProber",
+      "operation": "hybrid-quantum-workflow",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum",
+        "d-wave"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QuantumWalkCallGraph",
+      "operation": "hybrid-quantum-workflow",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum",
+        "d-wave"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QuantumZenoDebugger",
+      "operation": "hybrid-quantum-workflow",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum",
+        "d-wave"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "debugger.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QuantumZenoDeduplicator",
+      "operation": "hybrid-quantum-workflow",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum",
+        "d-wave"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "QueryPerformanceEstimator",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "oracle",
+      "agents": []
+    },
+    {
+      "toolName": "Read",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "database.agent.md",
+        "debugger.agent.md",
+        "devops.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "ReadabilityScorer",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "oracle",
+      "agents": []
+    },
+    {
+      "toolName": "ReconnaissanceScanner",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "RegressionPreventionCompiler",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "oracle",
+      "agents": []
+    },
+    {
+      "toolName": "ReliabilityChaosSimulator",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "oracle",
+      "agents": []
+    },
+    {
+      "toolName": "RenderBudgetProfiler",
+      "operation": "hybrid-quantum-workflow",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum",
+        "d-wave"
+      ],
+      "sourceCategory": "oracle",
+      "agents": []
+    },
+    {
+      "toolName": "Request",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md"
+      ]
+    },
+    {
+      "toolName": "RequestEigenDecomposer",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "RequestLifecycleTracing",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "ResponseShapeNormalizer",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "ResponseShapeVerifier",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "ReTeleportationRetryProtocol",
+      "operation": "exploit-interference",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "azure-quantum",
+        "aws-braket"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "ReTeleportationTrigger",
+      "operation": "exploit-interference",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "azure-quantum",
+        "aws-braket"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "RoomEntanglementAnalysis",
+      "operation": "exploit-interference",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "azure-quantum",
+        "aws-braket"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "RoomTargetingOptimizer",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "RouteTopologyAnalysis",
+      "operation": "apply-gate-circuit",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "SafeAreaInsetVerifier",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "oracle",
+      "agents": []
+    },
+    {
+      "toolName": "SchemaDataSuperposition",
+      "operation": "exploit-interference",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "azure-quantum",
+        "aws-braket"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "database.agent.md"
+      ]
+    },
+    {
+      "toolName": "SchemaEntropyCalculator",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "database.agent.md"
+      ]
+    },
+    {
+      "toolName": "SchrodingerObservabilityEngine",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "Search",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "database.agent.md",
+        "debugger.agent.md",
+        "devops.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "SecurityStabilizerCodes",
+      "operation": "surface-code-error-correction",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "azure-quantum",
+        "aws-braket"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "SelectiveDisclosureDesigner",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "SelfVerifyingFixLoop",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "debugger.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "ServiceBoundaryVerification",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "ServiceCountThreshold",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "ServiceEntanglementMapper",
+      "operation": "exploit-interference",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "azure-quantum",
+        "aws-braket"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "ServiceStabilityClassifier",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "ServiceToServiceWorldTester",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "ShannonQuantumCapacityAnalyzer",
+      "operation": "hybrid-quantum-workflow",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum",
+        "d-wave"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "ShorsAlgorithmSimulator",
+      "operation": "shor-factorization",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "azure-quantum",
+        "aws-braket"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "ShorsAlgorithmThreatAssessor",
+      "operation": "shor-factorization",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "azure-quantum",
+        "aws-braket"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "ShorsServiceDecomposer",
+      "operation": "shor-factorization",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "azure-quantum",
+        "aws-braket"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "SocketIOWorldTester",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "SocketStateCoherence",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "StabilizerCodeGenerator",
+      "operation": "surface-code-error-correction",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "azure-quantum",
+        "aws-braket"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "StageOrderingOptimizer",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "StaleCacheCorrector",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "StatePurificationMigrator",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "database.agent.md"
+      ]
+    },
+    {
+      "toolName": "SuperpositionQueryPlanner",
+      "operation": "exploit-interference",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "azure-quantum",
+        "aws-braket"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "database.agent.md"
+      ]
+    },
+    {
+      "toolName": "SymmetricVsAsymmetricClassifier",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "SymmetricVsAsymmetricCryptoAdvisor",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "SymptomCharacterizer",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "SystemStateCollapser",
+      "operation": "measure-output",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "SystemStateSuperpositionCollapser",
+      "operation": "exploit-interference",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "azure-quantum",
+        "aws-braket"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "TeleportationFidelityDiagnostic",
+      "operation": "exploit-interference",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "azure-quantum",
+        "aws-braket"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "TeleportationFidelityMeasure",
+      "operation": "exploit-interference",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "azure-quantum",
+        "aws-braket"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "ThreatAmplification",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "TimestampBasedObserver",
+      "operation": "measure-output",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "debugger.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "TodoWrite",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "claudecode.agent.md"
+      ]
+    },
+    {
+      "toolName": "TransportSuperpositionDiagnostic",
+      "operation": "exploit-interference",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "azure-quantum",
+        "aws-braket"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "TunnelURLPhaseTransition",
+      "operation": "phase-estimation",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "azure-quantum",
+        "aws-braket"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "TypingSuperpositionMonitor",
+      "operation": "exploit-interference",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "azure-quantum",
+        "aws-braket"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "TypographyRhythmSolver",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "oracle",
+      "agents": []
+    },
+    {
+      "toolName": "UnreadCountMeasurer",
+      "operation": "measure-output",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "URLQuantumManagement",
+      "operation": "hybrid-quantum-workflow",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum",
+        "d-wave"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "VirtualParticleDetector",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "VisualOracleRunner",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "oracle",
+      "agents": []
+    },
+    {
+      "toolName": "VonNeumannInfraEntropyCalculator",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "VonNeumannSchemaNormalization",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "database.agent.md"
+      ]
+    },
+    {
+      "toolName": "VulnerabilityTunneling",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "WaveFunctionCollapse",
+      "operation": "measure-output",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "database.agent.md",
+        "debugger.agent.md",
+        "devops.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "WebFetch",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "database.agent.md",
+        "debugger.agent.md",
+        "devops.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "WinningPlanCircuitTracer",
+      "operation": "apply-gate-circuit",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "database.agent.md"
+      ]
+    },
+    {
+      "toolName": "WorldCollapseResolver",
+      "operation": "measure-output",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "debugger.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "WorldComparer",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "devops.agent.md"
+      ]
+    },
+    {
+      "toolName": "WorldInstantiator",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "debugger.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "Write",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "database.agent.md",
+        "debugger.agent.md",
+        "devops.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "wsww",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md"
+      ]
+    },
+    {
+      "toolName": "ZenoGateInspector",
+      "operation": "apply-gate-circuit",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "ZenoMeasurementGate",
+      "operation": "measure-output",
+      "quantumComputing": true,
+      "providerPreference": [
+        "ibm-quantum",
+        "aws-braket",
+        "azure-quantum"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "frontend.agent.md",
+        "realtime.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "ZenoSaturationDetector",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "backend.agent.md",
+        "claudecode.agent.md",
+        "debugger.agent.md",
+        "frontend.agent.md",
+        "security.agent.md"
+      ]
+    },
+    {
+      "toolName": "ZeroKnowledgeProofArchitecture",
+      "operation": "classical-orchestration",
+      "quantumComputing": false,
+      "providerPreference": [
+        "classical-simulator"
+      ],
+      "sourceCategory": "agent",
+      "agents": [
+        "security.agent.md"
+      ]
+    }
+  ]
+}

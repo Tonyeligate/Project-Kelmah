@@ -4168,7 +4168,7 @@ const getHirerProposals = async (req, res, next) => {
 const updateApplicationStatus = async (req, res, next) => {
   try {
     const { id: jobId, applicationId } = req.params;
-    const { status, notes } = req.body || {};
+    const { status, notes, feedback } = req.body || {};
     const job = await Job.findById(jobId);
     if (!job) return errorResponse(res, 404, 'Job not found');
     if (String(job.hirer) !== String(req.user.id)) {
@@ -4178,9 +4178,91 @@ const updateApplicationStatus = async (req, res, next) => {
     if (!valid.includes(status)) return errorResponse(res, 400, 'Invalid status');
     const app = await Application.findOne({ _id: applicationId, job: jobId });
     if (!app) return errorResponse(res, 404, 'Application not found');
+    if (status === 'accepted' && job.worker && String(job.worker) !== String(app.worker)) {
+      return errorResponse(res, 409, 'Job already assigned to another worker');
+    }
+
     app.status = status;
-    if (notes) app.notes = notes;
+    const noteValue = notes || feedback;
+    if (noteValue) app.notes = noteValue;
     await app.save();
+
+    if (status === 'accepted') {
+
+      if (job.status !== 'in-progress' || !job.worker) {
+        job.status = 'in-progress';
+        job.worker = app.worker;
+        if (!job.startDate) {
+          job.startDate = new Date();
+        }
+        await job.save();
+      }
+
+      await Application.updateMany(
+        {
+          job: jobId,
+          _id: { $ne: app._id },
+          status: { $in: ['pending', 'under_review'] },
+        },
+        {
+          status: 'rejected',
+          notes: 'Another application was accepted for this job.',
+        },
+      );
+
+      const existingContract = await Contract.findOne({
+        job: jobId,
+        worker: app.worker,
+      }).lean();
+
+      if (!existingContract) {
+        const worker = await User.findById(app.worker)
+          .select('firstName lastName')
+          .lean();
+
+        const agreedValue = Number.isFinite(Number(app.proposedRate))
+          ? Number(app.proposedRate)
+          : Number(job.budget || 0);
+
+        const contractPayload = {
+          job: jobId,
+          hirer: job.hirer,
+          worker: app.worker,
+          application: app._id,
+          title: `Contract for ${job.title || 'job'}`,
+          description: `Service contract for ${job.title || 'job'}`,
+          startDate: new Date(),
+          clientName:
+            `${req.user?.firstName || ''} ${req.user?.lastName || ''}`.trim() ||
+            'Client',
+          workerName:
+            `${worker?.firstName || ''} ${worker?.lastName || ''}`.trim() ||
+            'Worker',
+          value: agreedValue,
+          paymentTerms: {
+            type: job.paymentType === 'hourly' ? 'hourly' : 'fixed',
+            rate: agreedValue,
+            currency: job.currency || 'GHS',
+          },
+          milestones: [],
+          deliverables: [],
+          termsAndConditions: {
+            content: '',
+            acceptedByHirer: false,
+            acceptedByWorker: false,
+          },
+          status: 'draft',
+        };
+
+        try {
+          await Contract.create(contractPayload);
+        } catch (contractError) {
+          if (contractError?.code !== 11000) {
+            throw contractError;
+          }
+        }
+      }
+    }
     return successResponse(res, 200, 'Application updated', app);
   } catch (error) { next(error); }
 };

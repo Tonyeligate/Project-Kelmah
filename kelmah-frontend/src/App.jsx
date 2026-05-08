@@ -306,28 +306,74 @@ const App = () => {
 
   // Verify authentication on mount
   useEffect(() => {
-    if (!initialized.current) {
-      initialized.current = true;
+    if (initialized.current) {
+      return undefined;
+    }
 
-      const hasSessionHints = Boolean(
-        secureStorage.getAuthToken() ||
-          secureStorage.getRefreshToken() ||
-          secureStorage.getUserData(),
-      );
+    initialized.current = true;
+    let isUnmounted = false;
 
-      if (!hasSessionHints) {
+    const completeBootstrap = () => {
+      if (!isUnmounted) {
         setAuthBootstrapLoading(false);
-        return;
       }
+    };
 
+    const hasSessionHints = Boolean(
+      secureStorage.getAuthToken() ||
+        secureStorage.getRefreshToken() ||
+        secureStorage.getUserData(),
+    );
+
+    if (!hasSessionHints) {
+      completeBootstrap();
+      return () => {
+        isUnmounted = true;
+      };
+    }
+
+    const runVerify = () => {
       Promise.resolve(dispatch(verifyAuth()))
         .catch(() => {
           // verifyAuth thunk already handles cleanup/state updates
         })
         .finally(() => {
-          setAuthBootstrapLoading(false);
+          completeBootstrap();
         });
+    };
+
+    if (
+      typeof document !== 'undefined' &&
+      document.visibilityState === 'hidden'
+    ) {
+      const handleVisibilityChange = () => {
+        if (document.visibilityState !== 'visible') {
+          return;
+        }
+
+        document.removeEventListener(
+          'visibilitychange',
+          handleVisibilityChange,
+        );
+        runVerify();
+      };
+
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+
+      return () => {
+        isUnmounted = true;
+        document.removeEventListener(
+          'visibilitychange',
+          handleVisibilityChange,
+        );
+      };
     }
+
+    runVerify();
+
+    return () => {
+      isUnmounted = true;
+    };
   }, [dispatch]);
 
   if (authBootstrapLoading) {

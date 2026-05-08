@@ -758,7 +758,9 @@ const routes = [
                 path: 'edit',
                 element: (
                   <ProtectedRoute roles={['worker', 'admin']}>
-                    <WorkerProfileEditPage />
+                    <RouteErrorBoundary label="Profile Editor">
+                      <WorkerProfileEditPage />
+                    </RouteErrorBoundary>
                   </ProtectedRoute>
                 ),
               },
@@ -1328,7 +1330,9 @@ const routes = [
         path: 'profile/upload-cv',
         element: (
           <ProtectedRoute roles={['worker', 'admin']}>
-            <WorkerProfileEditPage />
+            <RouteErrorBoundary label="Profile Editor">
+              <WorkerProfileEditPage />
+            </RouteErrorBoundary>
           </ProtectedRoute>
         ),
       },

@@ -14,6 +14,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.fail
+import org.junit.Assume.assumeTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import retrofit2.HttpException
@@ -29,9 +30,10 @@ class AuthLoginDeviceInstrumentationTest {
         val email = args.getString(ARG_EMAIL)?.trim().orEmpty()
         val password = args.getString(ARG_PASSWORD).orEmpty()
 
-        if (email.isBlank() || password.isBlank()) {
-            fail("Missing instrumentation args: $ARG_EMAIL and $ARG_PASSWORD")
-        }
+        assumeTrue(
+            "Skipping credentialed login instrumentation test because args $ARG_EMAIL and $ARG_PASSWORD were not provided",
+            email.isNotBlank() && password.isNotBlank(),
+        )
 
         val json = Json {
             ignoreUnknownKeys = true

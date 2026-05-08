@@ -3,12 +3,32 @@
 const fs = require('fs');
 const path = require('path');
 
+const { loadCapabilityRegistry, toCapabilityMap } = require('../quantum-runtime/capability-registry');
+
 const REQUIRED_FILES = [
   'belief_state.json',
   'delegation_packets.json',
   'closure_oracle.json',
+  'runtime_execution_telemetry.json',
   'risk_register.json',
   'counterfactual_worlds.json',
+];
+
+const REQUIRED_HARD_TELEMETRY_FIELDS = [
+  'toolName',
+  'operation',
+  'backendCall',
+  'provider',
+  'providerJobId',
+  'executionPath',
+  'circuitDepth',
+  'shots',
+  'fidelity',
+  'errorRate',
+  'costUsd',
+  'latencyMs',
+  'startedAtUtc',
+  'finishedAtUtc',
 ];
 
 const REQUIRED_ELITE_TOOLS = [
@@ -234,6 +254,55 @@ function validateClosureOracle(obj, errors) {
       errors.push(`closure_oracle.json: missing required elite tool '${tool}'`);
     }
   });
+
+  if (!obj.capabilityRegistry || typeof obj.capabilityRegistry !== 'object') {
+    errors.push('closure_oracle.json: capabilityRegistry object is required');
+  } else {
+    if (!obj.capabilityRegistry.schemaVersion) {
+      errors.push('closure_oracle.json: capabilityRegistry.schemaVersion is required');
+    }
+    if (!obj.capabilityRegistry.path || typeof obj.capabilityRegistry.path !== 'string') {
+      errors.push('closure_oracle.json: capabilityRegistry.path must be a string');
+    }
+  }
+
+  if (typeof obj.runtimeExecutionEvidenceFile !== 'string' || obj.runtimeExecutionEvidenceFile.length === 0) {
+    errors.push('closure_oracle.json: runtimeExecutionEvidenceFile must be a non-empty string');
+  }
+
+  if (!Array.isArray(obj.requiredHardTelemetryFields)) {
+    errors.push('closure_oracle.json: requiredHardTelemetryFields must be an array');
+  } else {
+    REQUIRED_HARD_TELEMETRY_FIELDS.forEach((field) => {
+      if (!obj.requiredHardTelemetryFields.includes(field)) {
+        errors.push(`closure_oracle.json: requiredHardTelemetryFields missing '${field}'`);
+      }
+    });
+  }
+
+  if (!obj.runtimeExecutionSummary || typeof obj.runtimeExecutionSummary !== 'object') {
+    errors.push('closure_oracle.json: runtimeExecutionSummary object is required');
+    return;
+  }
+
+  if (!Array.isArray(obj.runtimeExecutionSummary.requiredRuntimeTools)) {
+    errors.push('closure_oracle.json: runtimeExecutionSummary.requiredRuntimeTools must be an array');
+  } else {
+    obj.activatedEliteTools.forEach((tool) => {
+      if (!obj.runtimeExecutionSummary.requiredRuntimeTools.includes(tool)) {
+        errors.push(`closure_oracle.json: runtimeExecutionSummary.requiredRuntimeTools missing activated tool '${tool}'`);
+      }
+    });
+  }
+
+  if (typeof obj.runtimeExecutionSummary.requiredRuntimeToolsCount !== 'number') {
+    errors.push('closure_oracle.json: runtimeExecutionSummary.requiredRuntimeToolsCount must be a number');
+  } else if (
+    Array.isArray(obj.runtimeExecutionSummary.requiredRuntimeTools)
+    && obj.runtimeExecutionSummary.requiredRuntimeToolsCount !== obj.runtimeExecutionSummary.requiredRuntimeTools.length
+  ) {
+    errors.push('closure_oracle.json: runtimeExecutionSummary.requiredRuntimeToolsCount must equal requiredRuntimeTools length');
+  }
 }
 
 function validateCounterfactualWorlds(obj, errors) {
@@ -836,6 +905,208 @@ function validateWorldVerificationReport(obj, errors) {
   }
 }
 
+function isFiniteNumber(value) {
+  return typeof value === 'number' && !Number.isNaN(value);
+}
+
+function validateRuntimeExecutionTelemetry(obj, closure, errors, warnings) {
+  if (!obj || typeof obj !== 'object') {
+    errors.push('runtime_execution_telemetry.json: object is required');
+    return;
+  }
+
+  if (obj.closureVerdict !== 'PASS') {
+    errors.push(`runtime_execution_telemetry.json: closureVerdict must be PASS (received '${obj.closureVerdict}')`);
+  }
+
+  if (!obj.runtimeExecution || typeof obj.runtimeExecution !== 'object') {
+    errors.push('runtime_execution_telemetry.json: runtimeExecution object is required');
+    return;
+  }
+
+  if (!Array.isArray(obj.requiredHardTelemetryFields)) {
+    errors.push('runtime_execution_telemetry.json: requiredHardTelemetryFields must be an array');
+  } else {
+    REQUIRED_HARD_TELEMETRY_FIELDS.forEach((field) => {
+      if (!obj.requiredHardTelemetryFields.includes(field)) {
+        errors.push(`runtime_execution_telemetry.json: requiredHardTelemetryFields missing '${field}'`);
+      }
+    });
+  }
+
+  const runtime = obj.runtimeExecution;
+
+  if (!Array.isArray(runtime.requiredRuntimeTools)) {
+    errors.push('runtime_execution_telemetry.json: runtimeExecution.requiredRuntimeTools must be an array');
+  }
+
+  const closureRequiredTools = Array.isArray(closure && closure.runtimeExecutionSummary && closure.runtimeExecutionSummary.requiredRuntimeTools)
+    ? closure.runtimeExecutionSummary.requiredRuntimeTools
+    : Array.isArray(closure && closure.activatedEliteTools)
+      ? closure.activatedEliteTools
+      : [];
+
+  const requiredRuntimeTools = Array.isArray(runtime.requiredRuntimeTools) ? runtime.requiredRuntimeTools : [];
+  closureRequiredTools.forEach((tool) => {
+    if (!requiredRuntimeTools.includes(tool)) {
+      errors.push(`runtime_execution_telemetry.json: requiredRuntimeTools missing closure-required tool '${tool}'`);
+    }
+  });
+
+  if (!isFiniteNumber(runtime.requiredRuntimeToolsCount)) {
+    errors.push('runtime_execution_telemetry.json: runtimeExecution.requiredRuntimeToolsCount must be numeric');
+  } else if (runtime.requiredRuntimeToolsCount !== requiredRuntimeTools.length) {
+    errors.push('runtime_execution_telemetry.json: requiredRuntimeToolsCount must equal requiredRuntimeTools length');
+  }
+
+  if (!Array.isArray(runtime.telemetryRecords) || runtime.telemetryRecords.length === 0) {
+    errors.push('runtime_execution_telemetry.json: runtimeExecution.telemetryRecords must be a non-empty array');
+    return;
+  }
+
+  const capabilityMap = toCapabilityMap(loadCapabilityRegistry());
+  const executedTools = new Set();
+  let quantumProviderJobs = 0;
+  let classicalFallbackJobs = 0;
+
+  runtime.telemetryRecords.forEach((record, idx) => {
+    if (!record || typeof record !== 'object') {
+      errors.push(`runtime_execution_telemetry.json: telemetryRecords[${idx}] must be an object`);
+      return;
+    }
+
+    REQUIRED_HARD_TELEMETRY_FIELDS.forEach((field) => {
+      if (!(field in record)) {
+        errors.push(`runtime_execution_telemetry.json: telemetryRecords[${idx}] missing '${field}'`);
+      }
+    });
+
+    if (!record.toolName || typeof record.toolName !== 'string') {
+      errors.push(`runtime_execution_telemetry.json: telemetryRecords[${idx}].toolName must be a non-empty string`);
+    } else {
+      executedTools.add(record.toolName);
+      if (!capabilityMap.has(record.toolName)) {
+        warnings.push(`runtime_execution_telemetry.json: telemetryRecords[${idx}] references unknown tool '${record.toolName}'`);
+      }
+    }
+
+    if (!record.operation || typeof record.operation !== 'string') {
+      errors.push(`runtime_execution_telemetry.json: telemetryRecords[${idx}].operation must be a non-empty string`);
+    }
+
+    if (!record.backendCall || typeof record.backendCall !== 'object') {
+      errors.push(`runtime_execution_telemetry.json: telemetryRecords[${idx}].backendCall must be an object`);
+    }
+
+    if (!record.provider || typeof record.provider !== 'string') {
+      errors.push(`runtime_execution_telemetry.json: telemetryRecords[${idx}].provider must be a non-empty string`);
+    }
+
+    if (!record.providerJobId || typeof record.providerJobId !== 'string') {
+      errors.push(`runtime_execution_telemetry.json: telemetryRecords[${idx}].providerJobId must be a non-empty string`);
+    }
+
+    if (record.executionPath === 'quantum-provider') {
+      quantumProviderJobs += 1;
+    } else if (record.executionPath === 'classical-fallback') {
+      classicalFallbackJobs += 1;
+    } else {
+      errors.push(`runtime_execution_telemetry.json: telemetryRecords[${idx}].executionPath must be 'quantum-provider' or 'classical-fallback'`);
+    }
+
+    if (!isFiniteNumber(record.circuitDepth) || record.circuitDepth <= 0) {
+      errors.push(`runtime_execution_telemetry.json: telemetryRecords[${idx}].circuitDepth must be > 0`);
+    }
+
+    if (!isFiniteNumber(record.shots) || record.shots <= 0) {
+      errors.push(`runtime_execution_telemetry.json: telemetryRecords[${idx}].shots must be > 0`);
+    }
+
+    if (!isFiniteNumber(record.fidelity) || record.fidelity < 0 || record.fidelity > 1) {
+      errors.push(`runtime_execution_telemetry.json: telemetryRecords[${idx}].fidelity must be between 0 and 1`);
+    }
+
+    if (!isFiniteNumber(record.errorRate) || record.errorRate < 0 || record.errorRate > 1) {
+      errors.push(`runtime_execution_telemetry.json: telemetryRecords[${idx}].errorRate must be between 0 and 1`);
+    }
+
+    if (!isFiniteNumber(record.costUsd) || record.costUsd < 0) {
+      errors.push(`runtime_execution_telemetry.json: telemetryRecords[${idx}].costUsd must be >= 0`);
+    }
+
+    if (!isFiniteNumber(record.latencyMs) || record.latencyMs <= 0) {
+      errors.push(`runtime_execution_telemetry.json: telemetryRecords[${idx}].latencyMs must be > 0`);
+    }
+
+    if (!record.startedAtUtc || !record.finishedAtUtc) {
+      errors.push(`runtime_execution_telemetry.json: telemetryRecords[${idx}] must include startedAtUtc and finishedAtUtc`);
+    }
+  });
+
+  if (!isFiniteNumber(runtime.executedRuntimeCallsCount)) {
+    errors.push('runtime_execution_telemetry.json: runtimeExecution.executedRuntimeCallsCount must be numeric');
+  } else if (runtime.executedRuntimeCallsCount !== runtime.telemetryRecords.length) {
+    errors.push('runtime_execution_telemetry.json: executedRuntimeCallsCount must equal telemetryRecords length');
+  }
+
+  if (!isFiniteNumber(runtime.uniqueExecutedToolsCount)) {
+    errors.push('runtime_execution_telemetry.json: runtimeExecution.uniqueExecutedToolsCount must be numeric');
+  } else if (runtime.uniqueExecutedToolsCount !== executedTools.size) {
+    errors.push('runtime_execution_telemetry.json: uniqueExecutedToolsCount must equal unique tool names in telemetryRecords');
+  }
+
+  const missingRequiredTools = closureRequiredTools.filter((tool) => !executedTools.has(tool));
+  if (missingRequiredTools.length > 0) {
+    errors.push(`runtime_execution_telemetry.json: missing required tool executions: ${missingRequiredTools.join(', ')}`);
+  }
+
+  if (!Array.isArray(runtime.missingRequiredTools)) {
+    errors.push('runtime_execution_telemetry.json: runtimeExecution.missingRequiredTools must be an array');
+  } else {
+    const declaredMissing = runtime.missingRequiredTools.map((item) => String(item));
+    missingRequiredTools.forEach((tool) => {
+      if (!declaredMissing.includes(tool)) {
+        errors.push(`runtime_execution_telemetry.json: missingRequiredTools must include '${tool}'`);
+      }
+    });
+    declaredMissing.forEach((tool) => {
+      if (!missingRequiredTools.includes(tool)) {
+        errors.push(`runtime_execution_telemetry.json: missingRequiredTools contains non-missing tool '${tool}'`);
+      }
+    });
+  }
+
+  const coveragePct = closureRequiredTools.length > 0
+    ? Number((((closureRequiredTools.length - missingRequiredTools.length) / closureRequiredTools.length) * 100).toFixed(2))
+    : 100;
+
+  if (!isFiniteNumber(runtime.runtimeCoveragePct)) {
+    errors.push('runtime_execution_telemetry.json: runtimeExecution.runtimeCoveragePct must be numeric');
+  } else if (Math.abs(runtime.runtimeCoveragePct - coveragePct) > 0.5) {
+    errors.push('runtime_execution_telemetry.json: runtimeCoveragePct does not match computed coverage');
+  }
+
+  if (!isFiniteNumber(runtime.quantumProviderJobsCount)) {
+    errors.push('runtime_execution_telemetry.json: runtimeExecution.quantumProviderJobsCount must be numeric');
+  } else if (runtime.quantumProviderJobsCount !== quantumProviderJobs) {
+    errors.push('runtime_execution_telemetry.json: quantumProviderJobsCount must equal quantum-provider telemetry records');
+  }
+
+  if (!isFiniteNumber(runtime.classicalFallbackJobsCount)) {
+    errors.push('runtime_execution_telemetry.json: runtimeExecution.classicalFallbackJobsCount must be numeric');
+  } else if (runtime.classicalFallbackJobsCount !== classicalFallbackJobs) {
+    errors.push('runtime_execution_telemetry.json: classicalFallbackJobsCount must equal classical-fallback telemetry records');
+  }
+
+  if ((quantumProviderJobs + classicalFallbackJobs) !== runtime.telemetryRecords.length) {
+    errors.push('runtime_execution_telemetry.json: quantumProviderJobsCount + classicalFallbackJobsCount must equal telemetryRecords length');
+  }
+
+  if (runtime.runtimeCoveragePct < 100) {
+    errors.push(`runtime_execution_telemetry.json: runtimeCoveragePct must be 100 (received ${runtime.runtimeCoveragePct})`);
+  }
+}
+
 function main() {
   const args = parseArgs(process.argv);
   if (args.help) {
@@ -876,6 +1147,7 @@ function main() {
     const belief = readJson(path.join(bundleDir, 'belief_state.json'), report.errors, 'belief_state.json');
     const packets = readJson(path.join(bundleDir, 'delegation_packets.json'), report.errors, 'delegation_packets.json');
     const closure = readJson(path.join(bundleDir, 'closure_oracle.json'), report.errors, 'closure_oracle.json');
+    const runtimeTelemetry = readJson(path.join(bundleDir, 'runtime_execution_telemetry.json'), report.errors, 'runtime_execution_telemetry.json');
     const risk = readJson(path.join(bundleDir, 'risk_register.json'), report.errors, 'risk_register.json');
     const worlds = readJson(path.join(bundleDir, 'counterfactual_worlds.json'), report.errors, 'counterfactual_worlds.json');
 
@@ -883,6 +1155,9 @@ function main() {
       validateBeliefState(belief, report.errors, report.warnings);
       validateDelegationPackets(packets, report.errors);
       validateClosureOracle(closure, report.errors);
+      if (runtimeTelemetry) {
+        validateRuntimeExecutionTelemetry(runtimeTelemetry, closure, report.errors, report.warnings);
+      }
       validateRiskRegister(risk, report.errors);
       validateCounterfactualWorlds(worlds, report.errors);
 

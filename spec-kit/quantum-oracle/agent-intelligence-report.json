@@ -1,34 +1,28 @@
 {
-  "generatedAtUtc": "2026-04-01T18:15:51.309Z",
+  "generatedAtUtc": "2026-04-16T17:53:31.594Z",
   "quarter": "Q2-2026",
   "inputSummary": "spec-kit/quantum-oracle/learning-ledger-summary.json",
   "learningEnabledTaskCount": 3,
+  "totalRuntimeCalls": 16,
+  "totalQuantumProviderJobs": 0,
+  "totalClassicalFallbackJobs": 16,
   "advancedMissingLearningEvidence": [],
   "methodology": {
     "weights": {
-      "growthVelocity": 0.3,
-      "transferSuccess": 0.25,
-      "regressionPreventionStrength": 0.2,
+      "growthVelocity": 0.18,
+      "transferSuccess": 0.16,
+      "regressionPreventionStrength": 0.12,
       "gateMaturity": 0.1,
-      "toolchainDepth": 0.15,
+      "toolchainDepth": 0.1,
+      "runtimeCoverage": 0.16,
+      "runtimeExecutionEvidence": 0.1,
+      "runtimeDepth": 0.08,
       "immersiveSupportReadinessBlend": 0.1
     },
-    "note": "Scores are normalized from learning-ledger evidence, gate maturity, tool activation depth, and immersive readiness coverage."
+    "note": "Scores are normalized from learning evidence, executed runtime telemetry coverage/depth, gate maturity, and immersive readiness coverage."
   },
   "immersiveReadinessGlobal": 100,
   "agents": [
-    {
-      "agent": "frontend",
-      "gateCount": 28,
-      "learningTasks": 2,
-      "growthVelocity": 66.7,
-      "transferSuccess": 100,
-      "regressionPreventionStrength": 50,
-      "gateMaturity": 100,
-      "toolchainDepth": 95,
-      "immersiveSupportReadiness": 100,
-      "overallScore": 81.3
-    },
     {
       "agent": "backend",
       "gateCount": 13,
@@ -38,8 +32,28 @@
       "regressionPreventionStrength": 50,
       "gateMaturity": 81.3,
       "toolchainDepth": 80,
+      "runtimeCoverage": 100,
+      "runtimeExecutionEvidence": 100,
+      "runtimeDepth": 100,
+      "quantumProviderUtilization": 0,
       "immersiveSupportReadiness": 100,
-      "overallScore": 68.6
+      "overallScore": 80.3
+    },
+    {
+      "agent": "frontend",
+      "gateCount": 0,
+      "learningTasks": 2,
+      "growthVelocity": 66.7,
+      "transferSuccess": 100,
+      "regressionPreventionStrength": 50,
+      "gateMaturity": 0,
+      "toolchainDepth": 95,
+      "runtimeCoverage": 0,
+      "runtimeExecutionEvidence": 0,
+      "runtimeDepth": 0,
+      "quantumProviderUtilization": 0,
+      "immersiveSupportReadiness": 100,
+      "overallScore": 49.2
     },
     {
       "agent": "debugger",
@@ -50,6 +64,10 @@
       "regressionPreventionStrength": 0,
       "gateMaturity": 100,
       "toolchainDepth": 0,
+      "runtimeCoverage": 0,
+      "runtimeExecutionEvidence": 0,
+      "runtimeDepth": 0,
+      "quantumProviderUtilization": 0,
       "immersiveSupportReadiness": 100,
       "overallScore": 19
     },
@@ -62,6 +80,10 @@
       "regressionPreventionStrength": 0,
       "gateMaturity": 50,
       "toolchainDepth": 0,
+      "runtimeCoverage": 0,
+      "runtimeExecutionEvidence": 0,
+      "runtimeDepth": 0,
+      "quantumProviderUtilization": 0,
       "immersiveSupportReadiness": 100,
       "overallScore": 14.5
     },
@@ -74,6 +96,10 @@
       "regressionPreventionStrength": 0,
       "gateMaturity": 50,
       "toolchainDepth": 0,
+      "runtimeCoverage": 0,
+      "runtimeExecutionEvidence": 0,
+      "runtimeDepth": 0,
+      "quantumProviderUtilization": 0,
       "immersiveSupportReadiness": 100,
       "overallScore": 14.5
     },
@@ -86,6 +112,10 @@
       "regressionPreventionStrength": 0,
       "gateMaturity": 50,
       "toolchainDepth": 0,
+      "runtimeCoverage": 0,
+      "runtimeExecutionEvidence": 0,
+      "runtimeDepth": 0,
+      "quantumProviderUtilization": 0,
       "immersiveSupportReadiness": 100,
       "overallScore": 14.5
     },
@@ -98,20 +128,28 @@
       "regressionPreventionStrength": 0,
       "gateMaturity": 50,
       "toolchainDepth": 0,
+      "runtimeCoverage": 0,
+      "runtimeExecutionEvidence": 0,
+      "runtimeDepth": 0,
+      "quantumProviderUtilization": 0,
       "immersiveSupportReadiness": 100,
       "overallScore": 14.5
     }
   ],
   "topAgent": {
-    "agent": "frontend",
-    "gateCount": 28,
-    "learningTasks": 2,
-    "growthVelocity": 66.7,
+    "agent": "backend",
+    "gateCount": 13,
+    "learningTasks": 1,
+    "growthVelocity": 33.3,
     "transferSuccess": 100,
     "regressionPreventionStrength": 50,
-    "gateMaturity": 100,
-    "toolchainDepth": 95,
+    "gateMaturity": 81.3,
+    "toolchainDepth": 80,
+    "runtimeCoverage": 100,
+    "runtimeExecutionEvidence": 100,
+    "runtimeDepth": 100,
+    "quantumProviderUtilization": 0,
     "immersiveSupportReadiness": 100,
-    "overallScore": 81.3
+    "overallScore": 80.3
   }
 }

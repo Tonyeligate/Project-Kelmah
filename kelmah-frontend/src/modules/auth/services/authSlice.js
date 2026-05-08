@@ -24,6 +24,21 @@ const normalizeAuthUser = (user) => {
   return normalizeUser(user._raw || user);
 };
 
+const isDocumentCurrentlyHidden = () =>
+  typeof document !== 'undefined' && document.visibilityState === 'hidden';
+
+const hasStoredSessionHint = () => {
+  try {
+    return Boolean(
+      secureStorage.getAuthToken() ||
+        secureStorage.getUserData() ||
+        secureStorage.getRefreshToken(),
+    );
+  } catch {
+    return false;
+  }
+};
+
 const resolveInitialAuthState = () => {
   try {
     const token = secureStorage.getAuthToken();
@@ -125,6 +140,14 @@ export const verifyAuth = createAsyncThunk(
     try {
       devLog('Verifying auth status...');
 
+      if (isDocumentCurrentlyHidden() && hasStoredSessionHint()) {
+        return rejectWithValue({
+          message: null,
+          shouldReset: false,
+          silent: true,
+        });
+      }
+
       // Development mock authentication disabled - always verify via API
 
       // Production mode auth verification logic - cookie and token aware
@@ -219,10 +242,12 @@ export const verifyAuth = createAsyncThunk(
         typeof error?.isNetworkError === 'boolean'
           ? error.isNetworkError
           : /network/i.test(message) || /timeout/i.test(message);
+      const hiddenWithSessionHint =
+        isDocumentCurrentlyHidden() && hasStoredSessionHint();
       const shouldReset =
         typeof error?.shouldReset === 'boolean'
           ? error.shouldReset
-          : !isNetworkError;
+          : !isNetworkError && !hiddenWithSessionHint;
 
       if (shouldReset) {
         secureStorage.clearAuthData();
@@ -231,6 +256,7 @@ export const verifyAuth = createAsyncThunk(
       return rejectWithValue({
         message,
         shouldReset,
+        silent: hiddenWithSessionHint,
       });
     }
   },

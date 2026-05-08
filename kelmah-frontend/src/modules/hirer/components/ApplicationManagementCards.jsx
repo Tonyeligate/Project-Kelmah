@@ -39,6 +39,17 @@ const formatGhanaCurrencyLabel = (value) => {
   }).format(amount);
 };
 
+const resolveCardJobTitleLabel = (jobTitle) => {
+  const normalizedValue =
+    typeof jobTitle === 'string' ? jobTitle.trim() : '';
+
+  if (!normalizedValue || normalizedValue.toLowerCase() === 'unknown job') {
+    return 'Job context pending';
+  }
+
+  return normalizedValue;
+};
+
 export const ApplicationCard = ({
   application,
   isSelected,
@@ -58,10 +69,22 @@ export const ApplicationCard = ({
   const appliedDate = application.createdAt
     ? new Date(application.createdAt)
     : null;
+  const appliedDateLabel =
+    appliedDate && !Number.isNaN(appliedDate.getTime())
+      ? appliedDate.toLocaleDateString('en-GH', {
+          day: 'numeric',
+          month: 'short',
+          year: 'numeric',
+        })
+      : null;
   const appliedAgo =
     appliedDate && !Number.isNaN(appliedDate.getTime())
       ? formatDistanceToNow(appliedDate, { addSuffix: true })
       : null;
+  const parsedRating = Number(application?.workerRating);
+  const hasRating = Number.isFinite(parsedRating);
+  const cardJobTitleLabel = resolveCardJobTitleLabel(application?.jobTitle);
+  const hasLongCoverLetter = String(application?.coverLetter || '').length > 160;
   const handleCardKeyDown = (event) => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
@@ -128,12 +151,19 @@ export const ApplicationCard = ({
                 {application.workerName}
               </Typography>
               {application.workerRating !== null ? (
-                <Rating
-                  value={application.workerRating}
-                  precision={0.5}
-                  readOnly
-                  size="small"
-                />
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6 }}>
+                  <Rating
+                    value={parsedRating}
+                    precision={0.5}
+                    readOnly
+                    size="small"
+                  />
+                  {hasRating && (
+                    <Typography variant="caption" color="text.secondary">
+                      {parsedRating.toFixed(1)}
+                    </Typography>
+                  )}
+                </Box>
               ) : (
                 <Typography variant="caption" color="text.disabled">
                   No reviews yet
@@ -159,7 +189,7 @@ export const ApplicationCard = ({
               <Chip
                 size="small"
                 icon={<Work sx={{ fontSize: 14 }} />}
-                label={application.jobTitle || 'Unknown job'}
+                label={cardJobTitleLabel}
                 variant="outlined"
                 sx={{
                   maxWidth: '100%',
@@ -192,6 +222,15 @@ export const ApplicationCard = ({
           >
             {application.coverLetter}
           </Typography>
+          {hasLongCoverLetter && (
+            <Typography
+              variant="caption"
+              color="text.disabled"
+              sx={{ mt: 0.3, display: 'block' }}
+            >
+              Select this card to read the full note.
+            </Typography>
+          )}
           {application.proposedRate != null && (
             <Typography
               variant="caption"
@@ -226,11 +265,13 @@ export const ApplicationCard = ({
                 display: 'flex',
                 alignItems: 'center',
                 gap: 0.4,
+                flexWrap: 'wrap',
                 fontSize: { xs: '0.82rem', sm: '0.85rem' },
               }}
             >
               <Schedule sx={{ fontSize: { xs: 12, sm: 13 } }} />
               Applied {appliedAgo}
+              {appliedDateLabel && ` • ${appliedDateLabel}`}
             </Typography>
           )}
 
@@ -239,7 +280,7 @@ export const ApplicationCard = ({
               sx={{
                 mt: 0.85,
                 pt: 0.85,
-                borderTop: `1px dashed ${alpha(theme.palette.divider, 0.7)}`,
+                borderTop: `1px solid ${alpha(theme.palette.divider, 0.72)}`,
                 display: 'grid',
                 gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
                 gap: 0.6,

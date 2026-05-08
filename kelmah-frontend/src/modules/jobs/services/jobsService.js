@@ -50,6 +50,31 @@ const normalizeSkills = (skills) => {
   return skills.map((skill) => normalizeTextValue(skill)).filter(Boolean);
 };
 
+const normalizeDateValue = (value, fallback = null) => {
+  if (value === null || value === undefined || value === '') return fallback;
+
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? fallback : value.toISOString();
+  }
+
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (!trimmed) return fallback;
+    const parsed = new Date(trimmed);
+    return Number.isNaN(parsed.getTime()) ? fallback : trimmed;
+  }
+
+  if (typeof value === 'number') {
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? fallback : parsed.toISOString();
+  }
+
+  const normalizedText = normalizeTextValue(value);
+  if (!normalizedText) return fallback;
+  const parsed = new Date(normalizedText);
+  return Number.isNaN(parsed.getTime()) ? fallback : normalizedText;
+};
+
 const normalizeJobMedia = (job) => {
   if (!job || typeof job !== 'object') return [];
 
@@ -166,14 +191,13 @@ const transformJobListItem = (job) => {
     location: normalizeLocationValue(job.location || job.locationDetails),
     skills: normalizeSkills(job.skills),
     // Map API date fields to frontend expected fields
-    postedDate: job.createdAt ? new Date(job.createdAt) : new Date(),
+    postedDate: normalizeDateValue(
+      job.createdAt || job.postedDate,
+      new Date().toISOString(),
+    ),
     // U-05 FIX: Use actual bid deadline or null - never fabricate a deadline
-    deadline: job.endDate
-      ? new Date(job.endDate)
-      : job.bidding?.bidDeadline
-        ? new Date(job.bidding.bidDeadline)
-        : null,
-    startDate: job.startDate ? new Date(job.startDate) : new Date(),
+    deadline: normalizeDateValue(job.endDate || job.bidding?.bidDeadline, null),
+    startDate: normalizeDateValue(job.startDate, new Date().toISOString()),
     // Employer information
     employer,
     hirer: employer, // Backward compatibility
@@ -487,14 +511,19 @@ const jobsApi = {
                 }) ||
                 rawCoverImage ||
                 '',
-              created_at: raw.created_at || raw.createdAt || raw.postedDate,
+              created_at: normalizeDateValue(
+                raw.created_at || raw.createdAt || raw.postedDate,
+                raw.created_at || raw.createdAt || raw.postedDate,
+              ),
               hirer_name: raw.hirer_name || normalizedHirer?.name,
-              postedDate:
-                raw.postedDate ||
-                (raw.createdAt ? new Date(raw.createdAt) : undefined),
-              deadline:
-                raw.deadline ||
-                (raw.endDate ? new Date(raw.endDate) : undefined),
+              postedDate: normalizeDateValue(
+                raw.postedDate || raw.createdAt,
+                raw.postedDate || raw.createdAt,
+              ),
+              deadline: normalizeDateValue(
+                raw.deadline || raw.endDate,
+                raw.deadline || raw.endDate,
+              ),
               skills: Array.isArray(raw.skills)
                 ? raw.skills
                 : typeof raw.skills_required === 'string'

@@ -134,6 +134,11 @@ describe('hirer review responses route and count consistency', () => {
       expect(mockNavigate).toHaveBeenNthCalledWith(
         1,
         '/hirer/jobs/job-app-1/applicants',
+        {
+          state: {
+            jobTitle: 'Epoxy Floor Coating - Factory Floor',
+          },
+        },
       );
       expect(mockNavigate).toHaveBeenNthCalledWith(
         2,

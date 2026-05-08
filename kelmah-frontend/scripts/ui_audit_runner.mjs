@@ -204,6 +204,13 @@ const isLikelyProtectedRoute = (route = '/') => {
 
 const isPublicRouteCapture = (route = '/') => !isLikelyProtectedRoute(route);
 
+const hasUiAuditSimulationState = (routeValue = '/') => {
+  const normalizedRoute = String(routeValue || '/').toLowerCase();
+  return /(?:^|[?&])state=(route-fallback|in-app-fallback|global-fallback)\b/.test(
+    normalizedRoute,
+  );
+};
+
 const navigateWithFallback = async (page, url) => {
   try {
     await page.goto(url, {
@@ -406,6 +413,80 @@ const buildMockPublicJobsListPayload = (requestUrl) => {
   };
 };
 
+const buildMockPublicJobDetailsPayload = (requestUrl) => {
+  let jobId = 'ui-audit-job-1';
+
+  try {
+    const parsed = new URL(requestUrl);
+    const segments = parsed.pathname.split('/').filter(Boolean);
+    const tail = segments[segments.length - 1];
+    if (tail) {
+      jobId = tail;
+    }
+  } catch (_) {
+    // Keep defaults if URL parsing fails.
+  }
+
+  const now = Date.now();
+  const dayMs = 24 * 60 * 60 * 1000;
+
+  return {
+    success: true,
+    data: {
+      _id: jobId,
+      id: jobId,
+      title: 'Kitchen Cabinet Installation and Finishing',
+      description:
+        'Need an experienced carpenter to install, level, and finish custom kitchen cabinets for a two-bedroom home. Materials are available on-site and work should start this week.',
+      category: 'Carpentry',
+      type: 'onsite',
+      status: 'open',
+      budget: {
+        min: 450,
+        max: 800,
+        type: 'fixed',
+      },
+      paymentType: 'fixed',
+      proposalCount: 12,
+      viewCount: 68,
+      urgent: false,
+      createdAt: new Date(now - dayMs * 2).toISOString(),
+      startDate: new Date(now + dayMs * 3).toISOString(),
+      endDate: new Date(now + dayMs * 14).toISOString(),
+      duration: {
+        value: 2,
+        unit: 'week',
+      },
+      bidding: {
+        bidStatus: 'open',
+      },
+      location: {
+        city: 'Accra',
+        region: 'Greater Accra',
+        type: 'onsite',
+      },
+      skills: ['Cabinetry', 'Wood Finishing', 'Measurements'],
+      hirer: {
+        _id: 'ui-audit-hirer-1',
+        id: 'ui-audit-hirer-1',
+        firstName: 'Gifty',
+        lastName: 'Afisa',
+        name: 'Gifty Afisa',
+        email: 'giftyafisa@gmail.com',
+        companyName: 'Afisa Interiors',
+        verified: true,
+        rating: 4.7,
+        jobsPosted: 24,
+        createdAt: '2025-01-15T10:00:00.000Z',
+        location: {
+          city: 'Accra',
+          region: 'Greater Accra',
+        },
+      },
+    },
+  };
+};
+
 const buildMockUserCredentialsPayload = (mockUser) => ({
   success: true,
   data: {
@@ -419,6 +500,78 @@ const buildMockUserCredentialsPayload = (mockUser) => ({
     skills: [],
     licenses: [],
     certifications: [],
+  },
+});
+
+const buildMockWorkerProfilePayload = (mockUser) => {
+  const worker = {
+    _id: mockUser?._id || mockUser?.id || 'ui-audit-worker-1',
+    id: mockUser?.id || mockUser?._id || 'ui-audit-worker-1',
+    firstName: mockUser?.firstName || 'Kwame',
+    lastName: mockUser?.lastName || 'Mensah',
+    title: 'Certified Carpenter',
+    bio: 'Detail-oriented carpenter with residential renovation experience.',
+    hourlyRate: 120,
+    experience: 6,
+    location: 'Accra',
+    phone: '+233240000000',
+    profilePicture: null,
+    availability: {
+      status: 'available',
+    },
+    skills: [
+      { name: 'Cabinetry' },
+      { name: 'Wood Finishing' },
+      { name: 'Measurements' },
+    ],
+    education: [],
+    languages: [{ language: 'English', proficiency: 'Advanced' }],
+    portfolio: [],
+  };
+
+  return {
+    success: true,
+    data: {
+      ...worker,
+      worker,
+    },
+  };
+};
+
+const buildMockSettingsPayload = () => ({
+  success: true,
+  data: {
+    theme: 'light',
+    language: 'en',
+    notifications: {
+      email: true,
+      push: true,
+      sms: false,
+      inApp: true,
+    },
+    privacy: {
+      profileVisibility: 'public',
+      showEmail: false,
+      showPhone: false,
+    },
+  },
+});
+
+const buildMockWorkerApplicationsPayload = () => ({
+  success: true,
+  data: [],
+});
+
+const buildMockAssignedJobsPayload = () => ({
+  success: true,
+  data: {
+    results: [],
+    pagination: {
+      page: 1,
+      limit: 20,
+      total: 0,
+      totalPages: 1,
+    },
   },
 });
 
@@ -788,6 +941,9 @@ const wireMockRoutes = async ({
   const shouldMockPublicJobsList =
     isPublicRoute &&
     (shouldMockHomeJobsList || shouldMockWorkerSearch || mockPublicData);
+  const shouldMockPublicJobDetails =
+    isPublicRoute &&
+    (normalizedRoutePath.startsWith('/jobs/') || mockPublicData);
 
   await page.route('**/api/health/aggregate*', async (route) => {
     await route.fulfill({
@@ -856,6 +1012,18 @@ const wireMockRoutes = async ({
     });
   }
 
+  if (shouldMockPublicJobDetails) {
+    await page.route(/\/api\/jobs\/[^/?]+(?:\?.*)?$/i, async (routeRequest) => {
+      await routeRequest.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(
+          buildMockPublicJobDetailsPayload(routeRequest.request().url()),
+        ),
+      });
+    });
+  }
+
   if (mockAuth) {
     const accessToken = buildMockJwt(mockUser);
     const refreshToken = buildMockJwt(
@@ -918,6 +1086,14 @@ const wireMockRoutes = async ({
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify(buildMockUserCredentialsPayload(mockUser)),
+      });
+    });
+
+    await page.route(/\/api\/users\/workers\/[^/]+(?:\?.*)?$/i, async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(buildMockWorkerProfilePayload(mockUser)),
       });
     });
 
@@ -1048,6 +1224,30 @@ const wireMockRoutes = async ({
           success: true,
           data: [],
         }),
+      });
+    });
+
+    await page.route('**/api/settings*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(buildMockSettingsPayload()),
+      });
+    });
+
+    await page.route('**/api/jobs/applications/me*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(buildMockWorkerApplicationsPayload()),
+      });
+    });
+
+    await page.route('**/api/jobs/assigned*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(buildMockAssignedJobsPayload()),
       });
     });
   }
@@ -1520,6 +1720,7 @@ const main = async () => {
     mockAuth &&
     isLikelyProtectedRoute(route) &&
     (!authEmail || !authPassword);
+  const shouldEnableUiAuditSimulation = hasUiAuditSimulationState(route);
   const effectiveAuthEmail =
     authEmail || (shouldAutologinMockUser ? 'ui-audit@kelmah.test' : null);
   const effectiveAuthPassword =
@@ -1567,6 +1768,12 @@ const main = async () => {
         deviceScaleFactor: 1,
         serviceWorkers: 'block',
       });
+
+      if (shouldEnableUiAuditSimulation) {
+        await context.addInitScript(() => {
+          window.__KELMAH_UI_AUDIT__ = true;
+        });
+      }
 
       const page = await context.newPage();
       page.on('console', (msg) => {

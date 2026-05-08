@@ -3,6 +3,12 @@
 const fs = require('fs');
 const path = require('path');
 
+const {
+  writeCapabilityRegistry,
+  loadCapabilityRegistry,
+  toCapabilityMap,
+} = require('../quantum-runtime/capability-registry');
+
 const ADVANCED_TASK_TYPES = new Set([
   'ui-optimization',
   'adaptive-interface',
@@ -83,6 +89,23 @@ const LEARNING_TOOLS = [
   'RegressionPreventionCompiler',
 ];
 
+const HARD_TELEMETRY_FIELDS = [
+  'toolName',
+  'operation',
+  'backendCall',
+  'provider',
+  'providerJobId',
+  'executionPath',
+  'circuitDepth',
+  'shots',
+  'fidelity',
+  'errorRate',
+  'costUsd',
+  'latencyMs',
+  'startedAtUtc',
+  'finishedAtUtc',
+];
+
 function parseArgs(argv) {
   const parsed = {
     taskId: null,
@@ -136,6 +159,7 @@ function requiredByTaskType(taskType) {
     'belief_state',
     'delegation_packets',
     'closure_oracle',
+    'runtime_execution_telemetry',
     'risk_register',
     'counterfactual_worlds',
   ];
@@ -208,6 +232,83 @@ function applyClosureFlags(closure, taskType) {
   closure.activatedEliteTools = Array.from(tools);
 }
 
+function syncClosureRuntimeRequirements(closure) {
+  writeCapabilityRegistry();
+  const registry = loadCapabilityRegistry();
+  const capabilityMap = toCapabilityMap(registry);
+  const requiredRuntimeTools = Array.from(new Set(Array.isArray(closure.activatedEliteTools) ? closure.activatedEliteTools : []));
+
+  closure.capabilityRegistry = {
+    schemaVersion: registry.schemaVersion,
+    generatedAtUtc: registry.generatedAtUtc,
+    path: 'spec-kit/quantum-runtime/capability-registry.json',
+    uniqueToolCount: registry.summary && typeof registry.summary.uniqueToolCount === 'number'
+      ? registry.summary.uniqueToolCount
+      : null,
+  };
+
+  closure.runtimeExecutionEvidenceFile = 'runtime_execution_telemetry.json';
+  closure.requiredHardTelemetryFields = [...HARD_TELEMETRY_FIELDS];
+  closure.runtimeExecutionSummary = {
+    requiredRuntimeTools,
+    requiredRuntimeToolsCount: requiredRuntimeTools.length,
+    requiredRuntimeCapabilities: requiredRuntimeTools.map((toolName) => {
+      const cap = capabilityMap.get(toolName);
+      return {
+        toolName,
+        operation: cap ? cap.operation : 'classical-orchestration',
+        quantumComputing: cap ? cap.quantumComputing === true : false,
+      };
+    }),
+    executedRuntimeCallsCount: 0,
+    uniqueExecutedToolsCount: 0,
+    runtimeCoveragePct: 0,
+    missingRequiredTools: [...requiredRuntimeTools],
+    quantumProviderJobsCount: 0,
+    classicalFallbackJobsCount: 0,
+  };
+}
+
+function applyRuntimeTelemetryDefaults(runtimeTelemetry, closure, taskId) {
+  runtimeTelemetry.taskId = taskId;
+  runtimeTelemetry.timestampUtc = new Date().toISOString();
+  runtimeTelemetry.closureVerdict = runtimeTelemetry.closureVerdict || 'PASS';
+
+  const requiredRuntimeTools = closure
+    && closure.runtimeExecutionSummary
+    && Array.isArray(closure.runtimeExecutionSummary.requiredRuntimeTools)
+    ? [...closure.runtimeExecutionSummary.requiredRuntimeTools]
+    : [];
+
+  runtimeTelemetry.requiredHardTelemetryFields = closure && Array.isArray(closure.requiredHardTelemetryFields)
+    ? [...closure.requiredHardTelemetryFields]
+    : [...HARD_TELEMETRY_FIELDS];
+
+  runtimeTelemetry.capabilityRegistry = closure && closure.capabilityRegistry
+    ? { ...closure.capabilityRegistry }
+    : {
+      schemaVersion: '1.0.0',
+      generatedAtUtc: new Date().toISOString(),
+      path: 'spec-kit/quantum-runtime/capability-registry.json',
+    };
+
+  runtimeTelemetry.runtimeExecution = runtimeTelemetry.runtimeExecution && typeof runtimeTelemetry.runtimeExecution === 'object'
+    ? runtimeTelemetry.runtimeExecution
+    : {};
+
+  runtimeTelemetry.runtimeExecution.requiredRuntimeTools = requiredRuntimeTools;
+  runtimeTelemetry.runtimeExecution.requiredRuntimeToolsCount = requiredRuntimeTools.length;
+  runtimeTelemetry.runtimeExecution.executedRuntimeCallsCount = 0;
+  runtimeTelemetry.runtimeExecution.uniqueExecutedToolsCount = 0;
+  runtimeTelemetry.runtimeExecution.runtimeCoveragePct = 0;
+  runtimeTelemetry.runtimeExecution.missingRequiredTools = [...requiredRuntimeTools];
+  runtimeTelemetry.runtimeExecution.quantumProviderJobsCount = 0;
+  runtimeTelemetry.runtimeExecution.classicalFallbackJobsCount = 0;
+  runtimeTelemetry.runtimeExecution.providerUsage = [];
+  runtimeTelemetry.runtimeExecution.executedOperations = [];
+  runtimeTelemetry.runtimeExecution.telemetryRecords = [];
+}
+
 function main() {
   const args = parseArgs(process.argv);
   if (!args.taskId || !args.taskType) {
@@ -222,6 +323,7 @@ function main() {
   const required = requiredByTaskType(args.taskType);
   const written = [];
   const skipped = [];
+  let closureDraft = null;
 
   required.forEach((name) => {
     const templatePath = path.join(templatesDir, `${name}.template.json`);
@@ -232,6 +334,9 @@ function main() {
 
     const outPath = path.join(outDir, `${name}.json`);
     if (fs.existsSync(outPath) && !args.force) {
+      if (name === 'closure_oracle') {
+        closureDraft = readJson(outPath);
+      }
       skipped.push(path.basename(outPath));
       return;
     }
@@ -239,6 +344,11 @@ function main() {
     const obj = prepareFromTemplate(templatePath, args.taskId);
     if (name === 'closure_oracle') {
       applyClosureFlags(obj, args.taskType);
+      syncClosureRuntimeRequirements(obj);
+      closureDraft = obj;
+    }
+    if (name === 'runtime_execution_telemetry') {
+      applyRuntimeTelemetryDefaults(obj, closureDraft, args.taskId);
     }
     writeJson(outPath, obj);
     written.push(path.basename(outPath));

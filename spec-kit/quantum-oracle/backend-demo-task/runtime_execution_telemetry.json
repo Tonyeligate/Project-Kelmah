@@ -1,0 +1,572 @@
+{
+  "taskId": "backend-demo-task",
+  "timestampUtc": "2026-04-16T17:53:32.332Z",
+  "closureVerdict": "PASS",
+  "capabilityRegistry": {
+    "schemaVersion": "1.0.0",
+    "generatedAtUtc": "2026-04-16T17:53:20.211Z",
+    "path": "spec-kit/quantum-runtime/capability-registry.json",
+    "uniqueToolCount": 331
+  },
+  "requiredHardTelemetryFields": [
+    "toolName",
+    "operation",
+    "backendCall",
+    "provider",
+    "providerJobId",
+    "executionPath",
+    "circuitDepth",
+    "shots",
+    "fidelity",
+    "errorRate",
+    "costUsd",
+    "latencyMs",
+    "startedAtUtc",
+    "finishedAtUtc"
+  ],
+  "runtimeExecution": {
+    "requiredRuntimeTools": [
+      "EvidenceArtifactCompiler",
+      "CompletionOracleChecker",
+      "CounterfactualWorldScorer",
+      "DelegationPacketBuilder",
+      "VisualOracleRunner",
+      "AdversarialSelfPlayOrchestrator",
+      "QuantumScoreboardUpdater",
+      "APITopologyOptimizer",
+      "ContractEvolutionAnalyzer",
+      "ReliabilityChaosSimulator",
+      "GatewayPolicyVerifier",
+      "QueryPerformanceEstimator",
+      "MistakePatternMiner",
+      "FieldExperienceIngestor",
+      "GuardrailEvolutionEngine",
+      "RegressionPreventionCompiler"
+    ],
+    "requiredRuntimeToolsCount": 16,
+    "executedRuntimeCallsCount": 16,
+    "uniqueExecutedToolsCount": 16,
+    "runtimeCoveragePct": 100,
+    "missingRequiredTools": [],
+    "quantumProviderJobsCount": 0,
+    "classicalFallbackJobsCount": 16,
+    "providerUsage": [
+      {
+        "item": "classical-simulator",
+        "count": 16
+      }
+    ],
+    "executedOperations": [
+      {
+        "item": "classical-orchestration",
+        "count": 13
+      },
+      {
+        "item": "apply-gate-circuit",
+        "count": 2
+      },
+      {
+        "item": "hybrid-quantum-workflow",
+        "count": 1
+      }
+    ],
+    "telemetryRecords": [
+      {
+        "timestampUtc": "2026-04-16T17:33:08.017Z",
+        "taskId": "backend-demo-task",
+        "agent": "backend",
+        "toolName": "EvidenceArtifactCompiler",
+        "operation": "classical-orchestration",
+        "workloadType": "classical",
+        "quantumComputingOperation": false,
+        "backendCall": {
+          "service": "quantum-runtime",
+          "method": "executeCapability",
+          "operation": "classical-orchestration"
+        },
+        "provider": "classical-simulator",
+        "providerJobId": "qjob-1776360788017-a70d25e3",
+        "executionPath": "classical-fallback",
+        "advantageReason": "operation-is-not-quantum-computing",
+        "circuitDepth": 1,
+        "shots": 256,
+        "fidelity": 0.999,
+        "errorRate": 0.001,
+        "errorRates": {
+          "readout": 0.0005,
+          "gate": 0.0005
+        },
+        "costUsd": 0,
+        "latencyMs": 1,
+        "startedAtUtc": "2026-04-16T17:33:08.016Z",
+        "finishedAtUtc": "2026-04-16T17:33:08.017Z",
+        "capabilityInferenceReason": "fallback-classical-orchestration"
+      },
+      {
+        "timestampUtc": "2026-04-16T17:33:08.020Z",
+        "taskId": "backend-demo-task",
+        "agent": "backend",
+        "toolName": "CompletionOracleChecker",
+        "operation": "classical-orchestration",
+        "workloadType": "classical",
+        "quantumComputingOperation": false,
+        "backendCall": {
+          "service": "quantum-runtime",
+          "method": "executeCapability",
+          "operation": "classical-orchestration"
+        },
+        "provider": "classical-simulator",
+        "providerJobId": "qjob-1776360788020-24e458e2",
+        "executionPath": "classical-fallback",
+        "advantageReason": "operation-is-not-quantum-computing",
+        "circuitDepth": 1,
+        "shots": 256,
+        "fidelity": 0.999,
+        "errorRate": 0.001,
+        "errorRates": {
+          "readout": 0.0005,
+          "gate": 0.0005
+        },
+        "costUsd": 0,
+        "latencyMs": 1,
+        "startedAtUtc": "2026-04-16T17:33:08.020Z",
+        "finishedAtUtc": "2026-04-16T17:33:08.020Z",
+        "capabilityInferenceReason": "fallback-classical-orchestration"
+      },
+      {
+        "timestampUtc": "2026-04-16T17:33:08.023Z",
+        "taskId": "backend-demo-task",
+        "agent": "backend",
+        "toolName": "CounterfactualWorldScorer",
+        "operation": "classical-orchestration",
+        "workloadType": "classical",
+        "quantumComputingOperation": false,
+        "backendCall": {
+          "service": "quantum-runtime",
+          "method": "executeCapability",
+          "operation": "classical-orchestration"
+        },
+        "provider": "classical-simulator",
+        "providerJobId": "qjob-1776360788023-2df4bb5c",
+        "executionPath": "classical-fallback",
+        "advantageReason": "operation-is-not-quantum-computing",
+        "circuitDepth": 1,
+        "shots": 256,
+        "fidelity": 0.999,
+        "errorRate": 0.001,
+        "errorRates": {
+          "readout": 0.0005,
+          "gate": 0.0005
+        },
+        "costUsd": 0,
+        "latencyMs": 1,
+        "startedAtUtc": "2026-04-16T17:33:08.023Z",
+        "finishedAtUtc": "2026-04-16T17:33:08.023Z",
+        "capabilityInferenceReason": "fallback-classical-orchestration"
+      },
+      {
+        "timestampUtc": "2026-04-16T17:33:08.025Z",
+        "taskId": "backend-demo-task",
+        "agent": "backend",
+        "toolName": "DelegationPacketBuilder",
+        "operation": "classical-orchestration",
+        "workloadType": "classical",
+        "quantumComputingOperation": false,
+        "backendCall": {
+          "service": "quantum-runtime",
+          "method": "executeCapability",
+          "operation": "classical-orchestration"
+        },
+        "provider": "classical-simulator",
+        "providerJobId": "qjob-1776360788025-39f38a61",
+        "executionPath": "classical-fallback",
+        "advantageReason": "operation-is-not-quantum-computing",
+        "circuitDepth": 1,
+        "shots": 256,
+        "fidelity": 0.999,
+        "errorRate": 0.001,
+        "errorRates": {
+          "readout": 0.0005,
+          "gate": 0.0005
+        },
+        "costUsd": 0,
+        "latencyMs": 1,
+        "startedAtUtc": "2026-04-16T17:33:08.025Z",
+        "finishedAtUtc": "2026-04-16T17:33:08.025Z",
+        "capabilityInferenceReason": "fallback-classical-orchestration"
+      },
+      {
+        "timestampUtc": "2026-04-16T17:33:08.027Z",
+        "taskId": "backend-demo-task",
+        "agent": "backend",
+        "toolName": "VisualOracleRunner",
+        "operation": "classical-orchestration",
+        "workloadType": "classical",
+        "quantumComputingOperation": false,
+        "backendCall": {
+          "service": "quantum-runtime",
+          "method": "executeCapability",
+          "operation": "classical-orchestration"
+        },
+        "provider": "classical-simulator",
+        "providerJobId": "qjob-1776360788027-57cbec87",
+        "executionPath": "classical-fallback",
+        "advantageReason": "operation-is-not-quantum-computing",
+        "circuitDepth": 1,
+        "shots": 256,
+        "fidelity": 0.999,
+        "errorRate": 0.001,
+        "errorRates": {
+          "readout": 0.0005,
+          "gate": 0.0005
+        },
+        "costUsd": 0,
+        "latencyMs": 1,
+        "startedAtUtc": "2026-04-16T17:33:08.027Z",
+        "finishedAtUtc": "2026-04-16T17:33:08.027Z",
+        "capabilityInferenceReason": "fallback-classical-orchestration"
+      },
+      {
+        "timestampUtc": "2026-04-16T17:33:08.030Z",
+        "taskId": "backend-demo-task",
+        "agent": "backend",
+        "toolName": "AdversarialSelfPlayOrchestrator",
+        "operation": "classical-orchestration",
+        "workloadType": "classical",
+        "quantumComputingOperation": false,
+        "backendCall": {
+          "service": "quantum-runtime",
+          "method": "executeCapability",
+          "operation": "classical-orchestration"
+        },
+        "provider": "classical-simulator",
+        "providerJobId": "qjob-1776360788030-d4912d75",
+        "executionPath": "classical-fallback",
+        "advantageReason": "operation-is-not-quantum-computing",
+        "circuitDepth": 1,
+        "shots": 256,
+        "fidelity": 0.999,
+        "errorRate": 0.001,
+        "errorRates": {
+          "readout": 0.0005,
+          "gate": 0.0005
+        },
+        "costUsd": 0,
+        "latencyMs": 1,
+        "startedAtUtc": "2026-04-16T17:33:08.030Z",
+        "finishedAtUtc": "2026-04-16T17:33:08.030Z",
+        "capabilityInferenceReason": "fallback-classical-orchestration"
+      },
+      {
+        "timestampUtc": "2026-04-16T17:33:08.033Z",
+        "taskId": "backend-demo-task",
+        "agent": "backend",
+        "toolName": "QuantumScoreboardUpdater",
+        "operation": "hybrid-quantum-workflow",
+        "workloadType": "hybrid-workflow",
+        "quantumComputingOperation": true,
+        "backendCall": {
+          "service": "quantum-runtime",
+          "method": "executeCapability",
+          "operation": "hybrid-quantum-workflow"
+        },
+        "provider": "classical-simulator",
+        "providerJobId": "qjob-1776360788033-a2145442",
+        "executionPath": "classical-fallback",
+        "advantageReason": "forceQuantum-flag-set;provider-fallback:ibm-quantum|aws-braket|azure-quantum|d-wave",
+        "circuitDepth": 2,
+        "shots": 256,
+        "fidelity": 0.999,
+        "errorRate": 0.001,
+        "errorRates": {
+          "readout": 0.0005,
+          "gate": 0.0005
+        },
+        "costUsd": 0,
+        "latencyMs": 1,
+        "startedAtUtc": "2026-04-16T17:33:08.032Z",
+        "finishedAtUtc": "2026-04-16T17:33:08.033Z",
+        "capabilityInferenceReason": "name-pattern-quantum-default"
+      },
+      {
+        "timestampUtc": "2026-04-16T17:33:08.036Z",
+        "taskId": "backend-demo-task",
+        "agent": "backend",
+        "toolName": "APITopologyOptimizer",
+        "operation": "apply-gate-circuit",
+        "workloadType": "gate-evaluation",
+        "quantumComputingOperation": true,
+        "backendCall": {
+          "service": "quantum-runtime",
+          "method": "executeCapability",
+          "operation": "apply-gate-circuit"
+        },
+        "provider": "classical-simulator",
+        "providerJobId": "qjob-1776360788036-f846f71d",
+        "executionPath": "classical-fallback",
+        "advantageReason": "forceQuantum-flag-set;provider-fallback:ibm-quantum|aws-braket|azure-quantum",
+        "circuitDepth": 1,
+        "shots": 256,
+        "fidelity": 0.999,
+        "errorRate": 0.001,
+        "errorRates": {
+          "readout": 0.0005,
+          "gate": 0.0005
+        },
+        "costUsd": 0,
+        "latencyMs": 1,
+        "startedAtUtc": "2026-04-16T17:33:08.035Z",
+        "finishedAtUtc": "2026-04-16T17:33:08.036Z",
+        "capabilityInferenceReason": "name-pattern-gate-circuit"
+      },
+      {
+        "timestampUtc": "2026-04-16T17:33:08.038Z",
+        "taskId": "backend-demo-task",
+        "agent": "backend",
+        "toolName": "ContractEvolutionAnalyzer",
+        "operation": "classical-orchestration",
+        "workloadType": "classical",
+        "quantumComputingOperation": false,
+        "backendCall": {
+          "service": "quantum-runtime",
+          "method": "executeCapability",
+          "operation": "classical-orchestration"
+        },
+        "provider": "classical-simulator",
+        "providerJobId": "qjob-1776360788038-b208e3d0",
+        "executionPath": "classical-fallback",
+        "advantageReason": "operation-is-not-quantum-computing",
+        "circuitDepth": 1,
+        "shots": 256,
+        "fidelity": 0.999,
+        "errorRate": 0.001,
+        "errorRates": {
+          "readout": 0.0005,
+          "gate": 0.0005
+        },
+        "costUsd": 0,
+        "latencyMs": 1,
+        "startedAtUtc": "2026-04-16T17:33:08.038Z",
+        "finishedAtUtc": "2026-04-16T17:33:08.038Z",
+        "capabilityInferenceReason": "fallback-classical-orchestration"
+      },
+      {
+        "timestampUtc": "2026-04-16T17:33:08.040Z",
+        "taskId": "backend-demo-task",
+        "agent": "backend",
+        "toolName": "ReliabilityChaosSimulator",
+        "operation": "classical-orchestration",
+        "workloadType": "classical",
+        "quantumComputingOperation": false,
+        "backendCall": {
+          "service": "quantum-runtime",
+          "method": "executeCapability",
+          "operation": "classical-orchestration"
+        },
+        "provider": "classical-simulator",
+        "providerJobId": "qjob-1776360788040-2d76c4ce",
+        "executionPath": "classical-fallback",
+        "advantageReason": "operation-is-not-quantum-computing",
+        "circuitDepth": 1,
+        "shots": 256,
+        "fidelity": 0.999,
+        "errorRate": 0.001,
+        "errorRates": {
+          "readout": 0.0005,
+          "gate": 0.0005
+        },
+        "costUsd": 0,
+        "latencyMs": 1,
+        "startedAtUtc": "2026-04-16T17:33:08.039Z",
+        "finishedAtUtc": "2026-04-16T17:33:08.040Z",
+        "capabilityInferenceReason": "fallback-classical-orchestration"
+      },
+      {
+        "timestampUtc": "2026-04-16T17:33:08.041Z",
+        "taskId": "backend-demo-task",
+        "agent": "backend",
+        "toolName": "GatewayPolicyVerifier",
+        "operation": "apply-gate-circuit",
+        "workloadType": "gate-evaluation",
+        "quantumComputingOperation": true,
+        "backendCall": {
+          "service": "quantum-runtime",
+          "method": "executeCapability",
+          "operation": "apply-gate-circuit"
+        },
+        "provider": "classical-simulator",
+        "providerJobId": "qjob-1776360788041-9b458208",
+        "executionPath": "classical-fallback",
+        "advantageReason": "forceQuantum-flag-set;provider-fallback:ibm-quantum|aws-braket|azure-quantum",
+        "circuitDepth": 1,
+        "shots": 256,
+        "fidelity": 0.999,
+        "errorRate": 0.001,
+        "errorRates": {
+          "readout": 0.0005,
+          "gate": 0.0005
+        },
+        "costUsd": 0,
+        "latencyMs": 1,
+        "startedAtUtc": "2026-04-16T17:33:08.041Z",
+        "finishedAtUtc": "2026-04-16T17:33:08.041Z",
+        "capabilityInferenceReason": "name-pattern-gate-circuit"
+      },
+      {
+        "timestampUtc": "2026-04-16T17:33:08.044Z",
+        "taskId": "backend-demo-task",
+        "agent": "backend",
+        "toolName": "QueryPerformanceEstimator",
+        "operation": "classical-orchestration",
+        "workloadType": "classical",
+        "quantumComputingOperation": false,
+        "backendCall": {
+          "service": "quantum-runtime",
+          "method": "executeCapability",
+          "operation": "classical-orchestration"
+        },
+        "provider": "classical-simulator",
+        "providerJobId": "qjob-1776360788044-942d0c44",
+        "executionPath": "classical-fallback",
+        "advantageReason": "operation-is-not-quantum-computing",
+        "circuitDepth": 1,
+        "shots": 256,
+        "fidelity": 0.999,
+        "errorRate": 0.001,
+        "errorRates": {
+          "readout": 0.0005,
+          "gate": 0.0005
+        },
+        "costUsd": 0,
+        "latencyMs": 1,
+        "startedAtUtc": "2026-04-16T17:33:08.044Z",
+        "finishedAtUtc": "2026-04-16T17:33:08.044Z",
+        "capabilityInferenceReason": "fallback-classical-orchestration"
+      },
+      {
+        "timestampUtc": "2026-04-16T17:33:08.048Z",
+        "taskId": "backend-demo-task",
+        "agent": "backend",
+        "toolName": "MistakePatternMiner",
+        "operation": "classical-orchestration",
+        "workloadType": "classical",
+        "quantumComputingOperation": false,
+        "backendCall": {
+          "service": "quantum-runtime",
+          "method": "executeCapability",
+          "operation": "classical-orchestration"
+        },
+        "provider": "classical-simulator",
+        "providerJobId": "qjob-1776360788048-0afd640b",
+        "executionPath": "classical-fallback",
+        "advantageReason": "operation-is-not-quantum-computing",
+        "circuitDepth": 1,
+        "shots": 256,
+        "fidelity": 0.999,
+        "errorRate": 0.001,
+        "errorRates": {
+          "readout": 0.0005,
+          "gate": 0.0005
+        },
+        "costUsd": 0,
+        "latencyMs": 1,
+        "startedAtUtc": "2026-04-16T17:33:08.048Z",
+        "finishedAtUtc": "2026-04-16T17:33:08.048Z",
+        "capabilityInferenceReason": "fallback-classical-orchestration"
+      },
+      {
+        "timestampUtc": "2026-04-16T17:33:08.051Z",
+        "taskId": "backend-demo-task",
+        "agent": "backend",
+        "toolName": "FieldExperienceIngestor",
+        "operation": "classical-orchestration",
+        "workloadType": "classical",
+        "quantumComputingOperation": false,
+        "backendCall": {
+          "service": "quantum-runtime",
+          "method": "executeCapability",
+          "operation": "classical-orchestration"
+        },
+        "provider": "classical-simulator",
+        "providerJobId": "qjob-1776360788051-ce7c7ea1",
+        "executionPath": "classical-fallback",
+        "advantageReason": "operation-is-not-quantum-computing",
+        "circuitDepth": 1,
+        "shots": 256,
+        "fidelity": 0.999,
+        "errorRate": 0.001,
+        "errorRates": {
+          "readout": 0.0005,
+          "gate": 0.0005
+        },
+        "costUsd": 0,
+        "latencyMs": 1,
+        "startedAtUtc": "2026-04-16T17:33:08.051Z",
+        "finishedAtUtc": "2026-04-16T17:33:08.051Z",
+        "capabilityInferenceReason": "fallback-classical-orchestration"
+      },
+      {
+        "timestampUtc": "2026-04-16T17:33:08.053Z",
+        "taskId": "backend-demo-task",
+        "agent": "backend",
+        "toolName": "GuardrailEvolutionEngine",
+        "operation": "classical-orchestration",
+        "workloadType": "classical",
+        "quantumComputingOperation": false,
+        "backendCall": {
+          "service": "quantum-runtime",
+          "method": "executeCapability",
+          "operation": "classical-orchestration"
+        },
+        "provider": "classical-simulator",
+        "providerJobId": "qjob-1776360788053-4159b50b",
+        "executionPath": "classical-fallback",
+        "advantageReason": "operation-is-not-quantum-computing",
+        "circuitDepth": 1,
+        "shots": 256,
+        "fidelity": 0.999,
+        "errorRate": 0.001,
+        "errorRates": {
+          "readout": 0.0005,
+          "gate": 0.0005
+        },
+        "costUsd": 0,
+        "latencyMs": 1,
+        "startedAtUtc": "2026-04-16T17:33:08.053Z",
+        "finishedAtUtc": "2026-04-16T17:33:08.053Z",
+        "capabilityInferenceReason": "fallback-classical-orchestration"
+      },
+      {
+        "timestampUtc": "2026-04-16T17:33:08.055Z",
+        "taskId": "backend-demo-task",
+        "agent": "backend",
+        "toolName": "RegressionPreventionCompiler",
+        "operation": "classical-orchestration",
+        "workloadType": "classical",
+        "quantumComputingOperation": false,
+        "backendCall": {
+          "service": "quantum-runtime",
+          "method": "executeCapability",
+          "operation": "classical-orchestration"
+        },
+        "provider": "classical-simulator",
+        "providerJobId": "qjob-1776360788055-ef8924c1",
+        "executionPath": "classical-fallback",
+        "advantageReason": "operation-is-not-quantum-computing",
+        "circuitDepth": 1,
+        "shots": 256,
+        "fidelity": 0.999,
+        "errorRate": 0.001,
+        "errorRates": {
+          "readout": 0.0005,
+          "gate": 0.0005
+        },
+        "costUsd": 0,
+        "latencyMs": 1,
+        "startedAtUtc": "2026-04-16T17:33:08.055Z",
+        "finishedAtUtc": "2026-04-16T17:33:08.055Z",
+        "capabilityInferenceReason": "fallback-classical-orchestration"
+      }
+    ]
+  }
+}

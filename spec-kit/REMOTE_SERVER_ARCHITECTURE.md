@@ -31,6 +31,57 @@ Remote Server (Production):
 4. → Remote Server microservices (ports 5001-5006)
 ```
 
+## Application → Contract → Payment Flow (Current Behavior)
+
+### Step-by-step workflow
+1. Worker applies to a job
+   - UI: `MyApplicationsPage` and job detail pages
+   - API: `POST /api/jobs/:id/apply`
+   - Data: `Application` document created with `status: pending`
+
+2. Hirer accepts an application (auto-contract)
+   - UI: `ApplicationManagementPage`
+   - API: `PUT /api/jobs/:id/applications/:applicationId`
+   - Data updates:
+     - `Application.status = accepted`
+     - `Job.status = in-progress`, `Job.worker = application.worker`
+     - Other pending applications for the job → `rejected`
+     - Draft `Contract` created (if none exists for job + worker)
+
+3. Hirer reviews and sends contract
+   - UI: `ContractsPage`, `ContractManagementPage`
+   - API: `GET /api/jobs/contracts`, `PUT /api/jobs/contracts/:id`
+   - Data: `Contract.status` moves `draft → pending`
+
+4. Worker signs contract
+   - UI: contract detail screen
+   - API: `PUT /api/jobs/contracts/:id` with `status: active`
+   - Data: `Contract.status = active`
+
+5. Work and milestone tracking
+   - API: `POST /api/jobs/milestones/contract/:contractId`
+   - API: `PUT /api/jobs/milestones/:milestoneId`
+   - Data: `Contract.milestones[]` progress updates
+
+6. Payment and escrow release
+   - Service: Payment service (Escrow, Transaction)
+   - API: `/api/payments/*` and escrow endpoints (when enabled)
+   - Data: Escrow holds funds and releases on milestone approval
+
+### Data flow trace (accepted application → contract visible)
+```
+ApplicationManagementPage.jsx
+  → hirerService.updateApplicationStatus(jobId, applicationId, status)
+  → PUT /api/jobs/:id/applications/:applicationId
+  → api-gateway → job-service routes/job.routes.js
+  → job.controller.js:updateApplicationStatus()
+      - Application status update
+      - Job assignment
+      - Contract draft creation
+  → response (application)
+  → UI reloads applications + worker sees contract in My Contracts
+```
+
 ### WebSocket Flow (Corrected)
 ```
 1. Frontend → Vercel rewrites /socket.io/*
