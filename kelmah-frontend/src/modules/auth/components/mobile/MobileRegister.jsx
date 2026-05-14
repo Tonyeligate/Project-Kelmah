@@ -136,7 +136,13 @@ const MobileRegister = () => {
     if (field === 'phone') value = value.replace(/[^\d+\s]/g, '');
 
     setFormData((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: '' }));
+    if (errors[field]) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      });
+    }
     if (submitError) setSubmitError('');
     if (field === 'password') setPasswordStrength(checkPasswordStrength(value));
   };
@@ -187,8 +193,7 @@ const MobileRegister = () => {
         newErrors.confirmPassword = 'Passwords do not match — try again';
       }
       if (!formData.acceptTerms) {
-        newErrors.acceptTerms =
-          'Accept Terms and Privacy Policy to continue';
+        newErrors.acceptTerms = 'Accept Terms and Privacy Policy to continue';
       }
     }
 
@@ -275,7 +280,7 @@ const MobileRegister = () => {
     '& .MuiOutlinedInput-root': {
       backgroundColor: alpha(theme.palette.text.primary, 0.06),
       borderRadius: 2,
-      minHeight: 44,
+      minHeight: 40,
       '& fieldset': { borderColor: alpha(theme.palette.text.primary, 0.15) },
       '&:hover fieldset': {
         borderColor: alpha(theme.palette.primary.main, 0.4),
@@ -294,6 +299,22 @@ const MobileRegister = () => {
       color: theme.palette.text.primary,
       fontSize: '16px',
     },
+    '& .MuiFormHelperText-root': {
+      marginLeft: 0,
+      marginRight: 0,
+      marginTop: 0.35,
+    },
+  };
+
+  const inputLabelProps = {
+    shrink: true,
+    sx: {
+      transform: 'translate(5px, -16px) scale(0.75)',
+      transformOrigin: 'top left',
+      '&.MuiInputLabel-shrink': {
+        transform: 'translate(5px, -16px) scale(0.75)',
+      },
+    },
   };
 
   // Render step content
@@ -306,14 +327,14 @@ const MobileRegister = () => {
               sx={{
                 color: 'text.primary',
                 fontWeight: 600,
-                mb: 2,
+                mb: 1.5,
                 textAlign: 'center',
               }}
             >
               I want to...
             </Typography>
             <Stack
-              spacing={2}
+              spacing={1}
               role="radiogroup"
               aria-label="Choose account type"
             >
@@ -419,13 +440,12 @@ const MobileRegister = () => {
 
       case 2:
         return (
-          <Stack spacing={1.5}>
+          <Stack spacing={3.5}>
             <Box
               sx={{
-                display: 'flex',
-                gap: 1,
-                flexWrap: 'wrap',
-                '@media (max-width: 360px)': { flexDirection: 'column' },
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+                gap: 3.5,
               }}
             >
               <TextField
@@ -436,9 +456,10 @@ const MobileRegister = () => {
                 value={formData.firstName}
                 onChange={handleChange('firstName')}
                 error={Boolean(errors.firstName)}
-                helperText={errors.firstName}
+                helperText={errors.firstName || undefined}
                 size="small"
-                sx={{ ...inputStyles, flex: '1 1 140px' }}
+                InputLabelProps={inputLabelProps}
+                sx={inputStyles}
               />
               <TextField
                 fullWidth
@@ -448,9 +469,10 @@ const MobileRegister = () => {
                 value={formData.lastName}
                 onChange={handleChange('lastName')}
                 error={Boolean(errors.lastName)}
-                helperText={errors.lastName}
+                helperText={errors.lastName || undefined}
                 size="small"
-                sx={{ ...inputStyles, flex: '1 1 140px' }}
+                InputLabelProps={inputLabelProps}
+                sx={inputStyles}
               />
             </Box>
             <TextField
@@ -462,8 +484,9 @@ const MobileRegister = () => {
               value={formData.email}
               onChange={handleChange('email')}
               error={Boolean(errors.email)}
-              helperText={errors.email}
+              helperText={errors.email || undefined}
               size="small"
+              InputLabelProps={inputLabelProps}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -479,11 +502,12 @@ const MobileRegister = () => {
               value={formData.phone}
               onChange={handleChange('phone')}
               error={Boolean(errors.phone)}
-              helperText={errors.phone}
+              helperText={errors.phone || undefined}
               placeholder="+233 or 0XX XXX XXXX"
               size="small"
               autoComplete="tel"
               inputProps={{ inputMode: 'tel', maxLength: 20 }}
+              InputLabelProps={inputLabelProps}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -502,8 +526,9 @@ const MobileRegister = () => {
                 value={formData.companyName}
                 onChange={handleChange('companyName')}
                 error={Boolean(errors.companyName)}
-                helperText={errors.companyName}
+                helperText={errors.companyName || undefined}
                 size="small"
+                InputLabelProps={inputLabelProps}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -524,7 +549,11 @@ const MobileRegister = () => {
                 onChange={(_, newValue) => {
                   setFormData((p) => ({ ...p, trades: newValue }));
                   if (errors.trades) {
-                    setErrors((prev) => ({ ...prev, trades: '' }));
+                    setErrors((prev) => {
+                      const next = { ...prev };
+                      delete next.trades;
+                      return next;
+                    });
                   }
                 }}
                 renderTags={(value, getTagProps) =>
@@ -546,9 +575,10 @@ const MobileRegister = () => {
                     {...params}
                     label="Your Skills/Trades"
                     error={Boolean(errors.trades)}
-                    helperText={errors.trades}
+                    helperText={errors.trades || undefined}
                     autoComplete="off"
                     size="small"
+                    InputLabelProps={inputLabelProps}
                     sx={inputStyles}
                   />
                 )}
@@ -570,7 +600,7 @@ const MobileRegister = () => {
 
       case 3:
         return (
-          <Stack spacing={1.5}>
+          <Stack spacing={6.5}>
             <TextField
               fullWidth
               type={showPassword ? 'text' : 'password'}
@@ -580,8 +610,9 @@ const MobileRegister = () => {
               value={formData.password}
               onChange={handleChange('password')}
               error={Boolean(errors.password)}
-              helperText={errors.password}
+              helperText={errors.password || undefined}
               size="small"
+              InputLabelProps={inputLabelProps}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -597,8 +628,8 @@ const MobileRegister = () => {
                       }
                       sx={{
                         color: 'text.secondary',
-                        minWidth: 44,
-                        minHeight: 44,
+                        minWidth: 40,
+                        minHeight: 40,
                         '&:focus-visible': {
                           outline: '3px solid',
                           outlineColor: 'primary.main',
@@ -661,8 +692,9 @@ const MobileRegister = () => {
               value={formData.confirmPassword}
               onChange={handleChange('confirmPassword')}
               error={Boolean(errors.confirmPassword)}
-              helperText={errors.confirmPassword}
+              helperText={errors.confirmPassword || undefined}
               size="small"
+              InputLabelProps={inputLabelProps}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -682,8 +714,8 @@ const MobileRegister = () => {
                       }
                       sx={{
                         color: 'text.secondary',
-                        minWidth: 44,
-                        minHeight: 44,
+                        minWidth: 40,
+                        minHeight: 40,
                         '&:focus-visible': {
                           outline: '3px solid',
                           outlineColor: 'primary.main',
@@ -725,7 +757,7 @@ const MobileRegister = () => {
                       fontSize: '14px',
                       py: 0.75,
                       px: 0.5,
-                      minHeight: 44,
+                      minHeight: 40,
                       minWidth: 'auto',
                       textTransform: 'none',
                       verticalAlign: 'baseline',
@@ -742,7 +774,7 @@ const MobileRegister = () => {
                       fontSize: '14px',
                       py: 0.75,
                       px: 0.5,
-                      minHeight: 44,
+                      minHeight: 40,
                       minWidth: 'auto',
                       textTransform: 'none',
                       verticalAlign: 'baseline',
@@ -763,7 +795,7 @@ const MobileRegister = () => {
 
       case 4:
         return (
-          <Stack spacing={1.5}>
+          <Stack spacing={0.75}>
             <Alert
               severity="info"
               sx={{
@@ -905,13 +937,13 @@ const MobileRegister = () => {
         bgcolor: 'background.default',
         display: 'flex',
         flexDirection: 'column',
-        px: 2,
-        pt: withSafeAreaTop(12),
-        pb: withSafeAreaBottom(16),
+        px: 1.25,
+        pt: withSafeAreaTop(8),
+        pb: withSafeAreaBottom(10),
       }}
     >
       {/* Header */}
-      <Box sx={{ textAlign: 'center', mb: 2.25 }}>
+      <Box sx={{ textAlign: 'center', mb: 1.25 }}>
         <Box
           component="img"
           src={logoIcon}
@@ -927,7 +959,7 @@ const MobileRegister = () => {
       </Box>
 
       {/* Progress */}
-      <Box sx={{ mb: 2 }}>
+      <Box sx={{ mb: 1 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
           <Typography sx={{ color: 'text.secondary', fontSize: '13px' }}>
             Step {step} of {totalSteps}
@@ -946,7 +978,7 @@ const MobileRegister = () => {
           variant="determinate"
           value={(step / totalSteps) * 100}
           sx={{
-            height: 4,
+            height: 3,
             borderRadius: 2,
             backgroundColor: alpha(theme.palette.text.primary, 0.1),
             '& .MuiLinearProgress-bar': {
@@ -958,7 +990,7 @@ const MobileRegister = () => {
         <Typography
           variant="caption"
           color="text.secondary"
-          sx={{ display: 'block', mt: 1.25, lineHeight: 1.4 }}
+          sx={{ display: 'block', mt: 0.75, lineHeight: 1.4 }}
         >
           1) Pick role 2) Add real details 3) Set password 4) Review and create
           account.
@@ -971,7 +1003,9 @@ const MobileRegister = () => {
           flex: 1,
           backgroundColor: alpha(theme.palette.background.paper, 0.9),
           borderRadius: 3,
-          p: 2,
+          px: 1.25,
+          pt: '2cm',
+          pb: 1.25,
           border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
           display: 'flex',
           flexDirection: 'column',
@@ -1036,14 +1070,14 @@ const MobileRegister = () => {
         </Box>
 
         {/* Navigation Buttons */}
-        <Box sx={{ display: 'flex', gap: 1.5, mt: 2 }}>
+        <Box sx={{ display: 'flex', gap: 1, mt: 0.75 }}>
           <Button
             onClick={handleBack}
             variant="outlined"
             startIcon={<ArrowBackIcon />}
             sx={{
               flex: 1,
-              minHeight: 44,
+              minHeight: 40,
               borderColor: alpha(theme.palette.text.primary, 0.2),
               color: theme.palette.text.secondary,
               '&:hover': {
@@ -1060,7 +1094,7 @@ const MobileRegister = () => {
             disabled={isSubmitting || authLoading}
             sx={{
               flex: 2,
-              minHeight: 44,
+              minHeight: 40,
               background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark || '#FFC000'} 100%)`,
               color: theme.palette.primary.contrastText,
               fontWeight: 700,
@@ -1090,12 +1124,12 @@ const MobileRegister = () => {
         <Box
           sx={{
             textAlign: 'center',
-            mt: 1.5,
+            mt: 1,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             gap: 0.5,
-            minHeight: 44,
+            minHeight: 40,
           }}
         >
           <Typography sx={{ color: 'text.secondary', fontSize: '14px' }}>
@@ -1110,7 +1144,7 @@ const MobileRegister = () => {
               fontSize: '14px',
               py: 1,
               px: 1,
-              minHeight: 44,
+              minHeight: 40,
               minWidth: 'auto',
               textTransform: 'none',
             }}
