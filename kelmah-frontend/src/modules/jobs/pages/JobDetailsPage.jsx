@@ -64,7 +64,7 @@ import {
   TOUCH_TARGET_MIN,
   Z_INDEX,
 } from '../../../constants/layout';
-import { withBottomNavSafeArea } from '@/utils/safeArea';
+import { withSafeAreaBottom } from '@/utils/safeArea';
 import { Helmet } from 'react-helmet-async';
 import { hasRole } from '../../../utils/userUtils';
 import {
@@ -939,8 +939,7 @@ const JobDetailsPage = () => {
     : isCompactMobile
       ? compactBudgetDisplay
       : budgetDisplay;
-  const mobileStickyFooterReserve = isCompactMobile ? 328 : 308;
-  const mobileStickyFooterSpacer = isCompactMobile ? 222 : 206;
+  const mobileStickyFooterReserve = isCompactMobile ? 144 : 160;
   const rawStatusLabel = toDisplayText(job?.status, 'open');
   const jobStatusLabel = toReadableStatus(rawStatusLabel, 'Open');
   const normalizedStatusLabel = rawStatusLabel.toLowerCase();
@@ -964,7 +963,7 @@ const JobDetailsPage = () => {
   return (
     <PageCanvas
       disableContainer
-      sx={{ pb: { xs: withBottomNavSafeArea(mobileStickyFooterReserve), md: 6 } }}
+      sx={{ pb: { xs: withSafeAreaBottom(mobileStickyFooterReserve), md: 6 } }}
     >
       <Box
         sx={{
@@ -2550,22 +2549,12 @@ const JobDetailsPage = () => {
           )}
         </Container>
 
-        {isMobile && (
-          <Box
-            aria-hidden
-            sx={{
-              display: { xs: 'block', md: 'none' },
-              height: withBottomNavSafeArea(mobileStickyFooterSpacer),
-            }}
-          />
-        )}
-
         {/* Sticky bottom CTA bar for mobile */}
         {isMobile && job && (
           <Box
             sx={{
               position: 'fixed',
-              bottom: withBottomNavSafeArea(0),
+              bottom: withSafeAreaBottom(0),
               left: 0,
               right: 0,
               zIndex: Z_INDEX.stickyCta,
