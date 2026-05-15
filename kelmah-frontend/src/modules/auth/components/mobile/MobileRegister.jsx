@@ -56,7 +56,7 @@ import { withSafeAreaBottom, withSafeAreaTop } from '@/utils/safeArea';
 // Password strength
 const checkPasswordStrength = (password) => {
   let strength = 0;
-  if (password.length >= 8) strength++;
+  if (password.length >= 12) strength++;
   if (/[a-z]/.test(password)) strength++;
   if (/[A-Z]/.test(password)) strength++;
   if (/[0-9]/.test(password)) strength++;
@@ -181,11 +181,19 @@ const MobileRegister = () => {
     if (step === 3) {
       if (!formData.password) {
         newErrors.password = 'Create a password';
-      } else if (formData.password.length < 8) {
-        newErrors.password = 'Password must be at least 8 characters';
-      } else if (passwordStrength < 3) {
-        newErrors.password =
-          'Password is too easy to guess — add numbers or symbols';
+      } else if (formData.password.length < 12) {
+        newErrors.password = 'Password must be at least 12 characters';
+      } else {
+        const pwd = formData.password;
+        if (
+          !/[A-Z]/.test(pwd) ||
+          !/[a-z]/.test(pwd) ||
+          !/[0-9]/.test(pwd) ||
+          !/[^A-Za-z0-9]/.test(pwd)
+        ) {
+          newErrors.password =
+            'Password must include uppercase, lowercase, number and symbol';
+        }
       }
       if (!formData.confirmPassword) {
         newErrors.confirmPassword = 'Type your password again';

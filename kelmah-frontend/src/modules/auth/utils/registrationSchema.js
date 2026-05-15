@@ -10,7 +10,7 @@ export const isValidGhanaPhone = (value) =>
 
 export const calculatePasswordStrength = (password = '') => {
   let score = 0;
-  if (password.length >= 8) score += 1;
+  if (password.length >= 12) score += 1;
   if (/[A-Z]/.test(password)) score += 1;
   if (/[a-z]/.test(password)) score += 1;
   if (/[0-9]/.test(password)) score += 1;
@@ -53,10 +53,10 @@ export const registrationSchema = z
     ),
     password: z
       .string({ required_error: 'Password is required' })
-      .min(8, 'Password must be at least 8 characters long'),
+      .min(12, 'Password must be at least 12 characters long'),
     confirmPassword: z
       .string({ required_error: 'Please confirm your password' })
-      .min(8, 'Please confirm your password'),
+      .min(12, 'Please confirm your password'),
     companyName: z.string().trim().optional().default(''),
     trades: z.array(z.string().min(2)).optional().default([]),
     experienceYears: z
@@ -81,14 +81,45 @@ export const registrationSchema = z
       });
     }
 
-    const { score } = calculatePasswordStrength(data.password);
-    if (score < 3) {
+    // Enforce same password policy as backend SecurityUtils:
+    // - Minimum 12 characters
+    // - At least one uppercase, one lowercase, one digit, and one symbol
+    const pwd = data.password || '';
+    if (pwd.length < 12) {
       ctx.addIssue({
         path: ['password'],
         code: z.ZodIssueCode.custom,
-        message:
-          'Please choose a stronger password with uppercase, lowercase, numbers, and symbols',
+        message: 'Password must be at least 12 characters long',
       });
+    } else {
+      if (!/[A-Z]/.test(pwd)) {
+        ctx.addIssue({
+          path: ['password'],
+          code: z.ZodIssueCode.custom,
+          message: 'Password must include at least one uppercase letter',
+        });
+      }
+      if (!/[a-z]/.test(pwd)) {
+        ctx.addIssue({
+          path: ['password'],
+          code: z.ZodIssueCode.custom,
+          message: 'Password must include at least one lowercase letter',
+        });
+      }
+      if (!/[0-9]/.test(pwd)) {
+        ctx.addIssue({
+          path: ['password'],
+          code: z.ZodIssueCode.custom,
+          message: 'Password must include at least one number',
+        });
+      }
+      if (!/[^A-Za-z0-9]/.test(pwd)) {
+        ctx.addIssue({
+          path: ['password'],
+          code: z.ZodIssueCode.custom,
+          message: 'Password must include at least one symbol (e.g. !@#$)',
+        });
+      }
     }
 
     if (data.role === 'hirer' && !data.companyName?.trim()) {
