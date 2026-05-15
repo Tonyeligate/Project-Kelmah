@@ -327,11 +327,19 @@ const parseRefreshTokenId = (token) => {
 /**
  * Register a new user
  */
+// Toggle behaviour: when REQUIRE_EMAIL_DELIVERY=true, registration will fail if
+// verification email delivery is not available (current strict behaviour).
+// When not set, registration will succeed and email sending will be attempted
+// in the background to improve availability when the mail provider is flaky.
+const REQUIRE_EMAIL_DELIVERY = String(process.env.REQUIRE_EMAIL_DELIVERY || '').toLowerCase() === 'true';
+
 exports.register = async (req, res, next) => {
   // Avoid logging full payloads; log minimal info
   logger.info('Register attempt', { email: req.body?.email });
   try {
-    ensureEmailDeliveryConfigured(REGISTRATION_UNAVAILABLE_MESSAGE);
+    if (REQUIRE_EMAIL_DELIVERY) {
+      ensureEmailDeliveryConfigured(REGISTRATION_UNAVAILABLE_MESSAGE);
+    }
 
     const { firstName, lastName, email, phone, password, role } = req.body;
 
@@ -392,24 +400,46 @@ exports.register = async (req, res, next) => {
 
     logger.info('Email verification link generated', { frontendUrl });
 
-    // Verification delivery is required so we do not create unreachable accounts.
-    try {
-      const deliveryResult = await emailService.sendVerificationEmail({
-        name: `${newUser.firstName} ${newUser.lastName}`,
-        email: newUser.email,
-        verificationUrl,
-      });
+    // If strict delivery is required, send synchronously and rollback on failure.
+    if (REQUIRE_EMAIL_DELIVERY) {
+      try {
+        const deliveryResult = await emailService.sendVerificationEmail({
+          name: `${newUser.firstName} ${newUser.lastName}`,
+          email: newUser.email,
+          verificationUrl,
+        });
 
-      if (didEmailSendSkip(deliveryResult)) {
-        throw buildEmailDeliveryUnavailableError(REGISTRATION_UNAVAILABLE_MESSAGE);
+        if (didEmailSendSkip(deliveryResult)) {
+          throw buildEmailDeliveryUnavailableError(REGISTRATION_UNAVAILABLE_MESSAGE);
+        }
+      } catch (mailErr) {
+        logger.warn('Verification email failed during registration (strict mode)', {
+          email: newUser.email,
+          error: mailErr.message,
+        });
+        await rollbackUnverifiedRegistration(newUser);
+        return next(normalizeEmailDeliveryError(mailErr, REGISTRATION_UNAVAILABLE_MESSAGE));
       }
-    } catch (mailErr) {
-      logger.warn('Verification email failed during registration', {
-        email: newUser.email,
-        error: mailErr.message,
-      });
-      await rollbackUnverifiedRegistration(newUser);
-      return next(normalizeEmailDeliveryError(mailErr, REGISTRATION_UNAVAILABLE_MESSAGE));
+    } else {
+      // Non-strict mode: attempt delivery in background and do not block registration.
+      Promise.resolve()
+        .then(() =>
+          emailService.sendVerificationEmail({
+            name: `${newUser.firstName} ${newUser.lastName}`,
+            email: newUser.email,
+            verificationUrl,
+          }),
+        )
+        .then((deliveryResult) => {
+          if (didEmailSendSkip(deliveryResult)) {
+            logger.warn('Background verification email was skipped', { email: newUser.email });
+          } else {
+            logger.info('Background verification email sent', { email: newUser.email });
+          }
+        })
+        .catch((mailErr) => {
+          logger.warn('Background verification email failed', { email: newUser.email, error: mailErr.message });
+        });
     }
 
     return res.status(201).json({

@@ -1,3 +1,61 @@
+### Session: Registration 400 Investigation May 15 2026 IN PROGRESS
+
+**Date**: May 15, 2026
+**Scope**: Investigate 400 responses from `/api/auth/register` during the 4-step registration flow (mobile + desktop).
+
+**Files in scope**
+- `kelmah-frontend/src/modules/auth/components/register/Register.jsx`
+- `kelmah-frontend/src/modules/auth/components/mobile/MobileRegister.jsx`
+- `kelmah-frontend/src/modules/auth/hooks/useRegistrationForm.js`
+- `kelmah-frontend/src/modules/auth/utils/registrationSchema.js`
+- `kelmah-frontend/src/modules/auth/services/authSlice.js`
+- `kelmah-frontend/src/modules/auth/services/authService.js`
+- `kelmah-frontend/src/services/apiClient.js`
+- `kelmah-backend/api-gateway/routes/auth.routes.js`
+- `kelmah-backend/services/auth-service/routes/auth.routes.js`
+- `kelmah-backend/services/auth-service/controllers/auth.controller.js`
+- `kelmah-backend/services/auth-service/utils/security.js`
+- `kelmah-backend/services/auth-service/utils/validation.js`
+- `kelmah-backend/services/auth-service/utils/errorResponse.js`
+- `kelmah-backend/shared/models/User.js`
+
+**Baseline understanding (before changes)**
+- Registration UI submits via auth slice/service to gateway `/api/auth/register`.
+- Auth service validates email/password/name via express-validator + strict password policy.
+- Frontend password validation is looser than backend requirements.
+- Diagnostics not run yet.
+
+### Session: Oracle Dual Backend VM Provisioning May 11 2026 IN PROGRESS
+
+**Date**: May 11, 2026
+**Scope**: Provision an Oracle Cloud VM for backend redundancy, align .env-driven configuration, and keep Render deployment unaffected.
+
+**Files in scope**
+- `scripts/oracle-vm.env`
+- `spec-kit/STATUS_LOG.md`
+
+**Baseline understanding (before changes)**
+- Oracle CLI is configured and reachable via local OCI config.
+- `scripts/oracle-vm.env` contained OCI identifiers only.
+- VM provisioning not yet confirmed; no Oracle VM public IP recorded.
+
+**Implementation updates (during changes)**
+- Added placeholder application/env settings to `scripts/oracle-vm.env` so provisioning reads from .env instead of hardcoded values.
+- Provisioning attempted in us-ashburn-1 (AD-2) with A1 Flex (4 OCPU / 24 GB) and Oracle returned `Out of host capacity`.
+- Attempted us-ashburn-1 (AD-3) with A1 Flex; no instance created.
+- Attempted us-phoenix-1 region creation for new VCN/subnet and hit `NotAuthenticated` (region not subscribed or auth not permitted).
+- Attempted A2 Flex (2 OCPU / 12 GB) in us-ashburn-1 (AD-3) and OCI rejected the memory/OCPU ratio.
+- Attempted A1 Flex (4 OCPU / 24 GB) in us-ashburn-1 (AD-3) with reduced boot volume (50 GB) and hit `bootVolumeQuota Service limit reached`.
+- Attempted region subscription to PHX via API; failed with `TenantCapacityExceeded` (max subscribed regions).
+- Attempted A2 Flex with default memory (no override) in us-ashburn-1 (AD-3); OCI still rejected ratio (`Valid ratio range: 0 - 0`).
+
+**Blockers**
+- Oracle host capacity is unavailable in `uaGQ:US-ASHBURN-AD-2` for the requested shape; need alternate AD or region.
+- Phoenix region access is not authenticated/subscribed.
+- A2 Flex launch rejected with memory ratio error (needs alternate shape-config or different region).
+- Boot volume quota is exhausted in us-ashburn-1 for A1 Flex launches.
+- Tenant is at the max subscribed regions limit; cannot add PHX via API.
+
 ### Session: Worker Profile Edit Crash Investigation May 05 2026 COMPLETED
 
 **Date**: May 05, 2026
