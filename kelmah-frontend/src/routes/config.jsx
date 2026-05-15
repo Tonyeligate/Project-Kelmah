@@ -367,6 +367,7 @@ const routes = [
       // Support /reset-password/:token and /reset-password?token=...
       { path: 'reset-password', element: <ResetPasswordPage /> },
       { path: 'reset-password/:token', element: <ResetPasswordPage /> },
+      { path: 'verify-email', element: <VerifyEmailPage /> },
       { path: 'verify-email/:token', element: <VerifyEmailPage /> },
       { path: 'role-selection', element: <RoleSelectionPage /> },
       {

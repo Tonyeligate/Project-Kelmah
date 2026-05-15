@@ -487,13 +487,14 @@ const Register = () => {
       await dispatch(registerAction(payload)).unwrap();
       clearDraft();
       clearDraftStorage();
-      setDraftStatus('Account created. Redirecting to sign in...');
+      setDraftStatus('Account created. Opening email verification...');
 
       setTimeout(() => {
-        navigate('/login', {
+        navigate('/verify-email', {
           state: {
-            registered: true,
-            message: 'Registration successful! Please verify your email.',
+            email: values.email.trim().toLowerCase(),
+            message:
+              'Registration successful. If the email did not arrive, resend it below.',
             redirectTo: resolveRequestedPath(),
           },
         });

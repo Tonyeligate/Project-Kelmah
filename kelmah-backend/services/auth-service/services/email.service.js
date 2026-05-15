@@ -31,6 +31,7 @@ const smtpConfig = {
   host: SMTP_HOST || 'smtp.gmail.com',
   port: Number(SMTP_PORT) || 465,
   secure: (Number(SMTP_PORT) === 465) || false,
+  family: 4,
   auth: {
     user: SMTP_USER,
     pass: SMTP_PASS,

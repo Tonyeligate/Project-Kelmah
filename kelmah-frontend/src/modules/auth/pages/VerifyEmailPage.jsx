@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import AuthWrapper from '../components/common/AuthWrapper';
 import {
   Box,
@@ -14,7 +14,7 @@ import {
   MailOutline,
 } from '@mui/icons-material';
 import authService from '../services/authService';
-import { useParams, Link } from 'react-router-dom';
+import { useLocation, useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 import PageCanvas from '@/modules/common/components/PageCanvas';
@@ -22,10 +22,15 @@ import { withSafeAreaBottom } from '@/utils/safeArea';
 
 const VerifyEmailPage = () => {
   const { token } = useParams();
+  const location = useLocation();
+  const initialEmail =
+    location.state?.email ||
+    new URLSearchParams(location.search).get('email') ||
+    '';
   const [loading, setLoading] = useState(!!token);
   const [status, setStatus] = useState('');
   const [error, setError] = useState('');
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(initialEmail);
   const [resendSent, setResendSent] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
   const [resendError, setResendError] = useState('');
@@ -35,7 +40,7 @@ const VerifyEmailPage = () => {
     if (!token) {
       setLoading(false);
       setError(
-        'Verification link is missing. Open the latest email from Kelmah and try again.',
+        'Your account was created. If you did not receive the verification email, resend it below.',
       );
       return;
     }
@@ -48,7 +53,7 @@ const VerifyEmailPage = () => {
             res.message || 'Your email is confirmed. You can now sign in.',
           );
         }
-      } catch (err) {
+      } catch {
         if (!cancelled) {
           setError(
             'This link is no longer valid. Request a new verification email below.',
@@ -72,7 +77,7 @@ const VerifyEmailPage = () => {
     try {
       await authService.resendVerificationEmail(email);
       setResendSent(true);
-    } catch (err) {
+    } catch {
       setResendError('Failed to send verification email. Please try again.');
     } finally {
       setResendLoading(false);
@@ -226,6 +231,21 @@ const VerifyEmailPage = () => {
               )}
             </Button>
           </Box>
+          {location.state?.message && (
+            <Alert
+              severity="success"
+              sx={{
+                mt: 2,
+                borderRadius: 2,
+                ...(isMobile && {
+                  bgcolor: (t) => `${t.palette.success.main}1F`,
+                  color: 'text.primary',
+                }),
+              }}
+            >
+              {location.state.message}
+            </Alert>
+          )}
           {resendSent && (
             <Alert
               severity="success"
