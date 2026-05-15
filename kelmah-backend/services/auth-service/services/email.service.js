@@ -13,10 +13,10 @@ const SMTP_HOST = config.SMTP_HOST || 'smtp.gmail.com';
 const SMTP_PORT = config.SMTP_PORT || 465;
 const SMTP_USER = normalizeEnvString(config.SMTP_USER || process.env.SMTP_USER);
 const SMTP_PASS = normalizeSmtpPassword(config.SMTP_PASSWORD || config.SMTP_PASS || process.env.SMTP_PASSWORD || process.env.SMTP_PASS);
-const SMTP_CONNECTION_TIMEOUT_MS = Number(config.SMTP_CONNECTION_TIMEOUT_MS || process.env.SMTP_CONNECTION_TIMEOUT_MS || 15000);
-const SMTP_GREETING_TIMEOUT_MS = Number(config.SMTP_GREETING_TIMEOUT_MS || process.env.SMTP_GREETING_TIMEOUT_MS || 15000);
-const SMTP_SOCKET_TIMEOUT_MS = Number(config.SMTP_SOCKET_TIMEOUT_MS || process.env.SMTP_SOCKET_TIMEOUT_MS || 30000);
-const EMAIL_SEND_TIMEOUT_MS = Number(config.EMAIL_SEND_TIMEOUT_MS || process.env.EMAIL_SEND_TIMEOUT_MS || 30000);
+const SMTP_CONNECTION_TIMEOUT_MS = Number(config.SMTP_CONNECTION_TIMEOUT_MS || process.env.SMTP_CONNECTION_TIMEOUT_MS || 60000);
+const SMTP_GREETING_TIMEOUT_MS = Number(config.SMTP_GREETING_TIMEOUT_MS || process.env.SMTP_GREETING_TIMEOUT_MS || 60000);
+const SMTP_SOCKET_TIMEOUT_MS = Number(config.SMTP_SOCKET_TIMEOUT_MS || process.env.SMTP_SOCKET_TIMEOUT_MS || 60000);
+const EMAIL_SEND_TIMEOUT_MS = Number(config.EMAIL_SEND_TIMEOUT_MS || process.env.EMAIL_SEND_TIMEOUT_MS || 60000);
 const HAS_SMTP_CREDENTIALS = Boolean(SMTP_USER && SMTP_PASS);
 
 // Debug logging only in development
