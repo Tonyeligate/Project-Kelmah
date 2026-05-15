@@ -523,7 +523,13 @@ exports.login = async (req, res, next) => {
     }
 
     if (!user.isEmailVerified) {
-      return next(buildInvalidCredentialsError());
+      const error = new AppError(
+        'Please verify your email address before signing in. Check your inbox or resend the verification email.',
+        403,
+      );
+      error.expose = true;
+      error.exposeMessage = true;
+      return next(error);
     }
 
     // AUTH-1/2 FIX: Check account lock AFTER bcrypt to equalize timing

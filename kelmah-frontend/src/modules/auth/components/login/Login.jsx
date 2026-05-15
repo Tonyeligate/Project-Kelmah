@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { clearError, login as loginAction } from '../../services/authSlice';
 import {
@@ -41,8 +41,8 @@ import { checkApiHealth } from '../../../common/utils/apiUtils';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 import { toUserMessage } from '@/services/responseNormalizer';
+import authService from '../../services/authService';
 import {
-  getDefaultRouteByRole,
   getRequestedPathFromLocation,
   resolveLoginRedirectPath,
 } from '@/utils/authRedirect';
@@ -120,7 +120,9 @@ const Login = () => {
   const [submitting, setSubmitting] = useState(false);
   const [loginError, setLoginError] = useState('');
   const [apiError, setApiError] = useState('');
-  const [showWelcomeMessage, setShowWelcomeMessage] = useState(true);
+  const [showWelcomeMessage] = useState(true);
+  const [resendStatus, setResendStatus] = useState('');
+  const [resendLoading, setResendLoading] = useState(false);
 
   useEffect(() => {
     checkApiHealth().catch(() => {
@@ -141,6 +143,9 @@ const Login = () => {
     .map(normalizeErrorMessage)
     .find(Boolean);
   const errorMessages = activeErrorMessage ? [activeErrorMessage] : [];
+  const needsVerification = /verify your email|verification email/i.test(
+    activeErrorMessage || '',
+  );
   const socialProviders = useMemo(
     () =>
       [
@@ -162,6 +167,11 @@ const Login = () => {
     [],
   );
 
+  const getRequestedPath = useCallback(
+    () => getRequestedPathFromLocation(location),
+    [location],
+  );
+
   const buildSocialAuthUrl = useCallback(
     (authPath) => {
       const baseUrl = `${getTrustedApiBaseUrl()}${authPath}`;
@@ -178,7 +188,7 @@ const Login = () => {
       const separator = baseUrl.includes('?') ? '&' : '?';
       return `${baseUrl}${separator}from=${encodeURIComponent(requestedPath)}`;
     },
-    [location.search, location.state],
+    [getRequestedPath],
   );
 
   const handleSocialLogin = useCallback(
@@ -187,8 +197,6 @@ const Login = () => {
     },
     [buildSocialAuthUrl],
   );
-
-  const getRequestedPath = () => getRequestedPathFromLocation(location);
 
   const resolveLoginRedirect = (user) =>
     resolveLoginRedirectPath({
@@ -252,6 +260,32 @@ const Login = () => {
       setSubmitting(false);
     }
   };
+
+  const handleResendVerificationEmail = useCallback(async () => {
+    const targetEmail = email.trim();
+    if (!targetEmail) {
+      setLoginError('Enter the email address you used to register first.');
+      return;
+    }
+
+    setResendLoading(true);
+    setResendStatus('');
+
+    try {
+      await authService.resendVerificationEmail(targetEmail);
+      setResendStatus(
+        'Verification email sent. Check your inbox and spam folder.',
+      );
+    } catch (error) {
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        'Failed to send verification email. Please try again.';
+      setResendStatus(message);
+    } finally {
+      setResendLoading(false);
+    }
+  }, [email]);
 
   // Mobile detection now handled by LoginPage
   // Desktop Login form
@@ -391,7 +425,7 @@ const Login = () => {
                       textAlign: 'center',
                     }}
                   >
-                    Access Kelmah - Ghana's Skilled Trades Platform
+                    Access Kelmah - Ghana&apos;s Skilled Trades Platform
                   </Typography>
                 </Stack>
               </motion.div>
@@ -458,6 +492,71 @@ const Login = () => {
                     </Alert>
                   ))}
                 </Stack>
+                {needsVerification && (
+                  <Box
+                    sx={{
+                      mb: { xs: 1.5, sm: 2 },
+                      p: 1.5,
+                      borderRadius: 1.5,
+                      border: `1px solid ${alpha(accentColor, 0.25)}`,
+                      background: alpha(accentColor, isDarkMode ? 0.08 : 0.1),
+                    }}
+                  >
+                    <Stack spacing={1}>
+                      <Typography
+                        sx={{
+                          color: panelText,
+                          fontWeight: 700,
+                          fontSize: { xs: '0.85rem', sm: '0.9rem' },
+                        }}
+                      >
+                        Check your email to verify first.
+                      </Typography>
+                      <Typography
+                        sx={{
+                          color: panelMuted,
+                          fontSize: { xs: '0.78rem', sm: '0.82rem' },
+                        }}
+                      >
+                        If you did not receive it, resend the verification email
+                        to the address you entered.
+                      </Typography>
+                      <Box>
+                        <Button
+                          type="button"
+                          variant="outlined"
+                          size="small"
+                          onClick={handleResendVerificationEmail}
+                          disabled={resendLoading || !email.trim()}
+                          sx={{
+                            borderColor: alpha(accentColor, 0.45),
+                            color: accentColor,
+                            textTransform: 'none',
+                            fontWeight: 700,
+                            '&:hover': {
+                              borderColor: accentColor,
+                              background: alpha(accentColor, 0.08),
+                            },
+                          }}
+                        >
+                          {resendLoading
+                            ? 'Sending...'
+                            : 'Resend verification email'}
+                        </Button>
+                      </Box>
+                      {resendStatus && (
+                        <Typography
+                          sx={{
+                            color: panelMuted,
+                            fontSize: { xs: '0.75rem', sm: '0.8rem' },
+                          }}
+                        >
+                          {resendStatus}
+                        </Typography>
+                      )}
+                    </Stack>
+                  </Box>
+                )}
               </motion.div>
             )}
 

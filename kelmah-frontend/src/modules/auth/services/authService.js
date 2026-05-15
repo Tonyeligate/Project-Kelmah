@@ -141,6 +141,8 @@ const authService = {
           'Invalid email or password. Please check your credentials and try again.';
       } else if (error.response?.status === 403) {
         errorMessage =
+          error.response?.data?.message ||
+          error.response?.data?.error ||
           'Your account has been temporarily disabled. Please contact support.';
       } else if (error.response?.status === 429) {
         errorMessage =
