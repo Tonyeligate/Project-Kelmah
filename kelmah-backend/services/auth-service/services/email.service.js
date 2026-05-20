@@ -10,7 +10,7 @@ const PLACEHOLDER_FROM_PATTERN = /^no-?reply@kelmah\.com$/i;
 // Map config properties to expected names
 const EMAIL_FROM = normalizeEnvString(config.FROM_EMAIL || config.EMAIL_FROM || process.env.EMAIL_FROM);
 const SMTP_HOST = config.SMTP_HOST || 'smtp.gmail.com';
-const SMTP_PORT = config.SMTP_PORT || 465;
+const SMTP_PORT = Number(config.SMTP_PORT || process.env.SMTP_PORT || 465);
 const SMTP_USER = normalizeEnvString(config.SMTP_USER || process.env.SMTP_USER);
 const SMTP_PASS = normalizeSmtpPassword(config.SMTP_PASSWORD || config.SMTP_PASS || process.env.SMTP_PASSWORD || process.env.SMTP_PASS);
 const SMTP_CONNECTION_TIMEOUT_MS = Number(config.SMTP_CONNECTION_TIMEOUT_MS || process.env.SMTP_CONNECTION_TIMEOUT_MS || 60000);
@@ -18,6 +18,19 @@ const SMTP_GREETING_TIMEOUT_MS = Number(config.SMTP_GREETING_TIMEOUT_MS || proce
 const SMTP_SOCKET_TIMEOUT_MS = Number(config.SMTP_SOCKET_TIMEOUT_MS || process.env.SMTP_SOCKET_TIMEOUT_MS || 60000);
 const EMAIL_SEND_TIMEOUT_MS = Number(config.EMAIL_SEND_TIMEOUT_MS || process.env.EMAIL_SEND_TIMEOUT_MS || 60000);
 const HAS_SMTP_CREDENTIALS = Boolean(SMTP_USER && SMTP_PASS);
+const IS_GMAIL_HOST = /gmail\.com$/i.test(String(SMTP_HOST || ''));
+const hasSecureOverride = Object.prototype.hasOwnProperty.call(process.env, 'SMTP_SECURE');
+const SMTP_SECURE = hasSecureOverride
+  ? String(process.env.SMTP_SECURE).toLowerCase() === 'true'
+  : SMTP_PORT === 465;
+const hasRequireTlsOverride = Object.prototype.hasOwnProperty.call(process.env, 'SMTP_REQUIRE_TLS');
+const SMTP_REQUIRE_TLS = hasRequireTlsOverride
+  ? String(process.env.SMTP_REQUIRE_TLS).toLowerCase() === 'true'
+  : SMTP_PORT === 587;
+const hasPoolOverride = Object.prototype.hasOwnProperty.call(process.env, 'SMTP_POOL');
+const SMTP_POOL = hasPoolOverride
+  ? String(process.env.SMTP_POOL).toLowerCase() === 'true'
+  : !IS_GMAIL_HOST;
 
 // Debug logging only in development
 if (process.env.NODE_ENV === 'development') {
@@ -29,8 +42,9 @@ if (process.env.NODE_ENV === 'development') {
 
 const smtpConfig = {
   host: SMTP_HOST || 'smtp.gmail.com',
-  port: Number(SMTP_PORT) || 465,
-  secure: (Number(SMTP_PORT) === 465) || false,
+  port: SMTP_PORT || 465,
+  secure: SMTP_SECURE,
+  requireTLS: SMTP_REQUIRE_TLS,
   family: 4,
   auth: {
     user: SMTP_USER,
@@ -38,24 +52,29 @@ const smtpConfig = {
   },
   tls: {
     rejectUnauthorized: process.env.NODE_ENV !== 'development',
+    servername: SMTP_HOST || 'smtp.gmail.com',
   },
   connectionTimeout: SMTP_CONNECTION_TIMEOUT_MS,
   greetingTimeout: SMTP_GREETING_TIMEOUT_MS,
   socketTimeout: SMTP_SOCKET_TIMEOUT_MS,
-  // Connection pooling for better delivery
-  pool: true,
-  maxConnections: 5,
-  maxMessages: 100,
-  // Rate limiting
-  rateDelta: 20000,
-  rateLimit: 5
+  // Connection pooling for better delivery (disable by default for Gmail)
+  pool: SMTP_POOL,
 };
+
+if (SMTP_POOL) {
+  smtpConfig.maxConnections = 5;
+  smtpConfig.maxMessages = 100;
+  smtpConfig.rateDelta = 20000;
+  smtpConfig.rateLimit = 5;
+}
 
 if (process.env.NODE_ENV === 'development') {
   console.log('Using SMTP config:', {
     host: smtpConfig.host,
     port: smtpConfig.port,
     secure: smtpConfig.secure,
+    requireTLS: smtpConfig.requireTLS,
+    pool: smtpConfig.pool,
     user: smtpConfig.auth.user ? '[set]' : '[unset]',
     pass: smtpConfig.auth.pass ? '[set]' : '[unset]'
   });
@@ -124,7 +143,7 @@ const sendMailSafely = async (mailOptions, operation) => {
   let timeoutId;
 
   try {
-    return await Promise.race([
+    const result = await Promise.race([
       transporter.sendMail(mailOptions),
       new Promise((_, reject) => {
         timeoutId = setTimeout(() => {
@@ -132,6 +151,15 @@ const sendMailSafely = async (mailOptions, operation) => {
         }, EMAIL_SEND_TIMEOUT_MS);
       }),
     ]);
+
+    logger.info('SMTP delivery succeeded', {
+      operation,
+      to: mailOptions.to,
+      messageId: result?.messageId,
+      response: result?.response,
+    });
+
+    return result;
   } catch (error) {
     logger.warn('SMTP delivery failed', {
       operation,

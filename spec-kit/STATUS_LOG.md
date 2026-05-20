@@ -1,3 +1,53 @@
+### Session: Gmail SMTP Timeout Investigation May 15 2026 IN PROGRESS
+
+**Date**: May 15, 2026
+**Scope**: Investigate auth-service verification email SMTP timeouts in production (Gmail SMTP).
+
+**Files in scope**
+- `kelmah-backend/services/auth-service/services/email.service.js`
+- `kelmah-backend/services/auth-service/controllers/auth.controller.js`
+- `kelmah-backend/services/auth-service/routes/auth.routes.js`
+- `kelmah-backend/services/auth-service/config/env.js`
+- `spec-kit/STATUS_LOG.md`
+
+**Baseline understanding (before changes)**
+- Registration succeeds (201) and verification link is generated, but background email send times out after 60000ms in auth-service logs.
+- Login returns 403 for unverified users; resend verification endpoint exists.
+- SMTP env vars are present on Render; production logs still show SMTP send timeout.
+
+**Implementation updates (during changes)**
+- Updated SMTP transport defaults to require TLS on port 587, honor explicit `SMTP_SECURE`/`SMTP_REQUIRE_TLS` overrides, and disable pooling by default for Gmail while retaining IPv4 routing.
+- Added TLS `servername` to improve Gmail handshake stability.
+
+**Diagnostics executed**
+- Audited Render auth-service SMTP env vars (host/port/timeouts present, password set).
+
+### Session: Auth Registration + SMTP Failure May 20 2026 IN PROGRESS
+
+**Date**: May 20, 2026
+**Scope**: Investigate production registration email delivery failures and 403 login after signup.
+
+**Files in scope**
+- `kelmah-backend/services/auth-service/services/email.service.js`
+- `kelmah-backend/services/auth-service/controllers/auth.controller.js`
+- `kelmah-backend/services/auth-service/routes/auth.routes.js`
+- `kelmah-backend/services/auth-service/config/env.js`
+- `spec-kit/STATUS_LOG.md`
+
+**Baseline understanding (before changes)**
+- Registration returns 201 and generates verification link; SMTP send times out in production logs.
+- Login returns 403 for unverified accounts.
+
+**Diagnostics executed**
+- Render API: fetched auth-service SMTP env vars (host/port/user/from set).
+- Render API: pulled recent auth-service logs showing SMTP send timeout after 60000ms on registration.
+
+**Implementation updates (during changes)**
+- Updated Render auth-service env vars to STARTTLS on port 587 with explicit TLS required and SMTP pooling disabled.
+
+**Verification**
+- Triggered registration after env update; auth-service logs still show SMTP send timeout after 60000ms.
+
 ### Session: Registration 400 Investigation May 15 2026 IN PROGRESS
 
 **Date**: May 15, 2026
