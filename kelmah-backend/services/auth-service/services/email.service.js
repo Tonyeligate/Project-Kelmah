@@ -1,5 +1,6 @@
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
+const axios = require('axios');
 const config = require('../config');
 const { logger } = require('../utils/logger');
 
@@ -9,6 +10,16 @@ const PLACEHOLDER_FROM_PATTERN = /^no-?reply@kelmah\.com$/i;
 
 // Map config properties to expected names
 const EMAIL_FROM = normalizeEnvString(config.FROM_EMAIL || config.EMAIL_FROM || process.env.EMAIL_FROM);
+const EMAIL_FROM_NAME = normalizeEnvString(
+  config.FROM_NAME || config.EMAIL_FROM_NAME || process.env.EMAIL_FROM_NAME,
+);
+const EMAIL_PROVIDER = normalizeEnvString(process.env.EMAIL_PROVIDER || '').toLowerCase();
+const BREVO_API_KEY = normalizeEnvString(process.env.BREVO_API_KEY || process.env.BREVO_APIKEY);
+const BREVO_API_URL = normalizeEnvString(process.env.BREVO_API_URL) || 'https://api.brevo.com/v3/smtp/email';
+const BREVO_SENDER_EMAIL = normalizeEnvString(process.env.BREVO_SENDER_EMAIL || EMAIL_FROM);
+const BREVO_SENDER_NAME = normalizeEnvString(
+  process.env.BREVO_SENDER_NAME || EMAIL_FROM_NAME || 'Kelmah Platform',
+);
 const SMTP_HOST = config.SMTP_HOST || 'smtp.gmail.com';
 const SMTP_PORT = Number(config.SMTP_PORT || process.env.SMTP_PORT || 465);
 const SMTP_USER = normalizeEnvString(config.SMTP_USER || process.env.SMTP_USER);
@@ -18,6 +29,14 @@ const SMTP_GREETING_TIMEOUT_MS = Number(config.SMTP_GREETING_TIMEOUT_MS || proce
 const SMTP_SOCKET_TIMEOUT_MS = Number(config.SMTP_SOCKET_TIMEOUT_MS || process.env.SMTP_SOCKET_TIMEOUT_MS || 60000);
 const EMAIL_SEND_TIMEOUT_MS = Number(config.EMAIL_SEND_TIMEOUT_MS || process.env.EMAIL_SEND_TIMEOUT_MS || 60000);
 const HAS_SMTP_CREDENTIALS = Boolean(SMTP_USER && SMTP_PASS);
+const HAS_BREVO_KEY = Boolean(BREVO_API_KEY);
+const PREFERS_BREVO = EMAIL_PROVIDER === 'brevo' || (!EMAIL_PROVIDER && HAS_BREVO_KEY);
+const PREFERS_SMTP = EMAIL_PROVIDER === 'smtp';
+const HAS_DELIVERY_CONFIG = PREFERS_BREVO
+  ? HAS_BREVO_KEY
+  : PREFERS_SMTP
+    ? HAS_SMTP_CREDENTIALS
+    : (HAS_BREVO_KEY || HAS_SMTP_CREDENTIALS);
 const IS_GMAIL_HOST = /gmail\.com$/i.test(String(SMTP_HOST || ''));
 const hasSecureOverride = Object.prototype.hasOwnProperty.call(process.env, 'SMTP_SECURE');
 const SMTP_SECURE = hasSecureOverride
@@ -38,6 +57,8 @@ if (process.env.NODE_ENV === 'development') {
   console.log('EMAIL_FROM:', EMAIL_FROM);
   console.log('SMTP_USER:', SMTP_USER ? '[set]' : '[unset]');
   console.log('SMTP_PASS:', SMTP_PASS ? '[set]' : '[unset]');
+  console.log('EMAIL_PROVIDER:', EMAIL_PROVIDER || '[auto]');
+  console.log('BREVO_API_KEY:', HAS_BREVO_KEY ? '[set]' : '[unset]');
 }
 
 const smtpConfig = {
@@ -81,6 +102,47 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 const transporter = nodemailer.createTransport(smtpConfig);
+
+const parseAddressEntry = (entry) => {
+  if (!entry) {
+    return null;
+  }
+
+  if (typeof entry === 'object' && entry.email) {
+    return {
+      email: String(entry.email).trim(),
+      name: entry.name ? String(entry.name).trim() : undefined,
+    };
+  }
+
+  const raw = String(entry).trim();
+  if (!raw) {
+    return null;
+  }
+
+  const match = raw.match(/^(.*)<(.+)>$/);
+  if (match) {
+    const name = match[1].trim().replace(/^"|"$/g, '');
+    const email = match[2].trim();
+    return { email, name: name || undefined };
+  }
+
+  return { email: raw };
+};
+
+const buildBrevoRecipients = (to) => {
+  if (!to) {
+    return [];
+  }
+
+  const entries = Array.isArray(to)
+    ? to
+    : String(to).split(',').map((item) => item.trim());
+
+  return entries
+    .map(parseAddressEntry)
+    .filter((entry) => entry && entry.email);
+};
 
 const resolveSenderAddress = () => {
   const configuredSender = normalizeEnvString(EMAIL_FROM);
@@ -131,7 +193,80 @@ const buildMailMetadata = (priority = 'normal') => {
   };
 };
 
+const sendViaBrevoApi = async (mailOptions, operation) => {
+  if (!HAS_BREVO_KEY) {
+    logger.warn('Brevo API key missing; email send skipped', {
+      operation,
+      to: mailOptions.to,
+    });
+    return { skipped: true };
+  }
+
+  const senderEmail = BREVO_SENDER_EMAIL || resolveSenderAddress();
+  if (!senderEmail) {
+    logger.warn('Brevo sender email missing; email send skipped', {
+      operation,
+      to: mailOptions.to,
+    });
+    return { skipped: true };
+  }
+
+  const recipients = buildBrevoRecipients(mailOptions.to);
+  if (recipients.length === 0) {
+    throw new Error('Brevo recipients missing');
+  }
+
+  const replyToValue = mailOptions.replyTo || mailOptions.headers?.['Reply-To'];
+  const replyTo = replyToValue
+    ? { email: String(replyToValue).trim() }
+    : undefined;
+
+  const payload = {
+    sender: {
+      email: senderEmail,
+      name: BREVO_SENDER_NAME,
+    },
+    to: recipients,
+    subject: mailOptions.subject,
+    htmlContent: mailOptions.html || mailOptions.text,
+    textContent: mailOptions.text,
+    headers: mailOptions.headers,
+    replyTo,
+  };
+
+  try {
+    const response = await axios.post(BREVO_API_URL, payload, {
+      headers: {
+        'api-key': BREVO_API_KEY,
+        'content-type': 'application/json',
+        accept: 'application/json',
+      },
+      timeout: EMAIL_SEND_TIMEOUT_MS,
+    });
+
+    logger.info('Brevo delivery succeeded', {
+      operation,
+      to: mailOptions.to,
+      messageId: response?.data?.messageId,
+    });
+
+    return response?.data || { success: true };
+  } catch (error) {
+    logger.warn('Brevo delivery failed', {
+      operation,
+      to: mailOptions.to,
+      error: error.message,
+      status: error.response?.status,
+    });
+    throw error;
+  }
+};
+
 const sendMailSafely = async (mailOptions, operation) => {
+  if (PREFERS_BREVO) {
+    return sendViaBrevoApi(mailOptions, operation);
+  }
+
   if (!HAS_SMTP_CREDENTIALS) {
     logger.warn('SMTP credentials missing; email send skipped', {
       operation,
@@ -234,7 +369,7 @@ const createEmailTemplate = (title, content, buttonText, buttonUrl) => {
 };
 
 module.exports = {
-  isDeliveryConfigured: () => HAS_SMTP_CREDENTIALS,
+  isDeliveryConfigured: () => HAS_DELIVERY_CONFIG,
 
   sendVerificationEmail: async ({ name, email, verificationUrl }) => {
     const safeName = escapeHtml(name || 'there');

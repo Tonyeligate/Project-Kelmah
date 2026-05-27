@@ -1,3 +1,27 @@
+### Session: Worker Profile Dark Luxe Redesign May 27 2026 IN PROGRESS
+
+**Date**: May 27, 2026
+**Scope**: Redesign the public worker profile detail page (/workers/:workerId) to match the dark luxe reference.
+
+**Files in scope**
+- `kelmah-frontend/src/modules/worker/pages/WorkerProfilePage.jsx`
+- `kelmah-frontend/src/modules/worker/components/WorkerProfile.jsx`
+- `spec-kit/STATUS_LOG.md`
+
+**Baseline understanding (before changes)**
+- Public worker profile uses a glass-card + tabbed layout with a separate mobile profile layout; styling does not match the requested dark luxe card reference.
+- Route `/workers/:workerId` is the canonical public profile entry (legacy `/worker-profile/:workerId` redirects).
+
+**Implementation updates (during changes)**
+- Refined the mobile-first card stack to match the charcoal/gold reference: hero card, gold pill skills, right-aligned About action, square portfolio tiles with gold borders/progress line, and compact review rows.
+- Added a sticky mobile CTA bar above the bottom nav and set Profile as the active gold tab; aligned the hire/message button treatments to gold/black.
+- Switched to local Poppins/Manrope fallbacks (removed external font import) and tightened spacing to token sizes while preserving existing data logic.
+
+**Verification**
+- `npm run ui:auto-remediate -- --changed --apply` (no changes applied; 0 files scanned/changed).
+- `npm run ui:pack:compare -- --pack core-public --task-id worker-profile-detail-may27 --strict true` (rerun after layout updates; still fail: score 4/25 with 100% mismatch at all breakpoints). Artifacts written to `.artifacts/ui/worker-profile-detail-may27-{home,jobs,search,support,docs,community}`; pack report at `.artifacts/ui/packs/worker-profile-detail-may27/pack-report.json`.
+- `npm run ui:audit:capture -- --task-id worker-profile-detail-may27 --route /workers/ui-audit-worker-1 --mock-public-data true --strict true` (score 20/25; pass false). Issues show navigation refused at `http://127.0.0.1:3000` (no UI server). Artifacts written to `.artifacts/ui/worker-profile-detail-may27`.
+
 ### Session: Gmail SMTP Timeout Investigation May 15 2026 IN PROGRESS
 
 **Date**: May 15, 2026
@@ -44,6 +68,8 @@
 
 **Implementation updates (during changes)**
 - Updated Render auth-service env vars to STARTTLS on port 587 with explicit TLS required and SMTP pooling disabled.
+- Added Brevo API provider support in auth-service email delivery with provider selection and updated auth-service .env.example for Brevo settings.
+- Added Brevo delivery success/failure logging for easier production diagnostics.
 
 **Verification**
 - Triggered registration after env update; auth-service logs still show SMTP send timeout after 60000ms.

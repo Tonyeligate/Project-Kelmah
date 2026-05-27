@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
-import { useParams, useNavigate, Link as RouterLink } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 // Removed AuthContext import to prevent dual state management conflicts
 // import { useAuth } from '../../auth/hooks/useAuth';"
 import workerService from '../services/workerService';
@@ -10,76 +10,39 @@ import {
   Paper,
   Typography,
   Button,
-  Grid,
   Rating,
   Avatar,
-  List,
-  ListItem,
-  ListItemText,
   Alert,
-  Card,
-  CardContent,
-  CardMedia,
   Chip,
   IconButton,
-  Tabs,
-  Tab,
   Stack,
-  Badge,
-  Tooltip,
   Skeleton,
-  Container,
-  alpha,
-  SpeedDial,
-  SpeedDialAction,
-  SpeedDialIcon,
-  Breadcrumbs,
-  Link,
   Dialog,
   DialogTitle,
   DialogContent,
   Snackbar,
 } from '@mui/material';
 import {
-  Edit as EditIcon,
-  LocationOn as LocationIcon,
-  Language as WebsiteIcon,
-  Work as WorkIcon,
-  AttachMoney as MoneyIcon,
-  AccessTime as TimeIcon,
-  Verified as VerifiedIcon,
-  Star as StarIcon,
-  Message as MessageIcon,
   Bookmark as BookmarkIcon,
   BookmarkBorder as BookmarkBorderIcon,
   Share as ShareIcon,
-  Visibility as ViewIcon,
-  Build as BuildIcon,
-  School as SchoolIcon,
-  EmojiEvents as AwardIcon,
-  Schedule as ScheduleIcon,
-  TrendingUp as TrendingIcon,
+  Edit as EditIcon,
+  Verified as VerifiedIcon,
+  HomeRounded as HomeIcon,
+  SearchRounded as SearchIcon,
+  ChatBubbleOutline as MessageIcon,
+  WorkOutline as WorkIcon,
+  PersonOutline as PersonIcon,
   Close as CloseIcon,
-  Check as CheckIcon,
-  BusinessCenter as BusinessCenterIcon,
-  LocalOffer as PriceIcon,
-  Assessment as AssessmentIcon,
-  GroupWork as CollabIcon,
-  Home as HomeIcon,
-  Person as PersonIcon,
-  Info as InfoIcon,
-  AutoAwesome as AutoAwesomeIcon,
-  Reviews as ReviewsIcon,
 } from '@mui/icons-material';
-import { styled, useTheme } from '@mui/material/styles';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Helmet } from 'react-helmet-async';
-import TextField from '@mui/material/TextField';
-import ReviewSystem from '../../../components/reviews/ReviewSystem';
-import { BOTTOM_NAV_HEIGHT } from '../../../constants/layout';
+import {
+  BOTTOM_NAV_HEIGHT,
+  STICKY_CTA_HEIGHT,
+  Z_INDEX,
+} from '../../../constants/layout';
 import reviewService from '../../reviews/services/reviewService';
 import { hasRole } from '../../../utils/userUtils';
-import { useBreakpointDown } from '../../../hooks/useResponsive';
 import useOnlineStatus from '../../../hooks/useOnlineStatus';
 import useNetworkSpeed from '../../../hooks/useNetworkSpeed';
 import {
@@ -97,138 +60,6 @@ const formatGhanaCurrencyLabel = (value) => {
     currency: 'GHS',
   }).format(amount);
 };
-
-const WORKER_PROFILE_SCROLL_STATE_PREFIX = 'kelmah.worker.profile.scroll.v1';
-
-const formatTravelReadinessLabel = (value) => {
-  const normalized = String(value || '')
-    .trim()
-    .toLowerCase();
-
-  switch (normalized) {
-    case 'none':
-      return 'On-site only';
-    case 'local':
-      return 'Local area only';
-    case 'regional':
-      return 'Regional travel available';
-    case 'national':
-      return 'Can travel nationally';
-    default:
-      return 'Confirm travel range in chat';
-  }
-};
-
-const formatResponseSpeedLabel = (value) => {
-  const amount = Number(value);
-  if (!Number.isFinite(amount) || amount <= 0) {
-    return 'Not enough data';
-  }
-
-  if (amount < 1) {
-    return '<1h average';
-  }
-
-  if (amount < 24) {
-    return `${amount % 1 === 0 ? amount.toFixed(0) : amount.toFixed(1)}h average`;
-  }
-
-  return `${Math.round(amount / 24)}d average`;
-};
-
-const ProfileAvatar = styled(Avatar)(({ theme }) => ({
-  width: 200,
-  height: 200,
-  [theme.breakpoints.down('md')]: {
-    width: 120,
-    height: 120,
-    fontSize: '2.5rem',
-  },
-  [theme.breakpoints.down('sm')]: {
-    width: 96,
-    height: 96,
-    fontSize: '2rem',
-  },
-  border: `6px solid ${theme.palette.background.paper}`,
-  boxShadow: theme.shadows[20],
-  margin: 'auto',
-  backgroundColor: theme.palette.primary.main,
-  fontSize: '4rem',
-  fontWeight: 700,
-  background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-  '&:focus-visible': {
-    outline: `3px solid ${theme.palette.primary.main}`,
-    outlineOffset: 3,
-  },
-}));
-
-const GlassCard = styled(Card)(({ theme }) => ({
-  background: alpha(theme.palette.background.paper, 0.9),
-  backdropFilter: 'blur(20px)',
-  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-  borderRadius: 16,
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  '&:hover': {
-    transform: 'translateY(-4px)',
-    boxShadow: theme.shadows[20],
-    background: alpha(theme.palette.background.paper, 0.95),
-  },
-}));
-
-const SkillChip = styled(Chip)(({ theme }) => ({
-  backgroundColor: theme.palette.primary.main,
-  color: theme.palette.primary.contrastText,
-  border: `1px solid ${alpha(theme.palette.primary.main, 0.35)}`,
-  fontWeight: 600,
-  maxWidth: '100%',
-  '& .MuiChip-label': {
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    maxWidth: 180,
-  },
-  '&:hover': {
-    transform: 'scale(1.05)',
-    boxShadow: theme.shadows[8],
-  },
-  transition: 'all 0.2s ease-in-out',
-}));
-
-const MetricCard = styled(Card)(({ theme }) => ({
-  background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)}, ${alpha(theme.palette.secondary.main, 0.1)})`,
-  border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-  borderRadius: 16,
-  textAlign: 'center',
-  padding: theme.spacing(1.5),
-  minHeight: 138,
-  [theme.breakpoints.up('md')]: {
-    padding: theme.spacing(1.75),
-    minHeight: 152,
-  },
-  transition: 'all 0.3s ease-in-out',
-  '&:hover': {
-    transform: 'translateY(-2px)',
-    boxShadow: theme.shadows[12],
-  },
-}));
-
-const AnimatedButton = styled(Button)(({ theme }) => ({
-  borderRadius: 25,
-  padding: '12px 24px',
-  minHeight: 44,
-  fontWeight: 600,
-  textTransform: 'none',
-  transition: 'all 0.3s ease-in-out',
-  background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-  '&:focus-visible': {
-    outline: `3px solid ${theme.palette.primary.main}`,
-    outlineOffset: 2,
-  },
-  '&:hover': {
-    transform: 'translateY(-2px)',
-    boxShadow: theme.shadows[12],
-  },
-}));
 
 const getCanonicalWorkerProfilePath = (workerId) =>
   workerId
@@ -248,77 +79,8 @@ const normalizeWorkerSkillList = (skills) =>
         .filter((skill) => skill.name)
     : [];
 
-const normalizeAvailabilityHoursMap = (availableHours) => {
-  if (Array.isArray(availableHours)) {
-    return availableHours.reduce((accumulator, entry) => {
-      if (!entry?.day) {
-        return accumulator;
-      }
-
-      accumulator[String(entry.day).toLowerCase()] = {
-        available: entry.available !== false,
-        start: entry.start || '08:00',
-        end: entry.end || '17:00',
-      };
-
-      return accumulator;
-    }, {});
-  }
-
-  if (availableHours && typeof availableHours === 'object') {
-    return availableHours;
-  }
-
-  return {};
-};
-
-const buildAvailabilityHoursMap = (availability) => {
-  const directHours = normalizeAvailabilityHoursMap(
-    availability?.availableHours,
-  );
-  if (Object.keys(directHours).length > 0) {
-    return directHours;
-  }
-
-  if (!Array.isArray(availability?.daySlots)) {
-    return {};
-  }
-
-  const days = [
-    'sunday',
-    'monday',
-    'tuesday',
-    'wednesday',
-    'thursday',
-    'friday',
-    'saturday',
-  ];
-  return availability.daySlots.reduce((accumulator, slot) => {
-    const dayName =
-      typeof slot?.dayOfWeek === 'number' ? days[slot.dayOfWeek] : null;
-    const firstSlot = Array.isArray(slot?.slots) ? slot.slots[0] : null;
-
-    if (!dayName || !firstSlot?.start || !firstSlot?.end) {
-      return accumulator;
-    }
-
-    accumulator[dayName] = {
-      available: true,
-      start: firstSlot.start,
-      end: firstSlot.end,
-    };
-
-    return accumulator;
-  }, {});
-};
-
 const getPortfolioItems = (worker) =>
   Array.isArray(worker?.portfolio?.items) ? worker.portfolio.items : [];
-
-const getCertificateItems = (worker) =>
-  Array.isArray(worker?.certifications?.items)
-    ? worker.certifications.items
-    : [];
 
 const resolveCurrentUserId = (user) =>
   user?.id ||
@@ -331,17 +93,12 @@ const resolveCurrentUserId = (user) =>
 
 function WorkerProfile({ workerId: workerIdProp }) {
   const routeParams = useParams();
-  const { user: authUser, isAuthenticated } = useSelector(
-    (state) => state.auth,
-  );
+  const { user: authUser } = useSelector((state) => state.auth);
   const authUserId = resolveCurrentUserId(authUser);
   const resolvedWorkerId =
     workerIdProp ?? routeParams?.workerId ?? authUserId ?? null;
 
   const navigate = useNavigate();
-  const theme = useTheme();
-  const isMobile = useBreakpointDown('md');
-  const isActualMobile = isMobile;
   const { isOnline, wasOffline } = useOnlineStatus();
   const { isSlow, effectiveType, downlink, rtt, saveData } = useNetworkSpeed();
   const lowBandwidthModeActive = isOnline && (isSlow || saveData);
@@ -399,37 +156,18 @@ function WorkerProfile({ workerId: workerIdProp }) {
   const [profile, setProfile] = useState(null);
   const [skills, setSkills] = useState([]);
   const [portfolio, setPortfolio] = useState([]);
-  const [certificates, setCertificates] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [ratingSummary, setRatingSummary] = useState(null);
-  const [, setWorkHistory] = useState([]);
   const [availability, setAvailability] = useState(null);
   const [stats, setStats] = useState({});
-  const [profileCompletion, setProfileCompletion] = useState(null);
-  const [earnings, setEarnings] = useState(null);
-
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [tabValue, setTabValue] = useState(0);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [portfolioDialogOpen, setPortfolioDialogOpen] = useState(false);
   const [selectedPortfolioItem, setSelectedPortfolioItem] = useState(null);
-  const [editingAvailability, setEditingAvailability] = useState(false);
-  const [availabilityDraft, setAvailabilityDraft] = useState(null);
   const [feedbackMessage, setFeedbackMessage] = useState('');
   const [showFullBio, setShowFullBio] = useState(false);
   const [activePortfolioIndex, setActivePortfolioIndex] = useState(0);
-  const [mobileHeroParallaxOffset, setMobileHeroParallaxOffset] = useState(0);
-  const [lastVisitedSection, setLastVisitedSection] = useState('overview');
-
-  const readinessSectionRef = useRef(null);
-  const aboutSectionRef = useRef(null);
-  const portfolioSectionRef = useRef(null);
-  const reviewsSectionRef = useRef(null);
-
-  const profileScrollStateStorageKey = resolvedWorkerId
-    ? `${WORKER_PROFILE_SCROLL_STATE_PREFIX}:${resolvedWorkerId}`
-    : null;
 
   const getPortfolioPreviewImage = useCallback((item) => {
     return (
@@ -442,58 +180,11 @@ function WorkerProfile({ workerId: workerIdProp }) {
     );
   }, []);
 
-  const getCertificatePreviewImage = useCallback((certificate) => {
-    return (
-      resolveMediaAssetUrl(certificate?.metadata?.file, {
-        preferThumbnail: true,
-      }) ||
-      resolveMediaAssetUrl([certificate?.thumbnailUrl, certificate?.url]) ||
-      null
-    );
-  }, []);
-
   const isOwner =
     authUserId && resolvedWorkerId
       ? String(authUserId) === String(resolvedWorkerId)
       : false;
   const canHireWorker = hasRole(authUser, ['hirer', 'admin']);
-
-  const persistScrollState = useCallback(
-    (section = 'overview') => {
-      if (typeof window === 'undefined' || !profileScrollStateStorageKey) {
-        return;
-      }
-
-      try {
-        window.sessionStorage.setItem(
-          profileScrollStateStorageKey,
-          JSON.stringify({
-            scrollY: window.scrollY || 0,
-            section,
-            updatedAt: Date.now(),
-          }),
-        );
-      } catch {
-        // Ignore storage failures and continue navigation.
-      }
-    },
-    [profileScrollStateStorageKey],
-  );
-
-  const scrollToSection = useCallback(
-    (sectionRef, section = 'overview') => {
-      setLastVisitedSection(section);
-      persistScrollState(section);
-
-      if (sectionRef?.current) {
-        sectionRef.current.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start',
-        });
-      }
-    },
-    [persistScrollState],
-  );
 
   const handleHireAction = useCallback(() => {
     if (!authUser) {
@@ -524,14 +215,10 @@ function WorkerProfile({ workerId: workerIdProp }) {
     setProfile(null);
     setSkills([]);
     setPortfolio([]);
-    setCertificates([]);
     setReviews([]);
     setRatingSummary(null);
-    setWorkHistory([]);
     setAvailability(null);
     setStats({});
-    setProfileCompletion(null);
-    setEarnings(null);
     setLoading(true);
     setError(null);
 
@@ -573,15 +260,9 @@ function WorkerProfile({ workerId: workerIdProp }) {
       setProfile(normalizedProfile);
       setSkills(normalizeWorkerSkillList(worker?.skills));
       setPortfolio(getPortfolioItems(worker));
-      setCertificates(getCertificateItems(worker));
       setAvailability(worker?.availability || null);
       setStats(worker?.stats || {});
       setRatingSummary(fallbackRatingSummary);
-
-      const viewingOwnProfile =
-        authUserId && resolvedWorkerId
-          ? String(authUserId) === String(resolvedWorkerId)
-          : false;
 
       let profileDetailsThrottled = false;
       const runOptionalProfileRequest = async (requestFactory) => {
@@ -604,12 +285,6 @@ function WorkerProfile({ workerId: workerIdProp }) {
       };
 
       // Load secondary sections sequentially to avoid request bursts that trip gateway throttling.
-      const historyRes = await runOptionalProfileRequest(() =>
-        workerService.getWorkHistory(resolvedWorkerId),
-      );
-      const completionRes = await runOptionalProfileRequest(() =>
-        workerService.getWorkerStats(resolvedWorkerId),
-      );
       const ratingRes = await runOptionalProfileRequest(() =>
         reviewService.getWorkerRating(resolvedWorkerId),
       );
@@ -622,18 +297,6 @@ function WorkerProfile({ workerId: workerIdProp }) {
           order: 'desc',
         }),
       );
-      const earningsRes = viewingOwnProfile
-        ? await runOptionalProfileRequest(() =>
-            workerService.getWorkerEarnings(resolvedWorkerId),
-          )
-        : null;
-
-      const historyPayload = historyRes?.data?.data || historyRes?.data || [];
-      const normalizedHistory = Array.isArray(historyPayload)
-        ? historyPayload
-        : Array.isArray(historyPayload?.workHistory)
-          ? historyPayload.workHistory
-          : [];
 
       const normalizedReviews = Array.isArray(reviewListRes?.reviews)
         ? reviewListRes.reviews
@@ -645,9 +308,6 @@ function WorkerProfile({ workerId: workerIdProp }) {
 
       setReviews(normalizedReviews);
       setRatingSummary(ratingRes || fallbackRatingSummary);
-      setWorkHistory(normalizedHistory);
-      setProfileCompletion(completionRes || null);
-      setEarnings(earningsRes?.data?.data || earningsRes?.data || null);
     } catch (err) {
       const status = err?.response?.status;
       if (status === 404) {
@@ -675,16 +335,14 @@ function WorkerProfile({ workerId: workerIdProp }) {
     setProfile(null);
     setSkills([]);
     setPortfolio([]);
-    setCertificates([]);
     setReviews([]);
     setRatingSummary(null);
-    setWorkHistory([]);
     setAvailability(null);
     setStats({});
-    setProfileCompletion(null);
-    setEarnings(null);
-    setTabValue(0);
     setShowFullBio(false);
+    setActivePortfolioIndex(0);
+    setSelectedPortfolioItem(null);
+    setPortfolioDialogOpen(false);
 
     fetchAllData();
 
@@ -708,84 +366,6 @@ function WorkerProfile({ workerId: workerIdProp }) {
       });
   }, [authUserId, fetchAllData, resolvedWorkerId]);
 
-  useEffect(() => {
-    if (!isActualMobile) {
-      setMobileHeroParallaxOffset(0);
-      return;
-    }
-
-    let rafId = null;
-    const onScroll = () => {
-      if (rafId) {
-        return;
-      }
-
-      rafId = requestAnimationFrame(() => {
-        const nextOffset = Math.min(window.scrollY * 0.12, 16);
-        setMobileHeroParallaxOffset(nextOffset);
-        rafId = null;
-      });
-    };
-
-    window.addEventListener('scroll', onScroll, { passive: true });
-    onScroll();
-
-    return () => {
-      window.removeEventListener('scroll', onScroll);
-      if (rafId) {
-        cancelAnimationFrame(rafId);
-      }
-    };
-  }, [isActualMobile]);
-
-  useEffect(() => {
-    if (
-      !isActualMobile ||
-      loading ||
-      typeof window === 'undefined' ||
-      !profileScrollStateStorageKey
-    ) {
-      return;
-    }
-
-    try {
-      const storedState = window.sessionStorage.getItem(
-        profileScrollStateStorageKey,
-      );
-      if (!storedState) {
-        return;
-      }
-
-      const parsedState = JSON.parse(storedState);
-      const savedAt = Number(parsedState?.updatedAt || 0);
-      if (savedAt && Date.now() - savedAt > 30 * 60 * 1000) {
-        window.sessionStorage.removeItem(profileScrollStateStorageKey);
-        return;
-      }
-
-      const restoredScrollY = Number(parsedState?.scrollY || 0);
-      window.requestAnimationFrame(() => {
-        window.scrollTo({
-          top: Number.isFinite(restoredScrollY) ? restoredScrollY : 0,
-          left: 0,
-          behavior: 'auto',
-        });
-      });
-
-      if (parsedState?.section) {
-        setLastVisitedSection(String(parsedState.section));
-      }
-
-      window.sessionStorage.removeItem(profileScrollStateStorageKey);
-    } catch {
-      window.sessionStorage.removeItem(profileScrollStateStorageKey);
-    }
-  }, [isActualMobile, loading, profileScrollStateStorageKey]);
-
-  const handleTabChange = (event, newValue) => {
-    setTabValue(newValue);
-  };
-
   const handleContactWorker = () => {
     if (!authUser) {
       navigate('/login', {
@@ -793,8 +373,6 @@ function WorkerProfile({ workerId: workerIdProp }) {
       });
       return;
     }
-
-    persistScrollState(lastVisitedSection || 'overview');
 
     const recipientId =
       profile?.user?.id ||
@@ -876,74 +454,117 @@ function WorkerProfile({ workerId: workerIdProp }) {
     }
   };
 
+  const shellSx = {
+    width: '100%',
+    color: 'var(--wp-text)',
+    fontFamily: '"Manrope", "Poppins", "Work Sans", sans-serif',
+    px: { xs: 2, sm: 3, md: 4 },
+    pt: { xs: 2, md: 3 },
+    pb: { xs: STICKY_CTA_HEIGHT + 16, md: 6 },
+  };
+
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Box sx={{ textAlign: 'center', mb: 4 }}>
-          <Skeleton
-            variant="circular"
-            width={200}
-            height={200}
-            sx={{ mx: 'auto', mb: 2 }}
-          />
-          <Skeleton
-            variant="text"
-            width={300}
-            height={40}
-            sx={{ mx: 'auto', mb: 1 }}
-          />
-          <Skeleton
-            variant="text"
-            width={200}
-            height={30}
-            sx={{ mx: 'auto', mb: 2 }}
-          />
+      <Box sx={shellSx}>
+        <Box
+          sx={{
+            maxWidth: 960,
+            mx: 'auto',
+            display: 'grid',
+            gap: { xs: 2, md: 3 },
+          }}
+        >
           <Box
-            sx={{ display: 'flex', justifyContent: 'center', gap: 1, mb: 3 }}
+            sx={{
+              p: { xs: 2.5, md: 2.5 },
+              borderRadius: 16,
+              background: 'rgba(26, 26, 31, 0.92)',
+              border: '1px solid var(--wp-stroke)',
+              boxShadow: 'var(--wp-shadow)',
+            }}
           >
-            {[...Array(3)].map((_, i) => (
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: { xs: 'column', sm: 'row' },
+                gap: 2,
+              }}
+            >
               <Skeleton
-                key={`profile-chip-skeleton-${i}`}
-                variant="rectangular"
-                width={100}
-                height={32}
-                sx={{ borderRadius: 2 }}
+                variant="circular"
+                width={96}
+                height={96}
+                sx={{ bgcolor: 'rgba(255, 255, 255, 0.08)' }}
               />
-            ))}
+              <Box sx={{ flex: 1 }}>
+                <Skeleton
+                  variant="text"
+                  width="70%"
+                  height={36}
+                  sx={{ bgcolor: 'rgba(255, 255, 255, 0.08)' }}
+                />
+                <Skeleton
+                  variant="text"
+                  width="45%"
+                  height={24}
+                  sx={{ bgcolor: 'rgba(255, 255, 255, 0.08)' }}
+                />
+                <Box sx={{ display: 'flex', gap: 1, mt: 2, flexWrap: 'wrap' }}>
+                  {[...Array(4)].map((_, index) => (
+                    <Skeleton
+                      key={`luxe-chip-skeleton-${index}`}
+                      variant="rectangular"
+                      width={88}
+                      height={28}
+                      sx={{ borderRadius: 999, bgcolor: 'rgba(255, 255, 255, 0.08)' }}
+                    />
+                  ))}
+                </Box>
+              </Box>
+            </Box>
           </Box>
         </Box>
-        <Grid container spacing={3}>
-          {[...Array(6)].map((_, i) => (
-            <Grid item xs={12} md={4} key={`profile-card-skeleton-${i}`}>
-              <Skeleton
-                variant="rectangular"
-                height={200}
-                sx={{ borderRadius: 2 }}
-              />
-            </Grid>
-          ))}
-        </Grid>
-      </Container>
+      </Box>
     );
   }
 
   if (error) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Alert severity="error" sx={{ borderRadius: 2 }}>
-          {error}
-        </Alert>
-      </Container>
+      <Box sx={shellSx}>
+        <Box sx={{ maxWidth: 720, mx: 'auto' }}>
+          <Alert
+            severity="error"
+            sx={{
+              borderRadius: 3,
+              backgroundColor: 'rgba(26, 26, 31, 0.92)',
+              color: 'var(--wp-text)',
+              border: '1px solid var(--wp-stroke)',
+            }}
+          >
+            {error}
+          </Alert>
+        </Box>
+      </Box>
     );
   }
 
   if (!profile) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Alert severity="info" sx={{ borderRadius: 2 }}>
-          Worker profile not found.
-        </Alert>
-      </Container>
+      <Box sx={shellSx}>
+        <Box sx={{ maxWidth: 720, mx: 'auto' }}>
+          <Alert
+            severity="info"
+            sx={{
+              borderRadius: 3,
+              backgroundColor: 'rgba(26, 26, 31, 0.92)',
+              color: 'var(--wp-text)',
+              border: '1px solid var(--wp-stroke)',
+            }}
+          >
+            Worker profile not found.
+          </Alert>
+        </Box>
+      </Box>
     );
   }
 
@@ -963,2444 +584,277 @@ function WorkerProfile({ workerId: workerIdProp }) {
     ? getPortfolioPreviewImage(selectedPortfolioItem)
     : null;
 
-  const renderProfileHeader = () => (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
-    >
-      <GlassCard sx={{ mb: 4, overflow: 'visible', position: 'relative' }}>
-        <Box
-          sx={{
-            background:
-              shouldRenderPortfolioPreviews && profileHeroImage
-                ? `linear-gradient(180deg, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.6) 100%), url(${profileHeroImage})`
-                : `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            height: 200,
-            position: 'relative',
-            borderRadius: '16px 16px 0 0',
-          }}
-        >
-          <Box
-            sx={{
-              position: 'absolute',
-              top: 16,
-              right: 16,
-              display: 'flex',
-              gap: 1,
-            }}
-          >
-            <IconButton
-              onClick={handleBookmarkToggle}
-              aria-label={isBookmarked ? 'Remove from saved' : 'Save worker'}
-              sx={{
-                bgcolor: alpha(theme.palette.background.paper, 0.9),
-                '&:hover': { bgcolor: theme.palette.background.paper },
-                width: 44,
-                height: 44,
-                '&:focus-visible': {
-                  outline: '3px solid',
-                  outlineColor: 'primary.main',
-                  outlineOffset: '2px',
-                },
-              }}
-            >
-              {isBookmarked ? (
-                <BookmarkIcon color="primary" />
-              ) : (
-                <BookmarkBorderIcon />
-              )}
-            </IconButton>
-            <IconButton
-              onClick={handleShare}
-              aria-label="Share this profile"
-              sx={{
-                bgcolor: alpha(theme.palette.background.paper, 0.9),
-                '&:hover': { bgcolor: theme.palette.background.paper },
-                width: 44,
-                height: 44,
-                '&:focus-visible': {
-                  outline: '3px solid',
-                  outlineColor: 'primary.main',
-                  outlineOffset: '2px',
-                },
-              }}
-            >
-              <ShareIcon />
-            </IconButton>
-            {isOwner && (
-              <IconButton
-                onClick={() => navigate('/worker/profile/edit')}
-                aria-label="Edit your profile"
-                sx={{
-                  bgcolor: alpha(theme.palette.background.paper, 0.9),
-                  '&:hover': { bgcolor: theme.palette.background.paper },
-                  width: 44,
-                  height: 44,
-                  '&:focus-visible': {
-                    outline: '3px solid',
-                    outlineColor: 'primary.main',
-                    outlineOffset: '2px',
-                  },
-                }}
-              >
-                <EditIcon />
-              </IconButton>
-            )}
-          </Box>
-        </Box>
-
-        <CardContent sx={{ pt: 0, pb: 4 }}>
-          <Box sx={{ textAlign: 'center', mt: -10 }}>
-            <Badge
-              overlap="circular"
-              anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-              badgeContent={
-                profile.is_verified ? (
-                  <Tooltip title="Verified Professional">
-                    <VerifiedIcon
-                      sx={{
-                        width: 40,
-                        height: 40,
-                        color: theme.palette.success.main,
-                        bgcolor: theme.palette.background.paper,
-                        borderRadius: '50%',
-                        p: 0.5,
-                      }}
-                    />
-                  </Tooltip>
-                ) : null
-              }
-            >
-              <ProfileAvatar
-                src={profileAvatarUrl}
-                alt={`${profile.user?.firstName} ${profile.user?.lastName}`}
-                role="img"
-                aria-label={`${profile.user?.firstName || 'Worker'} ${profile.user?.lastName || ''} profile photo`}
-              >
-                {profile.user?.firstName?.charAt(0)}
-                {profile.user?.lastName?.charAt(0)}
-              </ProfileAvatar>
-            </Badge>
-
-            <Typography
-              variant="h3"
-              fontWeight={700}
-              sx={{
-                mt: 2,
-                mb: 1,
-                color: theme.palette.text.primary,
-                fontSize: { xs: '1.65rem', sm: '2rem', md: '2.25rem' },
-                lineHeight: 1.22,
-                letterSpacing: '-0.01em',
-              }}
-            >
-              {profile.user?.firstName} {profile.user?.lastName}
-              {profile.is_online && (
-                <Chip
-                  label="Online"
-                  size="small"
-                  color="success"
-                  sx={{ ml: 2, fontWeight: 600 }}
-                />
-              )}
-            </Typography>
-
-            <Typography
-              variant="h5"
-              color="primary"
-              gutterBottom
-              fontWeight={600}
-              sx={{
-                mb: 2,
-                fontSize: { xs: '1.05rem', sm: '1.2rem', md: '1.3rem' },
-                lineHeight: 1.35,
-              }}
-            >
-              {profile.profession}
-            </Typography>
-
-            <Stack
-              direction="row"
-              alignItems="center"
-              justifyContent="center"
-              spacing={2}
-              sx={{ mb: 3 }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Rating
-                  value={
-                    ratingSummary?.averageRating ?? profile.average_rating ?? 0
-                  }
-                  precision={0.1}
-                  readOnly
-                  size="large"
-                />
-                <Typography variant="h6" fontWeight={600}>
-                  {(
-                    ratingSummary?.averageRating ??
-                    profile.average_rating ??
-                    0
-                  ).toFixed(1)}
-                </Typography>
-                <Typography variant="body1" color="text.secondary">
-                  (
-                  {ratingSummary?.totalReviews ??
-                    stats.totalReviews ??
-                    reviews.length}{' '}
-                  reviews)
-                </Typography>
-              </Box>
-            </Stack>
-
-            <Typography
-              variant="body1"
-              color="text.secondary"
-              sx={{
-                maxWidth: 600,
-                mx: 'auto',
-                mb: 4,
-                lineHeight: 1.72,
-                fontSize: { xs: '0.98rem', sm: '1.06rem', md: '1.1rem' },
-              }}
-            >
-              {profile.bio ||
-                'Professional craftsperson dedicated to delivering quality work.'}
-            </Typography>
-
-            <Stack
-              direction="row"
-              spacing={1}
-              justifyContent="center"
-              flexWrap="wrap"
-              useFlexGap
-              sx={{ mb: 3 }}
-            >
-              <Chip
-                label={`${portfolio.length} portfolio item${portfolio.length === 1 ? '' : 's'}`}
-                variant="outlined"
-              />
-              <Chip
-                label={`${certificates.length} certificate${certificates.length === 1 ? '' : 's'}`}
-                variant="outlined"
-              />
-              {profileHeroImage ? (
-                <Chip
-                  label="Visual profile ready"
-                  color="success"
-                  variant="outlined"
-                />
-              ) : null}
-            </Stack>
-
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{ mb: 3, maxWidth: 680, mx: 'auto' }}
-            >
-              Trust tip: review verified badges, ratings, and recent portfolio
-              examples before confirming a hire.
-            </Typography>
-
-            <Stack
-              direction={{ xs: 'column', sm: 'row' }}
-              spacing={2}
-              justifyContent="center"
-              sx={{ mb: 4 }}
-            >
-              <AnimatedButton
-                variant="contained"
-                size="large"
-                startIcon={<MessageIcon />}
-                onClick={handleContactWorker}
-                disabled={isOwner}
-              >
-                Message Worker
-              </AnimatedButton>
-
-              {!isOwner && (
-                <AnimatedButton
-                  variant="outlined"
-                  size="large"
-                  startIcon={<BusinessCenterIcon />}
-                  onClick={handleHireAction}
-                >
-                  Hire Now
-                </AnimatedButton>
-              )}
-            </Stack>
-          </Box>
-        </CardContent>
-      </GlassCard>
-    </motion.div>
+  const displayName =
+    [profile.user?.firstName, profile.user?.lastName]
+      .filter(Boolean)
+      .join(' ') ||
+    profile.name ||
+    'Kelmah Pro';
+  const roleLabel = profile.profession || profile.title || 'Skilled Worker';
+  const ratingValue =
+    Number(ratingSummary?.averageRating ?? profile.average_rating ?? 0) || 0;
+  const reviewsCount = Number(
+    ratingSummary?.totalReviews ?? stats.totalReviews ?? reviews.length,
   );
-
-  const renderMetrics = () => {
-    const statsData = stats || {};
-    const completionData = profileCompletion || {};
-    const totalAllTime =
-      statsData.totalEarnings || earnings?.totals?.allTime || 0;
-    const last30 = earnings?.totals?.last30Days || 0;
-    const last7 = earnings?.totals?.last7Days || 0;
-    const jobsCompleted =
-      statsData.totalJobsCompleted || statsData.jobsCompleted || 0;
-    const completionRate =
-      completionData.completionPercentage ?? statsData.completionRate ?? 0;
-    const averageRating = Number(
-      statsData.rating ?? ratingSummary?.averageRating ?? 0,
-    );
-    const averageResponseTime = Number(statsData.averageResponseTime ?? 0);
-
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.2 }}
-      >
-        {/* Mobile Performance Stats for Owner */}
-        {isActualMobile && isOwner && (
-          <Box sx={{ mb: 3 }}>
-            <Typography
-              variant="h6"
-              sx={{
-                color: theme.palette.mode === 'dark' ? 'white' : 'text.primary',
-                fontSize: '1.125rem',
-                fontWeight: 'bold',
-                letterSpacing: '-0.015em',
-                mb: 2,
-              }}
-            >
-              Your Performance
-            </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={4}>
-                <Paper
-                  sx={{
-                    p: 2,
-                    textAlign: 'center',
-                    backgroundColor:
-                      theme.palette.mode === 'dark' ? '#35332c' : '#f5f5f5',
-                    borderRadius: '12px',
-                  }}
-                >
-                  <Typography
-                    sx={{ fontSize: '0.875rem', fontWeight: 500, mb: 0.5 }}
-                  >
-                    Earnings (30d)
-                  </Typography>
-                  <Typography
-                    sx={{
-                      fontSize: '1.25rem',
-                      fontWeight: 'bold',
-                      color: theme.palette.primary.main,
-                    }}
-                  >
-                    {formatGhanaCurrencyLabel(last30)}
-                  </Typography>
-                  <Typography
-                    sx={{
-                      color: '#4CAF50',
-                      fontSize: '0.75rem',
-                      fontWeight: 500,
-                    }}
-                  >
-                    7d: {formatGhanaCurrencyLabel(last7)}
-                  </Typography>
-                </Paper>
-              </Grid>
-              <Grid item xs={4}>
-                <Paper
-                  sx={{
-                    p: 2,
-                    textAlign: 'center',
-                    backgroundColor:
-                      theme.palette.mode === 'dark' ? '#35332c' : '#f5f5f5',
-                    borderRadius: '12px',
-                  }}
-                >
-                  <Typography
-                    sx={{ fontSize: '0.875rem', fontWeight: 500, mb: 0.5 }}
-                  >
-                    Jobs Completed
-                  </Typography>
-                  <Typography
-                    sx={{
-                      fontSize: '1.25rem',
-                      fontWeight: 'bold',
-                      color: theme.palette.primary.main,
-                    }}
-                  >
-                    {jobsCompleted}
-                  </Typography>
-                  <Typography
-                    sx={{
-                      color: 'text.secondary',
-                      fontSize: '0.75rem',
-                      fontWeight: 500,
-                    }}
-                  >
-                    total completed
-                  </Typography>
-                </Paper>
-              </Grid>
-              <Grid item xs={4}>
-                <Paper
-                  sx={{
-                    p: 2,
-                    textAlign: 'center',
-                    backgroundColor:
-                      theme.palette.mode === 'dark' ? '#35332c' : '#f5f5f5',
-                    borderRadius: '12px',
-                  }}
-                >
-                  <Typography
-                    sx={{ fontSize: '0.875rem', fontWeight: 500, mb: 0.5 }}
-                  >
-                    Reviews
-                  </Typography>
-                  <Typography
-                    sx={{
-                      fontSize: '1.25rem',
-                      fontWeight: 'bold',
-                      color: theme.palette.primary.main,
-                    }}
-                  >
-                    {averageRating.toFixed(1)}
-                  </Typography>
-                  <Typography
-                    sx={{
-                      color: 'text.secondary',
-                      fontSize: '0.75rem',
-                      fontWeight: 500,
-                    }}
-                  >
-                    {statsData.totalReviews || 0} reviews
-                  </Typography>
-                </Paper>
-              </Grid>
-            </Grid>
-          </Box>
-        )}
-
-        {/* Mobile Earnings Summary for Owner */}
-        {isActualMobile && isOwner && (
-          <Box sx={{ mb: 3 }}>
-            <Typography
-              variant="h6"
-              sx={{
-                color: theme.palette.mode === 'dark' ? 'white' : 'text.primary',
-                fontSize: '1.125rem',
-                fontWeight: 'bold',
-                letterSpacing: '-0.015em',
-                mb: 2,
-              }}
-            >
-              Earnings Summary
-            </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
-                <Paper
-                  sx={{
-                    p: 2,
-                    backgroundColor:
-                      theme.palette.mode === 'dark' ? '#35332c' : '#f5f5f5',
-                    borderRadius: '12px',
-                  }}
-                >
-                  <Grid container spacing={2}>
-                    <Grid item xs={6}>
-                      <Box sx={{ textAlign: 'center' }}>
-                        <Typography
-                          sx={{
-                            fontSize: '0.75rem',
-                            color: 'text.secondary',
-                            mb: 0.5,
-                          }}
-                        >
-                          All-Time Earnings
-                        </Typography>
-                        <Typography
-                          sx={{
-                            fontSize: '1.125rem',
-                            fontWeight: 'bold',
-                            color: theme.palette.primary.main,
-                          }}
-                        >
-                          {formatGhanaCurrencyLabel(totalAllTime)}
-                        </Typography>
-                      </Box>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Box sx={{ textAlign: 'center' }}>
-                        <Typography
-                          sx={{
-                            fontSize: '0.75rem',
-                            color: 'text.secondary',
-                            mb: 0.5,
-                          }}
-                        >
-                          Profile Completion
-                        </Typography>
-                        <Typography
-                          sx={{
-                            fontSize: '1.125rem',
-                            fontWeight: 'bold',
-                            color: '#E65100',
-                          }}
-                        >
-                          {completionRate}%
-                        </Typography>
-                      </Box>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Box sx={{ textAlign: 'center' }}>
-                        <Typography
-                          sx={{
-                            fontSize: '0.75rem',
-                            color: 'text.secondary',
-                            mb: 0.5,
-                          }}
-                        >
-                          Avg Response
-                        </Typography>
-                        <Typography
-                          sx={{
-                            fontSize: '1.125rem',
-                            fontWeight: 'bold',
-                            color: '#1565C0',
-                          }}
-                        >
-                          {averageResponseTime > 0
-                            ? `${averageResponseTime}h`
-                            : 'N/A'}
-                        </Typography>
-                      </Box>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                        }}
-                      >
-                        <Button
-                          variant="contained"
-                          size="medium"
-                          startIcon={<MoneyIcon />}
-                          onClick={() => navigate('/payments')}
-                          sx={{
-                            backgroundColor: theme.palette.primary.main,
-                            color: theme.palette.primary.contrastText,
-                            fontSize: '0.75rem',
-                            fontWeight: 'bold',
-                            borderRadius: '16px',
-                            px: 2,
-                            minHeight: 44,
-                            textTransform: 'none',
-                            '&:hover': {
-                              backgroundColor: theme.palette.primary.dark,
-                            },
-                          }}
-                        >
-                          Get Paid
-                        </Button>
-                      </Box>
-                    </Grid>
-                  </Grid>
-                </Paper>
-              </Grid>
-            </Grid>
-          </Box>
-        )}
-
-        {/* Regular Professional Metrics */}
-        <Grid container spacing={{ xs: 2, md: 2.25 }} sx={{ mb: 4 }}>
-          <Grid item xs={6} md={3}>
-            <MetricCard>
-              <WorkIcon
-                color="primary"
-                sx={{ fontSize: { xs: 30, md: 36 }, mb: 1 }}
-              />
-              <Typography
-                variant="h4"
-                fontWeight={700}
-                color="primary"
-                sx={{
-                  fontSize: { xs: '1.25rem', md: '1.65rem' },
-                  lineHeight: 1.2,
-                }}
-              >
-                {profile.experience_years || 0}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Years Experience
-              </Typography>
-            </MetricCard>
-          </Grid>
-
-          <Grid item xs={6} md={3}>
-            <MetricCard>
-              <AssessmentIcon
-                color="primary"
-                sx={{ fontSize: { xs: 30, md: 36 }, mb: 1 }}
-              />
-              <Typography
-                variant="h4"
-                fontWeight={700}
-                color="primary"
-                sx={{
-                  fontSize: { xs: '1.25rem', md: '1.65rem' },
-                  lineHeight: 1.2,
-                }}
-              >
-                {jobsCompleted}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Jobs Completed
-              </Typography>
-            </MetricCard>
-          </Grid>
-
-          <Grid item xs={6} md={3}>
-            <MetricCard>
-              <PriceIcon
-                color="primary"
-                sx={{ fontSize: { xs: 30, md: 36 }, mb: 1 }}
-              />
-              <Typography
-                variant="h4"
-                fontWeight={700}
-                color="primary"
-                sx={{
-                  fontSize: { xs: '1.05rem', md: '1.35rem' },
-                  lineHeight: 1.2,
-                  wordBreak: 'break-word',
-                }}
-              >
-                {formatGhanaCurrencyLabel(profile.hourly_rate || 0)}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Per Hour
-              </Typography>
-            </MetricCard>
-          </Grid>
-
-          <Grid item xs={6} md={3}>
-            <MetricCard>
-              <TrendingIcon
-                color="primary"
-                sx={{ fontSize: { xs: 30, md: 36 }, mb: 1 }}
-              />
-              <Typography
-                variant="h4"
-                fontWeight={700}
-                color="primary"
-                sx={{
-                  fontSize: { xs: '1.25rem', md: '1.65rem' },
-                  lineHeight: 1.2,
-                }}
-              >
-                {completionRate}%
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Profile Completion
-              </Typography>
-            </MetricCard>
-          </Grid>
-        </Grid>
-
-        {Array.isArray(earnings?.breakdown?.byMonth) &&
-          earnings.breakdown.byMonth.length > 0 && (
-            <GlassCard sx={{ mb: 4 }}>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  Earnings (last 12 months)
-                </Typography>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    gap: 1,
-                    alignItems: 'flex-end',
-                    height: 120,
-                  }}
-                >
-                  {earnings.breakdown.byMonth.map((m, idx) => {
-                    const max =
-                      Math.max(
-                        ...earnings.breakdown.byMonth.map((x) => x.amount || 0),
-                      ) || 1;
-                    const h = Math.max(
-                      4,
-                      Math.round(((m.amount || 0) / max) * 100),
-                    );
-                    return (
-                      <Box
-                        key={`${m?.year || 'year'}-${m?.month || 'month'}-${idx}`}
-                        sx={{
-                          width: 10,
-                          height: h,
-                          backgroundColor: theme.palette.primary.main,
-                          borderRadius: 1,
-                        }}
-                        title={`M${m.month}: ${formatGhanaCurrencyLabel(m.amount)}`}
-                      />
-                    );
-                  })}
-                </Box>
-              </CardContent>
-            </GlassCard>
-          )}
-      </motion.div>
-    );
+  const rateLabel = formatGhanaCurrencyLabel(profile.hourly_rate || 0);
+  const availabilityStatus = String(
+    availability?.status || availability?.availabilityStatus || 'available',
+  ).toLowerCase();
+  const availabilityLabelMap = {
+    available: 'Available now',
+    busy: 'Busy',
+    unavailable: 'Unavailable',
+    vacation: 'On break',
   };
+  const availabilityLabel =
+    availabilityLabelMap[availabilityStatus] || 'Availability TBD';
+  const aboutText =
+    profile.bio ||
+    'Professional craftsperson focused on dependable timelines, careful finishes, and clean job sites.';
+  const canTruncate = aboutText.length > 180;
+  const aboutPreview =
+    canTruncate && !showFullBio
+      ? `${aboutText.slice(0, 180).trim()}...`
+      : aboutText;
+  const avatarInitials =
+    [profile.user?.firstName, profile.user?.lastName]
+      .filter(Boolean)
+      .map((name) => name.charAt(0))
+      .join('')
+      .slice(0, 2) ||
+    displayName
+      .split(' ')
+      .map((name) => name.charAt(0))
+      .join('')
+      .slice(0, 2);
 
-  const renderSkillsAndExpertise = () => (
-    <GlassCard sx={{ mb: 4 }}>
-      <CardContent>
-        <Typography
-          variant="h5"
-          fontWeight={700}
-          gutterBottom
-          sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
-        >
-          <BuildIcon color="primary" />
-          Skills & Expertise
-        </Typography>
+  const skillItems = (
+    skills.length > 0
+      ? skills
+      : [
+          { name: 'Custom Builds' },
+          { name: 'Fine Finishing' },
+          { name: 'Installations' },
+          { name: 'Repairs' },
+        ]
+  ).slice(0, 6);
 
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={8}>
-            <Typography variant="h6" gutterBottom>
-              Primary Skills
-            </Typography>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 3 }}>
-              {skills.slice(0, 8).map((skill, index) => (
-                <SkillChip
-                  key={skill.id || skill._id || skill.name || `skill-${index}`}
-                  label={skill.name}
-                  size="medium"
-                />
-              ))}
-            </Box>
-
-            <Typography variant="h6" gutterBottom>
-              What I Do Best
-            </Typography>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-              {profile.specializations?.length > 0 ? (
-                profile.specializations.map((spec, index) => (
-                  <Chip
-                    key={`${spec}-${index}`}
-                    label={spec}
-                    variant="outlined"
-                    color="primary"
-                  />
-                ))
-              ) : (
-                <Typography variant="body2" color="text.secondary">
-                  Not listed yet
-                </Typography>
-              )}
-            </Box>
-          </Grid>
-
-          <Grid item xs={12} md={4}>
-            <Typography variant="h6" gutterBottom>
-              Tools & Equipment
-            </Typography>
-            {profile.tools?.length > 0 ? (
-              <List dense>
-                {profile.tools.map((tool, index) => (
-                  <ListItem key={`${tool}-${index}`}>
-                    <ListItemText primary={tool} />
-                  </ListItem>
-                ))}
-              </List>
-            ) : (
-              <Typography variant="body2" color="text.secondary">
-                No tools or equipment listed yet
-              </Typography>
-            )}
-          </Grid>
-        </Grid>
-      </CardContent>
-    </GlassCard>
-  );
-
-  const renderPortfolio = () => (
-    <GlassCard sx={{ mb: 4 }}>
-      <CardContent>
-        <Typography
-          variant="h5"
-          fontWeight={700}
-          gutterBottom
-          sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
-        >
-          <ViewIcon color="primary" />
-          Portfolio & Previous Work
-        </Typography>
-        {lowBandwidthModeActive && (
-          <Typography
-            variant="caption"
-            color="text.secondary"
-            sx={{ mb: 1, display: 'block' }}
-          >
-            Low-bandwidth mode: previews are reduced to save data. Open an item
-            to view details.
-          </Typography>
-        )}
-
-        {portfolio.length > 0 ? (
-          <Grid container spacing={2}>
-            {portfolio.map((item, index) => (
-              <Grid
-                item
-                xs={12}
-                sm={6}
-                md={4}
-                key={item.id || item._id || item.title || `portfolio-${index}`}
-              >
-                <Card
-                  sx={{
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      transform: 'translateY(-4px)',
-                      boxShadow: theme.shadows[12],
-                    },
-                  }}
-                  onClick={() => {
-                    setSelectedPortfolioItem(item);
-                    setPortfolioDialogOpen(true);
-                  }}
-                >
-                  {shouldRenderPortfolioPreviews &&
-                  getPortfolioPreviewImage(item) ? (
-                    <CardMedia
-                      component="img"
-                      height="200"
-                      image={getPortfolioPreviewImage(item)}
-                      alt={item.title}
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = '';
-                        e.target.style.display = 'none';
-                      }}
-                    />
-                  ) : (
-                    <Box
-                      sx={{
-                        height: 200,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexDirection: 'column',
-                        gap: 0.6,
-                        bgcolor: alpha(theme.palette.primary.main, 0.08),
-                        px: 1,
-                      }}
-                    >
-                      {lowBandwidthModeActive &&
-                      getPortfolioPreviewImage(item) ? (
-                        <>
-                          <TimeIcon sx={{ color: 'text.secondary' }} />
-                          <Typography
-                            variant="caption"
-                            color="text.secondary"
-                            align="center"
-                          >
-                            Preview paused to reduce data use.
-                          </Typography>
-                        </>
-                      ) : (
-                        <ViewIcon sx={{ color: 'text.secondary' }} />
-                      )}
-                    </Box>
-                  )}
-                  <CardContent>
-                    <Typography
-                      variant="h6"
-                      fontWeight={600}
-                      noWrap
-                      sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}
-                    >
-                      {item.title}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      {item.description}
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        ) : (
-          <Box sx={{ textAlign: 'center', py: 4 }}>
-            <ViewIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
-            <Typography variant="h6" color="text.secondary">
-              No portfolio items available yet
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Check back later to see this worker&apos;s completed projects
-            </Typography>
-          </Box>
-        )}
-      </CardContent>
-    </GlassCard>
-  );
-
-  const renderReviews = () => (
-    <GlassCard sx={{ mb: 4 }}>
-      <CardContent>
-        <Typography
-          variant="h5"
-          fontWeight={700}
-          gutterBottom
-          sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
-        >
-          <StarIcon color="primary" />
-          Client Reviews
-        </Typography>
-        <ReviewSystem workerId={resolvedWorkerId} showSubmissionForm />
-      </CardContent>
-    </GlassCard>
-  );
-
-  const renderAvailability = () => {
-    const availabilityStatus =
-      availability?.status || availability?.availabilityStatus || 'available';
-    const availabilityHours = buildAvailabilityHoursMap(availability);
-    const averageResponseLabel = stats?.averageResponseTime
-      ? `${stats.averageResponseTime}h average`
-      : 'Not specified';
-
-    return (
-      <GlassCard sx={{ mb: 4 }}>
-        <CardContent>
-          <Typography
-            variant="h5"
-            fontWeight={700}
-            gutterBottom
-            sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
-          >
-            <ScheduleIcon color="primary" />
-            Availability
-          </Typography>
-
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
-              <Typography variant="h6" gutterBottom>
-                Current Status
-              </Typography>
-              <Chip
-                label={availabilityStatus
-                  .toString()
-                  .replace(/\b\w/g, (c) => c.toUpperCase())}
-                color={
-                  availabilityStatus === 'available' ? 'success' : 'warning'
-                }
-                size="large"
-                sx={{ mb: 2 }}
-              />
-
-              <Typography variant="body1" gutterBottom>
-                <strong>Response Time:</strong> {averageResponseLabel}
-              </Typography>
-              <Typography variant="body1">
-                <strong>Next Available:</strong>{' '}
-                {availability?.nextAvailable ||
-                  (availability?.pausedUntil
-                    ? new Date(availability.pausedUntil).toLocaleString()
-                    : 'Immediately')}
-              </Typography>
-              {isOwner && (
-                <Box sx={{ mt: 2 }}>
-                  <Button
-                    size="medium"
-                    variant="outlined"
-                    startIcon={<EditIcon />}
-                    sx={{ minHeight: 44 }}
-                    onClick={() => {
-                      setEditingAvailability(true);
-                      setAvailabilityDraft({
-                        availabilityStatus,
-                        availableHours: availabilityHours,
-                        pausedUntil: availability?.pausedUntil || null,
-                      });
-                    }}
-                  >
-                    Edit Availability
-                  </Button>
-                </Box>
-              )}
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <Typography variant="h6" gutterBottom>
-                Working Hours
-              </Typography>
-              <List dense>
-                {(() => {
-                  const days = [
-                    'monday',
-                    'tuesday',
-                    'wednesday',
-                    'thursday',
-                    'friday',
-                    'saturday',
-                    'sunday',
-                  ];
-                  const lines = days.map((day) => {
-                    const slot = availabilityHours[day];
-                    if (!slot) {
-                      return `${day[0].toUpperCase()}${day.slice(1)}: Unspecified`;
-                    }
-                    if (!slot.available) {
-                      return `${day[0].toUpperCase()}${day.slice(1)}: Unavailable`;
-                    }
-                    return `${day[0].toUpperCase()}${day.slice(1)}: ${slot.start} - ${slot.end}`;
-                  });
-                  return lines.map((text, index) => (
-                    <ListItem key={`${text}-${index}`}>
-                      <ListItemText primary={text} />
-                    </ListItem>
-                  ));
-                })()}
-              </List>
-            </Grid>
-          </Grid>
-        </CardContent>
-      </GlassCard>
-    );
-  };
-
-  const renderAvailabilityEditor = () => {
-    if (!editingAvailability || !isOwner) return null;
-    const days = [
-      'monday',
-      'tuesday',
-      'wednesday',
-      'thursday',
-      'friday',
-      'saturday',
-      'sunday',
-    ];
-    const draft = availabilityDraft || {
-      availabilityStatus: 'available',
-      availableHours: {},
-    };
-    const setDay = (day, patch) => {
-      setAvailabilityDraft((prev) => ({
-        ...prev,
-        availableHours: {
-          ...(prev?.availableHours || {}),
-          [day]: {
-            ...(prev?.availableHours?.[day] || {
-              available: false,
-              start: '08:00',
-              end: '17:00',
-            }),
-            ...patch,
-          },
-        },
-      }));
-    };
-    const save = async () => {
-      try {
-        await workerService.updateWorkerAvailability(resolvedWorkerId, draft);
-        setAvailability({
-          status: draft.availabilityStatus,
-          availabilityStatus: draft.availabilityStatus,
-          availableHours: draft.availableHours,
-          pausedUntil: draft.pausedUntil || null,
-        });
-        setEditingAvailability(false);
-      } catch {
-        // Availability update failed
-      }
-    };
-    return (
-      <GlassCard sx={{ mb: 4 }}>
-        <CardContent>
-          <Typography variant="h6" sx={{ mb: 2 }}>
-            Edit Availability
-          </Typography>
-          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 2 }}>
-            <TextField
-              select
-              label="Status"
-              value={draft.availabilityStatus}
-              onChange={(e) =>
-                setAvailabilityDraft((p) => ({
-                  ...p,
-                  availabilityStatus: e.target.value,
-                }))
-              }
-              SelectProps={{ native: true }}
-            >
-              <option value="available">Available</option>
-              <option value="busy">Busy</option>
-              <option value="unavailable">Unavailable</option>
-              <option value="vacation">Vacation</option>
-            </TextField>
-            <TextField
-              label="Paused Until (ISO)"
-              placeholder="YYYY-MM-DDTHH:mm:ssZ"
-              value={draft.pausedUntil || ''}
-              onChange={(e) =>
-                setAvailabilityDraft((p) => ({
-                  ...p,
-                  pausedUntil: e.target.value,
-                }))
-              }
-              sx={{ minWidth: { xs: '100%', sm: 320 }, flex: 1 }}
-            />
-          </Box>
-          <Grid container spacing={2}>
-            {days.map((day) => {
-              const d = draft.availableHours?.[day] || {
-                available: false,
-                start: '08:00',
-                end: '17:00',
-              };
-              return (
-                <Grid item xs={12} md={6} key={day}>
-                  <Paper sx={{ p: 2 }}>
-                    <Typography variant="subtitle1" sx={{ mb: 1 }}>
-                      {day[0].toUpperCase() + day.slice(1)}
-                    </Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <Button
-                        size="small"
-                        variant={d.available ? 'contained' : 'outlined'}
-                        sx={{ minHeight: 44 }}
-                        onClick={() => setDay(day, { available: !d.available })}
-                      >
-                        {d.available ? 'Available' : 'Unavailable'}
-                      </Button>
-                      <TextField
-                        size="small"
-                        label="Start"
-                        placeholder="HH:mm"
-                        value={d.start}
-                        onChange={(e) => setDay(day, { start: e.target.value })}
-                        disabled={!d.available}
-                      />
-                      <TextField
-                        size="small"
-                        label="End"
-                        placeholder="HH:mm"
-                        value={d.end}
-                        onChange={(e) => setDay(day, { end: e.target.value })}
-                        disabled={!d.available}
-                      />
-                    </Box>
-                  </Paper>
-                </Grid>
-              );
-            })}
-          </Grid>
-          <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
-            <Button
-              variant="contained"
-              startIcon={<CheckIcon />}
-              sx={{ minHeight: 44 }}
-              onClick={save}
-            >
-              Save
-            </Button>
-            <Button
-              variant="text"
-              startIcon={<CloseIcon />}
-              sx={{ minHeight: 44 }}
-              onClick={() => setEditingAvailability(false)}
-            >
-              Cancel
-            </Button>
-          </Box>
-        </CardContent>
-      </GlassCard>
-    );
-  };
-
-  const renderCertifications = () => (
-    <GlassCard sx={{ mb: 4 }}>
-      <CardContent>
-        <Typography
-          variant="h5"
-          fontWeight={700}
-          gutterBottom
-          sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
-        >
-          <SchoolIcon color="primary" />
-          Certificates & Proof
-        </Typography>
-
-        {certificates.length > 0 ? (
-          <Grid container spacing={2}>
-            {certificates.map((cert, index) => {
-              const certificatePreview = getCertificatePreviewImage(cert);
-
-              return (
-                <Grid
-                  item
-                  xs={12}
-                  md={6}
-                  key={
-                    cert.id || cert._id || cert.name || `certificate-${index}`
-                  }
-                >
-                  <Card variant="outlined" sx={{ p: 2 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      {certificatePreview ? (
-                        <Box
-                          component="img"
-                          src={certificatePreview}
-                          alt={cert.name || 'Certificate preview'}
-                          sx={{
-                            width: 72,
-                            height: 72,
-                            borderRadius: 2,
-                            objectFit: 'cover',
-                            border: '1px solid',
-                            borderColor: 'divider',
-                            flexShrink: 0,
-                          }}
-                        />
-                      ) : (
-                        <Avatar
-                          sx={{
-                            bgcolor: 'primary.main',
-                            width: 72,
-                            height: 72,
-                          }}
-                        >
-                          <AwardIcon />
-                        </Avatar>
-                      )}
-                      <Box sx={{ flexGrow: 1 }}>
-                        <Typography variant="h6" fontWeight={600}>
-                          {cert.name}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {cert.issuing_organization}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          Issued:{' '}
-                          {cert.issue_date
-                            ? new Date(cert.issue_date).toLocaleDateString()
-                            : 'N/A'}
-                        </Typography>
-                      </Box>
-                      {cert.is_verified && <VerifiedIcon color="success" />}
-                    </Box>
-                    {cert.url && (
-                      <Box
-                        sx={{
-                          mt: 1.5,
-                          display: 'flex',
-                          justifyContent: 'flex-end',
-                        }}
-                      >
-                        <Button
-                          component="a"
-                          href={cert.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          size="small"
-                          variant="outlined"
-                        >
-                          View proof
-                        </Button>
-                      </Box>
-                    )}
-                  </Card>
-                </Grid>
-              );
-            })}
-          </Grid>
-        ) : (
-          <Box sx={{ textAlign: 'center', py: 4 }}>
-            <SchoolIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
-            <Typography variant="h6" color="text.secondary">
-              No certifications available
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Professional may be working on obtaining certifications
-            </Typography>
-          </Box>
-        )}
-      </CardContent>
-    </GlassCard>
-  );
-
-  const renderMobileProfileLayout = () => {
-    const isDark = theme.palette.mode === 'dark';
-    const dashboardFontFamily =
-      '"Plus Jakarta Sans", "Manrope", "Segoe UI", sans-serif';
-    const accent = theme.palette.secondary.main || '#F5B324';
-    const panel = alpha(theme.palette.background.paper, isDark ? 0.94 : 0.97);
-    const panelMuted = alpha(
-      theme.palette.background.paper,
-      isDark ? 0.86 : 0.92,
-    );
-    const textPrimary = theme.palette.text.primary;
-    const textMuted = alpha(theme.palette.text.primary, isDark ? 0.72 : 0.66);
-    const sectionRadius = 18;
-    const compactGap = 1.6;
-    const motionEase = 'easeOut';
-    const aboutText =
-      profile.bio ||
-      'I treat every project like a signature piece. Clean finishing, durable materials, and honest timelines.';
-    const canTruncate = aboutText.length > 160;
-    const aboutPreview =
-      canTruncate && !showFullBio
-        ? `${aboutText.slice(0, 160).trim()}...`
-        : aboutText;
-    const compactReviews = reviews.slice(0, 3);
-    const primaryActionLabel = isOwner ? 'Edit Profile' : 'Request Hire';
-    const secondaryActionLabel = isOwner ? 'Open Messages' : 'Send Question';
-    const averageRatingValue = Number(
-      ratingSummary?.averageRating ?? profile.average_rating ?? 0,
-    );
-    const totalReviewsValue = Number(
-      ratingSummary?.totalReviews ?? stats.totalReviews ?? reviews.length,
-    );
-    const completionValue = Number(
-      profileCompletion?.completionPercentage ?? stats?.completionRate ?? 0,
-    );
-    const jobsCompletedValue = Number(
-      stats?.totalJobsCompleted ?? stats?.jobsCompleted ?? 0,
-    );
-    const responseTimeValue = Number(stats?.averageResponseTime ?? 0);
-    const availabilityLabel =
-      availability?.status || availability?.availabilityStatus || 'available';
-    const availabilityUpdatedAt =
-      availability?.lastUpdated || profile?.updatedAt || null;
-    const availabilityUpdatedLabel = availabilityUpdatedAt
-      ? new Date(availabilityUpdatedAt).toLocaleDateString()
-      : 'today';
-    const profileLocationLabel =
-      profile?.location?.city ||
-      profile?.location?.address ||
-      profile?.location ||
-      'Location not set';
-    const priceLabel = formatGhanaCurrencyLabel(profile.hourly_rate || 0);
-    const serviceRadiusValue = Number(
-      profile?.serviceRadius ?? profile?.travelRadius ?? 0,
-    );
-    const serviceAreaLabel =
-      serviceRadiusValue > 0
-        ? `${profileLocationLabel} + ${serviceRadiusValue} km`
-        : profileLocationLabel;
-    const languageSupportLabel =
-      Array.isArray(profile?.languages) && profile.languages.length > 0
-        ? profile.languages
-            .map((entry) => {
-              if (typeof entry === 'string') {
-                return entry;
-              }
-
-              if (entry && typeof entry === 'object') {
-                return entry.language || entry.name || entry.label || '';
-              }
-
-              return '';
-            })
-            .filter(Boolean)
-            .slice(0, 3)
-            .join(', ')
-        : 'English';
-    const materialsResponsibilityLabel =
-      profile?.materialsResponsibility ||
-      profile?.materialResponsibility ||
-      (Array.isArray(profile?.tools) && profile.tools.length > 0
-        ? 'Worker brings own tools. Confirm material sourcing in chat.'
-        : 'Confirm tools and materials in chat before hire.');
-    const travelReadinessLabel = formatTravelReadinessLabel(
-      profile?.travelWillingness,
-    );
-    const activeJobsValue = Number(
-      stats?.jobsInProgress ?? profile?.successStats?.jobsInProgress ?? 0,
-    );
-    const responseRateValue = Number(
-      stats?.responseRate ?? profile?.responseRate ?? 0,
-    );
-    const mobilePortfolioItems = (
-      portfolio.length > 0 ? portfolio : [{ title: 'Project work' }]
-    ).slice(0, 6);
-
-    const trustMetricItems = [
+  const portfolioPreviewItems = useMemo(() => {
+    const baseItems = Array.isArray(portfolio) ? portfolio.slice(0, 3) : [];
+    const mapped = baseItems.map((item) => ({ ...item, isPlaceholder: false }));
+    const fallbacks = [
       {
-        label: 'Rating',
-        value: `${averageRatingValue.toFixed(1)} / 5`,
-        subLabel: `${totalReviewsValue} reviews`,
-        icon: <StarIcon sx={{ fontSize: 18 }} />,
+        id: 'portfolio-fallback-1',
+        title: 'Signature Finish',
+        isPlaceholder: true,
       },
+      { id: 'portfolio-fallback-2', title: 'Detail Work', isPlaceholder: true },
       {
-        label: 'Completed',
-        value: `${jobsCompletedValue}`,
-        subLabel: 'jobs delivered',
-        icon: <AssessmentIcon sx={{ fontSize: 18 }} />,
-      },
-      {
-        label: 'Profile',
-        value: `${completionValue}%`,
-        subLabel: 'completion',
-        icon: <CheckIcon sx={{ fontSize: 18 }} />,
-      },
-      {
-        label: 'Response',
-        value: responseTimeValue > 0 ? `${responseTimeValue}h` : 'Fast',
-        subLabel: 'avg reply time',
-        icon: <ScheduleIcon sx={{ fontSize: 18 }} />,
+        id: 'portfolio-fallback-3',
+        title: 'Client Space',
+        isPlaceholder: true,
       },
     ];
 
-    const handleMobilePortfolioScroll = (event) => {
-      const target = event.currentTarget;
-      const cardSpan = 172;
-      const nextIndex = Math.max(
-        0,
-        Math.min(
-          mobilePortfolioItems.length - 1,
-          Math.round(target.scrollLeft / cardSpan),
-        ),
-      );
-      if (nextIndex !== activePortfolioIndex) {
-        setActivePortfolioIndex(nextIndex);
-      }
-    };
+    while (mapped.length < 3) {
+      const fallback = fallbacks[mapped.length] || {
+        id: `portfolio-fallback-${mapped.length + 1}`,
+        title: 'Project Highlight',
+        isPlaceholder: true,
+      };
+      mapped.push(fallback);
+    }
 
-    return (
-      <Box
-        sx={{
-          pb: {
-            xs: isAuthenticated
-              ? withBottomNavSafeArea(28)
-              : withSafeAreaBottom(28),
-            md: 4,
-          },
-          fontFamily: dashboardFontFamily,
-        }}
-      >
-        <motion.div
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.28, ease: motionEase }}
-        >
-          <Paper
-            elevation={0}
-            sx={{
-              p: 1.5,
-              borderRadius: sectionRadius,
-              background: `linear-gradient(145deg, ${panel} 0%, ${alpha(accent, 0.08)} 100%)`,
-              border: `1px solid ${alpha(accent, 0.28)}`,
-              boxShadow: `0 12px 32px ${alpha('#000', 0.34)}`,
-              position: 'relative',
-              overflow: 'hidden',
-              transform: `translateY(-${mobileHeroParallaxOffset}px)`,
-              transition: 'transform 120ms linear',
-              '&::after': {
-                content: '""',
-                position: 'absolute',
-                top: -50,
-                right: -50,
-                width: 140,
-                height: 140,
-                borderRadius: '50%',
-                background: `radial-gradient(circle, ${alpha(accent, 0.22)} 0%, transparent 70%)`,
-                pointerEvents: 'none',
-              },
-            }}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-              <Avatar
-                src={profileAvatarUrl}
-                sx={{
-                  width: 66,
-                  height: 66,
-                  border: `2px solid ${accent}`,
-                  boxShadow: `0 0 12px 2px ${alpha(accent, 0.4)}`,
-                  bgcolor: alpha(accent, 0.22),
-                }}
-              >
-                {profile.user?.firstName?.charAt(0)}
-                {profile.user?.lastName?.charAt(0)}
-              </Avatar>
+    return mapped;
+  }, [portfolio]);
 
-              <Box sx={{ minWidth: 0, flexGrow: 1 }}>
-                <Typography
-                  variant="h6"
-                  sx={{
-                    color: accent,
-                    fontWeight: 700,
-                    lineHeight: 1.2,
-                    letterSpacing: '-0.02em',
-                  }}
-                >
-                  {profile.user?.firstName} {profile.user?.lastName}
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{ color: textMuted, fontWeight: 600, mb: 0.6 }}
-                >
-                  {profile.profession || 'Professional Worker'}
-                </Typography>
+  const reviewItems = reviews.slice(0, 3);
 
-                <Stack
-                  direction="row"
-                  spacing={0.8}
-                  useFlexGap
-                  flexWrap="wrap"
-                  sx={{ mb: 0.8 }}
-                >
-                  <Chip
-                    size="small"
-                    icon={<VerifiedIcon sx={{ fontSize: 14 }} />}
-                    label={
-                      profile.is_verified
-                        ? 'Verified by Kelmah'
-                        : 'Verification pending'
-                    }
-                    sx={{
-                      bgcolor: alpha(accent, 0.14),
-                      color: textPrimary,
-                      border: `1px solid ${alpha(accent, 0.34)}`,
-                      '& .MuiChip-icon': { color: accent },
-                    }}
-                  />
-                  <Chip
-                    size="small"
-                    icon={<ScheduleIcon sx={{ fontSize: 14 }} />}
-                    label={String(availabilityLabel).replace(/\b\w/g, (char) =>
-                      char.toUpperCase(),
-                    )}
-                    sx={{
-                      bgcolor: alpha('#25B56B', 0.13),
-                      color: textPrimary,
-                      border: `1px solid ${alpha('#25B56B', 0.35)}`,
-                      '& .MuiChip-icon': { color: '#25B56B' },
-                    }}
-                  />
-                </Stack>
+  const primaryCtaLabel = isOwner ? 'EDIT PROFILE' : 'HIRE NOW';
+  const secondaryCtaLabel = isOwner ? 'MESSAGES' : 'MESSAGE';
 
-                <Stack direction="row" spacing={0.8} alignItems="center">
-                  <Typography
-                    variant="body2"
-                    sx={{ color: accent, fontWeight: 700 }}
-                  >
-                    {averageRatingValue.toFixed(1)}
-                  </Typography>
-                  <Rating
-                    size="small"
-                    value={averageRatingValue || 0}
-                    precision={0.1}
-                    readOnly
-                  />
-                  <Typography variant="caption" sx={{ color: textMuted }}>
-                    ({totalReviewsValue} reviews)
-                  </Typography>
-                </Stack>
-                <Typography
-                  variant="caption"
-                  sx={{ color: textMuted, display: 'block', mt: 0.7 }}
-                >
-                  Verified status means Kelmah completed platform identity
-                  checks.
-                </Typography>
-              </Box>
+  const handlePrimaryCta = () => {
+    if (isOwner) {
+      navigate('/worker/profile/edit');
+      return;
+    }
 
-              <Stack direction="row" spacing={0.5}>
-                <IconButton
-                  onClick={handleBookmarkToggle}
-                  aria-label={
-                    isBookmarked ? 'Remove from saved' : 'Save worker'
-                  }
-                  sx={{
-                    width: 34,
-                    height: 34,
-                    bgcolor: alpha(accent, 0.14),
-                    color: accent,
-                    '&:focus-visible': {
-                      outline: '3px solid',
-                      outlineColor: 'primary.main',
-                      outlineOffset: '2px',
-                    },
-                  }}
-                >
-                  {isBookmarked ? (
-                    <BookmarkIcon sx={{ fontSize: 18 }} />
-                  ) : (
-                    <BookmarkBorderIcon sx={{ fontSize: 18 }} />
-                  )}
-                </IconButton>
-                <IconButton
-                  onClick={handleShare}
-                  aria-label="Share this profile"
-                  sx={{
-                    width: 34,
-                    height: 34,
-                    bgcolor: alpha(accent, 0.14),
-                    color: accent,
-                    '&:focus-visible': {
-                      outline: '3px solid',
-                      outlineColor: 'primary.main',
-                      outlineOffset: '2px',
-                    },
-                  }}
-                >
-                  <ShareIcon sx={{ fontSize: 18 }} />
-                </IconButton>
-              </Stack>
-            </Box>
-
-            <Stack
-              direction="row"
-              spacing={0.8}
-              useFlexGap
-              flexWrap="wrap"
-              sx={{ mt: 1.4 }}
-            >
-              {(skills.length > 0
-                ? skills
-                : [
-                    { name: 'Craftsman' },
-                    { name: 'Furniture' },
-                    { name: 'Finishing' },
-                  ]
-              )
-                .slice(0, 3)
-                .map((skill, index) => (
-                  <Chip
-                    key={`mobile-chip-${skill.name}-${index}`}
-                    label={skill.name}
-                    size="small"
-                    sx={{
-                      bgcolor: alpha(accent, 0.18),
-                      color: textPrimary,
-                      border: `1px solid ${alpha(accent, 0.45)}`,
-                      fontWeight: 600,
-                      borderRadius: 999,
-                    }}
-                  />
-                ))}
-            </Stack>
-
-            <Box
-              sx={{
-                mt: 1.2,
-                p: 1,
-                borderRadius: 2,
-                border: `1px solid ${alpha(accent, 0.3)}`,
-                background: alpha(accent, 0.08),
-              }}
-            >
-              <Grid container spacing={0.75}>
-                <Grid item xs={6}>
-                  <Typography variant="caption" sx={{ color: textMuted }}>
-                    Hourly guide
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{ color: textPrimary, fontWeight: 700 }}
-                  >
-                    {priceLabel}
-                  </Typography>
-                </Grid>
-                <Grid item xs={6}>
-                  <Typography variant="caption" sx={{ color: textMuted }}>
-                    Location
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{ color: textPrimary, fontWeight: 700 }}
-                  >
-                    {profileLocationLabel}
-                  </Typography>
-                </Grid>
-                <Grid item xs={12}>
-                  <Typography variant="caption" sx={{ color: textMuted }}>
-                    Availability updated {availabilityUpdatedLabel}
-                  </Typography>
-                </Grid>
-              </Grid>
-            </Box>
-
-            <Stack
-              direction="row"
-              spacing={0.8}
-              useFlexGap
-              flexWrap="wrap"
-              sx={{ mt: 1.2 }}
-            >
-              {[
-                {
-                  label: 'Readiness',
-                  icon: <BusinessCenterIcon sx={{ fontSize: 15 }} />,
-                  ref: readinessSectionRef,
-                  section: 'readiness',
-                },
-                {
-                  label: 'Work Summary',
-                  icon: <InfoIcon sx={{ fontSize: 15 }} />,
-                  ref: aboutSectionRef,
-                  section: 'summary',
-                },
-                {
-                  label: 'Photos',
-                  icon: <AutoAwesomeIcon sx={{ fontSize: 15 }} />,
-                  ref: portfolioSectionRef,
-                  section: 'photos',
-                },
-                {
-                  label: 'Feedback',
-                  icon: <ReviewsIcon sx={{ fontSize: 15 }} />,
-                  ref: reviewsSectionRef,
-                  section: 'feedback',
-                },
-              ].map((jumpItem) => (
-                <Chip
-                  key={jumpItem.label}
-                  icon={jumpItem.icon}
-                  label={jumpItem.label}
-                  onClick={() =>
-                    scrollToSection(jumpItem.ref, jumpItem.section)
-                  }
-                  sx={{
-                    bgcolor:
-                      lastVisitedSection === jumpItem.section
-                        ? alpha(accent, 0.22)
-                        : alpha(accent, 0.1),
-                    color: accent,
-                    border: `1px solid ${alpha(accent, 0.35)}`,
-                    '& .MuiChip-icon': { color: accent },
-                    '&:hover': { bgcolor: alpha(accent, 0.2) },
-                    '&:active': {
-                      transform: 'scale(0.98)',
-                    },
-                    transition:
-                      'transform 120ms ease, background-color 180ms ease',
-                  }}
-                />
-              ))}
-            </Stack>
-
-            <Grid container spacing={1.1} sx={{ mt: 0.45 }}>
-              {trustMetricItems.map((metric, index) => (
-                <Grid item xs={6} key={`mobile-trust-${metric.label}`}>
-                  <motion.div
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{
-                      duration: 0.22,
-                      delay: 0.04 + index * 0.035,
-                      ease: 'easeOut',
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        borderRadius: 2.4,
-                        border: `1px solid ${alpha(accent, 0.28)}`,
-                        background: `linear-gradient(170deg, ${alpha(accent, 0.17)} 0%, ${alpha('#000', isDark ? 0.18 : 0.03)} 100%)`,
-                        px: 1.1,
-                        py: 0.95,
-                        minHeight: 75,
-                      }}
-                    >
-                      <Stack
-                        direction="row"
-                        spacing={0.8}
-                        alignItems="center"
-                        sx={{ mb: 0.45 }}
-                      >
-                        <Box
-                          sx={{
-                            color: accent,
-                            display: 'flex',
-                            alignItems: 'center',
-                          }}
-                        >
-                          {metric.icon}
-                        </Box>
-                        <Typography
-                          variant="caption"
-                          sx={{ color: textMuted, fontWeight: 700 }}
-                        >
-                          {metric.label}
-                        </Typography>
-                      </Stack>
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          color: textPrimary,
-                          fontWeight: 800,
-                          lineHeight: 1.1,
-                        }}
-                      >
-                        {metric.value}
-                      </Typography>
-                      <Typography variant="caption" sx={{ color: textMuted }}>
-                        {metric.subLabel}
-                      </Typography>
-                    </Box>
-                  </motion.div>
-                </Grid>
-              ))}
-            </Grid>
-          </Paper>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.24, delay: 0.02, ease: motionEase }}
-        >
-          <Paper
-            ref={readinessSectionRef}
-            elevation={0}
-            sx={{
-              mt: compactGap,
-              p: 1.5,
-              borderRadius: sectionRadius,
-              background: panelMuted,
-              border: `1px solid ${alpha(accent, 0.2)}`,
-            }}
-          >
-            <Typography sx={{ color: accent, fontWeight: 700, mb: 0.55 }}>
-              Hire Readiness
-            </Typography>
-            <Typography variant="caption" sx={{ color: textMuted }}>
-              Check these first so you can hire confidently in one pass.
-            </Typography>
-
-            <Grid container spacing={0.9} sx={{ mt: 0.35 }}>
-              {[
-                {
-                  label: 'Rate guide',
-                  value: priceLabel,
-                  icon: <PriceIcon sx={{ fontSize: 15 }} />,
-                },
-                {
-                  label: 'Reply speed',
-                  value: formatResponseSpeedLabel(responseTimeValue),
-                  icon: <MessageIcon sx={{ fontSize: 15 }} />,
-                },
-                {
-                  label: 'Current load',
-                  value:
-                    activeJobsValue > 0
-                      ? `${activeJobsValue} active job${activeJobsValue > 1 ? 's' : ''}`
-                      : 'Open for new work',
-                  icon: <WorkIcon sx={{ fontSize: 15 }} />,
-                },
-                {
-                  label: 'Response rate',
-                  value:
-                    responseRateValue > 0
-                      ? `${responseRateValue}%`
-                      : 'Not enough data',
-                  icon: <CollabIcon sx={{ fontSize: 15 }} />,
-                },
-              ].map((item) => (
-                <Grid item xs={6} key={`readiness-${item.label}`}>
-                  <Box
-                    sx={{
-                      minHeight: 70,
-                      borderRadius: 2,
-                      border: `1px solid ${alpha(accent, 0.24)}`,
-                      background: alpha(accent, 0.1),
-                      px: 1,
-                      py: 0.85,
-                    }}
-                  >
-                    <Stack direction="row" spacing={0.5} alignItems="center">
-                      <Box
-                        sx={{
-                          color: accent,
-                          display: 'flex',
-                          alignItems: 'center',
-                        }}
-                      >
-                        {item.icon}
-                      </Box>
-                      <Typography variant="caption" sx={{ color: textMuted }}>
-                        {item.label}
-                      </Typography>
-                    </Stack>
-                    <Typography
-                      variant="body2"
-                      sx={{ color: textPrimary, fontWeight: 700, mt: 0.35 }}
-                    >
-                      {item.value}
-                    </Typography>
-                  </Box>
-                </Grid>
-              ))}
-            </Grid>
-
-            <Stack spacing={0.8} sx={{ mt: 1.15 }}>
-              {[
-                {
-                  label: 'Service area',
-                  value: serviceAreaLabel,
-                  icon: <LocationIcon sx={{ fontSize: 17 }} />,
-                },
-                {
-                  label: 'Language support',
-                  value: languageSupportLabel,
-                  icon: <WebsiteIcon sx={{ fontSize: 17 }} />,
-                },
-                {
-                  label: 'Tools & materials',
-                  value: materialsResponsibilityLabel,
-                  icon: <BuildIcon sx={{ fontSize: 17 }} />,
-                },
-                {
-                  label: 'Travel readiness',
-                  value: travelReadinessLabel,
-                  icon: <TimeIcon sx={{ fontSize: 17 }} />,
-                },
-              ].map((item) => (
-                <Box
-                  key={`readiness-row-${item.label}`}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: 0.9,
-                    borderRadius: 2,
-                    border: `1px solid ${alpha(accent, 0.22)}`,
-                    background: alpha(accent, 0.06),
-                    px: 1,
-                    py: 0.8,
-                  }}
-                >
-                  <Box
-                    sx={{
-                      color: accent,
-                      display: 'flex',
-                      alignItems: 'center',
-                      pt: 0.1,
-                    }}
-                  >
-                    {item.icon}
-                  </Box>
-                  <Box sx={{ minWidth: 0 }}>
-                    <Typography variant="caption" sx={{ color: textMuted }}>
-                      {item.label}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: textPrimary,
-                        fontWeight: 700,
-                        lineHeight: 1.35,
-                      }}
-                    >
-                      {item.value}
-                    </Typography>
-                  </Box>
-                </Box>
-              ))}
-            </Stack>
-          </Paper>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.24, delay: 0.03, ease: motionEase }}
-        >
-          <Paper
-            ref={aboutSectionRef}
-            elevation={0}
-            sx={{
-              mt: compactGap,
-              p: 1.5,
-              borderRadius: sectionRadius,
-              background: panelMuted,
-              border: `1px solid ${alpha(accent, 0.2)}`,
-            }}
-          >
-            <Typography sx={{ color: accent, fontWeight: 700, mb: 0.6 }}>
-              Work Summary
-            </Typography>
-            <Typography
-              sx={{ color: textPrimary, fontSize: 14, lineHeight: 1.55 }}
-            >
-              {aboutPreview}
-            </Typography>
-            <Typography
-              variant="caption"
-              sx={{ color: textMuted, display: 'block', mt: 0.6 }}
-            >
-              Include job location, budget, and deadline when sending your first
-              message.
-            </Typography>
-            {canTruncate && (
-              <Button
-                size="small"
-                onClick={() => setShowFullBio((prev) => !prev)}
-                sx={{
-                  mt: 0.8,
-                  px: 1.2,
-                  minHeight: 32,
-                  borderRadius: 999,
-                  color: '#1A1408',
-                  backgroundColor: accent,
-                  '&:hover': {
-                    backgroundColor: '#e7b843',
-                  },
-                }}
-              >
-                {showFullBio ? 'Show Less' : 'Read More'}
-              </Button>
-            )}
-          </Paper>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.24, delay: 0.06, ease: motionEase }}
-        >
-          <Paper
-            ref={portfolioSectionRef}
-            elevation={0}
-            sx={{
-              mt: compactGap,
-              p: 1.5,
-              borderRadius: sectionRadius,
-              background: panelMuted,
-              border: `1px solid ${alpha(accent, 0.2)}`,
-            }}
-          >
-            <Typography sx={{ color: accent, fontWeight: 700, mb: 0.55 }}>
-              Recent Work Photos
-            </Typography>
-            <Typography
-              variant="caption"
-              sx={{ color: textMuted, mb: 1, display: 'block' }}
-            >
-              Tap a photo to open full details before requesting hire.
-            </Typography>
-            {lowBandwidthModeActive && (
-              <Typography
-                variant="caption"
-                sx={{ color: textMuted, mb: 0.75, display: 'block' }}
-              >
-                Low-bandwidth mode is reducing image previews to keep this page
-                responsive.
-              </Typography>
-            )}
-            <Box
-              sx={{
-                display: 'flex',
-                gap: 1.2,
-                overflowX: 'auto',
-                pb: 0.9,
-                scrollSnapType: 'x mandatory',
-                scrollPaddingLeft: '4px',
-                '&::-webkit-scrollbar': { height: 6 },
-                '&::-webkit-scrollbar-thumb': {
-                  backgroundColor: alpha(accent, 0.45),
-                  borderRadius: 99,
-                },
-              }}
-              onScroll={handleMobilePortfolioScroll}
-            >
-              {mobilePortfolioItems.map((item, index) => {
-                const image = getPortfolioPreviewImage(item);
-                const isRealPortfolioItem = Boolean(
-                  item?.id || item?._id || item?.description || image,
-                );
-
-                return (
-                  <motion.div
-                    key={
-                      item.id ||
-                      item._id ||
-                      item.title ||
-                      `mobile-portfolio-${index}`
-                    }
-                    whileTap={isRealPortfolioItem ? { scale: 0.98 } : undefined}
-                  >
-                    <Card
-                      onClick={() => {
-                        if (!isRealPortfolioItem) {
-                          return;
-                        }
-                        setSelectedPortfolioItem(item);
-                        setPortfolioDialogOpen(true);
-                      }}
-                      sx={{
-                        width: 160,
-                        minWidth: 160,
-                        height: 144,
-                        borderRadius: 3,
-                        overflow: 'hidden',
-                        cursor: isRealPortfolioItem ? 'pointer' : 'default',
-                        border: `1px solid ${alpha(accent, index === activePortfolioIndex ? 0.9 : 0.45)}`,
-                        background: alpha('#000', 0.28),
-                        display: 'flex',
-                        flexDirection: 'column',
-                        position: 'relative',
-                        scrollSnapAlign: 'start',
-                        boxShadow:
-                          index === activePortfolioIndex
-                            ? `0 8px 20px ${alpha(accent, 0.24)}`
-                            : 'none',
-                        '&:active': {
-                          transform: isRealPortfolioItem
-                            ? 'scale(0.985)'
-                            : 'none',
-                        },
-                        transition:
-                          'transform 120ms ease, box-shadow 200ms ease, border-color 200ms ease',
-                      }}
-                    >
-                      {shouldRenderPortfolioPreviews && image ? (
-                        <CardMedia
-                          component="img"
-                          image={image}
-                          height="98"
-                          alt={item.title || 'Portfolio'}
-                        />
-                      ) : (
-                        <Box
-                          sx={{
-                            height: 98,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            flexDirection: 'column',
-                            gap: 0.4,
-                            bgcolor: alpha(accent, 0.14),
-                            px: 0.8,
-                          }}
-                        >
-                          {lowBandwidthModeActive && image ? (
-                            <>
-                              <TimeIcon sx={{ color: accent, fontSize: 17 }} />
-                              <Typography
-                                variant="caption"
-                                sx={{
-                                  color: textMuted,
-                                  textAlign: 'center',
-                                  lineHeight: 1.2,
-                                }}
-                              >
-                                Preview paused
-                              </Typography>
-                            </>
-                          ) : (
-                            <WorkIcon sx={{ color: accent }} />
-                          )}
-                        </Box>
-                      )}
-                      <Box
-                        sx={{
-                          position: 'absolute',
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                          height: 56,
-                          background:
-                            'linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.82) 100%)',
-                        }}
-                      />
-                      <CardContent sx={{ p: 0.9, mt: 'auto', zIndex: 1 }}>
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            color: '#FFF6D8',
-                            fontWeight: 700,
-                            display: '-webkit-box',
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: 'vertical',
-                            overflow: 'hidden',
-                          }}
-                        >
-                          {item.title || 'Untitled portfolio item'}
-                        </Typography>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                );
-              })}
-            </Box>
-            {mobilePortfolioItems.length > 1 && (
-              <Stack
-                direction="row"
-                spacing={0.7}
-                justifyContent="center"
-                sx={{ mt: 0.3 }}
-              >
-                {mobilePortfolioItems.map((item, index) => (
-                  <Box
-                    key={`portfolio-dot-${item.id || item._id || item.title || index}`}
-                    sx={{
-                      width: index === activePortfolioIndex ? 18 : 7,
-                      height: 7,
-                      borderRadius: 99,
-                      bgcolor:
-                        index === activePortfolioIndex
-                          ? accent
-                          : alpha(accent, 0.35),
-                      transition: 'all 0.24s ease',
-                    }}
-                  />
-                ))}
-              </Stack>
-            )}
-          </Paper>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.24, delay: 0.09, ease: motionEase }}
-        >
-          <Paper
-            ref={reviewsSectionRef}
-            elevation={0}
-            sx={{
-              mt: compactGap,
-              p: 1.5,
-              borderRadius: sectionRadius,
-              background: panelMuted,
-              border: `1px solid ${alpha(accent, 0.2)}`,
-            }}
-          >
-            <Typography sx={{ color: accent, fontWeight: 700, mb: 0.55 }}>
-              Client Feedback
-            </Typography>
-            <Typography
-              variant="caption"
-              sx={{ color: textMuted, mb: 1, display: 'block' }}
-            >
-              Recent comments help you confirm quality and communication style.
-            </Typography>
-
-            {compactReviews.length > 0 ? (
-              <Stack spacing={1}>
-                {compactReviews.map((review, index) => (
-                  <Box
-                    key={review.id || review._id || `mobile-review-${index}`}
-                    sx={{
-                      p: 1,
-                      borderRadius: 2,
-                      border: `1px solid ${alpha(accent, 0.24)}`,
-                      background: alpha('#000', 0.2),
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 0.9,
-                        mb: 0.5,
-                      }}
-                    >
-                      <Avatar
-                        src={
-                          review?.reviewer?.avatar ||
-                          review?.author?.avatar ||
-                          null
-                        }
-                        sx={{ width: 28, height: 28 }}
-                      >
-                        {(
-                          review?.reviewer?.name ||
-                          review?.author?.name ||
-                          'R'
-                        ).charAt(0)}
-                      </Avatar>
-                      <Box sx={{ minWidth: 0 }}>
-                        <Typography
-                          variant="caption"
-                          sx={{ color: textPrimary, fontWeight: 700 }}
-                        >
-                          {review?.reviewer?.name ||
-                            review?.author?.name ||
-                            'Verified Client'}
-                        </Typography>
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 0.5,
-                          }}
-                        >
-                          <Rating
-                            size="small"
-                            readOnly
-                            value={Number(review.rating || 0)}
-                            precision={0.5}
-                          />
-                          <Typography
-                            variant="caption"
-                            sx={{ color: textMuted }}
-                          >
-                            {Number(review.rating || 0).toFixed(1)}
-                          </Typography>
-                        </Box>
-                      </Box>
-                    </Box>
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: textMuted,
-                        lineHeight: 1.45,
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      {review.comment ||
-                        'Great workmanship and clear communication.'}
-                    </Typography>
-                  </Box>
-                ))}
-              </Stack>
-            ) : (
-              <Typography variant="body2" sx={{ color: textMuted }}>
-                Reviews will appear here as soon as clients submit feedback.
-              </Typography>
-            )}
-          </Paper>
-        </motion.div>
-
-        <Paper
-          elevation={0}
-          sx={{
-            position: 'sticky',
-            mt: compactGap,
-            bottom: isAuthenticated
-              ? withBottomNavSafeArea(8)
-              : withSafeAreaBottom(8),
-            zIndex: theme.zIndex.sticky,
-            p: 1,
-            borderRadius: 3,
-            background: alpha('#0E1014', 0.96),
-            border: `1px solid ${alpha(accent, 0.38)}`,
-            boxShadow: `0 12px 28px ${alpha('#000', 0.45)}`,
-          }}
-        >
-          <Stack spacing={1}>
-            <Button
-              fullWidth
-              onClick={() => {
-                if (isOwner) {
-                  navigate('/worker/profile/edit');
-                  return;
-                }
-                handleHireAction();
-              }}
-              sx={{
-                borderRadius: 999,
-                minHeight: 44,
-                fontWeight: 800,
-                letterSpacing: 0.5,
-                color: '#1A1408',
-                background: `linear-gradient(180deg, ${accent} 0%, #E4B13D 100%)`,
-                '&:hover': {
-                  background: `linear-gradient(180deg, #F7CF69 0%, ${accent} 100%)`,
-                },
-                '&:active': {
-                  transform: 'translateY(1px) scale(0.995)',
-                },
-                transition: 'transform 120ms ease, background 180ms ease',
-              }}
-              aria-label={isOwner ? 'Edit profile' : 'Hire this worker'}
-            >
-              {primaryActionLabel}
-            </Button>
-            <Button
-              fullWidth
-              onClick={() => {
-                if (isOwner) {
-                  navigate('/messages');
-                  return;
-                }
-                handleContactWorker();
-              }}
-              sx={{
-                borderRadius: 999,
-                minHeight: 44,
-                fontWeight: 800,
-                letterSpacing: 0.5,
-                color: accent,
-                border: `1px solid ${accent}`,
-                backgroundColor: isDark
-                  ? '#000000'
-                  : theme.palette.background.paper,
-                '&:hover': {
-                  backgroundColor: alpha(accent, 0.08),
-                },
-                '&:active': {
-                  transform: 'translateY(1px) scale(0.995)',
-                },
-                transition: 'transform 120ms ease, background-color 180ms ease',
-              }}
-            >
-              {secondaryActionLabel}
-            </Button>
-            {!isOwner && (
-              <Typography
-                variant="caption"
-                sx={{ color: alpha('#fff', 0.72), textAlign: 'center' }}
-              >
-                Request hire opens the contract flow before payment.
-              </Typography>
-            )}
-          </Stack>
-        </Paper>
-      </Box>
-    );
+    handleHireAction();
   };
+
+  const handleSecondaryCta = () => {
+    if (isOwner) {
+      navigate('/messages');
+      return;
+    }
+
+    handleContactWorker();
+  };
+
+  const handlePortfolioScroll = (event) => {
+    if (!event?.currentTarget || portfolioPreviewItems.length === 0) {
+      return;
+    }
+
+    const cardSpan = 176;
+    const nextIndex = Math.max(
+      0,
+      Math.min(
+        portfolioPreviewItems.length - 1,
+        Math.round(event.currentTarget.scrollLeft / cardSpan),
+      ),
+    );
+    if (nextIndex !== activePortfolioIndex) {
+      setActivePortfolioIndex(nextIndex);
+    }
+  };
+
+  const sectionColumn = { xs: '1 / -1', md: '2 / span 10', lg: '3 / span 8' };
+  const baseCardSx = {
+    gridColumn: sectionColumn,
+    background: 'var(--wp-surface)',
+    border: '1px solid var(--wp-stroke)',
+    borderRadius: 16,
+    boxShadow: 'var(--wp-shadow)',
+    p: { xs: 2, sm: 2.5, md: 2.5 },
+  };
+  const heroChipSx = {
+    height: 28,
+    borderRadius: 999,
+    background: 'rgba(15, 15, 18, 0.72)',
+    border: '1px solid var(--wp-stroke)',
+    color: 'var(--wp-text)',
+    fontWeight: 600,
+    fontSize: '0.72rem',
+    '& .MuiChip-label': { px: 1.5 },
+  };
+  const skillChipSx = {
+    height: 28,
+    borderRadius: 999,
+    background:
+      'linear-gradient(180deg, rgba(242, 193, 79, 0.98) 0%, rgba(216, 176, 75, 0.98) 100%)',
+    border: '1px solid rgba(242, 193, 79, 0.85)',
+    color: '#1b1b1e',
+    fontWeight: 700,
+    fontSize: '0.72rem',
+    letterSpacing: '0.01em',
+    '& .MuiChip-label': { px: 1.5 },
+  };
+  const primaryCtaSx = {
+    minHeight: 56,
+    borderRadius: 12,
+    fontWeight: 700,
+    letterSpacing: '0.12em',
+    textTransform: 'none',
+    fontSize: '0.95rem',
+    color: '#1b1b1e',
+    background:
+      'linear-gradient(180deg, var(--wp-gold) 0%, #d8b04b 100%)',
+    boxShadow: '0 12px 24px rgba(0, 0, 0, 0.35)',
+    '&:hover': {
+      background:
+        'linear-gradient(180deg, #f7d277 0%, var(--wp-gold) 100%)',
+    },
+  };
+  const secondaryCtaSx = {
+    minHeight: 56,
+    borderRadius: 12,
+    fontWeight: 700,
+    letterSpacing: '0.12em',
+    textTransform: 'none',
+    fontSize: '0.95rem',
+    color: 'var(--wp-gold)',
+    border: '1px solid rgba(242, 193, 79, 0.7)',
+    backgroundColor: 'rgba(12, 12, 15, 0.9)',
+    '&:hover': {
+      backgroundColor: 'rgba(22, 22, 26, 0.95)',
+    },
+  };
+
+  const bottomNavItems = [
+    { label: 'Home', icon: <HomeIcon sx={{ fontSize: 22 }} />, active: false },
+    {
+      label: 'Search',
+      icon: <SearchIcon sx={{ fontSize: 22 }} />,
+      active: false,
+    },
+    {
+      label: 'Messages',
+      icon: <MessageIcon sx={{ fontSize: 22 }} />,
+      active: false,
+    },
+    {
+      label: 'Contracts',
+      icon: <WorkIcon sx={{ fontSize: 22 }} />,
+      active: false,
+    },
+    {
+      label: 'Profile',
+      icon: <PersonIcon sx={{ fontSize: 22 }} />,
+      active: true,
+    },
+  ];
 
   return (
     <>
       <Helmet>
-        <title>{`${profile.user?.firstName} ${profile.user?.lastName} - ${profile.profession} | Kelmah`}</title>
+        <title>{`${displayName} - ${roleLabel} | Kelmah`}</title>
         <meta
           name="description"
-          content={`Professional ${profile.profession} available for hire. View portfolio, reviews, and contact ${profile.user?.firstName} for your next project.`}
+          content={`Professional ${roleLabel} available for hire. View portfolio, reviews, and contact ${displayName} for your next project.`}
         />
       </Helmet>
 
-      <Container
-        maxWidth={isActualMobile ? 'sm' : 'xl'}
-        sx={{
-          py: isActualMobile ? 1.5 : 4,
-          px: isActualMobile ? 1 : undefined,
-        }}
-      >
+      <Box sx={shellSx}>
+        <Box component="style">
+          {`
+@keyframes wpFadeUp {
+  0% {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.wp-reveal {
+  animation: wpFadeUp 0.6s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wp-reveal {
+    animation: none;
+  }
+}
+          `}
+        </Box>
+
         {workerProfileNetworkBanner && (
           <Alert
             severity={workerProfileNetworkBanner.severity}
-            sx={{ mb: 2, borderRadius: 2 }}
+            sx={{
+              mb: 2,
+              borderRadius: 3,
+              backgroundColor: 'rgba(20, 20, 24, 0.92)',
+              color: 'var(--wp-text)',
+              border: '1px solid var(--wp-stroke)',
+            }}
             action={
               <Button
-                color="inherit"
                 size="small"
                 onClick={() => {
                   fetchAllData();
                 }}
                 disabled={loading || !isOnline}
+                sx={{
+                  minHeight: 32,
+                  borderRadius: 2,
+                  border: '1px solid var(--wp-gold-soft)',
+                  color: 'var(--wp-gold)',
+                  textTransform: 'none',
+                }}
               >
                 {loading
                   ? 'Syncing...'
@@ -3419,98 +873,753 @@ function WorkerProfile({ workerId: workerIdProp }) {
           </Alert>
         )}
 
-        {isActualMobile ? (
-          renderMobileProfileLayout()
-        ) : (
-          <>
-            <Breadcrumbs sx={{ mb: 3 }}>
-              <Link color="inherit" component={RouterLink} to="/">
-                <HomeIcon sx={{ mr: 0.5 }} fontSize="inherit" />
-                Home
-              </Link>
-              <Link color="inherit" component={RouterLink} to="/find-talents">
-                Find Talents
-              </Link>
-              <Typography color="text.primary">
-                {profile.user?.firstName} {profile.user?.lastName}
-              </Typography>
-            </Breadcrumbs>
-
-            {renderProfileHeader()}
-            {renderMetrics()}
-
-            <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-              <Tabs
-                value={tabValue}
-                onChange={handleTabChange}
-                aria-label="Worker profile sections"
-                variant={isMobile ? 'scrollable' : 'standard'}
-                scrollButtons="auto"
-                allowScrollButtonsMobile
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: {
+              xs: 'repeat(4, minmax(0, 1fr))',
+              sm: 'repeat(8, minmax(0, 1fr))',
+              md: 'repeat(12, minmax(0, 1fr))',
+            },
+            columnGap: { xs: '12px', sm: '16px', md: '20px', lg: '24px' },
+            rowGap: { xs: '16px', md: '24px' },
+            maxWidth: { xs: '100%', md: 1280 },
+            mx: 'auto',
+            minWidth: 0,
+          }}
+        >
+          <Box
+            className="wp-reveal"
+            style={{ animationDelay: '0.04s' }}
+            sx={{
+              ...baseCardSx,
+              p: { xs: 2.5, sm: 2.5, md: 2.5 },
+              backgroundImage: profileHeroImage
+                ? `linear-gradient(160deg, rgba(12,12,14,0.94) 0%, rgba(27,27,30,0.88) 55%, rgba(14,14,16,0.96) 100%), url(${profileHeroImage})`
+                : 'linear-gradient(160deg, #2a2a2f 0%, #1b1b1e 60%, #141417 100%)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              position: 'relative',
+              overflow: 'hidden',
+            }}
+          >
+            <Box
+              sx={{
+                position: 'absolute',
+                inset: 0,
+                background:
+                  'radial-gradient(circle at 20% 0%, rgba(242, 193, 79, 0.2) 0%, transparent 58%)',
+                opacity: 0.6,
+                pointerEvents: 'none',
+              }}
+            />
+            <Box sx={{ position: 'relative', zIndex: 1 }}>
+              <Box
                 sx={{
-                  '& .MuiTabs-flexContainer': {
-                    gap: { md: 0.5, lg: 1 },
-                  },
+                  position: 'absolute',
+                  top: { xs: 12, md: 16 },
+                  right: { xs: 12, md: 16 },
+                  display: 'flex',
+                  gap: 1,
                 }}
               >
-                <Tab
-                  icon={<PersonIcon />}
-                  iconPosition="start"
-                  label="Overview"
-                />
-                <Tab
-                  icon={<ViewIcon />}
-                  iconPosition="start"
-                  label="Portfolio"
-                />
-                <Tab icon={<StarIcon />} iconPosition="start" label="Reviews" />
-                <Tab
-                  icon={<ScheduleIcon />}
-                  iconPosition="start"
-                  label="Availability"
-                />
-                <Tab
-                  icon={<SchoolIcon />}
-                  iconPosition="start"
-                  label="Certificates"
-                />
-              </Tabs>
-              <Typography
-                variant="caption"
-                sx={{ display: 'block', mt: 1, color: 'text.secondary' }}
+                <IconButton
+                  onClick={handleBookmarkToggle}
+                  aria-label={isBookmarked ? 'Remove from saved' : 'Save worker'}
+                  sx={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: '14px',
+                    border: '1px solid var(--wp-stroke)',
+                    backgroundColor: 'rgba(14, 14, 18, 0.7)',
+                    color: 'var(--wp-gold)',
+                    '&:hover': { backgroundColor: 'rgba(24, 24, 28, 0.85)' },
+                    '&:focus-visible': {
+                      outline: '3px solid var(--wp-gold)',
+                      outlineOffset: 2,
+                    },
+                  }}
+                >
+                  {isBookmarked ? (
+                    <BookmarkIcon sx={{ color: 'var(--wp-gold)' }} />
+                  ) : (
+                    <BookmarkBorderIcon sx={{ color: 'var(--wp-gold)' }} />
+                  )}
+                </IconButton>
+                <IconButton
+                  onClick={handleShare}
+                  aria-label="Share this profile"
+                  sx={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: '14px',
+                    border: '1px solid var(--wp-stroke)',
+                    backgroundColor: 'rgba(14, 14, 18, 0.7)',
+                    color: 'var(--wp-gold)',
+                    '&:hover': { backgroundColor: 'rgba(24, 24, 28, 0.85)' },
+                    '&:focus-visible': {
+                      outline: '3px solid var(--wp-gold)',
+                      outlineOffset: 2,
+                    },
+                  }}
+                >
+                  <ShareIcon sx={{ color: 'var(--wp-gold)' }} />
+                </IconButton>
+                {isOwner && (
+                  <IconButton
+                    onClick={() => navigate('/worker/profile/edit')}
+                    aria-label="Edit your profile"
+                    sx={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: '14px',
+                      border: '1px solid var(--wp-stroke)',
+                      backgroundColor: 'rgba(14, 14, 18, 0.7)',
+                      color: 'var(--wp-gold)',
+                      '&:hover': {
+                        backgroundColor: 'rgba(24, 24, 28, 0.85)',
+                      },
+                      '&:focus-visible': {
+                        outline: '3px solid var(--wp-gold)',
+                        outlineOffset: 2,
+                      },
+                    }}
+                  >
+                    <EditIcon sx={{ color: 'var(--wp-gold)' }} />
+                  </IconButton>
+                )}
+              </Box>
+
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: { xs: 'column', sm: 'row' },
+                  gap: { xs: 2, sm: 3 },
+                  alignItems: { xs: 'flex-start', sm: 'center' },
+                  pr: { xs: 0, sm: 8 },
+                }}
               >
-                Trust check: review verified badges, recent portfolio proofs,
-                and latest client feedback before starting a contract.
+                <Box
+                  sx={{
+                    p: '4px',
+                    borderRadius: '50%',
+                    background:
+                      'linear-gradient(135deg, var(--wp-gold), #d8b04b)',
+                    boxShadow:
+                      '0 0 0 1px rgba(242, 193, 79, 0.45), 0 14px 28px rgba(0, 0, 0, 0.45)',
+                  }}
+                >
+                  <Avatar
+                    src={profileAvatarUrl}
+                    alt={`${displayName} profile photo`}
+                    role="img"
+                    aria-label={`${displayName} profile photo`}
+                    sx={{
+                      width: { xs: 88, md: 112 },
+                      height: { xs: 88, md: 112 },
+                      bgcolor: '#1f1f24',
+                      border: '2px solid rgba(18, 18, 20, 0.9)',
+                      fontWeight: 700,
+                      fontSize: { xs: '1.6rem', md: '2rem' },
+                    }}
+                  >
+                    {avatarInitials}
+                  </Avatar>
+                </Box>
+
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography
+                    sx={{
+                      fontFamily: '"Poppins", "Manrope", "Work Sans", sans-serif',
+                      fontWeight: 700,
+                      fontSize: { xs: '1.75rem', md: '2.25rem' },
+                      lineHeight: { xs: 1.2, md: 1.15 },
+                      color: 'var(--wp-text)',
+                    }}
+                  >
+                    {displayName}
+                  </Typography>
+                  <Typography
+                    sx={{
+                      color: 'var(--wp-gold)',
+                      fontWeight: 600,
+                      fontSize: { xs: '0.95rem', md: '1.1rem' },
+                      letterSpacing: '0.02em',
+                      mt: 0.5,
+                    }}
+                  >
+                    {roleLabel}
+                  </Typography>
+                  <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1 }}>
+                    <Rating
+                      value={ratingValue}
+                      precision={0.1}
+                      readOnly
+                      size="small"
+                      sx={{
+                        '& .MuiRating-iconFilled': { color: 'var(--wp-gold)' },
+                        '& .MuiRating-iconEmpty': {
+                          color: 'rgba(216, 176, 75, 0.35)',
+                        },
+                      }}
+                    />
+                    <Typography
+                      sx={{
+                        fontWeight: 600,
+                        color: 'var(--wp-text)',
+                        fontSize: { xs: '0.9rem', md: '1rem' },
+                      }}
+                    >
+                      {ratingValue.toFixed(1)}
+                    </Typography>
+                    <Typography sx={{ color: 'var(--wp-muted)', fontSize: '0.85rem' }}>
+                      ({reviewsCount} reviews)
+                    </Typography>
+                  </Stack>
+                  <Typography
+                    variant="caption"
+                    sx={{ color: 'var(--wp-muted)', display: 'block', mt: 0.5 }}
+                  >
+                    From {rateLabel} / hr
+                  </Typography>
+                  <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ mt: 1.5 }}>
+                    {profile.is_verified && (
+                      <Chip
+                        icon={<VerifiedIcon sx={{ color: 'var(--wp-gold)' }} />}
+                        label="Verified"
+                        sx={heroChipSx}
+                      />
+                    )}
+                    <Chip label={availabilityLabel} sx={heroChipSx} />
+                  </Stack>
+                </Box>
+              </Box>
+
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: { xs: 2, sm: 2.5 } }}>
+                {skillItems.map((skill, index) => (
+                  <Chip
+                    key={skill.id || skill._id || skill.name || `skill-${index}`}
+                    label={skill.name}
+                    sx={skillChipSx}
+                  />
+                ))}
+              </Box>
+            </Box>
+          </Box>
+
+          <Box
+            className="wp-reveal"
+            style={{ animationDelay: '0.12s' }}
+            sx={baseCardSx}
+          >
+            <Typography
+              sx={{
+                fontFamily: '"Poppins", "Manrope", "Work Sans", sans-serif',
+                fontWeight: 700,
+                fontSize: { xs: '1.25rem', md: '1.5rem' },
+                color: 'var(--wp-text)',
+                mb: 1,
+              }}
+            >
+              About Me
+            </Typography>
+            <Typography
+              sx={{
+                color: 'var(--wp-muted)',
+                fontSize: { xs: '0.9rem', md: '0.95rem' },
+                lineHeight: 1.6,
+              }}
+            >
+              {aboutPreview}
+            </Typography>
+            {canTruncate && (
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 1.5 }}>
+                <Button
+                  size="small"
+                  onClick={() => setShowFullBio((prev) => !prev)}
+                  sx={{
+                    minHeight: 32,
+                    px: 2.5,
+                    borderRadius: 999,
+                    color: '#1b1b1e',
+                    backgroundColor: 'var(--wp-gold)',
+                    border: '1px solid rgba(242, 193, 79, 0.9)',
+                    textTransform: 'none',
+                    fontWeight: 700,
+                    '&:hover': {
+                      backgroundColor: '#f6cf6c',
+                    },
+                  }}
+                >
+                  {showFullBio ? 'Show Less' : 'Read More'}
+                </Button>
+              </Box>
+            )}
+          </Box>
+
+          <Box
+            className="wp-reveal"
+            style={{ animationDelay: '0.18s' }}
+            sx={baseCardSx}
+          >
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                mb: 1.5,
+                gap: 2,
+                flexWrap: 'wrap',
+              }}
+            >
+              <Typography
+                sx={{
+                  fontFamily: '"Poppins", "Manrope", "Work Sans", sans-serif',
+                  fontWeight: 700,
+                  fontSize: { xs: '1.25rem', md: '1.5rem' },
+                  color: 'var(--wp-text)',
+                }}
+              >
+                Portfolio
+              </Typography>
+              <Typography variant="caption" sx={{ color: 'var(--wp-muted)' }}>
+                {portfolio.length} item{portfolio.length === 1 ? '' : 's'}
               </Typography>
             </Box>
-
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={tabValue}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.3 }}
+            {lowBandwidthModeActive && (
+              <Typography
+                variant="caption"
+                sx={{ color: 'var(--wp-muted)', display: 'block', mb: 1 }}
               >
-                {tabValue === 0 && renderSkillsAndExpertise()}
-                {tabValue === 1 && renderPortfolio()}
-                {tabValue === 2 && renderReviews()}
-                {tabValue === 3 && renderAvailability()}
-                {tabValue === 4 && renderCertifications()}
-              </motion.div>
-            </AnimatePresence>
+                Low bandwidth mode is pausing previews to keep the page fast.
+              </Typography>
+            )}
+            <Box
+              sx={{
+                display: { xs: 'flex', md: 'grid' },
+                gridTemplateColumns: { md: 'repeat(3, minmax(0, 1fr))' },
+                gap: { xs: 1.5, md: 2 },
+                overflowX: { xs: 'auto', md: 'visible' },
+                pb: { xs: 1, md: 0 },
+                scrollSnapType: { xs: 'x mandatory', md: 'none' },
+                '&::-webkit-scrollbar': { height: 6 },
+                '&::-webkit-scrollbar-thumb': {
+                  backgroundColor: 'rgba(242, 193, 79, 0.5)',
+                  borderRadius: 99,
+                },
+              }}
+              onScroll={handlePortfolioScroll}
+            >
+              {portfolioPreviewItems.map((item, index) => {
+                const previewImage = getPortfolioPreviewImage(item);
+                const canShowImage = shouldRenderPortfolioPreviews && previewImage;
+                const isPlaceholder = item.isPlaceholder;
+                return (
+                  <Box
+                    key={item.id || item._id || item.title || `portfolio-${index}`}
+                    component="button"
+                    type="button"
+                    disabled={isPlaceholder}
+                    onClick={() => {
+                      if (isPlaceholder) {
+                        return;
+                      }
+                      setSelectedPortfolioItem(item);
+                      setPortfolioDialogOpen(true);
+                    }}
+                    sx={{
+                      position: 'relative',
+                      textAlign: 'left',
+                      border: '1px solid rgba(242, 193, 79, 0.75)',
+                      borderRadius: 16,
+                      background: 'rgba(12, 12, 15, 0.92)',
+                      color: 'inherit',
+                      padding: 0,
+                      display: 'flex',
+                      alignItems: 'stretch',
+                      overflow: 'hidden',
+                      cursor: isPlaceholder ? 'default' : 'pointer',
+                      minWidth: { xs: 140, sm: 160, md: 'auto' },
+                      aspectRatio: '1 / 1',
+                      scrollSnapAlign: 'start',
+                      transition:
+                        'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease',
+                      '&:hover': isPlaceholder
+                        ? undefined
+                        : {
+                            transform: 'translateY(-4px)',
+                            boxShadow: '0 12px 30px rgba(0,0,0,0.35)',
+                            borderColor: 'var(--wp-gold)',
+                          },
+                      '&:disabled': {
+                        opacity: 0.7,
+                      },
+                    }}
+                  >
+                    {canShowImage ? (
+                      <Box
+                        component="img"
+                        src={previewImage}
+                        alt={item.title || 'Portfolio preview'}
+                        sx={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                        }}
+                      />
+                    ) : (
+                      <Box
+                        sx={{
+                          position: 'absolute',
+                          inset: 0,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: 0.5,
+                          background: 'rgba(216, 176, 75, 0.08)',
+                          color: 'var(--wp-gold)',
+                        }}
+                      >
+                        <WorkIcon sx={{ fontSize: 28 }} />
+                        {lowBandwidthModeActive && previewImage ? (
+                          <Typography
+                            variant="caption"
+                            sx={{ color: 'var(--wp-muted)' }}
+                          >
+                            Preview paused
+                          </Typography>
+                        ) : null}
+                      </Box>
+                    )}
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        p: 1.25,
+                        background:
+                          'linear-gradient(180deg, rgba(12,12,14,0) 0%, rgba(12,12,14,0.78) 100%)',
+                      }}
+                    >
+                      <Typography
+                        sx={{
+                          color: 'var(--wp-text)',
+                          fontWeight: 600,
+                          fontSize: '0.85rem',
+                          lineHeight: 1.3,
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                        }}
+                      >
+                        {item.title || 'Portfolio highlight'}
+                      </Typography>
+                    </Box>
+                  </Box>
+                );
+              })}
+            </Box>
+            <Box
+              sx={{
+                mt: 1.5,
+                display: 'flex',
+                justifyContent: 'center',
+                gap: 1,
+              }}
+            >
+              {portfolioPreviewItems.map((item, index) => (
+                <Box
+                  key={`portfolio-indicator-${item.id || item.title || index}`}
+                  sx={{
+                    width: index === activePortfolioIndex ? 36 : 12,
+                    height: 2,
+                    borderRadius: 999,
+                    backgroundColor:
+                      index === activePortfolioIndex
+                        ? 'var(--wp-gold)'
+                        : 'rgba(216, 176, 75, 0.35)',
+                    transition: 'all 0.2s ease',
+                  }}
+                />
+              ))}
+            </Box>
+          </Box>
 
-            {renderAvailabilityEditor()}
-          </>
-        )}
+          <Box
+            className="wp-reveal"
+            style={{ animationDelay: '0.24s' }}
+            sx={baseCardSx}
+          >
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                mb: 1.5,
+              }}
+            >
+              <Typography
+                sx={{
+                  fontFamily: '"Poppins", "Manrope", "Work Sans", sans-serif',
+                  fontWeight: 700,
+                  fontSize: { xs: '1.25rem', md: '1.5rem' },
+                  color: 'var(--wp-text)',
+                }}
+              >
+                Reviews
+              </Typography>
+              <Typography variant="caption" sx={{ color: 'var(--wp-muted)' }}>
+                {reviewsCount} total
+              </Typography>
+            </Box>
+            <Stack spacing={1.5}>
+              {reviewItems.length > 0 ? (
+                reviewItems.map((review, index) => {
+                  const reviewRating = Number(review.rating || 0) || 0;
+                  const reviewerName =
+                    review?.reviewer?.name ||
+                    review?.author?.name ||
+                    'Verified Client';
+                  return (
+                    <Box
+                      key={review.id || review._id || `review-${index}`}
+                      sx={{
+                        p: 2,
+                        borderRadius: 12,
+                        border: '1px solid var(--wp-stroke)',
+                        background: 'rgba(14, 14, 18, 0.85)',
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1.5,
+                          mb: 1,
+                        }}
+                      >
+                        <Avatar
+                          src={
+                            review?.reviewer?.avatar ||
+                            review?.author?.avatar ||
+                            null
+                          }
+                          sx={{ width: 36, height: 36 }}
+                        >
+                          {reviewerName.charAt(0)}
+                        </Avatar>
+                        <Box sx={{ minWidth: 0 }}>
+                          <Typography
+                            sx={{
+                              color: 'var(--wp-text)',
+                              fontWeight: 600,
+                              fontSize: '0.95rem',
+                            }}
+                          >
+                            {reviewerName}
+                          </Typography>
+                          <Stack direction="row" spacing={1} alignItems="center">
+                            <Rating
+                              size="small"
+                              readOnly
+                              value={reviewRating}
+                              precision={0.5}
+                              sx={{
+                                '& .MuiRating-iconFilled': {
+                                  color: 'var(--wp-gold)',
+                                },
+                                '& .MuiRating-iconEmpty': {
+                                  color: 'rgba(216, 176, 75, 0.35)',
+                                },
+                              }}
+                            />
+                            <Typography
+                              variant="caption"
+                              sx={{ color: 'var(--wp-muted)' }}
+                            >
+                              {reviewRating.toFixed(1)}
+                            </Typography>
+                          </Stack>
+                        </Box>
+                      </Box>
+                      <Typography
+                        sx={{
+                          color: 'var(--wp-muted)',
+                          fontSize: '0.9rem',
+                          lineHeight: 1.5,
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                        }}
+                      >
+                        {review.comment ||
+                          'Great workmanship and clear communication.'}
+                      </Typography>
+                    </Box>
+                  );
+                })
+              ) : (
+                <Typography sx={{ color: 'var(--wp-muted)' }}>
+                  Reviews will appear here once clients share feedback.
+                </Typography>
+              )}
+            </Stack>
+          </Box>
 
-        {/* Portfolio Item Dialog */}
+          <Box
+            className="wp-reveal"
+            style={{ animationDelay: '0.3s' }}
+            sx={{
+              ...baseCardSx,
+              display: { xs: 'none', md: 'block' },
+              background:
+                'linear-gradient(160deg, rgba(20, 20, 24, 0.96) 0%, rgba(14, 14, 18, 0.98) 100%)',
+            }}
+          >
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: { md: 'row' },
+                gap: 2,
+              }}
+            >
+              <Button
+                fullWidth
+                onClick={handlePrimaryCta}
+                sx={primaryCtaSx}
+              >
+                {primaryCtaLabel}
+              </Button>
+              <Button
+                fullWidth
+                onClick={handleSecondaryCta}
+                sx={secondaryCtaSx}
+              >
+                {secondaryCtaLabel}
+              </Button>
+            </Box>
+          </Box>
+        </Box>
+
+        <Box
+          sx={{
+            position: 'fixed',
+            left: 0,
+            right: 0,
+            bottom: withBottomNavSafeArea(0),
+            display: { xs: 'flex', md: 'none' },
+            gap: 1.5,
+            px: 2,
+            py: 1.5,
+            minHeight: STICKY_CTA_HEIGHT,
+            alignItems: 'center',
+            backgroundColor: 'rgba(14, 14, 18, 0.96)',
+            borderTop: '1px solid var(--wp-stroke)',
+            backdropFilter: 'blur(18px)',
+            boxShadow: '0 -12px 24px rgba(0, 0, 0, 0.4)',
+            zIndex: Z_INDEX.stickyCta,
+          }}
+        >
+          <Button
+            onClick={handlePrimaryCta}
+            sx={{
+              ...primaryCtaSx,
+              flex: 1,
+              minWidth: 0,
+              letterSpacing: '0.1em',
+            }}
+          >
+            {primaryCtaLabel}
+          </Button>
+          <Button
+            onClick={handleSecondaryCta}
+            sx={{
+              ...secondaryCtaSx,
+              flex: 1,
+              minWidth: 0,
+              letterSpacing: '0.1em',
+            }}
+          >
+            {secondaryCtaLabel}
+          </Button>
+        </Box>
+
+        <Paper
+          component="nav"
+          elevation={0}
+          sx={{
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            display: { xs: 'flex', md: 'none' },
+            alignItems: 'center',
+            justifyContent: 'space-around',
+            height: BOTTOM_NAV_HEIGHT,
+            boxSizing: 'border-box',
+            px: 2,
+            pb: withSafeAreaBottom(6),
+            backgroundColor: 'rgba(13, 13, 16, 0.96)',
+            borderTop: '1px solid var(--wp-stroke)',
+            backdropFilter: 'blur(18px)',
+            zIndex: Z_INDEX.bottomNav,
+          }}
+        >
+          {bottomNavItems.map((item) => {
+            const isActive = item.active;
+            return (
+              <Box
+                key={item.label}
+                aria-current={isActive ? 'page' : undefined}
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 0.5,
+                  color: isActive ? 'var(--wp-gold)' : 'var(--wp-muted)',
+                  fontSize: '0.72rem',
+                  fontWeight: 600,
+                }}
+              >
+                <Box
+                  sx={{
+                    color: isActive ? 'var(--wp-gold)' : 'var(--wp-muted)',
+                    display: 'flex',
+                  }}
+                >
+                  {item.icon}
+                </Box>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: isActive ? 'var(--wp-gold)' : 'var(--wp-muted)',
+                  }}
+                >
+                  {item.label}
+                </Typography>
+              </Box>
+            );
+          })}
+        </Paper>
+
         <Dialog
           open={portfolioDialogOpen}
           onClose={() => setPortfolioDialogOpen(false)}
           maxWidth="md"
           fullWidth
           aria-labelledby="portfolio-item-dialog-title"
+          PaperProps={{
+            sx: {
+              backgroundColor: '#111114',
+              color: 'var(--wp-text)',
+              borderRadius: 3,
+              border: '1px solid var(--wp-stroke)',
+            },
+          }}
         >
           {selectedPortfolioItem && (
             <>
@@ -3522,16 +1631,23 @@ function WorkerProfile({ workerId: workerIdProp }) {
                     justifyContent: 'space-between',
                   }}
                 >
-                  <Typography variant="h5" fontWeight={600}>
+                  <Typography
+                    variant="h5"
+                    fontWeight={600}
+                    sx={{
+                      fontFamily:
+                        '"Poppins", "Manrope", "Work Sans", sans-serif',
+                    }}
+                  >
                     {selectedPortfolioItem.title}
                   </Typography>
                   <IconButton
                     onClick={() => setPortfolioDialogOpen(false)}
                     aria-label="Close portfolio preview dialog"
                     sx={{
+                      color: 'var(--wp-gold)',
                       '&:focus-visible': {
-                        outline: '3px solid',
-                        outlineColor: 'primary.main',
+                        outline: '3px solid var(--wp-gold)',
                         outlineOffset: '2px',
                       },
                     }}
@@ -3544,59 +1660,44 @@ function WorkerProfile({ workerId: workerIdProp }) {
                 <Box sx={{ mb: 2 }}>
                   {selectedPortfolioPreviewImage &&
                   shouldRenderPortfolioPreviews ? (
-                    <img
+                    <Box
+                      component="img"
                       src={selectedPortfolioPreviewImage}
                       alt={selectedPortfolioItem.title}
-                      style={{ width: '100%', height: 'auto', borderRadius: 8 }}
+                      sx={{ width: '100%', height: 'auto', borderRadius: 2 }}
                     />
                   ) : selectedPortfolioPreviewImage ? (
-                    <Alert severity="info" sx={{ borderRadius: 2 }}>
+                    <Alert
+                      severity="info"
+                      sx={{
+                        borderRadius: 2,
+                        backgroundColor: 'rgba(26, 26, 31, 0.92)',
+                        color: 'var(--wp-text)',
+                        border: '1px solid var(--wp-stroke)',
+                      }}
+                    >
                       Image preview is paused while low-bandwidth mode is
                       active.
                     </Alert>
                   ) : null}
                 </Box>
-                <Typography variant="body1" sx={{ mb: 2 }}>
+                <Typography sx={{ mb: 2, color: 'var(--wp-muted)' }}>
                   {selectedPortfolioItem.description}
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                   {selectedPortfolioItem.technologies?.map((tech, index) => (
-                    <Chip key={`${tech}-${index}`} label={tech} size="small" />
+                    <Chip
+                      key={`${tech}-${index}`}
+                      label={tech}
+                      size="small"
+                      sx={skillChipSx}
+                    />
                   ))}
                 </Box>
               </DialogContent>
             </>
           )}
         </Dialog>
-
-        {/* Floating Action Button for Quick Actions */}
-        {!isOwner && !isActualMobile && (
-          <SpeedDial
-            ariaLabel="Worker Actions"
-            sx={{
-              position: 'fixed',
-              bottom: { xs: BOTTOM_NAV_HEIGHT + 16, md: 16 },
-              right: 16,
-            }}
-            icon={<SpeedDialIcon />}
-          >
-            <SpeedDialAction
-              icon={<MessageIcon />}
-              tooltipTitle="Message Worker"
-              onClick={handleContactWorker}
-            />
-            <SpeedDialAction
-              icon={<BusinessCenterIcon />}
-              tooltipTitle="Hire Now"
-              onClick={handleHireAction}
-            />
-            <SpeedDialAction
-              icon={<ShareIcon />}
-              tooltipTitle="Share Profile"
-              onClick={handleShare}
-            />
-          </SpeedDial>
-        )}
 
         <Snackbar
           open={Boolean(feedbackMessage)}
@@ -3605,7 +1706,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
           message={feedbackMessage}
           anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
         />
-      </Container>
+      </Box>
     </>
   );
 }
