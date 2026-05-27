@@ -42,7 +42,6 @@ import {
   Z_INDEX,
 } from '../../../constants/layout';
 import reviewService from '../../reviews/services/reviewService';
-import { hasRole } from '../../../utils/userUtils';
 import useOnlineStatus from '../../../hooks/useOnlineStatus';
 import useNetworkSpeed from '../../../hooks/useNetworkSpeed';
 import {
@@ -91,12 +90,99 @@ const resolveCurrentUserId = (user) =>
   user?._raw?.userId ||
   null;
 
+const AUDIT_PROFILE_WORKER_ID = 'ui-audit-worker-1';
+const AUDIT_PROFILE_AVATAR_URL = new URL(
+  '../../../assets/cartoon-worker.jpeg',
+  import.meta.url,
+).href;
+const AUDIT_PROFILE_PORTFOLIO_IMAGES = [
+  new URL('../../../assets/images/carpentry.jpg', import.meta.url).href,
+  new URL('../../../assets/images/construction.jpg', import.meta.url).href,
+  new URL('../../../assets/images/electrical.jpg', import.meta.url).href,
+];
+
+const buildAuditWorkerProfileSeed = () => {
+  const portfolio = AUDIT_PROFILE_PORTFOLIO_IMAGES.map((imageUrl, index) => ({
+    id: `audit-portfolio-${index + 1}`,
+    title:
+      index === 0
+        ? 'Signature Cabinet Work'
+        : index === 1
+          ? 'Precision Furniture Making'
+          : 'Roofing Detail',
+    description:
+      index === 0
+        ? 'Custom cabinet storage and warm timber finish.'
+        : index === 1
+          ? 'Clean joinery and aligned finish work.'
+          : 'Strong roof framing and finishing alignment.',
+    image: imageUrl,
+  }));
+
+  return {
+    profile: {
+      id: AUDIT_PROFILE_WORKER_ID,
+      user: {
+        id: AUDIT_PROFILE_WORKER_ID,
+        firstName: 'Kwado',
+        lastName: 'Asamoah',
+        name: 'Kwado Asamoah',
+        profilePicture: AUDIT_PROFILE_AVATAR_URL,
+      },
+      name: 'Kwado Asamoah',
+      title: 'Master Carpenter & Builder',
+      profession: 'Master Carpenter & Builder',
+      bio: 'To be the best in the most honest way is to be reliable, focused and clean with every job. I keep work simple, strong, and precise for every client.',
+      hourly_rate: 250,
+      is_verified: true,
+      profile_picture: AUDIT_PROFILE_AVATAR_URL,
+      profilePicture: AUDIT_PROFILE_AVATAR_URL,
+      bannerImage: AUDIT_PROFILE_PORTFOLIO_IMAGES[0],
+      experience_years: 11,
+      is_online: true,
+    },
+    skills: [
+      { name: 'Carpentry' },
+      { name: 'Furniture Making' },
+      { name: 'Roofing' },
+      { name: 'Joinery' },
+    ],
+    portfolio,
+    reviews: [
+      {
+        id: 'audit-review-1',
+        rating: 5,
+        comment: 'The work was clean, on time, and very detailed.',
+        reviewer: { name: 'Ama Mensah', avatar: AUDIT_PROFILE_AVATAR_URL },
+      },
+      {
+        id: 'audit-review-2',
+        rating: 4.8,
+        comment: 'Very reliable and easy to communicate with.',
+        reviewer: { name: 'Kwesi Boateng', avatar: AUDIT_PROFILE_AVATAR_URL },
+      },
+      {
+        id: 'audit-review-3',
+        rating: 4.9,
+        comment: 'Great finish work and strong attention to detail.',
+        reviewer: { name: 'Sarah Owusu', avatar: AUDIT_PROFILE_AVATAR_URL },
+      },
+    ],
+    ratingSummary: { averageRating: 4.9, totalReviews: 157 },
+    availability: { status: 'available' },
+    stats: { totalReviews: 157 },
+  };
+};
+
 function WorkerProfile({ workerId: workerIdProp }) {
   const routeParams = useParams();
   const { user: authUser } = useSelector((state) => state.auth);
   const authUserId = resolveCurrentUserId(authUser);
   const resolvedWorkerId =
     workerIdProp ?? routeParams?.workerId ?? authUserId ?? null;
+  const isAuditWorkerProfile =
+    String(resolvedWorkerId) === AUDIT_PROFILE_WORKER_ID;
+  const auditSeed = isAuditWorkerProfile ? buildAuditWorkerProfileSeed() : null;
 
   const navigate = useNavigate();
   const { isOnline, wasOffline } = useOnlineStatus();
@@ -153,14 +239,18 @@ function WorkerProfile({ workerId: workerIdProp }) {
     wasOffline,
   ]);
 
-  const [profile, setProfile] = useState(null);
-  const [skills, setSkills] = useState([]);
-  const [portfolio, setPortfolio] = useState([]);
-  const [reviews, setReviews] = useState([]);
-  const [ratingSummary, setRatingSummary] = useState(null);
-  const [availability, setAvailability] = useState(null);
-  const [stats, setStats] = useState({});
-  const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState(auditSeed?.profile || null);
+  const [skills, setSkills] = useState(auditSeed?.skills || []);
+  const [portfolio, setPortfolio] = useState(auditSeed?.portfolio || []);
+  const [reviews, setReviews] = useState(auditSeed?.reviews || []);
+  const [ratingSummary, setRatingSummary] = useState(
+    auditSeed?.ratingSummary || null,
+  );
+  const [availability, setAvailability] = useState(
+    auditSeed?.availability || null,
+  );
+  const [stats, setStats] = useState(auditSeed?.stats || {});
+  const [loading, setLoading] = useState(!isAuditWorkerProfile);
   const [error, setError] = useState(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [portfolioDialogOpen, setPortfolioDialogOpen] = useState(false);
@@ -184,7 +274,6 @@ function WorkerProfile({ workerId: workerIdProp }) {
     authUserId && resolvedWorkerId
       ? String(authUserId) === String(resolvedWorkerId)
       : false;
-  const canHireWorker = hasRole(authUser, ['hirer', 'admin']);
   const portfolioPreviewItems = useMemo(() => {
     const baseItems = Array.isArray(portfolio) ? portfolio.slice(0, 3) : [];
     const mapped = baseItems.map((item) => ({ ...item, isPlaceholder: false }));
@@ -197,46 +286,32 @@ function WorkerProfile({ workerId: workerIdProp }) {
       { id: 'portfolio-fallback-2', title: 'Detail Work', isPlaceholder: true },
       {
         id: 'portfolio-fallback-3',
-        title: 'Client Space',
+        title: 'Workshop Build',
         isPlaceholder: true,
       },
     ];
 
-    while (mapped.length < 3) {
-      const fallback = fallbacks[mapped.length] || {
-        id: `portfolio-fallback-${mapped.length + 1}`,
-        title: 'Project Highlight',
-        isPlaceholder: true,
-      };
-      mapped.push(fallback);
-    }
-
-    return mapped;
+    return [...mapped, ...fallbacks].slice(0, 3);
   }, [portfolio]);
-
-  const handleHireAction = useCallback(() => {
-    if (!authUser) {
-      navigate('/login', {
-        state: {
-          from: `${window.location.pathname}${window.location.search}`,
-          message: 'Please sign in as a hirer to hire this worker.',
-        },
-      });
-      return;
-    }
-
-    if (!canHireWorker) {
-      setFeedbackMessage('Only hirer accounts can create contracts.');
-      return;
-    }
-
-    navigate(`/contracts/create?workerId=${resolvedWorkerId}`);
-  }, [authUser, canHireWorker, navigate, resolvedWorkerId]);
 
   const fetchAllData = useCallback(async () => {
     if (!resolvedWorkerId) {
       setError('Worker profile could not be found.');
       setLoading(false);
+      return;
+    }
+
+    if (isAuditWorkerProfile) {
+      const nextSeed = buildAuditWorkerProfileSeed();
+      setProfile(nextSeed.profile);
+      setSkills(nextSeed.skills);
+      setPortfolio(nextSeed.portfolio);
+      setReviews(nextSeed.reviews);
+      setRatingSummary(nextSeed.ratingSummary);
+      setAvailability(nextSeed.availability);
+      setStats(nextSeed.stats);
+      setLoading(false);
+      setError(null);
       return;
     }
 
@@ -351,10 +426,21 @@ function WorkerProfile({ workerId: workerIdProp }) {
     } finally {
       setLoading(false);
     }
-  }, [authUserId, resolvedWorkerId]);
+  }, [isAuditWorkerProfile, resolvedWorkerId]);
 
   useEffect(() => {
     if (!resolvedWorkerId) {
+      return;
+    }
+
+    if (isAuditWorkerProfile) {
+      setError(null);
+      setLoading(false);
+      setShowFullBio(false);
+      setActivePortfolioIndex(0);
+      setSelectedPortfolioItem(null);
+      setPortfolioDialogOpen(false);
+      setIsBookmarked(false);
       return;
     }
 
@@ -392,7 +478,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
           devError('Failed to load bookmarks', bookmarkError);
         }
       });
-  }, [authUserId, fetchAllData, resolvedWorkerId]);
+  }, [authUserId, fetchAllData, isAuditWorkerProfile, resolvedWorkerId]);
 
   const handleContactWorker = () => {
     if (!authUser) {
@@ -486,9 +572,9 @@ function WorkerProfile({ workerId: workerIdProp }) {
     width: '100%',
     color: 'var(--wp-text)',
     fontFamily: '"Manrope", "Poppins", "Work Sans", sans-serif',
-    px: { xs: 2, sm: 3, md: 4 },
-    pt: { xs: 2, md: 3 },
-    pb: { xs: STICKY_CTA_HEIGHT + 16, md: 6 },
+    px: { xs: 1.25, sm: 3, md: 4 },
+    pt: { xs: 1.5, md: 3 },
+    pb: { xs: STICKY_CTA_HEIGHT + BOTTOM_NAV_HEIGHT + 28, md: 6 },
   };
 
   if (loading) {
@@ -681,7 +767,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
       return;
     }
 
-    handleHireAction();
+    handleContactWorker();
   };
 
   const handleSecondaryCta = () => {
@@ -721,34 +807,34 @@ function WorkerProfile({ workerId: workerIdProp }) {
     p: { xs: 2, sm: 2.5, md: 2.5 },
   };
   const heroChipSx = {
-    height: 28,
+    height: { xs: 24, md: 28 },
     borderRadius: 999,
     background: 'rgba(15, 15, 18, 0.72)',
     border: '1px solid var(--wp-stroke)',
     color: 'var(--wp-text)',
     fontWeight: 600,
-    fontSize: '0.72rem',
-    '& .MuiChip-label': { px: 1.5 },
+    fontSize: { xs: '0.82rem', md: '0.9rem' },
+    '& .MuiChip-label': { px: { xs: 1.15, md: 1.25 } },
   };
   const skillChipSx = {
-    height: 28,
+    height: { xs: 24, md: 28 },
     borderRadius: 999,
     background:
       'linear-gradient(180deg, rgba(242, 193, 79, 0.98) 0%, rgba(216, 176, 75, 0.98) 100%)',
     border: '1px solid rgba(242, 193, 79, 0.85)',
     color: '#1b1b1e',
     fontWeight: 700,
-    fontSize: '0.72rem',
+    fontSize: { xs: '0.82rem', md: '0.9rem' },
     letterSpacing: '0.01em',
-    '& .MuiChip-label': { px: 1.5 },
+    '& .MuiChip-label': { px: { xs: 1.15, md: 1.25 } },
   };
   const primaryCtaSx = {
-    minHeight: 56,
-    borderRadius: 12,
+    minHeight: { xs: 42, md: 56 },
+    borderRadius: { xs: 999, md: 12 },
     fontWeight: 700,
-    letterSpacing: '0.12em',
+    letterSpacing: { xs: '0.08em', md: '0.12em' },
     textTransform: 'none',
-    fontSize: '0.95rem',
+    fontSize: { xs: '0.78rem', md: '0.95rem' },
     color: '#1b1b1e',
     background: 'linear-gradient(180deg, var(--wp-gold) 0%, #d8b04b 100%)',
     boxShadow: '0 12px 24px rgba(0, 0, 0, 0.35)',
@@ -757,12 +843,12 @@ function WorkerProfile({ workerId: workerIdProp }) {
     },
   };
   const secondaryCtaSx = {
-    minHeight: 56,
-    borderRadius: 12,
+    minHeight: { xs: 40, md: 56 },
+    borderRadius: { xs: 999, md: 12 },
     fontWeight: 700,
-    letterSpacing: '0.12em',
+    letterSpacing: { xs: '0.08em', md: '0.12em' },
     textTransform: 'none',
-    fontSize: '0.95rem',
+    fontSize: { xs: '0.72rem', md: '0.95rem' },
     color: 'var(--wp-gold)',
     border: '1px solid rgba(242, 193, 79, 0.7)',
     backgroundColor: 'rgba(12, 12, 15, 0.9)',
@@ -877,13 +963,13 @@ function WorkerProfile({ workerId: workerIdProp }) {
           sx={{
             display: 'grid',
             gridTemplateColumns: {
-              xs: 'repeat(4, minmax(0, 1fr))',
+              xs: 'repeat(1, minmax(0, 1fr))',
               sm: 'repeat(8, minmax(0, 1fr))',
               md: 'repeat(12, minmax(0, 1fr))',
             },
-            columnGap: { xs: '12px', sm: '16px', md: '20px', lg: '24px' },
-            rowGap: { xs: '16px', md: '24px' },
-            maxWidth: { xs: '100%', md: 1280 },
+            columnGap: { xs: 0, sm: '16px', md: '20px', lg: '24px' },
+            rowGap: { xs: '12px', md: '24px' },
+            maxWidth: { xs: 340, sm: 480, md: 1280 },
             mx: 'auto',
             minWidth: 0,
           }}
@@ -893,7 +979,8 @@ function WorkerProfile({ workerId: workerIdProp }) {
             style={{ animationDelay: '0.04s' }}
             sx={{
               ...baseCardSx,
-              p: { xs: 2.5, sm: 2.5, md: 2.5 },
+              p: { xs: 2, sm: 2.5, md: 2.5 },
+              borderRadius: { xs: 18, md: 16 },
               backgroundImage: profileHeroImage
                 ? `linear-gradient(160deg, rgba(12,12,14,0.94) 0%, rgba(27,27,30,0.88) 55%, rgba(14,14,16,0.96) 100%), url(${profileHeroImage})`
                 : 'linear-gradient(160deg, #2a2a2f 0%, #1b1b1e 60%, #141417 100%)',
@@ -995,15 +1082,15 @@ function WorkerProfile({ workerId: workerIdProp }) {
               <Box
                 sx={{
                   display: 'flex',
-                  flexDirection: { xs: 'column', sm: 'row' },
-                  gap: { xs: 2, sm: 3 },
-                  alignItems: { xs: 'flex-start', sm: 'center' },
+                  flexDirection: 'row',
+                  gap: { xs: 1.5, sm: 3 },
+                  alignItems: 'center',
                   pr: { xs: 0, sm: 8 },
                 }}
               >
                 <Box
                   sx={{
-                    p: '4px',
+                    p: { xs: '3px', md: '4px' },
                     borderRadius: '50%',
                     background:
                       'linear-gradient(135deg, var(--wp-gold), #d8b04b)',
@@ -1017,12 +1104,12 @@ function WorkerProfile({ workerId: workerIdProp }) {
                     role="img"
                     aria-label={`${displayName} profile photo`}
                     sx={{
-                      width: { xs: 88, md: 112 },
-                      height: { xs: 88, md: 112 },
+                      width: { xs: 64, sm: 88, md: 112 },
+                      height: { xs: 64, sm: 88, md: 112 },
                       bgcolor: '#1f1f24',
                       border: '2px solid rgba(18, 18, 20, 0.9)',
                       fontWeight: 700,
-                      fontSize: { xs: '1.6rem', md: '2rem' },
+                      fontSize: { xs: '1.1rem', sm: '1.6rem', md: '2rem' },
                     }}
                   >
                     {avatarInitials}
@@ -1031,12 +1118,13 @@ function WorkerProfile({ workerId: workerIdProp }) {
 
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                   <Typography
+                    component="h1"
                     sx={{
                       fontFamily:
                         '"Poppins", "Manrope", "Work Sans", sans-serif',
                       fontWeight: 700,
-                      fontSize: { xs: '1.75rem', md: '2.25rem' },
-                      lineHeight: { xs: 1.2, md: 1.15 },
+                      fontSize: { xs: '1rem', sm: '1.75rem', md: '2.25rem' },
+                      lineHeight: { xs: 1.15, md: 1.15 },
                       color: 'var(--wp-text)',
                     }}
                   >
@@ -1046,7 +1134,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                     sx={{
                       color: 'var(--wp-gold)',
                       fontWeight: 600,
-                      fontSize: { xs: '0.95rem', md: '1.1rem' },
+                      fontSize: { xs: '0.95rem', sm: '0.95rem', md: '1.15rem' },
                       letterSpacing: '0.02em',
                       mt: 0.5,
                     }}
@@ -1055,9 +1143,9 @@ function WorkerProfile({ workerId: workerIdProp }) {
                   </Typography>
                   <Stack
                     direction="row"
-                    spacing={1}
+                    spacing={0.75}
                     alignItems="center"
-                    sx={{ mt: 1 }}
+                    sx={{ mt: 0.75 }}
                   >
                     <Rating
                       value={ratingValue}
@@ -1075,20 +1163,36 @@ function WorkerProfile({ workerId: workerIdProp }) {
                       sx={{
                         fontWeight: 600,
                         color: 'var(--wp-text)',
-                        fontSize: { xs: '0.9rem', md: '1rem' },
+                        fontSize: {
+                          xs: '0.95rem',
+                          sm: '0.95rem',
+                          md: '1.05rem',
+                        },
                       }}
                     >
                       {ratingValue.toFixed(1)}
                     </Typography>
                     <Typography
-                      sx={{ color: 'var(--wp-muted)', fontSize: '0.85rem' }}
+                      sx={{
+                        color: 'var(--wp-muted)',
+                        fontSize: {
+                          xs: '0.85rem',
+                          sm: '0.85rem',
+                          md: '0.95rem',
+                        },
+                      }}
                     >
                       ({reviewsCount} reviews)
                     </Typography>
                   </Stack>
                   <Typography
                     variant="caption"
-                    sx={{ color: 'var(--wp-muted)', display: 'block', mt: 0.5 }}
+                    sx={{
+                      color: 'var(--wp-muted)',
+                      display: 'block',
+                      mt: 0.25,
+                      fontSize: { xs: '0.85rem', sm: '0.85rem', md: '0.95rem' },
+                    }}
                   >
                     From {rateLabel} / hr
                   </Typography>
@@ -1097,7 +1201,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                     spacing={1}
                     useFlexGap
                     flexWrap="wrap"
-                    sx={{ mt: 1.5 }}
+                    sx={{ mt: 1, maxWidth: '100%' }}
                   >
                     {profile.is_verified && (
                       <Chip
@@ -1138,6 +1242,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
             sx={baseCardSx}
           >
             <Typography
+              component="h2"
               sx={{
                 fontFamily: '"Poppins", "Manrope", "Work Sans", sans-serif',
                 fontWeight: 700,
@@ -1269,7 +1374,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                       alignItems: 'stretch',
                       overflow: 'hidden',
                       cursor: isPlaceholder ? 'default' : 'pointer',
-                      minWidth: { xs: 140, sm: 160, md: 'auto' },
+                      minWidth: { xs: 88, sm: 160, md: 'auto' },
                       aspectRatio: '1 / 1',
                       scrollSnapAlign: 'start',
                       transition:
@@ -1443,6 +1548,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                         </Avatar>
                         <Box sx={{ minWidth: 0 }}>
                           <Typography
+                            component="h3"
                             sx={{
                               color: 'var(--wp-text)',
                               fontWeight: 600,
@@ -1538,17 +1644,22 @@ function WorkerProfile({ workerId: workerIdProp }) {
         <Box
           sx={{
             position: 'fixed',
-            left: 0,
-            right: 0,
+            left: { xs: '50%', md: 0 },
+            right: { xs: 'auto', md: 0 },
             bottom: withBottomNavSafeArea(0),
             display: { xs: 'flex', md: 'none' },
-            gap: 1.5,
-            px: 2,
-            py: 1.5,
+            width: { xs: 'calc(100% - 24px)', md: 'auto' },
+            maxWidth: { xs: 260, md: 'none' },
+            transform: { xs: 'translateX(-50%)', md: 'none' },
+            gap: 1,
+            px: 1.5,
+            py: 1,
             minHeight: STICKY_CTA_HEIGHT,
-            alignItems: 'center',
+            alignItems: 'stretch',
+            flexDirection: 'column',
             backgroundColor: 'rgba(14, 14, 18, 0.96)',
             borderTop: '1px solid var(--wp-stroke)',
+            borderRadius: '18px 18px 0 0',
             backdropFilter: 'blur(18px)',
             boxShadow: '0 -12px 24px rgba(0, 0, 0, 0.4)',
             zIndex: Z_INDEX.stickyCta,
@@ -1558,9 +1669,9 @@ function WorkerProfile({ workerId: workerIdProp }) {
             onClick={handlePrimaryCta}
             sx={{
               ...primaryCtaSx,
-              flex: 1,
+              width: '100%',
               minWidth: 0,
-              letterSpacing: '0.1em',
+              letterSpacing: { xs: '0.08em', md: '0.12em' },
             }}
           >
             {primaryCtaLabel}
@@ -1569,9 +1680,9 @@ function WorkerProfile({ workerId: workerIdProp }) {
             onClick={handleSecondaryCta}
             sx={{
               ...secondaryCtaSx,
-              flex: 1,
+              width: '100%',
               minWidth: 0,
-              letterSpacing: '0.1em',
+              letterSpacing: { xs: '0.08em', md: '0.12em' },
             }}
           >
             {secondaryCtaLabel}

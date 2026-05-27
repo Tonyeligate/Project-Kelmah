@@ -132,6 +132,9 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
     currentPath === '/mfa/setup' ||
     currentPath.startsWith('/reset-password') ||
     currentPath.startsWith('/verify-email');
+  const isStandalonePublicProfilePage =
+    currentPath.startsWith('/workers/') ||
+    currentPath.startsWith('/worker-profile');
   // 🎯 ENHANCED: Comprehensive dashboard page detection
   // FIX: Added missing paths that should render with dashboard sidebar layout
   const isMessagesPage =
@@ -387,7 +390,7 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
       }}
     >
       {skipToContentLink}
-      {!isAuthPage && (
+      {!isAuthPage && !isStandalonePublicProfilePage && (
         <Box component="header">
           <Header
             toggleTheme={resolvedToggleTheme}
@@ -407,17 +410,31 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
             minWidth: 0,
             // Fixed header on mobile (48px) needs padding-top so content isn't hidden
             // Desktop header is static so no compensation needed (except standard spacing)
-            pt: isAuthPage
+            pt: isStandalonePublicProfilePage
               ? 0
-              : isHomePage
+              : isAuthPage
                 ? 0
-                : {
-                    xs: `calc(${withSafeAreaTop(HEADER_HEIGHT_MOBILE + 16)} + var(--kelmah-network-banner-offset, 0px))`,
-                    sm: `calc(${withSafeAreaTop(HEADER_HEIGHT_MOBILE + 20)} + var(--kelmah-network-banner-offset, 0px))`,
-                    md: 3,
-                  },
-            pb: isAuthPage ? 0 : isHomePage ? 0 : { xs: 2.5, sm: 3, md: 3 },
-            px: isAuthPage ? 0 : isHomePage ? 0 : { xs: 1.5, sm: 2.5, md: 3 },
+                : isHomePage
+                  ? 0
+                  : {
+                      xs: `calc(${withSafeAreaTop(HEADER_HEIGHT_MOBILE + 16)} + var(--kelmah-network-banner-offset, 0px))`,
+                      sm: `calc(${withSafeAreaTop(HEADER_HEIGHT_MOBILE + 20)} + var(--kelmah-network-banner-offset, 0px))`,
+                      md: 3,
+                    },
+            pb: isStandalonePublicProfilePage
+              ? 0
+              : isAuthPage
+                ? 0
+                : isHomePage
+                  ? 0
+                  : { xs: 2.5, sm: 3, md: 3 },
+            px: isStandalonePublicProfilePage
+              ? 0
+              : isAuthPage
+                ? 0
+                : isHomePage
+                  ? 0
+                  : { xs: 1.5, sm: 2.5, md: 3 },
             overflowX: 'hidden',
             overflowY: 'visible',
             '@media (min-width: 1px)': {
@@ -430,7 +447,7 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
         </Box>
       </Fade>
       {/* Footer hidden on mobile — bottom nav replaces it (Binance pattern) */}
-      {!isMobile && !isAuthPage && <Footer />}
+      {!isMobile && !isAuthPage && !isStandalonePublicProfilePage && <Footer />}
     </Box>
   );
 };

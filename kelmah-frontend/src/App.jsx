@@ -14,6 +14,7 @@ import {
   IconButton,
   Skeleton,
 } from '@mui/material';
+import { useLocation } from 'react-router-dom';
 import CloseIcon from '@mui/icons-material/Close';
 import { KelmahThemeProvider } from './theme/ThemeProvider';
 import { AppRoutes } from './routes/config';
@@ -75,6 +76,7 @@ const formatRetryDelay = (retryAfterMs) => {
 // Main App Component
 const App = () => {
   const dispatch = useDispatch();
+  const location = useLocation();
   const { isHealthy } = useApiHealth();
   const initialized = useRef(false);
   const [servicesWakingUp, setServicesWakingUp] = useState(false);
@@ -83,6 +85,9 @@ const App = () => {
   const [pwaInstallAvailable, setPwaInstallAvailable] = useState(false);
   const [apiRecoveryNotice, setApiRecoveryNotice] = useState(null);
   const [backendWarningOpen, setBackendWarningOpen] = useState(false);
+  const isStandalonePublicProfileRoute =
+    location.pathname.startsWith('/workers/') ||
+    location.pathname.startsWith('/worker-profile');
   // Keep layout offsets disabled so status notices do not push page content.
   const hasTopNetworkBanner = false;
 
@@ -468,7 +473,12 @@ const App = () => {
         </Box>
         <OfflineBanner />
         <Snackbar
-          open={!isHealthy && !servicesWakingUp && backendWarningOpen}
+          open={
+            !isStandalonePublicProfileRoute &&
+            !isHealthy &&
+            !servicesWakingUp &&
+            backendWarningOpen
+          }
           onClose={() => setBackendWarningOpen(false)}
           anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
           sx={{
