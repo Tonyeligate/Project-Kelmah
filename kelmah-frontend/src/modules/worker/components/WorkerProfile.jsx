@@ -185,6 +185,34 @@ function WorkerProfile({ workerId: workerIdProp }) {
       ? String(authUserId) === String(resolvedWorkerId)
       : false;
   const canHireWorker = hasRole(authUser, ['hirer', 'admin']);
+  const portfolioPreviewItems = useMemo(() => {
+    const baseItems = Array.isArray(portfolio) ? portfolio.slice(0, 3) : [];
+    const mapped = baseItems.map((item) => ({ ...item, isPlaceholder: false }));
+    const fallbacks = [
+      {
+        id: 'portfolio-fallback-1',
+        title: 'Signature Finish',
+        isPlaceholder: true,
+      },
+      { id: 'portfolio-fallback-2', title: 'Detail Work', isPlaceholder: true },
+      {
+        id: 'portfolio-fallback-3',
+        title: 'Client Space',
+        isPlaceholder: true,
+      },
+    ];
+
+    while (mapped.length < 3) {
+      const fallback = fallbacks[mapped.length] || {
+        id: `portfolio-fallback-${mapped.length + 1}`,
+        title: 'Project Highlight',
+        isPlaceholder: true,
+      };
+      mapped.push(fallback);
+    }
+
+    return mapped;
+  }, [portfolio]);
 
   const handleHireAction = useCallback(() => {
     if (!authUser) {
@@ -516,7 +544,10 @@ function WorkerProfile({ workerId: workerIdProp }) {
                       variant="rectangular"
                       width={88}
                       height={28}
-                      sx={{ borderRadius: 999, bgcolor: 'rgba(255, 255, 255, 0.08)' }}
+                      sx={{
+                        borderRadius: 999,
+                        bgcolor: 'rgba(255, 255, 255, 0.08)',
+                      }}
                     />
                   ))}
                 </Box>
@@ -639,35 +670,6 @@ function WorkerProfile({ workerId: workerIdProp }) {
         ]
   ).slice(0, 6);
 
-  const portfolioPreviewItems = useMemo(() => {
-    const baseItems = Array.isArray(portfolio) ? portfolio.slice(0, 3) : [];
-    const mapped = baseItems.map((item) => ({ ...item, isPlaceholder: false }));
-    const fallbacks = [
-      {
-        id: 'portfolio-fallback-1',
-        title: 'Signature Finish',
-        isPlaceholder: true,
-      },
-      { id: 'portfolio-fallback-2', title: 'Detail Work', isPlaceholder: true },
-      {
-        id: 'portfolio-fallback-3',
-        title: 'Client Space',
-        isPlaceholder: true,
-      },
-    ];
-
-    while (mapped.length < 3) {
-      const fallback = fallbacks[mapped.length] || {
-        id: `portfolio-fallback-${mapped.length + 1}`,
-        title: 'Project Highlight',
-        isPlaceholder: true,
-      };
-      mapped.push(fallback);
-    }
-
-    return mapped;
-  }, [portfolio]);
-
   const reviewItems = reviews.slice(0, 3);
 
   const primaryCtaLabel = isOwner ? 'EDIT PROFILE' : 'HIRE NOW';
@@ -748,12 +750,10 @@ function WorkerProfile({ workerId: workerIdProp }) {
     textTransform: 'none',
     fontSize: '0.95rem',
     color: '#1b1b1e',
-    background:
-      'linear-gradient(180deg, var(--wp-gold) 0%, #d8b04b 100%)',
+    background: 'linear-gradient(180deg, var(--wp-gold) 0%, #d8b04b 100%)',
     boxShadow: '0 12px 24px rgba(0, 0, 0, 0.35)',
     '&:hover': {
-      background:
-        'linear-gradient(180deg, #f7d277 0%, var(--wp-gold) 100%)',
+      background: 'linear-gradient(180deg, #f7d277 0%, var(--wp-gold) 100%)',
     },
   };
   const secondaryCtaSx = {
@@ -925,7 +925,9 @@ function WorkerProfile({ workerId: workerIdProp }) {
               >
                 <IconButton
                   onClick={handleBookmarkToggle}
-                  aria-label={isBookmarked ? 'Remove from saved' : 'Save worker'}
+                  aria-label={
+                    isBookmarked ? 'Remove from saved' : 'Save worker'
+                  }
                   sx={{
                     width: 40,
                     height: 40,
@@ -1030,7 +1032,8 @@ function WorkerProfile({ workerId: workerIdProp }) {
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                   <Typography
                     sx={{
-                      fontFamily: '"Poppins", "Manrope", "Work Sans", sans-serif',
+                      fontFamily:
+                        '"Poppins", "Manrope", "Work Sans", sans-serif',
                       fontWeight: 700,
                       fontSize: { xs: '1.75rem', md: '2.25rem' },
                       lineHeight: { xs: 1.2, md: 1.15 },
@@ -1050,7 +1053,12 @@ function WorkerProfile({ workerId: workerIdProp }) {
                   >
                     {roleLabel}
                   </Typography>
-                  <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1 }}>
+                  <Stack
+                    direction="row"
+                    spacing={1}
+                    alignItems="center"
+                    sx={{ mt: 1 }}
+                  >
                     <Rating
                       value={ratingValue}
                       precision={0.1}
@@ -1072,7 +1080,9 @@ function WorkerProfile({ workerId: workerIdProp }) {
                     >
                       {ratingValue.toFixed(1)}
                     </Typography>
-                    <Typography sx={{ color: 'var(--wp-muted)', fontSize: '0.85rem' }}>
+                    <Typography
+                      sx={{ color: 'var(--wp-muted)', fontSize: '0.85rem' }}
+                    >
                       ({reviewsCount} reviews)
                     </Typography>
                   </Stack>
@@ -1082,7 +1092,13 @@ function WorkerProfile({ workerId: workerIdProp }) {
                   >
                     From {rateLabel} / hr
                   </Typography>
-                  <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ mt: 1.5 }}>
+                  <Stack
+                    direction="row"
+                    spacing={1}
+                    useFlexGap
+                    flexWrap="wrap"
+                    sx={{ mt: 1.5 }}
+                  >
                     {profile.is_verified && (
                       <Chip
                         icon={<VerifiedIcon sx={{ color: 'var(--wp-gold)' }} />}
@@ -1095,10 +1111,19 @@ function WorkerProfile({ workerId: workerIdProp }) {
                 </Box>
               </Box>
 
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: { xs: 2, sm: 2.5 } }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: 1,
+                  mt: { xs: 2, sm: 2.5 },
+                }}
+              >
                 {skillItems.map((skill, index) => (
                   <Chip
-                    key={skill.id || skill._id || skill.name || `skill-${index}`}
+                    key={
+                      skill.id || skill._id || skill.name || `skill-${index}`
+                    }
                     label={skill.name}
                     sx={skillChipSx}
                   />
@@ -1133,7 +1158,9 @@ function WorkerProfile({ workerId: workerIdProp }) {
               {aboutPreview}
             </Typography>
             {canTruncate && (
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 1.5 }}>
+              <Box
+                sx={{ display: 'flex', justifyContent: 'flex-end', mt: 1.5 }}
+              >
                 <Button
                   size="small"
                   onClick={() => setShowFullBio((prev) => !prev)}
@@ -1212,11 +1239,14 @@ function WorkerProfile({ workerId: workerIdProp }) {
             >
               {portfolioPreviewItems.map((item, index) => {
                 const previewImage = getPortfolioPreviewImage(item);
-                const canShowImage = shouldRenderPortfolioPreviews && previewImage;
+                const canShowImage =
+                  shouldRenderPortfolioPreviews && previewImage;
                 const isPlaceholder = item.isPlaceholder;
                 return (
                   <Box
-                    key={item.id || item._id || item.title || `portfolio-${index}`}
+                    key={
+                      item.id || item._id || item.title || `portfolio-${index}`
+                    }
                     component="button"
                     type="button"
                     disabled={isPlaceholder}
@@ -1421,7 +1451,11 @@ function WorkerProfile({ workerId: workerIdProp }) {
                           >
                             {reviewerName}
                           </Typography>
-                          <Stack direction="row" spacing={1} alignItems="center">
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            alignItems="center"
+                          >
                             <Rating
                               size="small"
                               readOnly
@@ -1487,11 +1521,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                 gap: 2,
               }}
             >
-              <Button
-                fullWidth
-                onClick={handlePrimaryCta}
-                sx={primaryCtaSx}
-              >
+              <Button fullWidth onClick={handlePrimaryCta} sx={primaryCtaSx}>
                 {primaryCtaLabel}
               </Button>
               <Button
