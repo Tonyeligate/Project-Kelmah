@@ -70,7 +70,8 @@ const STEP_META = [
   {
     label: 'Profile',
     title: 'Set up your profile',
-    description: 'Add the details we need to create a trustworthy account.',
+    description:
+      'Add the core details we need now. You can complete company or trade details later.',
   },
   {
     label: 'Security',
@@ -651,8 +652,8 @@ const Register = () => {
         variant="body2"
         sx={{ color: formPanelMuted, lineHeight: 1.7 }}
       >
-        These details help Kelmah set up your account correctly and improve
-        matching quality after sign-up.
+        These core details help Kelmah set up your account correctly. Company
+        and trade details can be added later from your profile.
       </Typography>
 
       <Grid container spacing={2}>
@@ -742,14 +743,16 @@ const Register = () => {
         {role === 'hirer' && (
           <Grid item xs={12}>
             <TextField
-              label="Company or organization"
+              label="Company or organization (optional)"
               fullWidth
-              required
               placeholder="e.g. Asante Construction"
               autoComplete="organization"
               {...formRegister('companyName')}
               error={Boolean(errors.companyName)}
-              helperText={errors.companyName?.message}
+              helperText={
+                errors.companyName?.message ||
+                'Optional now. You can add this later.'
+              }
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -793,11 +796,14 @@ const Register = () => {
                     renderInput={(params) => (
                       <TextField
                         {...params}
-                        label="Trades or skills"
+                        label="Trades or skills (optional)"
                         placeholder="Add your primary skills"
                         autoComplete="off"
                         error={Boolean(errors.trades)}
-                        helperText={errors.trades?.message}
+                        helperText={
+                          errors.trades?.message ||
+                          'Optional now. Add your main skills later.'
+                        }
                         sx={fieldSx}
                       />
                     )}
@@ -807,14 +813,17 @@ const Register = () => {
             </Grid>
             <Grid item xs={12} md={6}>
               <TextField
-                label="Years of experience"
+                label="Years of experience (optional)"
                 fullWidth
                 type="number"
                 inputProps={{ min: 0, max: 60, inputMode: 'numeric' }}
                 placeholder="How long have you worked in this trade?"
                 {...formRegister('experienceYears')}
                 error={Boolean(errors.experienceYears)}
-                helperText={errors.experienceYears?.message}
+                helperText={
+                  errors.experienceYears?.message ||
+                  'Optional now. You can add this later.'
+                }
                 sx={fieldSx}
               />
             </Grid>
@@ -1187,8 +1196,7 @@ const Register = () => {
           sx={{ color: formPanelMuted, lineHeight: 1.7 }}
         >
           After sign-up, we will send a verification email and take you to sign
-          in. Completing your profile well improves trust and matching quality
-          across the platform.
+          in. You can finish company and trade details later from your profile.
         </Typography>
       </Paper>
     </Stack>

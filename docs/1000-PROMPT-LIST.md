@@ -10,8 +10,6 @@
 The strongest remaining prompts to tackle next, based on the current codebase and the work already completed:
 
 - 101. Redesign the mobile navbar so users can reach search, post job, and chat in one tap.
-- 181. Design a faster onboarding flow for new hirers.
-- 186. Redesign the sign-up form to require only essential fields first.
 - 364. Add a "Set Budget Range" slider during job creation.
 - 391. Add a "Preview Job Post" button before publishing.
 - 503. Add a "Request Quote" form with standardized fields.

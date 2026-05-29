@@ -2,7 +2,6 @@
  * Professional Mobile Registration Component
  * Clean, step-based design optimized for mobile devices
  */
-
 import { useState, useEffect } from 'react';
 import {
   Box,
@@ -169,12 +168,6 @@ const MobileRegister = () => {
         newErrors.phone = 'Enter your phone number';
       } else if (!isValidGhanaPhone(formData.phone)) {
         newErrors.phone = 'Use a valid Ghana number (e.g. 024 XXX XXXX)';
-      }
-      if (formData.role === 'hirer' && !formData.companyName.trim()) {
-        newErrors.companyName = 'Enter your company or business name';
-      }
-      if (formData.role === 'worker' && formData.trades.length === 0) {
-        newErrors.trades = 'Pick at least one trade you do';
       }
     }
 
@@ -449,6 +442,10 @@ const MobileRegister = () => {
       case 2:
         return (
           <Stack spacing={3.5}>
+            <Alert severity="info" sx={{ borderRadius: 2 }}>
+              Only your core contact details are required now. Company and trade
+              details can be added later.
+            </Alert>
             <Box
               sx={{
                 display: 'grid',
@@ -528,13 +525,15 @@ const MobileRegister = () => {
             {formData.role === 'hirer' && (
               <TextField
                 fullWidth
-                label="Company Name"
+                label="Company Name (optional)"
                 placeholder="e.g. Asante Construction"
                 autoComplete="organization"
                 value={formData.companyName}
                 onChange={handleChange('companyName')}
                 error={Boolean(errors.companyName)}
-                helperText={errors.companyName || undefined}
+                helperText={
+                  errors.companyName || 'Optional now. You can add it later.'
+                }
                 size="small"
                 InputLabelProps={inputLabelProps}
                 InputProps={{
@@ -581,9 +580,12 @@ const MobileRegister = () => {
                 renderInput={(params) => (
                   <TextField
                     {...params}
-                    label="Your Skills/Trades"
+                    label="Your Skills/Trades (optional)"
                     error={Boolean(errors.trades)}
-                    helperText={errors.trades || undefined}
+                    helperText={
+                      errors.trades ||
+                      'Optional now. You can add your main skills later.'
+                    }
                     autoComplete="off"
                     size="small"
                     InputLabelProps={inputLabelProps}
@@ -880,7 +882,7 @@ const MobileRegister = () => {
                   Company
                 </Typography>
                 <Typography sx={{ color: 'text.primary', fontWeight: 600 }}>
-                  {formData.companyName || '-'}
+                  {formData.companyName || 'Not added yet'}
                 </Typography>
               </Box>
             )}
@@ -924,7 +926,7 @@ const MobileRegister = () => {
                     <Typography
                       sx={{ color: 'text.secondary', fontSize: '13px' }}
                     >
-                      No trade selected yet
+                      Not added yet
                     </Typography>
                   )}
                 </Stack>
@@ -1000,7 +1002,7 @@ const MobileRegister = () => {
           color="text.secondary"
           sx={{ display: 'block', mt: 0.75, lineHeight: 1.4 }}
         >
-          1) Pick role 2) Add real details 3) Set password 4) Review and create
+          1) Pick role 2) Add core details 3) Set password 4) Review and create
           account.
         </Typography>
       </Box>

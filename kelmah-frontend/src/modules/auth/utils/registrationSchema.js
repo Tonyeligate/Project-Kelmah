@@ -121,22 +121,6 @@ export const registrationSchema = z
         });
       }
     }
-
-    if (data.role === 'hirer' && !data.companyName?.trim()) {
-      ctx.addIssue({
-        path: ['companyName'],
-        code: z.ZodIssueCode.custom,
-        message: 'Company name is required for hirer accounts',
-      });
-    }
-
-    if (data.role === 'worker' && (!data.trades || data.trades.length === 0)) {
-      ctx.addIssue({
-        path: ['trades'],
-        code: z.ZodIssueCode.custom,
-        message: 'Please select at least one trade/skill',
-      });
-    }
   });
 
 export const registrationDefaultValues = {
