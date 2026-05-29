@@ -398,7 +398,7 @@ const MobileBottomNav = () => {
             key={item.value}
             label={item.label}
             value={item.value}
-            aria-label={getActionAriaLabel(item)}
+            aria-label={item.ariaLabel || getActionAriaLabel(item)}
             icon={
               item.value === 'messages' ? (
                 <Badge
