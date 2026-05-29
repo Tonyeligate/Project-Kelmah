@@ -64,7 +64,7 @@ const DashboardPage = () => {
               alignItems: 'center',
               justifyContent: 'center',
               mb: 3,
-              border: `2px solid ${alpha(accentColor, 0.3)`,
+              border: `2px solid ${alpha(accentColor, 0.3)}`,
               boxShadow: `0 8px 24px ${alpha(accentColor, 0.2)}`,
             }}
           >
