@@ -1,5 +1,7 @@
 import React from 'react';
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Button, Typography, Card, CardActionArea, Stack } from '@mui/material';
+import { alpha, useTheme } from '@mui/material/styles';
+import { WorkOutline, Search } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import AuthWrapper from '../components/common/AuthWrapper';
 import { Helmet } from 'react-helmet-async';
@@ -174,7 +176,13 @@ const RoleSelectionPage = () => {
     );
   }
 
-  // Desktop fallback - redirect to register
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === 'dark';
+  const accentColor = theme.palette.primary.main || '#FFD34D';
+  const panelText = isDarkMode ? '#FFFFFF' : '#171A1F';
+  const panelMuted = isDarkMode ? alpha('#FFFFFF', 0.8) : alpha('#171A1F', 0.7);
+
+  // Desktop view with premium cards
   return (
     <PageCanvas
       disableContainer
@@ -184,37 +192,128 @@ const RoleSelectionPage = () => {
         <Helmet>
           <title>Choose Your Role | Kelmah</title>
         </Helmet>
-        <Box sx={{ textAlign: 'center', py: 4 }}>
-          <Typography variant="h4" gutterBottom>
-            Choose Your Role
+        <Box sx={{ width: '100%', maxWidth: 640, mx: 'auto', py: 2 }}>
+          <Typography
+            variant="h4"
+            component="h1"
+            sx={{
+              fontWeight: 800,
+              color: accentColor,
+              fontSize: '1.8rem',
+              textAlign: 'center',
+              mb: 1.5,
+              textShadow: `0 2px 10px ${alpha(accentColor, 0.24)}`
+            }}
+          >
+            How do you want to use Kelmah?
           </Typography>
-          <Typography variant="body1" sx={{ mb: 4 }}>
-            Pick one to continue. You can change this in account settings later.
+          <Typography
+            variant="body1"
+            sx={{
+              color: panelMuted,
+              textAlign: 'center',
+              mb: 4,
+              fontSize: '1rem',
+              lineHeight: 1.5
+            }}
+          >
+            Select the primary path that fits your goals. You can change this in your profile settings later.
           </Typography>
           <Box
             sx={{
               display: 'flex',
-              gap: 2,
+              gap: 3,
               justifyContent: 'center',
-              flexWrap: 'wrap',
+              flexDirection: { xs: 'column', sm: 'row' }
             }}
           >
-            <Button
-              variant="contained"
-              size="large"
-              onClick={() => handleRoleSelection('worker')}
-              sx={{ minWidth: 120, minHeight: 44 }}
+            {/* Worker Card */}
+            <Card
+              elevation={4}
+              sx={{
+                flex: 1,
+                borderRadius: 3,
+                bgcolor: isDarkMode ? 'rgba(26,29,38,0.7)' : '#FFFFFF',
+                border: `2px solid ${alpha(accentColor, 0.25)}`,
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  borderColor: accentColor,
+                  transform: 'translateY(-4px)',
+                  boxShadow: `0 12px 32px ${alpha(accentColor, 0.18)}`,
+                }
+              }}
             >
-              I want to find work
-            </Button>
-            <Button
-              variant="outlined"
-              size="large"
-              onClick={() => handleRoleSelection('hirer')}
-              sx={{ minWidth: 120, minHeight: 44 }}
+              <CardActionArea
+                onClick={() => handleRoleSelection('worker')}
+                sx={{ p: 3.5, height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}
+              >
+                <Box
+                  sx={{
+                    width: 64,
+                    height: 64,
+                    borderRadius: '50%',
+                    background: `linear-gradient(135deg, ${accentColor} 0%, #FFC000 100%)`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: `0 6px 20px ${alpha(accentColor, 0.3)}`,
+                    mb: 2.5
+                  }}
+                >
+                  <WorkOutline sx={{ fontSize: 32, color: '#000' }} />
+                </Box>
+                <Typography variant="h6" sx={{ fontWeight: 800, color: panelText, mb: 1.5 }}>
+                  Find Work
+                </Typography>
+                <Typography variant="body2" sx={{ color: panelMuted, lineHeight: 1.5 }}>
+                  Apply for skilled trades, manage contracts, view recommended jobs, and build your digital reputation.
+                </Typography>
+              </CardActionArea>
+            </Card>
+
+            {/* Hirer Card */}
+            <Card
+              elevation={4}
+              sx={{
+                flex: 1,
+                borderRadius: 3,
+                bgcolor: isDarkMode ? 'rgba(26,29,38,0.7)' : '#FFFFFF',
+                border: `2px solid ${alpha(accentColor, 0.25)}`,
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  borderColor: accentColor,
+                  transform: 'translateY(-4px)',
+                  boxShadow: `0 12px 32px ${alpha(accentColor, 0.18)}`,
+                }
+              }}
             >
-              I want to hire workers
-            </Button>
+              <CardActionArea
+                onClick={() => handleRoleSelection('hirer')}
+                sx={{ p: 3.5, height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}
+              >
+                <Box
+                  sx={{
+                    width: 64,
+                    height: 64,
+                    borderRadius: '50%',
+                    background: `linear-gradient(135deg, ${accentColor} 0%, #FFC000 100%)`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: `0 6px 20px ${alpha(accentColor, 0.3)}`,
+                    mb: 2.5
+                  }}
+                >
+                  <Search sx={{ fontSize: 32, color: '#000' }} />
+                </Box>
+                <Typography variant="h6" sx={{ fontWeight: 800, color: panelText, mb: 1.5 }}>
+                  Hire Workers
+                </Typography>
+                <Typography variant="body2" sx={{ color: panelMuted, lineHeight: 1.5 }}>
+                  Search vetted artisans, post job listings, compare local quotes, and track project details dynamically.
+                </Typography>
+              </CardActionArea>
+            </Card>
           </Box>
         </Box>
       </AuthWrapper>

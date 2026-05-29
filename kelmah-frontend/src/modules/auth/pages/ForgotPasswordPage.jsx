@@ -8,8 +8,10 @@ import {
   Alert,
   CircularProgress,
   IconButton,
+  InputAdornment,
 } from '@mui/material';
-import { ArrowBack } from '@mui/icons-material';
+import { alpha, useTheme } from '@mui/material/styles';
+import { ArrowBack, EmailOutlined } from '@mui/icons-material';
 import authService from '../services/authService';
 import { Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
@@ -257,6 +259,27 @@ const ForgotPasswordPage = () => {
     );
   }
 
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === 'dark';
+  const accentColor = theme.palette.primary.main || '#FFD34D';
+  const panelText = isDarkMode ? '#FFFFFF' : '#171A1F';
+  const panelMuted = isDarkMode ? alpha('#FFFFFF', 0.8) : alpha('#171A1F', 0.7);
+  const panelSoft = isDarkMode
+    ? alpha('#FFFFFF', 0.74)
+    : alpha('#171A1F', 0.64);
+  const inputBackground = isDarkMode
+    ? alpha('#FFFFFF', 0.08)
+    : alpha('#FFFFFF', 0.9);
+  const inputBorder = isDarkMode
+    ? alpha(accentColor, 0.5)
+    : alpha('#171A1F', 0.14);
+  const inputBorderHover = isDarkMode
+    ? alpha(accentColor, 0.7)
+    : alpha(accentColor, 0.38);
+  const inputPlaceholder = isDarkMode
+    ? alpha('#FFFFFF', 0.76)
+    : alpha('#171A1F', 0.58);
+
   return (
     <AuthWrapper>
       <Helmet>
@@ -265,38 +288,134 @@ const ForgotPasswordPage = () => {
       <Box
         component="form"
         onSubmit={handleSubmit}
-        sx={{ width: '100%', maxWidth: 360 }}
+        sx={{ width: '100%', maxWidth: 380, mx: 'auto' }}
       >
-        <Typography variant="h5" gutterBottom>
+        <Typography
+          variant="h5"
+          gutterBottom
+          sx={{
+            fontWeight: 800,
+            color: accentColor,
+            fontSize: '1.6rem',
+            textAlign: 'center',
+            mb: 1.5,
+            textShadow: `0 2px 10px ${alpha(accentColor, 0.24)}`
+          }}
+        >
           Forgot Password
         </Typography>
+        <Typography
+          variant="body2"
+          sx={{
+            color: panelMuted,
+            textAlign: 'center',
+            mb: 3,
+            lineHeight: 1.5
+          }}
+        >
+          Enter the email address you used to register and we'll send you a link to reset your password.
+        </Typography>
+
         {status && (
-          <Alert severity="success" sx={{ mb: 2 }}>
+          <Alert
+            severity="success"
+            sx={{
+              mb: 2.5,
+              borderRadius: 1.5,
+              fontSize: '0.85rem'
+            }}
+          >
             {status}
           </Alert>
         )}
         {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
+          <Alert
+            severity="error"
+            sx={{
+              mb: 2.5,
+              borderRadius: 1.5,
+              fontSize: '0.85rem'
+            }}
+          >
             {error}
           </Alert>
         )}
+
         <TextField
-          label="Email address"
+          label="Email Address"
           type="email"
           fullWidth
           required
-          margin="normal"
           placeholder="Enter your email address"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          helperText="Use the email you used when creating your account"
+          inputProps={{
+            'aria-label': 'Email used for your Kelmah account',
+          }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <EmailOutlined
+                  sx={{
+                    color: accentColor,
+                    fontSize: 20,
+                  }}
+                />
+              </InputAdornment>
+            ),
+            sx: {
+              fontSize: '1rem',
+              fontWeight: 500,
+              color: panelText,
+              background: inputBackground,
+              borderRadius: 1.5,
+              minHeight: '48px',
+              '& .MuiOutlinedInput-notchedOutline': {
+                borderColor: inputBorder,
+                borderWidth: 2,
+              },
+              '&:hover .MuiOutlinedInput-notchedOutline': {
+                borderColor: inputBorderHover,
+              },
+              '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                borderColor: accentColor,
+                boxShadow: `0 0 0 2px ${alpha(accentColor, 0.2)}`,
+              },
+              '& .MuiInputBase-input::placeholder': {
+                color: inputPlaceholder,
+                opacity: 1,
+              },
+            },
+          }}
+          InputLabelProps={{
+            sx: {
+              color: panelSoft,
+              fontWeight: 600,
+              '&.Mui-focused': {
+                color: accentColor,
+              },
+            },
+          }}
+          sx={{ mb: 3 }}
         />
+
         <Button
           type="submit"
-          variant="contained"
           fullWidth
           disabled={loading}
-          sx={{ mt: 2, minHeight: 44 }}
+          sx={{
+            bgcolor: 'primary.main',
+            color: 'primary.contrastText',
+            height: '48px',
+            borderRadius: '24px',
+            fontSize: '16px',
+            fontWeight: 'bold',
+            textTransform: 'none',
+            mb: 2.5,
+            '&:hover': {
+              bgcolor: 'primary.dark',
+            },
+          }}
         >
           {loading ? (
             <CircularProgress size={24} color="inherit" />
@@ -304,9 +423,19 @@ const ForgotPasswordPage = () => {
             'Send Reset Link'
           )}
         </Button>
-        <Box sx={{ mt: 2 }}>
-          <Typography variant="body2">
-            Remembered your password? <Link to="/login">Login</Link>
+        <Box sx={{ textCenter: 'center', display: 'flex', justifyContent: 'center' }}>
+          <Typography variant="body2" sx={{ color: panelMuted }}>
+            Remembered your password?{' '}
+            <Link
+              to="/login"
+              style={{
+                color: accentColor,
+                fontWeight: 700,
+                textDecoration: 'none'
+              }}
+            >
+              Sign In
+            </Link>
           </Typography>
         </Box>
       </Box>

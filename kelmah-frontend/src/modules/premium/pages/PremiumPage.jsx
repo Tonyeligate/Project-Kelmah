@@ -28,6 +28,7 @@ import {
   Tooltip,
   Stack,
 } from '@mui/material';
+import { alpha, useTheme } from '@mui/material/styles';
 import {
   Star as StarIcon,
   CheckCircle as CheckCircleIcon,
@@ -44,32 +45,59 @@ import PageCanvas from '../../common/components/PageCanvas';
 
 // --- Reusable Components ---
 
-const FeatureCard = ({ icon, title, description }) => (
+const FeatureCard = ({ icon, title, description }) => {
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === 'dark';
+  const accentColor = theme.palette.primary.main || '#FFD34D';
+  
+  return (
   <Paper
-    elevation={2}
+    elevation={3}
     sx={{
       p: 3,
       textAlign: 'center',
       height: '100%',
-      backgroundColor: 'background.paper',
-      transition: 'transform 0.3s',
+      backgroundColor: isDarkMode ? alpha(accentColor, 0.05) : 'background.paper',
+      border: `1px solid ${alpha(accentColor, 0.2)}`,
+      borderRadius: 3,
+      transition: 'all 0.3s ease',
       '&:hover': {
-        transform: 'scale(1.05)',
-        boxShadow: 8,
+        transform: 'translateY(-4px)',
+        borderColor: accentColor,
+        boxShadow: `0 12px 32px ${alpha(accentColor, 0.25)}`,
       },
     }}
   >
-    <Box color="primary.main" mb={2}>
+    <Box 
+      sx={{ 
+        mb: 2,
+        color: accentColor,
+        '& .MuiSvgIcon-root': {
+          fontSize: 48,
+          filter: `drop-shadow(0 0 12px ${alpha(accentColor, 0.4)})`
+        }
+      }}
+    >
       {React.cloneElement(icon, { sx: { fontSize: 48 } })}
     </Box>
-    <Typography variant="h6" fontWeight="bold" gutterBottom>
+    <Typography 
+      variant="h6" 
+      fontWeight="bold" 
+      gutterBottom
+      sx={{ color: 'text.primary' }}
+    >
       {title}
     </Typography>
-    <Typography variant="body2" color="text.secondary">
+    <Typography 
+      variant="body2" 
+      color="text.secondary"
+      sx={{ lineHeight: 1.5 }}
+    >
       {description}
     </Typography>
   </Paper>
 );
+};
 
 const PricingTier = ({ plan, price, isYearly, onUpgrade, yearlySavings }) => (
   <Paper

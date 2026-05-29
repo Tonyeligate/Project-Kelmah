@@ -7,8 +7,10 @@ import {
   InputAdornment,
   TextField,
   Typography,
+  CircularProgress,
 } from '@mui/material';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
+import { alpha, useTheme } from '@mui/material/styles';
+import { Visibility, VisibilityOff, LockOutlined } from '@mui/icons-material';
 import {
   Link,
   useNavigate,
@@ -19,6 +21,7 @@ import authService from '../modules/auth/services/authService';
 import { Helmet } from 'react-helmet-async';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 import PageCanvas from '../modules/common/components/PageCanvas';
+import AuthWrapper from '../modules/auth/components/common/AuthWrapper';
 import { withSafeAreaBottom } from '@/utils/safeArea';
 
 const ResetPassword = () => {
@@ -81,11 +84,32 @@ const ResetPassword = () => {
     }
   };
 
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === 'dark';
+  const accentColor = theme.palette.primary.main || '#FFD34D';
+  const panelText = isDarkMode ? '#FFFFFF' : '#171A1F';
+  const panelMuted = isDarkMode ? alpha('#FFFFFF', 0.8) : alpha('#171A1F', 0.7);
+  const panelSoft = isDarkMode
+    ? alpha('#FFFFFF', 0.74)
+    : alpha('#171A1F', 0.64);
+  const inputBackground = isDarkMode
+    ? alpha('#FFFFFF', 0.08)
+    : alpha('#FFFFFF', 0.9);
+  const inputBorder = isDarkMode
+    ? alpha(accentColor, 0.5)
+    : alpha('#171A1F', 0.14);
+  const inputBorderHover = isDarkMode
+    ? alpha(accentColor, 0.7)
+    : alpha(accentColor, 0.38);
+  const inputPlaceholder = isDarkMode
+    ? alpha('#FFFFFF', 0.76)
+    : alpha('#171A1F', 0.58);
+
   const content = (
     <Box
       component="form"
       onSubmit={handleSubmit}
-      sx={{ width: '100%', maxWidth: 420 }}
+      sx={{ width: '100%', maxWidth: 380, mx: 'auto' }}
     >
       <Helmet>
         <title>Reset Password | Kelmah</title>
@@ -93,23 +117,51 @@ const ResetPassword = () => {
       <Typography
         variant="h5"
         gutterBottom
-        sx={{ fontWeight: 700, color: 'text.primary' }}
+        sx={{
+          fontWeight: 800,
+          color: accentColor,
+          fontSize: '1.6rem',
+          textAlign: 'center',
+          mb: 1.5,
+          textShadow: `0 2px 10px ${alpha(accentColor, 0.24)}`
+        }}
       >
         Reset Password
       </Typography>
-      <Typography variant="body2" sx={{ mb: 1.5, color: 'text.secondary' }}>
-        Choose a new password you can remember. You can sign in right after
-        saving.
+      <Typography
+        variant="body2"
+        sx={{
+          color: panelMuted,
+          textAlign: 'center',
+          mb: 3,
+          lineHeight: 1.5
+        }}
+      >
+        Choose a new secure password you can remember. You can sign in right after saving.
       </Typography>
 
       {status && (
-        <Alert severity="success" sx={{ mb: 2 }}>
+        <Alert
+          severity="success"
+          sx={{
+            mb: 2.5,
+            borderRadius: 1.5,
+            fontSize: '0.85rem'
+          }}
+        >
           {status}
         </Alert>
       )}
 
       {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
+        <Alert
+          severity="error"
+          sx={{
+            mb: 2.5,
+            borderRadius: 1.5,
+            fontSize: '0.85rem'
+          }}
+        >
           {error}
         </Alert>
       )}
@@ -120,16 +172,25 @@ const ResetPassword = () => {
         fullWidth
         required
         disabled={loading}
-        margin="normal"
+        placeholder="Enter your new password"
         helperText="Use at least 8 characters."
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         inputProps={{
           autoComplete: 'new-password',
-          style: { fontSize: 16 },
           'aria-label': 'New password',
         }}
         InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <LockOutlined
+                sx={{
+                  color: accentColor,
+                  fontSize: 20,
+                }}
+              />
+            </InputAdornment>
+          ),
           endAdornment: (
             <InputAdornment position="end">
               <IconButton
@@ -142,7 +203,46 @@ const ResetPassword = () => {
               </IconButton>
             </InputAdornment>
           ),
+          sx: {
+            fontSize: '1rem',
+            fontWeight: 500,
+            color: panelText,
+            background: inputBackground,
+            borderRadius: 1.5,
+            minHeight: '48px',
+            '& .MuiOutlinedInput-notchedOutline': {
+              borderColor: inputBorder,
+              borderWidth: 2,
+            },
+            '&:hover .MuiOutlinedInput-notchedOutline': {
+              borderColor: inputBorderHover,
+            },
+            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+              borderColor: accentColor,
+              boxShadow: `0 0 0 2px ${alpha(accentColor, 0.2)}`,
+            },
+            '& .MuiInputBase-input::placeholder': {
+              color: inputPlaceholder,
+              opacity: 1,
+            },
+          },
         }}
+        InputLabelProps={{
+          sx: {
+            color: panelSoft,
+            fontWeight: 600,
+            '&.Mui-focused': {
+              color: accentColor,
+            },
+          },
+        }}
+        FormHelperTextProps={{
+          sx: {
+            fontSize: '0.78rem',
+            mt: 0.5
+          }
+        }}
+        sx={{ mb: 2.5 }}
       />
 
       <TextField
@@ -151,16 +251,25 @@ const ResetPassword = () => {
         fullWidth
         required
         disabled={loading}
-        margin="normal"
+        placeholder="Confirm your new password"
         helperText="Type the same password again."
         value={confirmPassword}
         onChange={(e) => setConfirmPassword(e.target.value)}
         inputProps={{
           autoComplete: 'new-password',
-          style: { fontSize: 16 },
           'aria-label': 'Confirm new password',
         }}
         InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <LockOutlined
+                sx={{
+                  color: accentColor,
+                  fontSize: 20,
+                }}
+              />
+            </InputAdornment>
+          ),
           endAdornment: (
             <InputAdornment position="end">
               <IconButton
@@ -177,18 +286,72 @@ const ResetPassword = () => {
               </IconButton>
             </InputAdornment>
           ),
+          sx: {
+            fontSize: '1rem',
+            fontWeight: 500,
+            color: panelText,
+            background: inputBackground,
+            borderRadius: 1.5,
+            minHeight: '48px',
+            '& .MuiOutlinedInput-notchedOutline': {
+              borderColor: inputBorder,
+              borderWidth: 2,
+            },
+            '&:hover .MuiOutlinedInput-notchedOutline': {
+              borderColor: inputBorderHover,
+            },
+            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+              borderColor: accentColor,
+              boxShadow: `0 0 0 2px ${alpha(accentColor, 0.2)}`,
+            },
+            '& .MuiInputBase-input::placeholder': {
+              color: inputPlaceholder,
+              opacity: 1,
+            },
+          },
         }}
+        InputLabelProps={{
+          sx: {
+            color: panelSoft,
+            fontWeight: 600,
+            '&.Mui-focused': {
+              color: accentColor,
+            },
+          },
+        }}
+        FormHelperTextProps={{
+          sx: {
+            fontSize: '0.78rem',
+            mt: 0.5
+          }
+        }}
+        sx={{ mb: 3.5 }}
       />
 
       <Button
         type="submit"
-        variant="contained"
         fullWidth
         disabled={loading}
         aria-label="Save new password"
-        sx={{ mt: 2, minHeight: 48, borderRadius: isMobile ? '24px' : 1 }}
+        sx={{
+          bgcolor: 'primary.main',
+          color: 'primary.contrastText',
+          height: '48px',
+          borderRadius: '24px',
+          fontSize: '16px',
+          fontWeight: 'bold',
+          textTransform: 'none',
+          mb: 2.5,
+          '&:hover': {
+            bgcolor: 'primary.dark',
+          },
+        }}
       >
-        {loading ? 'Saving new password...' : 'Save New Password'}
+        {loading ? (
+          <CircularProgress size={24} color="inherit" />
+        ) : (
+          'Save New Password'
+        )}
       </Button>
 
       {status && (
@@ -196,20 +359,33 @@ const ResetPassword = () => {
           variant="outlined"
           fullWidth
           onClick={() => navigate('/login')}
-          sx={{ mt: 1.25, minHeight: 44 }}
+          sx={{
+            borderColor: accentColor,
+            color: accentColor,
+            height: '48px',
+            borderRadius: '24px',
+            fontSize: '16px',
+            fontWeight: 'bold',
+            textTransform: 'none',
+            mb: 2.5,
+            '&:hover': {
+              borderColor: 'primary.dark',
+              background: alpha(accentColor, 0.08)
+            },
+          }}
         >
           Go to Sign in
         </Button>
       )}
 
-      <Box sx={{ mt: 2 }}>
-        <Typography variant="body2" color="text.secondary">
+      <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+        <Typography variant="body2" sx={{ color: panelMuted }}>
           Remember your password now?{' '}
           <Link
             to="/login"
             style={{
-              color: 'inherit',
-              fontWeight: 600,
+              color: accentColor,
+              fontWeight: 700,
               textDecoration: 'none',
             }}
           >
@@ -251,9 +427,9 @@ const ResetPassword = () => {
       disableContainer
       sx={{ pt: { xs: 3, md: 4 }, pb: { xs: 4, md: 6 } }}
     >
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 6, px: 3 }}>
+      <AuthWrapper>
         {content}
-      </Box>
+      </AuthWrapper>
     </PageCanvas>
   );
 };

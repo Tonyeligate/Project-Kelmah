@@ -365,7 +365,7 @@ const PaymentMethodsView = ({
                   method.phoneNumber ||
                   method.accountNumber ||
                   method.displayValue) && (
-                  <Typography color="text.secondary" sx={{ ml: '38px' }}>
+                  <Typography color="text.secondary" sx={{ ml: '40px' }}>
                     {method.cardNumber ||
                       method.phoneNumber ||
                       method.accountNumber ||

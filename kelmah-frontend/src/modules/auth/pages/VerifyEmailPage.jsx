@@ -7,7 +7,9 @@ import {
   TextField,
   Alert,
   CircularProgress,
+  InputAdornment,
 } from '@mui/material';
+import { alpha, useTheme } from '@mui/material/styles';
 import {
   CheckCircleOutline,
   ErrorOutline,
@@ -84,32 +86,61 @@ const VerifyEmailPage = () => {
     }
   };
 
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === 'dark';
+  const accentColor = theme.palette.primary.main || '#FFD34D';
+  const panelText = isDarkMode ? '#FFFFFF' : '#171A1F';
+  const panelMuted = isDarkMode ? alpha('#FFFFFF', 0.8) : alpha('#171A1F', 0.7);
+  const panelSoft = isDarkMode
+    ? alpha('#FFFFFF', 0.74)
+    : alpha('#171A1F', 0.64);
+  const inputBackground = isDarkMode
+    ? alpha('#FFFFFF', 0.08)
+    : alpha('#FFFFFF', 0.9);
+  const inputBorder = isDarkMode
+    ? alpha(accentColor, 0.5)
+    : alpha('#171A1F', 0.14);
+  const inputBorderHover = isDarkMode
+    ? alpha(accentColor, 0.7)
+    : alpha(accentColor, 0.38);
+  const inputPlaceholder = isDarkMode
+    ? alpha('#FFFFFF', 0.76)
+    : alpha('#171A1F', 0.58);
+
   const content = (
-    <Box sx={{ width: '100%', maxWidth: 400, textAlign: 'center', mx: 'auto' }}>
+    <Box sx={{ width: '100%', maxWidth: 420, textAlign: 'center', mx: 'auto' }}>
       <Helmet>
         <title>Verify Email | Kelmah</title>
       </Helmet>
       {loading && (
-        <Box sx={{ mb: 3 }}>
-          <CircularProgress size={48} sx={{ mb: 2 }} />
-          <Typography variant="body1" sx={{ color: 'text.secondary' }}>
-            Verifying your email…
+        <Box sx={{ py: 4 }}>
+          <CircularProgress size={48} sx={{ color: accentColor, mb: 3 }} />
+          <Typography variant="body1" sx={{ color: panelMuted, fontWeight: 500 }}>
+            Verifying your secure email link…
           </Typography>
         </Box>
       )}
       {!loading && status && (
-        <Box sx={{ mb: 3 }}>
+        <Box sx={{ mb: 3, py: 2 }}>
           <CheckCircleOutline
-            sx={{ fontSize: 56, color: 'success.main', mb: 1 }}
+            sx={{ fontSize: 64, color: 'success.main', mb: 2 }}
           />
+          <Typography
+            variant="h5"
+            sx={{
+              fontWeight: 800,
+              color: 'success.main',
+              mb: 2
+            }}
+          >
+            Verification Success!
+          </Typography>
           <Alert
             severity="success"
             sx={{
-              borderRadius: 2,
-              ...(isMobile && {
-                bgcolor: (t) => `${t.palette.success.main}1F`,
-                color: 'text.primary',
-              }),
+              borderRadius: 1.5,
+              fontSize: '0.88rem',
+              textAlign: 'left'
             }}
           >
             {status}
@@ -118,67 +149,73 @@ const VerifyEmailPage = () => {
       )}
       {!loading && error && (
         <>
-          <Box sx={{ mb: 3 }}>
-            <ErrorOutline sx={{ fontSize: 56, color: 'error.main', mb: 1 }} />
+          <Box sx={{ mb: 3, py: 1 }}>
+            <ErrorOutline sx={{ fontSize: 64, color: 'error.main', mb: 2 }} />
+            <Typography
+              variant="h5"
+              sx={{
+                fontWeight: 800,
+                color: 'error.main',
+                mb: 2
+              }}
+            >
+              Verification Failed
+            </Typography>
             <Alert
               severity="error"
               sx={{
-                borderRadius: 2,
-                ...(isMobile && {
-                  bgcolor: (t) => `${t.palette.error.main}1F`,
-                  color: 'text.primary',
-                }),
+                borderRadius: 1.5,
+                fontSize: '0.88rem',
+                textAlign: 'left'
               }}
             >
               {error}
             </Alert>
           </Box>
+
           <Box
             sx={{
-              mb: 2,
+              mb: 2.5,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: 1,
+              gap: 1.25,
             }}
           >
             <MailOutline
               sx={{
-                color: isMobile ? 'primary.main' : 'text.secondary',
-                fontSize: 20,
+                color: accentColor,
+                fontSize: 22,
               }}
             />
             <Typography
-              variant="body1"
-              sx={{ color: isMobile ? 'text.secondary' : 'text.primary' }}
+              variant="body2"
+              sx={{ color: panelMuted, textAlign: 'left', fontSize: '0.85rem' }}
             >
-              Enter your account email. We will send a new verification link.
+              No worries! Enter your registered account email address below, and we'll send you a new verification link right away.
             </Typography>
           </Box>
+
           {resendError && (
             <Alert
               severity="error"
               sx={{
-                mt: 1,
-                mb: 1,
-                borderRadius: 2,
-                ...(isMobile && {
-                  bgcolor: (t) => `${t.palette.error.main}1F`,
-                  color: 'text.primary',
-                }),
+                mb: 2,
+                borderRadius: 1.5,
+                fontSize: '0.85rem'
               }}
             >
               {resendError}
             </Alert>
           )}
+
           <Box component="form" onSubmit={handleResend} sx={{ mt: 1 }}>
             <TextField
               label="Account Email"
               type="email"
               fullWidth
               required
-              margin="normal"
-              placeholder="Enter the email you used to sign up"
+              placeholder="Enter your registered email address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               inputProps={{
@@ -186,42 +223,69 @@ const VerifyEmailPage = () => {
                 autoComplete: 'email',
                 'aria-label': 'Account email for verification resend',
               }}
-              sx={
-                isMobile
-                  ? {
-                      '& .MuiOutlinedInput-root': {
-                        bgcolor: 'action.hover',
-                        borderRadius: 2,
-                        color: 'text.primary',
-                        '& fieldset': { borderColor: 'divider' },
-                        '&:hover fieldset': { borderColor: 'primary.main' },
-                        '&.Mui-focused fieldset': {
-                          borderColor: 'primary.main',
-                        },
-                      },
-                      '& .MuiInputLabel-root': { color: 'text.secondary' },
-                      '& .MuiInputLabel-root.Mui-focused': {
-                        color: 'primary.main',
-                      },
-                    }
-                  : {}
-              }
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <MailOutline
+                      sx={{
+                        color: accentColor,
+                        fontSize: 20,
+                      }}
+                    />
+                  </InputAdornment>
+                ),
+                sx: {
+                  fontSize: '1rem',
+                  fontWeight: 500,
+                  color: panelText,
+                  background: inputBackground,
+                  borderRadius: 1.5,
+                  minHeight: '48px',
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: inputBorder,
+                    borderWidth: 2,
+                  },
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: inputBorderHover,
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: accentColor,
+                    boxShadow: `0 0 0 2px ${alpha(accentColor, 0.2)}`,
+                  },
+                  '& .MuiInputBase-input::placeholder': {
+                    color: inputPlaceholder,
+                    opacity: 1,
+                  },
+                },
+              }}
+              InputLabelProps={{
+                sx: {
+                  color: panelSoft,
+                  fontWeight: 600,
+                  '&.Mui-focused': {
+                    color: accentColor,
+                  },
+                },
+              }}
+              sx={{ mb: 2.5 }}
             />
             <Button
               type="submit"
-              variant="contained"
-              fullWidth
               disabled={resendLoading}
               aria-label="Send new verification link"
               sx={{
-                mt: 2,
-                minHeight: 48,
-                borderRadius: 6,
-                fontWeight: 600,
-                fontSize: '1rem',
                 bgcolor: 'primary.main',
                 color: 'primary.contrastText',
-                '&:hover': { bgcolor: 'primary.dark' },
+                height: '48px',
+                borderRadius: '24px',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                textTransform: 'none',
+                mb: 2,
+                width: '100%',
+                '&:hover': {
+                  bgcolor: 'primary.dark',
+                },
               }}
             >
               {resendLoading ? (
@@ -231,53 +295,47 @@ const VerifyEmailPage = () => {
               )}
             </Button>
           </Box>
+
           {location.state?.message && (
             <Alert
               severity="success"
               sx={{
                 mt: 2,
-                borderRadius: 2,
-                ...(isMobile && {
-                  bgcolor: (t) => `${t.palette.success.main}1F`,
-                  color: 'text.primary',
-                }),
+                borderRadius: 1.5,
+                fontSize: '0.85rem'
               }}
             >
               {location.state.message}
             </Alert>
           )}
+
           {resendSent && (
             <Alert
               severity="success"
               sx={{
                 mt: 2,
-                borderRadius: 2,
-                ...(isMobile && {
-                  bgcolor: (t) => `${t.palette.success.main}1F`,
-                  color: 'text.primary',
-                }),
+                borderRadius: 1.5,
+                fontSize: '0.85rem'
               }}
             >
-              Verification link sent. Check your inbox and spam folder.
+              Verification link sent successfully. Please check your inbox and spam folder.
             </Alert>
           )}
         </>
       )}
-      <Box sx={{ mt: 3 }}>
-        <Typography
-          variant="body2"
-          sx={{ color: isMobile ? 'text.disabled' : 'text.secondary' }}
-        >
+
+      <Box sx={{ mt: 3.5, display: 'flex', justifyContent: 'center' }}>
+        <Typography variant="body2" sx={{ color: panelMuted }}>
           Back to{' '}
           <Link
             to="/login"
             style={{
-              color: 'inherit',
-              fontWeight: 600,
+              color: accentColor,
+              fontWeight: 700,
               textDecoration: 'none',
             }}
           >
-            Login
+            Sign In
           </Link>
         </Typography>
       </Box>

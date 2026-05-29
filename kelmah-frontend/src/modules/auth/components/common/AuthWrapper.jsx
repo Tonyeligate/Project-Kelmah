@@ -174,7 +174,7 @@ const AuthWrapper = ({ children }) => {
           position: 'fixed',
           top: 0,
           left: 0,
-          width: '100vw',
+          width: '100%',
           height: '100dvh',
           zIndex: 0,
           backgroundImage: `url(${backgroundImg})`,
@@ -239,7 +239,7 @@ const AuthWrapper = ({ children }) => {
           position: 'relative',
           zIndex: 2,
           width: '100%',
-          maxWidth: '100vw',
+          maxWidth: '100%',
           px: { xs: 1, sm: 2, md: 3, lg: 4 },
           boxSizing: 'border-box',
         }}

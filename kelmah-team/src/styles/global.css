@@ -4,26 +4,26 @@
   --primary-black: #000000;
   --secondary-black: #1a1a1a;
   --tertiary-black: #2d2d2d;
-  --primary-gold: #FFD700;
-  --secondary-gold: #F4C430;
-  --tertiary-gold: #DAA520;
+  --primary-gold: #FFD34D;
+  --secondary-gold: #FFE089;
+  --tertiary-gold: #B8860B;
   --primary-white: #FFFFFF;
   --off-white: #F8F8F8;
   --light-gray: #E5E5E5;
   
   /* Gradient Colors */
-  --gold-gradient: linear-gradient(135deg, #FFD700 0%, #F4C430 50%, #DAA520 100%);
-  --black-gradient: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #2d2d2d 100%);
-  --glass-gradient: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  --gold-gradient: linear-gradient(135deg, #FFD34D 0%, #FFE089 50%, #B8860B 100%);
+  --black-gradient: linear-gradient(135deg, #101116 0%, #1A1D26 50%, #222530 100%);
+  --glass-gradient: linear-gradient(135deg, rgba(255, 211, 77, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
   
   /* Shadows */
-  --gold-shadow: 0 8px 32px rgba(255, 215, 0, 0.3);
+  --gold-shadow: 0 8px 32px rgba(255, 211, 77, 0.2);
   --soft-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   --deep-shadow: 0 15px 60px rgba(0, 0, 0, 0.4);
   
   /* Typography */
   --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-display: 'Playfair Display', Georgia, serif;
+  --font-display: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
   
   /* Animations */
   --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);

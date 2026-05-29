@@ -15,7 +15,7 @@ import { useAuthCheck } from '../../../hooks/useAuthCheck';
 const StyledNavLink = styled(NavLink)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
-  gap: '6px',
+  gap: '4px',
   margin: '0 4px',
   padding: '6px 12px',
   borderRadius: '24px',
