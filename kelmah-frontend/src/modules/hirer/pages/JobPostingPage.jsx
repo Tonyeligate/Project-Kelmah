@@ -56,10 +56,7 @@ import {
 } from '../services/hirerSlice';
 import fileUploadService from '../../common/services/fileUploadService';
 import { alpha, useTheme } from '@mui/material/styles';
-import {
-  Z_INDEX,
-  STICKY_CTA_HEIGHT,
-} from '../../../constants/layout';
+import { Z_INDEX, STICKY_CTA_HEIGHT } from '../../../constants/layout';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 import { formatGhanaCurrency } from '@/utils/formatters';
 import PageCanvas from '@/modules/common/components/PageCanvas';
@@ -394,7 +391,9 @@ const JobPostingPage = () => {
       }
 
       if (typeof parsed?.activeStep === 'number') {
-        setActiveStep(Math.max(0, Math.min(parsed.activeStep, steps.length - 1)));
+        setActiveStep(
+          Math.max(0, Math.min(parsed.activeStep, steps.length - 1)),
+        );
       }
 
       if (parsed?.savedAt) {
@@ -419,7 +418,10 @@ const JobPostingPage = () => {
         activeStep,
         savedAt,
       };
-      window.localStorage.setItem(localDraftStorageKey, JSON.stringify(payload));
+      window.localStorage.setItem(
+        localDraftStorageKey,
+        JSON.stringify(payload),
+      );
       setLastDraftSavedAt(savedAt);
     } catch {
       // Ignore local storage write failures.
@@ -779,6 +781,10 @@ const JobPostingPage = () => {
     setActiveStep((prev) => prev + 1);
   };
   const handleBack = () => setActiveStep((prev) => prev - 1);
+
+  const handleQuickHireShortcut = () => {
+    navigate('/hirer/quick-hire/request');
+  };
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === 'paymentType') {
@@ -1095,7 +1101,10 @@ const JobPostingPage = () => {
               error={Boolean(touchedFields.category && fieldErrors.category)}
               sx={REQUIRED_LABEL_SX}
             >
-              <InputLabel id="job-category-label" shrink={Boolean(formData.category)}>
+              <InputLabel
+                id="job-category-label"
+                shrink={Boolean(formData.category)}
+              >
                 Category
               </InputLabel>
               <Select
@@ -1126,7 +1135,7 @@ const JobPostingPage = () => {
                 ))}
                 {categoryOptionsForMenu.length === 0 && (
                   <MenuItem value="__no-category-match" disabled>
-                    No category matches "{categoryQuery.trim()}"
+                    No category matches {categoryQuery.trim()}
                   </MenuItem>
                 )}
               </Select>
@@ -1599,7 +1608,12 @@ const JobPostingPage = () => {
                   <Box
                     component="li"
                     key={check.key}
-                    sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.5 }}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      py: 0.5,
+                    }}
                   >
                     {check.passed ? (
                       <CheckCircle color="success" sx={{ fontSize: 18 }} />
@@ -1810,6 +1824,13 @@ const JobPostingPage = () => {
                 justifyContent: { xs: 'stretch', sm: 'flex-end' },
               }}
             >
+              <Button
+                variant="text"
+                onClick={handleQuickHireShortcut}
+                sx={{ minHeight: 44, flex: { xs: 1, sm: 'none' } }}
+              >
+                Quick hire
+              </Button>
               {activeStep === steps.length - 1 ? (
                 <>
                   <Button
@@ -1882,6 +1903,13 @@ const JobPostingPage = () => {
             >
               Back
             </Button>
+            <Button
+              variant="text"
+              onClick={handleQuickHireShortcut}
+              sx={{ minHeight: 44, flex: 1 }}
+            >
+              Quick hire
+            </Button>
             {activeStep === steps.length - 1 ? (
               <>
                 <Button
@@ -1893,21 +1921,21 @@ const JobPostingPage = () => {
                   Save Draft
                 </Button>
                 <Button
-                variant="contained"
-                onClick={() => handleSubmit(false)}
-                endIcon={<Publish />}
-                disabled={isLoading}
-                color="primary"
-                sx={{ minHeight: 44, flex: 1 }}
-              >
-                {isLoading ? (
-                  <CircularProgress size={24} />
-                ) : isEditMode ? (
-                  'Save'
-                ) : (
-                  'Post Job'
-                )}
-              </Button>
+                  variant="contained"
+                  onClick={() => handleSubmit(false)}
+                  endIcon={<Publish />}
+                  disabled={isLoading}
+                  color="primary"
+                  sx={{ minHeight: 44, flex: 1 }}
+                >
+                  {isLoading ? (
+                    <CircularProgress size={24} />
+                  ) : isEditMode ? (
+                    'Save'
+                  ) : (
+                    'Post Job'
+                  )}
+                </Button>
               </>
             ) : (
               <Button
