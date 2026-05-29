@@ -699,12 +699,12 @@ const WorkerCard = ({ worker, onSave, isPublicView }) => {
             minHeight: TOUCH_TARGET_MIN,
             flex: 1,
             mr: 1,
-            borderColor: 'rgba(255, 215, 0, 0.5)',
+            borderColor: 'rgba(255, 211, 77, 0.5)',
             color: 'text.primary',
             textDecoration: 'none',
             '&:hover': {
-              borderColor: '#FFD700',
-              bgcolor: 'rgba(255, 215, 0, 0.08)',
+              borderColor: '#FFD34D',
+              bgcolor: 'rgba(255, 211, 77, 0.08)',
             },
           }}
         >
@@ -726,7 +726,7 @@ const WorkerCard = ({ worker, onSave, isPublicView }) => {
                 minHeight: TOUCH_TARGET_MIN,
                 bgcolor: messageCta.disabled
                   ? 'action.disabledBackground'
-                  : '#FFD700',
+                  : '#FFD34D',
                 color: messageCta.disabled ? 'text.disabled' : '#000',
                 '&:hover': {
                   bgcolor: messageCta.disabled ? undefined : '#FFC700',

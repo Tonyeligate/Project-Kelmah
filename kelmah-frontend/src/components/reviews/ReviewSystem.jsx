@@ -297,7 +297,7 @@ const ReviewSystem = ({
 
               {/* Rating Breakdown */}
               <Grid item xs={12} md={5}>
-                <Typography variant="h6" sx={{ color: '#FFD700', mb: 2 }}>
+                <Typography variant="h6" sx={{ color: '#FFD34D', mb: 2 }}>
                   Rating Breakdown
                 </Typography>
                 {Object.entries(workerRating.ratings).map(
@@ -336,7 +336,7 @@ const ReviewSystem = ({
 
               {/* Stats */}
               <Grid item xs={12} md={4}>
-                <Typography variant="h6" sx={{ color: '#FFD700', mb: 2 }}>
+                <Typography variant="h6" sx={{ color: '#FFD34D', mb: 2 }}>
                   Trust Metrics
                 </Typography>
                 <Stack spacing={1}>
@@ -508,7 +508,7 @@ const ReviewSystem = ({
           {/* Review Content */}
           <Typography
             variant="h6"
-            sx={{ color: '#FFD700', mb: 1, fontWeight: 600 }}
+            sx={{ color: '#FFD34D', mb: 1, fontWeight: 600 }}
           >
             {review.title}
           </Typography>
@@ -581,10 +581,10 @@ const ReviewSystem = ({
                 spacing={1}
                 sx={{ mb: 1 }}
               >
-                <ReplyIcon sx={{ color: '#FFD700', fontSize: 16 }} />
+                <ReplyIcon sx={{ color: '#FFD34D', fontSize: 16 }} />
                 <Typography
                   variant="subtitle2"
-                  sx={{ color: '#FFD700', fontWeight: 600 }}
+                  sx={{ color: '#FFD34D', fontWeight: 600 }}
                 >
                   Worker Response
                 </Typography>
@@ -637,7 +637,7 @@ const ReviewSystem = ({
                       setSelectedReview(review);
                       setResponseDialogOpen(true);
                     }}
-                    sx={{ color: '#FFD700' }}
+                    sx={{ color: '#FFD34D' }}
                   >
                     Respond
                   </Button>
@@ -667,7 +667,7 @@ const ReviewSystem = ({
     >
       <DialogTitle
         id="review-submission-dialog-title"
-        sx={{ color: '#FFD700', fontWeight: 700 }}
+        sx={{ color: '#FFD34D', fontWeight: 700 }}
       >
         Submit Review
       </DialogTitle>
@@ -675,7 +675,7 @@ const ReviewSystem = ({
         <Grid container spacing={3} sx={{ mt: 1 }}>
           {/* Rating Section */}
           <Grid item xs={12}>
-            <Typography variant="h6" sx={{ color: '#FFD700', mb: 2 }}>
+            <Typography variant="h6" sx={{ color: '#FFD34D', mb: 2 }}>
               Rate Your Experience
             </Typography>
             {Object.entries(reviewForm.ratings).map(([category, rating]) => (
@@ -721,7 +721,7 @@ const ReviewSystem = ({
                   backgroundColor: 'rgba(255,255,255,0.05)',
                   '& fieldset': { borderColor: 'rgba(255,215,0,0.3)' },
                   '&:hover fieldset': { borderColor: 'rgba(255,215,0,0.5)' },
-                  '&.Mui-focused fieldset': { borderColor: '#FFD700' },
+                  '&.Mui-focused fieldset': { borderColor: '#FFD34D' },
                 },
                 '& .MuiInputBase-input': { color: '#fff' },
                 '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' },
@@ -745,7 +745,7 @@ const ReviewSystem = ({
                   backgroundColor: 'rgba(255,255,255,0.05)',
                   '& fieldset': { borderColor: 'rgba(255,215,0,0.3)' },
                   '&:hover fieldset': { borderColor: 'rgba(255,215,0,0.5)' },
-                  '&.Mui-focused fieldset': { borderColor: '#FFD700' },
+                  '&.Mui-focused fieldset': { borderColor: '#FFD34D' },
                 },
                 '& .MuiInputBase-input': { color: '#fff' },
                 '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' },
@@ -768,7 +768,7 @@ const ReviewSystem = ({
                   backgroundColor: 'rgba(255,255,255,0.05)',
                   '& fieldset': { borderColor: 'rgba(255,215,0,0.3)' },
                   '&:hover fieldset': { borderColor: 'rgba(255,215,0,0.5)' },
-                  '&.Mui-focused fieldset': { borderColor: '#FFD700' },
+                  '&.Mui-focused fieldset': { borderColor: '#FFD34D' },
                 },
                 '& .MuiInputBase-input': { color: '#fff' },
                 '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' },
@@ -788,9 +788,9 @@ const ReviewSystem = ({
                     }))
                   }
                   sx={{
-                    '& .MuiSwitch-switchBase.Mui-checked': { color: '#FFD700' },
+                    '& .MuiSwitch-switchBase.Mui-checked': { color: '#FFD34D' },
                     '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                      backgroundColor: '#FFD700',
+                      backgroundColor: '#FFD34D',
                     },
                   }}
                 />
@@ -815,7 +815,7 @@ const ReviewSystem = ({
           onClick={handleReviewSubmit}
           variant="contained"
           sx={{
-            background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
+            background: 'linear-gradient(135deg, #FFD34D 0%, #FFC000 100%)',
             color: '#000',
             fontWeight: 700,
             '&:hover': {
@@ -862,7 +862,7 @@ const ReviewSystem = ({
         alignItems="center"
         sx={{ mb: 3 }}
       >
-        <Typography variant="h5" sx={{ color: '#FFD700', fontWeight: 700 }}>
+        <Typography variant="h5" sx={{ color: '#FFD34D', fontWeight: 700 }}>
           Reviews ({workerRating?.totalReviews || 0})
         </Typography>
 
@@ -882,7 +882,7 @@ const ReviewSystem = ({
                 onClick={() => setSubmissionOpen(true)}
                 sx={{
                   background:
-                    'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
+                    'linear-gradient(135deg, #FFD34D 0%, #FFC000 100%)',
                   color: '#000',
                   fontWeight: 700,
                 }}
@@ -931,7 +931,7 @@ const ReviewSystem = ({
                 sx={{
                   '& .MuiPaginationItem-root': { color: '#fff' },
                   '& .Mui-selected': {
-                    backgroundColor: '#FFD700 !important',
+                    backgroundColor: '#FFD34D !important',
                     color: '#000 !important',
                   },
                 }}
@@ -961,7 +961,7 @@ const ReviewSystem = ({
       >
         <DialogTitle
           id="review-response-dialog-title"
-          sx={{ color: '#FFD700', fontWeight: 700 }}
+          sx={{ color: '#FFD34D', fontWeight: 700 }}
         >
           Respond to Review
         </DialogTitle>
@@ -992,7 +992,7 @@ const ReviewSystem = ({
           <Button
             variant="contained"
             sx={{
-              backgroundColor: '#FFD700',
+              backgroundColor: '#FFD34D',
               color: '#000',
               '&:hover': { backgroundColor: '#FFC107' },
             }}

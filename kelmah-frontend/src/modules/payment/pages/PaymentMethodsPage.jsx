@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Container,
   Typography,
@@ -12,7 +13,6 @@ import {
   DialogActions,
   TextField,
   IconButton,
-  CircularProgress,
   Alert,
   Card,
   CardContent,
@@ -28,6 +28,7 @@ import {
   CheckCircle as CheckCircleIcon,
   MobileFriendly as MobileIcon,
   AccountBalance as BankIcon,
+  Notifications as NotificationsIcon,
 } from '@mui/icons-material';
 import paymentService from '../services/paymentService';
 import { useTheme } from '@mui/material/styles';
@@ -80,6 +81,7 @@ const PaymentMethodsPage = () => {
 
   const [methodToDelete, setMethodToDelete] = useState(null);
 
+  const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -298,7 +300,10 @@ const PaymentMethodsPage = () => {
   return (
     <PageCanvas
       disableContainer
-      sx={{ pt: { xs: 1, sm: 4 }, pb: { xs: withBottomNavSafeArea(72), md: 6 } }}
+      sx={{
+        pt: { xs: 1, sm: 4 },
+        pb: { xs: withBottomNavSafeArea(72), md: 6 },
+      }}
     >
       <Container
         maxWidth="lg"
@@ -475,6 +480,37 @@ const PaymentMethodsPage = () => {
             </Box>
           </CardContent>
         </Card>
+
+        <Paper
+          elevation={1}
+          sx={{
+            mt: 3,
+            p: 3,
+            borderRadius: 3,
+            border: '1px solid',
+            borderColor: 'divider',
+            bgcolor: 'background.default',
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+            <NotificationsIcon sx={{ color: 'secondary.main', fontSize: 28 }} />
+            <Typography variant="h6" fontWeight="bold">
+              Payment notifications
+            </Typography>
+          </Box>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+            Get SMS and in-app alerts for payment activity, receipts, and status
+            updates when transactions are processed.
+          </Typography>
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={() => navigate('/notifications/preferences')}
+            sx={{ textTransform: 'none', fontWeight: 700 }}
+          >
+            Manage notification preferences
+          </Button>
+        </Paper>
 
         {error && (
           <Alert
@@ -1063,7 +1099,10 @@ const PaymentMethodsPage = () => {
             fullWidth
             variant="contained"
             color="secondary"
-            sx={{ minHeight: TOUCH_TARGET_MIN, boxShadow: '0 2px 8px rgba(255,215,0,0.35)' }}
+            sx={{
+              minHeight: TOUCH_TARGET_MIN,
+              boxShadow: '0 2px 8px rgba(255,215,0,0.35)',
+            }}
             onClick={() => setOpenAddBank(true)}
           >
             Bank

@@ -48,7 +48,7 @@ const AuthWrapper = ({ children }) => {
   const [currentImage, setCurrentImage] = useState(0);
   const [isCarouselAutoPlay, setIsCarouselAutoPlay] = useState(true);
   const isDarkMode = theme.palette.mode === 'dark';
-  const accentColor = theme.palette.primary.main || '#FFD700';
+  const accentColor = theme.palette.primary.main || '#FFD34D';
   const accentStrong = theme.palette.primary.dark || '#D39D00';
   const shellBackground = isDarkMode
     ? 'linear-gradient(145deg, rgba(20, 20, 20, 0.98) 0%, rgba(30, 30, 30, 0.99) 100%)'
@@ -121,21 +121,21 @@ const AuthWrapper = ({ children }) => {
   const features = [
     {
       icon: (
-        <VerifiedIcon sx={{ fontSize: { xs: 20, sm: 24 }, color: '#FFD700' }} />
+        <VerifiedIcon sx={{ fontSize: { xs: 20, sm: 24 }, color: '#FFD34D' }} />
       ),
       title: 'Verified Professionals',
       description: 'All workers are vetted and verified',
     },
     {
       icon: (
-        <BuildIcon sx={{ fontSize: { xs: 20, sm: 24 }, color: '#FFD700' }} />
+        <BuildIcon sx={{ fontSize: { xs: 20, sm: 24 }, color: '#FFD34D' }} />
       ),
       title: 'Skilled Trades',
       description: 'Plumbing, electrical, carpentry & more',
     },
     {
       icon: (
-        <HandymanIcon sx={{ fontSize: { xs: 20, sm: 24 }, color: '#FFD700' }} />
+        <HandymanIcon sx={{ fontSize: { xs: 20, sm: 24 }, color: '#FFD34D' }} />
       ),
       title: 'Quality Work',
       description: 'Guaranteed professional results',

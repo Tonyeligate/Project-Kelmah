@@ -41,12 +41,12 @@ const StyledContractCard = styled(Paper)(({ theme }) => ({
   backgroundColor: alpha(theme.palette.primary.main, 0.7),
   backdropFilter: 'blur(10px)',
   border: `2px solid ${theme.palette.secondary.main}`,
-  boxShadow: `inset 0 0 8px rgba(255, 215, 0, 0.5)`,
+  boxShadow: `inset 0 0 8px rgba(255, 211, 77, 0.5)`,
   transition:
     'transform 0.2s ease-in-out, box-shadow 0.3s ease-in-out, border-color 0.3s ease-in-out',
   '&:hover': {
     transform: 'translateY(-5px)',
-    boxShadow: `0 4px 20px rgba(255, 215, 0, 0.3), inset 0 0 8px rgba(255, 215, 0, 0.5)`,
+    boxShadow: `0 4px 20px rgba(255, 211, 77, 0.3), inset 0 0 8px rgba(255, 211, 77, 0.5)`,
     borderColor: theme.palette.secondary.light,
   },
 }));

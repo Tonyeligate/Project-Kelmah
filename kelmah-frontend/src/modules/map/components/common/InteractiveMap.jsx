@@ -17,9 +17,9 @@ const createAdvancedVocationalIcon = (
   isUrgent = false,
 ) => {
   const getIconColor = () => {
-    if (type === 'job') return isUrgent ? '#FF5722' : '#FFD700';
+    if (type === 'job') return isUrgent ? '#FF5722' : '#FFD34D';
     if (type === 'worker') return isOnline ? '#4CAF50' : '#1a1a1a';
-    return '#FFD700';
+    return '#FFD34D';
   };
 
   const getIconSymbol = () => {
@@ -968,7 +968,7 @@ const InteractiveMap = ({
             : `2px solid ${theme.palette.secondary.main}33`,
           boxShadow: isFullscreen
             ? 'none'
-            : `0 8px 32px rgba(255, 215, 0, 0.15)`,
+            : `0 8px 32px rgba(255, 211, 77, 0.15)`,
           ...(isFullscreen && {
             position: 'fixed',
             top: 0,
@@ -1321,7 +1321,7 @@ const InteractiveMap = ({
                 backdropFilter: 'blur(20px)',
                 border: `1px solid ${theme.palette.secondary.main}33`,
                 borderRadius: 3,
-                boxShadow: `0 8px 32px rgba(255, 215, 0, 0.2)`,
+                boxShadow: `0 8px 32px rgba(255, 211, 77, 0.2)`,
               }}
             >
               <Typography

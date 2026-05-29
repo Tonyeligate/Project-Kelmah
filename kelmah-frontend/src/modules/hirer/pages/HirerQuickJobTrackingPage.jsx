@@ -111,6 +111,31 @@ const toWorkerName = (worker) => {
   );
 };
 
+const formatPreferredDate = (value) => {
+  if (!value) {
+    return 'Flexible';
+  }
+
+  const parsedDate = new Date(`${value}T00:00:00`);
+  if (Number.isNaN(parsedDate.getTime())) {
+    return value;
+  }
+
+  return parsedDate.toLocaleDateString([], {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+  });
+};
+
+const formatPreferredTimeSlot = (value) => {
+  if (!value || value === 'anytime') {
+    return 'Anytime';
+  }
+
+  return value.replace(/_/g, ' ');
+};
+
 const QuoteCard = ({ quote, onAccept, actionLoading, acceptedQuoteId }) => {
   const workerName = toWorkerName(quote?.worker);
   const isAccepted =
@@ -374,6 +399,56 @@ const HirerQuickJobTrackingPage = () => {
   ].includes(job?.status);
   const canPay = job?.status === 'accepted';
   const quotes = useMemo(() => job?.quotes || [], [job?.quotes]);
+  const bookingSummaryRows = useMemo(
+    () => [
+      {
+        label: 'Service',
+        value: category?.name || 'Quick-hire request',
+      },
+      {
+        label: 'Description',
+        value: job?.description || 'No description provided',
+      },
+      {
+        label: 'Location',
+        value:
+          [job?.location?.address, job?.location?.region]
+            .filter(Boolean)
+            .join(', ') || 'Location not set',
+      },
+      {
+        label: 'Preferred date',
+        value: formatPreferredDate(job?.preferredDate),
+      },
+      {
+        label: 'Preferred time',
+        value: formatPreferredTimeSlot(job?.preferredTimeSlot),
+      },
+      {
+        label: 'Worker',
+        value: acceptedWorker
+          ? toWorkerName(acceptedWorker)
+          : 'Waiting for worker selection',
+      },
+      {
+        label: 'Booking total',
+        value: formatCurrency(
+          Number(job?.acceptedQuote?.amount || job?.escrow?.amount || 0),
+        ),
+      },
+    ],
+    [
+      acceptedWorker,
+      category?.name,
+      job?.description,
+      job?.location?.address,
+      job?.location?.region,
+      job?.preferredDate,
+      job?.preferredTimeSlot,
+      job?.acceptedQuote?.amount,
+      job?.escrow?.amount,
+    ],
+  );
 
   const handleAcceptQuote = async (quote) => {
     const quoteId = quote?._id || quote?.id;
@@ -792,7 +867,42 @@ const HirerQuickJobTrackingPage = () => {
               <Card sx={{ borderRadius: 3 }}>
                 <CardContent>
                   <Typography variant="h6" fontWeight={700} gutterBottom>
-                    Next action
+                    Confirm booking
+                  </Typography>
+                  <Typography color="text.secondary" sx={{ mb: 2 }}>
+                    Review the full job summary before you secure the worker.
+                  </Typography>
+                  <Stack spacing={1.5}>
+                    {bookingSummaryRows.map((item) => (
+                      <Box key={item.label}>
+                        <Typography variant="caption" color="text.secondary">
+                          {item.label}
+                        </Typography>
+                        <Typography fontWeight={600}>{item.value}</Typography>
+                      </Box>
+                    ))}
+                  </Stack>
+                  {paymentStatus?.status && (
+                    <Chip
+                      icon={<PaymentIcon />}
+                      label={`Payment status: ${paymentStatus.status}`}
+                      variant="outlined"
+                      sx={{ mt: 2 }}
+                    />
+                  )}
+                  {!canPay && (
+                    <Alert severity="info" sx={{ mt: 2 }}>
+                      Accept a quote to unlock payment and finalize this
+                      booking.
+                    </Alert>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card sx={{ borderRadius: 3 }}>
+                <CardContent>
+                  <Typography variant="h6" fontWeight={700} gutterBottom>
+                    {canPay ? 'Secure booking' : 'Next action'}
                   </Typography>
 
                   {canPay ? (
@@ -801,8 +911,8 @@ const HirerQuickJobTrackingPage = () => {
                         severity="info"
                         icon={<PaymentIcon fontSize="inherit" />}
                       >
-                        You have selected a worker. Make payment to lock the job
-                        and notify them to travel.
+                        Review the summary above, then secure the worker to lock
+                        this booking and notify them to travel.
                       </Alert>
                       <TextField
                         select
@@ -832,7 +942,7 @@ const HirerQuickJobTrackingPage = () => {
                         disabled={actionLoading}
                         sx={{ minHeight: 44 }}
                       >
-                        Secure worker with payment
+                        Confirm booking and secure worker
                       </Button>
                     </Stack>
                   ) : canApprove ? (

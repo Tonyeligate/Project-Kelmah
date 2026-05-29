@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Paper,
@@ -31,13 +31,13 @@ import { devError } from '@/modules/common/utils/devLogger';
 // Custom styled components
 const PaymentMethodCard = styled(Paper)(({ theme, selected }) => ({
   padding: theme.spacing(2),
-  border: `2px solid ${selected ? '#FFD700' : 'transparent'}`,
-  backgroundColor: selected ? 'rgba(255, 215, 0, 0.05)' : 'transparent',
+  border: `2px solid ${selected ? '#FFD34D' : 'transparent'}`,
+  backgroundColor: selected ? 'rgba(255, 211, 77, 0.05)' : 'transparent',
   cursor: 'pointer',
   transition: 'all 0.3s ease',
   '&:hover': {
-    borderColor: '#FFD700',
-    backgroundColor: 'rgba(255, 215, 0, 0.02)',
+    borderColor: '#FFD34D',
+    backgroundColor: 'rgba(255, 211, 77, 0.02)',
   },
 }));
 
@@ -198,7 +198,7 @@ const GhanaMobileMoneyPayment = ({
       case 'processing':
         return (
           <Box sx={{ textAlign: 'center', py: 4 }}>
-            <CircularProgress size={60} sx={{ color: '#FFD700', mb: 2 }} />
+            <CircularProgress size={60} sx={{ color: '#FFD34D', mb: 2 }} />
             <Typography variant="h6" gutterBottom>
               Processing Payment...
             </Typography>
@@ -264,7 +264,7 @@ const GhanaMobileMoneyPayment = ({
                 gutterBottom
                 sx={{ display: 'flex', alignItems: 'center' }}
               >
-                <WalletIcon sx={{ mr: 1, color: '#FFD700' }} />
+                <WalletIcon sx={{ mr: 1, color: '#FFD34D' }} />
                 Select Mobile Money Provider
               </Typography>
 
@@ -315,7 +315,7 @@ const GhanaMobileMoneyPayment = ({
                         </Box>
                         <Radio
                           checked={selectedProvider === provider.id}
-                          sx={{ color: '#FFD700' }}
+                          sx={{ color: '#FFD34D' }}
                         />
                       </Box>
                     </PaymentMethodCard>
@@ -333,7 +333,7 @@ const GhanaMobileMoneyPayment = ({
                 gutterBottom
                 sx={{ display: 'flex', alignItems: 'center' }}
               >
-                <PhoneIcon sx={{ mr: 1, color: '#FFD700' }} />
+                <PhoneIcon sx={{ mr: 1, color: '#FFD34D' }} />
                 Mobile Money Number
               </Typography>
 
@@ -379,7 +379,7 @@ const GhanaMobileMoneyPayment = ({
               <Typography variant="h6" gutterBottom>
                 Payment Summary
               </Typography>
-              <Paper sx={{ p: 2, backgroundColor: 'rgba(255, 215, 0, 0.05)' }}>
+              <Paper sx={{ p: 2, backgroundColor: 'rgba(255, 211, 77, 0.05)' }}>
                 <Box
                   sx={{
                     display: 'flex',
@@ -454,9 +454,9 @@ const GhanaMobileMoneyPayment = ({
                 py: 1.5,
                 fontSize: '1.1rem',
                 fontWeight: 600,
-                background: 'linear-gradient(45deg, #FFD700, #DAA520)',
+                background: 'linear-gradient(45deg, #FFD34D, #DAA520)',
                 '&:hover': {
-                  background: 'linear-gradient(45deg, #DAA520, #FFD700)',
+                  background: 'linear-gradient(45deg, #DAA520, #FFD34D)',
                 },
               }}
             >

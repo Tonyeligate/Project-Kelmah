@@ -10,14 +10,7 @@
 The strongest remaining prompts to tackle next, based on the current codebase and the work already completed:
 
 - 101. Redesign the mobile navbar so users can reach search, post job, and chat in one tap.
-- 364. Add a "Set Budget Range" slider during job creation.
-- 391. Add a "Preview Job Post" button before publishing.
-- 503. Add a "Request Quote" form with standardized fields.
 - 504. Add a "Confirm Booking" page with full job summary.
-- 662. Improve the pricing page so it is easier to understand.
-- 665. Display a "Service Fee" clearly on every transaction.
-- 681. Add a "Saved Payment Methods" for faster checkout.
-- 687. Add a "Payment Notification" SMS and in-app.
 
 ## Table of Contents
 
@@ -427,7 +420,6 @@ The strongest remaining prompts to tackle next, based on the current codebase an
 360. Add a job posting template for pool maintenance.
 361. Add an "Urgent Job" toggle that pushes the post to the top.
 362. Add a photo upload step during job posting.
-364. Add a "Set Budget Range" slider during job creation.
 365. Add a "Job Duration" selector (hours, days, weeks).
 366. Create a "Describe the Problem" prompt with example answers.
 367. Add a "Materials Provided?" checkbox for hirers.
@@ -454,7 +446,6 @@ The strongest remaining prompts to tackle next, based on the current codebase an
 388. Add a "Job Urgency" slider (casual to emergency).
 389. Add a "Local Language Description" field alongside English.
 390. Create a "Job Posting Tips" sidebar with best practices.
-391. Add a "Preview Job Post" button before publishing.
 392. Add a "Share to Facebook" option after posting.
 393. Create a "Boost This Job" paid promotion option.
 394. Add a "Apply Before" deadline date picker.
@@ -754,7 +745,6 @@ The strongest remaining prompts to tackle next, based on the current codebase an
 661. Improve the pricing page so it is easier to understand.
 663. Add mobile money payment (MTN MoMo, AirtelTigo).
 664. Add a "Split Payment" option for hirers (deposit + completion).
-665. Display a "Service Fee" clearly on every transaction.
 666. Add a "Payment Timeline" showing when funds are released.
 667. Add a "Worker Payout" settings for preferred method.
 668. Add a "Payment Receipt" download as PDF.
@@ -770,13 +760,11 @@ The strongest remaining prompts to tackle next, based on the current codebase an
 678. Add a "Payment Dispute" resolution center.
 679. Add a "Withdraw Earnings" interface for workers.
 680. Add a "Payment Currency" selector (GHS, USD for expats).
-681. Add a "Saved Payment Methods" for faster checkout.
 682. Add a "Auto-Release Payment" when job is marked complete.
 683. Add a "Late Payment" fee explanation for hirers.
 684. Add a "Promo Code" field at checkout.
 685. Add a "Referral Credit" balance display.
 686. Add a "Transaction Limits" display for new accounts.
-687. Add a "Payment Notification" SMS and in-app.
 688. Add a "Price Comparison" tool for similar jobs.
 689. Add a "Budget Estimator" based on job type and location.
 690. Add a "Deposit Protection" badge for large jobs.

@@ -820,9 +820,9 @@ function WorkerProfile({ workerId: workerIdProp }) {
     height: { xs: 24, md: 28 },
     borderRadius: 999,
     background:
-      'linear-gradient(180deg, rgba(242, 193, 79, 0.98) 0%, rgba(216, 176, 75, 0.98) 100%)',
-    border: '1px solid rgba(242, 193, 79, 0.85)',
-    color: '#1b1b1e',
+      'linear-gradient(180deg, rgba(255, 211, 77, 0.98) 0%, rgba(216, 176, 75, 0.98) 100%)',
+    border: '1px solid rgba(255, 211, 77, 0.85)',
+    color: '#101116',
     fontWeight: 700,
     fontSize: { xs: '0.82rem', md: '0.9rem' },
     letterSpacing: '0.01em',
@@ -835,7 +835,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
     letterSpacing: { xs: '0.08em', md: '0.12em' },
     textTransform: 'none',
     fontSize: { xs: '0.78rem', md: '0.95rem' },
-    color: '#1b1b1e',
+    color: '#101116',
     background: 'linear-gradient(180deg, var(--wp-gold) 0%, #d8b04b 100%)',
     boxShadow: '0 12px 24px rgba(0, 0, 0, 0.35)',
     '&:hover': {
@@ -850,7 +850,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
     textTransform: 'none',
     fontSize: { xs: '0.72rem', md: '0.95rem' },
     color: 'var(--wp-gold)',
-    border: '1px solid rgba(242, 193, 79, 0.7)',
+    border: '1px solid rgba(255, 211, 77, 0.7)',
     backgroundColor: 'rgba(12, 12, 15, 0.9)',
     '&:hover': {
       backgroundColor: 'rgba(22, 22, 26, 0.95)',
@@ -983,7 +983,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
               borderRadius: { xs: 18, md: 16 },
               backgroundImage: profileHeroImage
                 ? `linear-gradient(160deg, rgba(12,12,14,0.94) 0%, rgba(27,27,30,0.88) 55%, rgba(14,14,16,0.96) 100%), url(${profileHeroImage})`
-                : 'linear-gradient(160deg, #2a2a2f 0%, #1b1b1e 60%, #141417 100%)',
+                : 'linear-gradient(160deg, #222530 0%, #1A1D26 60%, #101116 100%)',
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               position: 'relative',
@@ -995,7 +995,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                 position: 'absolute',
                 inset: 0,
                 background:
-                  'radial-gradient(circle at 20% 0%, rgba(242, 193, 79, 0.2) 0%, transparent 58%)',
+                  'radial-gradient(circle at 20% 0%, rgba(255, 211, 77, 0.2) 0%, transparent 58%)',
                 opacity: 0.6,
                 pointerEvents: 'none',
               }}
@@ -1095,7 +1095,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                     background:
                       'linear-gradient(135deg, var(--wp-gold), #d8b04b)',
                     boxShadow:
-                      '0 0 0 1px rgba(242, 193, 79, 0.45), 0 14px 28px rgba(0, 0, 0, 0.45)',
+                      '0 0 0 1px rgba(255, 211, 77, 0.45), 0 14px 28px rgba(0, 0, 0, 0.45)',
                   }}
                 >
                   <Avatar

@@ -17,11 +17,11 @@ export const StyledAppBar = styled(AppBar)(({ theme }) => ({
   background:
     theme.palette.mode === 'dark'
       ? `linear-gradient(135deg, rgba(0, 0, 0, 0.95) 0%, rgba(26, 26, 26, 0.95) 100%)`
-      : `linear-gradient(135deg, rgba(255, 215, 0, 0.95) 0%, rgba(255, 193, 7, 0.95) 100%)`,
+      : `linear-gradient(135deg, rgba(255, 211, 77, 0.95) 0%, rgba(255, 193, 7, 0.95) 100%)`,
   backdropFilter: 'blur(20px)',
   borderBottom:
     theme.palette.mode === 'dark'
-      ? `2px solid rgba(255, 215, 0, 0.5)`
+      ? `2px solid rgba(255, 211, 77, 0.5)`
       : `2px solid rgba(0, 0, 0, 0.3)`,
   boxShadow:
     theme.palette.mode === 'dark'
@@ -68,7 +68,7 @@ export const LogoIcon = styled(Box)(({ theme }) => ({
   fontFamily: 'Montserrat, sans-serif',
   boxShadow:
     theme.palette.mode === 'dark'
-      ? `0 4px 15px rgba(255, 215, 0, 0.4)`
+      ? `0 4px 15px rgba(255, 211, 77, 0.4)`
       : `0 4px 15px rgba(0, 0, 0, 0.3)`,
   position: 'relative',
   overflow: 'hidden',
@@ -94,7 +94,7 @@ export const LogoIcon = styled(Box)(({ theme }) => ({
     background:
       theme.palette.mode === 'dark'
         ? `linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.3) 50%, transparent 70%)`
-        : `linear-gradient(45deg, transparent 30%, rgba(255, 215, 0, 0.3) 50%, transparent 70%)`,
+        : `linear-gradient(45deg, transparent 30%, rgba(255, 211, 77, 0.3) 50%, transparent 70%)`,
     transform: 'translateX(-100%)',
     transition: 'transform 0.6s ease',
   },
@@ -116,7 +116,7 @@ export const BrandText = styled(Typography)(({ theme }) => ({
   WebkitTextFillColor: 'transparent',
   textShadow:
     theme.palette.mode === 'dark'
-      ? '0 2px 10px rgba(255, 215, 0, 0.3)'
+      ? '0 2px 10px rgba(255, 211, 77, 0.3)'
       : '0 2px 10px rgba(0, 0, 0, 0.2)',
   letterSpacing: '-0.02em',
   [theme.breakpoints.down('sm')]: {
@@ -154,12 +154,12 @@ export const TaglineText = styled(Typography)(({ theme }) => ({
 export const ActionButton = styled(IconButton)(({ theme }) => ({
   backgroundColor:
     theme.palette.mode === 'dark'
-      ? 'rgba(255, 215, 0, 0.1)'
+      ? 'rgba(255, 211, 77, 0.1)'
       : 'rgba(0, 0, 0, 0.1)',
   color: theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
   border:
     theme.palette.mode === 'dark'
-      ? `1px solid rgba(255, 215, 0, 0.36)`
+      ? `1px solid rgba(255, 211, 77, 0.36)`
       : `1px solid rgba(0, 0, 0, 0.36)`,
   margin: theme.spacing(0, 0.5),
   minWidth: 44,
@@ -175,7 +175,7 @@ export const ActionButton = styled(IconButton)(({ theme }) => ({
     outlineOffset: '3px',
     boxShadow:
       theme.palette.mode === 'dark'
-        ? '0 0 0 4px rgba(255, 215, 0, 0.18)'
+        ? '0 0 0 4px rgba(255, 211, 77, 0.18)'
         : '0 0 0 4px rgba(0, 0, 0, 0.12)',
   },
   [theme.breakpoints.down('sm')]: {
@@ -191,12 +191,12 @@ export const ActionButton = styled(IconButton)(({ theme }) => ({
   '&:hover': {
     backgroundColor:
       theme.palette.mode === 'dark'
-        ? 'rgba(255, 215, 0, 0.2)'
+        ? 'rgba(255, 211, 77, 0.2)'
         : 'rgba(0, 0, 0, 0.15)',
     transform: 'translateY(-1px) scale(1.05)',
     boxShadow:
       theme.palette.mode === 'dark'
-        ? '0 4px 15px rgba(255, 215, 0, 0.3)'
+        ? '0 4px 15px rgba(255, 211, 77, 0.3)'
         : '0 4px 15px rgba(0, 0, 0, 0.2)',
   },
   '&:active': {
@@ -219,7 +219,7 @@ export const UserAvatar = styled(Avatar)(({ theme }) => ({
   fontSize: '1rem',
   border:
     theme.palette.mode === 'dark'
-      ? `2px solid rgba(255, 215, 0, 0.3)`
+      ? `2px solid rgba(255, 211, 77, 0.3)`
       : `2px solid rgba(0, 0, 0, 0.3)`,
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   cursor: 'pointer',
@@ -229,7 +229,7 @@ export const UserAvatar = styled(Avatar)(({ theme }) => ({
     fontSize: '0.95rem',
     border:
       theme.palette.mode === 'dark'
-        ? `1.5px solid rgba(255, 215, 0, 0.3)`
+        ? `1.5px solid rgba(255, 211, 77, 0.3)`
         : `1.5px solid rgba(0, 0, 0, 0.3)`,
   },
   '&:hover': {
@@ -240,7 +240,7 @@ export const UserAvatar = styled(Avatar)(({ theme }) => ({
         : `2px solid ${BRAND_COLORS.black}`,
     boxShadow:
       theme.palette.mode === 'dark'
-        ? `0 4px 15px rgba(255, 215, 0, 0.4)`
+        ? `0 4px 15px rgba(255, 211, 77, 0.4)`
         : `0 4px 15px rgba(0, 0, 0, 0.3)`,
   },
   '&:focus-visible': {
@@ -251,7 +251,7 @@ export const UserAvatar = styled(Avatar)(({ theme }) => ({
     outlineOffset: 3,
     boxShadow:
       theme.palette.mode === 'dark'
-        ? '0 0 0 4px rgba(255, 215, 0, 0.18)'
+        ? '0 0 0 4px rgba(255, 211, 77, 0.18)'
         : '0 0 0 4px rgba(0, 0, 0, 0.12)',
   },
 }));
@@ -325,7 +325,7 @@ export const AuthButton = styled(Button)(({ theme, variant }) => ({
     outlineOffset: 3,
     boxShadow:
       theme.palette.mode === 'dark'
-        ? '0 0 0 4px rgba(255, 215, 0, 0.18)'
+        ? '0 0 0 4px rgba(255, 211, 77, 0.18)'
         : '0 0 0 4px rgba(0, 0, 0, 0.12)',
   },
   [theme.breakpoints.down('sm')]: {
@@ -347,7 +347,7 @@ export const AuthButton = styled(Button)(({ theme, variant }) => ({
           : BRAND_COLORS.blackLight,
       backgroundColor:
         theme.palette.mode === 'dark'
-          ? 'rgba(255, 215, 0, 0.1)'
+          ? 'rgba(255, 211, 77, 0.1)'
           : 'rgba(0, 0, 0, 0.08)',
       transform: 'translateY(-1px)',
       borderWidth: '2px',
@@ -362,7 +362,7 @@ export const AuthButton = styled(Button)(({ theme, variant }) => ({
       theme.palette.mode === 'dark' ? BRAND_COLORS.black : BRAND_COLORS.gold,
     boxShadow:
       theme.palette.mode === 'dark'
-        ? '0 4px 15px rgba(255, 215, 0, 0.3)'
+        ? '0 4px 15px rgba(255, 211, 77, 0.3)'
         : '0 4px 15px rgba(0, 0, 0, 0.3)',
     '&:hover': {
       background:
@@ -371,7 +371,7 @@ export const AuthButton = styled(Button)(({ theme, variant }) => ({
           : `linear-gradient(135deg, ${BRAND_COLORS.blackLight} 0%, ${BRAND_COLORS.black} 100%)`,
       boxShadow:
         theme.palette.mode === 'dark'
-          ? '0 6px 20px rgba(255, 215, 0, 0.4)'
+          ? '0 6px 20px rgba(255, 211, 77, 0.4)'
           : '0 6px 20px rgba(0, 0, 0, 0.4)',
       transform: 'translateY(-2px)',
     },

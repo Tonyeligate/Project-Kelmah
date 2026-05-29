@@ -447,16 +447,16 @@ const MobileLogin = ({ registrationSuccess = false }) => {
                   fontWeight: 700,
                   textTransform: 'none',
                   background:
-                    'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
+                    'linear-gradient(135deg, #FFD34D 0%, #FFC000 100%)',
                   color: '#000',
-                  boxShadow: '0 4px 15px rgba(255, 215, 0, 0.3)',
+                  boxShadow: '0 4px 15px rgba(255, 211, 77, 0.3)',
                   '&:hover': {
                     background:
                       'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
-                    boxShadow: '0 6px 20px rgba(255, 215, 0, 0.4)',
+                    boxShadow: '0 6px 20px rgba(255, 211, 77, 0.4)',
                   },
                   '&:disabled': {
-                    background: 'rgba(255, 215, 0, 0.3)',
+                    background: 'rgba(255, 211, 77, 0.3)',
                     color: 'rgba(0, 0, 0, 0.5)',
                   },
                 }}

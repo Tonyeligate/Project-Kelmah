@@ -38,55 +38,55 @@
   --kelmah-focus-ring: rgba(255, 210, 76, 0.35);
 
   /* Surfaces */
-  --k-bg-body:    #050507;
-  --k-bg-surface: #0E0F14;
-  --k-bg-raised:  #151722;
-  --k-bg-overlay: #1E2030;
-
+  --k-bg-body:    #101116;
+  --k-bg-surface: #1A1D26;
+  --k-bg-raised:  #222530;
+  --k-bg-overlay: #2E3142;
+  
   /* Text */
   --k-text-primary:   #F7F3E3;
   --k-text-secondary: rgba(247, 243, 227, 0.70);
   --k-text-muted:     rgba(247, 243, 227, 0.50);
 
   /* Brand */
-  --k-gold:        #FFD700;
+  --k-gold:        #FFD34D;
   --k-gold-dark:   #B8860B;
-  --k-gold-active: #FFD700;
+  --k-gold-active: #FFD34D;
 
   /* Stroke / border */
   --k-border-default: rgba(255, 255, 255, 0.08);
-  --k-border-gold:    rgba(255, 215, 0, 0.20);
+  --k-border-gold:    rgba(255, 211, 77, 0.20);
 
   /* Shared semantic states */
   --k-surface-soft:           rgba(255, 255, 255, 0.05);
   --k-surface-muted:          rgba(255, 255, 255, 0.10);
-  --k-accent-soft:            rgba(255, 215, 0, 0.10);
-  --k-accent-soft-strong:     rgba(255, 215, 0, 0.18);
-  --k-accent-border:          rgba(255, 215, 0, 0.25);
-  --k-accent-border-strong:   rgba(255, 215, 0, 0.40);
+  --k-accent-soft:            rgba(255, 211, 77, 0.10);
+  --k-accent-soft-strong:     rgba(255, 211, 77, 0.18);
+  --k-accent-border:          rgba(255, 211, 77, 0.25);
+  --k-accent-border-strong:   rgba(255, 211, 77, 0.40);
   --k-text-on-accent:         #111111;
   --k-danger-soft:            rgba(244, 67, 54, 0.12);
   --k-danger-border:          rgba(244, 67, 54, 0.32);
   --k-danger-text:            #ff6b6b;
 
   /* Navigation sidebar */
-  --nav-icon-active:    #FFD700;
+  --nav-icon-active:    #FFD34D;
   --nav-icon-inactive:  #9E9E9E;
-  --nav-text-active:    #FFD700;
+  --nav-text-active:    #FFD34D;
   --nav-text-inactive:  #E0E0E0;
-  --nav-label:          rgba(255, 215, 0, 0.70);
-  --nav-bg-active:      rgba(255, 215, 0, 0.15);
-  --nav-bg-hover:       rgba(255, 215, 0, 0.08);
-  --nav-border:         rgba(255, 215, 0, 0.20);
-  --nav-user-card-bg:   rgba(255, 215, 0, 0.08);
-  --nav-user-card-border: rgba(255, 215, 0, 0.20);
-  --nav-divider:        rgba(255, 215, 0, 0.15);
-  --nav-collapse-icon:  #FFD700;
-  --nav-collapse-hover: rgba(255, 215, 0, 0.12);
+  --nav-label:          rgba(255, 211, 77, 0.70);
+  --nav-bg-active:      rgba(255, 211, 77, 0.15);
+  --nav-bg-hover:       rgba(255, 211, 77, 0.08);
+  --nav-border:         rgba(255, 211, 77, 0.20);
+  --nav-user-card-bg:   rgba(255, 211, 77, 0.08);
+  --nav-user-card-border: rgba(255, 211, 77, 0.20);
+  --nav-divider:        rgba(255, 211, 77, 0.15);
+  --nav-collapse-icon:  #FFD34D;
+  --nav-collapse-hover: rgba(255, 211, 77, 0.12);
 
   /* Scrollbar */
-  --scrollbar-thumb:       rgba(255, 215, 0, 0.30);
-  --scrollbar-thumb-hover: rgba(255, 215, 0, 0.55);
+  --scrollbar-thumb:       rgba(255, 211, 77, 0.30);
+  --scrollbar-thumb-hover: rgba(255, 211, 77, 0.55);
   --scrollbar-track:       transparent;
 }
 
@@ -381,7 +381,7 @@ a[href]:not(.MuiLink-root):not(.MuiButtonBase-root):visited {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #ffd700;
+  background: #FFD34D;
   border-radius: 4px;
   transition: background 0.3s ease;
 }
@@ -392,7 +392,7 @@ a[href]:not(.MuiLink-root):not(.MuiButtonBase-root):visited {
 
 /* Dark mode scrollbar */
 html[data-theme='dark'] ::-webkit-scrollbar-thumb {
-  background: #ffd700;
+  background: #FFD34D;
 }
 
 html[data-theme='dark'] ::-webkit-scrollbar-thumb:hover {
@@ -467,14 +467,14 @@ html[data-theme='light'] ::-webkit-scrollbar-thumb:hover {
 
 /* Focus management for accessibility */
 .focus-visible {
-  outline: 2px solid #ffd700;
+  outline: 2px solid #FFD34D;
   outline-offset: 2px;
 }
 
 /* High contrast mode support */
 @media (prefers-contrast: high) {
   ::-webkit-scrollbar-thumb {
-    background: #ffd700 !important;
+    background: #FFD34D !important;
   }
 }
 
@@ -615,11 +615,11 @@ body,
 
 /* Custom selection colors */
 ::selection {
-  background: #ffd700;
+  background: #FFD34D;
   color: #000000;
 }
 
 ::-moz-selection {
-  background: #ffd700;
+  background: #FFD34D;
   color: #000000;
 }

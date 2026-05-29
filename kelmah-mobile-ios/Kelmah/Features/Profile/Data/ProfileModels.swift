@@ -164,6 +164,9 @@ struct PortfolioProject: Hashable, Identifiable {
     let status: String
     let isFeatured: Bool
     let createdAt: String?
+    let imageUrl: String?
+    let clientName: String?
+    let clientTestimonial: String?
 }
 
 struct ProfileRawEnvelope: Decodable {

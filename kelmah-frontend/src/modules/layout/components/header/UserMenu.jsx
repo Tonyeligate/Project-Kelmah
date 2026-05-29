@@ -83,7 +83,7 @@ const UserMenu = ({
           minWidth: 260,
           border:
             theme.palette.mode === 'dark'
-              ? `1px solid rgba(255, 215, 0, 0.3)`
+              ? `1px solid rgba(255, 211, 77, 0.3)`
               : `1px solid rgba(0, 0, 0, 0.2)`,
           backgroundColor:
             theme.palette.mode === 'dark'
@@ -128,7 +128,7 @@ const UserMenu = ({
                 sx={{
                   backgroundColor:
                     theme.palette.mode === 'dark'
-                      ? 'rgba(255, 215, 0, 0.15)'
+                      ? 'rgba(255, 211, 77, 0.15)'
                       : 'rgba(0, 0, 0, 0.1)',
                   color:
                     theme.palette.mode === 'dark'

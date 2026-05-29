@@ -108,4 +108,7 @@ data class PortfolioProject(
     val status: String = "draft",
     val isFeatured: Boolean = false,
     val createdAt: String? = null,
+    val imageUrl: String? = null,
+    val clientName: String? = null,
+    val clientTestimonial: String? = null,
 )

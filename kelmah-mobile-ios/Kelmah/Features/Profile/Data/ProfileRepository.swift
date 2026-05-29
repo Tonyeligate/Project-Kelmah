@@ -204,6 +204,11 @@ final class ProfileRepository {
         let items = object["portfolioItems"]?.arrayValue?.compactMap { value -> PortfolioProject? in
             guard let item = value.objectValue else { return nil }
             guard let id = item.string("id") ?? item.string("_id") else { return nil }
+            
+            let mainImage = item.string("mainImage")
+            let firstImageUrl = item["images"]?.arrayValue?.first?.stringValue ?? item["images"]?.arrayValue?.first?.objectValue?.string("url")
+            let imageUrl = mainImage ?? firstImageUrl
+
             return PortfolioProject(
                 id: id,
                 title: item.string("title") ?? "Untitled project",
@@ -214,7 +219,10 @@ final class ProfileRepository {
                 clientRating: item.double("clientRating"),
                 status: item.string("status") ?? "draft",
                 isFeatured: item.bool("isFeatured") ?? false,
-                createdAt: item.string("createdAt")
+                createdAt: item.string("createdAt"),
+                imageUrl: imageUrl,
+                clientName: item.string("clientName"),
+                clientTestimonial: item.string("clientTestimonial")
             )
         } ?? []
         let stats = object["stats"]?.objectValue

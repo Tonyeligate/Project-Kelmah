@@ -33,7 +33,7 @@ const AnimatedButton = styled(Button)(({ theme }) => ({
 }));
 
 // Custom colors for charts
-const CHART_COLORS = ['#FFD700', '#1a1a1a', '#666666', '#999999', '#cccccc'];
+const CHART_COLORS = ['#FFD34D', '#1a1a1a', '#666666', '#999999', '#cccccc'];
 
 const EMPTY_EARNINGS_DATA = {
   summary: {

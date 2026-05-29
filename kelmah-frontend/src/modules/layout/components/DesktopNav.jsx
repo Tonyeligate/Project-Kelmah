@@ -28,26 +28,26 @@ const StyledNavLink = styled(NavLink)(({ theme }) => ({
     transform: 'translateY(-2px)',
     backgroundColor:
       theme.palette.mode === 'dark'
-        ? 'rgba(255, 215, 0, 0.15)'
+        ? 'rgba(255, 211, 77, 0.15)'
         : 'rgba(0, 0, 0, 0.1)',
     boxShadow:
       theme.palette.mode === 'dark'
-        ? '0 4px 12px rgba(255, 215, 0, 0.2)'
+        ? '0 4px 12px rgba(255, 211, 77, 0.2)'
         : '0 4px 12px rgba(0, 0, 0, 0.15)',
   },
   '&.active': {
     color:
       theme.palette.mode === 'dark'
-        ? '#FFD700' // Gold for dark mode
+        ? '#FFD34D' // Gold for dark mode
         : '#000000', // Black for light mode
     backgroundColor:
       theme.palette.mode === 'dark'
-        ? 'rgba(255, 215, 0, 0.2)'
+        ? 'rgba(255, 211, 77, 0.2)'
         : 'rgba(0, 0, 0, 0.15)',
     fontWeight: 700,
     boxShadow:
       theme.palette.mode === 'dark'
-        ? '0 2px 8px rgba(255, 215, 0, 0.3)'
+        ? '0 2px 8px rgba(255, 211, 77, 0.3)'
         : '0 2px 8px rgba(0, 0, 0, 0.2)',
     '&::after': {
       content: '""',
@@ -60,7 +60,7 @@ const StyledNavLink = styled(NavLink)(({ theme }) => ({
       borderRadius: '3px 3px 0 0',
       backgroundColor:
         theme.palette.mode === 'dark'
-          ? '#FFD700' // Gold for dark mode
+          ? '#FFD34D' // Gold for dark mode
           : '#000000', // Black for light mode
     },
   },

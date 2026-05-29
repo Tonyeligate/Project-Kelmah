@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import {
@@ -159,37 +160,30 @@ const PricingTier = ({ plan, price, isYearly, onUpgrade, yearlySavings }) => (
   </Paper>
 );
 
+PricingTier.propTypes = {
+  plan: PropTypes.shape({
+    name: PropTypes.string.isRequired,
+    description: PropTypes.string.isRequired,
+    features: PropTypes.arrayOf(PropTypes.string).isRequired,
+    isPopular: PropTypes.bool,
+  }).isRequired,
+  price: PropTypes.number.isRequired,
+  isYearly: PropTypes.bool.isRequired,
+  onUpgrade: PropTypes.func.isRequired,
+  yearlySavings: PropTypes.number.isRequired,
+};
+
+FeatureCard.propTypes = {
+  icon: PropTypes.element.isRequired,
+  title: PropTypes.string.isRequired,
+  description: PropTypes.string.isRequired,
+};
+
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
 // --- Main Premium Page ---
-
-const FeatureItem = ({ text }) => (
-  <ListItem sx={{ py: 0.5 }}>
-    <ListItemIcon sx={{ minWidth: 'auto', mr: 1.5, color: 'success.main' }}>
-      <CheckCircleIcon fontSize="small" />
-    </ListItemIcon>
-    <ListItemText primary={text} />
-  </ListItem>
-);
-
-const BenefitCard = ({ icon, title, description }) => (
-  <Paper
-    elevation={1}
-    sx={{ p: 3, textAlign: 'center', height: '100%', borderRadius: 2 }}
-  >
-    <Box color="primary.main" mb={1.5}>
-      {React.cloneElement(icon, { sx: { fontSize: 40 } })}
-    </Box>
-    <Typography variant="h6" fontWeight="bold" mb={1}>
-      {title}
-    </Typography>
-    <Typography variant="body2" color="text.secondary">
-      {description}
-    </Typography>
-  </Paper>
-);
 
 const PremiumPage = () => {
   const navigate = useNavigate();
@@ -371,7 +365,7 @@ const PremiumPage = () => {
 
           {/* Features Grid */}
           <Grid container spacing={4} sx={{ mb: 8 }}>
-            {features.map((feature, index) => (
+            {features.map((feature) => (
               <Grid item key={feature.title} xs={12} sm={6} md={3}>
                 <FeatureCard {...feature} />
               </Grid>
@@ -463,6 +457,35 @@ const PremiumPage = () => {
               <Typography variant="body2" color="text.secondary">
                 Business monthly equivalent: GH₵
                 {Math.round(plans.yearly.business / 12)}/month.
+              </Typography>
+            </Stack>
+          </Paper>
+          <Paper
+            elevation={1}
+            sx={{
+              mt: 4,
+              p: 3,
+              borderRadius: 3,
+              border: '1px solid',
+              borderColor: 'divider',
+              bgcolor: 'background.default',
+            }}
+          >
+            <Stack spacing={1.5}>
+              <Typography variant="h6" fontWeight="bold">
+                Service fee transparency
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Kelmah service fees are always displayed before payment. We do
+                not add hidden charges after checkout.
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Your plan covers premium exposure, and service fees are only
+                charged on successful jobs or subscriptions you confirm.
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Want to see the exact fee breakdown? It will be shown on the
+                confirm & pay screen before you complete any payment.
               </Typography>
             </Stack>
           </Paper>

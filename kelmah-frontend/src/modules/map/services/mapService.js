@@ -1,4 +1,4 @@
-﻿import axios from 'axios';
+import axios from 'axios';
 import { api } from '../../../services/apiClient';
 import { EXTERNAL_SERVICES } from '../../../config/services';
 import workerService from '../../worker/services/workerService';
@@ -208,7 +208,7 @@ class MapService {
       coordinates: this.extractCoordinates(job),
       hirer: job.hirer,
       type: 'job',
-      color: '#FFD700', // Gold for jobs
+      color: '#FFD34D', // Gold for jobs
       urgent: job.urgent || false,
       verified: job.hirer?.verified || false,
       createdAt: job.createdAt,

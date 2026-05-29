@@ -36,7 +36,7 @@ private val LightColors = lightColorScheme(
 )
 
 private val DarkColors = darkColorScheme(
-    primary = KelmahGoldBright,
+    primary = KelmahGold,
     onPrimary = KelmahNavy,
     primaryContainer = KelmahGoldMuted,
     onPrimaryContainer = KelmahDarkOnSurface,
@@ -59,7 +59,7 @@ private val DarkColors = darkColorScheme(
 
 @Composable
 fun KelmahTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    darkTheme: Boolean = true,
     content: @Composable () -> Unit,
 ) {
     val view = LocalView.current

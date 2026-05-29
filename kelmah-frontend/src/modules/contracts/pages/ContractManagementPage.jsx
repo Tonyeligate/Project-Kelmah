@@ -122,11 +122,11 @@ const ContractManagementPage = () => {
             backdropFilter: 'blur(10px)',
             borderRadius: theme.spacing(2),
             border: `2px solid ${theme.palette.secondary.main}`,
-            boxShadow: `inset 0 0 8px rgba(255, 215, 0, 0.5)`,
+            boxShadow: `inset 0 0 8px rgba(255, 211, 77, 0.5)`,
             transition:
               'box-shadow 0.3s ease-in-out, border-color 0.3s ease-in-out',
             '&:hover': {
-              boxShadow: `0 0 12px rgba(255, 215, 0, 0.3), inset 0 0 8px rgba(255, 215, 0, 0.5)`,
+              boxShadow: `0 0 12px rgba(255, 211, 77, 0.3), inset 0 0 8px rgba(255, 211, 77, 0.5)`,
               borderColor: theme.palette.secondary.light,
             },
           })}

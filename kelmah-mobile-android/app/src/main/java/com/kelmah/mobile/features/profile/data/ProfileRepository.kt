@@ -197,6 +197,19 @@ class ProfileRepository @Inject constructor(
         val items = raw.nestedArray("portfolioItems")?.mapNotNull { value ->
             val obj = value as? JsonObject ?: return@mapNotNull null
             val id = obj.string("id") ?: obj.string("_id") ?: return@mapNotNull null
+            
+            val mainImage = obj.string("mainImage")
+            val imagesArr = obj.nestedArray("images")
+            val firstImageUrl = if (imagesArr != null && imagesArr.isNotEmpty()) {
+                val first = imagesArr[0]
+                if (first is JsonObject) {
+                    first.string("url") ?: first.string("imageUrl")
+                } else if (first is JsonPrimitive) {
+                    first.content
+                } else null
+            } else null
+            val imageUrl = mainImage ?: firstImageUrl
+
             PortfolioProject(
                 id = id,
                 title = obj.string("title") ?: "Untitled project",
@@ -208,6 +221,9 @@ class ProfileRepository @Inject constructor(
                 status = obj.string("status") ?: "draft",
                 isFeatured = obj.bool("isFeatured") ?: false,
                 createdAt = obj.string("createdAt"),
+                imageUrl = imageUrl,
+                clientName = obj.string("clientName"),
+                clientTestimonial = obj.string("clientTestimonial"),
             )
         } ?: emptyList()
         val stats = raw.nestedObject("stats")

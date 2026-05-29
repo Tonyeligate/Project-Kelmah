@@ -60,7 +60,7 @@ const KelmahLogo = () => {
             width: 48,
             height: 48,
             borderRadius: '50%',
-            background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
+            background: 'linear-gradient(135deg, #FFD34D 0%, #FFA500 100%)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -344,8 +344,8 @@ const Sidebar = ({
             sx={{
               width: 40,
               height: 40,
-              bgcolor: '#FFD700',
-              color: (theme) => theme.palette.getContrastText('#FFD700'),
+              bgcolor: '#FFD34D',
+              color: (theme) => theme.palette.getContrastText('#FFD34D'),
               fontWeight: 700,
             }}
           >

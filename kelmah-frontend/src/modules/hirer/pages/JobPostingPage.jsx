@@ -33,6 +33,7 @@ import {
   Switch,
   Divider,
   Slider,
+  Stack,
 } from '@mui/material';
 import {
   Work,
@@ -56,10 +57,7 @@ import {
 } from '../services/hirerSlice';
 import fileUploadService from '../../common/services/fileUploadService';
 import { alpha, useTheme } from '@mui/material/styles';
-import {
-  Z_INDEX,
-  STICKY_CTA_HEIGHT,
-} from '../../../constants/layout';
+import { Z_INDEX, STICKY_CTA_HEIGHT } from '../../../constants/layout';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 import { formatGhanaCurrency } from '@/utils/formatters';
 import PageCanvas from '@/modules/common/components/PageCanvas';
@@ -111,6 +109,11 @@ const STEP_COACHING = [
     body: 'Review the checklist before publishing to avoid delays from incomplete details.',
   },
 ];
+
+const BUDGET_SLIDER_LIMITS = {
+  hourly: { min: 0, max: 1000, step: 10 },
+  fixed: { min: 0, max: 50000, step: 100 },
+};
 
 const formatDraftSavedTime = (timestamp) => {
   if (!timestamp) {
@@ -394,7 +397,9 @@ const JobPostingPage = () => {
       }
 
       if (typeof parsed?.activeStep === 'number') {
-        setActiveStep(Math.max(0, Math.min(parsed.activeStep, steps.length - 1)));
+        setActiveStep(
+          Math.max(0, Math.min(parsed.activeStep, steps.length - 1)),
+        );
       }
 
       if (parsed?.savedAt) {
@@ -419,7 +424,10 @@ const JobPostingPage = () => {
         activeStep,
         savedAt,
       };
-      window.localStorage.setItem(localDraftStorageKey, JSON.stringify(payload));
+      window.localStorage.setItem(
+        localDraftStorageKey,
+        JSON.stringify(payload),
+      );
       setLastDraftSavedAt(savedAt);
     } catch {
       // Ignore local storage write failures.
@@ -534,6 +542,48 @@ const JobPostingPage = () => {
       coverImage: coverImagePreview,
     };
   }, [formData, coverImagePreview]);
+
+  const budgetSliderConfig =
+    BUDGET_SLIDER_LIMITS[formData.paymentType] || BUDGET_SLIDER_LIMITS.fixed;
+
+  const budgetSliderValue = useMemo(() => {
+    if (formData.paymentType === 'hourly') {
+      const minValue = Number(formData.budget.min || 0);
+      const maxValue = Number(formData.budget.max || 0);
+      const safeMin = Number.isFinite(minValue) && minValue > 0 ? minValue : 0;
+      const safeMax = Number.isFinite(maxValue) && maxValue > 0 ? maxValue : 0;
+      return [safeMin, Math.max(safeMin, safeMax)];
+    }
+
+    const fixedValue = Number(formData.budget.fixed || 0);
+    return Number.isFinite(fixedValue) && fixedValue > 0 ? fixedValue : 0;
+  }, [
+    formData.budget.fixed,
+    formData.budget.max,
+    formData.budget.min,
+    formData.paymentType,
+  ]);
+
+  const budgetSliderSummary = useMemo(() => {
+    if (formData.paymentType === 'hourly') {
+      const minValue = Number(formData.budget.min || 0);
+      const maxValue = Number(formData.budget.max || 0);
+      if (minValue || maxValue) {
+        return `${formatCurrency(minValue)} - ${formatCurrency(maxValue)} / hr`;
+      }
+      return 'Select your budget range';
+    }
+
+    const fixedValue = Number(formData.budget.fixed || 0);
+    return fixedValue > 0
+      ? `${formatCurrency(fixedValue)} total`
+      : 'Select your project budget';
+  }, [
+    formData.budget.fixed,
+    formData.budget.max,
+    formData.budget.min,
+    formData.paymentType,
+  ]);
 
   const normalizedDescription = useMemo(
     () => normalizeDescription(formData.description || ''),
@@ -813,6 +863,40 @@ const JobPostingPage = () => {
       setTouchedFields((prev) => ({ ...prev, [name]: true }));
       refreshFieldError(name, nextData);
     }
+  };
+
+  const handleBudgetSliderChange = (_, value) => {
+    if (formData.paymentType === 'hourly') {
+      const [rawMin, rawMax] = Array.isArray(value)
+        ? value
+        : [Number(value) || 0, Number(value) || 0];
+      const nextMin = Math.max(0, Math.round(rawMin));
+      const nextMax = Math.max(nextMin, Math.round(rawMax));
+      const nextData = {
+        ...formData,
+        budget: {
+          ...formData.budget,
+          min: String(nextMin),
+          max: String(nextMax),
+        },
+      };
+      setFormData(nextData);
+      refreshFieldError('budget.min', nextData);
+      refreshFieldError('budget.max', nextData);
+      return;
+    }
+
+    const rawFixed = Array.isArray(value) ? value[0] : value;
+    const nextFixed = Math.max(0, Math.round(Number(rawFixed) || 0));
+    const nextData = {
+      ...formData,
+      budget: {
+        ...formData.budget,
+        fixed: String(nextFixed),
+      },
+    };
+    setFormData(nextData);
+    refreshFieldError('budget.fixed', nextData);
   };
   const handleSkillsChange = (event, newSkills) => {
     const nextData = { ...formData, skills: newSkills };
@@ -1095,7 +1179,10 @@ const JobPostingPage = () => {
               error={Boolean(touchedFields.category && fieldErrors.category)}
               sx={REQUIRED_LABEL_SX}
             >
-              <InputLabel id="job-category-label" shrink={Boolean(formData.category)}>
+              <InputLabel
+                id="job-category-label"
+                shrink={Boolean(formData.category)}
+              >
                 Category
               </InputLabel>
               <Select
@@ -1126,7 +1213,7 @@ const JobPostingPage = () => {
                 ))}
                 {categoryOptionsForMenu.length === 0 && (
                   <MenuItem value="__no-category-match" disabled>
-                    No category matches "{categoryQuery.trim()}"
+                    No category matches &quot;{categoryQuery.trim()}&quot;
                   </MenuItem>
                 )}
               </Select>
@@ -1335,6 +1422,70 @@ const JobPostingPage = () => {
                 />
               </RadioGroup>
             </FormControl>
+            <Box
+              sx={{
+                mt: 3,
+                p: 2.5,
+                borderRadius: 2,
+                border: `1px solid ${alpha(theme.palette.divider, 0.7)}`,
+                backgroundColor: alpha(theme.palette.background.paper, 0.7),
+              }}
+            >
+              <Stack
+                direction={{ xs: 'column', sm: 'row' }}
+                spacing={1}
+                alignItems={{ xs: 'flex-start', sm: 'center' }}
+                justifyContent="space-between"
+                sx={{ mb: 1.5 }}
+              >
+                <Box>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+                    {formData.paymentType === 'hourly'
+                      ? 'Set Budget Range'
+                      : 'Set Project Budget'}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Drag first, then fine-tune the exact values below.
+                  </Typography>
+                </Box>
+                <Chip
+                  size="small"
+                  label={budgetSliderSummary}
+                  sx={{ fontWeight: 700 }}
+                />
+              </Stack>
+              <Slider
+                value={budgetSliderValue}
+                onChange={handleBudgetSliderChange}
+                min={budgetSliderConfig.min}
+                max={budgetSliderConfig.max}
+                step={budgetSliderConfig.step}
+                valueLabelDisplay="auto"
+                valueLabelFormat={(value) => formatCurrency(value)}
+                disableSwap={formData.paymentType === 'hourly'}
+                aria-label={
+                  formData.paymentType === 'hourly'
+                    ? 'Budget range slider'
+                    : 'Project budget slider'
+                }
+                sx={{ mx: 0.5 }}
+              />
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  mt: 1.5,
+                }}
+              >
+                <Button
+                  variant="text"
+                  onClick={() => setActiveStep(steps.length - 1)}
+                  sx={{ textTransform: 'none', fontWeight: 700 }}
+                >
+                  Preview Job Post
+                </Button>
+              </Box>
+            </Box>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mt: 2 }}>
               {formData.paymentType === 'hourly' ? (
                 <>
@@ -1599,7 +1750,12 @@ const JobPostingPage = () => {
                   <Box
                     component="li"
                     key={check.key}
-                    sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.5 }}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      py: 0.5,
+                    }}
                   >
                     {check.passed ? (
                       <CheckCircle color="success" sx={{ fontSize: 18 }} />
@@ -1893,21 +2049,21 @@ const JobPostingPage = () => {
                   Save Draft
                 </Button>
                 <Button
-                variant="contained"
-                onClick={() => handleSubmit(false)}
-                endIcon={<Publish />}
-                disabled={isLoading}
-                color="primary"
-                sx={{ minHeight: 44, flex: 1 }}
-              >
-                {isLoading ? (
-                  <CircularProgress size={24} />
-                ) : isEditMode ? (
-                  'Save'
-                ) : (
-                  'Post Job'
-                )}
-              </Button>
+                  variant="contained"
+                  onClick={() => handleSubmit(false)}
+                  endIcon={<Publish />}
+                  disabled={isLoading}
+                  color="primary"
+                  sx={{ minHeight: 44, flex: 1 }}
+                >
+                  {isLoading ? (
+                    <CircularProgress size={24} />
+                  ) : isEditMode ? (
+                    'Save'
+                  ) : (
+                    'Post Job'
+                  )}
+                </Button>
               </>
             ) : (
               <Button

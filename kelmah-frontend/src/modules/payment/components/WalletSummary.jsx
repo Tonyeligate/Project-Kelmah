@@ -66,7 +66,7 @@ const WalletSummary = ({
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              background: 'linear-gradient(45deg, #FFD700 30%, #FFA500 90%)',
+              background: 'linear-gradient(45deg, #FFD34D 30%, #FFA500 90%)',
               borderRadius: 2,
             }}
           >

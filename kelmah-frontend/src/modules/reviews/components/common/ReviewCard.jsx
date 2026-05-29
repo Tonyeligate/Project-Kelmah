@@ -89,7 +89,7 @@ const ReviewCard = ({ review }) => {
               height: 64,
               borderRadius: 2,
               overflow: 'hidden',
-              border: '1px solid rgba(255, 215, 0, 0.25)',
+              border: '1px solid rgba(255, 211, 77, 0.25)',
               bgcolor: alpha('#000', 0.18),
               display: 'flex',
               alignItems: 'center',

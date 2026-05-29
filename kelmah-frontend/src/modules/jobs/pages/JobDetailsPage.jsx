@@ -185,7 +185,7 @@ const DetailsPaper = styled(Paper)(({ theme }) => ({
       ? 'rgba(26, 26, 26, 0.8)'
       : theme.palette.background.paper,
   backdropFilter: 'blur(10px)',
-  border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 215, 0, 0.1)' : theme.palette.divider}`,
+  border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 211, 77, 0.1)' : theme.palette.divider}`,
   [theme.breakpoints.up('sm')]: {
     padding: theme.spacing(3.5),
   },
@@ -207,7 +207,7 @@ const SkillChip = styled(Chip)(({ theme }) => ({
   height: 'auto',
   background:
     theme.palette.mode === 'dark'
-      ? 'rgba(255, 215, 0, 0.2)'
+      ? 'rgba(255, 211, 77, 0.2)'
       : 'rgba(212, 175, 55, 0.12)',
   color:
     theme.palette.mode === 'dark'
@@ -215,12 +215,12 @@ const SkillChip = styled(Chip)(({ theme }) => ({
       : theme.palette.primary.dark,
   borderColor:
     theme.palette.mode === 'dark'
-      ? 'rgba(255, 215, 0, 0.5)'
+      ? 'rgba(255, 211, 77, 0.5)'
       : 'rgba(212, 175, 55, 0.4)',
   '&:hover': {
     background:
       theme.palette.mode === 'dark'
-        ? 'rgba(255, 215, 0, 0.3)'
+        ? 'rgba(255, 211, 77, 0.3)'
         : 'rgba(212, 175, 55, 0.2)',
   },
   '& .MuiChip-label': {

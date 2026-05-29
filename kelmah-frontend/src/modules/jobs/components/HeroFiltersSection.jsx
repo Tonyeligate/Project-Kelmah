@@ -97,7 +97,7 @@ const HeroFiltersSection = ({
                 sx={{
                   fontWeight: 'bold',
                   background:
-                    'linear-gradient(45deg, #D4AF37 30%, #FFD700 90%)',
+                    'linear-gradient(45deg, #D4AF37 30%, #FFD34D 90%)',
                   backgroundClip: 'text',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',

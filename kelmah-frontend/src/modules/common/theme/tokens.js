@@ -11,7 +11,7 @@ export const colors = {
     200: '#ffe080',
     300: '#ffd24d',
     400: '#ffc726',
-    500: '#ffd700', // Kelmah gold brand primary
+    500: '#FFD34D', // Kelmah gold brand primary
     600: '#f4c400',
     700: '#d4af37',
     800: '#b8860b',

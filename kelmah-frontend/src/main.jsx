@@ -77,7 +77,7 @@ const ErrorFallback = ({ error, resetErrorBoundary }) => (
     style={{
       padding: 24,
       backgroundColor: '#000000',
-      color: '#FFD700',
+      color: '#FFD34D',
       minHeight: '100vh',
       display: 'flex',
       flexDirection: 'column',
@@ -91,7 +91,7 @@ const ErrorFallback = ({ error, resetErrorBoundary }) => (
         width: 64,
         height: 64,
         borderRadius: '50%',
-        background: 'linear-gradient(135deg, #FFD700 0%, #FFE55C 100%)',
+        background: 'linear-gradient(135deg, #FFD34D 0%, #FFE55C 100%)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -105,7 +105,7 @@ const ErrorFallback = ({ error, resetErrorBoundary }) => (
     </div>
     <h2
       style={{
-        color: '#FFD700',
+        color: '#FFD34D',
         marginBottom: 16,
         fontSize: '24px',
         fontWeight: 600,
@@ -130,7 +130,7 @@ const ErrorFallback = ({ error, resetErrorBoundary }) => (
         onClick={resetErrorBoundary}
         style={{
           padding: '12px 24px',
-          backgroundColor: '#FFD700',
+          backgroundColor: '#FFD34D',
           color: '#000000',
           border: 'none',
           borderRadius: 8,
@@ -146,8 +146,8 @@ const ErrorFallback = ({ error, resetErrorBoundary }) => (
         style={{
           padding: '12px 24px',
           backgroundColor: 'transparent',
-          color: '#FFD700',
-          border: '2px solid #FFD700',
+          color: '#FFD34D',
+          border: '2px solid #FFD34D',
           borderRadius: 8,
           fontSize: 16,
           fontWeight: 600,

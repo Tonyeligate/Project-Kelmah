@@ -407,7 +407,7 @@ const Header = ({
                 '&:hover': {
                   backgroundColor:
                     theme.palette.mode === 'dark'
-                      ? 'rgba(255, 215, 0, 0.15)'
+                      ? 'rgba(255, 211, 77, 0.15)'
                       : 'rgba(0, 0, 0, 0.15)',
                 },
               }}
@@ -514,7 +514,7 @@ const Header = ({
                       fontWeight: 700,
                       backgroundColor:
                         theme.palette.mode === 'dark'
-                          ? 'rgba(255, 215, 0, 0.18)'
+                          ? 'rgba(255, 211, 77, 0.18)'
                           : 'rgba(18, 24, 39, 0.1)',
                       color:
                         theme.palette.mode === 'dark'
@@ -573,7 +573,7 @@ const Header = ({
                           backgroundColor:
                             theme.palette.mode === 'dark'
                               ? 'rgba(255, 213, 79, 0.28)'
-                              : 'rgba(255, 215, 0, 0.3)',
+                              : 'rgba(255, 211, 77, 0.3)',
                           color:
                             theme.palette.mode === 'dark'
                               ? '#fff3c4'
@@ -675,7 +675,7 @@ const Header = ({
                 '&:hover': {
                   backgroundColor:
                     theme.palette.mode === 'dark'
-                      ? 'rgba(255, 215, 0, 0.15)'
+                      ? 'rgba(255, 211, 77, 0.15)'
                       : 'rgba(0, 0, 0, 0.15)',
                 },
               }}

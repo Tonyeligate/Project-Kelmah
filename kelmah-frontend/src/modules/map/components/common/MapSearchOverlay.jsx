@@ -13,7 +13,7 @@ const AnimatedBackground = () => {
         width: '100%',
         height: '100%',
         background: `
-          radial-gradient(circle at 20% 50%, rgba(255, 215, 0, 0.1) 0%, transparent 50%),
+          radial-gradient(circle at 20% 50%, rgba(255, 211, 77, 0.1) 0%, transparent 50%),
           radial-gradient(circle at 80% 20%, rgba(255, 193, 7, 0.08) 0%, transparent 50%),
           radial-gradient(circle at 40% 80%, rgba(0, 0, 0, 0.05) 0%, transparent 40%),
           linear-gradient(135deg, 
@@ -36,15 +36,15 @@ const AnimatedBackground = () => {
               90deg,
               transparent,
               transparent 2px,
-              rgba(255, 215, 0, 0.03) 2px,
-              rgba(255, 215, 0, 0.03) 4px
+              rgba(255, 211, 77, 0.03) 2px,
+              rgba(255, 211, 77, 0.03) 4px
             ),
             repeating-linear-gradient(
               0deg,
               transparent,
               transparent 2px,
-              rgba(255, 215, 0, 0.03) 2px,
-              rgba(255, 215, 0, 0.03) 4px
+              rgba(255, 211, 77, 0.03) 2px,
+              rgba(255, 211, 77, 0.03) 4px
             )
           `,
           animation: 'gridFlow 20s linear infinite',
@@ -58,8 +58,8 @@ const AnimatedBackground = () => {
           height: '100%',
           background: `
             radial-gradient(circle at 50% 50%, 
-              rgba(255, 215, 0, 0.1) 0%, 
-              rgba(255, 215, 0, 0.05) 30%,
+              rgba(255, 211, 77, 0.1) 0%, 
+              rgba(255, 211, 77, 0.05) 30%,
               transparent 70%
             )
           `,
@@ -125,7 +125,7 @@ const FloatingControls = ({
         sx={{
           '& .MuiSpeedDial-fab': {
             background: `linear-gradient(135deg, 
-              ${theme.palette.mode === 'dark' ? '#FFD700' : '#B8860B'} 0%, 
+              ${theme.palette.mode === 'dark' ? '#FFD34D' : '#B8860B'} 0%, 
               ${theme.palette.mode === 'dark' ? '#FFA500' : '#DAA520'} 100%
             )`,
             color: '#000',
@@ -139,21 +139,21 @@ const FloatingControls = ({
               transform: 'scale(1.1)',
             },
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            boxShadow: `0 8px 32px rgba(255, 215, 0, 0.3)`,
+            boxShadow: `0 8px 32px rgba(255, 211, 77, 0.3)`,
           },
           '& .MuiSpeedDialAction-fab': {
             width: 48,
             height: 48,
             background: `linear-gradient(135deg, 
-              rgba(255, 215, 0, 0.9) 0%, 
+              rgba(255, 211, 77, 0.9) 0%, 
               rgba(255, 193, 7, 0.9) 100%
             )`,
             backdropFilter: 'blur(10px)',
-            border: '1px solid rgba(255, 215, 0, 0.2)',
+            border: '1px solid rgba(255, 211, 77, 0.2)',
             color: '#000',
             '&:hover': {
               background: `linear-gradient(135deg, 
-                rgba(255, 215, 0, 1) 0%, 
+                rgba(255, 211, 77, 1) 0%, 
                 rgba(255, 193, 7, 1) 100%
               )`,
               transform: 'scale(1.15)',
@@ -179,10 +179,10 @@ const FloatingControls = ({
             sx={{
               '& .MuiSpeedDialAction-staticTooltip': {
                 background: 'rgba(0, 0, 0, 0.9)',
-                color: '#FFD700',
+                color: '#FFD34D',
                 fontWeight: 600,
                 backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 215, 0, 0.2)',
+                border: '1px solid rgba(255, 211, 77, 0.2)',
               },
             }}
           />
@@ -234,7 +234,7 @@ const PremiumSearchBar = ({
                   animate={{ rotate: focused ? 360 : 0 }}
                   transition={{ duration: 0.6, ease: 'easeInOut' }}
                 >
-                  <SearchIcon sx={{ color: '#FFD700', fontSize: 28 }} />
+                  <SearchIcon sx={{ color: '#FFD34D', fontSize: 28 }} />
                 </motion.div>
               </InputAdornment>
             ),
@@ -244,9 +244,9 @@ const PremiumSearchBar = ({
                   onClick={onClear}
                   aria-label="Clear map search"
                   sx={{
-                    color: '#FFD700',
+                    color: '#FFD34D',
                     '&:hover': {
-                      background: 'rgba(255, 215, 0, 0.1)',
+                      background: 'rgba(255, 211, 77, 0.1)',
                       transform: 'scale(1.1)',
                     },
                     transition: 'all 0.2s ease',
@@ -269,17 +269,17 @@ const PremiumSearchBar = ({
               )`,
               backdropFilter: 'blur(20px)',
               borderRadius: 4,
-              border: `2px solid ${focused ? '#FFD700' : 'rgba(255, 215, 0, 0.3)'}`,
+              border: `2px solid ${focused ? '#FFD34D' : 'rgba(255, 211, 77, 0.3)'}`,
               boxShadow: focused
-                ? `0 12px 40px rgba(255, 215, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.8)`
+                ? `0 12px 40px rgba(255, 211, 77, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.8)`
                 : `0 8px 32px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.6)`,
               fontSize: '1.1rem',
               fontWeight: 500,
               color: '#333',
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
               '&:hover': {
-                borderColor: '#FFD700',
-                boxShadow: `0 12px 40px rgba(255, 215, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.8)`,
+                borderColor: '#FFD34D',
+                boxShadow: `0 12px 40px rgba(255, 211, 77, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.8)`,
               },
               '& fieldset': {
                 border: 'none',
@@ -319,7 +319,7 @@ const PremiumSearchBar = ({
                   rgba(248, 248, 248, 0.98) 100%
                 )`,
                 backdropFilter: 'blur(20px)',
-                border: '1px solid rgba(255, 215, 0, 0.2)',
+                border: '1px solid rgba(255, 211, 77, 0.2)',
                 borderRadius: 3,
                 boxShadow: `0 16px 48px rgba(0, 0, 0, 0.15)`,
                 maxHeight: 400,
@@ -346,7 +346,7 @@ const PremiumSearchBar = ({
                       px: 3,
                       '&:hover': {
                         background:
-                          'linear-gradient(90deg, rgba(255, 215, 0, 0.1), rgba(255, 193, 7, 0.05))',
+                          'linear-gradient(90deg, rgba(255, 211, 77, 0.1), rgba(255, 193, 7, 0.05))',
                         transform: 'translateX(4px)',
                       },
                       transition: 'all 0.2s ease',
@@ -360,7 +360,7 @@ const PremiumSearchBar = ({
                       <Avatar
                         sx={{
                           background:
-                            'linear-gradient(135deg, #FFD700, #FFA500)',
+                            'linear-gradient(135deg, #FFD34D, #FFA500)',
                           color: '#000',
                           width: 40,
                           height: 40,
@@ -436,8 +436,8 @@ const PremiumFilterPanel = ({
           )`,
           backdropFilter: 'blur(20px)',
           border: 'none',
-          borderTop: isMobile ? '3px solid #FFD700' : 'none',
-          borderRight: !isMobile ? '3px solid #FFD700' : 'none',
+          borderTop: isMobile ? '3px solid #FFD34D' : 'none',
+          borderRight: !isMobile ? '3px solid #FFD34D' : 'none',
         },
       }}
     >
@@ -449,7 +449,7 @@ const PremiumFilterPanel = ({
         elevation={0}
         sx={{
           background:
-            'linear-gradient(135deg, rgba(255, 215, 0, 0.9), rgba(255, 193, 7, 0.9))',
+            'linear-gradient(135deg, rgba(255, 211, 77, 0.9), rgba(255, 193, 7, 0.9))',
           color: '#000',
         }}
       >
@@ -480,21 +480,21 @@ const PremiumFilterPanel = ({
       </AppBar>
 
       {/* 📱 PREMIUM TABS NAVIGATION */}
-      <Box sx={{ borderBottom: 1, borderColor: 'rgba(255, 215, 0, 0.2)' }}>
+      <Box sx={{ borderBottom: 1, borderColor: 'rgba(255, 211, 77, 0.2)' }}>
         <Tabs
           value={activeTab}
           onChange={(e, newValue) => setActiveTab(newValue)}
           variant="fullWidth"
           sx={{
             '& .MuiTab-root': {
-              color: 'rgba(255, 215, 0, 0.7)',
+              color: 'rgba(255, 211, 77, 0.7)',
               fontWeight: 600,
               '&.Mui-selected': {
-                color: '#FFD700',
+                color: '#FFD34D',
               },
             },
             '& .MuiTabs-indicator': {
-              backgroundColor: '#FFD700',
+              backgroundColor: '#FFD34D',
               height: 3,
             },
           }}
@@ -526,8 +526,8 @@ const PremiumFilterPanel = ({
                 {/* 💰 PRICE RANGE SLIDER */}
                 <Card
                   sx={{
-                    background: 'rgba(255, 215, 0, 0.05)',
-                    border: '1px solid rgba(255, 215, 0, 0.2)',
+                    background: 'rgba(255, 211, 77, 0.05)',
+                    border: '1px solid rgba(255, 211, 77, 0.2)',
                     borderRadius: 3,
                   }}
                 >
@@ -536,7 +536,7 @@ const PremiumFilterPanel = ({
                       variant="h6"
                       gutterBottom
                       sx={{
-                        color: '#FFD700',
+                        color: '#FFD34D',
                         fontWeight: 'bold',
                         display: 'flex',
                         alignItems: 'center',
@@ -559,22 +559,22 @@ const PremiumFilterPanel = ({
                       max={5000}
                       step={50}
                       sx={{
-                        color: '#FFD700',
+                        color: '#FFD34D',
                         '& .MuiSlider-thumb': {
                           background:
-                            'linear-gradient(135deg, #FFD700, #FFA500)',
+                            'linear-gradient(135deg, #FFD34D, #FFA500)',
                           border: '3px solid #000',
                           '&:hover': {
-                            boxShadow: '0 0 0 8px rgba(255, 215, 0, 0.2)',
+                            boxShadow: '0 0 0 8px rgba(255, 211, 77, 0.2)',
                           },
                         },
                         '& .MuiSlider-track': {
                           background:
-                            'linear-gradient(90deg, #FFD700, #FFA500)',
+                            'linear-gradient(90deg, #FFD34D, #FFA500)',
                           height: 6,
                         },
                         '& .MuiSlider-rail': {
-                          background: 'rgba(255, 215, 0, 0.2)',
+                          background: 'rgba(255, 211, 77, 0.2)',
                           height: 6,
                         },
                       }}
@@ -585,8 +585,8 @@ const PremiumFilterPanel = ({
                 {/* 📍 DISTANCE SLIDER */}
                 <Card
                   sx={{
-                    background: 'rgba(255, 215, 0, 0.05)',
-                    border: '1px solid rgba(255, 215, 0, 0.2)',
+                    background: 'rgba(255, 211, 77, 0.05)',
+                    border: '1px solid rgba(255, 211, 77, 0.2)',
                     borderRadius: 3,
                   }}
                 >
@@ -595,7 +595,7 @@ const PremiumFilterPanel = ({
                       variant="h6"
                       gutterBottom
                       sx={{
-                        color: '#FFD700',
+                        color: '#FFD34D',
                         fontWeight: 'bold',
                         display: 'flex',
                         alignItems: 'center',
@@ -612,19 +612,19 @@ const PremiumFilterPanel = ({
                       max={100}
                       step={1}
                       sx={{
-                        color: '#FFD700',
+                        color: '#FFD34D',
                         '& .MuiSlider-thumb': {
                           background:
-                            'linear-gradient(135deg, #FFD700, #FFA500)',
+                            'linear-gradient(135deg, #FFD34D, #FFA500)',
                           border: '3px solid #000',
                         },
                         '& .MuiSlider-track': {
                           background:
-                            'linear-gradient(90deg, #FFD700, #FFA500)',
+                            'linear-gradient(90deg, #FFD34D, #FFA500)',
                           height: 6,
                         },
                         '& .MuiSlider-rail': {
-                          background: 'rgba(255, 215, 0, 0.2)',
+                          background: 'rgba(255, 211, 77, 0.2)',
                           height: 6,
                         },
                       }}
@@ -635,8 +635,8 @@ const PremiumFilterPanel = ({
                 {/* 🏷️ CATEGORIES */}
                 <Card
                   sx={{
-                    background: 'rgba(255, 215, 0, 0.05)',
-                    border: '1px solid rgba(255, 215, 0, 0.2)',
+                    background: 'rgba(255, 211, 77, 0.05)',
+                    border: '1px solid rgba(255, 211, 77, 0.2)',
                     borderRadius: 3,
                   }}
                 >
@@ -645,7 +645,7 @@ const PremiumFilterPanel = ({
                       variant="h6"
                       gutterBottom
                       sx={{
-                        color: '#FFD700',
+                        color: '#FFD34D',
                         fontWeight: 'bold',
                         display: 'flex',
                         alignItems: 'center',
@@ -686,16 +686,16 @@ const PremiumFilterPanel = ({
                           }}
                           sx={{
                             background: filters.categories?.includes(category)
-                              ? 'linear-gradient(135deg, #FFD700, #FFA500)'
+                              ? 'linear-gradient(135deg, #FFD34D, #FFA500)'
                               : 'transparent',
                             color: filters.categories?.includes(category)
                               ? '#000'
-                              : '#FFD700',
-                            border: '1px solid #FFD700',
+                              : '#FFD34D',
+                            border: '1px solid #FFD34D',
                             fontWeight: 600,
                             '&:hover': {
                               background:
-                                'linear-gradient(135deg, #FFD700, #FFA500)',
+                                'linear-gradient(135deg, #FFD34D, #FFA500)',
                               color: '#000',
                               transform: 'scale(1.05)',
                             },
@@ -723,7 +723,7 @@ const PremiumFilterPanel = ({
                 <Typography
                   variant="h6"
                   sx={{
-                    color: '#FFD700',
+                    color: '#FFD34D',
                     fontWeight: 'bold',
                     display: 'flex',
                     alignItems: 'center',
@@ -741,16 +741,16 @@ const PremiumFilterPanel = ({
                   fullWidth
                   sx={{
                     '& .MuiToggleButton-root': {
-                      color: 'rgba(255, 215, 0, 0.7)',
-                      border: '1px solid rgba(255, 215, 0, 0.3)',
+                      color: 'rgba(255, 211, 77, 0.7)',
+                      border: '1px solid rgba(255, 211, 77, 0.3)',
                       py: 2,
                       '&.Mui-selected': {
-                        background: 'linear-gradient(135deg, #FFD700, #FFA500)',
+                        background: 'linear-gradient(135deg, #FFD34D, #FFA500)',
                         color: '#000',
                         fontWeight: 'bold',
                       },
                       '&:hover': {
-                        background: 'rgba(255, 215, 0, 0.1)',
+                        background: 'rgba(255, 211, 77, 0.1)',
                       },
                     },
                   }}
@@ -803,7 +803,7 @@ const PremiumFilterPanel = ({
                 <Typography
                   variant="h6"
                   sx={{
-                    color: '#FFD700',
+                    color: '#FFD34D',
                     fontWeight: 'bold',
                     display: 'flex',
                     alignItems: 'center',
@@ -820,7 +820,7 @@ const PremiumFilterPanel = ({
                   startIcon={<MyLocationIcon />}
                   fullWidth
                   sx={{
-                    background: 'linear-gradient(135deg, #FFD700, #FFA500)',
+                    background: 'linear-gradient(135deg, #FFD34D, #FFA500)',
                     color: '#000',
                     fontWeight: 'bold',
                     py: 2,
@@ -850,7 +850,7 @@ const PremiumFilterPanel = ({
                 <Typography
                   variant="h6"
                   sx={{
-                    color: '#FFD700',
+                    color: '#FFD34D',
                     fontWeight: 'bold',
                     display: 'flex',
                     alignItems: 'center',
@@ -862,8 +862,8 @@ const PremiumFilterPanel = ({
 
                 <Card
                   sx={{
-                    background: 'rgba(255, 215, 0, 0.05)',
-                    border: '1px solid rgba(255, 215, 0, 0.2)',
+                    background: 'rgba(255, 211, 77, 0.05)',
+                    border: '1px solid rgba(255, 211, 77, 0.2)',
                     borderRadius: 3,
                   }}
                 >
@@ -876,7 +876,7 @@ const PremiumFilterPanel = ({
                           alignItems: 'center',
                         }}
                       >
-                        <Typography sx={{ color: '#FFD700' }}>
+                        <Typography sx={{ color: '#FFD34D' }}>
                           Jobs Found
                         </Typography>
                         <Typography
@@ -893,7 +893,7 @@ const PremiumFilterPanel = ({
                           alignItems: 'center',
                         }}
                       >
-                        <Typography sx={{ color: '#FFD700' }}>
+                        <Typography sx={{ color: '#FFD34D' }}>
                           Workers Available
                         </Typography>
                         <Typography
@@ -910,7 +910,7 @@ const PremiumFilterPanel = ({
                           alignItems: 'center',
                         }}
                       >
-                        <Typography sx={{ color: '#FFD700' }}>
+                        <Typography sx={{ color: '#FFD34D' }}>
                           Avg. Response Time
                         </Typography>
                         <Typography
@@ -933,7 +933,7 @@ const PremiumFilterPanel = ({
       <Box
         sx={{
           p: 3,
-          borderTop: '1px solid rgba(255, 215, 0, 0.2)',
+          borderTop: '1px solid rgba(255, 211, 77, 0.2)',
           background: 'rgba(0, 0, 0, 0.3)',
         }}
       >
@@ -942,7 +942,7 @@ const PremiumFilterPanel = ({
             variant="contained"
             fullWidth
             sx={{
-              background: 'linear-gradient(135deg, #FFD700, #FFA500)',
+              background: 'linear-gradient(135deg, #FFD34D, #FFA500)',
               color: '#000',
               fontWeight: 'bold',
               py: 2,
@@ -959,12 +959,12 @@ const PremiumFilterPanel = ({
             variant="outlined"
             fullWidth
             sx={{
-              color: '#FFD700',
-              border: '1px solid #FFD700',
+              color: '#FFD34D',
+              border: '1px solid #FFD34D',
               py: 1.5,
               '&:hover': {
-                background: 'rgba(255, 215, 0, 0.1)',
-                border: '1px solid #FFD700',
+                background: 'rgba(255, 211, 77, 0.1)',
+                border: '1px solid #FFD34D',
               },
             }}
           >
@@ -1637,7 +1637,7 @@ const MapSearchOverlay = ({
                             rgba(248, 248, 248, 0.95) 100%
                           )`,
                           backdropFilter: 'blur(20px)',
-                          border: '1px solid rgba(255, 215, 0, 0.2)',
+                          border: '1px solid rgba(255, 211, 77, 0.2)',
                           borderRadius: 3,
                           textAlign: 'center',
                           cursor: 'pointer',
@@ -1653,7 +1653,7 @@ const MapSearchOverlay = ({
                             background: `linear-gradient(90deg, ${stat.color}, ${stat.color}88)`,
                           },
                           '&:hover': {
-                            boxShadow: `0 12px 40px rgba(255, 215, 0, 0.25)`,
+                            boxShadow: `0 12px 40px rgba(255, 211, 77, 0.25)`,
                             '&::before': {
                               height: '100%',
                               opacity: 0.1,
@@ -1730,7 +1730,7 @@ const MapSearchOverlay = ({
                   startIcon={<TuneIcon />}
                   onClick={() => setShowFilters(true)}
                   sx={{
-                    background: 'linear-gradient(135deg, #FFD700, #FFA500)',
+                    background: 'linear-gradient(135deg, #FFD34D, #FFA500)',
                     color: '#000',
                     fontWeight: 'bold',
                     px: 3,
@@ -1740,7 +1740,7 @@ const MapSearchOverlay = ({
                     '&:hover': {
                       background: 'linear-gradient(135deg, #FFE55C, #FFB347)',
                       transform: 'translateY(-2px)',
-                      boxShadow: '0 8px 25px rgba(255, 215, 0, 0.4)',
+                      boxShadow: '0 8px 25px rgba(255, 211, 77, 0.4)',
                     },
                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   }}
@@ -1758,11 +1758,11 @@ const MapSearchOverlay = ({
                     '& .MuiToggleButton-root': {
                       background: 'rgba(255, 255, 255, 0.9)',
                       color: '#333',
-                      border: '1px solid rgba(255, 215, 0, 0.3)',
+                      border: '1px solid rgba(255, 211, 77, 0.3)',
                       fontWeight: 600,
                       px: 2,
                       '&.Mui-selected': {
-                        background: 'linear-gradient(135deg, #FFD700, #FFA500)',
+                        background: 'linear-gradient(135deg, #FFD34D, #FFA500)',
                         color: '#000',
                         '&:hover': {
                           background:
@@ -1770,7 +1770,7 @@ const MapSearchOverlay = ({
                         },
                       },
                       '&:hover': {
-                        background: 'rgba(255, 215, 0, 0.1)',
+                        background: 'rgba(255, 211, 77, 0.1)',
                       },
                     },
                   }}
@@ -1790,13 +1790,13 @@ const MapSearchOverlay = ({
                     sx={{
                       background: 'rgba(255, 255, 255, 0.9)',
                       '& .MuiOutlinedInput-notchedOutline': {
-                        border: '1px solid rgba(255, 215, 0, 0.3)',
+                        border: '1px solid rgba(255, 211, 77, 0.3)',
                       },
                       '&:hover .MuiOutlinedInput-notchedOutline': {
-                        border: '1px solid #FFD700',
+                        border: '1px solid #FFD34D',
                       },
                       '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                        border: '2px solid #FFD700',
+                        border: '2px solid #FFD34D',
                       },
                     }}
                   >
@@ -1834,7 +1834,7 @@ const MapSearchOverlay = ({
               rgba(248, 248, 248, 0.95) 100%
             )`,
             backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255, 215, 0, 0.2)',
+            border: '1px solid rgba(255, 211, 77, 0.2)',
             borderRadius: 4,
             overflow: 'hidden',
             display: { xs: 'none', md: 'block' },
@@ -1852,7 +1852,7 @@ const MapSearchOverlay = ({
                 gap: 1,
               }}
             >
-              <CategoryIcon sx={{ color: '#FFD700' }} />
+              <CategoryIcon sx={{ color: '#FFD34D' }} />
               Categories
             </Typography>
 
@@ -1866,17 +1866,17 @@ const MapSearchOverlay = ({
                   <Accordion
                     sx={{
                       background: selectedCategories.includes(category)
-                        ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 193, 7, 0.05))'
+                        ? 'linear-gradient(135deg, rgba(255, 211, 77, 0.1), rgba(255, 193, 7, 0.05))'
                         : 'transparent',
                       '&:before': { display: 'none' },
                       border: selectedCategories.includes(category)
-                        ? '1px solid rgba(255, 215, 0, 0.3)'
+                        ? '1px solid rgba(255, 211, 77, 0.3)'
                         : '1px solid rgba(0, 0, 0, 0.1)',
                       borderRadius: '8px !important',
                       boxShadow: 'none',
                       '&:hover': {
                         background:
-                          'linear-gradient(135deg, rgba(255, 215, 0, 0.05), rgba(255, 193, 7, 0.02))',
+                          'linear-gradient(135deg, rgba(255, 211, 77, 0.05), rgba(255, 193, 7, 0.02))',
                       },
                     }}
                   >
@@ -1922,7 +1922,7 @@ const MapSearchOverlay = ({
                           label={data.avgRating}
                           sx={{
                             background:
-                              'linear-gradient(135deg, #FFD700, #FFA500)',
+                              'linear-gradient(135deg, #FFD34D, #FFA500)',
                             color: '#000',
                             fontWeight: 'bold',
                           }}
@@ -1949,15 +1949,15 @@ const MapSearchOverlay = ({
                             }}
                             sx={{
                               background: selectedSkills.includes(skill)
-                                ? 'linear-gradient(135deg, #FFD700, #FFA500)'
+                                ? 'linear-gradient(135deg, #FFD34D, #FFA500)'
                                 : 'transparent',
                               color: selectedSkills.includes(skill)
                                 ? '#000'
                                 : '#666',
-                              border: '1px solid rgba(255, 215, 0, 0.3)',
+                              border: '1px solid rgba(255, 211, 77, 0.3)',
                               '&:hover': {
                                 background:
-                                  'linear-gradient(135deg, #FFD700, #FFA500)',
+                                  'linear-gradient(135deg, #FFD34D, #FFA500)',
                                 color: '#000',
                               },
                             }}
@@ -1991,7 +1991,7 @@ const MapSearchOverlay = ({
               rgba(248, 248, 248, 0.95) 100%
             )`,
             backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255, 215, 0, 0.2)',
+            border: '1px solid rgba(255, 211, 77, 0.2)',
             borderRadius: 4,
             overflow: 'hidden',
             display: { xs: 'none', lg: 'block' },
@@ -2054,12 +2054,12 @@ const MapSearchOverlay = ({
                       sx={{
                         background:
                           'linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(248, 248, 248, 0.9))',
-                        border: '1px solid rgba(255, 215, 0, 0.1)',
+                        border: '1px solid rgba(255, 211, 77, 0.1)',
                         borderRadius: 3,
                         cursor: 'pointer',
                         '&:hover': {
-                          boxShadow: '0 8px 25px rgba(255, 215, 0, 0.2)',
-                          border: '1px solid rgba(255, 215, 0, 0.3)',
+                          boxShadow: '0 8px 25px rgba(255, 211, 77, 0.2)',
+                          border: '1px solid rgba(255, 211, 77, 0.3)',
                         },
                         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                       }}
@@ -2159,7 +2159,7 @@ const MapSearchOverlay = ({
               rgba(26, 26, 26, 0.95) 100%
             )`,
             backdropFilter: 'blur(20px)',
-            border: '2px solid rgba(255, 215, 0, 0.3)',
+            border: '2px solid rgba(255, 211, 77, 0.3)',
             borderRadius: 4,
             overflow: 'hidden',
           }}
@@ -2171,7 +2171,7 @@ const MapSearchOverlay = ({
                   <LiveIcon sx={{ color: '#4CAF50', fontSize: 20 }} />
                   <Typography
                     variant="body2"
-                    sx={{ color: '#FFD700', fontWeight: 600 }}
+                    sx={{ color: '#FFD34D', fontWeight: 600 }}
                   >
                     Live Search Active
                   </Typography>
@@ -2190,16 +2190,16 @@ const MapSearchOverlay = ({
                       flex: 1,
                       height: 8,
                       borderRadius: 4,
-                      backgroundColor: 'rgba(255, 215, 0, 0.2)',
+                      backgroundColor: 'rgba(255, 211, 77, 0.2)',
                       '& .MuiLinearProgress-bar': {
-                        background: 'linear-gradient(90deg, #FFD700, #FFA500)',
+                        background: 'linear-gradient(90deg, #FFD34D, #FFA500)',
                         borderRadius: 4,
                       },
                     }}
                   />
                   <Typography
                     variant="body2"
-                    sx={{ color: '#FFD700', fontWeight: 600 }}
+                    sx={{ color: '#FFD34D', fontWeight: 600 }}
                   >
                     {loading ? '45%' : '100%'}
                   </Typography>
@@ -2213,9 +2213,9 @@ const MapSearchOverlay = ({
                       size="small"
                       aria-label="Share search results"
                       sx={{
-                        color: '#FFD700',
+                        color: '#FFD34D',
                         '&:hover': {
-                          background: 'rgba(255, 215, 0, 0.1)',
+                          background: 'rgba(255, 211, 77, 0.1)',
                           transform: 'scale(1.1)',
                         },
                         '&:focus-visible': {
@@ -2233,9 +2233,9 @@ const MapSearchOverlay = ({
                       size="small"
                       aria-label="Save search"
                       sx={{
-                        color: '#FFD700',
+                        color: '#FFD34D',
                         '&:hover': {
-                          background: 'rgba(255, 215, 0, 0.1)',
+                          background: 'rgba(255, 211, 77, 0.1)',
                           transform: 'scale(1.1)',
                         },
                         '&:focus-visible': {
@@ -2253,9 +2253,9 @@ const MapSearchOverlay = ({
                       size="small"
                       aria-label="Export search results"
                       sx={{
-                        color: '#FFD700',
+                        color: '#FFD34D',
                         '&:hover': {
-                          background: 'rgba(255, 215, 0, 0.1)',
+                          background: 'rgba(255, 211, 77, 0.1)',
                           transform: 'scale(1.1)',
                         },
                         '&:focus-visible': {

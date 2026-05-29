@@ -75,9 +75,9 @@ fun KelmahScreenBackground(
     val baseGradient = if (isDark) {
         Brush.linearGradient(
             colors = listOf(
-                Color(0xFF050507),
-                Color(0xFF0E0F14),
-                Color(0xFF151722),
+                Color(0xFF101116),
+                Color(0xFF1A1D26),
+                Color(0xFF222530),
             ),
         )
     } else {

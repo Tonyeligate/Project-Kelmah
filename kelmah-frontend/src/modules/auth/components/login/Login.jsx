@@ -78,7 +78,7 @@ const Login = () => {
   const theme = useTheme();
   const isMobile = useBreakpointDown('sm');
   const isDarkMode = theme.palette.mode === 'dark';
-  const accentColor = theme.palette.primary.main || '#FFD700';
+  const accentColor = theme.palette.primary.main || '#FFD34D';
   const accentStrong = theme.palette.primary.dark || '#D39D00';
   const panelText = isDarkMode ? '#FFFFFF' : '#171A1F';
   const panelMuted = isDarkMode ? alpha('#FFFFFF', 0.8) : alpha('#171A1F', 0.7);
@@ -828,7 +828,7 @@ const Login = () => {
                         py: { xs: 1.8, sm: 1.5 },
                         minHeight: { xs: '56px', sm: '48px' },
                         background:
-                          'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
+                          'linear-gradient(135deg, #FFD34D 0%, #FFC000 100%)',
                         color: '#000',
                         boxShadow: isDarkMode
                           ? '0 4px 16px rgba(255,215,0,0.2)'

@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Drawer,
@@ -44,7 +44,7 @@ const SearchResult = styled(ListItem)(({ theme }) => ({
 
 const ContentPreview = styled(Typography)(({ theme, highlight }) => ({
   '& .highlight': {
-    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 215, 0, 0.3)' : 'rgba(184, 134, 11, 0.18)',
+    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 211, 77, 0.3)' : 'rgba(184, 134, 11, 0.18)',
     padding: '0 2px',
     borderRadius: '2px',
   },
@@ -53,13 +53,13 @@ const ContentPreview = styled(Typography)(({ theme, highlight }) => ({
 const FilterChip = styled(Chip)(({ theme, selected }) => ({
   margin: theme.spacing(0.5),
   backgroundColor: selected
-    ? (theme.palette.mode === 'dark' ? 'rgba(255, 215, 0, 0.2)' : 'rgba(184, 134, 11, 0.12)')
+    ? (theme.palette.mode === 'dark' ? 'rgba(255, 211, 77, 0.2)' : 'rgba(184, 134, 11, 0.12)')
     : theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
   color: selected ? theme.palette.secondary.main : theme.palette.text.secondary,
   borderColor: selected ? theme.palette.secondary.main : theme.palette.divider,
   '&:hover': {
     backgroundColor: selected
-      ? (theme.palette.mode === 'dark' ? 'rgba(255, 215, 0, 0.3)' : 'rgba(184, 134, 11, 0.18)')
+      ? (theme.palette.mode === 'dark' ? 'rgba(255, 211, 77, 0.3)' : 'rgba(184, 134, 11, 0.18)')
       : theme.palette.action.hover,
   },
 }));

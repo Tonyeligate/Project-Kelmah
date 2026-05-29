@@ -55,7 +55,7 @@ const StyledDrawer = styled(Drawer)(({ theme }) => ({
         : `linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%)`,
     borderRight:
       theme.palette.mode === 'dark'
-        ? `1px solid rgba(255, 215, 0, 0.2)`
+        ? `1px solid rgba(255, 211, 77, 0.2)`
         : `1px solid rgba(0, 0, 0, 0.1)`,
     boxShadow:
       theme.palette.mode === 'dark'
@@ -72,7 +72,7 @@ const ProfileSection = styled(Box)(({ theme }) => ({
       : `linear-gradient(135deg, ${alpha(BRAND_COLORS.black, 0.05)} 0%, ${alpha(BRAND_COLORS.blackLight, 0.02)} 100%)`,
   borderBottom:
     theme.palette.mode === 'dark'
-      ? `1px solid rgba(255, 215, 0, 0.1)`
+      ? `1px solid rgba(255, 211, 77, 0.1)`
       : `1px solid rgba(0, 0, 0, 0.08)`,
 }));
 
@@ -373,7 +373,7 @@ const MobileNav = ({ open, onClose }) => {
             p: 2,
             borderBottom:
               theme.palette.mode === 'dark'
-                ? `1px solid rgba(255, 215, 0, 0.1)`
+                ? `1px solid rgba(255, 211, 77, 0.1)`
                 : `1px solid rgba(0, 0, 0, 0.08)`,
           }}
         >

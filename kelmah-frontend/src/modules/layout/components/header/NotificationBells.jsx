@@ -60,13 +60,13 @@ const NotificationBells = ({
             borderColor:
               unreadMessages > 0
                 ? theme.palette.mode === 'dark'
-                  ? 'rgba(255, 215, 0, 0.45)'
+                  ? 'rgba(255, 211, 77, 0.45)'
                   : 'rgba(18, 24, 39, 0.32)'
                 : undefined,
             backgroundColor:
               unreadMessages > 0
                 ? theme.palette.mode === 'dark'
-                  ? 'rgba(255, 215, 0, 0.08)'
+                  ? 'rgba(255, 211, 77, 0.08)'
                   : 'rgba(18, 24, 39, 0.06)'
                 : undefined,
             '& .MuiSvgIcon-root': {
@@ -75,7 +75,7 @@ const NotificationBells = ({
             '&:focus-visible': {
               outline:
                 theme.palette.mode === 'dark'
-                  ? '3px solid rgba(255, 215, 0, 0.95)'
+                  ? '3px solid rgba(255, 211, 77, 0.95)'
                   : '3px solid rgba(17, 24, 39, 0.9)',
               outlineOffset: 2,
             },
@@ -108,13 +108,13 @@ const NotificationBells = ({
             borderColor:
               unreadNotifications > 0
                 ? theme.palette.mode === 'dark'
-                  ? 'rgba(255, 215, 0, 0.55)'
+                  ? 'rgba(255, 211, 77, 0.55)'
                   : 'rgba(18, 24, 39, 0.4)'
                 : undefined,
             backgroundColor:
               unreadNotifications > 0
                 ? theme.palette.mode === 'dark'
-                  ? 'rgba(255, 215, 0, 0.13)'
+                  ? 'rgba(255, 211, 77, 0.13)'
                   : 'rgba(18, 24, 39, 0.09)'
                 : undefined,
             '& .MuiSvgIcon-root': {
@@ -123,7 +123,7 @@ const NotificationBells = ({
             '&:focus-visible': {
               outline:
                 theme.palette.mode === 'dark'
-                  ? '3px solid rgba(255, 215, 0, 0.95)'
+                  ? '3px solid rgba(255, 211, 77, 0.95)'
                   : '3px solid rgba(17, 24, 39, 0.9)',
               outlineOffset: 2,
             },
@@ -161,7 +161,7 @@ const NotificationBells = ({
             maxHeight: 400,
             border:
               theme.palette.mode === 'dark'
-                ? `1px solid rgba(255, 215, 0, 0.3)`
+                ? `1px solid rgba(255, 211, 77, 0.3)`
                 : `1px solid rgba(0, 0, 0, 0.2)`,
             backgroundColor:
               theme.palette.mode === 'dark'

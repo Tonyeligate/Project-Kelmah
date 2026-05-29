@@ -1659,7 +1659,7 @@ const PaymentCenterPage = () => {
               disabled={
                 dialogSubmitting || !amount || Number(amount) <= 0 || !methodId
               }
-              sx={{ boxShadow: '0 2px 8px rgba(255, 215, 0, 0.4)' }}
+              sx={{ boxShadow: '0 2px 8px rgba(255, 211, 77, 0.4)' }}
             >
               Add
             </Button>

@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import {
   Box,
@@ -517,7 +517,7 @@ const JobResultsSection = ({
                         left: 0,
                         right: 0,
                         height: '4px',
-                        background: 'linear-gradient(90deg, #D4AF37, #FFD700)',
+                        background: 'linear-gradient(90deg, #D4AF37, #FFD34D)',
                         transform: 'scaleX(0)',
                         transformOrigin: 'left',
                         transition: 'transform 0.3s ease',

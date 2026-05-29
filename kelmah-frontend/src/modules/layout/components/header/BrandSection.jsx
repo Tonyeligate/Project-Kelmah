@@ -17,7 +17,7 @@ const PageTitlePill = ({ icon: Icon, name, theme }) => (
       alignItems: 'center',
       backgroundColor:
         theme.palette.mode === 'dark'
-          ? 'rgba(255, 215, 0, 0.1)'
+          ? 'rgba(255, 211, 77, 0.1)'
           : 'rgba(0, 0, 0, 0.1)',
       borderRadius: 2,
       px: 1.5,

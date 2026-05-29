@@ -8,7 +8,8 @@
  * Step 3: Select urgency -> Submit
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import PropTypes from 'prop-types';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
   Box,
@@ -33,6 +34,7 @@ import {
   Paper,
   Chip,
   LinearProgress,
+  MenuItem,
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -42,7 +44,6 @@ import {
   MicOff as MicOffIcon,
   LocationOn as LocationIcon,
   MyLocation as MyLocationIcon,
-  AccessTime as AccessTimeIcon,
   Send as SendIcon,
   Check as CheckIcon,
   Close as CloseIcon,
@@ -62,6 +63,30 @@ import PageCanvas from '../../common/components/PageCanvas';
 
 // Steps for the stepper
 const steps = ['Describe Problem', 'Confirm Location', 'When do you need it?'];
+
+const preferredTimeSlotOptions = [
+  { value: 'anytime', label: 'Anytime' },
+  { value: 'morning', label: 'Morning' },
+  { value: 'afternoon', label: 'Afternoon' },
+  { value: 'evening', label: 'Evening' },
+];
+
+const formatPreferredDate = (value) => {
+  if (!value) {
+    return 'Not set';
+  }
+
+  const parsedDate = new Date(`${value}T00:00:00`);
+  if (Number.isNaN(parsedDate.getTime())) {
+    return value;
+  }
+
+  return parsedDate.toLocaleDateString([], {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+  });
+};
 
 const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
   const theme = useTheme();
@@ -99,6 +124,8 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
   const [city, setCity] = useState('');
   const [region, setRegion] = useState('Greater Accra');
   const [urgency, setUrgency] = useState('soon');
+  const [preferredDate, setPreferredDate] = useState('');
+  const [preferredTimeSlot, setPreferredTimeSlot] = useState('anytime');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
@@ -314,7 +341,7 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
             return prev + 1;
           });
         }, 1000);
-      } catch (err) {
+      } catch {
         setError(
           toQuickJobErrorMessage(
             'Microphone access denied. Please allow microphone access to record a voice note.',
@@ -443,6 +470,8 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
           region: String(region || '').trim(),
         },
         urgency,
+        preferredDate: preferredDate || null,
+        preferredTimeSlot: preferredTimeSlot || 'anytime',
       };
 
       const result = await createQuickJob(jobData);
@@ -818,6 +847,52 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
               ))}
             </RadioGroup>
 
+            <Box
+              sx={{
+                mt: 3,
+                p: 2,
+                borderRadius: 2,
+                border: `1px solid ${theme.palette.divider}`,
+                bgcolor: theme.palette.action.hover,
+              }}
+            >
+              <Typography variant="subtitle2" gutterBottom>
+                Preferred schedule (optional)
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    type="date"
+                    label="Preferred date"
+                    value={preferredDate}
+                    onChange={(e) => setPreferredDate(e.target.value)}
+                    InputLabelProps={{ shrink: true }}
+                    inputProps={{
+                      min: new Date().toLocaleDateString('en-CA'),
+                    }}
+                    helperText="Choose a date if you already know when you want help."
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    select
+                    fullWidth
+                    label="Preferred time"
+                    value={preferredTimeSlot}
+                    onChange={(e) => setPreferredTimeSlot(e.target.value)}
+                    helperText="Workers will see this when they review your request."
+                  >
+                    {preferredTimeSlotOptions.map((option) => (
+                      <MenuItem key={option.value} value={option.value}>
+                        {option.label}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+              </Grid>
+            </Box>
+
             {/* Summary */}
             <Card sx={{ mt: 3, bgcolor: theme.palette.grey[50] }}>
               <CardContent>
@@ -853,8 +928,25 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
                     WebkitBoxOrient: 'vertical',
                   }}
                 >
-                  "{description || 'No description'}"
+                  {description || 'No description'}
                 </Typography>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 2 }}>
+                  <Chip
+                    size="small"
+                    label={`Urgency: ${urgency}`}
+                    variant="outlined"
+                  />
+                  <Chip
+                    size="small"
+                    label={`Date: ${formatPreferredDate(preferredDate)}`}
+                    variant="outlined"
+                  />
+                  <Chip
+                    size="small"
+                    label={`Time: ${preferredTimeSlot.replace(/_/g, ' ')}`}
+                    variant="outlined"
+                  />
+                </Box>
               </CardContent>
             </Card>
           </Box>
@@ -891,7 +983,7 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
             Request Sent!
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-            Workers nearby will see your request and send quotes. You'll be
+            Workers nearby will see your request and send quotes. You will be
             notified when they respond.
           </Typography>
           <CircularProgress size={24} />
@@ -1033,3 +1125,7 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
 };
 
 export default QuickJobRequestPage;
+
+QuickJobRequestPage.propTypes = {
+  successBasePath: PropTypes.string,
+};

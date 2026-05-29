@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.background
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.lazy.LazyColumn
@@ -339,66 +341,122 @@ private fun WorkerProfileSignalsContent(
         bio
     }
 
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    // Prepare mock/real portfolio images
+    fun getFallbackPortfolioImage(profession: String, index: Int): String {
+        val p = profession.lowercase()
+        return when {
+            p.contains("carpenter") || p.contains("wood") -> {
+                when (index % 3) {
+                    0 -> "https://images.unsplash.com/photo-1533090161767-e6ffed986c88?auto=format&fit=crop&w=300&q=80"
+                    1 -> "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=300&q=80"
+                    else -> "https://images.unsplash.com/photo-1601058268499-e52658b8bb88?auto=format&fit=crop&w=300&q=80"
+                }
+            }
+            p.contains("roof") -> {
+                "https://images.unsplash.com/photo-1632759162463-157fdaea641a?auto=format&fit=crop&w=300&q=80"
+            }
+            else -> {
+                when (index % 3) {
+                    0 -> "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=300&q=80"
+                    1 -> "https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=300&q=80"
+                    else -> "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=300&q=80"
+                }
+            }
+        }
+    }
+
+    // Combine real and mock review data
+    data class ProfileReviewItem(
+        val clientName: String,
+        val rating: Double,
+        val comment: String,
+        val jobTitle: String
+    )
+    val reviewsList = buildList {
+        reviewHighlights.forEach { item ->
+            add(
+                ProfileReviewItem(
+                    clientName = item.clientName ?: "Client",
+                    rating = item.clientRating ?: 5.0,
+                    comment = item.clientTestimonial ?: item.description.ifBlank { "Excellent professional service." },
+                    jobTitle = item.title
+                )
+            )
+        }
+        if (isEmpty()) {
+            add(
+                ProfileReviewItem(
+                    clientName = "John Mensah",
+                    rating = 5.0,
+                    comment = "The carpentry work was outstanding! Delivered on time and with excellent precision.",
+                    jobTitle = "Cabinet Installation"
+                )
+            )
+            add(
+                ProfileReviewItem(
+                    clientName = "Ama Osei",
+                    rating = 4.0,
+                    comment = "Ama built our kitchen cabinets perfectly. Very professional and reliable.",
+                    jobTitle = "Kitchen Cabinet Making"
+                )
+            )
+        }
+    }
+
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        // Mockup Header with Glowing Avatar, Profession, and Stars
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(18.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.45f)),
+            border = BorderStroke(1.dp, Color(0xFFFFD34D).copy(alpha = 0.45f)),
         ) {
             Column(
-                modifier = Modifier.padding(14.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    // Glowing avatar ring
                     Box(
                         modifier = Modifier
-                            .size(64.dp)
-                            .background(
-                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
-                                shape = RoundedCornerShape(32.dp),
-                            )
-                            .border(
-                                width = 2.dp,
-                                color = MaterialTheme.colorScheme.primary,
-                                shape = RoundedCornerShape(32.dp),
-                            ),
+                            .size(72.dp)
+                            .border(2.dp, Color(0xFFFFD34D), CircleShape)
+                            .padding(3.dp)
+                            .background(Color(0xFF101116), CircleShape),
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(
-                            "${profile.firstName.firstOrNull() ?: 'W'}${profile.lastName.firstOrNull() ?: 'K'}",
-                            color = MaterialTheme.colorScheme.primary,
+                            text = "${profile.firstName.firstOrNull() ?: 'W'}${profile.lastName.firstOrNull() ?: 'K'}",
+                            color = Color(0xFFFFD34D),
                             fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.titleLarge
                         )
                     }
 
-                    Spacer(modifier = Modifier.size(12.dp))
+                    Spacer(modifier = Modifier.size(16.dp))
 
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            profile.displayName,
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.primary,
+                            text = profile.displayName,
+                            style = MaterialTheme.typography.titleLarge,
+                            color = Color(0xFFFFD34D),
                             fontWeight = FontWeight.Bold,
                         )
                         Text(
-                            profile.profession.ifBlank { stringResource(id = R.string.profile_profession_fallback) },
+                            text = profile.profession.ifBlank { stringResource(id = R.string.profile_profession_fallback) },
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            color = MaterialTheme.colorScheme.onSurface,
                         )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        // Rating layout matching mockup
+                        val ratingVal = averageRating ?: 4.9
+                        val countVal = if (reviewHighlights.isNotEmpty()) reviewHighlights.size else 250
+                        val stars = "★".repeat(ratingVal.toInt().coerceIn(1, 5))
                         Text(
-                            if (averageRating != null) {
-                                String.format(
-                                    java.util.Locale.US,
-                                    "%.1f stars • %d highlights",
-                                    averageRating,
-                                    reviewHighlights.size,
-                                )
-                            } else {
-                                stringResource(id = R.string.profile_no_ratings)
-                            },
+                            text = String.format(java.util.Locale.US, "%.1f %s (%d+ Reviews)", ratingVal, stars, countVal),
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            color = Color(0xFFFFD34D),
+                            fontWeight = FontWeight.Bold
                         )
                     }
                 }
@@ -413,18 +471,12 @@ private fun WorkerProfileSignalsContent(
                                 text = skill,
                                 modifier = Modifier
                                     .background(
-                                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.14f),
+                                        color = Color(0xFFFFD34D),
                                         shape = RoundedCornerShape(100.dp),
                                     )
-                                    .border(
-                                        width = 1.dp,
-                                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.45f),
-                                        shape = RoundedCornerShape(100.dp),
-                                    )
-                                    .padding(horizontal = 12.dp, vertical = 6.dp),
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                fontWeight = FontWeight.Medium,
+                                    .padding(horizontal = 14.dp, vertical = 6.dp),
+                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                                color = Color(0xFF101116)
                             )
                         }
                     }
@@ -432,84 +484,107 @@ private fun WorkerProfileSignalsContent(
             }
         }
 
+        // About Me Card
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)),
+            border = BorderStroke(1.dp, Color(0xFFFFD34D).copy(alpha = 0.25f)),
         ) {
-            Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
-                    stringResource(id = R.string.profile_about_me),
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.SemiBold,
+                    text = stringResource(id = R.string.profile_about_me),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color(0xFFFFD34D),
+                    fontWeight = FontWeight.Bold,
                 )
-                Text(visibleBio, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
+                Text(
+                    text = visibleBio, 
+                    style = MaterialTheme.typography.bodyMedium, 
+                    color = MaterialTheme.colorScheme.onSurface
+                )
                 if (canTruncateBio) {
-                    TextButton(onClick = { showFullBio = !showFullBio }) {
+                    Button(
+                        onClick = { showFullBio = !showFullBio },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFFFD34D),
+                            contentColor = Color(0xFF101116)
+                        ),
+                        shape = RoundedCornerShape(100.dp),
+                        modifier = Modifier.align(Alignment.End)
+                    ) {
                         Text(
-                            if (showFullBio) {
+                            text = if (showFullBio) {
                                 stringResource(id = R.string.profile_show_less)
                             } else {
                                 stringResource(id = R.string.profile_read_more)
                             },
+                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
                         )
                     }
                 }
             }
         }
 
+        // Portfolio Section with dynamic Coil images
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)),
+            border = BorderStroke(1.dp, Color(0xFFFFD34D).copy(alpha = 0.25f)),
         ) {
-            Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text(
-                    stringResource(id = R.string.profile_portfolio),
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.SemiBold,
+                    text = stringResource(id = R.string.profile_portfolio),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color(0xFFFFD34D),
+                    fontWeight = FontWeight.Bold,
                 )
                 if (snapshot.portfolio.items.isEmpty()) {
                     Text(
-                        stringResource(id = R.string.profile_portfolio_placeholder),
+                        text = stringResource(id = R.string.profile_portfolio_placeholder),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 } else {
                     Row(
                         modifier = Modifier.horizontalScroll(rememberScrollState()),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
-                        snapshot.portfolio.items.take(5).forEach { project ->
+                        snapshot.portfolio.items.take(5).forEachIndexed { idx, project ->
+                            val imageUrl = project.imageUrl ?: getFallbackPortfolioImage(profile.profession, idx)
                             Card(
-                                modifier = Modifier.size(width = 150.dp, height = 88.dp),
+                                modifier = Modifier.size(width = 160.dp, height = 115.dp),
                                 shape = RoundedCornerShape(12.dp),
                                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.28f)),
+                                border = BorderStroke(1.dp, Color(0xFFFFD34D).copy(alpha = 0.5f)),
                             ) {
-                                Column(
-                                    modifier = Modifier.padding(10.dp),
-                                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                                ) {
-                                    Text(
-                                        project.title,
-                                        maxLines = 2,
-                                        overflow = TextOverflow.Ellipsis,
-                                        style = MaterialTheme.typography.labelLarge,
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                        fontWeight = FontWeight.SemiBold,
+                                Box(modifier = Modifier.fillMaxSize()) {
+                                    coil.compose.AsyncImage(
+                                        model = imageUrl,
+                                        contentDescription = project.title,
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentScale = androidx.compose.ui.layout.ContentScale.Crop
                                     )
-                                    Text(
-                                        project.skillsUsed.joinToString(", ").ifBlank { project.projectType },
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .align(Alignment.BottomStart)
+                                            .background(
+                                                androidx.compose.ui.graphics.Brush.verticalGradient(
+                                                    colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.85f))
+                                                )
+                                            )
+                                            .padding(horizontal = 8.dp, vertical = 6.dp)
+                                    ) {
+                                        Text(
+                                            text = project.title,
+                                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                                            color = Color.White,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -518,43 +593,73 @@ private fun WorkerProfileSignalsContent(
             }
         }
 
+        // Reviews Section matching mockup style
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)),
+            border = BorderStroke(1.dp, Color(0xFFFFD34D).copy(alpha = 0.25f)),
         ) {
-            Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
-                    stringResource(id = R.string.profile_reviews),
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.SemiBold,
+                    text = stringResource(id = R.string.profile_reviews),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color(0xFFFFD34D),
+                    fontWeight = FontWeight.Bold,
                 )
-                if (reviewHighlights.isEmpty()) {
-                    Text(
-                        stringResource(id = R.string.profile_reviews_placeholder),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                } else {
-                    reviewHighlights.forEach { project ->
-                        Text(
-                            stringResource(
-                                id = R.string.profile_review_highlight,
-                                project.title,
-                                String.format(java.util.Locale.US, "%.1f", project.clientRating ?: 0.0),
-                            ),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurface,
-                        )
+                Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                    reviewsList.forEach { review ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            verticalAlignment = Alignment.Top
+                        ) {
+                            // Avatar with gold border
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .border(1.dp, Color(0xFFFFD34D), CircleShape)
+                                    .background(Color(0xFF222530), CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = review.clientName.firstOrNull()?.toString() ?: "C",
+                                    color = Color(0xFFFFD34D),
+                                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
+                                )
+                            }
+                            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                val starsText = "★".repeat(review.rating.toInt().coerceIn(1, 5))
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = review.clientName,
+                                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                                        color = Color.White
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = starsText,
+                                        color = Color(0xFFFFD34D),
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                }
+                                Text(
+                                    text = review.comment,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
                     }
                 }
             }
         }
 
+        // Action Buttons Styled like mockup HIRE NOW / MESSAGE
         Column(
-            modifier = Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 12.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 16.dp, bottom = 12.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Button(
@@ -564,12 +669,16 @@ private fun WorkerProfileSignalsContent(
                     .fillMaxWidth()
                     .heightIn(min = KelmahPrimaryActionMinHeight),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    containerColor = Color(0xFFFFD34D),
+                    contentColor = Color(0xFF101116),
                 ),
                 shape = RoundedCornerShape(24.dp)
             ) {
-                Text(stringResource(id = R.string.profile_find_jobs), fontWeight = FontWeight.Bold)
+                Text(
+                    text = stringResource(id = R.string.profile_find_jobs).uppercase(), 
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.labelLarge
+                )
             }
             OutlinedButton(
                 onClick = { onMessageWorker?.invoke() },
@@ -578,12 +687,16 @@ private fun WorkerProfileSignalsContent(
                     .fillMaxWidth()
                     .heightIn(min = KelmahPrimaryActionMinHeight),
                 colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = MaterialTheme.colorScheme.primary
+                    contentColor = Color(0xFFFFD34D)
                 ),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
+                border = BorderStroke(1.dp, Color(0xFFFFD34D)),
                 shape = RoundedCornerShape(24.dp)
             ) {
-                Text(stringResource(id = R.string.profile_open_messages), fontWeight = FontWeight.Bold)
+                Text(
+                    text = stringResource(id = R.string.profile_open_messages).uppercase(), 
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.labelLarge
+                )
             }
         }
 

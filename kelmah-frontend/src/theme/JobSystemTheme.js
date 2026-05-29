@@ -4,7 +4,7 @@ import { createTheme } from '@mui/material/styles';
 const colors = {
   primary: {
     main: '#D4AF37', // Gold
-    light: '#FFD700',
+    light: '#FFD34D',
     dark: '#B8941F',
     contrastText: '#000000',
   },
@@ -128,7 +128,7 @@ const components = {
         'a, button, [role="button"], input, textarea, select': {
           outlineWidth: '2px',
           outlineStyle: 'solid',
-          outlineColor: '#FFD700',
+          outlineColor: '#FFD34D',
           outlineOffset: '2px',
         },
       },
@@ -144,7 +144,7 @@ const components = {
         textTransform: 'none',
         transition: 'all 0.2s ease-in-out',
         '&:focus-visible': {
-          outline: '3px solid rgba(255, 215, 0, 0.9)',
+          outline: '3px solid rgba(255, 211, 77, 0.9)',
           outlineOffset: 2,
         },
         '&:hover': {
@@ -153,7 +153,7 @@ const components = {
         },
       },
       contained: {
-        background: 'linear-gradient(45deg, #D4AF37 30%, #FFD700 90%)',
+        background: 'linear-gradient(45deg, #D4AF37 30%, #FFD34D 90%)',
         color: '#000000',
         '&:hover': {
           background: 'linear-gradient(45deg, #B8941F 30%, #D4AF37 90%)',
@@ -164,7 +164,7 @@ const components = {
         color: '#D4AF37',
         '&:hover': {
           backgroundColor: 'rgba(212,175,55,0.1)',
-          borderColor: '#FFD700',
+          borderColor: '#FFD34D',
         },
       },
     },
@@ -273,7 +273,7 @@ const components = {
         minWidth: 44,
         minHeight: 44,
         '&:focus-visible': {
-          outline: '3px solid rgba(255, 215, 0, 0.9)',
+          outline: '3px solid rgba(255, 211, 77, 0.9)',
           outlineOffset: 2,
         },
       },
@@ -283,7 +283,7 @@ const components = {
     styleOverrides: {
       root: {
         '&:focus-visible': {
-          outline: '2px solid rgba(255, 215, 0, 0.9)',
+          outline: '2px solid rgba(255, 211, 77, 0.9)',
           outlineOffset: 2,
           borderRadius: 2,
         },

@@ -3,16 +3,16 @@ import { createTheme } from '@mui/material/styles';
 // Kelmah Brand Colors - Core Identity
 const BRAND_COLORS = {
   // Gold variations - Primary brand color (must remain untouched)
-  gold: '#FFD700',
-  goldLight: '#FFE55C',
+  gold: '#FFD34D',
+  goldLight: '#FFE089',
   goldDark: '#B8860B',
-  goldMuted: 'rgba(255, 215, 0, 0.8)',
+  goldMuted: 'rgba(255, 211, 77, 0.8)',
 
   // Elevated neutral system so gold acts as an accent instead of background fill
-  charcoal: '#050507',
-  obsidian: '#0E0F14',
-  graphite: '#161821',
-  slate: '#1F2028',
+  charcoal: '#101116',
+  obsidian: '#1A1D26',
+  graphite: '#222530',
+  slate: '#2E3142',
   ink: '#1B1C22',
   warmConcrete: '#2A2B32',
 
@@ -44,16 +44,17 @@ const BRAND_COLORS = {
 
 const SURFACE_TOKENS = {
   dark: {
-    body: '#050507',
-    surface: '#0E0F14',
-    raised: '#151722',
-    overlay: '#1E2030',
+    body: '#101116',
+    surface: '#1A1D26',
+    raised: '#222530',
+    overlay: '#2E3142',
     stroke: 'rgba(255, 255, 255, 0.08)',
-    glow: 'rgba(255, 215, 0, 0.14)',
+    glow: 'rgba(255, 211, 77, 0.14)',
     textPrimary: '#F7F3E3',
     textSecondary: 'rgba(247, 243, 227, 0.78)',
     textMuted: 'rgba(247, 243, 227, 0.64)',
   },
+
   light: {
     body: '#F9F7ED',
     surface: '#FFFFFF',
@@ -222,10 +223,10 @@ const darkTheme = createTheme({
       contrastText: SURFACE_TOKENS.dark.textPrimary,
     },
     action: {
-      hover: 'rgba(255, 215, 0, 0.1)',
-      selected: 'rgba(255, 215, 0, 0.18)',
+      hover: 'rgba(255, 211, 77, 0.1)',
+      selected: 'rgba(255, 211, 77, 0.18)',
       disabled: 'rgba(255, 255, 255, 0.3)',
-      focus: 'rgba(255, 215, 0, 0.2)',
+      focus: 'rgba(255, 211, 77, 0.2)',
     },
     error: {
       main: BRAND_COLORS.error,
@@ -310,7 +311,7 @@ const darkTheme = createTheme({
           overflowY: 'auto',
         },
         '::selection': {
-          backgroundColor: 'rgba(255, 215, 0, 0.35)',
+          backgroundColor: 'rgba(255, 211, 77, 0.35)',
           color: SURFACE_TOKENS.dark.body,
         },
       },
@@ -319,7 +320,7 @@ const darkTheme = createTheme({
       styleOverrides: {
         root: {
           backgroundColor: 'rgba(14, 15, 20, 0.95)',
-          borderBottom: '1px solid rgba(255, 215, 0, 0.25)',
+          borderBottom: '1px solid rgba(255, 211, 77, 0.25)',
           boxShadow: '0 24px 45px rgba(5, 5, 7, 0.65)',
           backdropFilter: 'blur(18px)',
           color: SURFACE_TOKENS.dark.textPrimary,
@@ -345,7 +346,7 @@ const darkTheme = createTheme({
           transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
           boxShadow: '0 12px 30px rgba(3, 3, 5, 0.35)',
           '&:hover': {
-            borderColor: 'rgba(255, 215, 0, 0.35)',
+            borderColor: 'rgba(255, 211, 77, 0.35)',
             boxShadow: '0 18px 45px rgba(0, 0, 0, 0.45)',
           },
           // Mobile: minimal shadows — flat + border (Binance pattern)
@@ -393,7 +394,7 @@ const darkTheme = createTheme({
           transition: 'transform 0.3s ease, border-color 0.3s ease',
           '@media (hover: hover)': {
             '&:hover': {
-              borderColor: 'rgba(255, 215, 0, 0.3)',
+              borderColor: 'rgba(255, 211, 77, 0.3)',
               boxShadow: '0 25px 65px rgba(0, 0, 0, 0.65)',
               transform: 'translateY(-4px)',
             },
@@ -429,17 +430,17 @@ const darkTheme = createTheme({
         contained: {
           background: `linear-gradient(135deg, ${BRAND_COLORS.gold} 0%, ${BRAND_COLORS.goldLight} 100%)`,
           color: BRAND_COLORS.black,
-          boxShadow: '0 18px 35px rgba(255, 215, 0, 0.35)',
+          boxShadow: '0 18px 35px rgba(255, 211, 77, 0.35)',
           '&:hover': {
             background: `linear-gradient(135deg, ${BRAND_COLORS.goldLight} 0%, ${BRAND_COLORS.gold} 100%)`,
-            boxShadow: '0 24px 55px rgba(255, 215, 0, 0.45)',
+            boxShadow: '0 24px 55px rgba(255, 211, 77, 0.45)',
             transform: 'translateY(-2px)',
           },
           '&:active': {
             transform: 'translateY(0)',
           },
           '&:disabled': {
-            background: 'rgba(255, 215, 0, 0.3)',
+            background: 'rgba(255, 211, 77, 0.3)',
             color: 'rgba(0, 0, 0, 0.5)',
           },
           // ✅ MOBILE-AUDIT: Flat solid color on mobile — no gradients, no shadows
@@ -454,19 +455,19 @@ const darkTheme = createTheme({
           },
         },
         outlined: {
-          borderColor: 'rgba(255, 215, 0, 0.6)',
+          borderColor: 'rgba(255, 211, 77, 0.6)',
           borderWidth: '1.5px',
           color: BRAND_COLORS.gold,
           '&:hover': {
             borderColor: BRAND_COLORS.goldLight,
-            backgroundColor: 'rgba(255, 215, 0, 0.1)',
+            backgroundColor: 'rgba(255, 211, 77, 0.1)',
             borderWidth: '1.5px',
           },
         },
         text: {
           color: 'rgba(255, 255, 255, 0.8)',
           '&:hover': {
-            backgroundColor: 'rgba(255, 215, 0, 0.12)',
+            backgroundColor: 'rgba(255, 211, 77, 0.12)',
           },
         },
       },
@@ -483,7 +484,7 @@ const darkTheme = createTheme({
             outlineOffset: 2,
           },
           '&:hover': {
-            backgroundColor: 'rgba(255, 215, 0, 0.15)',
+            backgroundColor: 'rgba(255, 211, 77, 0.15)',
             transform: 'scale(1.05)',
           },
           // Mobile: no hover scale
@@ -532,7 +533,7 @@ const darkTheme = createTheme({
               borderColor: 'rgba(255, 255, 255, 0.1)',
             },
             '&:hover fieldset': {
-              borderColor: 'rgba(255, 215, 0, 0.4)',
+              borderColor: 'rgba(255, 211, 77, 0.4)',
             },
             '&.Mui-focused fieldset': {
               borderColor: BRAND_COLORS.gold,
@@ -567,12 +568,12 @@ const darkTheme = createTheme({
       styleOverrides: {
         root: {
           '&:hover': {
-            backgroundColor: 'rgba(255, 215, 0, 0.12)',
+            backgroundColor: 'rgba(255, 211, 77, 0.12)',
           },
           '&.Mui-selected': {
-            backgroundColor: 'rgba(255, 215, 0, 0.2)',
+            backgroundColor: 'rgba(255, 211, 77, 0.2)',
             '&:hover': {
-              backgroundColor: 'rgba(255, 215, 0, 0.25)',
+              backgroundColor: 'rgba(255, 211, 77, 0.25)',
             },
           },
         },
@@ -608,7 +609,7 @@ const darkTheme = createTheme({
       styleOverrides: {
         paper: {
           backgroundColor: SURFACE_TOKENS.dark.raised,
-          border: `1px solid rgba(255, 215, 0, 0.4)`,
+          border: `1px solid rgba(255, 211, 77, 0.4)`,
           borderRadius: 14,
           boxShadow: '0 40px 85px rgba(0, 0, 0, 0.7)',
           // Mobile: near-fullscreen dialogs (Binance pattern)
@@ -626,7 +627,7 @@ const darkTheme = createTheme({
       styleOverrides: {
         root: {
           padding: '16px 24px',
-          borderBottom: '1px solid rgba(255, 215, 0, 0.25)',
+          borderBottom: '1px solid rgba(255, 211, 77, 0.25)',
           color: BRAND_COLORS.gold,
         },
       },
@@ -664,7 +665,7 @@ const darkTheme = createTheme({
         tooltip: {
           backgroundColor: SURFACE_TOKENS.dark.raised,
           color: SURFACE_TOKENS.dark.textPrimary,
-          border: '1px solid rgba(255, 215, 0, 0.3)',
+          border: '1px solid rgba(255, 211, 77, 0.3)',
           fontSize: '0.875rem',
         },
         arrow: {
@@ -675,10 +676,10 @@ const darkTheme = createTheme({
     MuiChip: {
       styleOverrides: {
         root: {
-          backgroundColor: 'rgba(255, 215, 0, 0.18)',
+          backgroundColor: 'rgba(255, 211, 77, 0.18)',
           color: BRAND_COLORS.gold,
           '&:hover': {
-            backgroundColor: 'rgba(255, 215, 0, 0.25)',
+            backgroundColor: 'rgba(255, 211, 77, 0.25)',
           },
         },
       },
@@ -690,11 +691,11 @@ const darkTheme = createTheme({
           margin: '0 4px',
           color: SURFACE_TOKENS.dark.textSecondary,
           '&.Mui-selected': {
-            backgroundColor: 'rgba(255, 215, 0, 0.18)',
+            backgroundColor: 'rgba(255, 211, 77, 0.18)',
             color: BRAND_COLORS.gold,
           },
           '&:hover': {
-            backgroundColor: 'rgba(255, 215, 0, 0.12)',
+            backgroundColor: 'rgba(255, 211, 77, 0.12)',
           },
         },
       },
@@ -731,9 +732,9 @@ const darkTheme = createTheme({
           borderColor: 'rgba(255, 255, 255, 0.12)',
           color: SURFACE_TOKENS.dark.textSecondary,
           '&.Mui-selected': {
-            backgroundColor: 'rgba(255, 215, 0, 0.2)',
+            backgroundColor: 'rgba(255, 211, 77, 0.2)',
             color: BRAND_COLORS.gold,
-            borderColor: 'rgba(255, 215, 0, 0.5)',
+            borderColor: 'rgba(255, 211, 77, 0.5)',
           },
         },
       },
@@ -829,10 +830,10 @@ const lightTheme = createTheme({
     },
     divider: 'rgba(0, 0, 0, 0.15)',
     action: {
-      hover: 'rgba(255, 215, 0, 0.12)',
-      selected: 'rgba(255, 215, 0, 0.18)',
+      hover: 'rgba(255, 211, 77, 0.12)',
+      selected: 'rgba(255, 211, 77, 0.18)',
       disabled: 'rgba(0, 0, 0, 0.3)',
-      focus: 'rgba(255, 215, 0, 0.22)',
+      focus: 'rgba(255, 211, 77, 0.22)',
     },
     error: {
       main: '#d32f2f',
@@ -1027,17 +1028,17 @@ const lightTheme = createTheme({
         contained: {
           background: `linear-gradient(135deg, ${BRAND_COLORS.gold} 0%, ${BRAND_COLORS.goldLight} 100%)`,
           color: BRAND_COLORS.black,
-          boxShadow: '0 18px 35px rgba(255, 215, 0, 0.35)',
+          boxShadow: '0 18px 35px rgba(255, 211, 77, 0.35)',
           '&:hover': {
             background: `linear-gradient(135deg, ${BRAND_COLORS.goldLight} 0%, ${BRAND_COLORS.gold} 100%)`,
-            boxShadow: '0 24px 55px rgba(255, 215, 0, 0.45)',
+            boxShadow: '0 24px 55px rgba(255, 211, 77, 0.45)',
             transform: 'translateY(-2px)',
           },
           '&:active': {
             transform: 'translateY(0)',
           },
           '&:disabled': {
-            background: 'rgba(255, 215, 0, 0.35)',
+            background: 'rgba(255, 211, 77, 0.35)',
             color: 'rgba(0, 0, 0, 0.35)',
           },
         },
@@ -1400,7 +1401,7 @@ export const createGlassEffect = (theme, opacity = 0.1) => {
     backdropFilter: 'blur(20px)',
     border: `1px solid ${
       theme.palette.mode === 'dark'
-        ? 'rgba(255, 215, 0, 0.2)'
+        ? 'rgba(255, 211, 77, 0.2)'
         : 'rgba(0, 0, 0, 0.15)'
     }`,
   };
@@ -1408,7 +1409,7 @@ export const createGlassEffect = (theme, opacity = 0.1) => {
 
 export const GHANA_COLORS = {
   red: '#DC143C',
-  gold: '#FFD700',
+  gold: '#FFD34D',
   green: '#2E7D32',
   blue: '#1976D2',
   earth: '#8B4513',

@@ -1544,7 +1544,7 @@ const EnhancedReviewsPage = () => {
               onClick={handleReply}
               disabled={!replyText.trim() || replySubmitting}
               sx={{
-                background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
+                background: 'linear-gradient(135deg, #FFD34D 0%, #FFC000 100%)',
                 color: '#000',
                 fontWeight: 700,
                 minHeight: 44,

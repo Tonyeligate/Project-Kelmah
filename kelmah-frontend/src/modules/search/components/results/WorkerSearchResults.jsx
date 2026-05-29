@@ -368,11 +368,11 @@ const WorkerSearchResults = ({
               width: 72,
               height: 72,
               borderRadius: '50%',
-              background: 'rgba(255, 215, 0, 0.12)',
+              background: 'rgba(255, 211, 77, 0.12)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: '#FFD700',
+              color: '#FFD34D',
             }}
           >
             <SearchOffIcon sx={{ fontSize: 36 }} />
@@ -427,7 +427,7 @@ const WorkerSearchResults = ({
             startIcon={<RefreshIcon />}
             onClick={handleClearFilters}
             sx={{
-              background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
+              background: 'linear-gradient(135deg, #FFD34D 0%, #FFC000 100%)',
               color: '#000',
               minHeight: 44,
               '&:hover': {

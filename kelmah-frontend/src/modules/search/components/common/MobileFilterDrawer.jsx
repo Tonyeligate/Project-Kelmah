@@ -274,8 +274,8 @@ const MobileFilterDrawer = ({
           fullWidth
           sx={{
             minHeight: '48px',
-            bgcolor: theme.palette.mode === 'dark' ? '#FFD700' : '#000000',
-            color: theme.palette.mode === 'dark' ? '#000000' : '#FFD700',
+            bgcolor: theme.palette.mode === 'dark' ? '#FFD34D' : '#000000',
+            color: theme.palette.mode === 'dark' ? '#000000' : '#FFD34D',
             '&:hover': {
               bgcolor: theme.palette.mode === 'dark' ? '#FFC700' : '#1a1a1a',
             },

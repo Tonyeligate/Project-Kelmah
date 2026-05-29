@@ -41,7 +41,7 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
   zIndex: Z_INDEX.bottomNav,
   borderTop:
     theme.palette.mode === 'dark'
-      ? '1px solid rgba(255, 215, 0, 0.2)'
+      ? '1px solid rgba(255, 211, 77, 0.2)'
       : '1px solid rgba(0, 0, 0, 0.1)',
   backgroundColor:
     theme.palette.mode === 'dark'
@@ -83,7 +83,7 @@ const StyledBottomNavigationAction = styled(BottomNavigationAction)(
         theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
       backgroundColor:
         theme.palette.mode === 'dark'
-          ? 'rgba(255, 215, 0, 0.12)'
+          ? 'rgba(255, 211, 77, 0.12)'
           : 'rgba(17, 24, 39, 0.07)',
       '& .MuiBottomNavigationAction-label': {
         fontSize: '0.84rem',
@@ -118,7 +118,7 @@ const StyledBottomNavigationAction = styled(BottomNavigationAction)(
     '&:active': {
       backgroundColor:
         theme.palette.mode === 'dark'
-          ? 'rgba(255, 215, 0, 0.1)'
+          ? 'rgba(255, 211, 77, 0.1)'
           : 'rgba(0, 0, 0, 0.05)',
     },
     '@media (max-width:360px)': {

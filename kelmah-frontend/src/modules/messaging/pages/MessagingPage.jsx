@@ -785,7 +785,7 @@ const MessagingPage = () => {
   const isDarkMode = theme.palette.mode === 'dark';
   const chatTheme = useMemo(
     () => ({
-      accent: '#FFD700',
+      accent: '#FFD34D',
       accentDark: '#B8860B',
       header: isDarkMode
         ? alpha(theme.palette.background.paper, 0.12)

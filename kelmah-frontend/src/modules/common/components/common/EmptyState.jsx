@@ -143,7 +143,7 @@ const EmptyState = ({
           backgroundColor:
             type === 'error'
               ? 'rgba(244, 67, 54, 0.1)'
-              : 'rgba(255, 215, 0, 0.1)',
+              : 'rgba(255, 211, 77, 0.1)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',

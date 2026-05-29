@@ -1,3 +1,18 @@
+### Session: Hirer Dashboard UI Overhaul May 29 2026 IN PROGRESS
+
+**Date**: May 29, 2026
+**Scope**: Redesign the hirer dashboard high-level UI for mobile and desktop, remove duplicate skip-link visibility, and tighten the recent activity feed.
+
+**Files in scope**
+- `kelmah-frontend/src/modules/hirer/pages/HirerDashboardPage.jsx`
+- `kelmah-frontend/src/modules/hirer/components/RecentActivityFeed.jsx`
+- `kelmah-frontend/src/App.jsx`
+- `spec-kit/STATUS_LOG.md`
+
+**Baseline understanding (before changes)**
+- The hirer dashboard uses a dense hero, repeated KPI chips/cards, and a text-heavy priority queue that makes the page feel crowded.
+- The app shell renders duplicate "Skip to main content" links from both `App.jsx` and the layout shell.
+
 ### Session: Worker Profile Dark Luxe Redesign May 27 2026 IN PROGRESS
 
 **Date**: May 27, 2026
