@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Container,
   Typography,
@@ -12,7 +12,6 @@ import {
   DialogActions,
   TextField,
   IconButton,
-  CircularProgress,
   Alert,
   Card,
   CardContent,
@@ -186,6 +185,17 @@ const PaymentMethodsPage = () => {
     }
   };
 
+  // Helper: show provider-specific guidance for mobile money
+  const mobileProviderHelperText = useCallback(() => {
+    if (newMobile.provider === 'MTN') {
+      return 'Use the phone number registered with MTN Mobile Money. You will receive an OTP to confirm.';
+    }
+    if (newMobile.provider === 'Vodafone') {
+      return 'Use the phone number registered with Vodafone Cash. Ensure you have enabled PIN transactions.';
+    }
+    return 'Enter the phone number for the chosen mobile money provider.';
+  }, [newMobile.provider]);
+
   // Handle adding bank account via API
   const handleAddBank = async () => {
     setLoading(true);
@@ -298,7 +308,10 @@ const PaymentMethodsPage = () => {
   return (
     <PageCanvas
       disableContainer
-      sx={{ pt: { xs: 1, sm: 4 }, pb: { xs: withBottomNavSafeArea(72), md: 6 } }}
+      sx={{
+        pt: { xs: 1, sm: 4 },
+        pb: { xs: withBottomNavSafeArea(72), md: 6 },
+      }}
     >
       <Container
         maxWidth="lg"
@@ -848,6 +861,7 @@ const PaymentMethodsPage = () => {
                 sx={{ mb: 2 }}
                 placeholder="0XX XXX XXXX"
                 inputProps={{ inputMode: 'tel' }}
+                helperText={mobileProviderHelperText()}
               />
 
               <TextField
@@ -1063,7 +1077,10 @@ const PaymentMethodsPage = () => {
             fullWidth
             variant="contained"
             color="secondary"
-            sx={{ minHeight: TOUCH_TARGET_MIN, boxShadow: '0 2px 8px rgba(255,215,0,0.35)' }}
+            sx={{
+              minHeight: TOUCH_TARGET_MIN,
+              boxShadow: '0 2px 8px rgba(255,215,0,0.35)',
+            }}
             onClick={() => setOpenAddBank(true)}
           >
             Bank
