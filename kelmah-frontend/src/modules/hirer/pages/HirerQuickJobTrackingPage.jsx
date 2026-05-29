@@ -222,6 +222,7 @@ const HirerQuickJobTrackingPage = () => {
   const [verifyingPayment, setVerifyingPayment] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('card');
   const [paymentStatus, setPaymentStatus] = useState(null);
+  const [bookDialogOpen, setBookDialogOpen] = useState(false);
   const [approveDialogOpen, setApproveDialogOpen] = useState(false);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [disputeDialogOpen, setDisputeDialogOpen] = useState(false);
@@ -374,6 +375,9 @@ const HirerQuickJobTrackingPage = () => {
   ].includes(job?.status);
   const canPay = job?.status === 'accepted';
   const quotes = useMemo(() => job?.quotes || [], [job?.quotes]);
+  const selectedPaymentMethodLabel =
+    paymentMethodOptions.find((option) => option.value === paymentMethod)
+      ?.label || paymentMethod;
 
   const handleAcceptQuote = async (quote) => {
     const quoteId = quote?._id || quote?.id;
@@ -828,11 +832,11 @@ const HirerQuickJobTrackingPage = () => {
                             <PaymentIcon />
                           )
                         }
-                        onClick={handleStartPayment}
+                        onClick={() => setBookDialogOpen(true)}
                         disabled={actionLoading}
                         sx={{ minHeight: 44 }}
                       >
-                        Secure worker with payment
+                        Book now
                       </Button>
                     </Stack>
                   ) : canApprove ? (
@@ -1003,6 +1007,56 @@ const HirerQuickJobTrackingPage = () => {
               disabled={actionLoading}
             >
               Release payout
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        <Dialog
+          open={bookDialogOpen}
+          onClose={() => setBookDialogOpen(false)}
+          fullWidth
+          maxWidth="sm"
+        >
+          <DialogTitle>Confirm booking</DialogTitle>
+          <DialogContent>
+            <Stack spacing={2} sx={{ pt: 1 }}>
+              <Alert severity="info">
+                You are about to secure {toWorkerName(acceptedWorker)} and lock
+                the request with payment.
+              </Alert>
+              <Box>
+                <Typography variant="body2" color="text.secondary">
+                  Payment method
+                </Typography>
+                <Typography fontWeight={700}>
+                  {selectedPaymentMethodLabel}
+                </Typography>
+              </Box>
+              <Box>
+                <Typography variant="body2" color="text.secondary">
+                  Estimated worker payout
+                </Typography>
+                <Typography fontWeight={700}>
+                  {formatCurrency(Number(job?.escrow?.workerPayout || 0))}
+                </Typography>
+              </Box>
+              <Typography variant="body2" color="text.secondary">
+                After you confirm, the worker is notified and the request moves
+                into the payment-secured stage.
+              </Typography>
+            </Stack>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setBookDialogOpen(false)}>Back</Button>
+            <Button
+              variant="contained"
+              onClick={async () => {
+                setBookDialogOpen(false);
+                await handleStartPayment();
+              }}
+              disabled={actionLoading}
+            >
+              Confirm booking
             </Button>
           </DialogActions>
         </Dialog>
