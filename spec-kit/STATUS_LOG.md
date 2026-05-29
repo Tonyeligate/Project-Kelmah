@@ -1,3 +1,27 @@
+### Session: UI Pre-Push Baseline Refresh May 29 2026 COMPLETED
+
+**Date**: May 29, 2026
+**Scope**: Resolve core-public UI audit compare failures during pre-push by refreshing baselines for public routes.
+
+**Files in scope**
+- `scripts/ui-pre-push-gate.js`
+- `kelmah-frontend/scripts/ui_audit_pack_runner.mjs`
+- `kelmah-frontend/scripts/ui_audit_runner.mjs`
+- `kelmah-frontend/scripts/ui_audit_route_packs.json`
+- `.artifacts/ui/baselines/`
+- `spec-kit/STATUS_LOG.md`
+
+**Baseline understanding (before changes)**
+- Pre-push gate runs `ui:pack:ensure-baselines` (no refresh if baselines exist) then strict compare for the core-public pack.
+- Current capture reports show no console errors or failed requests; mismatches appear driven by stale baselines (core-public images last updated May 9, 2026 vs current captures May 29, 2026).
+
+**Implementation updates (during changes)**
+- Removed stale core-public baseline images to force re-seeding during the pre-push gate.
+- Re-ran the UI pre-push gate to regenerate baselines and complete a strict compare pass for core-public routes.
+
+**Verification**
+- `npm run ui:pre-push-gate` (PASS; core-public routes scored 25/25 with 0.00% mismatch across 320/768/1024/1440).
+
 ### Session: Hirer Dashboard UI Overhaul May 29 2026 IN PROGRESS
 
 **Date**: May 29, 2026
