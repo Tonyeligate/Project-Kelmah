@@ -257,6 +257,7 @@ const sendViaBrevoApi = async (mailOptions, operation) => {
       to: mailOptions.to,
       error: error.message,
       status: error.response?.status,
+      response: error.response?.data,
     });
     throw error;
   }
@@ -608,3 +609,4 @@ module.exports = {
     await sendMailSafely(mailOptions, 'sendLoginNotificationEmail');
   }
 };
+
