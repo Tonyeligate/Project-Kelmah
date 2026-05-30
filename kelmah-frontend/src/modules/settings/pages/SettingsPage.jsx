@@ -124,7 +124,6 @@ const SettingsPage = () => {
     return 0;
   })();
   const [tabValue, setTabValue] = useState(initialTab);
-  const theme = useTheme();
   const navigate = useNavigate();
   const isMdUp = useBreakpointUp('md');
   const { user } = useSelector((state) => state.auth);
