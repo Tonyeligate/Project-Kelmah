@@ -7,7 +7,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import workerService from '../services/workerService';
 import {
   Box,
-  Paper,
   Typography,
   Button,
   Rating,
@@ -30,16 +29,11 @@ import {
   Share as ShareIcon,
   Edit as EditIcon,
   Verified as VerifiedIcon,
-  HomeRounded as HomeIcon,
-  SearchRounded as SearchIcon,
-  ChatBubbleOutline as MessageIcon,
   WorkOutline as WorkIcon,
-  PersonOutline as PersonIcon,
   Close as CloseIcon,
 } from '@mui/icons-material';
 import { Helmet } from 'react-helmet-async';
 import {
-  BOTTOM_NAV_HEIGHT,
   STICKY_CTA_HEIGHT,
   Z_INDEX,
 } from '../../../constants/layout';
@@ -51,7 +45,6 @@ import {
   resolveProfileImageUrl,
 } from '../../common/utils/mediaAssets';
 import { devError } from '@/modules/common/utils/devLogger';
-import { withBottomNavSafeArea, withSafeAreaBottom } from '@/utils/safeArea';
 
 const formatGhanaCurrencyLabel = (value) => {
   const amount = Number(value);
@@ -570,13 +563,14 @@ function WorkerProfile({ workerId: workerIdProp }) {
     }
   };
 
+  // Bottom padding now only accounts for the sticky CTA — no bottom nav offset needed.
   const shellSx = {
     width: '100%',
     color: 'var(--wp-text)',
     fontFamily: '"Manrope", "Poppins", "Work Sans", sans-serif',
     px: { xs: 1.25, sm: 3, md: 4 },
     pt: { xs: 1.5, md: 3 },
-    pb: { xs: STICKY_CTA_HEIGHT + BOTTOM_NAV_HEIGHT + 28, md: 6 },
+    pb: { xs: STICKY_CTA_HEIGHT + 28, md: 6 },
   };
 
   if (loading) {
@@ -859,30 +853,6 @@ function WorkerProfile({ workerId: workerIdProp }) {
     },
   };
 
-  const bottomNavItems = [
-    { label: 'Home', icon: <HomeIcon sx={{ fontSize: 22 }} />, active: false },
-    {
-      label: 'Search',
-      icon: <SearchIcon sx={{ fontSize: 22 }} />,
-      active: false,
-    },
-    {
-      label: 'Messages',
-      icon: <MessageIcon sx={{ fontSize: 22 }} />,
-      active: false,
-    },
-    {
-      label: 'Contracts',
-      icon: <WorkIcon sx={{ fontSize: 22 }} />,
-      active: false,
-    },
-    {
-      label: 'Profile',
-      icon: <PersonIcon sx={{ fontSize: 22 }} />,
-      active: true,
-    },
-  ];
-
   return (
     <>
       <Helmet>
@@ -976,6 +946,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
             minWidth: 0,
           }}
         >
+          {/* ── Profile hero card ── */}
           <Box
             className="wp-reveal"
             style={{ animationDelay: '0.04s' }}
@@ -1238,6 +1209,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
             </Box>
           </Box>
 
+          {/* ── About Me card ── */}
           <Box
             className="wp-reveal"
             style={{ animationDelay: '0.12s' }}
@@ -1291,6 +1263,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
             )}
           </Box>
 
+          {/* ── Portfolio card ── */}
           <Box
             className="wp-reveal"
             style={{ animationDelay: '0.18s' }}
@@ -1485,6 +1458,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
             </Box>
           </Box>
 
+          {/* ── Reviews card ── */}
           <Box
             className="wp-reveal"
             style={{ animationDelay: '0.24s' }}
@@ -1612,6 +1586,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
             </Stack>
           </Box>
 
+          {/* ── Desktop inline CTA card ── */}
           <Box
             className="wp-reveal"
             style={{ animationDelay: '0.3s' }}
@@ -1643,19 +1618,22 @@ function WorkerProfile({ workerId: workerIdProp }) {
           </Box>
         </Box>
 
+        {/* ── Mobile sticky CTA — sits flush at screen bottom with safe-area padding ── */}
         <Box
           sx={{
             position: 'fixed',
             left: { xs: '50%', md: 0 },
             right: { xs: 'auto', md: 0 },
-            bottom: withBottomNavSafeArea(0),
+            bottom: 0,
             display: { xs: 'flex', md: 'none' },
             width: { xs: 'calc(100% - 24px)', md: 'auto' },
             maxWidth: { xs: 260, md: 'none' },
             transform: { xs: 'translateX(-50%)', md: 'none' },
             gap: 1,
             px: 1.5,
-            py: 1,
+            pt: 1,
+            // Respect iOS home-indicator safe area; fall back to 8px on Android/web
+            pb: 'max(env(safe-area-inset-bottom, 0px), 8px)',
             minHeight: STICKY_CTA_HEIGHT,
             alignItems: 'stretch',
             flexDirection: 'column',
@@ -1691,64 +1669,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
           </Button>
         </Box>
 
-        <Paper
-          component="nav"
-          elevation={0}
-          sx={{
-            position: 'fixed',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            display: { xs: 'flex', md: 'none' },
-            alignItems: 'center',
-            justifyContent: 'space-around',
-            height: BOTTOM_NAV_HEIGHT,
-            boxSizing: 'border-box',
-            px: 2,
-            pb: withSafeAreaBottom(6),
-            backgroundColor: 'rgba(13, 13, 16, 0.96)',
-            borderTop: '1px solid var(--wp-stroke)',
-            backdropFilter: 'blur(18px)',
-            zIndex: Z_INDEX.bottomNav,
-          }}
-        >
-          {bottomNavItems.map((item) => {
-            const isActive = item.active;
-            return (
-              <Box
-                key={item.label}
-                aria-current={isActive ? 'page' : undefined}
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: 0.5,
-                  color: isActive ? 'var(--wp-gold)' : 'var(--wp-muted)',
-                  fontSize: '0.72rem',
-                  fontWeight: 600,
-                }}
-              >
-                <Box
-                  sx={{
-                    color: isActive ? 'var(--wp-gold)' : 'var(--wp-muted)',
-                    display: 'flex',
-                  }}
-                >
-                  {item.icon}
-                </Box>
-                <Typography
-                  variant="caption"
-                  sx={{
-                    color: isActive ? 'var(--wp-gold)' : 'var(--wp-muted)',
-                  }}
-                >
-                  {item.label}
-                </Typography>
-              </Box>
-            );
-          })}
-        </Paper>
-
+        {/* ── Portfolio detail dialog ── */}
         <Dialog
           open={portfolioDialogOpen}
           onClose={() => setPortfolioDialogOpen(false)}
