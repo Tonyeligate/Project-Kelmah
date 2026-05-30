@@ -85,6 +85,8 @@ const ContractsPage = () => {
   const canCreateContract = ['hirer', 'admin'].includes(user?.role);
   const navigate = useNavigate();
   const isMobile = useBreakpointDown('md');
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === 'dark';
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortOption, setSortOption] = useState('newest');

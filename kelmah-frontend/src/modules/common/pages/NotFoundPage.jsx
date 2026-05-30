@@ -48,7 +48,7 @@ const NotFoundPage = () => {
               width: 180,
               height: 180,
               borderRadius: '50%',
-              backgroundColor: alpha(accentColor, 0.1),
+              backgroundColor: alpha(accentColor, isDarkMode ? 0.1 : 0.15),
               filter: 'blur(40px)',
               zIndex: 0,
             }}
@@ -61,8 +61,10 @@ const NotFoundPage = () => {
               zIndex: 1,
               fontSize: { xs: '120px', md: '160px' },
               fontWeight: 800,
-              color: accentColor,
-              textShadow: `0 0 40px ${alpha(accentColor, 0.3)}, 0 0 80px ${alpha(accentColor, 0.2)}`,
+              color: isDarkMode ? accentColor : '#D4A017',
+              textShadow: isDarkMode 
+                ? `0 0 40px ${alpha(accentColor, 0.3)}, 0 0 80px ${alpha(accentColor, 0.2)}`
+                : '0 2px 4px rgba(0,0,0,0.1)',
               lineHeight: 1,
             }}
           >
@@ -75,7 +77,7 @@ const NotFoundPage = () => {
           component="p" 
           sx={{ 
             fontWeight: 700,
-            color: 'text.primary',
+            color: isDarkMode ? 'text.primary' : '#1A1A1A',
             mb: 1
           }}
         >
@@ -83,9 +85,12 @@ const NotFoundPage = () => {
         </Typography>
         <Typography 
           variant="body1" 
-          color="text.secondary" 
-          maxWidth={480}
-          sx={{ mb: 4 }}
+          sx={{ 
+            color: isDarkMode ? 'text.secondary' : '#555555',
+            maxWidth: 480,
+            mb: 4,
+            lineHeight: 1.6
+          }}
         >
           This page may have moved or no longer exists. Use the buttons below to return home or continue exploring opportunities.
         </Typography>
@@ -105,14 +110,17 @@ const NotFoundPage = () => {
               minHeight: 48,
               borderRadius: '24px',
               px: 4,
-              bgcolor: accentColor,
-              color: isDarkMode ? '#000' : '#171A1F',
+              bgcolor: isDarkMode ? accentColor : '#D4A017',
+              color: '#171A1F',
               fontWeight: 700,
               fontSize: '16px',
               textTransform: 'none',
+              border: isDarkMode ? 'none' : '1px solid #B8860B',
               '&:hover': {
-                bgcolor: isDarkMode ? alpha(accentColor, 0.9) : alpha(accentColor, 0.85),
-                boxShadow: `0 8px 16px ${alpha(accentColor, 0.3)}`,
+                bgcolor: isDarkMode ? alpha(accentColor, 0.9) : '#C4941C',
+                boxShadow: isDarkMode 
+                  ? `0 8px 16px ${alpha(accentColor, 0.3)}`
+                  : '0 4px 12px rgba(0,0,0,0.15)',
               },
             }}
           >
@@ -125,15 +133,16 @@ const NotFoundPage = () => {
               minHeight: 48,
               borderRadius: '24px',
               px: 4,
-              borderColor: accentColor,
-              color: accentColor,
+              borderColor: isDarkMode ? accentColor : '#B8860B',
+              color: isDarkMode ? accentColor : '#1A1A1A',
               fontWeight: 700,
               fontSize: '16px',
               textTransform: 'none',
               borderWidth: 2,
+              backgroundColor: 'transparent',
               '&:hover': {
-                borderColor: isDarkMode ? alpha(accentColor, 0.9) : alpha(accentColor, 0.85),
-                backgroundColor: alpha(accentColor, 0.08),
+                borderColor: isDarkMode ? alpha(accentColor, 0.9) : '#D4A017',
+                backgroundColor: isDarkMode ? alpha(accentColor, 0.08) : 'rgba(212, 160, 23, 0.08)',
               },
             }}
           >

@@ -21,6 +21,8 @@ import {
   DialogTitle,
   DialogContent,
   Snackbar,
+  alpha,
+  useTheme,
 } from '@mui/material';
 import {
   Bookmark as BookmarkIcon,

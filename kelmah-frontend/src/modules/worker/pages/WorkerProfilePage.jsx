@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { Box, Typography, Button } from '@mui/material';
+import { alpha, useTheme } from '@mui/material/styles';
 import { PersonSearch as PersonSearchIcon } from '@mui/icons-material';
 import { Helmet } from 'react-helmet-async';
 import WorkerProfile from '../components/WorkerProfile';
@@ -27,6 +28,10 @@ const WorkerProfilePage = () => {
 
   // Show helpful message if no workerId
   if (!workerId) {
+    const theme = useTheme();
+    const isDarkMode = theme.palette.mode === 'dark';
+    const accentColor = theme.palette.primary.main || '#FFD34D';
+    
     return (
       <PageCanvas
         disableContainer
@@ -49,12 +54,22 @@ const WorkerProfilePage = () => {
           }}
         >
           <PersonSearchIcon
-            sx={{ fontSize: 64, color: 'secondary.dark', mb: 2 }}
+            sx={{ fontSize: 64, color: isDarkMode ? 'secondary.dark' : '#B8860B', mb: 2 }}
           />
-          <Typography variant="h6" gutterBottom>
+          <Typography 
+            variant="h6" 
+            gutterBottom
+            sx={{ color: isDarkMode ? 'text.primary' : '#1A1A1A' }}
+          >
             Worker profile not found
           </Typography>
-          <Typography variant="body2" sx={{ mb: 3, color: 'text.secondary' }}>
+          <Typography 
+            variant="body2" 
+            sx={{ 
+              mb: 3, 
+              color: isDarkMode ? 'text.secondary' : '#555555'
+            }}
+          >
             This worker page is unavailable right now. You can return to the
             worker directory and choose another profile.
           </Typography>
@@ -64,9 +79,13 @@ const WorkerProfilePage = () => {
             sx={{
               minHeight: 44,
               px: 2.5,
-              bgcolor: 'secondary.dark',
-              color: 'secondary.contrastText',
-              '&:hover': { bgcolor: 'secondary.dark' },
+              backgroundColor: isDarkMode ? 'secondary.dark' : '#D4A017',
+              color: '#171A1F',
+              fontWeight: 600,
+              border: isDarkMode ? 'none' : '1px solid #B8860B',
+              '&:hover': { 
+                backgroundColor: isDarkMode ? 'secondary.dark' : '#C4941C',
+              },
             }}
           >
             Go To Worker Directory

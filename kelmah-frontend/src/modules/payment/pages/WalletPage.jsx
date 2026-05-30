@@ -17,6 +17,7 @@ import {
   useTheme,
   useMediaQuery,
 } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import { usePayments } from '../contexts/PaymentContext';
 import { Helmet } from 'react-helmet-async';
 import TransactionsList from '../components/TransactionsList';
@@ -28,6 +29,8 @@ import { withBottomNavSafeArea } from '@/utils/safeArea';
 const WalletPage = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isDarkMode = theme.palette.mode === 'dark';
+  const accentColor = theme.palette.primary.main || '#FFD34D';
 
   const {
     loading,
@@ -118,32 +121,49 @@ const WalletPage = () => {
         {/* Wallet Summary */}
         <Paper
           elevation={0}
-          sx={(theme) => ({
-            p: { xs: 1.5, sm: 3 },
-            mb: { xs: 2, sm: 4 },
-            borderRadius: 2,
-            // ✅ MOBILE-AUDIT P4: solid bg instead of gradient
-            bgcolor: 'background.paper',
-            color: 'text.primary',
-            border: '1px solid',
-            borderColor: 'secondary.main',
-          })}
+          sx={(theme) => {
+            const isDark = theme.palette.mode === 'dark';
+            return {
+              p: { xs: 1.5, sm: 3 },
+              mb: { xs: 2, sm: 4 },
+              borderRadius: 2,
+              bgcolor: isDark ? 'background.paper' : '#FFFFFF',
+              color: 'text.primary',
+              border: isDark ? '1px solid rgba(255,211,77,0.2)' : '1px solid #E0E0E0',
+              boxShadow: isDark ? '0 4px 12px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.08)',
+            };
+          }}
         >
           <Typography
             variant={isMobile ? 'subtitle1' : 'h6'}
-            sx={{ opacity: 0.8, color: 'secondary.main' }}
+            sx={{ 
+              opacity: 0.9,
+              color: isDark ? 'text.secondary' : '#555555',
+              fontWeight: 600
+            }}
           >
             Wallet Balance
           </Typography>
           <Typography
             variant={isMobile ? 'h4' : 'h3'}
             fontWeight="bold"
-            sx={{ my: 1, color: 'secondary.main' }}
+            sx={{ 
+              my: 1, 
+              color: isDark ? 'text.primary' : '#1A1A1A'
+            }}
           >
             {currencyFormatter.format(walletBalance)}
           </Typography>
           {walletMissing && (
-            <Alert severity="info" sx={{ mt: 2 }}>
+            <Alert 
+              severity="info" 
+              sx={{ 
+                mt: 2,
+                backgroundColor: isDark ? 'rgba(33, 150, 243, 0.1)' : 'rgba(25, 118, 210, 0.1)',
+                color: isDark ? '#64b5f6' : '#1976D2',
+                border: isDark ? 'none' : '1px solid #1976D2',
+              }}
+            >
               Your wallet will be created automatically the first time you add
               funds or receive a payment.
             </Alert>

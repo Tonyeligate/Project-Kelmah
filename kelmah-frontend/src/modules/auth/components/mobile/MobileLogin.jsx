@@ -42,6 +42,7 @@ const MobileLogin = ({ registrationSuccess = false }) => {
   const location = useLocation();
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
+  const accentColor = theme.palette.primary.main || '#FFD34D';
   const infoMessage = location.state?.message;
   const dispatch = useDispatch();
   const { loading: authLoading } = useSelector((state) => state.auth);
@@ -256,10 +257,11 @@ const MobileLogin = ({ registrationSuccess = false }) => {
                   icon={<CheckCircleIcon />}
                   sx={{
                     mb: 2,
-                    backgroundColor: 'rgba(76, 175, 80, 0.1)',
-                    color: '#4caf50',
+                    backgroundColor: isDark ? 'rgba(76, 175, 80, 0.1)' : 'rgba(46, 125, 50, 0.1)',
+                    color: isDark ? '#4caf50' : '#2E7D32',
                     borderRadius: 2,
                     py: 0.5,
+                    border: isDark ? 'none' : '1px solid #4CAF50',
                     '& .MuiAlert-message': { fontSize: '14px' },
                   }}
                 >
@@ -276,10 +278,11 @@ const MobileLogin = ({ registrationSuccess = false }) => {
               severity="info"
               sx={{
                 mb: 2,
-                backgroundColor: 'rgba(33, 150, 243, 0.12)',
-                color: '#64b5f6',
+                backgroundColor: isDark ? 'rgba(33, 150, 243, 0.12)' : 'rgba(25, 118, 210, 0.1)',
+                color: isDark ? '#64b5f6' : '#1976D2',
                 borderRadius: 2,
                 py: 0.5,
+                border: isDark ? 'none' : '1px solid #1976D2',
                 '& .MuiAlert-message': { fontSize: '14px' },
               }}
             >
@@ -295,10 +298,11 @@ const MobileLogin = ({ registrationSuccess = false }) => {
                   severity="error"
                   sx={{
                     mb: 2,
-                    backgroundColor: 'rgba(244, 67, 54, 0.1)',
-                    color: '#f44336',
+                    backgroundColor: isDark ? 'rgba(244, 67, 54, 0.1)' : 'rgba(198, 40, 40, 0.1)',
+                    color: isDark ? '#f44336' : '#C62828',
                     borderRadius: 2,
                     py: 0.5,
+                    border: isDark ? 'none' : '1px solid #C62828',
                     '& .MuiAlert-message': { fontSize: '14px' },
                   }}
                 >

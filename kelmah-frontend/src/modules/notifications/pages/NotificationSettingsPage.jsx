@@ -13,12 +13,16 @@ import {
   Snackbar,
   Alert,
   Box,
+  alpha,
+  useTheme,
 } from '@mui/material';
 import notificationService from '../services/notificationService';
 import { Helmet } from 'react-helmet-async';
 import PageCanvas from '../../common/components/PageCanvas';
 
 const NotificationSettingsPage = () => {
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === 'dark';
   const [prefs, setPrefs] = useState({
     channels: { inApp: true, email: false, sms: false },
     types: {

@@ -50,6 +50,8 @@ import {
 import PageCanvas from '../../common/components/PageCanvas';
 
 const SettingsPage = () => {
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === 'dark';
   const {
     settings,
     loading,

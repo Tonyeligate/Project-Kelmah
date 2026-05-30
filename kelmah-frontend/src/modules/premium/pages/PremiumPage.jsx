@@ -374,17 +374,29 @@ const PremiumPage = () => {
             <Chip
               icon={<StarIcon />}
               label="Premium Access"
-              color="primary"
-              sx={{ mb: 2 }}
+              sx={{ 
+                mb: 2,
+                backgroundColor: theme => theme.palette.mode === 'dark' ? theme.palette.primary.main : '#D4A017',
+                color: '#171A1F',
+                fontWeight: 700,
+                border: theme => theme.palette.mode === 'dark' ? 'none' : '1px solid #B8860B',
+              }}
             />
-            <Typography variant="h2" fontWeight="bold" gutterBottom>
+            <Typography 
+              variant="h2" 
+              fontWeight="bold" 
+              gutterBottom
+              sx={{ color: theme => theme.palette.mode === 'dark' ? 'text.primary' : '#1A1A1A' }}
+            >
               Unlock Your Full Potential
             </Typography>
             <Typography
               variant="h6"
-              color="text.secondary"
-              maxWidth="md"
-              mx="auto"
+              sx={{ 
+                color: theme => theme.palette.mode === 'dark' ? 'text.secondary' : '#555555',
+                maxWidth: 'md',
+                mx: 'auto'
+              }}
             >
               Upgrade to Kelmah Premium for tools that help you get hired faster
               and run your work with less stress.
@@ -402,10 +414,21 @@ const PremiumPage = () => {
 
           {/* Pricing Section */}
           <Box sx={{ textAlign: 'center', mb: 4 }}>
-            <Typography variant="h4" fontWeight="bold" gutterBottom>
+            <Typography 
+              variant="h4" 
+              fontWeight="bold" 
+              gutterBottom
+              sx={{ color: theme => theme.palette.mode === 'dark' ? 'text.primary' : '#1A1A1A' }}
+            >
               Choose Your Plan
             </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                color: theme => theme.palette.mode === 'dark' ? 'text.secondary' : '#555555',
+                mb: 1.5
+              }}
+            >
               Compare plans side-by-side and choose monthly or yearly billing
               before checkout.
             </Typography>
@@ -424,9 +447,13 @@ const PremiumPage = () => {
                     <Chip
                       component="span"
                       label="Save ~17%"
-                      color="success"
                       size="small"
-                      sx={{ ml: 1 }}
+                      sx={{ 
+                        ml: 1,
+                        backgroundColor: theme => theme.palette.mode === 'dark' ? '#4CAF50' : '#2E7D32',
+                        color: '#FFFFFF',
+                        fontWeight: 700,
+                      }}
                     />
                   </Typography>
                 }
