@@ -20,8 +20,6 @@ import {
   DialogTitle,
   DialogContent,
   Snackbar,
-  alpha,
-  useTheme,
 } from '@mui/material';
 import {
   Bookmark as BookmarkIcon,
@@ -941,7 +939,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
             },
             columnGap: { xs: 0, sm: '16px', md: '20px', lg: '24px' },
             rowGap: { xs: '12px', md: '24px' },
-            maxWidth: { xs: 340, sm: 480, md: 1280 },
+            maxWidth: { xs: '100%', sm: 480, md: 1280 },
             mx: 'auto',
             minWidth: 0,
           }}
@@ -1058,7 +1056,9 @@ function WorkerProfile({ workerId: workerIdProp }) {
                   flexDirection: 'row',
                   gap: { xs: 1.5, sm: 3 },
                   alignItems: 'center',
-                  pr: { xs: 0, sm: 8 },
+                  // Reserve space on the right for the absolute bookmark/share/edit buttons.
+                  // At xs: 2 buttons × 40px + 8px gap + 12px card-edge = ~100px; 3 buttons = ~140px.
+                  pr: { xs: isOwner ? '140px' : '100px', sm: 8 },
                 }}
               >
                 <Box
@@ -1194,6 +1194,9 @@ function WorkerProfile({ workerId: workerIdProp }) {
                   flexWrap: 'wrap',
                   gap: 1,
                   mt: { xs: 2, sm: 2.5 },
+                  // Small inset prevents chips from touching the card edge
+                  // (which would clip them under overflow:hidden + border-radius)
+                  mx: '2px',
                 }}
               >
                 {skillItems.map((skill, index) => (

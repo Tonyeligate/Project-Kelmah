@@ -1,12 +1,11 @@
 import React, { useEffect } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { Box, Typography, Button } from '@mui/material';
-import { alpha, useTheme } from '@mui/material/styles';
+import { useTheme } from '@mui/material/styles';
 import { PersonSearch as PersonSearchIcon } from '@mui/icons-material';
 import { Helmet } from 'react-helmet-async';
 import WorkerProfile from '../components/WorkerProfile';
 import PageCanvas from '../../common/components/PageCanvas';
-import { withBottomNavSafeArea } from '@/utils/safeArea';
 
 /**
  * WorkerProfilePage - Public page for viewing worker profiles
@@ -30,14 +29,13 @@ const WorkerProfilePage = () => {
   if (!workerId) {
     const theme = useTheme();
     const isDarkMode = theme.palette.mode === 'dark';
-    const accentColor = theme.palette.primary.main || '#FFD34D';
-    
+
     return (
       <PageCanvas
         disableContainer
         sx={{
           pt: { xs: 1.5, md: 4 },
-          pb: { xs: withBottomNavSafeArea(20), md: 6 },
+          pb: { xs: 5, md: 6 },
           overflowX: 'clip',
         }}
       >
@@ -56,18 +54,18 @@ const WorkerProfilePage = () => {
           <PersonSearchIcon
             sx={{ fontSize: 64, color: isDarkMode ? 'secondary.dark' : '#B8860B', mb: 2 }}
           />
-          <Typography 
-            variant="h6" 
+          <Typography
+            variant="h6"
             gutterBottom
             sx={{ color: isDarkMode ? 'text.primary' : '#1A1A1A' }}
           >
             Worker profile not found
           </Typography>
-          <Typography 
-            variant="body2" 
-            sx={{ 
-              mb: 3, 
-              color: isDarkMode ? 'text.secondary' : '#555555'
+          <Typography
+            variant="body2"
+            sx={{
+              mb: 3,
+              color: isDarkMode ? 'text.secondary' : '#555555',
             }}
           >
             This worker page is unavailable right now. You can return to the
@@ -83,7 +81,7 @@ const WorkerProfilePage = () => {
               color: '#171A1F',
               fontWeight: 600,
               border: isDarkMode ? 'none' : '1px solid #B8860B',
-              '&:hover': { 
+              '&:hover': {
                 backgroundColor: isDarkMode ? 'secondary.dark' : '#C4941C',
               },
             }}
@@ -109,7 +107,9 @@ const WorkerProfilePage = () => {
         disableContainer
         sx={{
           pt: { xs: 1, md: 4 },
-          pb: { xs: withBottomNavSafeArea(0), md: 6 },
+          // No bottom nav exists on this page — just account for the sticky CTA
+          // height via the component's own shellSx; page canvas needs no extra offset.
+          pb: { xs: 0, md: 6 },
           overflowX: 'clip',
           '--wp-bg': '#101116',
           '--wp-surface': '#1A1D26',
