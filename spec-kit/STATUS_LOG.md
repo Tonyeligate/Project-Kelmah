@@ -1,3 +1,16 @@
+### Session: UI Pre-Push Remediation Fix May 31 2026 IN PROGRESS
+
+**Date**: May 31, 2026
+**Scope**: Review and stage the UI pre-push auto-remediation change for the worker profile skill-chip inset before pushing main.
+
+**Files in scope**
+- `kelmah-frontend/src/modules/worker/components/WorkerProfile.jsx`
+- `spec-kit/STATUS_LOG.md`
+
+**Baseline understanding (before changes)**
+- The pre-push gate applied a single safe spacing adjustment in the worker profile skill chip stack: `mx` changed from `2px` to `4px`.
+- The goal is to confirm the remediation is harmless, document it, and get the existing local commit pushed.
+
 ### Session: UI Pre-Push Baseline Refresh May 29 2026 COMPLETED
 
 **Date**: May 29, 2026

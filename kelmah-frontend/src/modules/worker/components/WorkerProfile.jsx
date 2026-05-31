@@ -31,10 +31,7 @@ import {
   Close as CloseIcon,
 } from '@mui/icons-material';
 import { Helmet } from 'react-helmet-async';
-import {
-  STICKY_CTA_HEIGHT,
-  Z_INDEX,
-} from '../../../constants/layout';
+import { STICKY_CTA_HEIGHT, Z_INDEX } from '../../../constants/layout';
 import reviewService from '../../reviews/services/reviewService';
 import useOnlineStatus from '../../../hooks/useOnlineStatus';
 import useNetworkSpeed from '../../../hooks/useNetworkSpeed';
@@ -1196,7 +1193,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                   mt: { xs: 2, sm: 2.5 },
                   // Small inset prevents chips from touching the card edge
                   // (which would clip them under overflow:hidden + border-radius)
-                  mx: '2px',
+                  mx: '4px',
                 }}
               >
                 {skillItems.map((skill, index) => (
