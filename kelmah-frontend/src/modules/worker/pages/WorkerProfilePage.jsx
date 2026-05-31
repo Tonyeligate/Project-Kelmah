@@ -5,12 +5,13 @@ import { useTheme } from '@mui/material/styles';
 import { PersonSearch as PersonSearchIcon } from '@mui/icons-material';
 import { Helmet } from 'react-helmet-async';
 import WorkerProfile from '../components/WorkerProfile';
-import PageCanvas from '../../common/components/PageCanvas';
+// If your project has a PageBanner, uncomment and adjust the path:
+// import PageBanner from '../../shared/components/PageBanner';
 
 /**
- * WorkerProfilePage - Public page for viewing worker profiles
- * Displays complete worker information including skills, reviews, portfolio, etc.
- * Accessible via /workers/:workerId. Legacy /worker-profile/:workerId redirects are handled in route config.
+ * WorkerProfilePage
+ * Displays the full worker profile for a given worker.
+ * Accessible navigation is handled via back button and router integration.
  *
  * Uses key prop on WorkerProfile to force re-mount when navigating between different
  * worker profiles, ensuring the component fetches fresh data for each worker.
@@ -19,136 +20,91 @@ const WorkerProfilePage = () => {
   const { workerId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
+  const theme = useTheme();
 
   // Scroll to top when workerId changes (new profile navigation)
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [workerId, location.pathname]);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [workerId]);
 
-  // Show helpful message if no workerId
+  // Back navigation: prefer router state history, fall back to browser history
+  const handleBack = () => {
+    const from = location.state?.from;
+    from ? navigate(from) : navigate(-1);
+  };
+
+  // ── Guard: no workerId in the URL ─────────────────────────────────────────
   if (!workerId) {
-    const theme = useTheme();
-    const isDarkMode = theme.palette.mode === 'dark';
-
     return (
-      <PageCanvas
-        disableContainer
+      <Box
         sx={{
-          pt: { xs: 1.5, md: 4 },
-          pb: { xs: 5, md: 6 },
-          overflowX: 'clip',
+          minHeight: '100vh',
+          background: '#0c0c0c',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 2,
+          px: 2,
         }}
       >
-        <Box
+        <PersonSearchIcon
+          sx={{ fontSize: 72, color: '#e8a820', opacity: 0.6 }}
+        />
+        <Typography
+          variant="h6"
+          sx={{ color: '#ffffff', fontWeight: 700, textAlign: 'center' }}
+        >
+          Worker Not Found
+        </Typography>
+        <Typography
+          variant="body2"
+          sx={{ color: '#626262', textAlign: 'center', maxWidth: 320 }}
+        >
+          The worker profile you're looking for doesn't exist or may have been
+          removed.
+        </Typography>
+        <Button
+          variant="outlined"
+          onClick={handleBack}
           sx={{
-            p: 4,
-            textAlign: 'center',
-            minHeight: '50vh',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            minWidth: 0,
+            mt: 1,
+            color: '#e8a820',
+            borderColor: '#e8a820',
+            textTransform: 'none',
+            fontWeight: 600,
+            '&:hover': {
+              borderColor: '#f5c842',
+              color: '#f5c842',
+              background: 'rgba(232,168,32,0.08)',
+            },
           }}
         >
-          <PersonSearchIcon
-            sx={{ fontSize: 64, color: isDarkMode ? 'secondary.dark' : '#B8860B', mb: 2 }}
-          />
-          <Typography
-            variant="h6"
-            gutterBottom
-            sx={{ color: isDarkMode ? 'text.primary' : '#1A1A1A' }}
-          >
-            Worker profile not found
-          </Typography>
-          <Typography
-            variant="body2"
-            sx={{
-              mb: 3,
-              color: isDarkMode ? 'text.secondary' : '#555555',
-            }}
-          >
-            This worker page is unavailable right now. You can return to the
-            worker directory and choose another profile.
-          </Typography>
-          <Button
-            variant="contained"
-            onClick={() => navigate('/search')}
-            sx={{
-              minHeight: 44,
-              px: 2.5,
-              backgroundColor: isDarkMode ? 'secondary.dark' : '#D4A017',
-              color: '#171A1F',
-              fontWeight: 600,
-              border: isDarkMode ? 'none' : '1px solid #B8860B',
-              '&:hover': {
-                backgroundColor: isDarkMode ? 'secondary.dark' : '#C4941C',
-              },
-            }}
-          >
-            Go To Worker Directory
-          </Button>
-        </Box>
-      </PageCanvas>
+          Go Back
+        </Button>
+      </Box>
     );
   }
 
+  // ── Main render ───────────────────────────────────────────────────────────
   return (
     <>
       <Helmet>
         <title>Worker Profile | Kelmah</title>
         <meta
           name="description"
-          content="View worker skills, experience, reviews, and portfolio details in one place."
+          content="View worker profile, portfolio, skills and reviews on Kelmah."
         />
       </Helmet>
 
-      <PageCanvas
-        disableContainer
-        sx={{
-          pt: { xs: 1, md: 4 },
-          // No bottom nav exists on this page — just account for the sticky CTA
-          // height via the component's own shellSx; page canvas needs no extra offset.
-          pb: { xs: 0, md: 6 },
-          overflowX: 'clip',
-          '--wp-bg': '#101116',
-          '--wp-surface': '#1A1D26',
-          '--wp-gold': '#FFD34D',
-          '--wp-gold-soft': 'rgba(255, 211, 77, 0.28)',
-          '--wp-text': '#F7F3E3',
-          '--wp-muted': '#B3AFA3',
-          '--wp-stroke': 'rgba(255, 211, 77, 0.22)',
-          '--wp-shadow': '0 18px 40px rgba(0, 0, 0, 0.45)',
-          backgroundColor: 'var(--wp-bg)',
-          backgroundImage:
-            'radial-gradient(circle at 16% 8%, rgba(255, 211, 77, 0.18) 0%, transparent 45%), radial-gradient(circle at 85% 0%, rgba(255, 255, 255, 0.06) 0%, transparent 45%), linear-gradient(180deg, #1A1D26 0%, #101116 58%, #0A0B10 100%)',
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            inset: 0,
-            backgroundImage:
-              'linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px)',
-            backgroundSize: '120px 120px',
-            opacity: 0.25,
-            pointerEvents: 'none',
-            maskImage:
-              'linear-gradient(180deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.5) 60%, transparent 100%)',
-          },
-          '&::after': {
-            content: '""',
-            position: 'absolute',
-            inset: 0,
-            pointerEvents: 'none',
-            background:
-              'radial-gradient(circle at 50% 0%, rgba(0,0,0,0.4) 0%, transparent 45%), radial-gradient(circle at 50% 100%, rgba(0,0,0,0.55) 0%, transparent 50%)',
-          },
-        }}
-      >
-        <Box sx={{ minWidth: 0 }}>
-          {/* Pass workerId as prop so the profile remounts cleanly between public worker routes */}
-          <WorkerProfile workerId={workerId} />
-        </Box>
-      </PageCanvas>
+      <Box sx={{ minHeight: '100vh', background: '#0c0c0c' }}>
+        {/*
+          key={workerId} forces WorkerProfile to fully re-mount every time the
+          user navigates to a different worker, guaranteeing a clean state and
+          fresh data fetch for each profile.
+        */}
+        <WorkerProfile key={workerId} workerId={workerId} />
+      </Box>
     </>
   );
 };
