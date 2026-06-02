@@ -2,6 +2,38 @@ import Combine
 import Foundation
 
 @MainActor
+final class PendingAttachment: ObservableObject, Identifiable {
+    enum Kind: String {
+        case image
+        case file
+    }
+
+    let id = UUID()
+    let fileName: String
+    let mimeType: String
+    let data: Data
+    let kind: Kind
+    let sizeInBytes: Int
+
+    @Published var progress: Double = 0
+    @Published var isUploading: Bool = false
+    @Published var isUploaded: Bool = false
+    @Published var uploadError: String?
+
+    var sizeDescription: String {
+        ByteCountFormatter.string(fromByteCount: Int64(sizeInBytes), countStyle: .file)
+    }
+
+    init(fileName: String, mimeType: String, data: Data) {
+        self.fileName = fileName
+        self.mimeType = mimeType
+        self.data = data
+        self.sizeInBytes = data.count
+        self.kind = mimeType.hasPrefix("image/") ? .image : .file
+    }
+}
+
+@MainActor
 final class MessagesViewModel: ObservableObject {
     @Published var isLoadingConversations = false
     @Published var isLoadingMessages = false
@@ -14,11 +46,13 @@ final class MessagesViewModel: ObservableObject {
     @Published var draftMessage = ""
     @Published var errorMessage: String?
     @Published var infoMessage: String?
+    @Published var pendingAttachment: PendingAttachment?
 
     private let repository: MessagesRepository
     private let realtimeSocketManager: RealtimeSocketManager
     private var hasBootstrapped = false
     private var subscriptions = Set<AnyCancellable>()
+    private var pendingServerMessageIDs = Set<String>()
 
     init(repository: MessagesRepository, realtimeSocketManager: RealtimeSocketManager) {
         self.repository = repository
@@ -72,6 +106,8 @@ final class MessagesViewModel: ObservableObject {
         searchQuery = ""
         errorMessage = nil
         infoMessage = nil
+        pendingAttachment = nil
+        pendingServerMessageIDs = []
     }
 
     func refreshConversations() async {
@@ -92,6 +128,7 @@ final class MessagesViewModel: ObservableObject {
     func openConversation(_ conversation: MessageConversation) async {
         selectedConversation = conversation
         draftMessage = ""
+        pendingAttachment = nil
         await loadMessages(conversationId: conversation.id)
     }
 
@@ -113,6 +150,7 @@ final class MessagesViewModel: ObservableObject {
         selectedConversation = nil
         messages = []
         draftMessage = ""
+        pendingAttachment = nil
         errorMessage = nil
     }
 
@@ -150,11 +188,57 @@ final class MessagesViewModel: ObservableObject {
         }
     }
 
+    func uploadAttachment(fileName: String, mimeType: String, data: Data) {
+        guard pendingAttachment == nil else { return }
+        let attachment = PendingAttachment(fileName: fileName, mimeType: mimeType, data: data)
+        self.pendingAttachment = attachment
+        Task { await performUpload(attachment) }
+    }
+
+    func clearAttachment() {
+        pendingAttachment = nil
+    }
+
+    func retryAttachment() {
+        guard let attachment = pendingAttachment else { return }
+        attachment.progress = 0
+        attachment.isUploading = true
+        attachment.isUploaded = false
+        attachment.uploadError = nil
+        Task { await performUpload(attachment) }
+    }
+
+    private func performUpload(_ attachment: PendingAttachment) async {
+        attachment.isUploading = true
+        attachment.uploadError = nil
+        attachment.progress = 0
+
+        do {
+            let response = try await repository.uploadAttachment(
+                fileName: attachment.fileName,
+                mimeType: attachment.mimeType,
+                data: attachment.data,
+                progress: { [weak attachment] value in
+                    Task { @MainActor in
+                        attachment?.progress = value
+                    }
+                }
+            )
+            attachment.isUploaded = true
+            attachment.isUploading = false
+            infoMessage = "Attachment uploaded"
+        } catch {
+            attachment.isUploading = false
+            attachment.uploadError = error.localizedDescription
+            errorMessage = "Attachment upload failed: \(error.localizedDescription)"
+        }
+    }
+
     func sendMessage() async {
         guard let selectedConversation else { return }
         let trimmed = draftMessage.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard trimmed.isEmpty == false else {
-            errorMessage = "Write a message first"
+        guard trimmed.isEmpty == false || pendingAttachment?.isUploaded == true else {
+            errorMessage = "Add a message or attach a file first"
             return
         }
 
@@ -162,8 +246,24 @@ final class MessagesViewModel: ObservableObject {
         errorMessage = nil
         infoMessage = nil
         defer { isSending = false }
+
         do {
-            let message = try await repository.sendMessage(conversationId: selectedConversation.id, content: trimmed)
+            let message: MessageThreadItem
+            if let attachment = pendingAttachment, attachment.isUploaded {
+                let messageType = attachment.kind == .image ? "image" : "file"
+                message = try await repository.sendMessage(
+                    conversationId: selectedConversation.id,
+                    content: "[Attachment]",
+                    messageType: messageType,
+                    attachmentFileName: attachment.fileName,
+                    attachmentMimeType: attachment.mimeType
+                )
+            } else {
+                message = try await repository.sendMessage(conversationId: selectedConversation.id, content: trimmed)
+            }
+
+            pendingAttachment = nil
+            pendingServerMessageIDs.insert(message.id)
             messages = sortMessagesChronologically(Array((messages + [message]).reduce(into: [String: MessageThreadItem]()) { result, item in
                 result[item.id] = item
             }.values))
@@ -173,7 +273,7 @@ final class MessagesViewModel: ObservableObject {
                 participants: selectedConversation.participants,
                 otherParticipant: selectedConversation.otherParticipant,
                 unreadCount: 0,
-                lastMessagePreview: message.content,
+                lastMessagePreview: self.lastMessagePreview(for: message),
                 lastMessageAt: message.createdAt
             )
             self.selectedConversation = updatedConversation
@@ -217,15 +317,59 @@ final class MessagesViewModel: ObservableObject {
         case let .message(conversationId):
             await refreshConversations()
             if let conversationId, selectedConversation?.id == conversationId {
-                await loadMessages(conversationId: conversationId)
+                await reconcileConversationMessages(conversationId)
             }
         case let .messagesRead(conversationId):
             await refreshConversations()
             if let conversationId, selectedConversation?.id == conversationId {
-                await loadMessages(conversationId: conversationId)
+                await reconcileConversationMessages(conversationId)
             }
-        case .notification, .connectionChanged:
+        case .notification:
+            await refreshConversations()
+        case .connectionChanged:
             break
+        }
+    }
+
+    private func reconcileConversationMessages(_ conversationId: String) async {
+        do {
+            let serverMessages = try await repository.getMessages(conversationId: conversationId)
+            var merged = Dictionary(uniqueKeysWithValues: messages.map { ($0.id, $0) })
+            serverMessages.forEach { merged[$0.id] = $0 }
+            pendingServerMessageIDs.formUnion(serverMessages.map(\.id))
+            messages = sortMessagesChronologically(Array(merged.values))
+            if let updated = conversations.first(where: { $0.id == conversationId }) {
+                let last = messages.sorted { lhs, rhs in
+                    let leftDate = messageTimestamp(from: lhs.createdAt) ?? Date.distantPast
+                    let rightDate = messageTimestamp(from: rhs.createdAt) ?? Date.distantPast
+                    if leftDate != rightDate { return leftDate > rightDate }
+                    return lhs.id > rhs.id
+                }.first
+                let conversation = MessageConversation(
+                    id: updated.id,
+                    title: updated.title,
+                    participants: updated.participants,
+                    otherParticipant: updated.otherParticipant,
+                    unreadCount: 0,
+                    lastMessagePreview: last.map { lastMessagePreview(for: $0) } ?? updated.lastMessagePreview,
+                    lastMessageAt: last?.createdAt ?? updated.lastMessageAt
+                )
+                self.selectedConversation = conversation
+                self.conversations = conversations.map { $0.id == conversationId ? conversation : $0 }
+            }
+        } catch {
+            // Keep local cache on server error; do not lose outbound optimistic state.
+        }
+    }
+
+    private func lastMessagePreview(for message: MessageThreadItem) -> String {
+        switch message.messageType {
+        case "image":
+            return message.content == "[Attachment]" ? "Photo" : message.content
+        case "file":
+            return message.content == "[Attachment]" ? "Attachment" : message.content
+        default:
+            return message.content
         }
     }
 }

@@ -15,6 +15,7 @@ final class AppEnvironment: ObservableObject {
     let jobsViewModel: JobsViewModel
     let messagesViewModel: MessagesViewModel
     let notificationsViewModel: NotificationsViewModel
+    let biometricAuthHelper: BiometricAuthHelper
 
     init(
         apiEnvironment: APIEnvironment,
@@ -29,7 +30,8 @@ final class AppEnvironment: ObservableObject {
         sessionCoordinator: SessionCoordinator,
         jobsViewModel: JobsViewModel,
         messagesViewModel: MessagesViewModel,
-        notificationsViewModel: NotificationsViewModel
+        notificationsViewModel: NotificationsViewModel,
+        biometricAuthHelper: BiometricAuthHelper
     ) {
         self.apiEnvironment = apiEnvironment
         self.sessionStore = sessionStore
@@ -44,6 +46,7 @@ final class AppEnvironment: ObservableObject {
         self.jobsViewModel = jobsViewModel
         self.messagesViewModel = messagesViewModel
         self.notificationsViewModel = notificationsViewModel
+        self.biometricAuthHelper = biometricAuthHelper
     }
 
     static func bootstrap() -> AppEnvironment {
@@ -63,6 +66,7 @@ final class AppEnvironment: ObservableObject {
         apiClient.authRecoveryHandler = { [weak sessionCoordinator] in
             await sessionCoordinator?.handleUnauthorized() ?? false
         }
+        let biometricAuthHelper = BiometricAuthHelper()
         return AppEnvironment(
             apiEnvironment: apiEnvironment,
             sessionStore: sessionStore,
@@ -76,7 +80,8 @@ final class AppEnvironment: ObservableObject {
             sessionCoordinator: sessionCoordinator,
             jobsViewModel: jobsViewModel,
             messagesViewModel: messagesViewModel,
-            notificationsViewModel: notificationsViewModel
+            notificationsViewModel: notificationsViewModel,
+            biometricAuthHelper: biometricAuthHelper
         )
     }
 }

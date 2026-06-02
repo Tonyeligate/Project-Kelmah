@@ -10,7 +10,7 @@ plugins {
 
 val gatewayOrigin = providers.gradleProperty("KELMAH_GATEWAY_ORIGIN")
     .orElse(providers.environmentVariable("KELMAH_GATEWAY_ORIGIN"))
-    .orElse("https://kelmah-api-gateway-hvif.onrender.com")
+    .orElse("https://kelmah-api-gateway-gf3g.onrender.com")
     .get()
     .trimEnd('/')
 
@@ -21,6 +21,16 @@ val gatewayHost = runCatching { URI(gatewayOrigin).host }
 android {
     namespace = "com.kelmah.mobile"
     compileSdk = 35
+
+    signingConfigs {
+        create("release") {
+            // Replace with real keystore credentials before publishing.
+            storeFile = file("release-keystore.jks")
+            storePassword = "RELEASE_KEYSTORE_PASSWORD"
+            keyAlias = "RELEASE_KEY_ALIAS"
+            keyPassword = "RELEASE_KEY_PASSWORD"
+        }
+    }
 
     defaultConfig {
         applicationId = "com.kelmah.mobile"
@@ -44,8 +54,8 @@ android {
             buildConfigField("boolean", "ENABLE_VERBOSE_LOGGING", "true")
         }
         release {
-            isMinifyEnabled = true
-            isShrinkResources = true
+            isMinifyEnabled = false
+            isShrinkResources = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -117,6 +127,7 @@ dependencies {
     implementation("androidx.tracing:tracing:1.3.0")
 
     implementation("androidx.work:work-runtime-ktx:2.9.1")
+    implementation("androidx.biometric:biometric:1.1.0")
     implementation("io.coil-kt:coil-compose:2.7.0")
     implementation("io.socket:socket.io-client:2.1.1") {
         exclude(group = "org.json", module = "json")

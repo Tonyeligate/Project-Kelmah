@@ -18,7 +18,6 @@ class SessionCoordinator @Inject constructor(
 ) {
     private val invalidSessionCodes = setOf(401, 403)
     private val refreshMutex = Mutex()
-    @Volatile
     private var didBootstrap = false
 
     private val _sessionState = MutableStateFlow<SessionState>(
@@ -26,8 +25,18 @@ class SessionCoordinator @Inject constructor(
     )
     val sessionState: StateFlow<SessionState> = _sessionState.asStateFlow()
 
+    private val _biometricUnlockRequired = MutableStateFlow(false)
+    val biometricUnlockRequired: StateFlow<Boolean> = _biometricUnlockRequired.asStateFlow()
+
+    fun markBiometricUnlockRequired() {
+        _biometricUnlockRequired.value = true
+    }
+
+    fun clearBiometricUnlockRequired() {
+        _biometricUnlockRequired.value = false
+    }
+
     suspend fun bootstrapSession(force: Boolean = false) {
-        // Thread-safe check-then-act using mutex to prevent duplicate bootstrap
         refreshMutex.withLock {
             if (didBootstrap && !force) return
             didBootstrap = true
@@ -67,19 +76,21 @@ class SessionCoordinator @Inject constructor(
 
     suspend fun onLoginCompleted() {
         bootstrapSession(force = true)
+        // Once bootstrap resolves the authenticated session, require biometric unlock on next resume.
+        clearBiometricUnlockRequired()
+        markBiometricUnlockRequired()
     }
 
     suspend fun refreshSession(): Boolean = refreshSessionInternal()
 
     suspend fun logout(logoutAll: Boolean = false) {
         val cachedRefreshToken = tokenManager.getRefreshToken()
-        // Best-effort server-side logout using the cached refresh token so
-        // "sign out everywhere" can still revoke sessions server-side.
         try {
             authRepository.logout(logoutAll = logoutAll, refreshTokenOverride = cachedRefreshToken)
         } catch (_: Exception) {
-            // Server-side revocation is best-effort
+            // server-side revocation best-effort
         } finally {
+            _biometricUnlockRequired.value = false
             tokenManager.clearSession()
             _sessionState.value = SessionState.Unauthenticated
             didBootstrap = false
@@ -90,8 +101,6 @@ class SessionCoordinator @Inject constructor(
         val currentRefreshToken = tokenManager.getRefreshToken() ?: return@withLock false
         when (val refreshResult = authRepository.refreshSession(currentRefreshToken)) {
             is ApiResult.Success -> {
-                // refreshSession already persists tokens via tokenManager.saveSession in AuthRepository
-                // Prefer fresh user from server response if available
                 val resolvedUser = refreshResult.data.user ?: tokenManager.getStoredSession()?.user
                 _sessionState.value = SessionState.Authenticated(resolvedUser)
                 true
@@ -108,7 +117,7 @@ class SessionCoordinator @Inject constructor(
         }
     }
 
-    private fun recoverOrClear(message: String = "We could not verify your session. Sign in again to keep your account safe.") {
+    private fun recoverOrClear(message: String) {
         val cachedUser = tokenManager.getStoredSession()?.user
         if (cachedUser != null) {
             _sessionState.value = SessionState.RecoveryRequired(

@@ -156,6 +156,8 @@ class ProfileViewModel @Inject constructor(
                             shouldLogout = true,
                         )
                     }
+                    // Refresh profile snapshot after a successful password change.
+                    refreshWorkerProfileSignals()
                 }
                 is ApiResult.Error -> {
                     _uiState.update { it.copy(isSaving = false, errorMessage = result.message) }

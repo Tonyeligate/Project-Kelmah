@@ -248,7 +248,7 @@ const requestCachedGatewayFromSW = () => {
 // Service Worker Registration with Ghana-specific optimizations
 export const registerServiceWorker = async () => {
   if ('serviceWorker' in navigator) {
-    const useExistingRegistration = async () => {
+    const existingRegistration = async () => {
       try {
         const existing = await navigator.serviceWorker.getRegistration('/');
         if (existing) {
@@ -272,14 +272,14 @@ export const registerServiceWorker = async () => {
         pwaWarn(
           'ServiceWorker script not found at /sw.js, checking existing registration',
         );
-        return useExistingRegistration();
+        return existingRegistration();
       }
     } catch (error) {
       pwaWarn(
         'ServiceWorker script HEAD check failed, checking existing registration',
         error,
       );
-      const existing = await useExistingRegistration();
+      const existing = await existingRegistration();
       if (existing) {
         return existing;
       }

@@ -59,6 +59,7 @@ import com.kelmah.mobile.core.session.SessionCoordinator
 import com.kelmah.mobile.core.session.SessionState
 import com.kelmah.mobile.core.storage.TokenManager
 import com.kelmah.mobile.features.auth.presentation.LoginScreen
+import com.kelmah.mobile.core.security.BiometricUnlock
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -80,9 +81,16 @@ fun KelmahApp(
         val jobsViewModel: JobsViewModel = hiltViewModel()
         val messagesViewModel: MessagesViewModel = hiltViewModel()
         val notificationsViewModel: NotificationsViewModel = hiltViewModel()
+        val biometricUnlockRequired by sessionCoordinator.biometricUnlockRequired.collectAsStateWithLifecycle()
         val jobsState by jobsViewModel.uiState.collectAsStateWithLifecycle()
         val messagesState by messagesViewModel.uiState.collectAsStateWithLifecycle()
         val notificationsState by notificationsViewModel.uiState.collectAsStateWithLifecycle()
+
+        LaunchedEffect(biometricUnlockRequired) {
+            if (biometricUnlockRequired) {
+                sessionCoordinator.clearBiometricUnlockRequired()
+            }
+        }
         val isNetworkAvailable = rememberNetworkAvailability()
 
         val sessionStateMessage = when (val state = sessionState) {
@@ -210,6 +218,8 @@ fun KelmahApp(
         val backStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = backStackEntry?.destination?.route
 
+        val requireBiometricUnlock = sessionState is SessionState.Authenticated && biometricUnlockRequired
+
         Scaffold(
             containerColor = Color.Transparent,
             topBar = {
@@ -315,6 +325,23 @@ fun KelmahApp(
                     onLogout = { logoutAll ->
                         appScope.launch {
                             sessionCoordinator.logout(logoutAll = logoutAll)
+                        }
+                    },
+                )
+            }
+
+            if (requireBiometricUnlock) {
+                BiometricUnlock.BiometricGate(
+                    visible = true,
+                    onUnlocked = { sessionCoordinator.clearBiometricUnlockRequired() },
+                    fallbackContent = {
+                        KelmahScreenBackground {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                CircularProgressIndicator()
+                            }
                         }
                     },
                 )
