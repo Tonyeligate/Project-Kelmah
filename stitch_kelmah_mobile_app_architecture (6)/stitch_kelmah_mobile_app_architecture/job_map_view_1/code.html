@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kelmah - Job Map View</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 48;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        /* Custom drag sheet animation/state */
+        #job-details-sheet {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .map-marker-pulse {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-high": "#e8e8e8",
+                        "on-tertiary-fixed-variant": "#474740",
+                        "on-secondary-fixed-variant": "#474746",
+                        "primary": "#705d00",
+                        "outline": "#7e775f",
+                        "on-error-container": "#93000a",
+                        "inverse-surface": "#2f3131",
+                        "surface-tint": "#705d00",
+                        "on-surface-variant": "#4d4732",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "surface-muted": "#F3F4F6",
+                        "tertiary-fixed": "#e4e3d9",
+                        "surface-bright": "#f9f9f9",
+                        "outline-variant": "#d0c6ab",
+                        "secondary-fixed": "#e5e2e1",
+                        "on-error": "#ffffff",
+                        "secondary": "#5f5e5e",
+                        "on-primary-fixed": "#221b00",
+                        "tertiary": "#5f5f57",
+                        "primary-fixed": "#ffe16d",
+                        "surface-container": "#eeeeee",
+                        "surface-container-highest": "#e2e2e2",
+                        "error-container": "#ffdad6",
+                        "primary-fixed-dim": "#e9c400",
+                        "on-secondary-container": "#636262",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "on-primary-fixed-variant": "#544600",
+                        "inverse-on-surface": "#f0f1f1",
+                        "status-info": "#3B82F6",
+                        "inverse-primary": "#e9c400",
+                        "background": "#f9f9f9",
+                        "on-tertiary-fixed": "#1b1c16",
+                        "on-tertiary": "#ffffff",
+                        "on-background": "#1a1c1c",
+                        "on-primary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-container": "#ffd700",
+                        "tertiary-fixed-dim": "#c8c7bd",
+                        "on-primary-container": "#705e00",
+                        "text-body": "#4B5563",
+                        "status-success": "#10B981",
+                        "error": "#ba1a1a",
+                        "surface-dim": "#dadada",
+                        "surface-container-low": "#f3f3f4",
+                        "secondary-container": "#e2dfde",
+                        "surface-variant": "#e2e2e2",
+                        "tertiary-container": "#dcdad0",
+                        "on-secondary": "#ffffff",
+                        "surface": "#f9f9f9",
+                        "on-surface": "#1a1c1c",
+                        "on-tertiary-container": "#5f5f58"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "touch-target": "48px",
+                        "margin-mobile": "16px",
+                        "margin-desktop": "64px",
+                        "gutter": "16px",
+                        "base": "8px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "caption": ["Inter"],
+                        "display-lg": ["Montserrat"],
+                        "headline-md": ["Montserrat"],
+                        "headline-lg": ["Montserrat"],
+                        "label-md": ["Inter"],
+                        "headline-lg-mobile": ["Montserrat"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "caption": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["28px", {"lineHeight": "34px", "fontWeight": "700"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md selection:bg-primary-container selection:text-on-primary-container overflow-hidden">
+<!-- Top App Bar -->
+<header class="fixed top-0 left-0 right-0 z-50 bg-primary shadow-md flex justify-between items-center w-full px-margin-mobile h-touch-target">
+<div class="flex items-center gap-3">
+<button aria-label="Menu" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-on-primary/10 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-on-primary">menu</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-on-primary">Kelmah</h1>
+</div>
+<div class="flex items-center gap-2">
+<button class="px-4 py-1.5 rounded-full bg-on-primary/20 text-on-primary font-label-md text-label-md flex items-center gap-2 hover:bg-on-primary/30 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[18px]">list</span>
+                List View
+            </button>
+<div class="w-8 h-8 rounded-full overflow-hidden border-2 border-primary-container">
+<img alt="User profile picture" class="w-full h-full object-cover" data-alt="A professional headshot of a middle-aged Ghanaian man with a friendly expression, wearing a clean collared shirt. The lighting is soft and natural, emphasizing a trustworthy and reliable professional character. The background is a blurred office setting with warm tones, matching the Kelmah brand identity of industrial professionalism and stability." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBhTxTvhjErXw8884lB7MALLvQCV5T6HZLfZcF_3ZmKULgg8x3_XIKiy6nSeTDHm5RGfnKOlCFF2z5pouk3QIKqS6wzcj4FG1cl9MZPCbgrSr0bZjRdJCdbRnb94mkjakKjEDltLobCT74weaW5AV7c6eT6S95DVItWReng7rLeWQX-zbmh4iSW1olamsk1tktECQCYqJsdJzP3yKh-9URVJvTBpGR9kzhgbuXVp6AW43DZv0w1XobgysKdHSy7u_8NwLPbYZKnexk"/>
+</div>
+</div>
+</header>
+<!-- Main View Container -->
+<main class="relative h-screen w-full pt-touch-target pb-20 overflow-hidden">
+<!-- Search & Filter Header -->
+<div class="absolute top-[64px] left-0 right-0 z-40 px-margin-mobile pointer-events-none">
+<div class="flex gap-2 pointer-events-auto">
+<div class="flex-1 bg-surface-container-lowest shadow-lg rounded-xl flex items-center px-4 py-2 border border-outline-variant/30">
+<span class="material-symbols-outlined text-outline mr-3">search</span>
+<input class="w-full bg-transparent border-none focus:ring-0 text-body-md font-body-md placeholder:text-outline/70" placeholder="Search trades in Ghana..." type="text"/>
+</div>
+<button class="w-touch-target h-touch-target bg-primary-container text-on-primary-container shadow-lg rounded-xl flex items-center justify-center active:scale-95 transition-transform">
+<span class="material-symbols-outlined">tune</span>
+</button>
+</div>
+<!-- Quick Chips -->
+<div class="flex gap-2 mt-4 overflow-x-auto hide-scrollbar pointer-events-auto">
+<button class="whitespace-nowrap px-4 py-1.5 rounded-full bg-surface-container-highest/90 backdrop-blur-md border border-outline-variant/30 font-label-md text-label-md shadow-sm active:bg-primary-container transition-colors">Accra</button>
+<button class="whitespace-nowrap px-4 py-1.5 rounded-full bg-surface-container-highest/90 backdrop-blur-md border border-outline-variant/30 font-label-md text-label-md shadow-sm active:bg-primary-container transition-colors">Electrical</button>
+<button class="whitespace-nowrap px-4 py-1.5 rounded-full bg-surface-container-highest/90 backdrop-blur-md border border-outline-variant/30 font-label-md text-label-md shadow-sm active:bg-primary-container transition-colors">Carpentry</button>
+<button class="whitespace-nowrap px-4 py-1.5 rounded-full bg-surface-container-highest/90 backdrop-blur-md border border-outline-variant/30 font-label-md text-label-md shadow-sm active:bg-primary-container transition-colors">Plumbing</button>
+</div>
+</div>
+<!-- Full-screen Map Integration -->
+<div class="absolute inset-0 z-0">
+<div class="w-full h-full grayscale-[0.2]" data-location="Accra, Ghana" style="">
+<!-- Fallback Map Image -->
+<img alt="Detailed city map of Accra" class="w-full h-full object-cover" data-alt="A highly detailed, top-down satellite and street map view of Accra, Ghana, showing intricate urban patterns and coastal geography. The visual style is clean and professional, with a slightly muted color palette to allow UI markers to pop. Soft sunlight glints off city rooftops, creating a modern, high-end cartographic aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC9COpvYbttYUc0t1S0GJX5fbdTI3WD130VcyooZPmDWQPFR5Fujp7kgscnGxGnlK5nA4Fv1vwTF83B2qZb5RTxUOj9GmuwA81MlIDX7EMWt42Ry5rXANpx7E8aAc53QR8YaFkTtf_2U0ZdZMA4TLXkcp2SDZtfBy5GR9WYCcPKjhgxoMBFXBhvKNBJtqsBHy99bG_69D9sO9qhdWfw61AHKNLHIjpZbUxtXdOXXfkPc2r8-MIEPtahkO-nWOFeEB4mTDl7J8JHf8Q"/>
+<!-- Simulated Interactive Markers -->
+<!-- Accra Marker -->
+<button class="absolute top-[40%] left-[35%] z-10 group active:scale-90 transition-transform" onclick="selectJob('accra')">
+<div class="relative flex flex-col items-center">
+<div class="bg-primary text-on-primary p-2 rounded-full shadow-xl map-marker-pulse group-hover:bg-primary-fixed-dim transition-colors">
+<span class="material-symbols-outlined text-[24px]">carpenter</span>
+</div>
+<div class="mt-1 bg-surface-container-lowest px-2 py-1 rounded shadow-md border border-outline-variant/20">
+<span class="text-caption font-caption text-on-surface">GH₵ 450</span>
+</div>
+<div class="w-1 h-3 bg-primary -mt-1"></div>
+</div>
+</button>
+<!-- Kumasi Marker -->
+<button class="absolute top-[30%] left-[65%] z-10 group active:scale-90 transition-transform" onclick="selectJob('kumasi')">
+<div class="relative flex flex-col items-center">
+<div class="bg-primary text-on-primary p-2 rounded-full shadow-xl group-hover:bg-primary-fixed-dim transition-colors">
+<span class="material-symbols-outlined text-[24px]">bolt</span>
+</div>
+<div class="mt-1 bg-surface-container-lowest px-2 py-1 rounded shadow-md border border-outline-variant/20">
+<span class="text-caption font-caption text-on-surface">GH₵ 800</span>
+</div>
+<div class="w-1 h-3 bg-primary -mt-1"></div>
+</div>
+</button>
+<!-- Additional Marker -->
+<button class="absolute top-[55%] left-[50%] z-10 group active:scale-90 transition-transform" onclick="selectJob('tema')">
+<div class="relative flex flex-col items-center">
+<div class="bg-secondary text-white p-2 rounded-full shadow-xl">
+<span class="material-symbols-outlined text-[24px]">plumbing</span>
+</div>
+<div class="w-1 h-3 bg-secondary -mt-1"></div>
+</div>
+</button>
+</div>
+</div>
+<!-- Draggable / Overlay Sheet -->
+<div class="fixed bottom-20 left-0 right-0 z-50 transform translate-y-[calc(100%-80px)] px-4" id="job-details-sheet">
+<div class="bg-surface-container-lowest rounded-t-3xl shadow-[0_-8px_30px_rgba(0,0,0,0.12)] border border-outline-variant/20 overflow-hidden">
+<!-- Drag Handle -->
+<div class="w-full flex justify-center py-3 cursor-grab" onclick="toggleSheet()">
+<div class="w-12 h-1.5 bg-outline-variant rounded-full"></div>
+</div>
+<div class="px-gutter pb-8" id="sheet-content">
+<!-- Default State (Collapsed) -->
+<div class="flex justify-between items-center h-12" id="collapsed-info">
+<p class="font-label-md text-label-md text-outline">Tap a marker or drag up for results</p>
+<span class="text-primary font-bold text-label-md">12 Jobs Nearby</span>
+</div>
+<!-- Selected Job Content (Revealed on Marker Click/Drag) -->
+<div class="hidden" id="job-detail-card">
+<div class="flex justify-between items-start mb-4">
+<div>
+<div class="flex items-center gap-2 mb-1">
+<span class="bg-status-success/10 text-status-success px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">Verified Listing</span>
+<span class="text-outline text-caption font-caption">2.4km away</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface" id="job-title">Professional Carpentry Needed</h3>
+<p class="text-on-surface-variant flex items-center gap-1 text-body-md font-body-md" id="job-location">
+<span class="material-symbols-outlined text-[18px]">location_on</span>
+                                    East Legon, Accra
+                                </p>
+</div>
+<div class="text-right">
+<span class="text-primary font-bold text-headline-md block" id="job-price">GH₵ 450</span>
+<span class="text-outline text-caption font-caption">Estimated</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4 mb-6">
+<div class="bg-surface-container p-3 rounded-xl">
+<span class="text-outline text-caption block mb-1">Trade Category</span>
+<span class="font-label-md flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px] text-primary">handyman</span>
+                                    Woodwork
+                                </span>
+</div>
+<div class="bg-surface-container p-3 rounded-xl">
+<span class="text-outline text-caption block mb-1">Timeline</span>
+<span class="font-label-md flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px] text-primary">schedule</span>
+                                    Immediate
+                                </span>
+</div>
+</div>
+<div class="flex gap-3">
+<button class="flex-1 bg-surface-container-highest text-on-surface font-label-md py-3 rounded-xl active:scale-95 transition-transform">View Details</button>
+<button class="flex-[1.5] bg-primary-container text-on-primary-container font-headline-md py-3 rounded-xl shadow-lg active:scale-95 transition-transform">Apply Now</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Floating Action for Recenter -->
+<button class="fixed right-6 bottom-40 z-40 w-12 h-12 bg-surface-container-lowest text-primary shadow-xl rounded-full flex items-center justify-center border border-outline-variant/30 active:scale-90 transition-transform">
+<span class="material-symbols-outlined">my_location</span>
+</button>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 w-full z-50 flex justify-around items-center bg-surface-container-lowest py-2 px-margin-mobile shadow-[0_-4px_20px_rgba(0,0,0,0.04)] rounded-t-xl border-t border-outline-variant">
+<a class="flex flex-col items-center justify-center text-secondary px-4 py-1 hover:bg-surface-variant transition-colors" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-md text-caption">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1 scale-90" href="#">
+<span class="material-symbols-outlined">work</span>
+<span class="font-label-md text-caption">Jobs</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary px-4 py-1 hover:bg-surface-variant transition-colors" href="#">
+<span class="material-symbols-outlined">chat</span>
+<span class="font-label-md text-caption">Messages</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary px-4 py-1 hover:bg-surface-variant transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-caption">Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary px-4 py-1 hover:bg-surface-variant transition-colors" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-md text-caption">Profile</span>
+</a>
+</nav>
+<script>
+        let isExpanded = false;
+        const sheet = document.getElementById('job-details-sheet');
+        const collapsedInfo = document.getElementById('collapsed-info');
+        const jobCard = document.getElementById('job-detail-card');
+
+        function toggleSheet(force = null) {
+            if (force === true) isExpanded = true;
+            else if (force === false) isExpanded = false;
+            else isExpanded = !isExpanded;
+
+            if (isExpanded) {
+                sheet.style.transform = 'translateY(0)';
+                collapsedInfo.classList.add('hidden');
+                jobCard.classList.remove('hidden');
+            } else {
+                sheet.style.transform = 'translateY(calc(100% - 80px))';
+                collapsedInfo.classList.remove('hidden');
+                jobCard.classList.add('hidden');
+            }
+        }
+
+        const jobData = {
+            accra: {
+                title: "Master Carpenter for Cabinetry",
+                location: "East Legon, Accra",
+                price: "GH₵ 550",
+                dist: "1.2km away"
+            },
+            kumasi: {
+                title: "Electrical Rewiring (Residential)",
+                location: "Asokwa, Kumasi",
+                price: "GH₵ 1,200",
+                dist: "3.5km away"
+            }
+        };
+
+        function selectJob(key) {
+            const data = jobData[key] || jobData.accra;
+            document.getElementById('job-title').innerText = data.title;
+            document.getElementById('job-location').innerHTML = `<span class="material-symbols-outlined text-[18px]">location_on</span> ${data.location}`;
+            document.getElementById('job-price').innerText = data.price;
+            toggleSheet(true);
+        }
+
+        // Simple Drag Simulation for the bar
+        let startY;
+        const dragHandle = sheet.querySelector('.cursor-grab');
+
+        dragHandle.addEventListener('touchstart', (e) => {
+            startY = e.touches[0].clientY;
+        });
+
+        dragHandle.addEventListener('touchmove', (e) => {
+            const currentY = e.touches[0].clientY;
+            if (startY - currentY > 50) {
+                toggleSheet(true);
+            } else if (currentY - startY > 50) {
+                toggleSheet(false);
+            }
+        });
+    </script>
+</body></html>

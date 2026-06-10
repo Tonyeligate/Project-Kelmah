@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Submit Milestone Update | Kelmah</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .active-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+        body {
+            -webkit-tap-highlight-color: transparent;
+        }
+    </style>
+<!-- Include Tailwind Config verbatim -->
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-container-high": "#e8e8e8",
+                      "on-tertiary-fixed-variant": "#474740",
+                      "on-secondary-fixed-variant": "#474746",
+                      "primary": "#705d00",
+                      "outline": "#7e775f",
+                      "on-error-container": "#93000a",
+                      "inverse-surface": "#2f3131",
+                      "surface-tint": "#705d00",
+                      "on-surface-variant": "#4d4732",
+                      "on-secondary-fixed": "#1c1b1b",
+                      "surface-muted": "#F3F4F6",
+                      "tertiary-fixed": "#e4e3d9",
+                      "surface-bright": "#f9f9f9",
+                      "outline-variant": "#d0c6ab",
+                      "secondary-fixed": "#e5e2e1",
+                      "on-error": "#ffffff",
+                      "secondary": "#5f5e5e",
+                      "on-primary-fixed": "#221b00",
+                      "tertiary": "#5f5f57",
+                      "primary-fixed": "#ffe16d",
+                      "surface-container": "#eeeeee",
+                      "surface-container-highest": "#e2e2e2",
+                      "error-container": "#ffdad6",
+                      "primary-fixed-dim": "#e9c400",
+                      "on-secondary-container": "#636262",
+                      "secondary-fixed-dim": "#c8c6c5",
+                      "on-primary-fixed-variant": "#544600",
+                      "inverse-on-surface": "#f0f1f1",
+                      "status-info": "#3B82F6",
+                      "inverse-primary": "#e9c400",
+                      "background": "#f9f9f9",
+                      "on-tertiary-fixed": "#1b1c16",
+                      "on-tertiary": "#ffffff",
+                      "on-background": "#1a1c1c",
+                      "on-primary": "#ffffff",
+                      "surface-container-lowest": "#ffffff",
+                      "primary-container": "#ffd700",
+                      "tertiary-fixed-dim": "#c8c7bd",
+                      "on-primary-container": "#705e00",
+                      "text-body": "#4B5563",
+                      "status-success": "#10B981",
+                      "error": "#ba1a1a",
+                      "surface-dim": "#dadada",
+                      "surface-container-low": "#f3f3f4",
+                      "secondary-container": "#e2dfde",
+                      "surface-variant": "#e2e2e2",
+                      "tertiary-container": "#dcdad0",
+                      "on-secondary": "#ffffff",
+                      "surface": "#f9f9f9",
+                      "on-surface": "#1a1c1c",
+                      "on-tertiary-container": "#5f5f58"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "touch-target": "48px",
+                      "margin-mobile": "16px",
+                      "margin-desktop": "64px",
+                      "gutter": "16px",
+                      "base": "8px"
+              },
+              "fontFamily": {
+                      "body-md": ["Inter"],
+                      "caption": ["Inter"],
+                      "display-lg": ["Montserrat"],
+                      "headline-md": ["Montserrat"],
+                      "headline-lg": ["Montserrat"],
+                      "label-md": ["Inter"],
+                      "headline-lg-mobile": ["Montserrat"],
+                      "body-lg": ["Inter"]
+              },
+              "fontSize": {
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "caption": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                      "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                      "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                      "headline-lg-mobile": ["28px", {"lineHeight": "34px", "fontWeight": "700"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md min-h-screen pb-32">
+<!-- TopAppBar (Suppressed if Task-Focused, but since it's a "screen" and not a modal, we keep the Shell Title for Branding) -->
+<header class="bg-primary dark:bg-primary-fixed-dim text-on-primary dark:text-on-primary-fixed shadow-md docked full-width top-0 sticky z-50 flex justify-between items-center w-full px-margin-mobile h-touch-target">
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined hover:bg-on-primary/10 dark:hover:bg-on-primary-fixed/10 p-2 rounded-full transition-transform active:scale-95">arrow_back</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold">Milestone Update</h1>
+</div>
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-on-primary/20">
+<img alt="Worker avatar" data-alt="A professional close-up portrait of a skilled electrician in a modern workspace. The lighting is crisp and industrial, highlighting the worker's focused expression and clean uniform. The background is a blurred high-tech workshop with soft yellow accents mirroring the brand's primary color palette. The aesthetic is clean, trustworthy, and high-resolution, conveying expertise and reliability." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDnY1n84sMkQxZqjWINya7Am_L1kU2VFeZRmNu6UBRvzsz-cf4ExqeEPgh2G7EUI4Z1fBnDV4OtlJgh9TTg0QdNqzlzVu4tyz9fmgu1W8xx_NO4biOBUYl6qGaScYUg6nfPBYifoXCUoTBWTVyQkRN39uy6y2XNfzXAvMR7btpXSIWf5Es5Zkl8Vq1PQ25k1Z4EIfZ68gVHxlKxoZs4xi7By9BN4zLIRpkie4-uQpiOKC_s1FI_whao_R7NlNifgFw7Ia23wgwtUzQ"/>
+</div>
+</header>
+<main class="max-w-2xl mx-auto px-margin-mobile pt-gutter space-y-gutter">
+<!-- Job Context Card -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-gutter shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
+<div class="flex justify-between items-start mb-2">
+<div>
+<p class="font-label-md text-primary uppercase tracking-wider">Active Project</p>
+<h2 class="font-headline-md text-headline-md-mobile">Rewiring - Commercial Unit 402</h2>
+</div>
+<span class="bg-primary-container text-on-primary-container font-label-md px-3 py-1 rounded-full">In Progress</span>
+</div>
+<div class="flex items-center gap-2 text-secondary">
+<span class="material-symbols-outlined text-base">location_on</span>
+<p class="text-caption">Airport Residential Area, Accra</p>
+</div>
+</div>
+<!-- Form Section -->
+<section class="space-y-6">
+<!-- Milestone Selection -->
+<div class="space-y-2">
+<label class="font-label-md text-on-surface" for="milestone">Select Milestone</label>
+<div class="relative">
+<select class="w-full h-touch-target bg-surface-container border border-outline rounded-lg px-4 appearance-none focus:ring-2 focus:ring-primary-container focus:border-primary outline-none transition-all" id="milestone">
+<option disabled="" selected="" value="">Choose the completed stage...</option>
+<option value="1">First Fix: Cable Pulling</option>
+<option value="2">Distribution Board Installation</option>
+<option value="3">Lighting Fixtures Completion</option>
+<option value="4">Final Testing &amp; Certification</option>
+</select>
+<span class="material-symbols-outlined absolute right-4 top-3 pointer-events-none text-secondary">expand_more</span>
+</div>
+</div>
+<!-- Work Notes -->
+<div class="space-y-2">
+<label class="font-label-md text-on-surface" for="notes">Work Notes</label>
+<textarea class="w-full bg-surface-container border border-outline rounded-lg p-4 focus:ring-2 focus:ring-primary-container focus:border-primary outline-none transition-all resize-none" id="notes" placeholder="Describe what was accomplished, any hurdles encountered, or items for client review..." rows="4"></textarea>
+</div>
+<!-- Photo Upload Area -->
+<div class="space-y-3">
+<label class="font-label-md text-on-surface">Proof of Completion (Photos)</label>
+<div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+<!-- Photo Preview Placeholder -->
+<div class="aspect-square bg-surface-container-high rounded-lg flex flex-col items-center justify-center border-2 border-dashed border-outline-variant hover:bg-surface-container-highest cursor-pointer transition-colors group" onclick="document.getElementById('file-input').click()">
+<span class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">add_a_photo</span>
+<p class="text-caption mt-1">Add Photo</p>
+</div>
+<!-- Mock uploaded images -->
+<div class="aspect-square relative rounded-lg overflow-hidden group">
+<img class="w-full h-full object-cover" data-alt="A professional high-angle shot of neatly installed electrical conduits and wiring inside a modern commercial building. The wiring is organized with industrial precision, reflecting high-quality trade craft. The lighting is clear and bright, highlighting the metallic textures of the conduits and the vibrant colors of the insulated wires. The image conveys a sense of progress and professional completion within an architectural setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGhNYU9r1O5qaz3Svl2rEARg05y_GR75V221FcpP3i35fh7So8aHGoUbCt0eqalxcyoq1Ulsj2O_GrqzgZtRbEHHg-KLcH_QhJhqn6yBtvoByMhUm7JSF7gPSv_37vsO6lc5ym5Fd5D6w6bhMv0szB0IY2enNDqZKkZ1oVZODx4-VLu47AGL7NTR3D_XkZz3rGp9Da6Pmlfzf13expBbxAEc7FzZm3j-VtcXydmp0aMASydvGNMJg39Wpd-nhLpY4H8dIp3G4TNis"/>
+<button class="absolute top-1 right-1 bg-black/50 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+</div>
+<input accept="image/*" class="hidden" id="file-input" multiple="" type="file"/>
+<p class="text-caption text-secondary">Max 5 photos. JPG or PNG. 10MB limit.</p>
+</div>
+<!-- Location Verification Toggle -->
+<div class="bg-surface-container border border-outline-variant rounded-xl p-4 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="bg-status-success/10 p-2 rounded-full">
+<span class="material-symbols-outlined text-status-success" style="font-variation-settings: 'FILL' 1;">location_on</span>
+</div>
+<div>
+<h4 class="font-label-md text-on-surface">Location Verification</h4>
+<p class="text-caption text-secondary">Tags update with GPS coordinates</p>
+</div>
+</div>
+<button class="relative inline-flex h-6 w-11 items-center rounded-full bg-primary transition-colors focus:outline-none" id="location-toggle" onclick="this.classList.toggle('bg-primary'); this.classList.toggle('bg-outline')">
+<span class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform translate-x-6"></span>
+</button>
+</div>
+</section>
+</main>
+<!-- Bottom Action Bar -->
+<div class="fixed bottom-0 left-0 right-0 p-margin-mobile bg-surface-container-lowest border-t border-outline-variant flex flex-col gap-3 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] z-50">
+<div class="flex gap-4">
+<button class="flex-1 h-touch-target bg-primary text-on-primary font-headline-md rounded-lg flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-md">
+<span class="material-symbols-outlined">check_circle</span>
+                Submit Milestone
+            </button>
+</div>
+<p class="text-center text-caption text-secondary">By submitting, you confirm the work meets safety standards.</p>
+</div>
+<!-- Bottom Navigation (Filtered: Not rendered for this task-focused workflow as per UI guidelines) -->
+<!-- We prioritize the Submit button over Global Nav for focus -->
+<script>
+        // Simple micro-interaction for the toggle
+        const toggle = document.getElementById('location-toggle');
+        const dot = toggle.querySelector('span');
+        let isEnabled = true;
+
+        toggle.addEventListener('click', () => {
+            isEnabled = !isEnabled;
+            if (isEnabled) {
+                toggle.classList.remove('bg-outline');
+                toggle.classList.add('bg-primary');
+                dot.classList.add('translate-x-6');
+                dot.classList.remove('translate-x-1');
+            } else {
+                toggle.classList.add('bg-outline');
+                toggle.classList.remove('bg-primary');
+                dot.classList.remove('translate-x-6');
+                dot.classList.add('translate-x-1');
+            }
+        });
+
+        // Feedback on submit (Visual only)
+        document.querySelector('button.bg-primary').addEventListener('click', function() {
+            const btn = this;
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = `<span class="material-symbols-outlined animate-spin">sync</span> Submitting...`;
+            btn.disabled = true;
+            btn.classList.add('opacity-80');
+            
+            setTimeout(() => {
+                btn.innerHTML = `<span class="material-symbols-outlined">verified</span> Success!`;
+                btn.classList.remove('bg-primary');
+                btn.classList.add('bg-status-success');
+                setTimeout(() => {
+                    btn.innerHTML = originalContent;
+                    btn.classList.add('bg-primary');
+                    btn.classList.remove('bg-status-success');
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-80');
+                }, 2000);
+            }, 1500);
+        });
+    </script>
+</body></html>

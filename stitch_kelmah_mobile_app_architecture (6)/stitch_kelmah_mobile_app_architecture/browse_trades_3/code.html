@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kelmah - Find Skilled Trades</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-high": "#e8e8e8",
+                        "primary": "#705d00",
+                        "on-tertiary-fixed": "#1b1c16",
+                        "surface-variant": "#e2e2e2",
+                        "tertiary": "#5f5f57",
+                        "tertiary-fixed-dim": "#c8c7bd",
+                        "background": "#f9f9f9",
+                        "on-error": "#ffffff",
+                        "on-surface-variant": "#4d4732",
+                        "on-tertiary-fixed-variant": "#474740",
+                        "status-success": "#10B981",
+                        "outline": "#7e775f",
+                        "outline-variant": "#d0c6ab",
+                        "tertiary-fixed": "#e4e3d9",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-container": "#5f5f58",
+                        "on-background": "#1a1c1c",
+                        "secondary-fixed": "#e5e2e1",
+                        "secondary-container": "#e2dfde",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "inverse-on-surface": "#f0f1f1",
+                        "inverse-primary": "#e9c400",
+                        "text-body": "#4B5563",
+                        "surface-container": "#eeeeee",
+                        "surface-bright": "#f9f9f9",
+                        "on-primary-container": "#705e00",
+                        "surface-container-low": "#f3f3f4",
+                        "on-primary": "#ffffff",
+                        "primary-fixed-dim": "#e9c400",
+                        "surface-container-highest": "#e2e2e2",
+                        "surface-dim": "#dadada",
+                        "on-surface": "#1a1c1c",
+                        "error-container": "#ffdad6",
+                        "on-secondary-fixed-variant": "#474746",
+                        "on-primary-fixed-variant": "#544600",
+                        "primary-container": "#ffd700",
+                        "surface": "#f9f9f9",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed": "#221b00",
+                        "on-secondary-container": "#636262",
+                        "status-info": "#3B82F6",
+                        "primary-fixed": "#ffe16d",
+                        "secondary": "#5f5e5e",
+                        "surface-tint": "#705d00",
+                        "tertiary-container": "#dcdad0",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "surface-muted": "#F3F4F6",
+                        "error": "#ba1a1a",
+                        "inverse-surface": "#2f3131"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "8px",
+                        "gutter": "16px",
+                        "touch-target": "48px",
+                        "margin-mobile": "16px",
+                        "margin-desktop": "64px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Montserrat"],
+                        "headline-lg": ["Montserrat"],
+                        "display-lg": ["Montserrat"],
+                        "headline-md": ["Montserrat"],
+                        "body-lg": ["Inter"],
+                        "caption": ["Inter"],
+                        "label-md": ["Inter"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["28px", {"lineHeight": "34px", "fontWeight": "700"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "caption": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md text-body-md antialiased overflow-x-hidden min-h-screen pb-24">
+<!-- TopAppBar -->
+<header class="bg-primary sticky top-0 z-[50] shadow-md flex justify-between items-center w-full px-margin-mobile h-touch-target">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-on-primary">menu</span>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-on-primary">Kelmah</h1>
+</div>
+<div class="flex items-center gap-4">
+<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center overflow-hidden border-2 border-on-primary/20">
+<img alt="User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGVnUPbQ4m4_BVVBW2XA4COum-4_wH8kjPKbyld_1iUmUMrO_0M1bv7O_zy7LAv3ShJoAmUo9d83tjeyKFDzcQTdiIhX68b_WIUd6b5slwSh3bNM1_8RcaZRsXXCfifg9-5Di6eiRG9Xpz4sMT7HYnFZ7h1UpvoMVeNbxwczZK3fbbqFDjLsjnYK-LO_APDzXbfm76-A_TCDPVmVuJQTvIdIF2sKik6qXUAnwMoHDA9RwJuZ1Ty8EBXMPTO39-h5KgvqbXM9ptoHY"/>
+</div>
+</div>
+</header>
+<!-- Content Canvas -->
+<main class="w-full max-w-lg mx-auto px-margin-mobile pt-6">
+<!-- Search Header Section -->
+<section class="mb-8">
+<div class="flex flex-col gap-2 mb-6">
+<span class="inline-block px-3 py-1 bg-primary-container text-on-primary-container font-label-md text-caption rounded-full w-fit">
+                    Ghana's Trusted Trades
+                </span>
+<h2 class="font-headline-md text-headline-md-mobile text-on-surface">Find a professional</h2>
+</div>
+<!-- Search Bar -->
+<div class="relative group">
+<div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-outline">search</span>
+</div>
+<input class="w-full pl-12 pr-4 py-4 bg-surface-container-lowest border-2 border-outline-variant focus:border-primary focus:ring-0 rounded-xl transition-all shadow-sm font-body-md" placeholder="Search for plumbers, electricians..." type="text"/>
+<button class="absolute inset-y-2 right-2 px-4 bg-primary-container text-on-primary-container font-label-md text-label-md rounded-lg hover:bg-primary hover:text-on-primary transition-colors">
+                    Filter
+                </button>
+</div>
+</section>
+<!-- Category Horizontal Scroll -->
+<section class="mb-8 -mx-margin-mobile px-margin-mobile">
+<div class="flex items-center justify-between mb-4 px-margin-mobile">
+<h3 class="font-label-md text-label-md text-on-surface-variant">Popular Categories</h3>
+<button class="text-primary font-label-md text-caption">View All</button>
+</div>
+<div class="flex gap-4 overflow-x-auto hide-scrollbar pb-2 px-margin-mobile">
+<!-- Category Item: Active -->
+<button class="flex flex-col items-center gap-2 min-w-[80px] shrink-0">
+<div class="w-16 h-16 rounded-2xl bg-primary-container flex items-center justify-center text-on-primary-container shadow-sm border-2 border-primary">
+<span class="material-symbols-outlined text-[32px]">bolt</span>
+</div>
+<span class="font-label-md text-caption text-primary">Electricians</span>
+</button>
+<!-- Category Item -->
+<button class="flex flex-col items-center gap-2 min-w-[80px] shrink-0 group">
+<div class="w-16 h-16 rounded-2xl bg-surface-container-high flex items-center justify-center text-secondary group-hover:bg-primary-container transition-colors">
+<span class="material-symbols-outlined text-[32px]">plumbing</span>
+</div>
+<span class="font-label-md text-caption text-on-surface-variant">Plumbers</span>
+</button>
+<!-- Category Item -->
+<button class="flex flex-col items-center gap-2 min-w-[80px] shrink-0 group">
+<div class="w-16 h-16 rounded-2xl bg-surface-container-high flex items-center justify-center text-secondary group-hover:bg-primary-container transition-colors">
+<span class="material-symbols-outlined text-[32px]">handyman</span>
+</div>
+<span class="font-label-md text-caption text-on-surface-variant">Masons</span>
+</button>
+<!-- Category Item -->
+<button class="flex flex-col items-center gap-2 min-w-[80px] shrink-0 group">
+<div class="w-16 h-16 rounded-2xl bg-surface-container-high flex items-center justify-center text-secondary group-hover:bg-primary-container transition-colors">
+<span class="material-symbols-outlined text-[32px]">format_paint</span>
+</div>
+<span class="font-label-md text-caption text-on-surface-variant">Painters</span>
+</button>
+<!-- Category Item -->
+<button class="flex flex-col items-center gap-2 min-w-[80px] shrink-0 group">
+<div class="w-16 h-16 rounded-2xl bg-surface-container-high flex items-center justify-center text-secondary group-hover:bg-primary-container transition-colors">
+<span class="material-symbols-outlined text-[32px]">carpenter</span>
+</div>
+<span class="font-label-md text-caption text-on-surface-variant">Carpenters</span>
+</button>
+</div>
+</section>
+<!-- Worker Listing -->
+<section class="space-y-4">
+<h3 class="font-label-md text-label-md text-on-surface-variant mb-4">Top Rated Near You</h3>
+<!-- Worker Card 1 -->
+<div class="bg-surface-container-lowest rounded-xl p-4 border border-outline-variant shadow-[0_4px_20px_rgba(0,0,0,0.04)] relative overflow-hidden active:scale-[0.98] transition-transform">
+<div class="flex gap-4">
+<div class="relative">
+<img alt="Kofi Mensah" class="w-20 h-20 rounded-lg object-cover bg-surface-container" data-alt="A portrait of a smiling African professional electrician wearing high-visibility work gear and safety glasses. He is holding a digital tablet in a bright, modern workshop setting with soft, warm lighting. The background is slightly blurred to emphasize his friendly and professional demeanor, aligning with a corporate-modern Ghanaian industrial aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuChjZqGxXHE70JjxmgpR-Gb2RhCVM6J94Z0FqAw3SeX1UYRt8skE5WKPrdEaafdTA8eZX71klvC7tHa7LaOkXxemEOFbQKE1_1YCi3NZlZBgpg-ns4AS8i-606so0JqDlgrWwO8JKZ121E_Sas_ZOKKswHcjywUykMXOADJSa01ZDNzw8cBN_5lnpEhvUBBeDqJvBtCzeaQ9TFrvHxpNoY5MkNq38pArjHIyjNeWGgdDhuUkqTyjbRL2AjMgHEihJM_q-fWAAZAHYI"/>
+<div class="absolute -bottom-2 -right-2 bg-status-success text-white px-2 py-0.5 rounded-full text-[10px] font-bold border-2 border-white">VERIFIED</div>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="font-label-md text-label-md text-on-surface">Kofi Mensah</h4>
+<p class="text-caption text-on-surface-variant">Master Electrician • 8 yrs exp.</p>
+</div>
+<div class="flex items-center gap-1 bg-primary-container/30 px-2 py-1 rounded-lg">
+<span class="material-symbols-outlined text-primary text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-bold text-caption text-primary">4.9</span>
+</div>
+</div>
+<div class="flex items-center gap-1 mt-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<span class="text-caption">East Legon, Accra</span>
+</div>
+</div>
+</div>
+<div class="mt-4 pt-4 border-t border-outline-variant flex justify-between items-center">
+<div class="text-caption text-secondary">Starts from <span class="font-bold text-on-surface">₵150/hr</span></div>
+<button class="bg-primary-container text-on-primary-container px-4 py-2 rounded-lg font-label-md text-label-md hover:bg-primary hover:text-on-primary transition-all active:scale-95">View Profile</button>
+</div>
+</div>
+<!-- Worker Card 2 -->
+<div class="bg-surface-container-lowest rounded-xl p-4 border border-outline-variant shadow-[0_4px_20px_rgba(0,0,0,0.04)] active:scale-[0.98] transition-transform">
+<div class="flex gap-4">
+<div class="relative">
+<img alt="Ama Serwaa" class="w-20 h-20 rounded-lg object-cover bg-surface-container" data-alt="A professional Ghanaian female plumber in a clean navy blue uniform, smiling confidently while standing in a brightly lit residential kitchen area. She carries a professional tool bag. The atmosphere is trustworthy and professional, with clean lines and a high-contrast lighting style that reflects the Kelmah brand identity of industrial professionalism." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCGhGdUXscdV7BV3zWgK1WV-MGRWYHtDg10EIwb9O6WBOyi8WvREO4KL5eiLcyXe72UZ5Yh8TN0FQH_LZX07p6VxzhDJX7w5RBuTTwVCEXRFB9EE4cU4Ix5eBB3vpI5kLP2g8Z0msgEDBIpRW17PigjiCZh7a9JEcWU_hMW_JgM-fW5cJ4yLOsxnqw6OO2kDfVGTeOcghJVFlp9Dtq_-e5qhRWPC8vP2SzalUv9_bsJqqhjC2k9svJcSmOVWD29e5Y3xqdGAYxsa-Q"/>
+<div class="absolute -bottom-2 -right-2 bg-status-success text-white px-2 py-0.5 rounded-full text-[10px] font-bold border-2 border-white">VERIFIED</div>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="font-label-md text-label-md text-on-surface">Ama Serwaa</h4>
+<p class="text-caption text-on-surface-variant">Certified Plumber • 5 yrs exp.</p>
+</div>
+<div class="flex items-center gap-1 bg-primary-container/30 px-2 py-1 rounded-lg">
+<span class="material-symbols-outlined text-primary text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-bold text-caption text-primary">4.8</span>
+</div>
+</div>
+<div class="flex items-center gap-1 mt-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<span class="text-caption">Kumasi, Ashanti</span>
+</div>
+</div>
+</div>
+<div class="mt-4 pt-4 border-t border-outline-variant flex justify-between items-center">
+<div class="text-caption text-secondary">Starts from <span class="font-bold text-on-surface">₵120/hr</span></div>
+<button class="bg-primary-container text-on-primary-container px-4 py-2 rounded-lg font-label-md text-label-md hover:bg-primary hover:text-on-primary transition-all active:scale-95">View Profile</button>
+</div>
+</div>
+<!-- Worker Card 3 -->
+<div class="bg-surface-container-lowest rounded-xl p-4 border border-outline-variant shadow-[0_4px_20px_rgba(0,0,0,0.04)] active:scale-[0.98] transition-transform">
+<div class="flex gap-4">
+<div class="relative">
+<img alt="Joseph Boateng" class="w-20 h-20 rounded-lg object-cover bg-surface-container" data-alt="A skilled Ghanaian mason at a construction site, wearing safety attire and a yellow hard hat. He is looking directly at the camera with a look of expert reliability. The morning sun provides a natural, bright illumination, highlighting the texture of the building materials. The visual style is utilitarian and stable, emphasizing the stability and trust core to the platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBohVil9Pi8xA7O4KuanXpDXRXmqZOfXFvlfxA7PWA_uxLoAjzemHC4to49K94JNQtWGQCjYVbU9M43ync-G73HrYScOqb_Q14NtWddc2nxQNwAdGcO3qzFPZo3ajeBH-wG7YnN06vfyBkJmjcKq4fef1DOeHa2G6kZWlTWuWmHR6gj-vH_pghHdQ5s_cB4nJHPfjw3p1_mQoZ0gltIT6MhLX4MeOe0yd99Ncs3J5cTRW_a6Vxgm6f71ikWRLQjzJoBVLIHNxBDqck"/>
+<div class="absolute -bottom-2 -right-2 bg-status-success text-white px-2 py-0.5 rounded-full text-[10px] font-bold border-2 border-white">VERIFIED</div>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="font-label-md text-label-md text-on-surface">Joseph Boateng</h4>
+<p class="text-caption text-on-surface-variant">Lead Mason • 12 yrs exp.</p>
+</div>
+<div class="flex items-center gap-1 bg-primary-container/30 px-2 py-1 rounded-lg">
+<span class="material-symbols-outlined text-primary text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-bold text-caption text-primary">5.0</span>
+</div>
+</div>
+<div class="flex items-center gap-1 mt-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<span class="text-caption">Tema, Greater Accra</span>
+</div>
+</div>
+</div>
+<div class="mt-4 pt-4 border-t border-outline-variant flex justify-between items-center">
+<div class="text-caption text-secondary">Starts from <span class="font-bold text-on-surface">₵200/day</span></div>
+<button class="bg-primary-container text-on-primary-container px-4 py-2 rounded-lg font-label-md text-label-md hover:bg-primary hover:text-on-primary transition-all active:scale-95">View Profile</button>
+</div>
+</div>
+</section>
+</main>
+<!-- FAB for quick action -->
+<button class="fixed bottom-24 right-margin-mobile w-14 h-14 bg-primary text-on-primary rounded-full shadow-xl flex items-center justify-center z-40 active:scale-90 transition-transform">
+<span class="material-symbols-outlined">add</span>
+</button>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 flex justify-around items-center bg-surface-container-lowest py-2 px-margin-mobile shadow-[0_-4px_20px_rgba(0,0,0,0.04)] border-t border-outline-variant rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-secondary px-4 py-1 group" href="#">
+<span class="material-symbols-outlined group-active:scale-90 duration-150">home</span>
+<span class="font-label-md text-caption">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1" href="#">
+<span class="material-symbols-outlined scale-90 duration-150" style="font-variation-settings: 'FILL' 1;">work</span>
+<span class="font-label-md text-caption">Jobs</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary px-4 py-1 group" href="#">
+<span class="material-symbols-outlined group-active:scale-90 duration-150">chat</span>
+<span class="font-label-md text-caption">Messages</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary px-4 py-1 group" href="#">
+<span class="material-symbols-outlined group-active:scale-90 duration-150">dashboard</span>
+<span class="font-label-md text-caption">Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary px-4 py-1 group" href="#">
+<span class="material-symbols-outlined group-active:scale-90 duration-150">person</span>
+<span class="font-label-md text-caption">Profile</span>
+</a>
+</nav>
+<script>
+        // Simple micro-interaction for cards
+        document.querySelectorAll('.active\\:scale-\\[0\\.98\\]').forEach(card => {
+            card.addEventListener('click', () => {
+                // Future expansion for card clicks
+            });
+        });
+
+        // Add a nice reveal effect for categories on scroll
+        const categoryScroll = document.querySelector('.overflow-x-auto');
+        let isDown = false;
+        let startX;
+        let scrollLeft;
+
+        categoryScroll.addEventListener('mousedown', (e) => {
+            isDown = true;
+            startX = e.pageX - categoryScroll.offsetLeft;
+            scrollLeft = categoryScroll.scrollLeft;
+        });
+        categoryScroll.addEventListener('mouseleave', () => { isDown = false; });
+        categoryScroll.addEventListener('mouseup', () => { isDown = false; });
+        categoryScroll.addEventListener('mousemove', (e) => {
+            if(!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - categoryScroll.offsetLeft;
+            const walk = (x - startX) * 2;
+            categoryScroll.scrollLeft = scrollLeft - walk;
+        });
+    </script>
+</body></html>

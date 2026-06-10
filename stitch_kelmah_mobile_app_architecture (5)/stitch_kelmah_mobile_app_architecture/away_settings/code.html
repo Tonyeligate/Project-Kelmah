@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Vacation Mode Settings - Kelmah</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline": "#7e775f",
+                        "on-surface": "#1a1c1c",
+                        "on-error": "#ffffff",
+                        "primary-fixed": "#ffe16d",
+                        "on-tertiary-container": "#5f5f58",
+                        "on-primary-fixed": "#221b00",
+                        "inverse-primary": "#e9c400",
+                        "on-surface-variant": "#4d4732",
+                        "on-secondary-container": "#636262",
+                        "surface-container": "#eeeeee",
+                        "surface-muted": "#F3F4F6",
+                        "tertiary-fixed": "#e4e3d9",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "error-container": "#ffdad6",
+                        "on-error-container": "#93000a",
+                        "status-info": "#3B82F6",
+                        "secondary-container": "#e2dfde",
+                        "primary-fixed-dim": "#e9c400",
+                        "inverse-surface": "#2f3131",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-bright": "#f9f9f9",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#1a1c1c",
+                        "outline-variant": "#d0c6ab",
+                        "surface": "#f9f9f9",
+                        "on-primary-fixed-variant": "#544600",
+                        "on-primary-container": "#705e00",
+                        "tertiary-container": "#dcdad0",
+                        "on-secondary-fixed-variant": "#474746",
+                        "on-tertiary": "#ffffff",
+                        "surface-variant": "#e2e2e2",
+                        "surface-container-high": "#e8e8e8",
+                        "primary-container": "#ffd700",
+                        "surface-container-low": "#f3f3f4",
+                        "primary": "#705d00",
+                        "error": "#ba1a1a",
+                        "inverse-on-surface": "#f0f1f1",
+                        "text-body": "#4B5563",
+                        "tertiary-fixed-dim": "#c8c7bd",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "surface-dim": "#dadada",
+                        "on-tertiary-fixed-variant": "#474740",
+                        "secondary": "#5f5e5e",
+                        "on-tertiary-fixed": "#1b1c16",
+                        "surface-container-highest": "#e2e2e2",
+                        "background": "#f9f9f9",
+                        "status-success": "#10B981",
+                        "surface-tint": "#705d00",
+                        "tertiary": "#5f5f57",
+                        "secondary-fixed": "#e5e2e1",
+                        "on-primary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "base": "8px",
+                        "margin-mobile": "16px",
+                        "touch-target": "48px",
+                        "margin-desktop": "64px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Montserrat"],
+                        "headline-lg": ["Montserrat"],
+                        "label-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "display-lg": ["Montserrat"],
+                        "caption": ["Inter"],
+                        "headline-lg-mobile": ["Montserrat"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "caption": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "34px", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface antialiased min-h-screen flex flex-col font-body-md">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky bg-surface dark:bg-surface-dim bg-surface-container-low dark:bg-surface-container-high flex items-center justify-between px-margin-mobile md:px-margin-desktop h-16 w-full z-40">
+<div class="flex items-center gap-4">
+<button class="h-touch-target w-touch-target flex items-center justify-center text-primary dark:text-primary-fixed-dim hover:bg-surface-variant dark:hover:bg-on-surface-variant transition-colors rounded-full active:scale-95 duration-150">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<h1 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg font-bold text-primary dark:text-primary-fixed-dim">Kelmah</h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="h-touch-target w-touch-target flex items-center justify-center rounded-full bg-surface-variant overflow-hidden hover:bg-surface-variant dark:hover:bg-on-surface-variant transition-colors active:scale-95 duration-150">
+<img alt="User avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBbfOurHpaMJxkAMQw5VcttqNeD6Z_5RaJWTOjVs-F96jY4QEWUpgQM7_-exfsOzOLhO4lBe23RdEhdSvzajbTWoj0mnhuqas9f38pjhASUcUwXf7hAGsfE9I_-YZXVGn0JeMmtgdwCKRDBdCewNhfv-PjgyaFje0M0NmMIceigliOskTtBrxNn25O0A6RSWd7t4vVCsp4OlnmiCo3wUfBdnMM7NMa5JON2MTviv6RyI6iKR_8tCh65j8HQlvxfm0wcriQ0nYA1nwU"/>
+</button>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-grow w-full max-w-3xl mx-auto px-margin-mobile md:px-0 py-8 pb-32 md:pb-8 flex flex-col gap-6">
+<!-- Header Section -->
+<div class="flex items-center gap-4 border-b border-outline-variant pb-4">
+<a class="h-touch-target w-touch-target flex items-center justify-center rounded-full hover:bg-surface-variant transition-colors" href="#">
+<span class="material-symbols-outlined">arrow_back</span>
+</a>
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface">Availability Settings</h2>
+<p class="font-body-md text-body-md text-secondary">Manage your visibility and auto-replies.</p>
+</div>
+</div>
+<!-- Warning Alert -->
+<div class="bg-error-container text-on-error-container rounded-lg p-4 flex gap-4 items-start border border-error/20">
+<span class="material-symbols-outlined text-error mt-0.5">warning</span>
+<div>
+<h3 class="font-label-md text-label-md font-bold text-error">Search Visibility</h3>
+<p class="font-body-md text-body-md mt-1 text-on-error-container">While Vacation Mode is active, your profile will not appear in search results for new jobs. You can still message existing clients.</p>
+</div>
+</div>
+<!-- Vacation Mode Toggle Card -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant p-6 flex flex-col gap-6">
+<div class="flex justify-between items-start">
+<div class="flex-1 pr-4">
+<h3 class="font-headline-md text-[20px] font-semibold text-on-surface">Vacation Mode</h3>
+<p class="font-body-md text-body-md text-secondary mt-1">Temporarily hide your profile and send automated responses to incoming messages.</p>
+</div>
+<!-- Toggle Switch (Custom) -->
+<label class="flex items-center cursor-pointer h-touch-target" for="vacation-toggle">
+<div class="relative">
+<input checked="" class="sr-only" id="vacation-toggle" type="checkbox"/>
+<div class="block bg-outline-variant w-14 h-8 rounded-full transition-colors duration-300" id="toggle-bg"></div>
+<div class="dot absolute left-1 top-1 bg-surface-container-lowest w-6 h-6 rounded-full transition-transform duration-300 transform translate-x-6 shadow-sm flex items-center justify-center" id="toggle-dot">
+<span class="material-symbols-outlined text-[14px] text-primary" id="toggle-icon">flight_takeoff</span>
+</div>
+</div>
+</label>
+</div>
+<div class="border-t border-outline-variant pt-6 flex flex-col gap-4">
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-2" for="until-date">Active Until Date</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-secondary">calendar_month</span>
+<input class="w-full h-12 pl-12 pr-4 bg-surface-container-lowest border border-on-surface rounded-md font-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-transparent" id="until-date" type="date" value="2024-05-15"/>
+</div>
+<p class="font-caption text-caption text-secondary mt-1">Vacation mode will automatically turn off at 11:59 PM on this date.</p>
+</div>
+</div>
+</div>
+<!-- Auto-Reply Message Card -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant p-6 flex flex-col gap-4">
+<div class="flex items-center gap-3 mb-2">
+<span class="material-symbols-outlined text-primary bg-primary-container/20 p-2 rounded-full">forum</span>
+<h3 class="font-headline-md text-[20px] font-semibold text-on-surface">Away Message</h3>
+</div>
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-2" for="auto-reply">Auto-reply template</label>
+<textarea class="w-full p-4 bg-surface-container-lowest border border-on-surface rounded-md font-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-transparent resize-none" id="auto-reply" rows="4">Hello! I am currently out of town on a project and unable to take new requests until May 16th. If you have an urgent question about an ongoing job, please leave details and I will reply as soon as possible.</textarea>
+<div class="flex justify-between items-center mt-2">
+<p class="font-caption text-caption text-secondary">This message will be sent instantly to anyone who messages you.</p>
+<p class="font-caption text-caption text-secondary">224/500</p>
+</div>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="flex gap-4 justify-end mt-4">
+<button class="h-touch-target px-6 rounded-full border border-on-surface text-on-surface font-label-md text-label-md hover:bg-surface-variant transition-colors">
+                Cancel
+            </button>
+<button class="h-touch-target px-8 rounded-full bg-primary-container text-on-primary-container font-headline-md text-[16px] font-bold shadow-sm hover:opacity-90 transition-opacity">
+                Save Settings
+            </button>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-touch-target bg-surface dark:bg-surface-dim border-t border-outline-variant dark:border-outline pb-safe shadow-md md:hidden">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-secondary-fixed-dim px-4 py-1.5 hover:bg-secondary-container dark:hover:bg-secondary-fixed-variant active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-md text-[10px]">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-secondary-fixed-dim px-4 py-1.5 hover:bg-secondary-container dark:hover:bg-secondary-fixed-variant active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="work">work</span>
+<span class="font-label-md text-[10px]">Jobs</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-secondary-fixed-dim px-4 py-1.5 hover:bg-secondary-container dark:hover:bg-secondary-fixed-variant active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="chat">chat</span>
+<span class="font-label-md text-[10px]">Messages</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-secondary-fixed-dim px-4 py-1.5 hover:bg-secondary-container dark:hover:bg-secondary-fixed-variant active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+<span class="font-label-md text-[10px]">Wallet</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container dark:bg-primary-fixed text-on-primary-container dark:text-on-primary-fixed rounded-xl px-4 py-1.5 active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-md text-[10px]">Profile</span>
+</a>
+</nav>
+<script>
+        // Simple toggle interaction logic
+        const toggleInput = document.getElementById('vacation-toggle');
+        const toggleBg = document.getElementById('toggle-bg');
+        const toggleDot = document.getElementById('toggle-dot');
+        const toggleIcon = document.getElementById('toggle-icon');
+
+        function updateToggleState() {
+            if (toggleInput.checked) {
+                toggleBg.classList.remove('bg-outline-variant');
+                toggleBg.classList.add('bg-primary-container');
+                toggleDot.classList.add('translate-x-6');
+                toggleDot.classList.remove('translate-x-1');
+                toggleIcon.textContent = 'flight_takeoff';
+                toggleIcon.classList.remove('text-secondary');
+                toggleIcon.classList.add('text-primary');
+            } else {
+                toggleBg.classList.remove('bg-primary-container');
+                toggleBg.classList.add('bg-outline-variant');
+                toggleDot.classList.remove('translate-x-6');
+                toggleDot.classList.add('translate-x-1');
+                toggleIcon.textContent = 'flight_land';
+                toggleIcon.classList.remove('text-primary');
+                toggleIcon.classList.add('text-secondary');
+            }
+        }
+
+        toggleInput.addEventListener('change', updateToggleState);
+        // Initialize state on load
+        updateToggleState();
+    </script>
+</body></html>

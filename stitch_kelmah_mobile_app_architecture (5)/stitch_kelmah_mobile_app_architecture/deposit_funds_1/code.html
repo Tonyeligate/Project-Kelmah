@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "tertiary-fixed": "#e4e3d9",
+                      "inverse-primary": "#e9c400",
+                      "surface-muted": "#F3F4F6",
+                      "outline": "#7e775f",
+                      "on-primary": "#ffffff",
+                      "on-surface": "#1a1c1c",
+                      "status-success": "#10B981",
+                      "inverse-on-surface": "#f0f1f1",
+                      "primary-container": "#ffd700",
+                      "on-secondary": "#ffffff",
+                      "surface-variant": "#e2e2e2",
+                      "primary-fixed": "#ffe16d",
+                      "tertiary-fixed-dim": "#c8c7bd",
+                      "primary-fixed-dim": "#e9c400",
+                      "on-secondary-fixed": "#1c1b1b",
+                      "surface": "#f9f9f9",
+                      "secondary-fixed-dim": "#c8c6c5",
+                      "on-background": "#1a1c1c",
+                      "secondary-container": "#e2dfde",
+                      "surface-container": "#eeeeee",
+                      "error-container": "#ffdad6",
+                      "surface-dim": "#dadada",
+                      "inverse-surface": "#2f3131",
+                      "on-tertiary": "#ffffff",
+                      "surface-tint": "#705d00",
+                      "background": "#f9f9f9",
+                      "surface-container-low": "#f3f3f4",
+                      "on-tertiary-fixed": "#1b1c16",
+                      "on-primary-fixed": "#221b00",
+                      "secondary": "#5f5e5e",
+                      "on-surface-variant": "#4d4732",
+                      "primary": "#705d00",
+                      "on-tertiary-container": "#5f5f58",
+                      "surface-bright": "#f9f9f9",
+                      "on-tertiary-fixed-variant": "#474740",
+                      "on-primary-fixed-variant": "#544600",
+                      "on-error-container": "#93000a",
+                      "on-secondary-fixed-variant": "#474746",
+                      "status-info": "#3B82F6",
+                      "tertiary-container": "#dcdad0",
+                      "surface-container-highest": "#e2e2e2",
+                      "on-secondary-container": "#636262",
+                      "on-error": "#ffffff",
+                      "on-primary-container": "#705e00",
+                      "surface-container-high": "#e8e8e8",
+                      "secondary-fixed": "#e5e2e1",
+                      "error": "#ba1a1a",
+                      "text-body": "#4B5563"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "touch-target": "48px",
+                      "gutter": "16px",
+                      "margin-desktop": "64px",
+                      "margin-mobile": "16px",
+                      "base": "8px"
+              },
+              "fontFamily": {
+                      "headline-md": ["Montserrat"],
+                      "body-md": ["Inter"],
+                      "display-lg": ["Montserrat"],
+                      "body-lg": ["Inter"],
+                      "label-md": ["Inter"],
+                      "headline-lg-mobile": ["Montserrat"],
+                      "headline-lg": ["Montserrat"],
+                      "caption": ["Inter"]
+              },
+              "fontSize": {
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                      "headline-lg-mobile": ["28px", {"lineHeight": "34px", "fontWeight": "700"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                      "caption": ["12px", {"lineHeight": "16px", "fontWeight": "500"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: #f9f9f9; }
+        .font-headline-md { font-family: 'Montserrat', sans-serif; }
+        .font-display-lg { font-family: 'Montserrat', sans-serif; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen">
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 w-full z-50 flex items-center justify-between px-margin-mobile h-touch-target bg-surface border-b border-outline-variant">
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-primary active:scale-95 transition-transform" data-icon="arrow_back">arrow_back</button>
+<h1 class="font-headline-md text-headline-md-mobile font-bold text-primary">Deposit Funds</h1>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="notifications">notifications</span>
+</div>
+</header>
+<main class="pt-20 pb-24 px-margin-mobile max-w-2xl mx-auto space-y-6">
+<!-- Wallet Balance Card -->
+<section class="bg-inverse-surface text-inverse-on-surface rounded-xl p-6 shadow-md relative overflow-hidden">
+<div class="relative z-10">
+<p class="font-label-md text-label-md opacity-80 mb-1">Current Balance</p>
+<h2 class="font-display-lg text-[32px] font-bold leading-tight">₵ 4,250.00</h2>
+<div class="mt-4 flex items-center gap-2 bg-white/10 w-fit px-3 py-1 rounded-full border border-white/20">
+<span class="material-symbols-outlined text-status-success text-sm" data-icon="verified_user" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+<span class="font-caption text-caption">Secure Account</span>
+</div>
+</div>
+<!-- Decorative atmospheric effect -->
+<div class="absolute top-0 right-0 -mr-12 -mt-12 w-48 h-48 bg-primary-container/20 rounded-full blur-3xl"></div>
+</section>
+<!-- Deposit Input Section -->
+<section class="space-y-4">
+<div class="bg-surface rounded-xl border border-outline-variant p-6 space-y-4">
+<label class="block font-label-md text-on-surface-variant">Enter Deposit Amount</label>
+<div class="relative flex items-center">
+<span class="absolute left-4 font-headline-md text-on-surface">₵</span>
+<input class="w-full pl-12 pr-4 py-4 bg-surface-container-lowest border-2 border-primary rounded-lg font-headline-md text-headline-md focus:ring-4 focus:ring-primary-container/30 transition-all outline-none" placeholder="0.00" type="number" value="500"/>
+</div>
+<div class="flex gap-2">
+<button class="flex-1 py-2 rounded-lg border border-outline-variant hover:bg-surface-container-high transition-colors font-label-md text-label-md" onclick="this.parentElement.previousElementSibling.querySelector('input').value = '100'">+100</button>
+<button class="flex-1 py-2 rounded-lg border border-outline-variant hover:bg-surface-container-high transition-colors font-label-md text-label-md" onclick="this.parentElement.previousElementSibling.querySelector('input').value = '500'">+500</button>
+<button class="flex-1 py-2 rounded-lg border border-outline-variant hover:bg-surface-container-high transition-colors font-label-md text-label-md" onclick="this.parentElement.previousElementSibling.querySelector('input').value = '1000'">+1,000</button>
+</div>
+</div>
+</section>
+<!-- Payment Method Selection -->
+<section class="space-y-4">
+<h3 class="font-headline-md text-body-lg font-bold text-on-surface">Select Payment Method</h3>
+<!-- Bento-style Grid for Payment Options -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+<!-- Mobile Money -->
+<div class="payment-option relative group cursor-pointer" onclick="selectPayment(this)">
+<input checked="" class="hidden" id="momo" name="payment" type="radio"/>
+<div class="p-4 rounded-xl border-2 border-primary bg-primary-container/10 flex items-center gap-4 transition-all hover:shadow-md">
+<div class="w-12 h-12 rounded-lg bg-white flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-primary" data-icon="smartphone">smartphone</span>
+</div>
+<div>
+<p class="font-label-md text-on-surface font-bold">Mobile Money</p>
+<p class="font-caption text-on-surface-variant">MTN, Vodafone Cash</p>
+</div>
+<span class="material-symbols-outlined ml-auto text-primary" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+<!-- Credit/Debit Card -->
+<div class="payment-option relative group cursor-pointer" onclick="selectPayment(this)">
+<input class="hidden" id="card" name="payment" type="radio"/>
+<div class="p-4 rounded-xl border-2 border-outline-variant bg-surface flex items-center gap-4 transition-all hover:border-primary-container">
+<div class="w-12 h-12 rounded-lg bg-white flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="credit_card">credit_card</span>
+</div>
+<div>
+<p class="font-label-md text-on-surface font-bold">Card Payment</p>
+<p class="font-caption text-on-surface-variant">Visa, Mastercard</p>
+</div>
+<span class="material-symbols-outlined ml-auto text-outline-variant hidden" data-icon="circle">circle</span>
+</div>
+</div>
+</div>
+<!-- Detailed Method Info (Dynamic based on Selection) -->
+<div class="bg-surface-container-low p-5 rounded-xl border border-outline-variant space-y-4" id="momo-details">
+<div class="space-y-2">
+<label class="block font-label-md text-on-surface-variant">Mobile Number</label>
+<input class="w-full px-4 py-3 bg-surface-container-lowest border border-outline-variant rounded-lg focus:border-primary outline-none transition-colors" placeholder="024 XXX XXXX" type="tel"/>
+</div>
+<div class="flex items-center gap-3">
+<img class="h-6 w-auto" data-alt="Official vibrant MTN mobile money logo on a clean white background with corporate branding colors yellow and blue, high quality professional graphic asset for a financial fintech app." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDfkJgcFwDfaqzS40LW0VNGqe3gCCrLOBI9uP2E2LgJw3Mcx1ZlICKmESKLYvbc0I7gjENYPc-KSzzlrZx6SPt6fEukV0dIRGTKTXblvg8dxxa6xfAsAhqOw-zUzdOCXjEUUBllAgrXlqFgevOUhdtX0ehRxVYzDap3Hyny2HtattEIBHxN9RDSCdtd_lgQAP9z6imZGzWYIgSwvNgrLpMitzRKHgxrcr-OZ0Zhm6Q7Hplg0ppZu0CAz4yVZtVziEyJJlb2e8jI3FM"/>
+<img class="h-6 w-auto" data-alt="Official Vodafone Cash logo featuring its iconic speech mark symbol in bold red and white, presented as a high-fidelity vector element for a secure payment interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAJODyHksK0W3viE8bYuBrAdbS_EEqu2cRWuNaLjNwp9z20NciZtUgSRLGLEyt_Y8k7Qq8-JzvlvRBv2TyzEGwml9hioSMU2PAQoSjhVtUMmttL568CnUq6ufiekpl7yPqRRgzdUi-0tHuF9rfWDG-q-4GkKIM6zcXXaLDjA1KdCZmUYS4K_YcNKM50lNeGvzYZUh0M_Uxy2Z2WcbDI4NVkeM9opgOKzXRFmz_RypgCzo2XFt4ESwEJTwbjcNBh3Rx2cwvxxxGZkKk"/>
+</div>
+</div>
+</section>
+<!-- Trust Badges -->
+<section class="flex flex-wrap justify-center items-center gap-6 py-4 opacity-70">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]" data-icon="lock" style="font-variation-settings: 'FILL' 1;">lock</span>
+<span class="font-caption text-caption">256-bit SSL</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]" data-icon="security" style="font-variation-settings: 'FILL' 1;">security</span>
+<span class="font-caption text-caption">PCI DSS Compliant</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]" data-icon="gpp_good" style="font-variation-settings: 'FILL' 1;">gpp_good</span>
+<span class="font-caption text-caption">Secured by Kelmah</span>
+</div>
+</section>
+<!-- Final Action -->
+<div class="fixed bottom-0 left-0 w-full p-margin-mobile bg-surface border-t border-outline-variant md:relative md:bg-transparent md:border-none md:p-0">
+<button class="w-full bg-primary-container text-on-primary-fixed-variant font-headline-md text-body-md py-4 rounded-xl shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-3 hover:bg-primary-fixed">
+<span class="material-symbols-outlined" data-icon="account_balance_wallet">account_balance_wallet</span>
+                Confirm Deposit
+            </button>
+</div>
+</main>
+<script>
+        function selectPayment(element) {
+            // Remove active classes from all options
+            document.querySelectorAll('.payment-option').forEach(opt => {
+                const container = opt.querySelector('div');
+                container.classList.remove('border-primary', 'bg-primary-container/10');
+                container.classList.add('border-outline-variant', 'bg-surface');
+                
+                const icon = opt.querySelector('span:last-child');
+                icon.textContent = 'circle';
+                icon.classList.remove('text-primary');
+                icon.classList.add('text-outline-variant');
+                icon.style.fontVariationSettings = "'FILL' 0";
+            });
+
+            // Add active classes to selected
+            const container = element.querySelector('div');
+            container.classList.add('border-primary', 'bg-primary-container/10');
+            container.classList.remove('border-outline-variant', 'bg-surface');
+            
+            const icon = element.querySelector('span:last-child');
+            icon.textContent = 'check_circle';
+            icon.classList.remove('text-outline-variant');
+            icon.classList.add('text-primary');
+            icon.style.fontVariationSettings = "'FILL' 1";
+
+            // Update details view (simulated)
+            const momoDetails = document.getElementById('momo-details');
+            if (element.querySelector('input').id === 'card') {
+                momoDetails.innerHTML = `
+                    <div class="space-y-4">
+                        <div class="space-y-2">
+                            <label class="block font-label-md text-on-surface-variant">Card Number</label>
+                            <input type="text" placeholder="XXXX XXXX XXXX XXXX" class="w-full px-4 py-3 bg-surface-container-lowest border border-outline-variant rounded-lg outline-none">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-2">
+                                <label class="block font-label-md text-on-surface-variant">Expiry</label>
+                                <input type="text" placeholder="MM/YY" class="w-full px-4 py-3 bg-surface-container-lowest border border-outline-variant rounded-lg outline-none">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="block font-label-md text-on-surface-variant">CVV</label>
+                                <input type="password" placeholder="***" class="w-full px-4 py-3 bg-surface-container-lowest border border-outline-variant rounded-lg outline-none">
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                momoDetails.innerHTML = `
+                    <div class="space-y-2">
+                        <label class="block font-label-md text-on-surface-variant">Mobile Number</label>
+                        <input type="tel" placeholder="024 XXX XXXX" class="w-full px-4 py-3 bg-surface-container-lowest border border-outline-variant rounded-lg focus:border-primary outline-none transition-colors">
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <img src="https://image-resource-placeholder.com/mtn-logo" data-alt="Official vibrant MTN mobile money logo on a clean white background with corporate branding colors yellow and blue, high quality professional graphic asset for a financial fintech app." class="h-6 w-auto">
+                        <img src="https://image-resource-placeholder.com/vodafone-logo" data-alt="Official Vodafone Cash logo featuring its iconic speech mark symbol in bold red and white, presented as a high-fidelity vector element for a secure payment interface." class="h-6 w-auto">
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body></html>

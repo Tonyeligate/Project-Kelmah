@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kelmah | Notifications</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary": "#5f5f57",
+                    "outline-variant": "#d0c6ab",
+                    "on-tertiary": "#ffffff",
+                    "tertiary-fixed-dim": "#c8c7bd",
+                    "on-tertiary-container": "#5f5f58",
+                    "secondary": "#5f5e5e",
+                    "surface-variant": "#e2e2e2",
+                    "on-surface": "#1a1c1c",
+                    "surface-bright": "#f9f9f9",
+                    "surface-container-low": "#f3f3f4",
+                    "error-container": "#ffdad6",
+                    "error": "#ba1a1a",
+                    "on-secondary-fixed": "#1c1b1b",
+                    "on-primary-fixed-variant": "#544600",
+                    "on-primary": "#ffffff",
+                    "inverse-surface": "#2f3131",
+                    "surface-dim": "#dadada",
+                    "on-secondary": "#ffffff",
+                    "surface-muted": "#F3F4F6",
+                    "surface-tint": "#705d00",
+                    "surface-container": "#eeeeee",
+                    "on-tertiary-fixed": "#1b1c16",
+                    "on-primary-fixed": "#221b00",
+                    "surface-container-high": "#e8e8e8",
+                    "inverse-primary": "#e9c400",
+                    "surface-container-highest": "#e2e2e2",
+                    "surface": "#f9f9f9",
+                    "secondary-fixed": "#e5e2e1",
+                    "on-secondary-fixed-variant": "#474746",
+                    "primary-fixed": "#ffe16d",
+                    "secondary-fixed-dim": "#c8c6c5",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary-container": "#e2dfde",
+                    "status-info": "#3B82F6",
+                    "tertiary-fixed": "#e4e3d9",
+                    "on-tertiary-fixed-variant": "#474740",
+                    "primary-fixed-dim": "#e9c400",
+                    "on-surface-variant": "#4d4732",
+                    "background": "#f9f9f9",
+                    "tertiary-container": "#dcdad0",
+                    "status-success": "#10B981",
+                    "on-error": "#ffffff",
+                    "on-secondary-container": "#636262",
+                    "inverse-on-surface": "#f0f1f1",
+                    "text-body": "#4B5563",
+                    "on-background": "#1a1c1c",
+                    "on-primary-container": "#705e00",
+                    "on-error-container": "#93000a",
+                    "outline": "#7e775f",
+                    "primary": "#705d00",
+                    "primary-container": "#ffd700"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter": "16px",
+                    "base": "8px",
+                    "margin-desktop": "64px",
+                    "touch-target": "48px",
+                    "margin-mobile": "16px"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": ["Montserrat"],
+                    "label-md": ["Inter"],
+                    "caption": ["Inter"],
+                    "headline-md": ["Montserrat"],
+                    "display-lg": ["Montserrat"],
+                    "body-md": ["Inter"],
+                    "headline-lg": ["Montserrat"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": ["28px", {"lineHeight": "34px", "fontWeight": "700"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                    "caption": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .unread-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #705d00;
+        }
+        .active-tab-indicator {
+            height: 3px;
+            background-color: #705d00;
+            width: 100%;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body-md min-h-screen">
+<!-- Top App Bar -->
+<header class="bg-surface dark:bg-surface-dim w-full top-0 sticky z-50 flex items-center justify-between px-margin-mobile h-touch-target">
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-primary dark:text-primary-fixed hover:bg-surface-container dark:hover:bg-surface-container-high transition-colors p-2 rounded-full active:scale-95 transition-transform duration-100" data-icon="menu">menu</button>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">Kelmah</h1>
+</div>
+<div class="flex items-center gap-2">
+<button class="material-symbols-outlined text-primary dark:text-primary-fixed hover:bg-surface-container dark:hover:bg-surface-container-high transition-colors p-2 rounded-full active:scale-95 transition-transform duration-100" data-icon="notifications">notifications</button>
+</div>
+</header>
+<main class="max-w-[1280px] mx-auto pb-32">
+<!-- Content Header -->
+<div class="px-margin-mobile md:px-margin-desktop py-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<h2 class="font-headline-lg text-headline-lg md:text-headline-lg text-on-surface">Notifications</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Stay updated with your latest activities and transactions.</p>
+</div>
+<button class="flex items-center gap-2 font-label-md text-label-md text-primary hover:underline transition-all" onclick="markAllRead()">
+<span class="material-symbols-outlined" data-icon="done_all">done_all</span>
+                Mark all as read
+            </button>
+</div>
+<!-- Filter Tabs -->
+<div class="px-margin-mobile md:px-margin-desktop mb-6 border-b border-outline-variant/30 sticky top-[48px] bg-surface z-40">
+<div class="flex gap-8 overflow-x-auto no-scrollbar">
+<button class="relative pb-4 font-label-md text-label-md text-primary font-bold" id="tab-all" onclick="switchTab('all')">
+                    All
+                    <div class="active-tab-indicator" id="indicator-all"></div>
+</button>
+<button class="relative pb-4 font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" id="tab-jobs" onclick="switchTab('jobs')">
+                    Jobs
+                    <div class="active-tab-indicator hidden" id="indicator-jobs"></div>
+</button>
+<button class="relative pb-4 font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" id="tab-payments" onclick="switchTab('payments')">
+                    Payments
+                    <div class="active-tab-indicator hidden" id="indicator-payments"></div>
+</button>
+</div>
+</div>
+<!-- Notification List -->
+<div class="px-margin-mobile md:px-margin-desktop space-y-3" id="notification-container">
+<!-- Unread Job Application -->
+<div class="notification-item bg-surface-container-lowest border border-outline-variant/20 rounded-xl p-4 flex gap-4 items-start shadow-sm hover:shadow-md transition-shadow relative overflow-hidden" data-category="jobs">
+<div class="bg-primary-container text-on-primary-container p-3 rounded-full flex-shrink-0">
+<span class="material-symbols-outlined" data-icon="work">work</span>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-start mb-1">
+<h4 class="font-label-md text-label-md text-on-surface font-bold">New Application Received</h4>
+<span class="font-caption text-caption text-on-surface-variant">2 mins ago</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-3">Kofi Mensah has applied for your "Cabinet Installation" project. Review their portfolio and credentials.</p>
+<div class="flex gap-2">
+<button class="bg-primary text-on-primary px-4 py-2 rounded-lg font-label-md text-label-md hover:opacity-90 transition-opacity active:scale-95">Review Application</button>
+<button class="bg-surface-container-high text-on-surface px-4 py-2 rounded-lg font-label-md text-label-md hover:bg-surface-variant transition-colors active:scale-95">Decline</button>
+</div>
+</div>
+<div class="unread-indicator absolute top-4 right-4"></div>
+</div>
+<!-- Milestone Approved -->
+<div class="notification-item bg-surface-container-lowest border border-outline-variant/20 rounded-xl p-4 flex gap-4 items-start shadow-sm hover:shadow-md transition-shadow" data-category="jobs">
+<div class="bg-tertiary-container text-on-tertiary-container p-3 rounded-full flex-shrink-0">
+<span class="material-symbols-outlined" data-icon="verified">verified</span>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-start mb-1">
+<h4 class="font-label-md text-label-md text-on-surface font-bold">Milestone Approved</h4>
+<span class="font-caption text-caption text-on-surface-variant">1 hour ago</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">Phase 1 (Site Preparation) of the "Security Fence Construction" has been approved by the client.</p>
+</div>
+</div>
+<!-- Payment Released -->
+<div class="notification-item bg-surface-container-lowest border border-outline-variant/20 rounded-xl p-4 flex gap-4 items-start shadow-sm hover:shadow-md transition-shadow relative overflow-hidden" data-category="payments">
+<div class="bg-status-success/10 text-status-success p-3 rounded-full flex-shrink-0">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-start mb-1">
+<h4 class="font-label-md text-label-md text-on-surface font-bold">Payment Released</h4>
+<span class="font-caption text-caption text-on-surface-variant">4 hours ago</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">₵4,500.00 has been successfully deposited into your wallet for the completed project "Main House Electrical Overhaul".</p>
+<div class="mt-3">
+<button class="flex items-center gap-1 text-primary font-label-md text-label-md hover:underline">
+                            View Transaction <span class="material-symbols-outlined text-[18px]" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+<div class="unread-indicator absolute top-4 right-4"></div>
+</div>
+<!-- System Update -->
+<div class="notification-item bg-surface-container-lowest border border-outline-variant/20 rounded-xl p-4 flex gap-4 items-start shadow-sm hover:shadow-md transition-shadow" data-category="all">
+<div class="bg-surface-container-high text-on-surface-variant p-3 rounded-full flex-shrink-0">
+<span class="material-symbols-outlined" data-icon="update">update</span>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-start mb-1">
+<h4 class="font-label-md text-label-md text-on-surface font-bold">App Update: New Features</h4>
+<span class="font-caption text-caption text-on-surface-variant">Yesterday</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">We've added detailed tax reports and an improved artisan search filter. Check out what's new in version 2.4.0.</p>
+</div>
+</div>
+<!-- Low Balance Warning -->
+<div class="notification-item bg-surface-container-lowest border border-outline-variant/20 rounded-xl p-4 flex gap-4 items-start shadow-sm hover:shadow-md transition-shadow" data-category="payments">
+<div class="bg-error-container text-on-error-container p-3 rounded-full flex-shrink-0">
+<span class="material-symbols-outlined" data-icon="warning">warning</span>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-start mb-1">
+<h4 class="font-label-md text-label-md text-on-surface font-bold">Escrow Deposit Needed</h4>
+<span class="font-caption text-caption text-on-surface-variant">1 day ago</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">To begin work on "Industrial Plumbing Installation", please deposit the agreed phase 1 amount into escrow.</p>
+</div>
+</div>
+</div>
+</main>
+<!-- Navigation Drawer (Shell Implementation) -->
+<div class="fixed inset-0 bg-black/50 z-[60] hidden transition-opacity" id="side-drawer">
+<div class="h-full w-80 bg-surface-container-low dark:bg-surface-container-lowest rounded-r-xl shadow-lg flex flex-col p-4 gap-2 transform -translate-x-full transition-transform">
+<div class="flex flex-col gap-4 mb-8">
+<div class="flex items-center gap-3 p-2">
+<img alt="User profile avatar" class="w-12 h-12 rounded-full object-cover" data-alt="Close-up studio portrait of a confident West African man in professional work attire with soft, warm lighting that highlights the textures of his skin and the modern corporate setting in the background. Professional and reliable aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDxGyPK1UdX4N6VsHGIFYFehC2GfWwYnQstBzb6RaObmYqLhjCNb8cckk5XS1Ei1t8vAbCb5OAWJSxWi-u49CEpdktjCsDu1xhZFoHkApwU-o2jcEITDB0wMhSbB4DiY8cLMnbThX_wRG3fQCyA2Yj49rSFW2mlsSypcCPyAW_zL_cRH04yVIHhr9q4pWKFu4sVU64DuYqmFRwzTROR8Kjj7b2uZ500aXKnovIUp7cW0UM3sLaXNPpXRLFcSQiVFEophawqKoW3tJY"/>
+<div class="flex flex-col">
+<span class="font-headline-md text-headline-md font-bold text-primary">Kofi Mensah</span>
+<span class="font-body-md text-body-md text-on-surface-variant">Verified Professional</span>
+</div>
+</div>
+</div>
+<nav class="flex flex-col gap-2">
+<a class="flex items-center gap-3 text-on-surface dark:text-on-surface-variant p-3 hover:bg-surface-container-high dark:hover:bg-surface-container transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="construction">construction</span>
+                    Browse Trades
+                </a>
+<a class="flex items-center gap-3 text-on-surface dark:text-on-surface-variant p-3 hover:bg-surface-container-high dark:hover:bg-surface-container transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+                    My Contracts
+                </a>
+<a class="flex items-center gap-3 text-on-surface dark:text-on-surface-variant p-3 hover:bg-surface-container-high dark:hover:bg-surface-container transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
+                    Payment History
+                </a>
+<a class="flex items-center gap-3 text-on-surface dark:text-on-surface-variant p-3 hover:bg-surface-container-high dark:hover:bg-surface-container transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+                    Settings
+                </a>
+<a class="flex items-center gap-3 text-on-surface dark:text-on-surface-variant p-3 hover:bg-surface-container-high dark:hover:bg-surface-container transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+                    Help Center
+                </a>
+<div class="h-px bg-outline-variant/30 my-4"></div>
+<a class="flex items-center gap-3 text-on-surface dark:text-on-surface-variant p-3 hover:bg-surface-container-high dark:hover:bg-surface-container transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+                    Logout
+                </a>
+</nav>
+</div>
+</div>
+<!-- Bottom Navigation Bar (Mobile View) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2 bg-surface dark:bg-inverse-surface shadow-[0px_-4px_20px_rgba(0,0,0,0.04)] rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-secondary-fixed-variant p-2 hover:bg-surface-variant dark:hover:bg-surface-container-highest transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-md text-label-md">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-secondary-fixed-variant p-2 hover:bg-surface-variant dark:hover:bg-surface-container-highest transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="work">work</span>
+<span class="font-label-md text-label-md">Jobs</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container dark:bg-primary text-on-primary-container dark:text-on-primary rounded-full px-4 py-1 active:scale-90 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="mail">mail</span>
+<span class="font-label-md text-label-md">Messages</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-secondary-fixed-variant p-2 hover:bg-surface-variant dark:hover:bg-surface-container-highest transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="account_balance_wallet">account_balance_wallet</span>
+<span class="font-label-md text-label-md">Wallet</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-secondary-fixed-variant p-2 hover:bg-surface-variant dark:hover:bg-surface-container-highest transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-md text-label-md">Profile</span>
+</a>
+</nav>
+<script>
+        function switchTab(tab) {
+            const tabs = ['all', 'jobs', 'payments'];
+            const container = document.getElementById('notification-container');
+            const items = container.getElementsByClassName('notification-item');
+
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                const indicator = document.getElementById(`indicator-${t}`);
+                if (t === tab) {
+                    btn.classList.add('text-primary', 'font-bold');
+                    btn.classList.remove('text-on-surface-variant');
+                    indicator.classList.remove('hidden');
+                } else {
+                    btn.classList.remove('text-primary', 'font-bold');
+                    btn.classList.add('text-on-surface-variant');
+                    indicator.classList.add('hidden');
+                }
+            });
+
+            // Filtering logic
+            Array.from(items).forEach(item => {
+                if (tab === 'all') {
+                    item.style.display = 'flex';
+                } else {
+                    if (item.getAttribute('data-category') === tab) {
+                        item.style.display = 'flex';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                }
+            });
+        }
+
+        function markAllRead() {
+            const indicators = document.querySelectorAll('.unread-indicator');
+            indicators.forEach(ind => {
+                ind.style.opacity = '0';
+                setTimeout(() => ind.remove(), 300);
+            });
+        }
+
+        // Side Drawer Toggle
+        document.querySelector('[data-icon="menu"]').addEventListener('click', () => {
+            const drawer = document.getElementById('side-drawer');
+            const inner = drawer.querySelector('div');
+            drawer.classList.remove('hidden');
+            setTimeout(() => {
+                drawer.classList.add('opacity-100');
+                inner.classList.remove('-translate-x-full');
+            }, 10);
+        });
+
+        document.getElementById('side-drawer').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('side-drawer')) {
+                const drawer = document.getElementById('side-drawer');
+                const inner = drawer.querySelector('div');
+                drawer.classList.remove('opacity-100');
+                inner.classList.add('-translate-x-full');
+                setTimeout(() => drawer.classList.add('hidden'), 300);
+            }
+        });
+    </script>
+</body></html>

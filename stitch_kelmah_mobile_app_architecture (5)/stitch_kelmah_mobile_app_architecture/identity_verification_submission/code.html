@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Identity Verification - Kelmah</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-secondary-fixed": "#1c1b1b",
+                        "surface-container-high": "#e8e8e8",
+                        "text-body": "#4B5563",
+                        "on-primary-fixed-variant": "#544600",
+                        "surface-muted": "#F3F4F6",
+                        "on-tertiary": "#ffffff",
+                        "surface-variant": "#e2e2e2",
+                        "inverse-surface": "#2f3131",
+                        "surface-tint": "#705d00",
+                        "on-surface-variant": "#4d4732",
+                        "surface": "#f9f9f9",
+                        "primary": "#705d00",
+                        "on-primary": "#ffffff",
+                        "status-success": "#10B981",
+                        "on-secondary-fixed-variant": "#474746",
+                        "surface-container-highest": "#e2e2e2",
+                        "on-secondary": "#ffffff",
+                        "inverse-on-surface": "#f0f1f1",
+                        "on-secondary-container": "#636262",
+                        "outline-variant": "#d0c6ab",
+                        "primary-container": "#ffd700",
+                        "on-tertiary-fixed-variant": "#474740",
+                        "on-surface": "#1a1c1c",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "on-tertiary-container": "#5f5f58",
+                        "surface-container": "#eeeeee",
+                        "tertiary-container": "#dcdad0",
+                        "surface-container-low": "#f3f3f4",
+                        "tertiary-fixed": "#e4e3d9",
+                        "secondary-container": "#e2dfde",
+                        "outline": "#7e775f",
+                        "inverse-primary": "#e9c400",
+                        "error-container": "#ffdad6",
+                        "on-primary-fixed": "#221b00",
+                        "primary-fixed": "#ffe16d",
+                        "tertiary-fixed-dim": "#c8c7bd",
+                        "tertiary": "#5f5f57",
+                        "on-tertiary-fixed": "#1b1c16",
+                        "on-primary-container": "#705e00",
+                        "error": "#ba1a1a",
+                        "primary-fixed-dim": "#e9c400",
+                        "surface-bright": "#f9f9f9",
+                        "status-info": "#3B82F6",
+                        "secondary-fixed": "#e5e2e1",
+                        "on-background": "#1a1c1c",
+                        "surface-dim": "#dadada",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error": "#ffffff",
+                        "background": "#f9f9f9",
+                        "secondary": "#5f5e5e",
+                        "on-error-container": "#93000a"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "touch-target": "48px",
+                        "margin-mobile": "16px",
+                        "margin-desktop": "64px",
+                        "gutter": "16px",
+                        "base": "8px"
+                    },
+                    fontFamily: {
+                        "headline-lg-mobile": ["Montserrat"],
+                        "caption": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg": ["Montserrat"],
+                        "label-md": ["Inter"],
+                        "headline-md": ["Montserrat"],
+                        "display-lg": ["Montserrat"],
+                        "body-lg": ["Inter"]
+                    },
+                    fontSize: {
+                        "headline-lg-mobile": ["28px", { lineHeight: "34px", fontWeight: "700" }],
+                        "caption": ["12px", { lineHeight: "16px", fontWeight: "500" }],
+                        "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+                        "headline-lg": ["32px", { lineHeight: "40px", fontWeight: "700" }],
+                        "label-md": ["14px", { lineHeight: "20px", fontWeight: "600" }],
+                        "headline-md": ["24px", { lineHeight: "32px", fontWeight: "600" }],
+                        "display-lg": ["48px", { lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700" }],
+                        "body-lg": ["18px", { lineHeight: "28px", fontWeight: "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface antialiased min-h-screen flex flex-col">
+<!-- Transactional Header (Global Nav Suppressed) -->
+<header class="fixed top-0 w-full z-50 bg-surface shadow-sm h-touch-target flex items-center px-margin-mobile">
+<button aria-label="Go back" class="h-touch-target w-touch-target flex items-center justify-center -ml-3 text-on-surface hover:bg-surface-container transition-colors rounded-full">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="font-headline-md text-headline-md ml-2 flex-1">Verification</h1>
+</header>
+<main class="flex-1 pt-[calc(48px+16px)] pb-24 px-margin-mobile md:px-margin-desktop max-w-2xl mx-auto w-full flex flex-col gap-6">
+<!-- Context & Trust -->
+<section class="flex flex-col gap-4">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-on-surface">Confirm your identity</h2>
+<p class="font-body-md text-body-md text-secondary">To ensure a secure environment for all artisans and contractors on Kelmah, we need to verify your official government ID.</p>
+<div class="bg-surface-container-lowest border border-surface-variant rounded-lg p-4 flex items-start gap-3 shadow-sm">
+<span class="material-symbols-outlined text-status-success mt-0.5" data-icon="lock" style="font-variation-settings: 'FILL' 1;">lock</span>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Secure &amp; Encrypted</p>
+<p class="font-caption text-caption text-secondary mt-1">Your data is processed securely and never shared publicly. Used solely for KYC compliance.</p>
+</div>
+</div>
+</section>
+<!-- Step 1: Front ID -->
+<section class="bg-surface-container-lowest rounded-xl border border-surface-variant shadow-sm overflow-hidden flex flex-col">
+<div class="p-4 border-b border-surface-variant flex items-center gap-3 bg-surface-bright">
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-surface flex items-center justify-center font-label-md text-label-md">1</div>
+<h3 class="font-label-md text-label-md text-on-surface flex-1">Front of Government ID</h3>
+</div>
+<div class="p-4 flex flex-col gap-4">
+<p class="font-body-md text-body-md text-secondary">Upload a clear photo. Make sure all corners are visible and there is no glare.</p>
+<button class="w-full h-40 rounded-lg border-2 border-dashed border-outline-variant hover:border-outline hover:bg-surface-container-low transition-colors flex flex-col items-center justify-center gap-2 group focus:outline-none focus:ring-2 focus:ring-primary-container">
+<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-secondary group-hover:text-on-surface" data-icon="id_card">id_card</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface">Tap to capture or upload</span>
+</button>
+</div>
+</section>
+<!-- Step 2: Back ID -->
+<section class="bg-surface-container-lowest rounded-xl border border-surface-variant shadow-sm overflow-hidden flex flex-col opacity-75">
+<div class="p-4 border-b border-surface-variant flex items-center gap-3 bg-surface-bright">
+<div class="w-8 h-8 rounded-full border-2 border-outline-variant text-secondary flex items-center justify-center font-label-md text-label-md">2</div>
+<h3 class="font-label-md text-label-md text-on-surface flex-1">Back of Government ID</h3>
+</div>
+<div class="p-4 flex flex-col gap-4">
+<button class="w-full h-40 rounded-lg border-2 border-dashed border-outline-variant hover:border-outline hover:bg-surface-container-low transition-colors flex flex-col items-center justify-center gap-2 group focus:outline-none focus:ring-2 focus:ring-primary-container" disabled="">
+<span class="material-symbols-outlined text-secondary" data-icon="add_photo_alternate">add_photo_alternate</span>
+<span class="font-label-md text-label-md text-secondary">Complete Step 1 first</span>
+</button>
+</div>
+</section>
+<!-- Step 3: Selfie -->
+<section class="bg-surface-container-lowest rounded-xl border border-surface-variant shadow-sm overflow-hidden flex flex-col opacity-75">
+<div class="p-4 border-b border-surface-variant flex items-center gap-3 bg-surface-bright">
+<div class="w-8 h-8 rounded-full border-2 border-outline-variant text-secondary flex items-center justify-center font-label-md text-label-md">3</div>
+<h3 class="font-label-md text-label-md text-on-surface flex-1">Liveness Check</h3>
+</div>
+<div class="p-4 flex flex-col gap-4">
+<p class="font-body-md text-body-md text-secondary">Take a quick selfie to prove you are the owner of the ID provided. Ensure you are in a well-lit area.</p>
+<button class="w-full h-touch-target rounded-lg bg-inverse-surface text-on-tertiary font-label-md text-label-md flex items-center justify-center gap-2 hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-inverse-surface cursor-not-allowed opacity-50" disabled="">
+<span class="material-symbols-outlined" data-icon="face">face</span>
+                    Take a Selfie
+                </button>
+</div>
+</section>
+</main>
+<!-- Sticky Bottom Action -->
+<div class="fixed bottom-0 left-0 w-full bg-surface border-t border-surface-variant p-margin-mobile pb-[calc(16px+env(safe-area-inset-bottom))] z-40">
+<div class="max-w-2xl mx-auto">
+<button class="w-full h-touch-target rounded-lg bg-surface-container text-secondary font-headline-md text-headline-md text-[16px] flex items-center justify-center transition-colors cursor-not-allowed" disabled="">
+                Submit Verification
+            </button>
+<p class="text-center font-caption text-caption text-secondary mt-3">You must complete all steps to proceed.</p>
+</div>
+</div>
+</body></html>

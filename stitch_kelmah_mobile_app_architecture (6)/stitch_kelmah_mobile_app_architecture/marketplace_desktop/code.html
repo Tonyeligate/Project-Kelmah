@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kelmah Artisan Marketplace - Browse Trades</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-surface": "#303031",
+                        "error": "#ba1a1a",
+                        "tertiary-fixed-dim": "#c6c6c7",
+                        "on-tertiary-container": "#5e5f5f",
+                        "surface-container-high": "#e9e8e7",
+                        "background": "#fbf9f8",
+                        "on-tertiary-fixed": "#1a1c1c",
+                        "on-tertiary": "#ffffff",
+                        "surface-variant": "#e4e2e2",
+                        "on-error": "#ffffff",
+                        "on-secondary-fixed-variant": "#474746",
+                        "on-surface": "#1b1c1c",
+                        "surface-dim": "#dbdad9",
+                        "surface": "#fbf9f8",
+                        "primary-fixed-dim": "#e9c400",
+                        "on-secondary-container": "#636262",
+                        "on-primary-fixed": "#221b00",
+                        "tertiary-fixed": "#e2e2e2",
+                        "inverse-on-surface": "#f2f0f0",
+                        "surface-tint": "#705d00",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "surface-container-low": "#f5f3f3",
+                        "primary": "#705d00",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "surface-container-highest": "#e4e2e2",
+                        "on-tertiary-fixed-variant": "#454747",
+                        "on-primary": "#ffffff",
+                        "surface-container": "#efeded",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "tertiary-container": "#dadada",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed-variant": "#544600",
+                        "on-background": "#1b1c1c",
+                        "secondary": "#5f5e5e",
+                        "secondary-container": "#e2dfde",
+                        "secondary-fixed": "#e5e2e1",
+                        "outline-variant": "#d0c6ab",
+                        "error-container": "#ffdad6",
+                        "on-surface-variant": "#4d4732",
+                        "outline": "#7e775f",
+                        "on-primary-container": "#705e00",
+                        "tertiary": "#5d5f5f",
+                        "primary-fixed": "#ffe16d",
+                        "primary-container": "#ffd700",
+                        "surface-bright": "#fbf9f8",
+                        "inverse-primary": "#e9c400"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "columns": "12",
+                        "sidebar-width": "280px",
+                        "margin-desktop": "64px",
+                        "baseline": "8px",
+                        "container-max-width": "1440px",
+                        "margin-tablet": "32px",
+                        "gutter": "32px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Montserrat"],
+                        "display-xl": ["Montserrat"],
+                        "body-md": ["Montserrat"],
+                        "display-lg": ["Montserrat"],
+                        "label-lg": ["Montserrat"],
+                        "headline-xl": ["Montserrat"],
+                        "headline-md": ["Montserrat"],
+                        "label-md": ["Montserrat"],
+                        "body-sm": ["Montserrat"],
+                        "body-lg": ["Montserrat"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["36px", { "lineHeight": "44px", "fontWeight": "600" }],
+                        "display-xl": ["72px", { "lineHeight": "84px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "display-lg": ["60px", { "lineHeight": "72px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-lg": ["14px", { "lineHeight": "16px", "fontWeight": "600" }],
+                        "headline-xl": ["48px", { "lineHeight": "56px", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Montserrat', sans-serif; background-color: #fbf9f8; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .icon-fill {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="text-on-background flex bg-background">
+<!-- SideNavBar -->
+<aside class="bg-inverse-surface text-primary w-sidebar-width h-screen fixed left-0 top-0 border-r border-outline dark:border-outline-variant flex flex-col h-full py-baseline px-4 z-40">
+<div class="mb-8 mt-4 px-4">
+<h1 class="font-headline-xl text-headline-xl font-bold text-primary">Kelmah</h1>
+<p class="font-label-md text-label-md text-tertiary-fixed-dim mt-1">Artisan Marketplace</p>
+</div>
+<nav class="flex-1 space-y-2 mt-4">
+<a class="flex items-center px-4 py-3 rounded text-on-tertiary-fixed-variant font-medium hover:text-primary-fixed-dim transition-colors duration-200 scale-95 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined mr-3">dashboard</span>
+<span class="font-label-lg text-label-lg">Dashboard</span>
+</a>
+<a class="flex items-center px-4 py-3 rounded text-primary font-bold border-r-2 border-primary bg-surface-tint/10 hover:text-primary-fixed-dim transition-colors duration-200 scale-95 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined mr-3 icon-fill">storefront</span>
+<span class="font-label-lg text-label-lg">Marketplace</span>
+</a>
+<a class="flex items-center px-4 py-3 rounded text-on-tertiary-fixed-variant font-medium hover:text-primary-fixed-dim transition-colors duration-200 scale-95 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined mr-3">assignment</span>
+<span class="font-label-lg text-label-lg">Projects</span>
+</a>
+<a class="flex items-center px-4 py-3 rounded text-on-tertiary-fixed-variant font-medium hover:text-primary-fixed-dim transition-colors duration-200 scale-95 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined mr-3">chat_bubble</span>
+<span class="font-label-lg text-label-lg">Messages</span>
+</a>
+<a class="flex items-center px-4 py-3 rounded text-on-tertiary-fixed-variant font-medium hover:text-primary-fixed-dim transition-colors duration-200 scale-95 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined mr-3">settings</span>
+<span class="font-label-lg text-label-lg">Settings</span>
+</a>
+</nav>
+<div class="mt-auto px-4 pb-4">
+<button class="w-full bg-primary-container text-on-primary-fixed font-label-lg text-label-lg uppercase font-bold py-3 rounded hover:bg-primary-fixed transition-colors">
+                Post a Job
+            </button>
+</div>
+</aside>
+<!-- Main Content Wrapper -->
+<div class="flex-1 ml-sidebar-width flex flex-col min-h-screen">
+<!-- TopNavBar -->
+<header class="bg-surface h-20 w-full sticky top-0 z-50 border-b border-outline dark:border-outline-variant flex items-center justify-between px-margin-desktop w-auto">
+<div class="flex-1 max-w-xl">
+<div class="relative focus-within:border-primary border-b border-outline transition-colors">
+<span class="material-symbols-outlined absolute left-0 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full pl-8 pr-4 py-2 bg-transparent border-none focus:ring-0 font-body-md text-body-md text-on-surface placeholder:text-on-surface-variant outline-none" placeholder="Search trades, artisans, or projects..." type="text"/>
+</div>
+</div>
+<div class="flex items-center space-x-6 text-primary">
+<button class="hover:bg-surface-container-high transition-colors p-2 rounded-full">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="hover:bg-surface-container-high transition-colors p-2 rounded-full">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Main Marketplace Canvas -->
+<main class="flex-1 p-margin-desktop bg-background">
+<div class="max-w-container-max-width mx-auto">
+<div class="mb-8">
+<h2 class="font-display-lg text-display-lg text-on-background">Browse Trades</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mt-2 max-w-2xl">Discover skilled artisans for your next project. Filter by specialty, location, and verified ratings.</p>
+</div>
+<div class="grid grid-cols-12 gap-gutter">
+<!-- Advanced Filters (Left Sidebar - 3 cols) -->
+<aside class="col-span-3 space-y-8 pr-4 border-r border-surface-variant">
+<!-- Filter Section: Trade Type -->
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-4">Trade Type</h3>
+<div class="space-y-3 font-body-md text-body-md text-on-surface-variant">
+<label class="flex items-center cursor-pointer group">
+<input class="form-checkbox h-5 w-5 text-primary border-outline rounded bg-surface-container focus:ring-primary focus:ring-offset-background" type="checkbox"/>
+<span class="ml-3 group-hover:text-primary transition-colors">Woodworking</span>
+</label>
+<label class="flex items-center cursor-pointer group">
+<input checked="" class="form-checkbox h-5 w-5 text-primary border-outline rounded bg-surface-container focus:ring-primary focus:ring-offset-background" type="checkbox"/>
+<span class="ml-3 text-primary font-medium">Metalcraft</span>
+</label>
+<label class="flex items-center cursor-pointer group">
+<input class="form-checkbox h-5 w-5 text-primary border-outline rounded bg-surface-container focus:ring-primary focus:ring-offset-background" type="checkbox"/>
+<span class="ml-3 group-hover:text-primary transition-colors">Ceramics</span>
+</label>
+<label class="flex items-center cursor-pointer group">
+<input class="form-checkbox h-5 w-5 text-primary border-outline rounded bg-surface-container focus:ring-primary focus:ring-offset-background" type="checkbox"/>
+<span class="ml-3 group-hover:text-primary transition-colors">Textiles &amp; Leather</span>
+</label>
+<label class="flex items-center cursor-pointer group">
+<input class="form-checkbox h-5 w-5 text-primary border-outline rounded bg-surface-container focus:ring-primary focus:ring-offset-background" type="checkbox"/>
+<span class="ml-3 group-hover:text-primary transition-colors">Masonry</span>
+</label>
+</div>
+</div>
+<!-- Filter Section: Location -->
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-4">Location</h3>
+<div class="relative focus-within:border-primary border-b border-outline transition-colors">
+<span class="material-symbols-outlined absolute left-0 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">location_on</span>
+<input class="w-full pl-6 pr-4 py-2 bg-transparent border-none focus:ring-0 font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant outline-none" placeholder="Enter city or zip..." type="text"/>
+</div>
+<div class="mt-4">
+<label class="font-label-md text-label-md text-on-surface-variant mb-2 block">Distance Radius: 50 miles</label>
+<input class="w-full h-1 bg-surface-variant rounded-lg appearance-none cursor-pointer accent-primary" max="100" min="0" type="range" value="50"/>
+</div>
+</div>
+<!-- Filter Section: Rating -->
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-4">Minimum Rating</h3>
+<div class="flex items-center space-x-2">
+<button class="p-2 border border-outline rounded hover:border-primary text-primary transition-colors"><span class="material-symbols-outlined icon-fill">star</span></button>
+<button class="p-2 border border-outline rounded hover:border-primary text-primary transition-colors"><span class="material-symbols-outlined icon-fill">star</span></button>
+<button class="p-2 border border-outline rounded hover:border-primary text-primary transition-colors"><span class="material-symbols-outlined icon-fill">star</span></button>
+<button class="p-2 border-2 border-primary bg-primary-container/10 rounded text-primary transition-colors"><span class="material-symbols-outlined icon-fill">star</span></button>
+<button class="p-2 border border-outline rounded hover:border-primary text-on-surface-variant transition-colors"><span class="material-symbols-outlined">star</span></button>
+</div>
+</div>
+</aside>
+<!-- Main Content Gallery (Right Side - 9 cols) -->
+<div class="col-span-9">
+<!-- Active Filters Bar -->
+<div class="flex items-center justify-between mb-6 pb-4 border-b border-surface-variant">
+<div class="flex items-center space-x-2">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Active Filters:</span>
+<span class="px-3 py-1 bg-surface-container rounded-full border border-outline-variant font-label-md text-label-md text-on-surface flex items-center">
+                                    Metalcraft <button class="ml-2 hover:text-error"><span class="material-symbols-outlined text-[14px]">close</span></button>
+</span>
+<span class="px-3 py-1 bg-surface-container rounded-full border border-outline-variant font-label-md text-label-md text-on-surface flex items-center">
+                                    4+ Stars <button class="ml-2 hover:text-error"><span class="material-symbols-outlined text-[14px]">close</span></button>
+</span>
+</div>
+<div class="flex items-center space-x-4 font-body-sm text-body-sm text-on-surface-variant">
+<span>Showing 124 Results</span>
+<select class="bg-transparent border-none focus:ring-0 text-on-surface font-label-md text-label-md cursor-pointer outline-none">
+<option>Sort by: Recommended</option>
+<option>Sort by: Highest Rated</option>
+<option>Sort by: Newest</option>
+</select>
+</div>
+</div>
+<!-- Grid of Artisan Cards (Bento-style layout suggestion) -->
+<div class="grid grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Card 1 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden group hover:border-primary transition-colors duration-300">
+<div class="h-48 bg-surface-variant relative overflow-hidden">
+<img alt="Artisan working on metal" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A high-quality, professional photograph of a skilled artisan working intently in a modern, well-lit metalworking studio. Sparks fly subtly from a grinding tool, illuminating the artisan's focused face. The environment features an industrial yet clean aesthetic, with soft, natural light streaming through a large factory window. The overall mood is grounded, tactile, and premium, emphasizing craftsmanship within a light-mode layout." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDY8pm_WKtqV7RN9yp_ZgRBjkOhdc_eXd0dc4oo5h1bKVhohXs1IWj1UzxKujbmKiUiFbP_Fn8PpT99bf4estsTUSRDhiKpYNT3dQ_wz8Zq_TNb0sPNwzbH2QY5j6BJsYLveAxNvhT8aJ7jF1A5N715z4hNGJO4vPyCjEFFbsfoYOMZs1hourUmZ7PZl7F0RAhUaYosASzGI4V4xj8m7E5JWf7thRYZ6Ifcoqfj859w2eZGaB0QvGXz7AbGlllPTM52Ch7UHXSebzc"/>
+<div class="absolute top-3 right-3 bg-surface-container-lowest px-2 py-1 rounded flex items-center shadow-sm">
+<span class="material-symbols-outlined icon-fill text-primary text-[14px] mr-1">star</span>
+<span class="font-label-md text-label-md text-on-surface">4.9</span>
+</div>
+</div>
+<div class="p-4">
+<div class="flex justify-between items-start mb-2">
+<h4 class="font-headline-md text-headline-md text-on-surface leading-tight">Elias Forge &amp; Co.</h4>
+<span class="material-symbols-outlined text-outline hover:text-primary cursor-pointer transition-colors">bookmark_border</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-4">Custom architectural metalwork, specializing in brass and forged steel fixtures.</p>
+<div class="flex flex-wrap gap-2 mb-4">
+<span class="px-2 py-1 bg-surface border border-outline-variant rounded text-[10px] font-label-md text-on-surface-variant uppercase tracking-wider">Metalcraft</span>
+<span class="px-2 py-1 bg-surface border border-outline-variant rounded text-[10px] font-label-md text-on-surface-variant uppercase tracking-wider">Custom</span>
+</div>
+<div class="flex justify-between items-center pt-3 border-t border-surface-variant">
+<div class="flex items-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px] mr-1">location_on</span>
+<span class="font-label-md text-label-md">Portland, OR</span>
+</div>
+<span class="font-label-lg text-label-lg text-on-surface">$$$</span>
+</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden group hover:border-primary transition-colors duration-300">
+<div class="h-48 bg-surface-variant relative overflow-hidden">
+<img alt="Detailed shot of food" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A close-up, highly detailed shot of intricate metalwork resting on a clean, light wooden workbench in an artisan studio. The lighting is soft and diffused, highlighting the texture and patina of the metal. Tools are neatly arranged in the blurred background. The image exudes a sense of premium craftsmanship, quiet focus, and a high-end minimalist aesthetic suitable for a professional gallery layout." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBv_GOJpnVpDZTH1BXquHgNeocPTNUjYQfAiUbmZQlKq17agyfpuAUTphoNxX2xTrLuGfhiVsBf27BTTAY7oyIAVawqfQ1cwNo7rNo0MpFXNssfGSrFrpArgeTzH7asuyh1HWm23NHbxDcAjCHLWmH5bWR5oZfCneYBzoGHNKbpW3b72-og23cUuy4_r5oP8jjT2IkVvq91ZQdc3USKiEobf67hMJXDEROeNP1br892Dfhcyowi3qR93JaCrhMVJyPnrFSljAqXoLM"/>
+<div class="absolute top-3 right-3 bg-surface-container-lowest px-2 py-1 rounded flex items-center shadow-sm">
+<span class="material-symbols-outlined icon-fill text-primary text-[14px] mr-1">star</span>
+<span class="font-label-md text-label-md text-on-surface">4.7</span>
+</div>
+</div>
+<div class="p-4">
+<div class="flex justify-between items-start mb-2">
+<h4 class="font-headline-md text-headline-md text-on-surface leading-tight">Ironclad Designs</h4>
+<span class="material-symbols-outlined text-outline hover:text-primary cursor-pointer transition-colors">bookmark_border</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-4">Bespoke industrial furniture and small-batch hardware casting.</p>
+<div class="flex flex-wrap gap-2 mb-4">
+<span class="px-2 py-1 bg-surface border border-outline-variant rounded text-[10px] font-label-md text-on-surface-variant uppercase tracking-wider">Metalcraft</span>
+<span class="px-2 py-1 bg-surface border border-outline-variant rounded text-[10px] font-label-md text-on-surface-variant uppercase tracking-wider">Furniture</span>
+</div>
+<div class="flex justify-between items-center pt-3 border-t border-surface-variant">
+<div class="flex items-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px] mr-1">location_on</span>
+<span class="font-label-md text-label-md">Seattle, WA</span>
+</div>
+<span class="font-label-lg text-label-lg text-on-surface">$$</span>
+</div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden group hover:border-primary transition-colors duration-300">
+<div class="h-48 bg-surface-variant relative overflow-hidden">
+<div class="absolute inset-0 bg-gradient-to-br from-surface-container-high to-surface-container-low flex items-center justify-center">
+<span class="material-symbols-outlined text-outline-variant text-6xl">precision_manufacturing</span>
+</div>
+<div class="absolute top-3 right-3 bg-surface-container-lowest px-2 py-1 rounded flex items-center shadow-sm">
+<span class="material-symbols-outlined icon-fill text-primary text-[14px] mr-1">star</span>
+<span class="font-label-md text-label-md text-on-surface">5.0</span>
+</div>
+</div>
+<div class="p-4">
+<div class="flex justify-between items-start mb-2">
+<h4 class="font-headline-md text-headline-md text-on-surface leading-tight">Apex Welding</h4>
+<span class="material-symbols-outlined text-outline hover:text-primary cursor-pointer transition-colors">bookmark_border</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-4">Precision TIG welding for structural and ornamental applications.</p>
+<div class="flex flex-wrap gap-2 mb-4">
+<span class="px-2 py-1 bg-surface border border-outline-variant rounded text-[10px] font-label-md text-on-surface-variant uppercase tracking-wider">Metalcraft</span>
+<span class="px-2 py-1 bg-surface border border-outline-variant rounded text-[10px] font-label-md text-on-surface-variant uppercase tracking-wider">Welding</span>
+</div>
+<div class="flex justify-between items-center pt-3 border-t border-surface-variant">
+<div class="flex items-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px] mr-1">location_on</span>
+<span class="font-label-md text-label-md">Austin, TX</span>
+</div>
+<span class="font-label-lg text-label-lg text-on-surface">$$$</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Load More -->
+<div class="mt-12 text-center">
+<button class="bg-transparent border-2 border-on-surface text-on-surface font-label-lg text-label-lg uppercase font-bold py-3 px-8 rounded hover:bg-surface-container-high transition-colors">
+                                Load More Trades
+                            </button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-low dark:bg-surface-container-lowest w-full py-8 border-t border-outline dark:border-outline-variant">
+<div class="max-w-container-max-width mx-auto flex justify-between px-margin-desktop">
+<p class="font-label-md text-label-md text-secondary dark:text-secondary-fixed">© 2024 Kelmah Artisan Marketplace. All rights reserved.</p>
+<div class="flex space-x-6">
+<a class="font-label-md text-label-md text-secondary hover:text-primary transition-colors opacity-80 hover:opacity-100" href="#">Terms of Service</a>
+<a class="font-label-md text-label-md text-secondary hover:text-primary transition-colors opacity-80 hover:opacity-100" href="#">Privacy Policy</a>
+<a class="font-label-md text-label-md text-secondary hover:text-primary transition-colors opacity-80 hover:opacity-100" href="#">Contact Support</a>
+<a class="font-label-md text-label-md text-secondary hover:text-primary transition-colors opacity-80 hover:opacity-100" href="#">Become an Artisan</a>
+</div>
+</div>
+</footer>
+</div>
+</body></html>

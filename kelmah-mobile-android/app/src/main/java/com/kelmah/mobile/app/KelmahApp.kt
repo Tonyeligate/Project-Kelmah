@@ -235,11 +235,11 @@ fun KelmahApp(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 10.dp, vertical = 8.dp),
-                    color = MaterialTheme.colorScheme.surface.copy(alpha = if (isSystemInDarkTheme()) 0.94f else 0.98f),
-                    shape = RoundedCornerShape(28.dp),
+                    color = MaterialTheme.colorScheme.surface.copy(alpha = if (isSystemInDarkTheme()) 0.94f else 0.99f),
+                    shape = RoundedCornerShape(24.dp),
                     tonalElevation = 0.dp,
                     shadowElevation = 14.dp,
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.58f)),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = if (isSystemInDarkTheme()) 0.58f else 0.95f)),
                 ) {
                     NavigationBar(
                         modifier = Modifier
@@ -301,11 +301,11 @@ fun KelmahApp(
                                     )
                                 },
                                 colors = NavigationBarItemDefaults.colors(
-                                    selectedIconColor = MaterialTheme.colorScheme.onSecondary,
-                                    selectedTextColor = MaterialTheme.colorScheme.onBackground,
+                                    selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    selectedTextColor = MaterialTheme.colorScheme.primary,
                                     unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
                                     unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    indicatorColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.9f),
+                                    indicatorColor = MaterialTheme.colorScheme.primaryContainer,
                                 ),
                             )
                         }

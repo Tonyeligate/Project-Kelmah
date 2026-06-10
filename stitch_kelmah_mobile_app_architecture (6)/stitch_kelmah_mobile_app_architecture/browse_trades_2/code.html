@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kelmah - Find Jobs</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container": "#eeeeee",
+                    "primary-container": "#ffd700",
+                    "inverse-on-surface": "#f0f1f1",
+                    "on-tertiary": "#ffffff",
+                    "surface-container-low": "#f3f3f4",
+                    "inverse-primary": "#e9c400",
+                    "status-info": "#3B82F6",
+                    "outline": "#7e775f",
+                    "tertiary-fixed-dim": "#c8c7bd",
+                    "primary-fixed": "#ffe16d",
+                    "secondary-fixed": "#e5e2e1",
+                    "secondary": "#5f5e5e",
+                    "surface": "#f9f9f9",
+                    "surface-dim": "#dadada",
+                    "inverse-surface": "#2f3131",
+                    "surface-container-highest": "#e2e2e2",
+                    "on-secondary-container": "#636262",
+                    "on-primary-container": "#705e00",
+                    "on-primary-fixed": "#221b00",
+                    "on-tertiary-fixed": "#1b1c16",
+                    "on-error-container": "#93000a",
+                    "primary": "#705d00",
+                    "surface-muted": "#F3F4F6",
+                    "surface-container-high": "#e8e8e8",
+                    "surface-tint": "#705d00",
+                    "on-surface": "#1a1c1c",
+                    "surface-container-lowest": "#ffffff",
+                    "text-body": "#4B5563",
+                    "secondary-container": "#e2dfde",
+                    "on-primary-fixed-variant": "#544600",
+                    "on-error": "#ffffff",
+                    "surface-variant": "#e2e2e2",
+                    "tertiary": "#5f5f57",
+                    "error-container": "#ffdad6",
+                    "on-secondary": "#ffffff",
+                    "on-secondary-fixed": "#1c1b1b",
+                    "on-primary": "#ffffff",
+                    "secondary-fixed-dim": "#c8c6c5",
+                    "on-tertiary-fixed-variant": "#474740",
+                    "on-background": "#1a1c1c",
+                    "tertiary-container": "#dcdad0",
+                    "on-tertiary-container": "#5f5f58",
+                    "background": "#f9f9f9",
+                    "outline-variant": "#d0c6ab",
+                    "error": "#ba1a1a",
+                    "status-success": "#10B981",
+                    "on-secondary-fixed-variant": "#474746",
+                    "surface-bright": "#f9f9f9",
+                    "primary-fixed-dim": "#e9c400",
+                    "on-surface-variant": "#4d4732",
+                    "tertiary-fixed": "#e4e3d9"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-desktop": "64px",
+                    "touch-target": "48px",
+                    "gutter": "16px",
+                    "margin-mobile": "16px",
+                    "base": "8px"
+            },
+            "fontFamily": {
+                    "headline-lg": ["Montserrat"],
+                    "display-lg": ["Montserrat"],
+                    "body-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "label-md": ["Inter"],
+                    "headline-md": ["Montserrat"],
+                    "headline-lg-mobile": ["Montserrat"],
+                    "caption": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "34px", "fontWeight": "700"}],
+                    "caption": ["12px", {"lineHeight": "16px", "fontWeight": "500"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        body {
+            background-color: theme('colors.background');
+            color: theme('colors.on-background');
+            font-family: theme('fontFamily.body-md');
+        }
+        
+        /* Hide scrollbar for chips */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+        
+        /* Material Icon styling as per instructions */
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined[data-weight="fill"] {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="antialiased min-h-screen flex flex-col pt-[48px] pb-[64px] md:pb-0">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface dark:bg-inverse-surface border-b border-outline-variant dark:border-outline">
+<div class="flex items-center justify-between px-margin-mobile h-touch-target">
+<button aria-label="Menu" class="w-[48px] h-[48px] flex items-center justify-center text-primary dark:text-inverse-primary hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors active:scale-95 duration-200 rounded-full">
+<span class="material-symbols-outlined text-2xl" data-icon="construction">construction</span>
+</button>
+<h1 class="font-headline-md text-headline-md-mobile font-bold text-primary dark:text-primary-container">Kelmah</h1>
+<button aria-label="Notifications" class="w-[48px] h-[48px] flex items-center justify-center text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors active:scale-95 duration-200 rounded-full">
+<span class="material-symbols-outlined text-2xl" data-icon="notifications">notifications</span>
+</button>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-grow flex flex-col md:max-w-screen-xl md:mx-auto md:w-full md:px-margin-desktop px-margin-mobile pt-gutter space-y-6">
+<!-- Search Bar -->
+<section class="w-full relative">
+<div class="relative flex items-center w-full h-[48px] bg-surface-container-lowest border border-surface-variant rounded-lg overflow-hidden focus-within:border-on-background focus-within:ring-1 focus-within:ring-primary-container transition-all shadow-sm">
+<div class="pl-4 flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</div>
+<input class="w-full h-full bg-transparent border-none focus:ring-0 text-body-md font-body-md text-on-background placeholder-on-surface-variant/70 px-3 outline-none" placeholder="Search jobs by trade or location" type="text"/>
+<button class="h-full px-4 bg-surface-container hover:bg-surface-container-high transition-colors text-on-surface flex items-center justify-center border-l border-surface-variant">
+<span class="material-symbols-outlined" data-icon="tune">tune</span>
+</button>
+</div>
+</section>
+<!-- Trade Categories (Chips) -->
+<section class="w-full overflow-x-auto no-scrollbar -mx-margin-mobile px-margin-mobile md:mx-0 md:px-0">
+<div class="flex space-x-3 pb-2 w-max">
+<button class="h-[40px] px-5 rounded-full bg-on-background text-on-primary font-label-md text-label-md transition-transform active:scale-95 whitespace-nowrap">
+                    All
+                </button>
+<button class="h-[40px] px-5 rounded-full bg-surface-container border border-outline-variant text-on-surface hover:bg-surface-container-high font-label-md text-label-md transition-all active:scale-95 whitespace-nowrap">
+                    Plumbing
+                </button>
+<button class="h-[40px] px-5 rounded-full bg-surface-container border border-outline-variant text-on-surface hover:bg-surface-container-high font-label-md text-label-md transition-all active:scale-95 whitespace-nowrap">
+                    Electrical
+                </button>
+<button class="h-[40px] px-5 rounded-full bg-surface-container border border-outline-variant text-on-surface hover:bg-surface-container-high font-label-md text-label-md transition-all active:scale-95 whitespace-nowrap">
+                    Carpentry
+                </button>
+<button class="h-[40px] px-5 rounded-full bg-surface-container border border-outline-variant text-on-surface hover:bg-surface-container-high font-label-md text-label-md transition-all active:scale-95 whitespace-nowrap">
+                    Masonry
+                </button>
+</div>
+</section>
+<!-- Job Cards List -->
+<section class="flex flex-col space-y-4 pb-8 w-full">
+<!-- Card 1 -->
+<article class="bg-surface-container-lowest border border-surface-variant rounded-xl p-5 flex flex-col shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+<div class="absolute top-0 left-0 w-1 h-full bg-primary-container"></div>
+<div class="flex justify-between items-start mb-3 pl-2">
+<div class="flex flex-col">
+<span class="text-caption font-caption text-on-surface-variant uppercase tracking-wider mb-1">Electrical</span>
+<h2 class="text-headline-md font-headline-md text-on-background leading-tight">Complete Home Wiring</h2>
+</div>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-caption font-caption font-bold bg-error-container text-on-error-container">
+                        Urgent
+                    </span>
+</div>
+<div class="flex flex-col space-y-2 mb-5 pl-2">
+<div class="flex items-center text-on-surface-variant text-body-md font-body-md">
+<span class="material-symbols-outlined text-lg mr-2" data-icon="location_on">location_on</span>
+                        East Legon, Accra
+                    </div>
+<div class="flex items-center text-on-surface-variant text-body-md font-body-md">
+<span class="material-symbols-outlined text-lg mr-2" data-icon="payments">payments</span>
+<span class="font-bold text-on-background">GHS 800 - 1,200</span>
+</div>
+<div class="flex items-center text-on-surface-variant text-body-md font-body-md">
+<span class="material-symbols-outlined text-lg mr-2" data-icon="schedule">schedule</span>
+                        Starts in 2 days
+                    </div>
+</div>
+<div class="flex justify-between items-center mt-auto pl-2 border-t border-surface-variant pt-4">
+<div class="flex -space-x-2">
+<img alt="Client Avatar" class="w-8 h-8 rounded-full border-2 border-surface-container-lowest object-cover" data-alt="A close up portrait of a professional African man wearing a hardhat and high-visibility vest on a modern construction site. The lighting is bright and sunny, creating a highly professional and trustworthy corporate modern aesthetic. The color palette features high contrast warm tones against a clean, structured background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBfeAZm7D79boGnsFOtYK2gDVXs69r_x4kM_vHSSM9F3Gw_dG4DUPd99e2miwXNSF-VnbTmoOk-PUlv9r58hmvxHkM65gQku11tOKMXVpVwUTsZSNLXBYuO6KNEVMmv52rWKOfKnS8zSm3QuJjs1daaBDmNvTZsbkcfv-UEXNioc7vDFTV4W1suQc0H1PXQQReBqPY-_XWsDvV2vJ7zcwtluOI2chvctlOC_5S2CEgxdDN_Io8fTtoJQ7RIgjWLnYN6hVrMgtem5tU"/>
+<span class="text-caption font-caption text-on-surface-variant ml-4 flex items-center">Posted by Contractor</span>
+</div>
+<button class="h-[40px] px-6 bg-primary-container text-on-primary-container font-label-md text-label-md rounded-lg hover:bg-primary-fixed transition-colors active:scale-95 flex items-center justify-center font-bold">
+                        Apply Now
+                    </button>
+</div>
+</article>
+<!-- Card 2 -->
+<article class="bg-surface-container-lowest border border-surface-variant rounded-xl p-5 flex flex-col shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+<div class="flex justify-between items-start mb-3">
+<div class="flex flex-col">
+<span class="text-caption font-caption text-on-surface-variant uppercase tracking-wider mb-1">Plumbing</span>
+<h2 class="text-headline-md font-headline-md text-on-background leading-tight">Pipe Leak Repair &amp; Installation</h2>
+</div>
+</div>
+<div class="flex flex-col space-y-2 mb-5">
+<div class="flex items-center text-on-surface-variant text-body-md font-body-md">
+<span class="material-symbols-outlined text-lg mr-2" data-icon="location_on">location_on</span>
+                        Osu, Accra
+                    </div>
+<div class="flex items-center text-on-surface-variant text-body-md font-body-md">
+<span class="material-symbols-outlined text-lg mr-2" data-icon="payments">payments</span>
+<span class="font-bold text-on-background">GHS 200 - 500</span>
+</div>
+<div class="flex items-center text-on-surface-variant text-body-md font-body-md">
+<span class="material-symbols-outlined text-lg mr-2" data-icon="schedule">schedule</span>
+                        Flexible Timeline
+                    </div>
+</div>
+<div class="flex justify-between items-center mt-auto border-t border-surface-variant pt-4">
+<div class="flex items-center">
+<span class="text-caption font-caption text-on-surface-variant flex items-center">Posted by Homeowner</span>
+</div>
+<button class="h-[40px] px-6 bg-primary-container text-on-primary-container font-label-md text-label-md rounded-lg hover:bg-primary-fixed transition-colors active:scale-95 flex items-center justify-center font-bold">
+                        Apply Now
+                    </button>
+</div>
+</article>
+<!-- Card 3 -->
+<article class="bg-surface-container-lowest border border-surface-variant rounded-xl p-5 flex flex-col shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+<div class="flex justify-between items-start mb-3">
+<div class="flex flex-col">
+<span class="text-caption font-caption text-on-surface-variant uppercase tracking-wider mb-1">Masonry</span>
+<h2 class="text-headline-md font-headline-md text-on-background leading-tight">Block Laying for Extension</h2>
+</div>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-caption font-caption font-bold bg-surface-container text-on-surface">
+                        Large Project
+                    </span>
+</div>
+<div class="flex flex-col space-y-2 mb-5">
+<div class="flex items-center text-on-surface-variant text-body-md font-body-md">
+<span class="material-symbols-outlined text-lg mr-2" data-icon="location_on">location_on</span>
+                        Cantonments, Accra
+                    </div>
+<div class="flex items-center text-on-surface-variant text-body-md font-body-md">
+<span class="material-symbols-outlined text-lg mr-2" data-icon="payments">payments</span>
+<span class="font-bold text-on-background">GHS 3,000 - 5,000</span>
+</div>
+<div class="flex items-center text-on-surface-variant text-body-md font-body-md">
+<span class="material-symbols-outlined text-lg mr-2" data-icon="schedule">schedule</span>
+                        Starts next week
+                    </div>
+</div>
+<div class="flex justify-between items-center mt-auto border-t border-surface-variant pt-4">
+<div class="flex items-center">
+<span class="material-symbols-outlined text-status-success text-sm mr-1" data-icon="verified">verified</span>
+<span class="text-caption font-caption text-on-surface-variant flex items-center">Verified Client</span>
+</div>
+<button class="h-[40px] px-6 bg-primary-container text-on-primary-container font-label-md text-label-md rounded-lg hover:bg-primary-fixed transition-colors active:scale-95 flex items-center justify-center font-bold">
+                        Apply Now
+                    </button>
+</div>
+</article>
+</section>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 w-full z-50 bg-surface dark:bg-inverse-surface shadow-md flex justify-around items-center h-16 border-t border-outline-variant dark:border-outline pb-safe">
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim px-3 py-1 hover:text-primary dark:hover:text-primary-fixed transition-colors active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="home">home</span>
+<span class="font-label-md text-label-md text-[10px]">Home</span>
+</a>
+<a aria-current="page" class="flex flex-col items-center justify-center bg-primary-container dark:bg-primary-fixed-dim text-on-primary-container dark:text-on-primary-fixed rounded-xl px-3 py-1 hover:text-primary dark:hover:text-primary-fixed transition-colors active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="work" data-weight="fill">work</span>
+<span class="font-label-md text-label-md text-[10px] font-bold">Jobs</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim px-3 py-1 hover:text-primary dark:hover:text-primary-fixed transition-colors active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="mail">mail</span>
+<span class="font-label-md text-label-md text-[10px]">Messages</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim px-3 py-1 hover:text-primary dark:hover:text-primary-fixed transition-colors active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="dashboard">dashboard</span>
+<span class="font-label-md text-label-md text-[10px]">Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim px-3 py-1 hover:text-primary dark:hover:text-primary-fixed transition-colors active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="person">person</span>
+<span class="font-label-md text-label-md text-[10px]">Profile</span>
+</a>
+</nav>
+<!-- Desktop Sidebar Placeholder (Hidden on Mobile) -->
+<aside class="hidden md:flex fixed left-0 top-[48px] h-[calc(100vh-48px)] w-64 bg-surface-container-lowest border-r border-surface-variant flex-col p-6 space-y-2">
+<!-- Desktop nav mirroring bottom nav for structure completeness if needed, simplified here -->
+<a class="flex items-center space-x-3 p-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-md text-label-md">Home</span>
+</a>
+<a class="flex items-center space-x-3 p-3 rounded-lg bg-primary-container/20 text-primary font-bold transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="work" data-weight="fill">work</span>
+<span class="font-label-md text-label-md">Jobs</span>
+</a>
+<a class="flex items-center space-x-3 p-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="mail">mail</span>
+<span class="font-label-md text-label-md">Messages</span>
+</a>
+</aside>
+<!-- Add margin to main content on desktop to account for sidebar -->
+<style>
+        @media (min-width: 768px) {
+            main {
+                margin-left: 16rem; /* 64px * 4 = 256px = w-64 */
+                max-width: calc(100% - 16rem);
+            }
+        }
+    </style>
+</body></html>

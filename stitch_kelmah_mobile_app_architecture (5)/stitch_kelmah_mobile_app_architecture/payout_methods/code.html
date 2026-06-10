@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kelmah - Payment Methods</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline": "#7e775f",
+                        "on-surface": "#1a1c1c",
+                        "on-error": "#ffffff",
+                        "primary-fixed": "#ffe16d",
+                        "on-tertiary-container": "#5f5f58",
+                        "on-primary-fixed": "#221b00",
+                        "inverse-primary": "#e9c400",
+                        "on-surface-variant": "#4d4732",
+                        "on-secondary-container": "#636262",
+                        "surface-container": "#eeeeee",
+                        "surface-muted": "#F3F4F6",
+                        "tertiary-fixed": "#e4e3d9",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "error-container": "#ffdad6",
+                        "on-error-container": "#93000a",
+                        "status-info": "#3B82F6",
+                        "secondary-container": "#e2dfde",
+                        "primary-fixed-dim": "#e9c400",
+                        "inverse-surface": "#2f3131",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-bright": "#f9f9f9",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#1a1c1c",
+                        "outline-variant": "#d0c6ab",
+                        "surface": "#f9f9f9",
+                        "on-primary-fixed-variant": "#544600",
+                        "on-primary-container": "#705e00",
+                        "tertiary-container": "#dcdad0",
+                        "on-secondary-fixed-variant": "#474746",
+                        "on-tertiary": "#ffffff",
+                        "surface-variant": "#e2e2e2",
+                        "surface-container-high": "#e8e8e8",
+                        "primary-container": "#ffd700",
+                        "surface-container-low": "#f3f3f4",
+                        "primary": "#705d00",
+                        "error": "#ba1a1a",
+                        "inverse-on-surface": "#f0f1f1",
+                        "text-body": "#4B5563",
+                        "tertiary-fixed-dim": "#c8c7bd",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "surface-dim": "#dadada",
+                        "on-tertiary-fixed-variant": "#474740",
+                        "secondary": "#5f5e5e",
+                        "on-tertiary-fixed": "#1b1c16",
+                        "surface-container-highest": "#e2e2e2",
+                        "background": "#f9f9f9",
+                        "status-success": "#10B981",
+                        "surface-tint": "#705d00",
+                        "tertiary": "#5f5f57",
+                        "secondary-fixed": "#e5e2e1",
+                        "on-primary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "base": "8px",
+                        "margin-mobile": "16px",
+                        "touch-target": "48px",
+                        "margin-desktop": "64px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Montserrat"],
+                        "headline-lg": ["Montserrat"],
+                        "label-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "display-lg": ["Montserrat"],
+                        "caption": ["Inter"],
+                        "headline-lg-mobile": ["Montserrat"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "caption": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "34px", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined[data-weight="fill"] {
+            font-variation-settings: 'FILL' 1;
+        }
+        /* Mobile specific hiding */
+        @media (max-width: 767px) {
+            .mobile-hide { display: none !important; }
+        }
+        @media (min-width: 768px) {
+            .desktop-hide { display: none !important; }
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body-md antialiased pb-24 md:pb-8">
+<!-- TopAppBar -->
+<header class="bg-surface w-full top-0 sticky z-40 bg-surface-container-low">
+<div class="flex items-center justify-between px-margin-mobile md:px-margin-desktop h-16 w-full">
+<button aria-label="Menu" class="w-touch-target h-touch-target flex items-center justify-center text-primary hover:bg-surface-variant active:scale-95 duration-150 rounded-full">
+<span class="material-symbols-outlined text-2xl" data-icon="menu">menu</span>
+</button>
+<div class="font-headline-md text-headline-md font-bold text-primary">
+                Kelmah
+            </div>
+<button aria-label="Profile" class="w-touch-target h-touch-target flex items-center justify-center hover:bg-surface-variant active:scale-95 duration-150 rounded-full">
+<img alt="User avatar" class="w-8 h-8 rounded-full object-cover border border-outline-variant" data-alt="A professional headshot of a tradesperson wearing a high-visibility yellow vest and a white hard hat. The background is a clean, bright, modern construction site environment. The lighting is natural and flattering, emphasizing a trustworthy and reliable demeanor. The style is crisp and corporate modern." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAkpXD--COpRKpAVewxRlSvPOh-w2TwTWrGO-QFAHcS4QAZNZXLm-QC6Trtp56ij54Jm4oymEX9GqeiH1hrTNAkvLswkhwEjsANvKFod8u63jac8i-d7NlaBWhXpWZRVLf-WFMRXyrHUVBbntAS8UJXOTH1WwJSAiWYMKV9lnCpIdyTeeDb0mYn-uitFGrRWJqaSrhCeXuYnTzU30HC49v2WdzwyoeAeLTnURHqh-LAD6m7WEfVGYN2y_eizpX-u9KjdVLtdb2RLAs"/>
+</button>
+</div>
+<!-- Desktop Navigation (Hidden on mobile) -->
+<nav class="hidden md:flex justify-center gap-8 py-2 bg-surface shadow-sm border-t border-outline-variant/30">
+<a class="font-label-md text-label-md text-secondary hover:bg-surface-variant px-4 py-2 rounded-lg transition-colors flex items-center gap-2" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="home">home</span> Home
+             </a>
+<a class="font-label-md text-label-md text-secondary hover:bg-surface-variant px-4 py-2 rounded-lg transition-colors flex items-center gap-2" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="work">work</span> Jobs
+             </a>
+<a class="font-label-md text-label-md text-secondary hover:bg-surface-variant px-4 py-2 rounded-lg transition-colors flex items-center gap-2" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="chat">chat</span> Messages
+             </a>
+<a class="font-label-md text-label-md text-primary font-bold bg-primary-container/20 px-4 py-2 rounded-lg transition-colors flex items-center gap-2" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="payments" data-weight="fill">payments</span> Wallet
+             </a>
+<a class="font-label-md text-label-md text-secondary hover:bg-surface-variant px-4 py-2 rounded-lg transition-colors flex items-center gap-2" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="person">person</span> Profile
+             </a>
+</nav>
+</header>
+<main class="max-w-[1280px] mx-auto px-margin-mobile md:px-margin-desktop py-8 grid grid-cols-1 md:grid-cols-12 gap-gutter">
+<!-- Page Header -->
+<div class="col-span-1 md:col-span-12 mb-6">
+<h1 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface mb-2">Payment Methods</h1>
+<p class="font-body-md text-body-md text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-status-success text-sm" data-icon="lock" data-weight="fill">lock</span>
+                Securely manage your payout options and saved cards.
+            </p>
+</div>
+<!-- Main Content Area -->
+<div class="col-span-1 md:col-span-8 space-y-6">
+<!-- Linked Accounts Section -->
+<section class="bg-surface-container-lowest border border-surface-variant rounded-xl p-6 shadow-sm">
+<div class="flex justify-between items-center mb-6">
+<h2 class="font-headline-md text-headline-md text-on-surface">Saved Methods</h2>
+</div>
+<div class="space-y-4">
+<!-- Default Method: Mobile Money -->
+<div class="relative bg-surface rounded-lg p-4 border border-outline-variant flex items-start gap-4">
+<div class="absolute top-0 right-0 mt-4 mr-4">
+<span class="bg-primary-container text-on-primary-container font-caption text-caption px-2 py-1 rounded-full uppercase tracking-wider font-bold">Default Payout</span>
+</div>
+<div class="w-12 h-12 bg-primary-container/10 rounded-lg flex items-center justify-center shrink-0 border border-primary/20">
+<span class="material-symbols-outlined text-primary text-2xl" data-icon="smartphone">smartphone</span>
+</div>
+<div class="flex-grow">
+<h3 class="font-label-md text-label-md text-on-surface">MTN Mobile Money</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">+233 ** *** 4589</p>
+<div class="mt-3 flex gap-3">
+<button class="font-label-md text-label-md text-on-surface underline hover:text-primary transition-colors">Edit</button>
+<button class="font-label-md text-label-md text-error underline hover:opacity-80 transition-opacity">Remove</button>
+</div>
+</div>
+</div>
+<!-- Secondary Method: Credit Card -->
+<div class="bg-surface rounded-lg p-4 border border-surface-variant flex items-start gap-4 opacity-80 hover:opacity-100 transition-opacity">
+<div class="w-12 h-12 bg-surface-container-high rounded-lg flex items-center justify-center shrink-0 border border-surface-variant">
+<span class="material-symbols-outlined text-on-surface-variant text-2xl" data-icon="credit_card">credit_card</span>
+</div>
+<div class="flex-grow flex justify-between items-start">
+<div>
+<h3 class="font-label-md text-label-md text-on-surface">Visa •••• 4242</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Expires 12/25</p>
+<div class="mt-3 flex gap-3">
+<button class="font-label-md text-label-md text-on-surface underline hover:text-primary transition-colors">Set as Default</button>
+<button class="font-label-md text-label-md text-error underline hover:opacity-80 transition-opacity">Remove</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Sidebar / Action Area -->
+<div class="col-span-1 md:col-span-4 space-y-6">
+<!-- Add New Methods -->
+<section class="bg-surface-container-lowest border border-surface-variant rounded-xl p-6 shadow-sm">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-4">Add Method</h3>
+<div class="space-y-3">
+<button class="w-full min-h-[48px] bg-on-surface text-on-secondary font-label-md text-label-md font-bold rounded-lg flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-lg" data-icon="add_circle">add_circle</span>
+                        Add Mobile Money
+                    </button>
+<button class="w-full min-h-[48px] bg-transparent border border-on-surface text-on-surface font-label-md text-label-md font-bold rounded-lg flex items-center justify-center gap-2 hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-lg" data-icon="credit_card">credit_card</span>
+                        Add Credit/Debit Card
+                    </button>
+</div>
+</section>
+<!-- Trust Signals -->
+<section class="bg-surface-muted rounded-xl p-6 text-center">
+<div class="flex justify-center gap-4 mb-4 text-on-surface-variant opacity-60">
+<span class="material-symbols-outlined text-3xl" data-icon="assured_workload">assured_workload</span>
+<span class="material-symbols-outlined text-3xl" data-icon="security">security</span>
+<span class="material-symbols-outlined text-3xl" data-icon="verified_user">verified_user</span>
+</div>
+<p class="font-caption text-caption text-on-surface-variant">
+                    All transactions are securely encrypted. We do not store your full card details on our servers.
+                </p>
+</section>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-touch-target bg-surface border-t border-outline-variant pb-safe md:hidden shadow-md">
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1.5 hover:bg-secondary-container active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-md text-label-md text-[10px]">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1.5 hover:bg-secondary-container active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="work">work</span>
+<span class="font-label-md text-label-md text-[10px]">Jobs</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1.5 hover:bg-secondary-container active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="chat">chat</span>
+<span class="font-label-md text-label-md text-[10px]">Messages</span>
+</a>
+<!-- Active Tab: Wallet -->
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-4 py-1.5 active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="payments" data-weight="fill">payments</span>
+<span class="font-label-md text-label-md text-[10px] font-bold">Wallet</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1.5 hover:bg-secondary-container active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-md text-label-md text-[10px]">Profile</span>
+</a>
+</nav>
+</body></html>

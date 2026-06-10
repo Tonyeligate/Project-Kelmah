@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Notification Hub | Kelmah</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-high": "#e8e8e8",
+                    "on-tertiary-fixed-variant": "#474740",
+                    "primary": "#705d00",
+                    "on-secondary-fixed-variant": "#474746",
+                    "inverse-surface": "#2f3131",
+                    "on-error-container": "#93000a",
+                    "outline": "#7e775f",
+                    "surface-bright": "#f9f9f9",
+                    "tertiary-fixed": "#e4e3d9",
+                    "on-secondary-fixed": "#1c1b1b",
+                    "surface-muted": "#F3F4F6",
+                    "surface-tint": "#705d00",
+                    "on-surface-variant": "#4d4732",
+                    "secondary-fixed": "#e5e2e1",
+                    "outline-variant": "#d0c6ab",
+                    "on-error": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "surface-container-highest": "#e2e2e2",
+                    "surface-container": "#eeeeee",
+                    "secondary": "#5f5e5e",
+                    "on-primary-fixed": "#221b00",
+                    "tertiary": "#5f5f57",
+                    "primary-fixed": "#ffe16d",
+                    "inverse-on-surface": "#f0f1f1",
+                    "secondary-fixed-dim": "#c8c6c5",
+                    "on-primary-fixed-variant": "#544600",
+                    "primary-fixed-dim": "#e9c400",
+                    "on-secondary-container": "#636262",
+                    "on-tertiary-fixed": "#1b1c16",
+                    "background": "#f9f9f9",
+                    "status-info": "#3B82F6",
+                    "inverse-primary": "#e9c400",
+                    "on-primary-container": "#705e00",
+                    "tertiary-fixed-dim": "#c8c7bd",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-container": "#ffd700",
+                    "on-tertiary": "#ffffff",
+                    "on-background": "#1a1c1c",
+                    "on-primary": "#ffffff",
+                    "surface-dim": "#dadada",
+                    "surface-container-low": "#f3f3f4",
+                    "status-success": "#10B981",
+                    "error": "#ba1a1a",
+                    "text-body": "#4B5563",
+                    "surface-variant": "#e2e2e2",
+                    "secondary-container": "#e2dfde",
+                    "surface": "#f9f9f9",
+                    "on-surface": "#1a1c1c",
+                    "on-tertiary-container": "#5f5f58",
+                    "tertiary-container": "#dcdad0",
+                    "on-secondary": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "touch-target": "48px",
+                    "margin-mobile": "16px",
+                    "base": "8px",
+                    "margin-desktop": "64px",
+                    "gutter": "16px"
+            },
+            "fontFamily": {
+                    "body-md": ["Inter"],
+                    "caption": ["Inter"],
+                    "headline-md": ["Montserrat"],
+                    "headline-lg": ["Montserrat"],
+                    "display-lg": ["Montserrat"],
+                    "label-md": ["Inter"],
+                    "headline-lg-mobile": ["Montserrat"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "caption": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "34px", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #d0c6ab;
+            border-radius: 10px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body-md selection:bg-primary-container selection:text-on-primary-container min-h-screen flex flex-col">
+<!-- Top App Bar -->
+<header class="flex justify-between items-center px-margin-mobile md:px-margin-desktop w-full z-50 sticky top-0 bg-surface dark:bg-inverse-surface shadow-sm h-16">
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-primary hover:opacity-80 transition-opacity active:scale-95" data-icon="arrow_back">arrow_back</button>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim">Kelmah</h1>
+</div>
+<div class="flex items-center gap-2">
+<button class="font-label-md text-label-md text-primary hover:bg-primary-container/10 px-3 py-2 rounded-lg transition-colors flex items-center gap-2" id="markReadBtn">
+<span class="material-symbols-outlined text-[18px]" data-icon="done_all">done_all</span>
+                Mark all as read
+            </button>
+</div>
+</header>
+<main class="flex-grow max-w-[1280px] mx-auto w-full px-margin-mobile md:px-margin-desktop py-8">
+<!-- Dashboard Header -->
+<div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface mb-2">Notifications</h2>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-xl">Stay updated on your project progress, payments, and account activities within the Kelmah professional network.</p>
+</div>
+<div class="flex gap-2">
+<span class="bg-primary-container text-on-primary-container px-3 py-1 rounded-full text-label-md font-label-md">3 Unread</span>
+<span class="bg-surface-container-high text-on-surface-variant px-3 py-1 rounded-full text-label-md font-label-md">Total 24</span>
+</div>
+</div>
+<!-- Section: Today -->
+<section class="mb-10">
+<div class="flex items-center gap-4 mb-4">
+<h3 class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Today</h3>
+<div class="h-[1px] flex-grow bg-outline-variant opacity-30"></div>
+</div>
+<div class="grid grid-cols-1 gap-4">
+<!-- Payment Released -->
+<div class="group relative bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-4 md:p-6 shadow-[0px_4px_20px_rgba(0,0,0,0.02)] hover:shadow-[0px_8px_24px_rgba(0,0,0,0.06)] transition-all duration-300 border-l-4 border-l-status-success">
+<div class="flex gap-4 md:gap-6">
+<div class="flex-shrink-0 w-12 h-12 rounded-full bg-status-success/10 text-status-success flex items-center justify-center">
+<span class="material-symbols-outlined text-[24px]" data-icon="payments" data-weight="fill" style="font-variation-settings: 'FILL' 1;">payments</span>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-start">
+<h4 class="font-label-md text-label-md md:text-body-lg font-bold text-on-surface mb-1">Payment Released</h4>
+<span class="text-caption font-caption text-on-surface-variant whitespace-nowrap">2h ago</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant mb-4">The milestone payment for "Kitchen Cabinet Installation" has been released to your wallet. You can now withdraw the funds.</p>
+<div class="flex gap-3">
+<button class="bg-primary text-on-primary px-4 py-2 rounded-lg font-label-md text-label-md hover:opacity-90 active:scale-95 transition-all">View Wallet</button>
+<button class="text-on-surface-variant hover:bg-surface-container-high px-4 py-2 rounded-lg font-label-md text-label-md transition-all">Dismiss</button>
+</div>
+</div>
+<div class="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0"></div>
+</div>
+</div>
+<!-- Milestone Approved -->
+<div class="group relative bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-4 md:p-6 shadow-[0px_4px_20px_rgba(0,0,0,0.02)] hover:shadow-[0px_8px_24px_rgba(0,0,0,0.06)] transition-all duration-300 border-l-4 border-l-status-info">
+<div class="flex gap-4 md:gap-6">
+<div class="flex-shrink-0 w-12 h-12 rounded-full bg-status-info/10 text-status-info flex items-center justify-center">
+<span class="material-symbols-outlined text-[24px]" data-icon="verified_user" data-weight="fill" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-start">
+<h4 class="font-label-md text-label-md md:text-body-lg font-bold text-on-surface mb-1">Milestone Approved</h4>
+<span class="text-caption font-caption text-on-surface-variant whitespace-nowrap">5h ago</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant">The final inspection for "Central HVAC Maintenance" was approved by Mr. Thompson. Well done!</p>
+</div>
+<div class="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0"></div>
+</div>
+</div>
+<!-- New Message -->
+<div class="group relative bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-4 md:p-6 shadow-[0px_4px_20px_rgba(0,0,0,0.02)] hover:shadow-[0px_8px_24px_rgba(0,0,0,0.06)] transition-all duration-300">
+<div class="flex gap-4 md:gap-6">
+<div class="flex-shrink-0 w-12 h-12 rounded-full overflow-hidden">
+<img alt="Client Avatar" class="w-full h-full object-cover" data-alt="A professional headshot of a middle-aged man with a friendly expression, wearing a clean, modern white polo shirt. The lighting is soft and natural, emphasizing a professional yet approachable contractor-client relationship. The background is a blurred high-end interior, consistent with a premium service-based mobile application interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCECM_Mf10UvYo8aeHbfiBvdPr-xm_2yOUIFgnepxe1-0u7RVRISdTfNgZNiJVbC-tZCiAkBwvZnZzRSnqtkzETlFdWvnuVcSicF-F-YD8SmM5PC4BAOT8_cV5SwOkB3YRtNkOv56Enk9cLAWuC7RcBBS6vNuSwlx2L-BH7yY7AOwT0w7IGzfX-gSbbsTy3DPdoSwRiJv4EuoBTtou8-f7qXUT7BZWw8owXKAlJk2Fzqx7ACmDjEc5drwwVrLgU4ePcDdrkoVcrzlo"/>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-start">
+<h4 class="font-label-md text-label-md md:text-body-lg font-bold text-on-surface mb-1">New Message from David L.</h4>
+<span class="text-caption font-caption text-on-surface-variant whitespace-nowrap">8h ago</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant italic mb-2">"Hi! I'm interested in the plumbing quote you sent yesterday. Could you confirm if you're available this Saturday?"</p>
+<button class="bg-secondary text-on-secondary px-4 py-2 rounded-lg font-label-md text-label-md hover:opacity-90 active:scale-95 transition-all">Reply Now</button>
+</div>
+<div class="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Section: Earlier -->
+<section>
+<div class="flex items-center gap-4 mb-4">
+<h3 class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Earlier</h3>
+<div class="h-[1px] flex-grow bg-outline-variant opacity-30"></div>
+</div>
+<div class="grid grid-cols-1 gap-4">
+<!-- Profile Verification -->
+<div class="group relative bg-surface-container/50 border border-transparent rounded-xl p-4 md:p-6 transition-all duration-300 opacity-80 hover:opacity-100 hover:bg-surface-container-high/50">
+<div class="flex gap-4 md:gap-6">
+<div class="flex-shrink-0 w-12 h-12 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[24px]" data-icon="badge" data-weight="fill" style="font-variation-settings: 'FILL' 1;">badge</span>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-start">
+<h4 class="font-label-md text-label-md md:text-body-lg font-bold text-on-surface mb-1">Profile Verification Success</h4>
+<span class="text-caption font-caption text-on-surface-variant whitespace-nowrap">Yesterday</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant">Your industrial plumbing certification has been verified. A "Verified Specialist" badge is now visible on your public profile.</p>
+</div>
+</div>
+</div>
+<!-- Job Alert -->
+<div class="group relative bg-surface-container/50 border border-transparent rounded-xl p-4 md:p-6 transition-all duration-300 opacity-80 hover:opacity-100 hover:bg-surface-container-high/50">
+<div class="flex gap-4 md:gap-6">
+<div class="flex-shrink-0 w-12 h-12 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center">
+<span class="material-symbols-outlined text-[24px]" data-icon="work" data-weight="fill" style="font-variation-settings: 'FILL' 1;">work</span>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-start">
+<h4 class="font-label-md text-label-md md:text-body-lg font-bold text-on-surface mb-1">New Job Near You</h4>
+<span class="text-caption font-caption text-on-surface-variant whitespace-nowrap">2 days ago</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant">Residential rewiring project posted in Downtown district (1.5 miles away). Matching your expertise in electrical systems.</p>
+</div>
+</div>
+</div>
+<!-- Security Alert -->
+<div class="group relative bg-surface-container/50 border border-transparent rounded-xl p-4 md:p-6 transition-all duration-300 opacity-80 hover:opacity-100 hover:bg-surface-container-high/50">
+<div class="flex gap-4 md:gap-6">
+<div class="flex-shrink-0 w-12 h-12 rounded-full bg-error-container/30 text-error flex items-center justify-center">
+<span class="material-symbols-outlined text-[24px]" data-icon="security" data-weight="fill" style="font-variation-settings: 'FILL' 1;">security</span>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-start">
+<h4 class="font-label-md text-label-md md:text-body-lg font-bold text-on-surface mb-1">Security Login Alert</h4>
+<span class="text-caption font-caption text-on-surface-variant whitespace-nowrap">3 days ago</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant">A new login was detected from a Chrome browser on Windows. If this wasn't you, please secure your account immediately.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Load More Placeholder -->
+<div class="mt-12 flex justify-center pb-24">
+<button class="flex items-center gap-2 font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors py-3 px-6 rounded-full border border-outline-variant/30">
+                Show more notifications
+                <span class="material-symbols-outlined text-[18px]" data-icon="expand_more">expand_more</span>
+</button>
+</div>
+</main>
+<!-- Bottom Navigation Bar (Mobile Viewport Logic) -->
+<nav class="fixed bottom-0 w-full z-50 flex justify-around items-center px-2 py-2 bg-surface dark:bg-inverse-surface shadow-[0px_-4px_20px_rgba(0,0,0,0.04)] rounded-t-xl md:hidden">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant px-3 py-1 hover:bg-surface-container-high transition-colors active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-md text-label-md">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant px-3 py-1 hover:bg-surface-container-high transition-colors active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="work">work</span>
+<span class="font-label-md text-label-md">Jobs</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container dark:bg-primary text-on-primary-container dark:text-on-primary rounded-xl px-3 py-1 transition-transform active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="notifications" data-weight="fill" style="font-variation-settings: 'FILL' 1;">notifications</span>
+<span class="font-label-md text-label-md">Alerts</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant px-3 py-1 hover:bg-surface-container-high transition-colors active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="account_balance_wallet">account_balance_wallet</span>
+<span class="font-label-md text-label-md">Wallet</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant px-3 py-1 hover:bg-surface-container-high transition-colors active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-md text-label-md">Profile</span>
+</a>
+</nav>
+<!-- Desktop Navigation Side Rail (Optional Visual Enhancement) -->
+<div class="hidden md:flex fixed left-0 top-16 h-[calc(100vh-4rem)] w-20 flex-col items-center py-8 gap-8 border-r border-outline-variant/20 bg-surface">
+<a class="text-on-surface-variant hover:text-primary transition-colors p-3" href="#" title="Home">
+<span class="material-symbols-outlined text-[28px]" data-icon="home">home</span>
+</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors p-3" href="#" title="Jobs">
+<span class="material-symbols-outlined text-[28px]" data-icon="work">work</span>
+</a>
+<a class="text-primary bg-primary-container/20 rounded-2xl p-3" href="#" title="Notifications">
+<span class="material-symbols-outlined text-[28px]" data-icon="notifications" data-weight="fill" style="font-variation-settings: 'FILL' 1;">notifications</span>
+</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors p-3" href="#" title="Messages">
+<span class="material-symbols-outlined text-[28px]" data-icon="chat_bubble">chat_bubble</span>
+</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors p-3 mt-auto" href="#" title="Profile">
+<span class="material-symbols-outlined text-[28px]" data-icon="person">person</span>
+</a>
+</div>
+<script>
+        // Micro-interactions
+        document.getElementById('markReadBtn').addEventListener('click', function() {
+            const unreadDots = document.querySelectorAll('.w-2.h-2.rounded-full.bg-primary');
+            unreadDots.forEach(dot => {
+                dot.style.opacity = '0';
+                setTimeout(() => dot.remove(), 300);
+            });
+            
+            const countBadge = document.querySelector('.bg-primary-container.text-on-primary-container');
+            if(countBadge) {
+                countBadge.textContent = '0 Unread';
+                countBadge.classList.replace('bg-primary-container', 'bg-surface-container-high');
+                countBadge.classList.replace('text-on-primary-container', 'text-on-surface-variant');
+            }
+
+            this.innerHTML = '<span class="material-symbols-outlined text-[18px]" data-icon="done_all">done_all</span> All read';
+            this.classList.add('opacity-50', 'pointer-events-none');
+        });
+
+        // Hover animations for cards
+        const cards = document.querySelectorAll('.group.relative');
+        cards.forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-2px)';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0)';
+            });
+        });
+    </script>
+</body></html>

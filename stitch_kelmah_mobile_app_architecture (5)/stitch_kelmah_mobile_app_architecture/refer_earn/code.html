@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kelmah - Refer &amp; Earn</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts: Montserrat (Headlines) & Inter (Body) -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed": "#1c1b1b",
+                        "surface-container-high": "#e8e8e8",
+                        "text-body": "#4B5563",
+                        "on-primary-fixed-variant": "#544600",
+                        "surface-muted": "#F3F4F6",
+                        "on-tertiary": "#ffffff",
+                        "surface-variant": "#e2e2e2",
+                        "inverse-surface": "#2f3131",
+                        "surface-tint": "#705d00",
+                        "on-surface-variant": "#4d4732",
+                        "surface": "#f9f9f9",
+                        "primary": "#705d00",
+                        "on-primary": "#ffffff",
+                        "status-success": "#10B981",
+                        "on-secondary-fixed-variant": "#474746",
+                        "surface-container-highest": "#e2e2e2",
+                        "on-secondary": "#ffffff",
+                        "inverse-on-surface": "#f0f1f1",
+                        "on-secondary-container": "#636262",
+                        "outline-variant": "#d0c6ab",
+                        "primary-container": "#ffd700",
+                        "on-tertiary-fixed-variant": "#474740",
+                        "on-surface": "#1a1c1c",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "on-tertiary-container": "#5f5f58",
+                        "surface-container": "#eeeeee",
+                        "tertiary-container": "#dcdad0",
+                        "surface-container-low": "#f3f3f4",
+                        "tertiary-fixed": "#e4e3d9",
+                        "secondary-container": "#e2dfde",
+                        "outline": "#7e775f",
+                        "inverse-primary": "#e9c400",
+                        "error-container": "#ffdad6",
+                        "on-primary-fixed": "#221b00",
+                        "primary-fixed": "#ffe16d",
+                        "tertiary-fixed-dim": "#c8c7bd",
+                        "tertiary": "#5f5f57",
+                        "on-tertiary-fixed": "#1b1c16",
+                        "on-primary-container": "#705e00",
+                        "error": "#ba1a1a",
+                        "primary-fixed-dim": "#e9c400",
+                        "surface-bright": "#f9f9f9",
+                        "status-info": "#3B82F6",
+                        "secondary-fixed": "#e5e2e1",
+                        "on-background": "#1a1c1c",
+                        "surface-dim": "#dadada",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error": "#ffffff",
+                        "background": "#f9f9f9",
+                        "secondary": "#5f5e5e",
+                        "on-error-container": "#93000a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "touch-target": "48px",
+                        "margin-mobile": "16px",
+                        "margin-desktop": "64px",
+                        "gutter": "16px",
+                        "base": "8px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Montserrat"],
+                        "caption": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg": ["Montserrat"],
+                        "label-md": ["Inter"],
+                        "headline-md": ["Montserrat"],
+                        "display-lg": ["Montserrat"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["28px", { "lineHeight": "34px", "fontWeight": "700" }],
+                        "caption": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined[data-weight="fill"] {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md text-body-md antialiased min-h-screen relative">
+<!-- TopAppBar (Shared Component Strict Implementation) -->
+<header class="fixed top-0 w-full z-50 bg-surface shadow-sm flex justify-between items-center px-margin-mobile h-touch-target">
+<button aria-label="Menu" class="flex items-center justify-center w-touch-target h-touch-target text-on-surface hover:bg-surface-container transition-colors active:scale-95 duration-100 rounded-full">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Kelmah</h1>
+<button aria-label="Notifications" class="flex items-center justify-center w-touch-target h-touch-target text-on-surface hover:bg-surface-container transition-colors active:scale-95 duration-100 rounded-full">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+</header>
+<!-- Main Content Canvas (Navigation suppressed for focused task flow) -->
+<main class="pt-[80px] pb-margin-mobile px-margin-mobile max-w-lg mx-auto flex flex-col gap-8">
+<!-- Hero Section -->
+<section class="flex flex-col gap-4 text-center items-center mt-4">
+<div class="w-full h-48 bg-surface-container-high rounded-xl overflow-hidden relative shadow-sm border border-outline-variant/30">
+<img alt="Illustration of growth" class="w-full h-full object-cover opacity-90" data-alt="A stylized, high-quality digital photograph showing a diverse team of professional tradespeople and contractors enthusiastically reviewing blueprints together on a bright, active construction site. The lighting is sunny and optimistic, reflecting a modern, high-end corporate aesthetic. The color grading subtly emphasizes deep golds, crisp whites, and industrial grays, perfectly aligning with a premium industrial platform brand identity emphasizing community and reliable growth." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDNb0RjhnPETC_DSfuDPVT1U_ZyN6UHi6im0kloTnf_K3jBtau8_yhZ8WJaHdoD-WI2ZUJMEyxWSH-n39ivQ16a9KeltAXdIdccTTE3RWoxT7tQ2D8lRmAuKTdNbqSdiaozk5EcNmMm-d4RU-o8mhn8NTIM4exuZex6gZABQtxQN2kazSb_QE4Vv-Qp5m_m6VsOGQqyTVCbMKOYSYDy_B5vrmWgyNFaDI_QJjVAd5YXuvcLPRYyFfaXt_T3epjemIKZqqd8zJPx1jo"/>
+<!-- Overlay gradient for text readability if needed, though we place text below -->
+<div class="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent"></div>
+</div>
+<div class="flex flex-col gap-2 px-2">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Invite Friends, Earn Cash.</h2>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-[280px] mx-auto">
+                    Earn <span class="font-bold text-primary">GHS 20</span> for every friend who signs up and completes their first professional job.
+                </p>
+</div>
+</section>
+<!-- Referral Code Card (Level 1 Elevation) -->
+<section class="bg-surface-container-lowest border border-outline-variant rounded-xl p-gutter shadow-[0px_4px_20px_rgba(0,0,0,0.04)] flex flex-col gap-4 relative overflow-hidden">
+<!-- Decorative Accent -->
+<div class="absolute top-0 left-0 w-2 h-full bg-primary-container"></div>
+<div class="pl-2">
+<h3 class="font-label-md text-label-md text-secondary uppercase tracking-wider mb-2">Your Unique Code</h3>
+<div class="flex items-center justify-between bg-surface-container-low border border-outline-variant/50 rounded-lg p-2 pl-4">
+<span class="font-headline-md text-headline-md text-on-surface font-mono tracking-widest select-all" id="referralCode">
+                        KLM-8472X
+                    </span>
+<button aria-label="Copy Code" class="w-touch-target h-touch-target flex items-center justify-center text-primary bg-surface-container-lowest hover:bg-surface-container rounded-md transition-colors border border-outline-variant/30 active:scale-95" onclick="copyCode()">
+<span class="material-symbols-outlined" data-icon="content_copy" id="copyIcon">content_copy</span>
+</button>
+</div>
+</div>
+<!-- Primary Action -->
+<button class="mt-2 w-full h-[56px] bg-primary-container text-on-primary-container font-label-md text-label-md rounded-lg flex justify-center items-center gap-2 shadow-sm active:scale-[0.98] transition-transform">
+<span class="material-symbols-outlined" data-icon="share" data-weight="fill">share</span>
+                Share Referral Link
+            </button>
+</section>
+<!-- Breakdown Section (Bento-style layout) -->
+<section class="flex flex-col gap-base">
+<h3 class="font-headline-md text-headline-md text-on-surface px-2">How it works</h3>
+<div class="grid grid-cols-1 gap-base">
+<!-- Step 1 -->
+<div class="bg-surface-container rounded-xl p-gutter flex gap-gutter items-center border border-transparent hover:border-outline-variant/30 transition-colors">
+<div class="w-12 h-12 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined" data-icon="send">send</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">1. Share your link</span>
+<span class="font-body-md text-body-md text-on-surface-variant text-sm">Send your unique code to friends or colleagues.</span>
+</div>
+</div>
+<!-- Step 2 -->
+<div class="bg-surface-container rounded-xl p-gutter flex gap-gutter items-center border border-transparent hover:border-outline-variant/30 transition-colors">
+<div class="w-12 h-12 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined" data-icon="engineering">engineering</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">2. They complete a job</span>
+<span class="font-body-md text-body-md text-on-surface-variant text-sm">Your friend registers and successfully finishes their first task.</span>
+</div>
+</div>
+<!-- Step 3 -->
+<div class="bg-primary-container/10 border border-primary-container/30 rounded-xl p-gutter flex gap-gutter items-center relative overflow-hidden">
+<div class="absolute -right-4 -top-4 text-primary-container/20">
+<span class="material-symbols-outlined text-[100px]" data-icon="payments">payments</span>
+</div>
+<div class="w-12 h-12 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center shrink-0 relative z-10 shadow-sm">
+<span class="material-symbols-outlined" data-icon="account_balance_wallet" data-weight="fill">account_balance_wallet</span>
+</div>
+<div class="flex flex-col relative z-10">
+<span class="font-label-md text-label-md text-on-surface">3. You earn GHS 20</span>
+<span class="font-body-md text-body-md text-on-surface-variant text-sm">The reward is instantly added to your Kelmah wallet.</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<script>
+        function copyCode() {
+            const code = document.getElementById('referralCode').innerText;
+            const icon = document.getElementById('copyIcon');
+            
+            navigator.clipboard.writeText(code).then(() => {
+                // Visual feedback
+                icon.innerText = 'check';
+                icon.classList.add('text-status-success');
+                
+                setTimeout(() => {
+                    icon.innerText = 'content_copy';
+                    icon.classList.remove('text-status-success');
+                }, 2000);
+            });
+        }
+    </script>
+</body></html>

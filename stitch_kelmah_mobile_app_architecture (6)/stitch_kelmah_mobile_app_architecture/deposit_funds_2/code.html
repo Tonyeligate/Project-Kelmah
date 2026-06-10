@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kelmah Wallet - Deposit Funds</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-surface-variant": "#4d4732",
+                      "secondary-container": "#e2dfde",
+                      "error": "#ba1a1a",
+                      "tertiary": "#5f5f57",
+                      "surface-container-highest": "#e2e2e2",
+                      "tertiary-fixed-dim": "#c8c7bd",
+                      "surface-container": "#eeeeee",
+                      "secondary-fixed": "#e5e2e1",
+                      "on-surface": "#1a1c1c",
+                      "surface-container-low": "#f3f3f4",
+                      "on-primary": "#ffffff",
+                      "outline-variant": "#d0c6ab",
+                      "on-secondary": "#ffffff",
+                      "surface-container-lowest": "#ffffff",
+                      "on-error": "#ffffff",
+                      "secondary-fixed-dim": "#c8c6c5",
+                      "status-info": "#3B82F6",
+                      "primary-fixed": "#ffe16d",
+                      "on-secondary-container": "#636262",
+                      "tertiary-fixed": "#e4e3d9",
+                      "primary-fixed-dim": "#e9c400",
+                      "status-success": "#10B981",
+                      "error-container": "#ffdad6",
+                      "on-tertiary-fixed": "#1b1c16",
+                      "background": "#f9f9f9",
+                      "surface-dim": "#dadada",
+                      "surface-variant": "#e2e2e2",
+                      "primary": "#705d00",
+                      "inverse-on-surface": "#f0f1f1",
+                      "primary-container": "#ffd700",
+                      "on-primary-container": "#705e00",
+                      "inverse-primary": "#e9c400",
+                      "on-primary-fixed": "#221b00",
+                      "on-tertiary-fixed-variant": "#474740",
+                      "secondary": "#5f5e5e",
+                      "outline": "#7e775f",
+                      "text-body": "#4B5563",
+                      "on-secondary-fixed": "#1c1b1b",
+                      "on-tertiary-container": "#5f5f58",
+                      "surface-bright": "#f9f9f9",
+                      "surface": "#f9f9f9",
+                      "on-error-container": "#93000a",
+                      "surface-container-high": "#e8e8e8",
+                      "surface-muted": "#F3F4F6",
+                      "tertiary-container": "#dcdad0",
+                      "on-background": "#1a1c1c",
+                      "on-tertiary": "#ffffff",
+                      "surface-tint": "#705d00",
+                      "on-secondary-fixed-variant": "#474746",
+                      "on-primary-fixed-variant": "#544600",
+                      "inverse-surface": "#2f3131"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin-desktop": "64px",
+                      "touch-target": "48px",
+                      "margin-mobile": "16px",
+                      "base": "8px",
+                      "gutter": "16px"
+              },
+              "fontFamily": {
+                      "headline-lg-mobile": [
+                              "Montserrat"
+                      ],
+                      "display-lg": [
+                              "Montserrat"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Montserrat"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Montserrat"
+                      ],
+                      "caption": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "headline-lg-mobile": [
+                              "28px",
+                              {
+                                      "lineHeight": "34px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "caption": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "500"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen pb-[100px] md:pb-0 font-body-md">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-inverse-surface border-b border-outline-variant w-full top-0 sticky flex justify-between items-center px-gutter h-touch-target z-50">
+<button aria-label="Go back" class="h-touch-target w-touch-target flex items-center justify-center text-on-surface-variant dark:text-surface-variant transition-colors duration-200 active:opacity-70 hover:bg-surface-container dark:hover:bg-surface-variant rounded-full">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary dark:text-primary-fixed">Deposit Funds</h1>
+<div class="w-touch-target"></div> <!-- Spacer for centering -->
+</header>
+<main class="max-w-[1280px] mx-auto px-margin-mobile md:px-margin-desktop py-8 grid grid-cols-1 md:grid-cols-12 gap-8">
+<!-- Main Form Area -->
+<div class="col-span-1 md:col-span-8 lg:col-span-6 md:col-start-3 lg:col-start-4">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.04)] mb-8">
+<!-- Amount Input -->
+<div class="mb-8">
+<label class="block font-label-md text-label-md text-on-surface mb-2" for="deposit-amount">Amount to Deposit (GHS)</label>
+<div class="relative">
+<span class="absolute left-4 top-1/2 -translate-y-1/2 font-headline-md text-headline-md text-on-surface-variant">₵</span>
+<input class="w-full pl-12 pr-4 h-touch-target rounded-lg border border-[#1A1A1A] bg-surface-container-lowest font-headline-md text-headline-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-transparent transition-all" id="deposit-amount" min="1" placeholder="0.00" step="0.01" type="number"/>
+</div>
+</div>
+<!-- Provider Selection -->
+<div class="mb-8">
+<h2 class="font-label-md text-label-md text-on-surface mb-4">Select Mobile Money Provider</h2>
+<div class="grid grid-cols-1 gap-4">
+<label class="relative flex items-center p-4 border border-outline-variant rounded-lg cursor-pointer hover:bg-surface-container-low transition-colors has-[:checked]:border-primary-container has-[:checked]:bg-surface-container-low">
+<input checked="" class="peer sr-only" name="provider" type="radio" value="mtn"/>
+<div class="w-12 h-12 rounded bg-[#FFCC00] flex items-center justify-center mr-4 shrink-0 overflow-hidden" data-alt="A minimal corporate style graphic featuring a bright yellow background with subtle black typographic elements, representing MTN Mobile Money in a clean, modern UI context.">
+<span class="font-headline-md text-headline-md text-[#000000] font-bold">M</span>
+</div>
+<div class="flex-grow">
+<span class="block font-body-md text-body-md font-semibold text-on-surface">MTN Mobile Money</span>
+</div>
+<div class="w-6 h-6 rounded-full border-2 border-outline-variant peer-checked:border-primary-container peer-checked:bg-primary-container flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-[16px] text-on-primary-container opacity-0 peer-checked:opacity-100 transition-opacity" data-icon="check">check</span>
+</div>
+</label>
+<label class="relative flex items-center p-4 border border-outline-variant rounded-lg cursor-pointer hover:bg-surface-container-low transition-colors has-[:checked]:border-primary-container has-[:checked]:bg-surface-container-low">
+<input class="peer sr-only" name="provider" type="radio" value="vodafone"/>
+<div class="w-12 h-12 rounded bg-[#E60000] flex items-center justify-center mr-4 shrink-0 overflow-hidden" data-alt="A minimal corporate style graphic featuring a stark red background with white typographic elements, representing Vodafone Cash in a clean, modern UI context.">
+<span class="font-headline-md text-headline-md text-white font-bold">V</span>
+</div>
+<div class="flex-grow">
+<span class="block font-body-md text-body-md font-semibold text-on-surface">Vodafone Cash</span>
+</div>
+<div class="w-6 h-6 rounded-full border-2 border-outline-variant peer-checked:border-primary-container peer-checked:bg-primary-container flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-[16px] text-on-primary-container opacity-0 peer-checked:opacity-100 transition-opacity" data-icon="check">check</span>
+</div>
+</label>
+<label class="relative flex items-center p-4 border border-outline-variant rounded-lg cursor-pointer hover:bg-surface-container-low transition-colors has-[:checked]:border-primary-container has-[:checked]:bg-surface-container-low">
+<input class="peer sr-only" name="provider" type="radio" value="airteltigo"/>
+<div class="w-12 h-12 rounded bg-[#00529C] flex items-center justify-center mr-4 shrink-0 overflow-hidden" data-alt="A minimal corporate style graphic featuring a deep blue and vibrant red split background with white typographic elements, representing AirtelTigo in a clean, modern UI context.">
+<span class="font-headline-md text-headline-md text-white font-bold">AT</span>
+</div>
+<div class="flex-grow">
+<span class="block font-body-md text-body-md font-semibold text-on-surface">AirtelTigo Money</span>
+</div>
+<div class="w-6 h-6 rounded-full border-2 border-outline-variant peer-checked:border-primary-container peer-checked:bg-primary-container flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-[16px] text-on-primary-container opacity-0 peer-checked:opacity-100 transition-opacity" data-icon="check">check</span>
+</div>
+</label>
+</div>
+</div>
+<!-- Phone Number -->
+<div class="mb-8">
+<label class="block font-label-md text-label-md text-on-surface mb-2" for="phone-number">Mobile Money Number</label>
+<input class="w-full px-4 h-touch-target rounded-lg border border-[#1A1A1A] bg-surface-container-lowest font-body-md text-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-transparent transition-all" id="phone-number" placeholder="e.g. 024 XXX XXXX" type="tel"/>
+</div>
+</div>
+<!-- Action Button -->
+<button class="w-full h-touch-target bg-[#FFD700] text-[#1A1A1A] font-headline-md text-headline-md font-bold rounded-lg flex items-center justify-center gap-2 hover:opacity-90 transition-opacity active:scale-[0.98]">
+<span>Confirm Deposit</span>
+<span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</main>
+</body></html>

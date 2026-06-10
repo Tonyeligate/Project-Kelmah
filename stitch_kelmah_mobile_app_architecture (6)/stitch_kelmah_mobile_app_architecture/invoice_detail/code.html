@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Invoice View - Kelmah</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts & Material Symbols -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+          font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<!-- Tailwind Config injected from prompt -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-fixed": "#1c1b1b",
+                    "surface-container-high": "#e8e8e8",
+                    "text-body": "#4B5563",
+                    "on-primary-fixed-variant": "#544600",
+                    "surface-muted": "#F3F4F6",
+                    "on-tertiary": "#ffffff",
+                    "surface-variant": "#e2e2e2",
+                    "inverse-surface": "#2f3131",
+                    "surface-tint": "#705d00",
+                    "on-surface-variant": "#4d4732",
+                    "surface": "#f9f9f9",
+                    "primary": "#705d00",
+                    "on-primary": "#ffffff",
+                    "status-success": "#10B981",
+                    "on-secondary-fixed-variant": "#474746",
+                    "surface-container-highest": "#e2e2e2",
+                    "on-secondary": "#ffffff",
+                    "inverse-on-surface": "#f0f1f1",
+                    "on-secondary-container": "#636262",
+                    "outline-variant": "#d0c6ab",
+                    "primary-container": "#ffd700",
+                    "on-tertiary-fixed-variant": "#474740",
+                    "on-surface": "#1a1c1c",
+                    "secondary-fixed-dim": "#c8c6c5",
+                    "on-tertiary-container": "#5f5f58",
+                    "surface-container": "#eeeeee",
+                    "tertiary-container": "#dcdad0",
+                    "surface-container-low": "#f3f3f4",
+                    "tertiary-fixed": "#e4e3d9",
+                    "secondary-container": "#e2dfde",
+                    "outline": "#7e775f",
+                    "inverse-primary": "#e9c400",
+                    "error-container": "#ffdad6",
+                    "on-primary-fixed": "#221b00",
+                    "primary-fixed": "#ffe16d",
+                    "tertiary-fixed-dim": "#c8c7bd",
+                    "tertiary": "#5f5f57",
+                    "on-tertiary-fixed": "#1b1c16",
+                    "on-primary-container": "#705e00",
+                    "error": "#ba1a1a",
+                    "primary-fixed-dim": "#e9c400",
+                    "surface-bright": "#f9f9f9",
+                    "status-info": "#3B82F6",
+                    "secondary-fixed": "#e5e2e1",
+                    "on-background": "#1a1c1c",
+                    "surface-dim": "#dadada",
+                    "surface-container-lowest": "#ffffff",
+                    "on-error": "#ffffff",
+                    "background": "#f9f9f9",
+                    "secondary": "#5f5e5e",
+                    "on-error-container": "#93000a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "touch-target": "48px",
+                    "margin-mobile": "16px",
+                    "margin-desktop": "64px",
+                    "gutter": "16px",
+                    "base": "8px"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": ["Montserrat"],
+                    "caption": ["Inter"],
+                    "body-md": ["Inter"],
+                    "headline-lg": ["Montserrat"],
+                    "label-md": ["Inter"],
+                    "headline-md": ["Montserrat"],
+                    "display-lg": ["Montserrat"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": ["28px", {"lineHeight": "34px", "fontWeight": "700"}],
+                    "caption": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface-container-high text-on-surface antialiased min-h-screen flex flex-col">
+<!-- Transactional Top Bar (Suppressed main nav, focused on document actions) -->
+<header class="bg-surface-container-lowest shadow-sm fixed top-0 w-full z-50 px-margin-mobile h-touch-target flex justify-between items-center">
+<button aria-label="Go back" class="flex items-center gap-2 text-on-surface hover:text-primary transition-colors h-full px-2">
+<span class="material-symbols-outlined">arrow_back</span>
+<span class="font-label-md text-label-md hidden md:inline">Back to Jobs</span>
+</button>
+<button class="bg-primary-container text-on-primary-fixed-variant font-label-md text-label-md px-6 py-2 rounded-lg flex items-center gap-2 hover:bg-primary-fixed transition-colors active:scale-95">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">download</span>
+            Download PDF
+        </button>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow pt-[calc(48px+32px)] pb-12 px-margin-mobile md:px-margin-desktop">
+<!-- Document Wrapper (Paper Simulation) -->
+<div class="max-w-4xl mx-auto bg-surface-container-lowest rounded-xl shadow-md border border-surface-variant overflow-hidden">
+<!-- Invoice Inner Container -->
+<div class="p-6 md:p-12 flex flex-col gap-10">
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row justify-between items-start gap-8 border-b border-surface-variant pb-8">
+<!-- Brand Identity -->
+<div>
+<h1 class="font-headline-lg text-headline-lg text-primary tracking-tight">Kelmah</h1>
+<p class="font-caption text-caption text-secondary mt-1">Industrial Professionalism &amp; Trust</p>
+</div>
+<!-- Invoice Meta -->
+<div class="md:text-right flex flex-col gap-1">
+<h2 class="font-headline-md text-headline-md text-secondary tracking-widest uppercase mb-2">Invoice</h2>
+<p class="font-body-md text-body-md"><span class="font-label-md text-label-md text-secondary mr-2">Invoice ID:</span> <span class="font-label-md text-label-md">#INV-2023-0891</span></p>
+<p class="font-body-md text-body-md"><span class="font-label-md text-label-md text-secondary mr-2">Issue Date:</span> Oct 24, 2023</p>
+<p class="font-body-md text-body-md"><span class="font-label-md text-label-md text-secondary mr-2">Due Date:</span> Nov 07, 2023</p>
+</div>
+</div>
+<!-- Parties Details -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<!-- Hirer (Billed To) -->
+<div class="flex flex-col gap-2">
+<h3 class="font-label-md text-label-md text-secondary uppercase tracking-wider mb-1">Billed To (Hirer)</h3>
+<p class="font-body-lg text-body-lg font-semibold text-on-surface">Acme Property Management</p>
+<p class="font-body-md text-body-md text-secondary">Attn: Sarah Jenkins</p>
+<p class="font-body-md text-body-md text-secondary">124 Industrial Park Rd.<br/>Accra, Ghana</p>
+<p class="font-body-md text-body-md text-secondary mt-2 flex items-center gap-2">
+<span class="material-symbols-outlined text-base">mail</span> s.jenkins@acmeproperties.com
+                        </p>
+</div>
+<!-- Artisan (From) -->
+<div class="flex flex-col gap-2">
+<h3 class="font-label-md text-label-md text-secondary uppercase tracking-wider mb-1">From (Artisan)</h3>
+<p class="font-body-lg text-body-lg font-semibold text-on-surface">Kwame Osei</p>
+<p class="font-body-md text-body-md text-secondary">Master Electrician - Lic #ME-8842</p>
+<p class="font-body-md text-body-md text-secondary">East Legon<br/>Accra, Ghana</p>
+<div class="inline-flex items-center gap-1 bg-surface-container px-2 py-1 rounded mt-2 w-fit">
+<span class="material-symbols-outlined text-status-success text-sm" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="font-caption text-caption text-on-surface">Kelmah Verified</span>
+</div>
+</div>
+</div>
+<!-- Line Items Table -->
+<div class="mt-4">
+<!-- Responsive Table Structure using Grid -->
+<div class="hidden md:grid grid-cols-12 gap-4 border-b border-surface-variant pb-3 mb-4">
+<div class="col-span-6 font-label-md text-label-md text-secondary uppercase tracking-wider">Description / Milestone</div>
+<div class="col-span-2 font-label-md text-label-md text-secondary uppercase tracking-wider text-right">Qty / Hrs</div>
+<div class="col-span-2 font-label-md text-label-md text-secondary uppercase tracking-wider text-right">Rate (GHS)</div>
+<div class="col-span-2 font-label-md text-label-md text-secondary uppercase tracking-wider text-right">Amount</div>
+</div>
+<!-- Item 1 -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-4 py-4 border-b border-surface-container group hover:bg-surface-bright transition-colors rounded-sm px-2 -mx-2">
+<div class="col-span-1 md:col-span-6 flex flex-col gap-1">
+<span class="font-body-md text-body-md font-medium text-on-surface">Main Panel Upgrade &amp; Rewiring</span>
+<span class="font-caption text-caption text-secondary">Complete removal of old panel, installation of new 200A breaker box, and circuit testing for ground floor.</span>
+</div>
+<!-- Mobile Layout adjustments -->
+<div class="col-span-1 md:col-span-6 grid grid-cols-3 md:grid-cols-6 gap-4 items-center">
+<div class="md:col-span-2 text-left md:text-right font-body-md text-body-md">
+<span class="md:hidden font-caption text-caption text-secondary block">Qty/Hrs:</span>
+                                1.00
+                            </div>
+<div class="md:col-span-2 text-center md:text-right font-body-md text-body-md">
+<span class="md:hidden font-caption text-caption text-secondary block">Rate:</span>
+                                3,500.00
+                            </div>
+<div class="md:col-span-2 text-right font-body-md text-body-md font-medium">
+<span class="md:hidden font-caption text-caption text-secondary block">Amount:</span>
+                                3,500.00
+                            </div>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-4 py-4 border-b border-surface-container group hover:bg-surface-bright transition-colors rounded-sm px-2 -mx-2">
+<div class="col-span-1 md:col-span-6 flex flex-col gap-1">
+<span class="font-body-md text-body-md font-medium text-on-surface">Fixture Installation (Phase 1)</span>
+<span class="font-caption text-caption text-secondary">Installation of 12 recess lights in living area and 2 exterior security floodlights.</span>
+</div>
+<div class="col-span-1 md:col-span-6 grid grid-cols-3 md:grid-cols-6 gap-4 items-center">
+<div class="md:col-span-2 text-left md:text-right font-body-md text-body-md">
+<span class="md:hidden font-caption text-caption text-secondary block">Qty/Hrs:</span>
+                                14.00
+                            </div>
+<div class="md:col-span-2 text-center md:text-right font-body-md text-body-md">
+<span class="md:hidden font-caption text-caption text-secondary block">Rate:</span>
+                                50.00
+                            </div>
+<div class="md:col-span-2 text-right font-body-md text-body-md font-medium">
+<span class="md:hidden font-caption text-caption text-secondary block">Amount:</span>
+                                700.00
+                            </div>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-4 py-4 border-b border-surface-container group hover:bg-surface-bright transition-colors rounded-sm px-2 -mx-2">
+<div class="col-span-1 md:col-span-6 flex flex-col gap-1">
+<span class="font-body-md text-body-md font-medium text-on-surface">Materials (Reimbursable)</span>
+<span class="font-caption text-caption text-secondary">Wire, conduits, junction boxes as per attached receipts.</span>
+</div>
+<div class="col-span-1 md:col-span-6 grid grid-cols-3 md:grid-cols-6 gap-4 items-center">
+<div class="md:col-span-2 text-left md:text-right font-body-md text-body-md">
+<span class="md:hidden font-caption text-caption text-secondary block">Qty/Hrs:</span>
+                                1.00
+                            </div>
+<div class="md:col-span-2 text-center md:text-right font-body-md text-body-md">
+<span class="md:hidden font-caption text-caption text-secondary block">Rate:</span>
+                                1,250.00
+                            </div>
+<div class="md:col-span-2 text-right font-body-md text-body-md font-medium">
+<span class="md:hidden font-caption text-caption text-secondary block">Amount:</span>
+                                1,250.00
+                            </div>
+</div>
+</div>
+</div>
+<!-- Totals Section -->
+<div class="flex justify-end pt-4">
+<div class="w-full md:w-1/2 lg:w-1/3 flex flex-col gap-3">
+<div class="flex justify-between items-center text-secondary">
+<span class="font-body-md text-body-md">Subtotal</span>
+<span class="font-body-md text-body-md">5,450.00 GHS</span>
+</div>
+<div class="flex justify-between items-center text-secondary">
+<span class="font-body-md text-body-md">Platform Fee (5%)</span>
+<span class="font-body-md text-body-md">272.50 GHS</span>
+</div>
+<div class="flex justify-between items-center border-t border-surface-variant pt-3 mt-1 text-on-surface">
+<span class="font-headline-md text-headline-md font-bold">Grand Total</span>
+<span class="font-headline-md text-headline-md font-bold text-primary">5,722.50 GHS</span>
+</div>
+</div>
+</div>
+<!-- Footer Notes -->
+<div class="mt-8 pt-8 border-t border-surface-variant flex flex-col items-center gap-2 text-center">
+<p class="font-body-md text-body-md text-secondary">Payment is securely held in Kelmah Escrow and will be released upon job completion approval.</p>
+<p class="font-caption text-caption text-outline">For questions concerning this invoice, please contact support@kelmah.com</p>
+<div class="flex items-center gap-1 mt-4 text-outline-variant">
+<span class="material-symbols-outlined text-sm">lock</span>
+<span class="font-caption text-caption uppercase tracking-wider">Secured by Kelmah Trust Ledger</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

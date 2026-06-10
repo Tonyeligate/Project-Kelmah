@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kelmah - Luxury Bathroom Tiling</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+                  "on-tertiary-container": "#5f5f58",
+                  "surface-variant": "#e2e2e2",
+                  "surface-container-highest": "#e2e2e2",
+                  "primary-fixed-dim": "#e9c400",
+                  "on-tertiary-fixed": "#1b1c16",
+                  "on-error": "#ffffff",
+                  "on-secondary-container": "#636262",
+                  "tertiary-fixed": "#e4e3d9",
+                  "outline-variant": "#d0c6ab",
+                  "on-primary-container": "#705e00",
+                  "secondary-fixed": "#e5e2e1",
+                  "error": "#ba1a1a",
+                  "tertiary": "#5f5f57",
+                  "on-primary-fixed-variant": "#544600",
+                  "on-primary": "#ffffff",
+                  "surface": "#f9f9f9",
+                  "background": "#f9f9f9",
+                  "surface-container-lowest": "#ffffff",
+                  "secondary": "#5f5e5e",
+                  "surface-tint": "#705d00",
+                  "surface-muted": "#F3F4F6",
+                  "on-secondary-fixed": "#1c1b1b",
+                  "secondary-fixed-dim": "#c8c6c5",
+                  "on-surface-variant": "#4d4732",
+                  "tertiary-fixed-dim": "#c8c7bd",
+                  "surface-dim": "#dadada",
+                  "secondary-container": "#e2dfde",
+                  "tertiary-container": "#dcdad0",
+                  "status-success": "#10B981",
+                  "primary": "#705d00",
+                  "primary-container": "#ffd700",
+                  "outline": "#7e775f",
+                  "inverse-primary": "#e9c400",
+                  "on-secondary": "#ffffff",
+                  "surface-bright": "#f9f9f9",
+                  "on-tertiary-fixed-variant": "#474740",
+                  "surface-container-high": "#e8e8e8",
+                  "on-surface": "#1a1c1c",
+                  "status-info": "#3B82F6",
+                  "text-body": "#4B5563",
+                  "surface-container": "#eeeeee",
+                  "on-primary-fixed": "#221b00",
+                  "on-tertiary": "#ffffff",
+                  "inverse-surface": "#2f3131",
+                  "on-secondary-fixed-variant": "#474746",
+                  "on-error-container": "#93000a",
+                  "surface-container-low": "#f3f3f4",
+                  "primary-fixed": "#ffe16d",
+                  "inverse-on-surface": "#f0f1f1",
+                  "error-container": "#ffdad6",
+                  "on-background": "#1a1c1c"
+          },
+          "borderRadius": {
+                  "DEFAULT": "0.25rem",
+                  "lg": "0.5rem",
+                  "xl": "0.75rem",
+                  "full": "9999px"
+          },
+          "spacing": {
+                  "touch-target": "48px",
+                  "margin-mobile": "16px",
+                  "base": "8px",
+                  "margin-desktop": "64px",
+                  "gutter": "16px"
+          },
+          "fontFamily": {
+                  "display-lg": ["Montserrat"],
+                  "caption": ["Inter"],
+                  "body-lg": ["Inter"],
+                  "headline-lg": ["Montserrat"],
+                  "body-md": ["Inter"],
+                  "label-md": ["Inter"],
+                  "headline-md": ["Montserrat"],
+                  "headline-lg-mobile": ["Montserrat"]
+          },
+          "fontSize": {
+                  "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                  "caption": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                  "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                  "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                  "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                  "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                  "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                  "headline-lg-mobile": ["28px", {"lineHeight": "34px", "fontWeight": "700"}]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      line-height: 1;
+      text-transform: none;
+      letter-spacing: normal;
+      word-wrap: normal;
+      white-space: nowrap;
+      direction: ltr;
+    }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body-md min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="bg-surface-container-low dark:bg-surface-dim shadow-sm w-full top-0 sticky flex items-center justify-between px-margin-mobile h-touch-target z-50">
+<div class="flex items-center gap-4">
+<button class="active:opacity-80 transition-all hover:bg-surface-variant transition-colors rounded-full p-2">
+<span class="material-symbols-outlined text-primary">arrow_back</span>
+</button>
+<h1 class="font-headline-md text-headline-md font-bold text-on-surface">Project Details</h1>
+</div>
+<div class="flex items-center gap-2">
+<button class="active:opacity-80 transition-all hover:bg-surface-variant transition-colors rounded-full p-2">
+<span class="material-symbols-outlined text-secondary">share</span>
+</button>
+<button class="active:opacity-80 transition-all hover:bg-surface-variant transition-colors rounded-full p-2">
+<span class="material-symbols-outlined text-secondary">favorite</span>
+</button>
+</div>
+</header>
+<main class="max-w-7xl mx-auto">
+<!-- Image Carousel Section -->
+<section class="relative group">
+<div class="flex overflow-x-auto snap-x snap-mandatory hide-scrollbar aspect-[4/3] md:aspect-[16/7] w-full bg-surface-container" id="carousel">
+<div class="snap-start flex-shrink-0 w-full h-full relative">
+<img class="w-full h-full object-cover" data-alt="A luxurious modern bathroom featuring intricate grey and white marble tiling across the walls and floors. The lighting is soft and cinematic, highlighting the polished textures and the precision of the masonry work. The aesthetic is high-end corporate modern with a clean, industrial edge. Deep shadows and bright highlights emphasize the quality of the artisan's craftsmanship." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCmuaNdSSCJ5RYtXqvC1jTskuAPEqNgjHm6xTP99gp6peueJ7smP0wmCc39hWHagx-hnXNNfr3ZxMe4DHpvjyqbwxbaKO_oyA8iEeJpcHAZknwCTWRqP8SqsIRt7665PWZ_-GoOt6lz2hqbZQqRQhED6BIspeYhS54VEqYBrfvteoRQuiEmzlQPdNuHmsG0CY4CadkrPcA-NV6P9geEsfS6gz7DyrR9j6gVfVq4jJXiXkkUXa14iIq_IfHtLEALEfUCfevM2E8BGTg"/>
+</div>
+<div class="snap-start flex-shrink-0 w-full h-full relative">
+<img class="w-full h-full object-cover" data-alt="Close up detail shot of professional tiling work in a luxury bathroom environment. The image shows perfectly aligned grout lines and geometric tile patterns in a palette of slate grey and charcoal. High-contrast lighting creates a professional and reliable atmosphere, focusing on the utilitarian clarity of the industrial masonry process." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDWfzOvKCdBse7DspNdKJnw2RwbtxoSdHY6z5Xd9m4k0kMtlXu9_CmCcBw8EvQw0BTIBt54I0CXqOuMs3BCIHeRdlHwl8rn45f1XoKpwOL91xvXUJDVQlrWXDLciINraXDV77OuT0z90Odywz5tHRSxyVt41A4JwiNx9Ao-JYJb6gWyU5oFLe3tyRF5VHTzO-edCt7WMyNljmd4s595H9kZbUZ6NtcA2SQ58Qr8_P9f1n7WQ1OzZQHv-HmowCyKjoGwngmqtxcZxzQ"/>
+</div>
+<div class="snap-start flex-shrink-0 w-full h-full relative">
+<img class="w-full h-full object-cover" data-alt="A wide shot of a master bathroom renovation project nearing completion. Skilled masonry work is evident in the custom-built walk-in shower with floor-to-ceiling tiling. The color palette consists of bone white and primary yellow accents in the decor, reflecting a stable and efficient professional workspace. The lighting is natural and bright, showcasing the stability of the structure." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-95Y8byfCBnE0_3SV8u7uGvuRLp3200oRckGfmqq6gNET5KP48MhVx44knifvRn62TwDn0hnaPO45ECVxFGpU-lriwF-gwMCwIJO8lSBaBzJfxYSokz0916e9UjVsX6t84hYX5P-evkPBNFGBlAVA2a9PUfCoAeI8x9uxKY0JP9AzWJFm1Q_OR2kPUMP-QxkjqONDhV0i2kfsmUdAqMgB1q4UjcRovQS2Gg0q34oOHp5Gq0E_-BckkemOWYbr2dvyWilnRrsagP4"/>
+</div>
+</div>
+<!-- Carousel Indicators -->
+<div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+<div class="w-2 h-2 rounded-full bg-primary-container"></div>
+<div class="w-2 h-2 rounded-full bg-white/50"></div>
+<div class="w-2 h-2 rounded-full bg-white/50"></div>
+</div>
+</section>
+<div class="px-margin-mobile mt-8 md:mt-12 grid grid-cols-1 md:grid-cols-12 gap-gutter">
+<!-- Content Column -->
+<div class="md:col-span-8 space-y-8">
+<!-- Title and Category -->
+<div>
+<div class="flex items-center gap-2 mb-2">
+<span class="bg-primary-container text-on-primary-container px-3 py-1 rounded-full font-label-md text-label-md">Masonry/Tiling</span>
+<span class="bg-status-success/10 text-status-success px-3 py-1 rounded-full font-label-md text-label-md flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+              Verified Project
+            </span>
+</div>
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface mb-2">Luxury Bathroom Tiling</h2>
+<p class="text-secondary font-body-md">Completed in Central London District</p>
+</div>
+<!-- Project Overview Card -->
+<section class="bg-white border border-outline-variant p-6 rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.04)]">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-4">Project Overview</h3>
+<p class="font-body-md text-on-surface-variant leading-relaxed mb-6">
+            A comprehensive tiling renovation for a premium residential penthouse. This project involved the precise installation of large-format Italian porcelain tiles and intricate mosaic accents. The design required meticulous planning to ensure perfectly centered patterns and seamless transitions between the wet area and the main floor.
+          </p>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+<div class="flex items-start gap-4">
+<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined">architecture</span>
+</div>
+<div>
+<p class="text-secondary font-label-md">Materials Used</p>
+<p class="font-body-md font-bold">Italian Porcelain, Marble Trim</p>
+</div>
+</div>
+<div class="flex items-start gap-4">
+<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined">schedule</span>
+</div>
+<div>
+<p class="text-secondary font-label-md">Duration</p>
+<p class="font-body-md font-bold">14 Working Days</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Technical Specification (Bento Style) -->
+<section class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<div class="bg-on-surface text-white p-6 rounded-xl flex flex-col justify-between h-40">
+<span class="material-symbols-outlined text-primary-container">square_foot</span>
+<div>
+<p class="font-label-md text-secondary-fixed">Surface Area</p>
+<p class="font-headline-md text-headline-md">45 m²</p>
+</div>
+</div>
+<div class="bg-surface-container-high p-6 rounded-xl flex flex-col justify-between h-40 border border-outline-variant">
+<span class="material-symbols-outlined text-primary">precision_manufacturing</span>
+<div>
+<p class="font-label-md text-secondary">Grout Technique</p>
+<p class="font-headline-md text-headline-md">Epoxy Precision</p>
+</div>
+</div>
+</section>
+</div>
+<!-- Artisan Sidebar (Desktop Only) -->
+<aside class="hidden md:block md:col-span-4 space-y-6">
+<div class="sticky top-24 bg-white border border-outline-variant rounded-xl p-6 shadow-lg">
+<div class="flex items-center gap-4 mb-6">
+<img class="w-16 h-16 rounded-full object-cover" data-alt="A professional portrait of a skilled masonry artisan in his late 40s. He wears a clean, branded work uniform and has a confident, reliable expression. The background is a blurred professional workshop with high-end tools. Lighting is bright and even, reinforcing the brand's pillars of trust and efficiency." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDPYExuKfUi_POIT8EiFbnwR80mzHIZdknz4eXK8R0WKtso--oXtu5w6C02rmrqTBGA-gW0ksKxDHptb9CGsiKfNzTbNt-XrzVo-crs0zzWJJs_FhshPshRRRAS6OhQH1QnJzzRbxnoe1V4msXoOEyXrO9ts6uWbjAA8GswUm8vp-8eNV-yO6V1dl3yXtkRRP0O11UAN-_N7h-EvJBTOjauAlnDHEviRCt68P2Cqvwx54FDlOPffDfmvQ8xO-3s853aI7v73ZyfTK8"/>
+<div>
+<h4 class="font-headline-md text-headline-md text-on-surface">Marcus T.</h4>
+<p class="text-secondary font-label-md">Master Mason • 12 yrs exp.</p>
+</div>
+</div>
+<p class="font-body-md text-on-surface-variant mb-6">Marcus specializes in high-end stone and tile installations for luxury properties across the metropolitan area.</p>
+<button class="w-full bg-primary-container text-on-primary-container font-bold py-4 rounded-lg active:scale-95 transition-transform hover:opacity-90 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">message</span>
+            Contact Artisan
+          </button>
+<button class="w-full mt-3 bg-white border border-on-surface text-on-surface font-bold py-4 rounded-lg active:scale-95 transition-transform hover:bg-surface-container flex items-center justify-center gap-2">
+            View Full Portfolio
+          </button>
+</div>
+</aside>
+</div>
+</main>
+<!-- Sticky Bottom Contact (Mobile Only) -->
+<div class="md:hidden fixed bottom-16 left-0 w-full p-4 z-40 bg-white/80 backdrop-blur-md border-t border-outline-variant">
+<button class="w-full bg-primary-container text-on-primary-container font-bold py-4 rounded-lg shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">send</span>
+      Contact Artisan
+    </button>
+</div>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-margin-mobile py-2 bg-surface dark:bg-on-surface shadow-lg rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim px-4 py-1 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-md text-label-md">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container dark:bg-primary text-on-primary-container dark:text-on-primary rounded-xl px-4 py-1" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">work</span>
+<span class="font-label-md text-label-md">Jobs</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim px-4 py-1 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">mail</span>
+<span class="font-label-md text-label-md">Messages</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim px-4 py-1 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim px-4 py-1 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-md text-label-md">Profile</span>
+</a>
+</nav>
+<script>
+    // Micro-interactions for Carousel
+    const carousel = document.getElementById('carousel');
+    const dots = document.querySelectorAll('.absolute.bottom-4 div');
+    
+    carousel.addEventListener('scroll', () => {
+      const scrollIndex = Math.round(carousel.scrollLeft / carousel.offsetWidth);
+      dots.forEach((dot, index) => {
+        if(index === scrollIndex) {
+          dot.classList.add('bg-primary-container');
+          dot.classList.remove('bg-white/50');
+        } else {
+          dot.classList.remove('bg-primary-container');
+          dot.classList.add('bg-white/50');
+        }
+      });
+    });
+
+    // Simple interaction for the "Contact" button
+    document.querySelectorAll('button').forEach(btn => {
+      if(btn.innerText.includes('Contact Artisan')) {
+        btn.addEventListener('click', () => {
+          btn.innerHTML = '<span class="material-symbols-outlined animate-spin">sync</span> Connecting...';
+          setTimeout(() => {
+            btn.innerHTML = '<span class="material-symbols-outlined">check_circle</span> Message Sent';
+            btn.classList.replace('bg-primary-container', 'bg-status-success');
+            btn.classList.replace('text-on-primary-container', 'text-white');
+          }, 1200);
+        });
+      }
+    });
+  </script>
+</body></html>

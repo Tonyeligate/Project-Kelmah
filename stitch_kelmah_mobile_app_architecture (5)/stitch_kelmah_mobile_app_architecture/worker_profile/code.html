@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Worker Profile - Kojo Mensah</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "surface-bright": "#f9f9f9",
+                        "secondary": "#5f5e5e",
+                        "primary": "#705d00",
+                        "surface-container-low": "#f3f3f4",
+                        "on-secondary-fixed-variant": "#474746",
+                        "on-secondary": "#ffffff",
+                        "on-surface": "#1a1c1c",
+                        "outline-variant": "#d0c6ab",
+                        "on-error": "#ffffff",
+                        "inverse-surface": "#2f3131",
+                        "tertiary-container": "#dcdad0",
+                        "on-error-container": "#93000a",
+                        "primary-fixed-dim": "#e9c400",
+                        "on-primary-fixed-variant": "#544600",
+                        "text-body": "#4B5563",
+                        "on-background": "#1a1c1c",
+                        "on-tertiary-container": "#5f5f58",
+                        "tertiary-fixed-dim": "#c8c7bd",
+                        "surface": "#f9f9f9",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "inverse-on-surface": "#f0f1f1",
+                        "outline": "#7e775f",
+                        "status-success": "#10B981",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#e9c400",
+                        "primary-fixed": "#ffe16d",
+                        "tertiary-fixed": "#e4e3d9",
+                        "surface-container-high": "#e8e8e8",
+                        "status-info": "#3B82F6",
+                        "secondary-container": "#e2dfde",
+                        "background": "#f9f9f9",
+                        "surface-container": "#eeeeee",
+                        "on-tertiary-fixed-variant": "#474740",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "on-primary-container": "#705e00",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary": "#5f5f57",
+                        "surface-dim": "#dadada",
+                        "on-secondary-container": "#636262",
+                        "on-primary-fixed": "#221b00",
+                        "surface-muted": "#F3F4F6",
+                        "secondary-fixed": "#e5e2e1",
+                        "on-tertiary-fixed": "#1b1c16",
+                        "surface-tint": "#705d00",
+                        "error-container": "#ffdad6",
+                        "surface-container-highest": "#e2e2e2",
+                        "on-surface-variant": "#4d4732",
+                        "primary-container": "#ffd700",
+                        "surface-variant": "#e2e2e2"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "touch-target": "48px",
+                        "gutter": "16px",
+                        "margin-desktop": "64px",
+                        "base": "8px",
+                        "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "headline-lg-mobile": ["Montserrat"],
+                        "headline-lg": ["Montserrat"],
+                        "label-md": ["Inter"],
+                        "headline-md": ["Montserrat"],
+                        "caption": ["Inter"],
+                        "body-md": ["Inter"],
+                        "display-lg": ["Montserrat"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["28px", {"lineHeight": "34px", "fontWeight": "700"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "caption": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body-md antialiased mb-20 md:mb-0 md:mt-16">
+<!-- Top App Bar -->
+<header class="fixed top-0 w-full z-50 bg-surface-container-low dark:bg-surface-container-high shadow-sm flex justify-between items-center px-margin-mobile h-touch-target">
+<div class="flex items-center gap-4">
+<button class="active:scale-95 transition-transform hover:bg-surface-variant/20 p-2 rounded-full">
+<span class="material-symbols-outlined text-primary" data-icon="arrow_back">arrow_back</span>
+</button>
+<span class="font-headline-md text-headline-md font-bold text-primary">Kelmah</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="active:scale-95 transition-transform hover:bg-surface-variant/20 p-2 rounded-full">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="share">share</span>
+</button>
+<button class="active:scale-95 transition-transform hover:bg-surface-variant/20 p-2 rounded-full">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="favorite">favorite</span>
+</button>
+</div>
+</header>
+<main class="max-w-screen-xl mx-auto pt-16 md:pt-8 px-margin-mobile md:px-margin-desktop grid grid-cols-1 md:grid-cols-12 gap-8">
+<!-- Left Column: Profile Card & Basic Info -->
+<aside class="md:col-span-4 lg:col-span-3 space-y-6">
+<div class="bg-surface-container-lowest rounded-xl p-6 shadow-[0_-4px_20px_rgba(0,0,0,0.04)] border border-outline-variant/30 flex flex-col items-center text-center">
+<div class="relative mb-4">
+<img class="w-32 h-32 rounded-full object-cover border-4 border-primary-container shadow-lg" data-alt="A professional portrait of a skilled African male artisan in his 30s, wearing a clean, structured work shirt. He has a warm, confident expression, standing against a softly blurred industrial workshop background. The lighting is bright and natural, emphasizing a professional and trustworthy atmosphere for a modern business platform. The color palette is grounded in warm neutrals and golden accents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCTTmTfLZh2sErgxnz4vSnr0T6hIXOtlSk2XBUUnSJAa9_HN4MzS2juJ_s3EwctIXij7swyNWLu4UGYRPV8EV8D1ITDMIHWI-X-FkwRY_Tbt6AiBgommA88_ko4dFtRn1fMfYy_2dGhLnxZ3H-MdhrZs8oJ0fbTZhMoFzOJ1BstQhB5Ln5tfLsTeLqYcaH98N80mgsJ6zeFDyvJJEI_zYnhyS40XtgcdPqRMrWJeeaJf7vUY9FCeWmy6Yt2J8CpIOZG-JfQXvaG5Zs"/>
+<div class="absolute bottom-1 right-1 bg-status-success text-white p-1 rounded-full border-2 border-surface-container-lowest">
+<span class="material-symbols-outlined text-[16px]" data-icon="verified" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+<h1 class="font-headline-md text-headline-md text-on-surface mb-1">Kojo Mensah</h1>
+<p class="text-body-md text-on-surface-variant mb-3">Master Plumber</p>
+<div class="flex items-center gap-1 bg-tertiary-fixed px-3 py-1 rounded-full mb-4">
+<span class="material-symbols-outlined text-primary text-sm" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-md text-on-tertiary-fixed">4.8 (124 Reviews)</span>
+</div>
+<div class="w-full pt-4 border-t border-outline-variant/30 space-y-3 text-left">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary" data-icon="location_on">location_on</span>
+<span class="text-body-md">Accra, Ghana</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary" data-icon="payments">payments</span>
+<span class="font-bold text-on-surface">GH¢ 120 / hr</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary" data-icon="schedule">schedule</span>
+<span class="text-body-md">Available Now</span>
+</div>
+</div>
+<button class="w-full mt-6 bg-primary-container text-on-primary-container font-bold py-3 rounded-xl hover:opacity-90 active:scale-[0.98] transition-all shadow-sm">
+                    Hire Now
+                </button>
+<button class="w-full mt-3 border border-on-surface text-on-surface font-bold py-3 rounded-xl hover:bg-surface-variant/10 transition-colors">
+                    Send Message
+                </button>
+</div>
+<!-- Skills Card -->
+<div class="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/30">
+<h3 class="font-label-md text-on-surface mb-4">Specialized Skills</h3>
+<div class="flex flex-wrap gap-2">
+<span class="px-3 py-1 bg-secondary-container text-on-secondary-container rounded-lg text-sm font-medium">Pipe Repair</span>
+<span class="px-3 py-1 bg-secondary-container text-on-secondary-container rounded-lg text-sm font-medium">Drain Cleaning</span>
+<span class="px-3 py-1 bg-secondary-container text-on-secondary-container rounded-lg text-sm font-medium">Water Heater Installation</span>
+<span class="px-3 py-1 bg-secondary-container text-on-secondary-container rounded-lg text-sm font-medium">Gas Leak Detection</span>
+<span class="px-3 py-1 bg-secondary-container text-on-secondary-container rounded-lg text-sm font-medium">Leak Proofing</span>
+</div>
+</div>
+</aside>
+<!-- Right Column: Tabs & Content -->
+<section class="md:col-span-8 lg:col-span-9">
+<!-- Bento-style Portfolio Highlights -->
+<div class="mb-8">
+<div class="flex items-center justify-between mb-4">
+<h2 class="font-headline-md text-headline-md">Portfolio Gallery</h2>
+<button class="text-primary font-label-md flex items-center gap-1 hover:underline">
+                        View All <span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 auto-rows-[150px]">
+<div class="col-span-2 row-span-2 rounded-2xl overflow-hidden relative group">
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="A clean, high-contrast shot of a modern bathroom plumbing installation featuring gleaming copper pipes and professional soldering work. The image is bright with high-key lighting, emphasizing precision and industrial cleanliness. The setting is a contemporary home under renovation, showcasing a sophisticated and organized utility system." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPtZ2RhZ2hMwJ7nkbYFjVQ2Q0fv4NyecOhLzmUnd062e9_ySqGTVo3NrpW-EDv8yw_Z6yylFFdzBz1ctgLwPuCcKcXLCjZ8ziVzz31MG1vIddhQ2-2hQXg3MYceVf2e5uG490Ehy9qZCjpid4EeoI3RM5oduIfGPNRobHMifeLQEP8RF2cLrr9UJqZST2W6X4Pf7Hg8deiXV3WKE3wxtWADJ-Uxc5d0CBPQ5W2aUJ28Z9FIBzn33f6-tf-8TR_OsggF1UvC1WI3As"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
+<span class="text-white text-sm font-medium">Luxury Bath Installation</span>
+</div>
+</div>
+<div class="rounded-2xl overflow-hidden relative group">
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Close up of professional plumbing tools including heavy-duty wrenches and high-quality fittings neatly arranged on a clean work surface. The style is utilitarian and professional, utilizing a corporate modern aesthetic with sharp focus and clean lines. The atmosphere suggests readiness and technical expertise." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA_YpU1V4vYfMeZhvdwWg6Sd8wV4s6WL_nCX0hYDAvA413t0LDMA5QGSA38-F6NVZ8D4xUCWpceXvhlAyZgqso20fQRw-HUgrOIvMLqSx6RbH-lH7SDbuElfBfLd1HpcQHFu1pdlTcB3VOu5tFVQTGo89__hD6Ionmnm5ZsYUMrnzHFf5siSnh64sPkD57CV6TPNi5zP4mA2QiYukyG6OsD-sa16I91ybVi3addGk9cDT2G6ZLNqPuR6TsVswhCRWiwjY4aJh8MW-M"/>
+</div>
+<div class="rounded-2xl overflow-hidden relative group">
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="A wide angle view of an industrial-grade water heater unit installed in a modern basement. The installation is perfectly aligned, featuring clean piping and visible pressure gauges. The lighting is cool and even, highlighting the technical proficiency and stable execution of a complex mechanical task." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCAuql-1TPa4RWEZ0Z4rz7ZXIUegTntky0HgvlTdNxv-kh75FBmep3jRlyvH48rmAT_LWrRQqxDmClWuZkX3o9y4dVqfKGVIpnooOqk5zaJF5g1WYOGDfijanMQEa_CX5v8TXkMNwvwVPqqPGhtcZtz_ahX1eYd07kHc9Dsrg3ZK2xQTEv2p-KRwAE9r86ypedf9rsxptVhWlEPRE7JsW0M6OVrfiSvOIPnzYmU7mKeQbzokFywTWiPkFB2Lp4sf8_tlDtC2iB_O6w"/>
+</div>
+<div class="col-span-2 rounded-2xl overflow-hidden relative group">
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="A series of neatly finished floor drains in a high-end commercial kitchen, showing perfect grouting and professional metal finish. The aesthetic is clean, functional, and precise, mirroring a professional trade environment. The image uses a neutral color palette with high contrast highlights on metallic surfaces." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDA-pRydLvNJhQQFc2FlZ9GTQvSlXSDuDl5NdZcWqoguSfp2vziWhrkERUUr7oDw4Xln6dKdpRBOM-I8GcCp7wlsdqCGyVF81zvN-fYtWQjO7C-unVuloQIBazgJD0ZXiWBbbKUEefGE9WKbn8u9A-NMAzCQHWm8X0q-_RkXfC9V6PWPEH7HiLgdT5KKCpRYO3ksCyPsseuIqu9R2gclJkoBJqNkca-b0a3j9S91tLj6EO1omI5poYs4cezm1Z2OsFCrc3ZuKY73bw"/>
+</div>
+</div>
+</div>
+<!-- Tab Navigation -->
+<div class="border-b border-outline-variant/30 mb-6 flex gap-8 overflow-x-auto hide-scrollbar">
+<button class="pb-4 border-b-2 border-primary text-primary font-bold transition-all" id="tab-about" onclick="switchTab('about')">About</button>
+<button class="pb-4 border-b-2 border-transparent text-on-surface-variant font-medium hover:text-on-surface transition-all" id="tab-reviews" onclick="switchTab('reviews')">Reviews (124)</button>
+<button class="pb-4 border-b-2 border-transparent text-on-surface-variant font-medium hover:text-on-surface transition-all" id="tab-faq" onclick="switchTab('faq')">FAQ</button>
+</div>
+<!-- Tab Content: About -->
+<div class="space-y-6" id="content-about">
+<div class="bg-surface-container rounded-xl p-6">
+<h3 class="font-headline-md text-lg mb-3">Professional Bio</h3>
+<p class="text-body-md text-on-surface-variant leading-relaxed">
+                        With over 12 years of hands-on experience in both residential and commercial plumbing, I specialize in solving complex water system issues. My approach is built on the pillars of transparency, precision, and respect for my client's property. I am fully licensed and bring state-of-the-art diagnostic equipment to every job to ensure we find the right fix the first time.
+                    </p>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/30 flex items-start gap-4">
+<div class="bg-primary-container/20 p-2 rounded-lg">
+<span class="material-symbols-outlined text-primary" data-icon="construction">construction</span>
+</div>
+<div>
+<h4 class="font-label-md">Licensed &amp; Insured</h4>
+<p class="text-caption text-on-surface-variant">Full coverage for your peace of mind</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/30 flex items-start gap-4">
+<div class="bg-primary-container/20 p-2 rounded-lg">
+<span class="material-symbols-outlined text-primary" data-icon="timer">timer</span>
+</div>
+<div>
+<h4 class="font-label-md">Fast Response</h4>
+<p class="text-caption text-on-surface-variant">Average response within 30 minutes</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Tab Content: Reviews (Hidden by default) -->
+<div class="hidden space-y-4" id="content-reviews">
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/30">
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-3">
+<img alt="Reviewer" class="w-10 h-10 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCvphFlsxEb7v-7gvZCaoCv3m-pE1MGH87CZPZBVgXh4ST7NfMSbTcx_RJpMQP4y_wSVn5IQqpfJvEmq76vQDDKd0SWomBBiGG8Xc3EbbrXboRofUS4egsHXiBpaSytNIK5g_lJufzz8z6kV03VxFHJPEDMuBJqennvYihofSrXkjlOodx1BNs7v4S6plh02LCo-gi2zeAK9qrZH9JG12KuuwgP5t38U48tpgYfdgA2sb3od4SEh9QkjaKOhW-F7kWoO8d83dGjV14"/>
+<div>
+<h4 class="font-label-md">Ama Serwaa</h4>
+<div class="flex text-[12px]">
+<span class="material-symbols-outlined text-primary scale-75" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary scale-75" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary scale-75" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary scale-75" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary scale-75" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</div>
+</div>
+<span class="text-caption text-on-surface-variant">2 days ago</span>
+</div>
+<p class="text-body-md text-on-surface-variant">"Kojo was incredibly professional. He fixed my leaking kitchen sink in record time and even cleaned up afterwards. Highly recommend his services!"</p>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/30">
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-3">
+<img alt="Reviewer" class="w-10 h-10 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAFynZSjr8NbYssvloZu9mSjbUh7xtqgknknn5f4OcDnA9JTJnIuC201oTXxTDu-ar1my2_584Vvh9RJVtnFBpuMlzCGfVyySY3J1-NMzA-hfzeGwFRzRUPYYqxbTQ682jxwT0jrZbaDvCehHRwaV7QS6UdHYvYVJPpw7WB9Lepbiqq3uFfWWcrN96REFfZEtr09UrZTGRT-9MGCeEPj7AlQFis0oSyXdyyhuar8fbs27nlK5Oy9DWRWF2mjcBwCWDwIAYJ1JGQ02c"/>
+<div>
+<h4 class="font-label-md">Yaw Boateng</h4>
+<div class="flex text-[12px]">
+<span class="material-symbols-outlined text-primary scale-75" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary scale-75" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary scale-75" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary scale-75" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-on-surface-variant scale-75" data-icon="star">star</span>
+</div>
+</div>
+</div>
+<span class="text-caption text-on-surface-variant">1 week ago</span>
+</div>
+<p class="text-body-md text-on-surface-variant">"Great workmanship on the solar heater installation. Arrived exactly on time."</p>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Nav Bar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 w-full z-50 rounded-t-xl bg-surface-container-lowest dark:bg-surface-container-high shadow-[0_-4px_20px_rgba(0,0,0,0.04)] flex justify-around items-center h-16 pb-safe px-gutter">
+<a class="flex flex-col items-center justify-center text-on-surface-variant transition-all active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-md text-label-md">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant transition-all active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="work">work</span>
+<span class="font-label-md text-label-md">Jobs</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant transition-all active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="mail">mail</span>
+<span class="font-label-md text-label-md">Messages</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1 transition-all active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="person" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-label-md text-label-md">Profile</span>
+</a>
+</nav>
+<script>
+        function switchTab(tabName) {
+            const tabs = ['about', 'reviews', 'faq'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                const content = document.getElementById(`content-${t}`);
+                
+                if (t === tabName) {
+                    btn.classList.add('border-primary', 'text-primary', 'font-bold');
+                    btn.classList.remove('border-transparent', 'text-on-surface-variant', 'font-medium');
+                    if(content) content.classList.remove('hidden');
+                } else {
+                    btn.classList.remove('border-primary', 'text-primary', 'font-bold');
+                    btn.classList.add('border-transparent', 'text-on-surface-variant', 'font-medium');
+                    if(content) content.classList.add('hidden');
+                }
+            });
+        }
+    </script>
+</body></html>

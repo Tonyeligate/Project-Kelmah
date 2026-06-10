@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kelmah | Ghana's Trusted Skilled Trades Platform</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-high": "#e8e8e8",
+                    "primary": "#705d00",
+                    "on-tertiary-fixed": "#1b1c16",
+                    "surface-variant": "#e2e2e2",
+                    "tertiary": "#5f5f57",
+                    "tertiary-fixed-dim": "#c8c7bd",
+                    "background": "#f9f9f9",
+                    "on-error": "#ffffff",
+                    "on-surface-variant": "#4d4732",
+                    "on-tertiary-fixed-variant": "#474740",
+                    "status-success": "#10B981",
+                    "outline": "#7e775f",
+                    "outline-variant": "#d0c6ab",
+                    "tertiary-fixed": "#e4e3d9",
+                    "on-secondary": "#ffffff",
+                    "on-tertiary-container": "#5f5f58",
+                    "on-background": "#1a1c1c",
+                    "secondary-fixed": "#e5e2e1",
+                    "secondary-container": "#e2dfde",
+                    "surface-container-lowest": "#ffffff",
+                    "on-secondary-fixed": "#1c1b1b",
+                    "inverse-on-surface": "#f0f1f1",
+                    "inverse-primary": "#e9c400",
+                    "text-body": "#4B5563",
+                    "surface-container": "#eeeeee",
+                    "surface-bright": "#f9f9f9",
+                    "on-primary-container": "#705e00",
+                    "surface-container-low": "#f3f3f4",
+                    "on-primary": "#ffffff",
+                    "primary-fixed-dim": "#e9c400",
+                    "surface-container-highest": "#e2e2e2",
+                    "surface-dim": "#dadada",
+                    "on-surface": "#1a1c1c",
+                    "error-container": "#ffdad6",
+                    "on-secondary-fixed-variant": "#474746",
+                    "on-primary-fixed-variant": "#544600",
+                    "primary-container": "#ffd700",
+                    "surface": "#f9f9f9",
+                    "on-error-container": "#93000a",
+                    "on-primary-fixed": "#221b00",
+                    "on-secondary-container": "#636262",
+                    "status-info": "#3B82F6",
+                    "primary-fixed": "#ffe16d",
+                    "secondary": "#5f5e5e",
+                    "surface-tint": "#705d00",
+                    "tertiary-container": "#dcdad0",
+                    "on-tertiary": "#ffffff",
+                    "secondary-fixed-dim": "#c8c6c5",
+                    "surface-muted": "#F3F4F6",
+                    "error": "#ba1a1a",
+                    "inverse-surface": "#2f3131"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "base": "8px",
+                    "gutter": "16px",
+                    "touch-target": "48px",
+                    "margin-mobile": "16px",
+                    "margin-desktop": "64px"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": ["Montserrat"],
+                    "headline-lg": ["Montserrat"],
+                    "display-lg": ["Montserrat"],
+                    "headline-md": ["Montserrat"],
+                    "body-lg": ["Inter"],
+                    "caption": ["Inter"],
+                    "label-md": ["Inter"],
+                    "body-md": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": ["28px", {"lineHeight": "34px", "fontWeight": "700"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "caption": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        .hero-gradient {
+            background: linear-gradient(rgba(249, 249, 249, 0.8), rgba(249, 249, 249, 0.95)), url('https://images.unsplash.com/photo-1581094794329-c8112a89af12?q=80&w=2070&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+        }
+        .custom-shadow {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface min-h-screen pb-20">
+<!-- TopAppBar -->
+<header class="sticky top-0 z-50 bg-primary dark:bg-primary-fixed-dim shadow-md w-full h-touch-target flex justify-between items-center px-margin-mobile">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-on-primary dark:text-on-primary-fixed" data-icon="menu">menu</span>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-on-primary dark:text-on-primary-fixed">Kelmah</h1>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden md:flex gap-6 mr-4">
+<a class="text-on-primary dark:text-on-primary-fixed font-bold" href="#">Home</a>
+<a class="text-on-primary/80 dark:text-on-primary-fixed/80" href="#">Jobs</a>
+<a class="text-on-primary/80 dark:text-on-primary-fixed/80" href="#">Find Talent</a>
+</div>
+<div class="w-8 h-8 rounded-full bg-surface-container-high border-2 border-on-primary overflow-hidden">
+<img alt="User profile picture" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4giKGYFujhX0gtVzqPpJtoC1xw3zjuEWLIoECNiT6LxiDPoQHjodwfkecv2P8P-rKAv_APK7_5vmxmUhflKALGcBn01Fa_4tWFBOzSgob0uu509Zv_qxLuLQooxmBaF-O47tKcgUT8QMSvvpQ9KvixKf5dwBVIls-iG4juols5avFbdyAfq4Rll7h8TocJztNY8Ji6HT6VY8t43d8g1uJ5Q286BlNjhBmwQF-Ki5XudLCluE5Y47SYZbr0x3es-fYI_G1K8Isy8k"/>
+</div>
+</div>
+</header>
+<main>
+<!-- Hero Section -->
+<section class="hero-gradient px-margin-mobile pt-12 pb-16 flex flex-col items-start gap-6" data-alt="A professional Ghanaian tradesperson working in a brightly lit industrial workshop with high-quality tools and equipment. The scene is captured in a crisp, clean light-mode aesthetic with warm yellow accents. The background features a soft-focus workshop environment that emphasizes a sense of expertise and reliability.">
+<div class="bg-primary-container px-3 py-1 rounded-full">
+<span class="font-label-md text-caption text-on-primary-container">Built for Ghana's busy hiring flow</span>
+</div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile md:text-headline-lg text-on-surface max-w-xl">
+                Find trusted workers across Ghana without the guesswork.
+            </h2>
+<p class="font-body-md text-body-md text-secondary max-w-lg">
+                Kelmah connects homes, shops, and project sites in Accra, Kumasi, Tamale, Takoradi, and beyond with vetted carpenters, electricians, plumbers, masons, painters, and other professionals.
+            </p>
+<div class="flex flex-col sm:flex-row gap-4 w-full">
+<button class="bg-primary-container text-on-primary-container h-touch-target px-8 rounded-lg font-bold flex items-center justify-center gap-2 shadow-md active:scale-95 transition-transform">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+                    Find a worker
+                </button>
+<button class="bg-inverse-surface text-inverse-on-surface h-touch-target px-8 rounded-lg font-bold flex items-center justify-center gap-2 shadow-md active:scale-95 transition-transform">
+<span class="material-symbols-outlined" data-icon="work">work</span>
+                    I need work
+                </button>
+</div>
+<div class="flex items-center gap-2 mt-4 px-4 py-2 bg-surface-container rounded-full border border-outline-variant">
+<span class="material-symbols-outlined text-status-success scale-75" data-icon="verified" data-weight="fill" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="font-caption text-caption text-secondary">Verified workers with ratings and work history across Ghana</span>
+</div>
+</section>
+<!-- Why Kelmah / Categories Section -->
+<section class="px-margin-mobile py-12 bg-surface">
+<div class="max-w-4xl mx-auto space-y-8">
+<div class="space-y-2">
+<h3 class="font-headline-md text-headline-md text-on-surface">Why Kelmah works in Ghana</h3>
+<p class="font-body-md text-body-md text-secondary">A direct, low-friction flow built for people who want to get work done in cities and towns across Ghana.</p>
+</div>
+<!-- Feature Grid / Bento Style -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Carpentry -->
+<div class="bg-surface-container-lowest p-6 rounded-xl custom-shadow border border-outline-variant hover:border-primary transition-colors group">
+<div class="w-12 h-12 bg-tertiary-container rounded-full flex items-center justify-center mb-4 group-hover:bg-primary-container transition-colors">
+<span class="material-symbols-outlined text-primary" data-icon="handyman">handyman</span>
+</div>
+<h4 class="font-label-md text-on-surface mb-2">Carpentry and building work</h4>
+<p class="font-caption text-secondary">Find dependable carpenters, masons, and site workers for repairs, finishes, and new builds in Accra, Kumasi, and beyond.</p>
+</div>
+<!-- Electrical -->
+<div class="bg-surface-container-lowest p-6 rounded-xl custom-shadow border border-outline-variant hover:border-primary transition-colors group">
+<div class="w-12 h-12 bg-tertiary-container rounded-full flex items-center justify-center mb-4 group-hover:bg-primary-container transition-colors">
+<span class="material-symbols-outlined text-primary" data-icon="bolt">bolt</span>
+</div>
+<h4 class="font-label-md text-on-surface mb-2">Electrical repairs and installs</h4>
+<p class="font-caption text-secondary">Connect with electricians for fault finding, wiring, fittings, and safe installations in homes, shops, and sites.</p>
+</div>
+<!-- Plumbing -->
+<div class="bg-surface-container-lowest p-6 rounded-xl custom-shadow border border-outline-variant hover:border-primary transition-colors group">
+<div class="w-12 h-12 bg-tertiary-container rounded-full flex items-center justify-center mb-4 group-hover:bg-primary-container transition-colors">
+<span class="material-symbols-outlined text-primary" data-icon="plumbing">plumbing</span>
+</div>
+<h4 class="font-label-md text-on-surface mb-2">Plumbing and water systems</h4>
+<p class="font-caption text-secondary">Get help with leaks, fittings, tanks, drainage, and bathroom or kitchen plumbing across Ghana.</p>
+</div>
+<!-- Other -->
+<div class="bg-primary p-6 rounded-xl shadow-lg flex flex-col justify-between text-on-primary">
+<div>
+<h4 class="font-label-md mb-2">Are you a skilled artisan?</h4>
+<p class="font-caption opacity-90">Join thousands of professionals finding new jobs every day on Ghana's #1 trades platform.</p>
+</div>
+<button class="mt-6 bg-primary-container text-on-primary-container font-bold py-2 px-4 rounded-lg self-start text-sm active:scale-95 transition-transform">Register Now</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Stats Section (Mobile Friendly) -->
+<section class="px-margin-mobile py-12 flex flex-col gap-8 md:flex-row md:justify-center md:items-center">
+<div class="flex flex-col items-center gap-1">
+<span class="font-headline-lg-mobile text-primary">50k+</span>
+<span class="font-label-md text-secondary">Verified Pros</span>
+</div>
+<div class="w-px h-12 bg-outline-variant hidden md:block"></div>
+<div class="flex flex-col items-center gap-1">
+<span class="font-headline-lg-mobile text-primary">120+</span>
+<span class="font-label-md text-secondary">Towns Covered</span>
+</div>
+<div class="w-px h-12 bg-outline-variant hidden md:block"></div>
+<div class="flex flex-col items-center gap-1">
+<span class="font-headline-lg-mobile text-primary">4.8/5</span>
+<span class="font-label-md text-secondary">Avg. Rating</span>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 flex justify-around items-center bg-surface-container-lowest dark:bg-inverse-surface py-2 px-margin-mobile border-t border-outline-variant dark:border-outline shadow-[0_-4px_20px_rgba(0,0,0,0.04)] rounded-t-xl md:hidden">
+<a class="flex flex-col items-center justify-center bg-primary-container dark:bg-primary text-on-primary-container dark:text-on-primary rounded-full px-4 py-1 scale-90 duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-md text-caption">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim px-4 py-1 hover:bg-surface-variant transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="work">work</span>
+<span class="font-label-md text-caption">Jobs</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim px-4 py-1 hover:bg-surface-variant transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="chat">chat</span>
+<span class="font-label-md text-caption">Messages</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim px-4 py-1 hover:bg-surface-variant transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-md text-caption">Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim px-4 py-1 hover:bg-surface-variant transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-md text-caption">Profile</span>
+</a>
+</nav>
+<!-- Contextual FAB (Only shown on scroll or key areas) -->
+<button class="fixed bottom-24 right-6 w-14 h-14 bg-primary-container text-on-primary-container rounded-full shadow-xl flex items-center justify-center z-40 active:scale-90 transition-transform md:bottom-10" id="main-fab">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+</button>
+<script>
+        // Micro-interaction for the FAB
+        const fab = document.getElementById('main-fab');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 200) {
+                fab.style.opacity = '1';
+                fab.style.transform = 'translateY(0)';
+            } else {
+                fab.style.opacity = '0.7';
+            }
+        });
+
+        // Toggle theme logic (optional but nice for demo)
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+        }
+    </script>
+</body></html>

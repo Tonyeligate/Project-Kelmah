@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Shared Documents - Kelmah</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config injected from Style Guidance -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "outline": "#7e775f",
+                    "on-surface": "#1a1c1c",
+                    "on-error": "#ffffff",
+                    "primary-fixed": "#ffe16d",
+                    "on-tertiary-container": "#5f5f58",
+                    "on-primary-fixed": "#221b00",
+                    "inverse-primary": "#e9c400",
+                    "on-surface-variant": "#4d4732",
+                    "on-secondary-container": "#636262",
+                    "surface-container": "#eeeeee",
+                    "surface-muted": "#F3F4F6",
+                    "tertiary-fixed": "#e4e3d9",
+                    "secondary-fixed-dim": "#c8c6c5",
+                    "error-container": "#ffdad6",
+                    "on-error-container": "#93000a",
+                    "status-info": "#3B82F6",
+                    "secondary-container": "#e2dfde",
+                    "primary-fixed-dim": "#e9c400",
+                    "inverse-surface": "#2f3131",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-bright": "#f9f9f9",
+                    "on-secondary": "#ffffff",
+                    "on-background": "#1a1c1c",
+                    "outline-variant": "#d0c6ab",
+                    "surface": "#f9f9f9",
+                    "on-primary-fixed-variant": "#544600",
+                    "on-primary-container": "#705e00",
+                    "tertiary-container": "#dcdad0",
+                    "on-secondary-fixed-variant": "#474746",
+                    "on-tertiary": "#ffffff",
+                    "surface-variant": "#e2e2e2",
+                    "surface-container-high": "#e8e8e8",
+                    "primary-container": "#ffd700",
+                    "surface-container-low": "#f3f3f4",
+                    "primary": "#705d00",
+                    "error": "#ba1a1a",
+                    "inverse-on-surface": "#f0f1f1",
+                    "text-body": "#4B5563",
+                    "tertiary-fixed-dim": "#c8c7bd",
+                    "on-secondary-fixed": "#1c1b1b",
+                    "surface-dim": "#dadada",
+                    "on-tertiary-fixed-variant": "#474740",
+                    "secondary": "#5f5e5e",
+                    "on-tertiary-fixed": "#1b1c16",
+                    "surface-container-highest": "#e2e2e2",
+                    "background": "#f9f9f9",
+                    "status-success": "#10B981",
+                    "surface-tint": "#705d00",
+                    "tertiary": "#5f5f57",
+                    "secondary-fixed": "#e5e2e1",
+                    "on-primary": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter": "16px",
+                    "base": "8px",
+                    "margin-mobile": "16px",
+                    "touch-target": "48px",
+                    "margin-desktop": "64px"
+            },
+            "fontFamily": {
+                    "headline-md": ["Montserrat"],
+                    "headline-lg": ["Montserrat"],
+                    "label-md": ["Inter"],
+                    "body-md": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "display-lg": ["Montserrat"],
+                    "caption": ["Inter"],
+                    "headline-lg-mobile": ["Montserrat"]
+            },
+            "fontSize": {
+                    "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                    "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                    "label-md": ["14px", { "lineHeight": "20px", "fontWeight": "600" }],
+                    "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                    "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                    "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                    "caption": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                    "headline-lg-mobile": ["28px", { "lineHeight": "34px", "fontWeight": "700" }]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        /* Smooth transitions for view toggling */
+        .view-transition { transition: all 0.3s ease-in-out; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body-md antialiased min-h-screen flex flex-col">
+<!-- TopAppBar (From JSON, modified leading icon for deep link "Back" intent while preserving styles) -->
+<header class="bg-surface dark:bg-surface-dim w-full top-0 sticky bg-surface-container-low dark:bg-surface-container-high flex items-center justify-between px-margin-mobile md:px-margin-desktop h-16 w-full z-50">
+<div class="flex items-center gap-4">
+<button class="flex items-center justify-center w-touch-target h-touch-target text-primary dark:text-primary-fixed-dim hover:bg-surface-variant dark:hover:bg-on-surface-variant transition-colors rounded-full active:scale-95 duration-150">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">arrow_back</span>
+</button>
+<span class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim">Kelmah</span>
+</div>
+<div class="flex items-center">
+<button class="flex items-center justify-center w-touch-target h-touch-target rounded-full hover:bg-surface-variant transition-colors overflow-hidden">
+<span class="material-symbols-outlined text-secondary">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="flex-1 w-full max-w-7xl mx-auto px-margin-mobile md:px-margin-desktop py-8 flex flex-col gap-8">
+<!-- Header & Controls -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<div class="flex items-center gap-2 text-on-surface-variant mb-1">
+<span class="material-symbols-outlined text-[18px]">folder_open</span>
+<span class="font-label-md text-label-md">Project: Riverside Renovation</span>
+</div>
+<h1 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface">Shared Documents</h1>
+</div>
+<!-- Toolbar -->
+<div class="flex items-center gap-3">
+<!-- Search -->
+<div class="relative flex-1 md:w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full h-touch-target pl-10 pr-4 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-body-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors" placeholder="Search files..." type="text"/>
+</div>
+<!-- View Toggles -->
+<div class="flex items-center bg-surface-container border border-outline-variant rounded-lg p-1">
+<button class="w-10 h-10 flex items-center justify-center rounded-md bg-primary-container text-on-primary-container transition-colors" id="btn-list-view" title="List View">
+<span class="material-symbols-outlined">view_list</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-md text-on-surface-variant hover:bg-surface-variant transition-colors" id="btn-grid-view" title="Grid View">
+<span class="material-symbols-outlined">grid_view</span>
+</button>
+</div>
+<!-- Upload Button -->
+<button class="h-touch-target px-6 bg-primary-container text-on-primary-container font-label-md text-label-md rounded-lg hover:bg-inverse-primary transition-colors flex items-center gap-2 ml-2 shadow-sm">
+<span class="material-symbols-outlined">upload</span>
+<span class="hidden md:inline">Upload File</span>
+</button>
+</div>
+</div>
+<!-- Highlight: Proof of Work Photos (Bento-style preview row) -->
+<section class="flex flex-col gap-4">
+<h2 class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wide">Recent Proof of Work</h2>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+<!-- Photo Card 1 -->
+<div class="group relative aspect-square rounded-xl overflow-hidden border border-outline-variant bg-surface-container-lowest cursor-pointer">
+<img alt="" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 bg-surface-variant" data-alt="A high-quality, brightly lit photograph of a newly installed custom wooden cabinetry set in a modern residential kitchen. The craftsmanship is precise, highlighting smooth joints and a natural finish. The lighting is natural, casting soft shadows that emphasize the texture of the wood. The overall aesthetic aligns with a clean, industrial professionalism, showcasing reliable and expert artisan work." src=""/>
+<div class="absolute inset-0 bg-gradient-to-t from-on-surface/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
+<span class="font-label-md text-label-md text-on-primary truncate">Kitchen_Cabinets_Final.jpg</span>
+<span class="font-caption text-caption text-surface-muted">Uploaded by Marcus T.</span>
+</div>
+</div>
+<!-- Photo Card 2 -->
+<div class="group relative aspect-square rounded-xl overflow-hidden border border-outline-variant bg-surface-container-lowest cursor-pointer">
+<img alt="" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 bg-surface-variant" data-alt="A detailed close-up photograph of freshly laid ceramic floor tiles in a commercial hallway. The grout lines are perfectly straight and clean, demonstrating high-precision tiling work. Overhead fluorescent lighting reflects off the slightly textured surface of the tiles, emphasizing the clean, utilitarian, and robust nature of the flooring. The image conveys a sense of completed, professional labor." src=""/>
+<div class="absolute inset-0 bg-gradient-to-t from-on-surface/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
+<span class="font-label-md text-label-md text-on-primary truncate">Hallway_Tiling_Phase2.jpg</span>
+<span class="font-caption text-caption text-surface-muted">Uploaded by Sarah K.</span>
+</div>
+</div>
+<!-- Add More placeholder -->
+<div class="aspect-square rounded-xl border-2 border-dashed border-outline-variant bg-surface-container flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-variant hover:border-outline cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-[32px] mb-2">add_a_photo</span>
+<span class="font-label-md text-label-md">Add Photo</span>
+</div>
+</div>
+</section>
+<!-- Document Container (Toggles between List and Grid) -->
+<section class="flex flex-col gap-4 flex-1">
+<h2 class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wide">All Files</h2>
+<!-- The Container -->
+<div class="flex flex-col gap-3 view-transition" id="document-container">
+<!-- List Header (Hidden in Grid view and Mobile) -->
+<div class="hidden md:flex items-center px-4 py-2 font-caption text-caption text-on-surface-variant border-b border-outline-variant/50" id="list-header">
+<div class="w-12"></div>
+<div class="flex-1">Name</div>
+<div class="w-32">Type</div>
+<div class="w-40">Uploader</div>
+<div class="w-32">Date</div>
+<div class="w-24 text-right">Size</div>
+<div class="w-16"></div>
+</div>
+<!-- Document Item 1 (Contract) -->
+<div class="doc-item group flex flex-col md:flex-row md:items-center p-4 bg-surface-container-lowest border border-outline-variant rounded-xl hover:bg-surface-variant transition-colors shadow-sm relative">
+<!-- Icon -->
+<div class="w-12 h-12 flex items-center justify-center rounded-lg bg-error-container/20 text-error hidden md:flex shrink-0 mr-4">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">picture_as_pdf</span>
+</div>
+<!-- Content block -->
+<div class="flex-1 flex flex-col md:flex-row md:items-center gap-2 md:gap-0">
+<!-- Mobile Icon + Name -->
+<div class="flex items-center gap-3 md:flex-1">
+<div class="w-10 h-10 flex items-center justify-center rounded-lg bg-error-container/20 text-error md:hidden shrink-0">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">picture_as_pdf</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface line-clamp-1">Master_Service_Agreement_v2.pdf</span>
+</div>
+<!-- Metadata Row (Grid behavior changes via CSS) -->
+<div class="doc-meta flex flex-wrap md:flex-nowrap items-center gap-3 md:gap-0 text-on-surface-variant font-body-md text-body-md ml-13 md:ml-0">
+<div class="w-auto md:w-32">
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface text-[12px] font-medium border border-outline-variant">Contract</span>
+</div>
+<div class="w-auto md:w-40 flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-secondary-container flex items-center justify-center text-[10px] font-bold text-on-surface">JD</div>
+<span class="truncate text-[14px] md:text-[16px]">John Doe</span>
+</div>
+<div class="w-auto md:w-32 text-[14px] md:text-[16px]">Oct 24, 2023</div>
+<div class="w-auto md:w-24 md:text-right text-[14px] md:text-[16px]">2.4 MB</div>
+</div>
+</div>
+<!-- Actions -->
+<div class="absolute top-4 right-4 md:relative md:top-auto md:right-auto md:w-16 flex justify-end gap-1 shrink-0">
+<button class="w-10 h-10 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high transition-colors" title="Download">
+<span class="material-symbols-outlined">download</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high transition-colors md:hidden group-hover:flex" title="More options">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Document Item 2 (Invoice) -->
+<div class="doc-item group flex flex-col md:flex-row md:items-center p-4 bg-surface-container-lowest border border-outline-variant rounded-xl hover:bg-surface-variant transition-colors shadow-sm relative">
+<div class="w-12 h-12 flex items-center justify-center rounded-lg bg-status-info/10 text-status-info hidden md:flex shrink-0 mr-4">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">receipt_long</span>
+</div>
+<div class="flex-1 flex flex-col md:flex-row md:items-center gap-2 md:gap-0">
+<div class="flex items-center gap-3 md:flex-1">
+<div class="w-10 h-10 flex items-center justify-center rounded-lg bg-status-info/10 text-status-info md:hidden shrink-0">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">receipt_long</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface line-clamp-1">INV-2023-089_Materials.pdf</span>
+</div>
+<div class="doc-meta flex flex-wrap md:flex-nowrap items-center gap-3 md:gap-0 text-on-surface-variant font-body-md text-body-md ml-13 md:ml-0">
+<div class="w-auto md:w-32">
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface text-[12px] font-medium border border-outline-variant">Invoice</span>
+</div>
+<div class="w-auto md:w-40 flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-secondary-container flex items-center justify-center text-[10px] font-bold text-on-surface">MT</div>
+<span class="truncate text-[14px] md:text-[16px]">Marcus T.</span>
+</div>
+<div class="w-auto md:w-32 text-[14px] md:text-[16px]">Oct 22, 2023</div>
+<div class="w-auto md:w-24 md:text-right text-[14px] md:text-[16px]">1.1 MB</div>
+</div>
+</div>
+<div class="absolute top-4 right-4 md:relative md:top-auto md:right-auto md:w-16 flex justify-end gap-1 shrink-0">
+<button class="w-10 h-10 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high transition-colors" title="Download">
+<span class="material-symbols-outlined">download</span>
+</button>
+</div>
+</div>
+<!-- Document Item 3 (Image/Proof) -->
+<div class="doc-item group flex flex-col md:flex-row md:items-center p-4 bg-surface-container-lowest border border-outline-variant rounded-xl hover:bg-surface-variant transition-colors shadow-sm relative">
+<div class="w-12 h-12 flex items-center justify-center rounded-lg bg-status-success/10 text-status-success hidden md:flex shrink-0 mr-4 overflow-hidden">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">image</span>
+</div>
+<div class="flex-1 flex flex-col md:flex-row md:items-center gap-2 md:gap-0">
+<div class="flex items-center gap-3 md:flex-1">
+<div class="w-10 h-10 flex items-center justify-center rounded-lg bg-status-success/10 text-status-success md:hidden shrink-0">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">image</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface line-clamp-1">Site_Prep_Day1.jpg</span>
+</div>
+<div class="doc-meta flex flex-wrap md:flex-nowrap items-center gap-3 md:gap-0 text-on-surface-variant font-body-md text-body-md ml-13 md:ml-0">
+<div class="w-auto md:w-32">
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface text-[12px] font-medium border border-outline-variant">Proof of Work</span>
+</div>
+<div class="w-auto md:w-40 flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-secondary-container flex items-center justify-center text-[10px] font-bold text-on-surface">SK</div>
+<span class="truncate text-[14px] md:text-[16px]">Sarah K.</span>
+</div>
+<div class="w-auto md:w-32 text-[14px] md:text-[16px]">Oct 20, 2023</div>
+<div class="w-auto md:w-24 md:text-right text-[14px] md:text-[16px]">4.8 MB</div>
+</div>
+</div>
+<div class="absolute top-4 right-4 md:relative md:top-auto md:right-auto md:w-16 flex justify-end gap-1 shrink-0">
+<button class="w-10 h-10 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high transition-colors" title="Download">
+<span class="material-symbols-outlined">download</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Simple JS for View Toggle logic visually -->
+<script>
+        const btnList = document.getElementById('btn-list-view');
+        const btnGrid = document.getElementById('btn-grid-view');
+        const container = document.getElementById('document-container');
+        const listHeader = document.getElementById('list-header');
+
+        function setListView() {
+            // Update buttons
+            btnList.className = "w-10 h-10 flex items-center justify-center rounded-md bg-primary-container text-on-primary-container transition-colors";
+            btnGrid.className = "w-10 h-10 flex items-center justify-center rounded-md text-on-surface-variant hover:bg-surface-variant transition-colors";
+            
+            // Update container
+            container.classList.remove('grid', 'grid-cols-1', 'sm:grid-cols-2', 'lg:grid-cols-3');
+            container.classList.add('flex', 'flex-col');
+            listHeader.classList.remove('hidden');
+            listHeader.classList.add('hidden', 'md:flex'); // Restore responsive hidden state
+
+            // Update items (reset structural overrides)
+            document.querySelectorAll('.doc-item').forEach(item => {
+                item.classList.remove('flex-col', 'items-start');
+                item.classList.add('md:flex-row', 'md:items-center');
+                const meta = item.querySelector('.doc-meta');
+                if(meta) {
+                    meta.classList.remove('flex-col', 'items-start', 'w-full', 'mt-4');
+                    meta.classList.add('flex-wrap', 'md:flex-nowrap', 'items-center');
+                    Array.from(meta.children).forEach(child => {
+                        child.classList.remove('w-full', 'mb-2');
+                    });
+                }
+            });
+        }
+
+        function setGridView() {
+            // Update buttons
+            btnGrid.className = "w-10 h-10 flex items-center justify-center rounded-md bg-primary-container text-on-primary-container transition-colors";
+            btnList.className = "w-10 h-10 flex items-center justify-center rounded-md text-on-surface-variant hover:bg-surface-variant transition-colors";
+            
+            // Update container
+            container.classList.remove('flex', 'flex-col');
+            container.classList.add('grid', 'grid-cols-1', 'sm:grid-cols-2', 'lg:grid-cols-3');
+            listHeader.classList.add('hidden');
+            listHeader.classList.remove('md:flex');
+
+            // Override items for grid appearance
+            document.querySelectorAll('.doc-item').forEach(item => {
+                item.classList.remove('md:flex-row', 'md:items-center');
+                item.classList.add('flex-col', 'items-start');
+                
+                const meta = item.querySelector('.doc-meta');
+                if(meta) {
+                    meta.classList.remove('flex-wrap', 'md:flex-nowrap', 'items-center', 'ml-13', 'md:ml-0');
+                    meta.classList.add('flex-col', 'items-start', 'w-full', 'mt-4');
+                    Array.from(meta.children).forEach(child => {
+                        child.classList.add('w-full', 'mb-2');
+                        child.classList.remove('md:w-32', 'md:w-40', 'md:w-24', 'md:text-right');
+                    });
+                }
+            });
+        }
+
+        btnList.addEventListener('click', setListView);
+        btnGrid.addEventListener('click', setGridView);
+    </script>
+</body></html>

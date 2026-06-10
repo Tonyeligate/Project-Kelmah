@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Forgot Password - Kelmah</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=Montserrat:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        /* Subtle industrial grid background */
+        .bg-grid-pattern {
+            background-image: linear-gradient(to right, #f3f3f4 1px, transparent 1px), linear-gradient(to bottom, #f3f3f4 1px, transparent 1px);
+            background-size: 32px 32px;
+        }
+    </style>
+<!-- Tailwind Config -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed-variant": "#474746",
+                        "surface-muted": "#F3F4F6",
+                        "outline-variant": "#d0c6ab",
+                        "inverse-surface": "#2f3131",
+                        "secondary": "#5f5e5e",
+                        "text-body": "#4B5563",
+                        "surface-container-highest": "#e2e2e2",
+                        "secondary-container": "#e2dfde",
+                        "primary-fixed": "#ffe16d",
+                        "surface-variant": "#e2e2e2",
+                        "on-background": "#1a1c1c",
+                        "inverse-primary": "#e9c400",
+                        "primary": "#705d00",
+                        "surface-container-low": "#f3f3f4",
+                        "outline": "#7e775f",
+                        "surface-container": "#eeeeee",
+                        "error": "#ba1a1a",
+                        "inverse-on-surface": "#f0f1f1",
+                        "background": "#f9f9f9",
+                        "surface": "#f9f9f9",
+                        "on-surface-variant": "#4d4732",
+                        "on-secondary": "#ffffff",
+                        "surface-dim": "#dadada",
+                        "on-error-container": "#93000a",
+                        "secondary-fixed": "#e5e2e1",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "on-primary-fixed-variant": "#544600",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-fixed-variant": "#474740",
+                        "on-secondary-container": "#636262",
+                        "status-success": "#10B981",
+                        "on-tertiary-container": "#5f5f58",
+                        "on-primary-container": "#705e00",
+                        "status-info": "#3B82F6",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "on-tertiary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "tertiary-fixed-dim": "#c8c7bd",
+                        "primary-container": "#ffd700",
+                        "on-surface": "#1a1c1c",
+                        "tertiary-container": "#dcdad0",
+                        "tertiary": "#5f5f57",
+                        "tertiary-fixed": "#e4e3d9",
+                        "on-tertiary-fixed": "#1b1c16",
+                        "primary-fixed-dim": "#e9c400",
+                        "surface-bright": "#f9f9f9",
+                        "surface-container-high": "#e8e8e8",
+                        "on-error": "#ffffff",
+                        "on-primary-fixed": "#221b00",
+                        "surface-tint": "#705d00"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "touch-target": "48px",
+                        "margin-desktop": "64px",
+                        "margin-mobile": "16px",
+                        "base": "8px"
+                    },
+                    "fontFamily": {
+                        "caption": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg": ["Montserrat"],
+                        "headline-md": ["Montserrat"],
+                        "label-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-lg-mobile": ["Montserrat"],
+                        "display-lg": ["Montserrat"]
+                    },
+                    "fontSize": {
+                        "caption": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "34px", "fontWeight": "700" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface antialiased min-h-screen flex items-center justify-center p-margin-mobile md:p-margin-desktop bg-grid-pattern relative overflow-hidden">
+<!-- Subtle background accent for depth -->
+<div class="absolute top-[-10%] right-[-5%] w-[40vw] h-[40vw] rounded-full bg-primary-container/10 blur-[100px] pointer-events-none"></div>
+<!-- Main Card Container -->
+<main class="w-full max-w-[440px] bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.04)] border border-surface-container-high p-8 md:p-10 relative z-10">
+<!-- Brand Header -->
+<div class="flex flex-col items-center mb-8">
+<div class="flex items-center justify-center w-12 h-12 bg-primary-container rounded-DEFAULT mb-4">
+<span class="material-symbols-outlined text-on-primary-fixed" style="font-variation-settings: 'FILL' 1;">
+                    lock_reset
+                </span>
+</div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-on-surface mb-2 text-center">
+                Reset Password
+            </h1>
+<p class="font-body-md text-body-md text-text-body text-center">
+                Enter your registered email address below. We'll send you a secure link to reset your password.
+            </p>
+</div>
+<!-- Form Section -->
+<form class="flex flex-col gap-6" id="resetForm" onsubmit="event.preventDefault(); handleFormSubmit();">
+<div class="flex flex-col gap-base">
+<label class="font-label-md text-label-md text-on-surface" for="email">Email Address</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 transform -translate-y-1/2 text-on-surface-variant">
+                        mail
+                    </span>
+<input class="w-full h-touch-target pl-12 pr-4 bg-surface-container-lowest border border-surface-container-highest rounded-DEFAULT font-body-md text-body-md text-on-surface focus:outline-none focus:border-on-surface focus:ring-2 focus:ring-primary-container/30 transition-all placeholder:text-surface-dim" id="email" name="email" placeholder="e.g., kojo.mensah@example.com" required="" type="email"/>
+</div>
+</div>
+<button class="h-touch-target w-full bg-primary-container text-on-primary-fixed rounded-DEFAULT flex items-center justify-center gap-2 transition-all active:scale-[0.98] hover:bg-primary-fixed hover:shadow-md mt-2" id="submitBtn" type="submit">
+<span class="font-headline-md text-[16px] font-bold" id="btnText">Send Reset Link</span>
+<span class="material-symbols-outlined" id="btnIcon">arrow_forward</span>
+</button>
+<!-- Success Message (Hidden by default) -->
+<div class="hidden bg-status-success/10 border border-status-success/20 p-4 rounded-DEFAULT flex items-start gap-3 mt-2" id="successMessage">
+<span class="material-symbols-outlined text-status-success mt-0.5" style="font-variation-settings: 'FILL' 1;">
+                    check_circle
+                </span>
+<p class="font-body-md text-[14px] leading-tight text-on-surface">
+                    If an account exists for that email, a reset link has been sent. Please check your inbox.
+                </p>
+</div>
+</form>
+<!-- Footer Link -->
+<div class="mt-8 pt-6 border-t border-surface-container-high flex justify-center">
+<a class="font-label-md text-label-md text-text-body hover:text-primary flex items-center gap-1 transition-colors group" href="#">
+<span class="material-symbols-outlined text-[18px] group-hover:-translate-x-1 transition-transform">
+                    arrow_back
+                </span>
+                Return to Login
+            </a>
+</div>
+</main>
+<script>
+        function handleFormSubmit() {
+            const btn = document.getElementById('submitBtn');
+            const btnText = document.getElementById('btnText');
+            const btnIcon = document.getElementById('btnIcon');
+            const successMsg = document.getElementById('successMessage');
+            const emailInput = document.getElementById('email');
+
+            // Loading state
+            btn.disabled = true;
+            btn.classList.add('opacity-80', 'cursor-not-allowed');
+            btnText.textContent = 'Sending...';
+            btnIcon.textContent = 'hourglass_empty';
+            btnIcon.classList.add('animate-spin');
+            
+            // Simulate API call
+            setTimeout(() => {
+                // Success state
+                btn.classList.add('hidden');
+                emailInput.disabled = true;
+                emailInput.classList.add('bg-surface-container-low', 'opacity-70');
+                
+                successMsg.classList.remove('hidden');
+                successMsg.classList.add('animate-fade-in');
+            }, 1500);
+        }
+    </script>
+</body></html>

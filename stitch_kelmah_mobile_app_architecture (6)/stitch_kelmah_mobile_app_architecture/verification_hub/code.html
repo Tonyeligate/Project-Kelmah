@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Verification Hub</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-bright": "#f9f9f9",
+                    "surface-muted": "#F3F4F6",
+                    "on-error-container": "#93000a",
+                    "on-tertiary": "#ffffff",
+                    "surface-container-low": "#f3f3f4",
+                    "surface-variant": "#e2e2e2",
+                    "on-secondary-fixed": "#1c1b1b",
+                    "tertiary-fixed": "#e4e3d9",
+                    "on-background": "#1a1c1c",
+                    "tertiary-fixed-dim": "#c8c7bd",
+                    "on-primary-fixed-variant": "#544600",
+                    "on-error": "#ffffff",
+                    "on-surface": "#1a1c1c",
+                    "on-primary": "#ffffff",
+                    "on-tertiary-fixed": "#1b1c16",
+                    "background": "#f9f9f9",
+                    "surface": "#f9f9f9",
+                    "secondary-fixed": "#e5e2e1",
+                    "on-primary-container": "#705e00",
+                    "primary-fixed-dim": "#e9c400",
+                    "inverse-on-surface": "#f0f1f1",
+                    "surface-container-high": "#e8e8e8",
+                    "on-secondary": "#ffffff",
+                    "on-tertiary-fixed-variant": "#474740",
+                    "primary-container": "#ffd700",
+                    "text-body": "#4B5563",
+                    "surface-dim": "#dadada",
+                    "secondary": "#5f5e5e",
+                    "outline-variant": "#d0c6ab",
+                    "primary-fixed": "#ffe16d",
+                    "on-secondary-fixed-variant": "#474746",
+                    "surface-container-highest": "#e2e2e2",
+                    "status-info": "#3B82F6",
+                    "surface-container-lowest": "#ffffff",
+                    "status-success": "#10B981",
+                    "tertiary-container": "#dcdad0",
+                    "outline": "#7e775f",
+                    "secondary-fixed-dim": "#c8c6c5",
+                    "secondary-container": "#e2dfde",
+                    "on-surface-variant": "#4d4732",
+                    "surface-tint": "#705d00",
+                    "inverse-surface": "#2f3131",
+                    "error": "#ba1a1a",
+                    "surface-container": "#eeeeee",
+                    "on-tertiary-container": "#5f5f58",
+                    "inverse-primary": "#e9c400",
+                    "on-secondary-container": "#636262",
+                    "on-primary-fixed": "#221b00",
+                    "tertiary": "#5f5f57",
+                    "primary": "#705d00",
+                    "error-container": "#ffdad6"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter": "16px",
+                    "base": "8px",
+                    "margin-mobile": "16px",
+                    "margin-desktop": "64px",
+                    "touch-target": "48px"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": ["Montserrat"],
+                    "display-lg": ["Montserrat"],
+                    "caption": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "headline-md": ["Montserrat"],
+                    "headline-lg": ["Montserrat"],
+                    "body-md": ["Inter"],
+                    "label-md": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": ["28px", {"lineHeight": "34px", "fontWeight": "700"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "caption": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "600"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col pb-24 md:pb-0 pt-16 md:pt-20">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface dark:bg-surface-dim shadow-sm flex justify-between items-center px-margin-mobile h-touch-target">
+<button class="text-primary dark:text-primary-fixed hover:bg-surface-container dark:hover:bg-surface-container-highest transition-colors active:scale-95 duration-100 flex items-center justify-center w-touch-target h-touch-target rounded-full">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<div class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">Kelmah</div>
+<button class="text-primary dark:text-primary-fixed hover:bg-surface-container dark:hover:bg-surface-container-highest transition-colors active:scale-95 duration-100 flex items-center justify-center w-touch-target h-touch-target rounded-full">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+</header>
+<main class="flex-grow container mx-auto px-margin-mobile md:px-margin-desktop py-8 max-w-4xl">
+<div class="mb-8">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg mb-2">Verification Hub</h1>
+<p class="font-body-md text-body-md text-secondary">Complete your profile to achieve Verified Artisan status.</p>
+</div>
+<!-- Benefit Banner -->
+<div class="bg-primary-container text-on-primary-container rounded-xl p-6 mb-8 flex flex-col md:flex-row items-start md:items-center gap-4 shadow-sm relative overflow-hidden">
+<div class="absolute right-0 top-0 opacity-10 pointer-events-none transform translate-x-1/4 -translate-y-1/4">
+<span class="material-symbols-outlined" style="font-size: 160px;">verified</span>
+</div>
+<div class="bg-surface rounded-full p-3 flex-shrink-0 z-10">
+<span class="material-symbols-outlined text-primary" data-icon="shield" style="font-variation-settings: 'FILL' 1;">shield</span>
+</div>
+<div class="z-10 flex-grow">
+<h2 class="font-headline-md text-headline-md mb-1">Why Get Verified?</h2>
+<p class="font-body-md text-body-md">Verified artisans receive up to 3x more job inquiries. Establish trust, stand out in search results, and access premium opportunities by confirming your credentials.</p>
+</div>
+</div>
+<!-- Verification Steps Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Government ID -->
+<div class="bg-surface-container-lowest rounded-xl border border-surface-variant shadow-sm p-6 flex flex-col hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-4">
+<div class="bg-surface-container rounded-lg p-3">
+<span class="material-symbols-outlined text-primary" data-icon="id_card">id_card</span>
+</div>
+<span class="bg-status-success/10 text-status-success font-label-md text-label-md px-3 py-1 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined" style="font-size: 16px;">check_circle</span>
+                        Verified
+                    </span>
+</div>
+<h3 class="font-headline-md text-headline-md mb-2 text-on-surface">Government ID</h3>
+<p class="font-body-md text-body-md text-secondary mb-6 flex-grow">A valid passport, driver's license, or national ID to confirm your identity.</p>
+<button class="w-full h-touch-target rounded-lg font-label-md text-label-md border-2 border-on-surface text-on-surface bg-transparent opacity-50 cursor-not-allowed flex items-center justify-center gap-2" disabled="">
+                    Complete
+                </button>
+</div>
+<!-- Business Registration -->
+<div class="bg-surface-container-lowest rounded-xl border border-primary shadow-[0_0_0_1px_rgba(255,215,0,0.5)] p-6 flex flex-col relative overflow-hidden">
+<div class="absolute top-0 left-0 w-1 h-full bg-primary"></div>
+<div class="flex justify-between items-start mb-4">
+<div class="bg-primary-container rounded-lg p-3">
+<span class="material-symbols-outlined text-on-primary-container" data-icon="storefront">storefront</span>
+</div>
+<span class="bg-surface-container text-secondary font-label-md text-label-md px-3 py-1 rounded-full flex items-center gap-1">
+                        Pending
+                    </span>
+</div>
+<h3 class="font-headline-md text-headline-md mb-2 text-on-surface">Business Registration</h3>
+<p class="font-body-md text-body-md text-secondary mb-6 flex-grow">Official documentation proving your business is legally registered.</p>
+<button class="w-full h-touch-target rounded-lg font-label-md text-label-md bg-primary-container text-on-primary-container hover:bg-[#E6C200] transition-colors flex items-center justify-center gap-2 font-bold shadow-sm">
+<span class="material-symbols-outlined" data-icon="upload">upload</span>
+                    Upload Document
+                </button>
+</div>
+<!-- Trade Certification -->
+<div class="bg-surface-container-lowest rounded-xl border border-surface-variant shadow-sm p-6 flex flex-col">
+<div class="flex justify-between items-start mb-4">
+<div class="bg-surface-container rounded-lg p-3">
+<span class="material-symbols-outlined text-primary" data-icon="school">school</span>
+</div>
+<span class="bg-surface-container text-secondary font-label-md text-label-md px-3 py-1 rounded-full flex items-center gap-1">
+                        Not Started
+                    </span>
+</div>
+<h3 class="font-headline-md text-headline-md mb-2 text-on-surface">Trade Certification</h3>
+<p class="font-body-md text-body-md text-secondary mb-6 flex-grow">Relevant diplomas, licenses, or certificates for your specific trade.</p>
+<button class="w-full h-touch-target rounded-lg font-label-md text-label-md bg-on-background text-on-tertiary hover:bg-[#333333] transition-colors flex items-center justify-center gap-2 shadow-sm">
+<span class="material-symbols-outlined" data-icon="upload">upload</span>
+                    Upload Document
+                </button>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full flex justify-around items-center h-16 px-2 pb-safe bg-surface-container-lowest dark:bg-surface-dim shadow-[0_-1px_2px_rgba(0,0,0,0.05)] z-50">
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim px-3 py-1 hover:bg-surface-container-high dark:hover:bg-surface-container-highest rounded-xl active:scale-90 transition-transform duration-150 h-touch-target" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="home">home</span>
+<span class="font-label-md text-[10px]">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim px-3 py-1 hover:bg-surface-container-high dark:hover:bg-surface-container-highest rounded-xl active:scale-90 transition-transform duration-150 h-touch-target" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="work">work</span>
+<span class="font-label-md text-[10px]">Jobs</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim px-3 py-1 hover:bg-surface-container-high dark:hover:bg-surface-container-highest rounded-xl active:scale-90 transition-transform duration-150 h-touch-target" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="chat">chat</span>
+<span class="font-label-md text-[10px]">Messages</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim px-3 py-1 hover:bg-surface-container-high dark:hover:bg-surface-container-highest rounded-xl active:scale-90 transition-transform duration-150 h-touch-target" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="account_balance_wallet">account_balance_wallet</span>
+<span class="font-label-md text-[10px]">Wallet</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container dark:bg-primary text-on-primary-container dark:text-on-primary rounded-xl px-3 py-1 active:scale-90 transition-transform duration-150 h-touch-target" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="person" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-label-md text-[10px]">Profile</span>
+</a>
+</nav>
+</body></html>

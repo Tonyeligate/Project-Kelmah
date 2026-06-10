@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kelmah - Identity Verification</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline": "#7e775f",
+                        "on-surface": "#1a1c1c",
+                        "on-error": "#ffffff",
+                        "primary-fixed": "#ffe16d",
+                        "on-tertiary-container": "#5f5f58",
+                        "on-primary-fixed": "#221b00",
+                        "inverse-primary": "#e9c400",
+                        "on-surface-variant": "#4d4732",
+                        "on-secondary-container": "#636262",
+                        "surface-container": "#eeeeee",
+                        "surface-muted": "#F3F4F6",
+                        "tertiary-fixed": "#e4e3d9",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "error-container": "#ffdad6",
+                        "on-error-container": "#93000a",
+                        "status-info": "#3B82F6",
+                        "secondary-container": "#e2dfde",
+                        "primary-fixed-dim": "#e9c400",
+                        "inverse-surface": "#2f3131",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-bright": "#f9f9f9",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#1a1c1c",
+                        "outline-variant": "#d0c6ab",
+                        "surface": "#f9f9f9",
+                        "on-primary-fixed-variant": "#544600",
+                        "on-primary-container": "#705e00",
+                        "tertiary-container": "#dcdad0",
+                        "on-secondary-fixed-variant": "#474746",
+                        "on-tertiary": "#ffffff",
+                        "surface-variant": "#e2e2e2",
+                        "surface-container-high": "#e8e8e8",
+                        "primary-container": "#ffd700",
+                        "surface-container-low": "#f3f3f4",
+                        "primary": "#705d00",
+                        "error": "#ba1a1a",
+                        "inverse-on-surface": "#f0f1f1",
+                        "text-body": "#4B5563",
+                        "tertiary-fixed-dim": "#c8c7bd",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "surface-dim": "#dadada",
+                        "on-tertiary-fixed-variant": "#474740",
+                        "secondary": "#5f5e5e",
+                        "on-tertiary-fixed": "#1b1c16",
+                        "surface-container-highest": "#e2e2e2",
+                        "background": "#f9f9f9",
+                        "status-success": "#10B981",
+                        "surface-tint": "#705d00",
+                        "tertiary": "#5f5f57",
+                        "secondary-fixed": "#e5e2e1",
+                        "on-primary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "base": "8px",
+                        "margin-mobile": "16px",
+                        "touch-target": "48px",
+                        "margin-desktop": "64px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Montserrat"],
+                        "headline-lg": ["Montserrat"],
+                        "label-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "display-lg": ["Montserrat"],
+                        "caption": ["Inter"],
+                        "headline-lg-mobile": ["Montserrat"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "caption": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "34px", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md antialiased min-h-screen flex flex-col">
+<!-- Top Navigation (Transactional/Linear Flow - No standard nav, just close/back) -->
+<header class="w-full top-0 sticky bg-surface flex items-center justify-between px-margin-mobile md:px-margin-desktop h-16 border-b border-surface-variant z-50">
+<button class="h-touch-target w-touch-target flex items-center justify-center text-on-surface hover:bg-surface-variant transition-colors rounded-full active:scale-95 duration-150">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+<div class="font-headline-md text-headline-md font-bold text-primary">Kelmah</div>
+<div class="w-touch-target"></div> <!-- Spacer for centering -->
+</header>
+<!-- Main Content -->
+<main class="flex-grow flex flex-col px-margin-mobile md:px-margin-desktop py-8 max-w-3xl mx-auto w-full">
+<!-- Header -->
+<div class="mb-8">
+<h1 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface mb-2">Verify Your Identity</h1>
+<p class="font-body-md text-body-md text-secondary">To keep our community safe, we need to verify you are who you say you are.</p>
+</div>
+<!-- Progress Stepper -->
+<div class="flex items-center justify-between mb-12 relative">
+<div class="absolute left-0 top-1/2 w-full h-1 bg-surface-variant -z-10 -translate-y-1/2 rounded-full"></div>
+<div class="absolute left-0 top-1/2 w-0 h-1 bg-primary-container -z-10 -translate-y-1/2 rounded-full transition-all duration-300" style="width: 15%;"></div>
+<!-- Step 1 (Active) -->
+<div class="flex flex-col items-center gap-2">
+<div class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-label-md text-label-md border-2 border-surface">
+                    1
+                </div>
+<span class="font-label-md text-label-md text-on-surface">ID Upload</span>
+</div>
+<!-- Step 2 -->
+<div class="flex flex-col items-center gap-2">
+<div class="w-10 h-10 rounded-full bg-surface-variant text-secondary flex items-center justify-center font-label-md text-label-md border-2 border-surface">
+                    2
+                </div>
+<span class="font-label-md text-label-md text-secondary">Face Scan</span>
+</div>
+<!-- Step 3 -->
+<div class="flex flex-col items-center gap-2">
+<div class="w-10 h-10 rounded-full bg-surface-variant text-secondary flex items-center justify-center font-label-md text-label-md border-2 border-surface">
+                    3
+                </div>
+<span class="font-label-md text-label-md text-secondary">Verified</span>
+</div>
+</div>
+<!-- Camera / Document Area -->
+<div class="flex-grow flex flex-col items-center justify-center mb-8 w-full">
+<div class="relative w-full max-w-md aspect-[4/3] bg-inverse-surface rounded-xl overflow-hidden shadow-md flex items-center justify-center border-2 border-dashed border-outline-variant">
+<!-- Placeholder for Camera View -->
+<div class="absolute inset-0 z-0">
+<img alt="Blank document on a wooden desk" class="w-full h-full object-cover opacity-40 blur-[2px]" data-alt="A top-down view of a blank, slightly textured identification card resting on a clean, light oak wooden desk. The lighting is bright and even, simulating ideal conditions for document scanning. The overall aesthetic aligns with a modern, professional, and slightly industrial visual style, utilizing a light mode palette with crisp details. The scene conveys readiness for data capture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuACJH2-9mLpTsB6lRqst00eZC5hffpO-CYKH76OPmrQdV30Ty9DTwhPLMRs5mxNW6Iheu2y2nW8e0vV2rnh03XpaF5vTXspVwwIqu-unw6DDasel3nE0DdUuySElujRwsv75egBvwle5-B38eCaj0ipL8Z_Bs1k7iJzoN8mvi-pXmEiO4L6ifwm4pQILVt5nZiyYfmDqm0OHiECmrg_eVC5C5eoD8Mj-L59_akZ90PQ1Dvi-FQDEUV8BVE_PJ6T8_wfNnt1PIwQc3I"/>
+</div>
+<!-- Overlay Frame for Document -->
+<div class="absolute inset-8 border-2 border-primary-container rounded-lg z-10 box-border pointer-events-none">
+<!-- Corner markers -->
+<div class="absolute -top-[2px] -left-[2px] w-4 h-4 border-t-4 border-l-4 border-primary-container"></div>
+<div class="absolute -top-[2px] -right-[2px] w-4 h-4 border-t-4 border-r-4 border-primary-container"></div>
+<div class="absolute -bottom-[2px] -left-[2px] w-4 h-4 border-b-4 border-l-4 border-primary-container"></div>
+<div class="absolute -bottom-[2px] -right-[2px] w-4 h-4 border-b-4 border-r-4 border-primary-container"></div>
+</div>
+<div class="z-20 text-center px-4">
+<span class="material-symbols-outlined text-4xl text-on-tertiary mb-2 block" data-icon="document_scanner">document_scanner</span>
+<p class="font-label-md text-label-md text-on-tertiary">Position front of ID card in frame</p>
+</div>
+</div>
+</div>
+<!-- Instructions -->
+<div class="bg-surface-container-low rounded-xl p-4 mb-8 border border-surface-variant flex gap-4 items-start shadow-sm">
+<div class="mt-1 text-primary">
+<span class="material-symbols-outlined" data-icon="lightbulb">lightbulb</span>
+</div>
+<div>
+<h3 class="font-label-md text-label-md text-on-surface mb-1">Tips for a good scan</h3>
+<ul class="font-body-md text-body-md text-on-surface-variant list-disc pl-5 space-y-1">
+<li>Ensure good lighting, avoid glare.</li>
+<li>Place ID on a dark, flat surface.</li>
+<li>Make sure all 4 corners are visible.</li>
+</ul>
+</div>
+</div>
+<!-- Action Area -->
+<div class="mt-auto pb-safe">
+<button class="w-full min-h-[48px] bg-primary-container text-on-primary-container font-headline-md text-headline-md font-bold rounded-lg flex items-center justify-center gap-2 active:scale-95 transition-transform duration-150 shadow-sm hover:bg-inverse-primary">
+<span class="material-symbols-outlined" data-icon="photo_camera">photo_camera</span>
+                Scan Document
+            </button>
+<div class="mt-4 text-center">
+<button class="font-label-md text-label-md text-secondary hover:text-on-surface transition-colors min-h-[48px] px-4">Enter Details Manually Instead</button>
+</div>
+</div>
+</main>
+</body></html>

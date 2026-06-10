@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Financial Summary - Project</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "outline": "#7e775f",
+                      "on-surface": "#1a1c1c",
+                      "on-error": "#ffffff",
+                      "primary-fixed": "#ffe16d",
+                      "on-tertiary-container": "#5f5f58",
+                      "on-primary-fixed": "#221b00",
+                      "inverse-primary": "#e9c400",
+                      "on-surface-variant": "#4d4732",
+                      "on-secondary-container": "#636262",
+                      "surface-container": "#eeeeee",
+                      "surface-muted": "#F3F4F6",
+                      "tertiary-fixed": "#e4e3d9",
+                      "secondary-fixed-dim": "#c8c6c5",
+                      "error-container": "#ffdad6",
+                      "on-error-container": "#93000a",
+                      "status-info": "#3B82F6",
+                      "secondary-container": "#e2dfde",
+                      "primary-fixed-dim": "#e9c400",
+                      "inverse-surface": "#2f3131",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-bright": "#f9f9f9",
+                      "on-secondary": "#ffffff",
+                      "on-background": "#1a1c1c",
+                      "outline-variant": "#d0c6ab",
+                      "surface": "#f9f9f9",
+                      "on-primary-fixed-variant": "#544600",
+                      "on-primary-container": "#705e00",
+                      "tertiary-container": "#dcdad0",
+                      "on-secondary-fixed-variant": "#474746",
+                      "on-tertiary": "#ffffff",
+                      "surface-variant": "#e2e2e2",
+                      "surface-container-high": "#e8e8e8",
+                      "primary-container": "#ffd700",
+                      "surface-container-low": "#f3f3f4",
+                      "primary": "#705d00",
+                      "error": "#ba1a1a",
+                      "inverse-on-surface": "#f0f1f1",
+                      "text-body": "#4B5563",
+                      "tertiary-fixed-dim": "#c8c7bd",
+                      "on-secondary-fixed": "#1c1b1b",
+                      "surface-dim": "#dadada",
+                      "on-tertiary-fixed-variant": "#474740",
+                      "secondary": "#5f5e5e",
+                      "on-tertiary-fixed": "#1b1c16",
+                      "surface-container-highest": "#e2e2e2",
+                      "background": "#f9f9f9",
+                      "status-success": "#10B981",
+                      "surface-tint": "#705d00",
+                      "tertiary": "#5f5f57",
+                      "secondary-fixed": "#e5e2e1",
+                      "on-primary": "#ffffff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "gutter": "16px",
+                      "base": "8px",
+                      "margin-mobile": "16px",
+                      "touch-target": "48px",
+                      "margin-desktop": "64px"
+              },
+              "fontFamily": {
+                      "headline-md": [
+                              "Montserrat"
+                      ],
+                      "headline-lg": [
+                              "Montserrat"
+                      ],
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "display-lg": [
+                              "Montserrat"
+                      ],
+                      "caption": [
+                              "Inter"
+                      ],
+                      "headline-lg-mobile": [
+                              "Montserrat"
+                      ]
+              },
+              "fontSize": {
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "label-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "caption": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "28px",
+                              {
+                                      "lineHeight": "34px",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.filled {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        /* Utility for hiding scrollbar but keeping functionality */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface antialiased min-h-screen font-body-md">
+<!-- Top App Bar - Mobile/Tablet only, hidden on Desktop (handled by layout below) -->
+<header class="md:hidden w-full top-0 sticky z-40 bg-surface border-b border-surface-variant flex items-center justify-between px-margin-mobile h-16">
+<div class="flex items-center gap-4">
+<button class="h-touch-target w-touch-target flex items-center justify-center -ml-2 text-primary active:scale-95 duration-150 rounded-full hover:bg-surface-variant">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="font-headline-md text-headline-md text-primary">Financial Summary</h1>
+</div>
+<button class="h-touch-target w-touch-target flex items-center justify-center -mr-2 text-primary active:scale-95 duration-150 rounded-full hover:bg-surface-variant">
+<span class="material-symbols-outlined">help_outline</span>
+</button>
+</header>
+<div class="flex h-screen overflow-hidden">
+<!-- Navigation Drawer - Desktop Only -->
+<nav class="hidden md:flex flex-col h-full w-80 fixed left-0 top-0 bg-surface shadow-xl py-6 gap-2 z-50 overflow-y-auto no-scrollbar">
+<div class="px-6 mb-6">
+<h2 class="font-headline-lg text-headline-lg font-bold text-primary mb-8">Kelmah</h2>
+<div class="flex items-center gap-4 mb-8">
+<img alt="Artisan profile picture" class="w-12 h-12 rounded-full object-cover" data-alt="A professional headshot of a skilled artisan, a man in his late 30s with short hair, wearing a clean, dark grey work shirt. He has a subtle, confident smile. The background is a slightly blurred, bright, modern workshop space. The lighting is natural and flattering, emphasizing a trustworthy and competent demeanor consistent with the Kelmah brand's industrial professionalism." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDHEWSmfei-cTZWji0uuXqOt8bYuxYDoemc2sxfbjDUoCg9EJzQDC7KFMvR87kzvTNCvedddxACxB-BCX-gp-y1ZHyKnvF-pDOJTlEMM0Dmh6Si64EoUf4ZiccYkmBNfLhn5-H-GV6U_TflzlijrZb4WCQ9DkzzomkhRoRFFqA-CBjiDTVBLYrQATBS-uaPMoauFBMxHY8IPdRPZH5wQ2IaTFptDRNxf5WrZpr3VFE5DCWDW-16G0P_aCYXPmYbtmtrIjdguUC8ts8"/>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Professional Profile</p>
+<p class="font-caption text-caption text-secondary">Verified Artisan • Accra, Ghana</p>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<a class="flex items-center gap-3 py-3 mx-2 px-4 rounded-full text-on-surface-variant hover:bg-surface-container-high transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined">work</span>
+<span class="font-label-md text-label-md">Current Projects</span>
+</a>
+<a class="flex items-center gap-3 py-3 mx-2 px-4 rounded-full text-on-surface-variant hover:bg-surface-container-high transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="font-label-md text-label-md">Project History</span>
+</a>
+<a class="flex items-center gap-3 py-3 mx-2 px-4 rounded-full bg-primary-container text-on-primary-container font-semibold transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined filled">payments</span>
+<span class="font-label-md text-label-md">Wallet</span>
+</a>
+<a class="flex items-center gap-3 py-3 mx-2 px-4 rounded-full text-on-surface-variant hover:bg-surface-container-high transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined">verified</span>
+<span class="font-label-md text-label-md">Certifications</span>
+</a>
+<div class="my-4 border-t border-surface-variant mx-4"></div>
+<a class="flex items-center gap-3 py-3 mx-2 px-4 rounded-full text-on-surface-variant hover:bg-surface-container-high transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+<a class="flex items-center gap-3 py-3 mx-2 px-4 rounded-full text-on-surface-variant hover:bg-surface-container-high transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-label-md text-label-md">Support</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 md:ml-80 overflow-y-auto no-scrollbar pb-24 md:pb-8 pt-4 md:pt-8 px-margin-mobile md:px-margin-desktop bg-surface-container-lowest">
+<div class="max-w-5xl mx-auto space-y-8">
+<!-- Page Header (Desktop) -->
+<div class="hidden md:flex items-center justify-between mb-8">
+<div>
+<div class="flex items-center gap-2 text-secondary mb-2">
+<a class="hover:text-primary transition-colors font-label-md text-label-md" href="#">Projects</a>
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+<a class="hover:text-primary transition-colors font-label-md text-label-md" href="#">East Legon Villa Renovation</a>
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+<span class="font-label-md text-label-md text-on-surface">Financial Summary</span>
+</div>
+<h1 class="font-display-lg text-display-lg text-on-surface">Financial Summary</h1>
+</div>
+<button class="bg-[#1A1A1A] text-white px-6 h-touch-target rounded-lg font-label-md text-label-md hover:bg-black transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined">download</span>
+                        Download Statement
+                    </button>
+</div>
+<!-- Project Context Header -->
+<div class="bg-surface rounded-xl p-6 border border-surface-variant">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div>
+<p class="font-label-md text-label-md text-primary mb-1 uppercase tracking-wider">Project Focus</p>
+<h2 class="font-headline-lg-mobile md:font-headline-md text-headline-lg-mobile md:text-headline-md text-on-surface">East Legon Villa Renovation</h2>
+<p class="font-body-md text-body-md text-secondary mt-1">Client: Kwesi Appiah • Ref: #KLM-24-0892</p>
+</div>
+<div class="flex items-center gap-3">
+<span class="bg-status-success/10 text-status-success px-4 py-2 rounded-full font-label-md text-label-md flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">check_circle</span> Active
+                            </span>
+</div>
+</div>
+</div>
+<!-- High-Level Bento Grid Summary -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+<!-- Total Budget Card -->
+<div class="md:col-span-4 bg-primary-container rounded-xl p-6 relative overflow-hidden group">
+<div class="absolute -right-8 -top-8 w-32 h-32 bg-white/20 rounded-full blur-2xl group-hover:bg-white/30 transition-all"></div>
+<div class="relative z-10 flex flex-col h-full justify-between gap-6">
+<div class="flex items-center justify-between">
+<p class="font-label-md text-label-md text-on-primary-container">Total Project Value</p>
+<span class="material-symbols-outlined text-on-primary-container">account_balance_wallet</span>
+</div>
+<div>
+<p class="font-display-lg text-display-lg text-on-primary-container tracking-tight">GHS 45,000</p>
+<p class="font-caption text-caption text-on-primary-container/80 mt-1">Agreed contract amount</p>
+</div>
+</div>
+</div>
+<!-- Released & Escrow Stack -->
+<div class="md:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- Total Released -->
+<div class="bg-surface rounded-xl p-6 border border-surface-variant flex flex-col justify-between hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-2 text-status-success">
+<span class="material-symbols-outlined">task_alt</span>
+<p class="font-label-md text-label-md">Total Released</p>
+</div>
+<span class="bg-surface-variant text-on-surface-variant px-2 py-1 rounded text-xs font-bold">55%</span>
+</div>
+<div>
+<p class="font-headline-lg text-headline-lg text-on-surface">GHS 24,750</p>
+<div class="w-full bg-surface-variant rounded-full h-1.5 mt-3">
+<div class="bg-status-success h-1.5 rounded-full" style="width: 55%"></div>
+</div>
+</div>
+</div>
+<!-- Remaining in Escrow -->
+<div class="bg-surface rounded-xl p-6 border border-surface-variant flex flex-col justify-between hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-2 text-secondary">
+<span class="material-symbols-outlined">lock</span>
+<p class="font-label-md text-label-md">Remaining in Escrow</p>
+</div>
+<span class="bg-surface-variant text-on-surface-variant px-2 py-1 rounded text-xs font-bold">45%</span>
+</div>
+<div>
+<p class="font-headline-lg text-headline-lg text-on-surface">GHS 20,250</p>
+<div class="w-full bg-surface-variant rounded-full h-1.5 mt-3">
+<div class="bg-secondary h-1.5 rounded-full" style="width: 45%"></div>
+</div>
+</div>
+</div>
+<!-- Platform Fees (Spans full width of this sub-grid) -->
+<div class="md:col-span-2 bg-surface-muted rounded-xl p-4 border border-surface-variant flex items-center justify-between">
+<div class="flex items-center gap-3 text-secondary">
+<span class="material-symbols-outlined">receipt_long</span>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Kelmah Platform Fee (5%)</p>
+<p class="font-caption text-caption text-secondary">Deducted from released funds</p>
+</div>
+</div>
+<p class="font-headline-md text-headline-md text-on-surface">- GHS 2,250</p>
+</div>
+</div>
+</div>
+<!-- Milestone Breakdown -->
+<div class="mt-12">
+<div class="flex items-center justify-between mb-6">
+<h3 class="font-headline-md text-headline-md text-on-surface">Milestone Breakdown</h3>
+<button class="text-primary font-label-md text-label-md hover:underline flex items-center gap-1">
+                            View Contract <span class="material-symbols-outlined text-sm">open_in_new</span>
+</button>
+</div>
+<div class="bg-surface border border-surface-variant rounded-xl overflow-hidden">
+<!-- Milestone Item 1 (Completed) -->
+<div class="p-4 md:p-6 border-b border-surface-variant hover:bg-surface-muted transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div class="flex gap-4 items-start md:items-center">
+<div class="w-10 h-10 rounded-full bg-status-success/10 text-status-success flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined">check</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">M1: Site Preparation &amp; Foundation</p>
+<p class="font-body-md text-body-md text-secondary">Completed &amp; Approved on Oct 12, 2023</p>
+</div>
+</div>
+<div class="flex items-center justify-between md:justify-end gap-6 ml-14 md:ml-0">
+<div class="text-left md:text-right">
+<p class="font-headline-md text-headline-md text-on-surface">GHS 15,000</p>
+<p class="font-caption text-caption text-status-success font-semibold">Funds Released</p>
+</div>
+<button class="p-2 text-secondary hover:text-primary rounded-full hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Milestone Item 2 (Completed) -->
+<div class="p-4 md:p-6 border-b border-surface-variant hover:bg-surface-muted transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div class="flex gap-4 items-start md:items-center">
+<div class="w-10 h-10 rounded-full bg-status-success/10 text-status-success flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined">check</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">M2: Framing &amp; Roofing</p>
+<p class="font-body-md text-body-md text-secondary">Completed &amp; Approved on Nov 05, 2023</p>
+</div>
+</div>
+<div class="flex items-center justify-between md:justify-end gap-6 ml-14 md:ml-0">
+<div class="text-left md:text-right">
+<p class="font-headline-md text-headline-md text-on-surface">GHS 9,750</p>
+<p class="font-caption text-caption text-status-success font-semibold">Funds Released</p>
+</div>
+<button class="p-2 text-secondary hover:text-primary rounded-full hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Milestone Item 3 (In Progress / Escrow) -->
+<div class="p-4 md:p-6 border-b border-surface-variant bg-surface-container-lowest hover:bg-surface-muted transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4 relative">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
+<div class="flex gap-4 items-start md:items-center">
+<div class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined">schedule</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">M3: Plumbing &amp; Electrical Rough-in</p>
+<p class="font-body-md text-body-md text-secondary">In Progress • Est. completion Nov 28, 2023</p>
+</div>
+</div>
+<div class="flex items-center justify-between md:justify-end gap-6 ml-14 md:ml-0">
+<div class="text-left md:text-right">
+<p class="font-headline-md text-headline-md text-on-surface">GHS 12,000</p>
+<p class="font-caption text-caption text-secondary flex items-center gap-1 justify-start md:justify-end">
+<span class="material-symbols-outlined text-[14px]">lock</span> In Escrow
+                                    </p>
+</div>
+<button class="bg-primary-container text-on-primary-container px-4 py-2 rounded-lg font-label-md text-label-md hover:bg-primary hover:text-on-primary transition-colors whitespace-nowrap">
+                                    Request Release
+                                </button>
+</div>
+</div>
+<!-- Milestone Item 4 (Pending) -->
+<div class="p-4 md:p-6 hover:bg-surface-muted transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4 opacity-75">
+<div class="flex gap-4 items-start md:items-center">
+<div class="w-10 h-10 rounded-full border-2 border-dashed border-secondary text-secondary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined">hourglass_empty</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">M4: Interior Finishing &amp; Handover</p>
+<p class="font-body-md text-body-md text-secondary">Pending previous milestones</p>
+</div>
+</div>
+<div class="flex items-center justify-between md:justify-end gap-6 ml-14 md:ml-0">
+<div class="text-left md:text-right">
+<p class="font-headline-md text-headline-md text-on-surface">GHS 8,250</p>
+<p class="font-caption text-caption text-secondary flex items-center gap-1 justify-start md:justify-end">
+<span class="material-symbols-outlined text-[14px]">lock</span> In Escrow
+                                    </p>
+</div>
+<button class="p-2 text-secondary hover:text-primary rounded-full hover:bg-surface-variant transition-colors invisible md:visible">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom padding for mobile nav -->
+<div class="h-16 md:hidden"></div>
+</div>
+</main>
+</div>
+<!-- Bottom Nav Bar - Mobile Only -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-16 bg-surface border-t border-surface-variant pb-safe shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1.5 w-full h-full active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined mb-1">home</span>
+<span class="font-label-md text-[10px] leading-[12px]">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1.5 w-full h-full active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined mb-1">work</span>
+<span class="font-label-md text-[10px] leading-[12px]">Jobs</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-4 py-1.5 mx-2 active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined filled mb-1">payments</span>
+<span class="font-label-md text-[10px] leading-[12px] font-bold">Wallet</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1.5 w-full h-full active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined mb-1">chat</span>
+<span class="font-label-md text-[10px] leading-[12px]">Messages</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1.5 w-full h-full active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined mb-1">person</span>
+<span class="font-label-md text-[10px] leading-[12px]">Profile</span>
+</a>
+</nav>
+</body></html>

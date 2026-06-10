@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kelmah - Skills Assessment</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "background": "#f9f9f9",
+                    "error": "#ba1a1a",
+                    "on-primary-fixed-variant": "#544600",
+                    "primary-fixed-dim": "#e9c400",
+                    "inverse-primary": "#e9c400",
+                    "inverse-surface": "#2f3131",
+                    "outline-variant": "#d0c6ab",
+                    "tertiary-fixed-dim": "#c8c7bd",
+                    "on-surface": "#1a1c1c",
+                    "tertiary-container": "#dcdad0",
+                    "on-tertiary-fixed-variant": "#474740",
+                    "inverse-on-surface": "#f0f1f1",
+                    "on-error": "#ffffff",
+                    "primary": "#705d00",
+                    "surface-muted": "#F3F4F6",
+                    "secondary-fixed-dim": "#c8c6c5",
+                    "surface-container-highest": "#e2e2e2",
+                    "on-background": "#1a1c1c",
+                    "on-secondary-container": "#636262",
+                    "surface-bright": "#f9f9f9",
+                    "on-secondary": "#ffffff",
+                    "on-primary-container": "#705e00",
+                    "outline": "#7e775f",
+                    "error-container": "#ffdad6",
+                    "surface-container-low": "#f3f3f4",
+                    "on-secondary-fixed": "#1c1b1b",
+                    "primary-container": "#ffd700",
+                    "surface-container-high": "#e8e8e8",
+                    "on-error-container": "#93000a",
+                    "on-tertiary": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary-fixed": "#1b1c16",
+                    "surface": "#f9f9f9",
+                    "surface-container": "#eeeeee",
+                    "status-info": "#3B82F6",
+                    "secondary": "#5f5e5e",
+                    "on-secondary-fixed-variant": "#474746",
+                    "status-success": "#10B981",
+                    "on-surface-variant": "#4d4732",
+                    "surface-variant": "#e2e2e2",
+                    "text-body": "#4B5563",
+                    "tertiary-fixed": "#e4e3d9",
+                    "secondary-fixed": "#e5e2e1",
+                    "secondary-container": "#e2dfde",
+                    "on-tertiary-container": "#5f5f58",
+                    "on-primary-fixed": "#221b00",
+                    "on-primary": "#ffffff",
+                    "surface-tint": "#705d00",
+                    "surface-dim": "#dadada",
+                    "primary-fixed": "#ffe16d",
+                    "tertiary": "#5f5f57"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "base": "8px",
+                    "margin-desktop": "64px",
+                    "touch-target": "48px",
+                    "margin-mobile": "16px",
+                    "gutter": "16px"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": [
+                            "Montserrat"
+                    ],
+                    "caption": [
+                            "Inter"
+                    ],
+                    "headline-lg": [
+                            "Montserrat"
+                    ],
+                    "body-md": [
+                            "Inter"
+                    ],
+                    "body-lg": [
+                            "Inter"
+                    ],
+                    "display-lg": [
+                            "Montserrat"
+                    ],
+                    "headline-md": [
+                            "Montserrat"
+                    ],
+                    "label-md": [
+                            "Inter"
+                    ]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": [
+                            "28px",
+                            {
+                                    "lineHeight": "34px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "caption": [
+                            "12px",
+                            {
+                                    "lineHeight": "16px",
+                                    "fontWeight": "500"
+                            }
+                    ],
+                    "headline-lg": [
+                            "32px",
+                            {
+                                    "lineHeight": "40px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "body-lg": [
+                            "18px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "display-lg": [
+                            "48px",
+                            {
+                                    "lineHeight": "56px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "headline-md": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "label-md": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "fontWeight": "600"
+                            }
+                    ]
+            }
+    },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col pb-24 md:pb-0">
+<!-- TopAppBar (Mobile & Desktop) -->
+<header class="bg-surface w-full top-0 sticky z-50">
+<div class="flex items-center justify-between px-margin-mobile md:px-margin-desktop h-[64px] w-full border-b border-surface-container">
+<div class="flex items-center gap-4">
+<button class="md:hidden p-2 text-on-surface-variant hover:bg-surface-container rounded-full active:scale-95 transition-transform duration-100">
+<span class="material-symbols-outlined text-2xl" data-icon="menu">menu</span>
+</button>
+<div class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed hidden md:block">Kelmah</div>
+</div>
+<!-- Desktop Navigation Links -->
+<nav class="hidden md:flex items-center gap-8 h-full">
+<a class="h-full flex items-center px-4 font-label-md text-label-md text-on-surface-variant hover:text-primary border-b-2 border-transparent hover:border-primary transition-colors" href="#">Home</a>
+<a class="h-full flex items-center px-4 font-label-md text-label-md text-on-surface-variant hover:text-primary border-b-2 border-transparent hover:border-primary transition-colors" href="#">Jobs</a>
+<a class="h-full flex items-center px-4 font-label-md text-label-md text-on-surface-variant hover:text-primary border-b-2 border-transparent hover:border-primary transition-colors" href="#">Messages</a>
+<a class="h-full flex items-center px-4 font-label-md text-label-md text-primary border-b-2 border-primary transition-colors" href="#">Profile</a>
+</nav>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container rounded-full active:scale-95 transition-transform duration-100">
+<span class="material-symbols-outlined text-2xl" data-icon="notifications">notifications</span>
+</button>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-grow w-full max-w-[1280px] mx-auto px-margin-mobile md:px-margin-desktop py-8">
+<div class="mb-8">
+<h1 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface mb-2">Skills Assessment</h1>
+<p class="font-body-md text-body-md text-text-body">Complete trade-specific tests to earn verified badges and increase your visibility to clients.</p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Left Column: Test List -->
+<div class="lg:col-span-2 flex flex-col gap-4">
+<!-- Test Card 1: Passed -->
+<div class="bg-surface rounded-xl border border-surface-container shadow-[0px_4px_20px_rgba(0,0,0,0.04)] p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div class="flex-grow">
+<div class="flex items-center gap-2 mb-1">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-status-success/10 text-status-success font-label-md text-caption">
+<span class="material-symbols-outlined text-[14px]" data-icon="check_circle">check_circle</span>
+                                Passed
+                            </span>
+<span class="font-caption text-caption text-text-body">Valid until Dec 2024</span>
+</div>
+<h3 class="font-headline-md text-body-lg font-bold text-on-surface mb-1">General Site Safety</h3>
+<p class="font-body-md text-caption text-text-body">Core safety protocols for all construction and trade sites.</p>
+</div>
+<div class="flex-shrink-0">
+<button class="w-full md:w-auto px-6 h-touch-target rounded-lg border border-on-surface text-on-surface font-label-md text-label-md hover:bg-surface-container transition-colors flex items-center justify-center gap-2">
+                            View Certificate
+                        </button>
+</div>
+</div>
+<!-- Test Card 2: Available (Selected) -->
+<div class="bg-surface rounded-xl border-2 border-primary shadow-[0px_4px_20px_rgba(0,0,0,0.04)] p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 relative overflow-hidden">
+<div class="absolute top-0 left-0 w-1.5 h-full bg-primary"></div>
+<div class="flex-grow pl-2">
+<div class="flex items-center gap-2 mb-1">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-md text-caption">
+<span class="material-symbols-outlined text-[14px]" data-icon="schedule">schedule</span>
+                                45 Mins
+                            </span>
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-md text-caption">
+<span class="material-symbols-outlined text-[14px]" data-icon="assignment">assignment</span>
+                                30 Questions
+                            </span>
+</div>
+<h3 class="font-headline-md text-body-lg font-bold text-on-surface mb-1">Advanced Carpentry Techniques</h3>
+<p class="font-body-md text-caption text-text-body">Assessment of structural framing, finish carpentry, and tool proficiency.</p>
+</div>
+<div class="flex-shrink-0">
+<button class="w-full md:w-auto px-6 h-touch-target rounded-lg bg-primary-container text-on-primary-container font-label-md text-label-md hover:bg-primary-fixed-dim transition-colors flex items-center justify-center gap-2 shadow-sm">
+                            Start Assessment
+                        </button>
+</div>
+</div>
+<!-- Test Card 3: In Progress -->
+<div class="bg-surface rounded-xl border border-surface-container shadow-[0px_4px_20px_rgba(0,0,0,0.04)] p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 opacity-80">
+<div class="flex-grow">
+<div class="flex items-center gap-2 mb-1">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-status-info/10 text-status-info font-label-md text-caption">
+<span class="material-symbols-outlined text-[14px]" data-icon="timelapse">timelapse</span>
+                                In Progress
+                            </span>
+<span class="font-caption text-caption text-text-body">40% Complete</span>
+</div>
+<h3 class="font-headline-md text-body-lg font-bold text-on-surface mb-1">Electrical Safety Standards</h3>
+<p class="font-body-md text-caption text-text-body">National electrical code compliance and hazard mitigation.</p>
+<div class="w-full bg-surface-container rounded-full h-1.5 mt-3 max-w-[200px]">
+<div class="bg-status-info h-1.5 rounded-full" style="width: 40%"></div>
+</div>
+</div>
+<div class="flex-shrink-0">
+<button class="w-full md:w-auto px-6 h-touch-target rounded-lg border border-on-surface text-on-surface font-label-md text-label-md hover:bg-surface-container transition-colors flex items-center justify-center gap-2">
+                            Resume
+                        </button>
+</div>
+</div>
+</div>
+<!-- Right Column: Info Panel -->
+<div class="lg:col-span-1">
+<div class="bg-surface-muted rounded-xl p-6 sticky top-[88px]">
+<div class="w-12 h-12 bg-primary-container rounded-full flex items-center justify-center mb-4">
+<span class="material-symbols-outlined text-on-primary-container fill text-[24px]" data-icon="verified">verified</span>
+</div>
+<h3 class="font-headline-md text-body-lg font-bold text-on-surface mb-2">Why Get Verified?</h3>
+<p class="font-body-md text-caption text-text-body mb-6">Completing assessments proves your expertise to clients. Verified artisans receive significant benefits on the Kelmah platform.</p>
+<ul class="flex flex-col gap-4">
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary mt-0.5 text-[20px]" data-icon="visibility">visibility</span>
+<div>
+<h4 class="font-label-md text-label-md text-on-surface">Increased Visibility</h4>
+<p class="font-body-md text-caption text-text-body">Your profile ranks higher in search results for your trade.</p>
+</div>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary mt-0.5 text-[20px]" data-icon="handshake">handshake</span>
+<div>
+<h4 class="font-label-md text-label-md text-on-surface">Higher Trust</h4>
+<p class="font-body-md text-caption text-text-body">Clients are 3x more likely to hire verified professionals.</p>
+</div>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary mt-0.5 text-[20px]" data-icon="payments">payments</span>
+<div>
+<h4 class="font-label-md text-label-md text-on-surface">Premium Rates</h4>
+<p class="font-body-md text-caption text-text-body">Verified artisans command higher average hourly rates.</p>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden bg-surface shadow-[0px_-4px_20px_rgba(0,0,0,0.04)] fixed bottom-0 w-full z-50 rounded-t-xl">
+<div class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2 bg-surface rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-surface-variant transition-all active:scale-90 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-md text-[10px] mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-surface-variant transition-all active:scale-90 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="work">work</span>
+<span class="font-label-md text-[10px] mt-1">Jobs</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-surface-variant transition-all active:scale-90 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="mail">mail</span>
+<span class="font-label-md text-[10px] mt-1">Messages</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1 hover:bg-surface-variant transition-all active:scale-90 shadow-sm" href="#">
+<span class="material-symbols-outlined fill" data-icon="person">person</span>
+<span class="font-label-md text-[10px] mt-1 font-bold">Profile</span>
+</a>
+</div>
+</nav>
+</body></html>

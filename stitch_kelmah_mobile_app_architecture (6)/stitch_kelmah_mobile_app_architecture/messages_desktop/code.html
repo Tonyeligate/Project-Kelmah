@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kelmah - Messaging</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-surface": "#303031",
+                        "error": "#ba1a1a",
+                        "tertiary-fixed-dim": "#c6c6c7",
+                        "on-tertiary-container": "#5e5f5f",
+                        "surface-container-high": "#e9e8e7",
+                        "background": "#fbf9f8",
+                        "on-tertiary-fixed": "#1a1c1c",
+                        "on-tertiary": "#ffffff",
+                        "surface-variant": "#e4e2e2",
+                        "on-error": "#ffffff",
+                        "on-secondary-fixed-variant": "#474746",
+                        "on-surface": "#1b1c1c",
+                        "surface-dim": "#dbdad9",
+                        "surface": "#fbf9f8",
+                        "primary-fixed-dim": "#e9c400",
+                        "on-secondary-container": "#636262",
+                        "on-primary-fixed": "#221b00",
+                        "tertiary-fixed": "#e2e2e2",
+                        "inverse-on-surface": "#f2f0f0",
+                        "surface-tint": "#705d00",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "surface-container-low": "#f5f3f3",
+                        "primary": "#705d00",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "surface-container-highest": "#e4e2e2",
+                        "on-tertiary-fixed-variant": "#454747",
+                        "on-primary": "#ffffff",
+                        "surface-container": "#efeded",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "tertiary-container": "#dadada",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed-variant": "#544600",
+                        "on-background": "#1b1c1c",
+                        "secondary": "#5f5e5e",
+                        "secondary-container": "#e2dfde",
+                        "secondary-fixed": "#e5e2e1",
+                        "outline-variant": "#d0c6ab",
+                        "error-container": "#ffdad6",
+                        "on-surface-variant": "#4d4732",
+                        "outline": "#7e775f",
+                        "on-primary-container": "#705e00",
+                        "tertiary": "#5d5f5f",
+                        "primary-fixed": "#ffe16d",
+                        "primary-container": "#ffd700",
+                        "surface-bright": "#fbf9f8",
+                        "inverse-primary": "#e9c400"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "columns": "12",
+                        "sidebar-width": "280px",
+                        "margin-desktop": "64px",
+                        "baseline": "8px",
+                        "container-max-width": "1440px",
+                        "margin-tablet": "32px",
+                        "gutter": "32px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Montserrat"],
+                        "display-xl": ["Montserrat"],
+                        "body-md": ["Montserrat"],
+                        "display-lg": ["Montserrat"],
+                        "label-lg": ["Montserrat"],
+                        "headline-xl": ["Montserrat"],
+                        "headline-md": ["Montserrat"],
+                        "label-md": ["Montserrat"],
+                        "body-sm": ["Montserrat"],
+                        "body-lg": ["Montserrat"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["36px", { "lineHeight": "44px", "fontWeight": "600" }],
+                        "display-xl": ["72px", { "lineHeight": "84px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "display-lg": ["60px", { "lineHeight": "72px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-lg": ["14px", { "lineHeight": "16px", "fontWeight": "600" }],
+                        "headline-xl": ["48px", { "lineHeight": "56px", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Montserrat', sans-serif; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-background text-on-background antialiased flex h-screen overflow-hidden">
+<!-- SideNavBar -->
+<nav class="bg-inverse-surface dark:bg-inverse-surface w-sidebar-width h-screen fixed left-0 top-0 border-r border-outline dark:border-outline-variant flex flex-col h-full py-baseline px-4 z-40">
+<div class="mb-8 mt-4 flex flex-col items-center">
+<div class="w-16 h-16 rounded-full bg-surface-container-high flex items-center justify-center mb-4 overflow-hidden">
+<img alt="Kelmah Artisan Logo" class="w-full h-full object-cover" data-alt="A stylized, modern artisan logo featuring geometric craft tools intersecting. The logo is clean and minimalist, set against a neutral background. The aesthetic reflects high-end craftsmanship, using deep blacks and subtle gold accents to evoke a premium, guild-like feel." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCZLKgOYSujD4mG4MupPe7szcPFMTy8zBI205L4aIqSAgIFGFBswYyTIB9LMX7tB7VKr8X_7MYzKv_d_E8TRLhLC4Jo-j1QOd7xT4X2Ey_8yLkjz6q0gwZN98dc34rQbGb9Idvfa0xrdUC4DTCWvpo2eRCSJofU7DQI50RsAb2iphMR-VcnoCW6Cwhiyt7BOYIHApn1LuGMJ8pPE56tbnPebh0GS0mTQXxt3gleyxtRvMZrHC-vA2OXfwl0lzYumqwSw8jB-hks0ao"/>
+</div>
+<h1 class="font-headline-xl text-headline-xl font-bold text-primary text-center">Kelmah</h1>
+<p class="font-label-md text-label-md text-on-tertiary-fixed-variant mt-1 text-center">Artisan Marketplace</p>
+</div>
+<ul class="flex flex-col gap-2 flex-grow">
+<!-- Dashboard -->
+<li>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-on-tertiary-fixed-variant font-medium hover:text-primary-fixed-dim transition-colors duration-200 scale-95 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-lg text-label-lg">Dashboard</span>
+</a>
+</li>
+<!-- Marketplace -->
+<li>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-on-tertiary-fixed-variant font-medium hover:text-primary-fixed-dim transition-colors duration-200 scale-95 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="storefront">storefront</span>
+<span class="font-label-lg text-label-lg">Marketplace</span>
+</a>
+</li>
+<!-- Projects -->
+<li>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-on-tertiary-fixed-variant font-medium hover:text-primary-fixed-dim transition-colors duration-200 scale-95 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="assignment">assignment</span>
+<span class="font-label-lg text-label-lg">Projects</span>
+</a>
+</li>
+<!-- Messages (ACTIVE) -->
+<li>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-primary font-bold border-r-2 border-primary bg-inverse-on-surface/10 scale-95 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="chat_bubble" style="font-variation-settings: 'FILL' 1;">chat_bubble</span>
+<span class="font-label-lg text-label-lg">Messages</span>
+</a>
+</li>
+<!-- Settings -->
+<li>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-on-tertiary-fixed-variant font-medium hover:text-primary-fixed-dim transition-colors duration-200 scale-95 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-lg text-label-lg">Settings</span>
+</a>
+</li>
+</ul>
+<div class="mt-auto pt-4 border-t border-outline/20">
+<button class="w-full py-3 px-4 bg-primary-container text-on-primary-fixed font-label-lg text-label-lg font-bold rounded-lg hover:opacity-90 transition-opacity">
+                Post a Job
+            </button>
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<div class="flex-1 flex flex-col ml-[280px] h-screen bg-surface">
+<!-- TopNavBar -->
+<header class="bg-surface dark:bg-surface-dim h-20 w-full sticky top-0 z-30 border-b border-outline dark:border-outline-variant flex items-center justify-between px-margin-desktop w-auto">
+<div class="flex items-center gap-6 flex-1">
+<div class="relative w-96 focus-within:border-primary transition-colors border-b border-outline">
+<span class="material-symbols-outlined absolute left-0 top-1/2 -translate-y-1/2 text-on-surface-variant" data-icon="search">search</span>
+<input class="w-full bg-transparent border-none focus:ring-0 pl-8 py-2 font-body-md text-body-md text-on-surface placeholder:text-on-surface-variant" placeholder="Search conversations..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full text-on-surface-variant hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 rounded-full text-on-surface-variant hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Messaging Dual Pane Layout -->
+<main class="flex-1 flex overflow-hidden">
+<!-- Left Pane: Conversation List -->
+<aside class="w-96 border-r border-outline-variant flex flex-col bg-surface-container-lowest">
+<div class="p-6 border-b border-outline-variant flex justify-between items-center">
+<h2 class="font-headline-md text-headline-md text-on-surface">Inbox</h2>
+<button class="text-primary hover:text-primary-fixed-dim transition-colors">
+<span class="material-symbols-outlined" data-icon="edit_square">edit_square</span>
+</button>
+</div>
+<div class="overflow-y-auto flex-1 scrollbar-hide">
+<!-- Active Chat Item -->
+<div class="p-4 border-b border-outline-variant bg-surface-container-low cursor-pointer border-l-4 border-l-primary">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-surface-variant shrink-0">
+<img alt="Avatar" class="w-full h-full object-cover" data-alt="A professional headshot of a male artisan in a well-lit studio. He wears a neutral-toned apron over a simple shirt. The background is slightly blurred, showing tools and wood textures, reflecting a modern, minimalist craftsman aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCEVNhdzGxxx3HMFdyCMGiOn9MJ4J9qYwhc5_5hUKdE4aHiKSWpMTbZnc519dttFqDhrwa60g7nwv_5NbNnJTmThpJFNlV7E_6Mg8FJPD2sdn4e3-TCORCXnLd4wyP2tg3B7Amnzq_w8odwYOUzNGHVrXeV5HZgHfYeqXzr5_afxA4KdKVHiDLSw_jZKfic2oSiby3690SHDfpPkAhS1hQqWr1KFFFp02O9NyPIUhthnUGeE0xMFKDp1ih8gHOSxzUtu_lfFVRKaK4"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-baseline mb-1">
+<h3 class="font-label-lg text-label-lg text-on-surface truncate">Elias Thorne</h3>
+<span class="font-label-md text-label-md text-on-surface-variant shrink-0">10:42 AM</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">The custom joinery will be ready for review tomorrow.</p>
+</div>
+</div>
+</div>
+<!-- Unread Chat Item -->
+<div class="p-4 border-b border-outline-variant cursor-pointer hover:bg-surface-container-lowest transition-colors group">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-surface-variant shrink-0 relative">
+<img alt="Avatar" class="w-full h-full object-cover" data-alt="A portrait of a female designer in a bright, modern studio space. She is smiling subtly, framed against a clean white wall with a hint of a large window letting in natural light. The mood is approachable yet highly professional." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBAYAj6j4uzg3w7xhJdVuTHszZ_q3SLt9lcu4FnhTyhlhOcMyyf9tr9Zyh3u7tS4rw18ndZgbixVwScYQM1P1G_boFQKDvH3QGQav9grQmekzdjQhqzjnkN28ZWkk19CnKz5K3Nf5m7-4Bc87spVIcT1_LXu8wBrP4cBEP3hA5T9aOhcLe29i8aZnREKa2agHpsrl9BXBjrmJowe4telZCzOwxrncdFqz7uPnA1GjL-URSbzzzhTfk8z4dTIRX89_xat28L-ncna-U"/>
+<span class="absolute top-0 right-0 w-3 h-3 bg-error rounded-full border-2 border-surface-container-lowest"></span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-baseline mb-1">
+<h3 class="font-label-lg text-label-lg text-on-surface font-bold truncate">Sarah Jenkins</h3>
+<span class="font-label-md text-label-md text-primary font-bold shrink-0">Yesterday</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface font-semibold truncate">Can we discuss the finish options for the dining table?</p>
+</div>
+</div>
+</div>
+<!-- Normal Chat Item -->
+<div class="p-4 border-b border-outline-variant cursor-pointer hover:bg-surface-container-lowest transition-colors group">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-surface-variant shrink-0">
+<div class="w-full h-full flex items-center justify-center bg-tertiary-container text-on-tertiary-container font-headline-md">M</div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-baseline mb-1">
+<h3 class="font-label-lg text-label-lg text-on-surface truncate">Marcus Wright</h3>
+<span class="font-label-md text-label-md text-on-surface-variant shrink-0">Mon</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">Invoice #4029 has been paid.</p>
+</div>
+</div>
+</div>
+</div>
+</aside>
+<!-- Right Pane: Active Chat Area -->
+<section class="flex-1 flex flex-col bg-surface relative">
+<!-- Chat Header -->
+<div class="h-20 px-6 border-b border-outline-variant flex items-center justify-between bg-surface-container-lowest z-10 shrink-0">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-surface-variant">
+<img alt="Avatar" class="w-full h-full object-cover" data-alt="A professional headshot of a male artisan in a well-lit studio. He wears a neutral-toned apron over a simple shirt. The background is slightly blurred, showing tools and wood textures, reflecting a modern, minimalist craftsman aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCs-DuRcokARntBCQfEO-nGWuQu_-2vnWkzR9Ne_3taT5CZEmGCx7PMgNIJZZaao0r-n_CYDJppBgf8rSxJEI8zT3KTeiQMM9_Hculgj0D17OALSNJ0BMWvNnJp_IroBQbD8kUNS218aU1EF0BcUyc0QXmLkNRMIaFT-L53BU43d91g6s6oKku8EFOFAY_Z9EGUWChcj5CzcYlzWalvSmj9zldIXhzug1fP_LrIYTgl-Po2sLymxU67v7_PClFaCWOUH6fps4F4ZN0"/>
+</div>
+<div>
+<h2 class="font-label-lg text-label-lg text-on-surface">Elias Thorne</h2>
+<p class="font-label-md text-label-md text-secondary">Master Carpenter</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors rounded-full hover:bg-surface-container-high" onclick="document.getElementById('media-drawer').classList.toggle('translate-x-full')">
+<span class="material-symbols-outlined" data-icon="gallery_thumbnail">gallery_thumbnail</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors rounded-full hover:bg-surface-container-high">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Chat Messages Area -->
+<div class="flex-1 overflow-y-auto p-6 flex flex-col gap-6 scrollbar-hide bg-surface">
+<!-- Date Divider -->
+<div class="flex justify-center my-4">
+<span class="px-3 py-1 rounded-full bg-surface-container-high font-label-md text-label-md text-on-surface-variant">Today</span>
+</div>
+<!-- Received Message -->
+<div class="flex gap-4 max-w-3xl">
+<div class="w-8 h-8 rounded-full overflow-hidden shrink-0 mt-1">
+<img alt="Avatar" class="w-full h-full object-cover" data-alt="A professional headshot of a male artisan in a well-lit studio. He wears a neutral-toned apron over a simple shirt. The background is slightly blurred, showing tools and wood textures, reflecting a modern, minimalist craftsman aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYcLXqgz1Alchm_3BweInx2PAIr41IKBeDyp05m8mjleopfdUgCLq4rr7OgGW8tQ7bTipokh5K0Ky4QM6lxirquYXZjhKq03qDRFB-oOXpk9wEqBrwcdKe4wltZrhCLJFoLNhV_h_Fd0AkZ7hmL-jQlq_oVQ5B7TFByco3jbB1rvWJyusQl_VUy7azgBIa-rSqsJOFbyaVYOtFyNNRmoAlH2N9UToSR4EVVBie0GGRjpkvjLeZJSHnAgelnHZ_7dgPePWZLzqTiIg"/>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-baseline gap-2">
+<span class="font-label-lg text-label-lg text-on-surface">Elias Thorne</span>
+<span class="font-label-md text-label-md text-on-surface-variant">10:30 AM</span>
+</div>
+<div class="p-4 rounded-xl rounded-tl-sm bg-surface-container-highest text-on-surface font-body-md text-body-md max-w-xl">
+                                I've sourced the walnut for the credenza. The grain patterns look incredible. I'll send over some photos once I have them laid out.
+                            </div>
+</div>
+</div>
+<!-- Sent Message (User) -->
+<div class="flex gap-4 max-w-3xl self-end flex-row-reverse">
+<div class="w-8 h-8 rounded-full overflow-hidden shrink-0 mt-1 bg-primary-container text-on-primary-fixed flex items-center justify-center font-label-lg">
+                            U
+                        </div>
+<div class="flex flex-col gap-1 items-end">
+<div class="flex items-baseline gap-2 flex-row-reverse">
+<span class="font-label-lg text-label-lg text-on-surface">You</span>
+<span class="font-label-md text-label-md text-on-surface-variant">10:35 AM</span>
+</div>
+<div class="p-4 rounded-xl rounded-tr-sm bg-inverse-surface text-inverse-on-surface font-body-md text-body-md max-w-xl">
+                                That's great news Elias! Looking forward to seeing them. Let me know if you need to adjust the timeline for the assembly.
+                            </div>
+</div>
+</div>
+<!-- Received Message with Image -->
+<div class="flex gap-4 max-w-3xl">
+<div class="w-8 h-8 rounded-full overflow-hidden shrink-0 mt-1">
+<img alt="Avatar" class="w-full h-full object-cover" data-alt="A professional headshot of a male artisan in a well-lit studio. He wears a neutral-toned apron over a simple shirt. The background is slightly blurred, showing tools and wood textures, reflecting a modern, minimalist craftsman aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD3nV75_nr-e7KJ8p4NLDoNBomwC54bPdMm4KJC9oV0h0C8qbP9WoFG-znVrSu-9unyK9hF3oKcvsXtbdO7TcDqhjVlrFAje2oszoHCxLGPXlO0HRN1awA_WdQ4zba3ht_tb_XGRoJYO58fqnIn3n46rNzALJSqUACVJIOb_LVHzKJHTTOAIWc731z1gtJkWmzoqTo0uXLpPcdAAFcNzxlS8BK5-81VerVUj8suE97WRuZA5EKbcPT4m_3F6Q7UvBBGUpNQxneR-Ig"/>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-baseline gap-2">
+<span class="font-label-lg text-label-lg text-on-surface">Elias Thorne</span>
+<span class="font-label-md text-label-md text-on-surface-variant">10:42 AM</span>
+</div>
+<div class="p-4 rounded-xl rounded-tl-sm bg-surface-container-highest text-on-surface font-body-md text-body-md max-w-xl">
+                                Here's a quick preview. The custom joinery will be ready for review tomorrow.
+                                <div class="mt-3 rounded-lg overflow-hidden border border-outline-variant max-w-sm">
+<img alt="Wood Grain Preview" class="w-full h-auto object-cover" data-alt="A close-up shot of rich, dark walnut wood planks laid out on a workbench. The lighting highlights the intricate, flowing grain patterns of the wood. Sawdust and a few traditional hand tools are visible in the shallow depth of field, emphasizing a high-quality artisan workspace." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZPTqq96ogGuehI7FC_s5Gvik3_RVZHFAuDRo6dpHi25hnyoSasKiTRHSUHHjyjtC1sCYVgqo0CjV0l59D3LZp6_aWTJVNeuxvBGUicPD6lx39ik16nELXrr83CJkIwLWb1pOEGiMNUUe_m0xwIz_XO_F5zqXO9c9Py3QQePRDq-W8YSdTtdQ6GmO0YbJ2JiItdlzzyqS8E_YzyoUmQ7Hnb6md1VbQBN5JFm6sM4xvpn8gTAIp0GtlAaAHvu2g2xVo1CyK_1bdv90"/>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Input Area -->
+<div class="p-6 border-t border-outline-variant bg-surface-container-lowest shrink-0">
+<div class="flex items-end gap-4">
+<button class="p-3 text-secondary hover:text-primary transition-colors shrink-0">
+<span class="material-symbols-outlined" data-icon="add_circle">add_circle</span>
+</button>
+<div class="flex-1 bg-surface-container-low rounded-xl border border-outline-variant focus-within:border-primary transition-colors flex items-end min-h-[56px] p-1">
+<textarea class="w-full bg-transparent border-none focus:ring-0 resize-none max-h-32 min-h-[40px] py-3 px-4 font-body-md text-body-md text-on-surface placeholder:text-on-surface-variant scrollbar-hide" placeholder="Type a message..." rows="1"></textarea>
+</div>
+<button class="w-14 h-14 bg-primary-container text-on-primary-fixed rounded-xl flex items-center justify-center hover:opacity-90 transition-opacity shrink-0">
+<span class="material-symbols-outlined" data-icon="send">send</span>
+</button>
+</div>
+</div>
+<!-- Shared Media Side Drawer -->
+<div class="absolute top-0 right-0 h-full w-80 bg-surface-container-lowest border-l border-outline-variant transform translate-x-full transition-transform duration-300 z-20 shadow-[-8px_0_32px_rgba(0,0,0,0.05)] flex flex-col" id="media-drawer">
+<div class="p-6 border-b border-outline-variant flex justify-between items-center shrink-0">
+<h3 class="font-headline-md text-headline-md text-on-surface">Shared Media</h3>
+<button class="text-on-surface-variant hover:text-error transition-colors" onclick="document.getElementById('media-drawer').classList.add('translate-x-full')">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+</div>
+<div class="flex border-b border-outline-variant">
+<button class="flex-1 py-3 text-center border-b-2 border-primary text-primary font-label-lg text-label-lg">Media</button>
+<button class="flex-1 py-3 text-center border-b-2 border-transparent text-secondary hover:text-on-surface font-label-lg text-label-lg transition-colors">Files</button>
+<button class="flex-1 py-3 text-center border-b-2 border-transparent text-secondary hover:text-on-surface font-label-lg text-label-lg transition-colors">Links</button>
+</div>
+<div class="p-4 flex-1 overflow-y-auto scrollbar-hide grid grid-cols-3 gap-2 auto-rows-max">
+<!-- Media Thumbnails -->
+<div class="aspect-square bg-surface-variant rounded-md overflow-hidden cursor-pointer hover:opacity-80 transition-opacity">
+<img alt="Thumbnail" class="w-full h-full object-cover" data-alt="A close-up shot of rich, dark walnut wood planks laid out on a workbench. The lighting highlights the intricate, flowing grain patterns of the wood. Sawdust and a few traditional hand tools are visible in the shallow depth of field, emphasizing a high-quality artisan workspace." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDyOa6WkW6NRI0TxkvGWTMaGsGghr45-5UbEVEv4GNDr6LSN7-hKbQr8oC3Jjq4J3n-OcXx-aUZINsrnhWIPSkiouVw2PvARqAcJK94VZiSqp3Cs_eJWpJNE3PLPj8QFgrxNeb18Im1l6VMBnCSfeUmQO8MDiDOWMx5aazWv924Eb0q-RiRG3iYpZzw68_nTtSqIvq8sFg5YyFxf8wQ8MATC8iT2TGECL16O4xvjHwGaMUfQLoLIKbzgEP8Yl0FeLrdeA_-IbcDW8A"/>
+</div>
+<div class="aspect-square bg-surface-variant rounded-md overflow-hidden cursor-pointer hover:opacity-80 transition-opacity">
+<img alt="Thumbnail" class="w-full h-full object-cover" data-alt="A modern minimalist wooden chair sitting in a bright, white gallery space. The chair features clean lines and smooth joints, demonstrating high-end craftsmanship. Soft natural light casts gentle shadows on the polished floor." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCEbfHOU3Rzvja1yNbrW6UxdjmSg7xRycHV8khDInphPREC2ZTBZEJ3S41W3RKzkzwVJ-9NsSAkO8zYYwP2U9vh6FRqqdn2zPY8mnqTjQ51ovE0PJKGUPxCja22YhvSf9mLhUSL5bew_N7k3sAiKJLjk3Cb7YScrO-TjPA3YatjQYGvTkrZsHleqCCPB1VoqNEqPxUm5ep-wAGEZCjdwXknCyh7PvsRgXYeg9-ZfeA_jO7rFj_fQgKwQOiPD6UADnjxahRG8QCUPBo"/>
+</div>
+<div class="aspect-square bg-surface-variant rounded-md overflow-hidden cursor-pointer hover:opacity-80 transition-opacity">
+<img alt="Thumbnail" class="w-full h-full object-cover" data-alt="Detailed view of a hand-cut dovetail joint on a wooden drawer. The contrasting wood tones highlight the precision of the cut. The aesthetic is tactile and professional, focusing on the subtle details of artisan woodwork." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAj2dXjeCnY0FCxHhcR03bbN-0YSPKs5hOpNg3ZhMmBZkPw9l8GJhjea27YriwrSqSzvMKSSKg2E7Quxf359KIbHgrW9K7hWAJVWRB7WWw_tJrR5o6YJqahYCEqAsXLxN9Ty_NGFuTwRILl4mRmzGNM-a9PTAMz0LCFQlkbf4g8xyEQ20CthQ5KaYCj4fEr3azYG818yfFL_RRMAjIAG-iPgPzpl0BEpYH_v0JYPwo8Kp_rmI54r2ijKSCFv4k1n00fgKDNIZlydgg"/>
+</div>
+<div class="aspect-square bg-surface-variant rounded-md overflow-hidden cursor-pointer hover:opacity-80 transition-opacity flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary" data-icon="insert_drive_file">insert_drive_file</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+</div>
+<script>
+        // Auto-resize textarea
+        const textarea = document.querySelector('textarea');
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+    </script>
+</body></html>

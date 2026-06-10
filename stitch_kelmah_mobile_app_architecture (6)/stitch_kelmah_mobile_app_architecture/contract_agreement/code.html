@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Contract Agreement - Kelmah</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-bright": "#f9f9f9",
+                        "surface-muted": "#F3F4F6",
+                        "on-error-container": "#93000a",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-low": "#f3f3f4",
+                        "surface-variant": "#e2e2e2",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "tertiary-fixed": "#e4e3d9",
+                        "on-background": "#1a1c1c",
+                        "tertiary-fixed-dim": "#c8c7bd",
+                        "on-primary-fixed-variant": "#544600",
+                        "on-error": "#ffffff",
+                        "on-surface": "#1a1c1c",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-fixed": "#1b1c16",
+                        "background": "#f9f9f9",
+                        "surface": "#f9f9f9",
+                        "secondary-fixed": "#e5e2e1",
+                        "on-primary-container": "#705e00",
+                        "primary-fixed-dim": "#e9c400",
+                        "inverse-on-surface": "#f0f1f1",
+                        "surface-container-high": "#e8e8e8",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#474740",
+                        "primary-container": "#ffd700",
+                        "text-body": "#4B5563",
+                        "surface-dim": "#dadada",
+                        "secondary": "#5f5e5e",
+                        "outline-variant": "#d0c6ab",
+                        "primary-fixed": "#ffe16d",
+                        "on-secondary-fixed-variant": "#474746",
+                        "surface-container-highest": "#e2e2e2",
+                        "status-info": "#3B82F6",
+                        "surface-container-lowest": "#ffffff",
+                        "status-success": "#10B981",
+                        "tertiary-container": "#dcdad0",
+                        "outline": "#7e775f",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "secondary-container": "#e2dfde",
+                        "on-surface-variant": "#4d4732",
+                        "surface-tint": "#705d00",
+                        "inverse-surface": "#2f3131",
+                        "error": "#ba1a1a",
+                        "surface-container": "#eeeeee",
+                        "on-tertiary-container": "#5f5f58",
+                        "inverse-primary": "#e9c400",
+                        "on-secondary-container": "#636262",
+                        "on-primary-fixed": "#221b00",
+                        "tertiary": "#5f5f57",
+                        "primary": "#705d00",
+                        "error-container": "#ffdad6"
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.25rem",
+                        lg: "0.5rem",
+                        xl: "0.75rem",
+                        full: "9999px"
+                    },
+                    spacing: {
+                        gutter: "16px",
+                        base: "8px",
+                        "margin-mobile": "16px",
+                        "margin-desktop": "64px",
+                        "touch-target": "48px"
+                    },
+                    fontFamily: {
+                        "headline-lg-mobile": ["Montserrat"],
+                        "display-lg": ["Montserrat"],
+                        caption: ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Montserrat"],
+                        "headline-lg": ["Montserrat"],
+                        "body-md": ["Inter"],
+                        "label-md": ["Inter"]
+                    },
+                    fontSize: {
+                        "headline-lg-mobile": ["28px", { lineHeight: "34px", fontWeight: "700" }],
+                        "display-lg": ["48px", { lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700" }],
+                        caption: ["12px", { lineHeight: "16px", fontWeight: "500" }],
+                        "body-lg": ["18px", { lineHeight: "28px", fontWeight: "400" }],
+                        "headline-md": ["24px", { lineHeight: "32px", fontWeight: "600" }],
+                        "headline-lg": ["32px", { lineHeight: "40px", fontWeight: "700" }],
+                        "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+                        "label-md": ["14px", { lineHeight: "20px", fontWeight: "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Montserrat', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface min-h-screen flex flex-col md:bg-surface-container">
+<!-- Top App Bar -->
+<header class="bg-surface dark:bg-surface-dim shadow-sm text-primary dark:text-primary-fixed font-headline-md text-headline-md fixed top-0 w-full z-50 flex justify-between items-center px-margin-mobile h-touch-target w-full">
+<button aria-label="Close" class="flex items-center justify-center w-touch-target h-touch-target hover:bg-surface-container dark:hover:bg-surface-container-highest transition-colors active:scale-95 duration-100 rounded-full">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+<span class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">Review Agreement</span>
+<div class="w-touch-target h-touch-target"></div> <!-- Spacer for center alignment -->
+</header>
+<!-- Main Content -->
+<main class="flex-grow pt-touch-target pb-32 md:pb-8 px-margin-mobile md:px-margin-desktop md:max-w-4xl md:mx-auto w-full">
+<div class="mt-6 md:mt-10 md:bg-surface-container-lowest md:rounded-xl md:shadow-lg md:p-8">
+<!-- Header Section -->
+<div class="mb-8 border-b border-surface-variant pb-6">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-on-surface mb-2">Contract Agreement</h1>
+<p class="font-body-md text-body-md text-secondary">Reference: #KLM-2023-8902</p>
+</div>
+<!-- Parties Involved -->
+<section class="mb-8">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-4">Parties Involved</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- Client -->
+<div class="bg-surface-container-lowest border border-surface-variant rounded-lg p-4 flex items-start gap-4">
+<div class="bg-surface-container rounded-full w-12 h-12 flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-secondary" data-icon="person">person</span>
+</div>
+<div>
+<span class="font-caption text-caption text-secondary uppercase tracking-wider">Client (Hirer)</span>
+<p class="font-body-lg text-body-lg text-on-surface font-semibold mt-1">Sarah Jenkins</p>
+<p class="font-body-md text-body-md text-secondary">Property Owner</p>
+</div>
+</div>
+<!-- Artisan -->
+<div class="bg-surface-container-lowest border border-surface-variant rounded-lg p-4 flex items-start gap-4">
+<div class="bg-primary-container rounded-full w-12 h-12 flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-on-primary-container" data-icon="engineering">engineering</span>
+</div>
+<div>
+<span class="font-caption text-caption text-secondary uppercase tracking-wider">Artisan (Worker)</span>
+<p class="font-body-lg text-body-lg text-on-surface font-semibold mt-1">David Osei</p>
+<p class="font-body-md text-body-md text-secondary">Master Electrician</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Contract Details -->
+<section class="mb-8">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-4">Job Details</h2>
+<div class="bg-surface-container-lowest border border-surface-variant rounded-lg p-6">
+<div class="mb-6">
+<h3 class="font-body-lg text-body-lg font-semibold text-on-surface">Complete House Wiring Verification &amp; Upgrade</h3>
+<p class="font-body-md text-body-md text-secondary mt-2">Comprehensive inspection of existing electrical systems, replacing outdated wiring in the kitchen and living areas, and installing a new 200-amp breaker panel.</p>
+</div>
+<div class="grid grid-cols-2 gap-y-4 gap-x-8 mb-6 border-t border-surface-variant pt-4">
+<div>
+<span class="font-caption text-caption text-secondary block mb-1">Start Date</span>
+<span class="font-body-md text-body-md text-on-surface">Oct 24, 2023</span>
+</div>
+<div>
+<span class="font-caption text-caption text-secondary block mb-1">Est. Completion</span>
+<span class="font-body-md text-body-md text-on-surface">Nov 05, 2023</span>
+</div>
+<div>
+<span class="font-caption text-caption text-secondary block mb-1">Location</span>
+<span class="font-body-md text-body-md text-on-surface">East Legon, Accra</span>
+</div>
+<div>
+<span class="font-caption text-caption text-secondary block mb-1">Total Agreed Price</span>
+<span class="font-body-lg text-body-lg font-semibold text-primary">GH₵ 4,500</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Milestones -->
+<section class="mb-8">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-4">Milestones &amp; Payment</h2>
+<div class="space-y-4">
+<!-- Milestone 1 -->
+<div class="bg-surface-container-lowest border border-surface-variant rounded-lg p-4 flex justify-between items-center">
+<div class="flex items-start gap-4">
+<div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center font-label-md text-label-md flex-shrink-0">1</div>
+<div>
+<h4 class="font-body-md text-body-md font-semibold text-on-surface">Initial Inspection &amp; Material Sourcing</h4>
+<p class="font-caption text-caption text-secondary">Due: Oct 26, 2023</p>
+</div>
+</div>
+<div class="text-right">
+<span class="font-body-md text-body-md font-semibold text-on-surface">GH₵ 1,500</span>
+</div>
+</div>
+<!-- Milestone 2 -->
+<div class="bg-surface-container-lowest border border-surface-variant rounded-lg p-4 flex justify-between items-center">
+<div class="flex items-start gap-4">
+<div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center font-label-md text-label-md flex-shrink-0">2</div>
+<div>
+<h4 class="font-body-md text-body-md font-semibold text-on-surface">Wiring Upgrade Completion</h4>
+<p class="font-caption text-caption text-secondary">Due: Nov 02, 2023</p>
+</div>
+</div>
+<div class="text-right">
+<span class="font-body-md text-body-md font-semibold text-on-surface">GH₵ 2,000</span>
+</div>
+</div>
+<!-- Milestone 3 -->
+<div class="bg-surface-container-lowest border border-surface-variant rounded-lg p-4 flex justify-between items-center">
+<div class="flex items-start gap-4">
+<div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center font-label-md text-label-md flex-shrink-0">3</div>
+<div>
+<h4 class="font-body-md text-body-md font-semibold text-on-surface">Final Testing &amp; Sign-off</h4>
+<p class="font-caption text-caption text-secondary">Due: Nov 05, 2023</p>
+</div>
+</div>
+<div class="text-right">
+<span class="font-body-md text-body-md font-semibold text-on-surface">GH₵ 1,000</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Terms & Conditions -->
+<section class="mb-10">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-4">Terms &amp; Conditions</h2>
+<div class="bg-surface-container-lowest border border-surface-variant rounded-lg h-48 overflow-y-auto p-4 custom-scrollbar">
+<div class="prose prose-sm text-secondary font-body-md text-body-md">
+<p class="mb-2"><strong>1. Scope of Work:</strong> The Artisan agrees to perform the services described in the Job Details section in a professional and workmanlike manner.</p>
+<p class="mb-2"><strong>2. Payment Terms:</strong> Payments will be released according to the agreed milestones. Funds will be held in escrow upon acceptance of this contract and released upon mutual confirmation of milestone completion.</p>
+<p class="mb-2"><strong>3. Materials:</strong> Unless otherwise specified, the Client is responsible for the cost of major materials, while the Artisan provides necessary tools.</p>
+<p class="mb-2"><strong>4. Delays:</strong> Any significant delays due to unforeseen circumstances or material unavailability must be communicated immediately. Time extensions must be agreed upon mutually.</p>
+<p class="mb-2"><strong>5. Dispute Resolution:</strong> In the event of a dispute, both parties agree to engage in good faith mediation through the Kelmah support platform before seeking other remedies.</p>
+<p><strong>6. Liability:</strong> The Artisan holds necessary valid licenses and basic liability insurance for the duration of the project.</p>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Fixed Bottom Action Bar -->
+<div class="fixed bottom-0 left-0 w-full bg-surface-container-lowest shadow-[0_-4px_20px_rgba(0,0,0,0.05)] p-4 border-t border-surface-variant z-40">
+<div class="md:max-w-4xl md:mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+<label class="flex items-center gap-3 cursor-pointer">
+<input class="w-6 h-6 rounded border-surface-variant text-primary focus:ring-primary focus:ring-offset-0 bg-surface" id="agree-checkbox" type="checkbox"/>
+<span class="font-body-md text-body-md text-on-surface">I have read and agree to the terms of this contract.</span>
+</label>
+<button class="w-full sm:w-auto min-w-[200px] h-touch-target bg-primary-container text-[#1A1A1A] font-headline-md text-headline-md rounded-lg flex items-center justify-center opacity-50 cursor-not-allowed transition-all duration-200" disabled="" id="sign-button">
+<span class="material-symbols-outlined mr-2" data-icon="draw">draw</span>
+                Accept &amp; Sign
+            </button>
+</div>
+</div>
+<script>
+        // Simple interaction for the agreement checkbox
+        const checkbox = document.getElementById('agree-checkbox');
+        const signButton = document.getElementById('sign-button');
+
+        checkbox.addEventListener('change', function() {
+            if (this.checked) {
+                signButton.disabled = false;
+                signButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                signButton.classList.add('hover:bg-[#e6c200]', 'active:scale-95');
+            } else {
+                signButton.disabled = true;
+                signButton.classList.add('opacity-50', 'cursor-not-allowed');
+                signButton.classList.remove('hover:bg-[#e6c200]', 'active:scale-95');
+            }
+        });
+    </script>
+</body></html>

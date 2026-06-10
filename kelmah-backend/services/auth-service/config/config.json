@@ -1,0 +1,32 @@
+{
+  "development": {
+    "use_env_variable": "AUTH_SQL_URL",
+    "username": "postgres",
+    "password": "postgres",
+    "database": "kelmah_development",
+    "host": "127.0.0.1",
+    "port": 5432,
+    "dialect": "postgres"
+  },
+  "test": {
+    "use_env_variable": "AUTH_SQL_URL",
+    "username": "postgres",
+    "password": "postgres",
+    "database": "kelmah_test",
+    "host": "127.0.0.1",
+    "port": 5432,
+    "dialect": "postgres"
+  },
+  "production": {
+    "use_env_variable": "AUTH_SQL_URL",
+    "username": "postgres",
+    "password": "postgres",
+    "database": "kelmah_production",
+    "host": "127.0.0.1",
+    "port": 5432,
+    "dialect": "postgres",
+    "dialectOptions": {
+      "ssl": { "rejectUnauthorized": false }
+    }
+  }
+}

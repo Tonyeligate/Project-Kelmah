@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kelmah - Artisan Portfolio</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-bright": "#f9f9f9",
+                        "surface-muted": "#F3F4F6",
+                        "on-error-container": "#93000a",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-low": "#f3f3f4",
+                        "surface-variant": "#e2e2e2",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "tertiary-fixed": "#e4e3d9",
+                        "on-background": "#1a1c1c",
+                        "tertiary-fixed-dim": "#c8c7bd",
+                        "on-primary-fixed-variant": "#544600",
+                        "on-error": "#ffffff",
+                        "on-surface": "#1a1c1c",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-fixed": "#1b1c16",
+                        "background": "#f9f9f9",
+                        "surface": "#f9f9f9",
+                        "secondary-fixed": "#e5e2e1",
+                        "on-primary-container": "#705e00",
+                        "primary-fixed-dim": "#e9c400",
+                        "inverse-on-surface": "#f0f1f1",
+                        "surface-container-high": "#e8e8e8",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#474740",
+                        "primary-container": "#ffd700",
+                        "text-body": "#4B5563",
+                        "surface-dim": "#dadada",
+                        "secondary": "#5f5e5e",
+                        "outline-variant": "#d0c6ab",
+                        "primary-fixed": "#ffe16d",
+                        "on-secondary-fixed-variant": "#474746",
+                        "surface-container-highest": "#e2e2e2",
+                        "status-info": "#3B82F6",
+                        "surface-container-lowest": "#ffffff",
+                        "status-success": "#10B981",
+                        "tertiary-container": "#dcdad0",
+                        "outline": "#7e775f",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "secondary-container": "#e2dfde",
+                        "on-surface-variant": "#4d4732",
+                        "surface-tint": "#705d00",
+                        "inverse-surface": "#2f3131",
+                        "error": "#ba1a1a",
+                        "surface-container": "#eeeeee",
+                        "on-tertiary-container": "#5f5f58",
+                        "inverse-primary": "#e9c400",
+                        "on-secondary-container": "#636262",
+                        "on-primary-fixed": "#221b00",
+                        "tertiary": "#5f5f57",
+                        "primary": "#705d00",
+                        "error-container": "#ffdad6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "base": "8px",
+                        "margin-mobile": "16px",
+                        "margin-desktop": "64px",
+                        "touch-target": "48px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Montserrat"],
+                        "display-lg": ["Montserrat"],
+                        "caption": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Montserrat"],
+                        "headline-lg": ["Montserrat"],
+                        "body-md": ["Inter"],
+                        "label-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["28px", { "lineHeight": "34px", "fontWeight": "700" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "caption": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        /* Utility for hiding scrollbar but allowing scroll */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface font-body-md text-body-md text-on-surface pb-24 antialiased selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface shadow-sm flex justify-between items-center px-margin-mobile h-touch-target">
+<button aria-label="Menu" class="w-touch-target h-touch-target flex items-center justify-start text-on-surface hover:bg-surface-container transition-colors active:scale-95 duration-100">
+<span class="material-symbols-outlined text-primary">menu</span>
+</button>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Kelmah</h1>
+<button aria-label="Notifications" class="w-touch-target h-touch-target flex items-center justify-end text-on-surface hover:bg-surface-container transition-colors active:scale-95 duration-100">
+<span class="material-symbols-outlined text-primary">notifications</span>
+</button>
+</header>
+<!-- Main Content -->
+<main class="pt-[80px] px-margin-mobile pb-8 max-w-7xl mx-auto md:px-margin-desktop">
+<!-- Header Section -->
+<div class="flex flex-col gap-2 mb-6">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-background">My Portfolio</h2>
+<p class="font-body-md text-body-md text-secondary">Manage and showcase your completed projects to attract new clients.</p>
+</div>
+<!-- Primary Action -->
+<button class="w-full h-touch-target bg-primary-container text-on-background rounded-lg flex items-center justify-center gap-2 shadow-sm hover:bg-primary-fixed transition-colors active:scale-95 duration-100 mb-8 border border-primary/10">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add_circle</span>
+<span class="font-label-md text-label-md font-bold uppercase tracking-wide">Add New Project</span>
+</button>
+<!-- Portfolio Grid -->
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+<!-- Project Card 1 -->
+<div class="bg-surface-container-lowest rounded-xl border border-surface-variant overflow-hidden shadow-sm flex flex-col group relative">
+<div class="relative aspect-square w-full bg-surface-container">
+<img alt="Project Thumbnail" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="A brightly lit, modern residential kitchen under construction. The scene features freshly installed, pristine white cabinetry juxtaposed against exposed wooden beams and industrial metal fixtures. Dust particles catch the natural sunlight streaming through a large window, highlighting the precision of the carpentry work. The overall mood is industrious, clean, and highly professional, reflecting a high-end contracting job in progress." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC77JZhR55it4bkEmK6fW2tmjUSgUEXOhroRa4_rsXP0shFIUDaJvXENYdj-1FEq-SYXRmkyB-OGIhEo2XlvxhNAB3JcfNu1IiH1asNT30e0hi3yxZapF7gVxgeztgVIViC6yPRtExpmOmw1en-JryUMHqhGP4McNiJ9AL9Rkezs6WMlJ4adeAR5hNrxdPMVxrGXSRQgcp3UgOvZw5hPpcYuRG4kwFHOlvdNbGczr2tfKT2SrhSI1VNAh4z1hornoJKwj94TsGhKLQ"/>
+<!-- Contextual Action Button (Edit/Delete) -->
+<button aria-label="Project Options" class="absolute top-2 right-2 w-10 h-10 rounded-full bg-surface-container-lowest/90 backdrop-blur-sm flex items-center justify-center text-on-surface shadow-sm border border-surface-variant/50 active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+<!-- Status Badge -->
+<div class="absolute bottom-2 left-2 px-2 py-1 rounded bg-status-success/10 border border-status-success/20 backdrop-blur-sm">
+<span class="font-caption text-caption text-status-success font-bold tracking-wide uppercase">Verified</span>
+</div>
+</div>
+<div class="p-3 flex flex-col gap-1 bg-surface-container-lowest z-10">
+<h3 class="font-label-md text-label-md text-on-background line-clamp-1" title="Modern Kitchen Install">Modern Kitchen Install</h3>
+<p class="font-caption text-caption text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">handyman</span> Carpentry
+                    </p>
+</div>
+</div>
+<!-- Project Card 2 -->
+<div class="bg-surface-container-lowest rounded-xl border border-surface-variant overflow-hidden shadow-sm flex flex-col group relative">
+<div class="relative aspect-square w-full bg-surface-container">
+<img alt="Project Thumbnail" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="Close-up of a professional electrician's hands working on a complex residential breaker box. The image is sharply focused on the intricate wiring and yellow safety tools, set against a stark, high-contrast background. The lighting is crisp and utilitarian, emphasizing the technical precision and safety standards of the trade. The color palette is dominated by industrial grays, blacks, and sharp warning yellows." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAiB78T_3GgbiYAjReZF64Z2bZmTCpI1M82NpvLlADF_LGTRNpk2StJjSxVEST8NTkG6WUJ1S4af4R9YQxHLrZ5BK76l-vqjMXAY7i4Ko25qvhhLijMA3suHPNhbmV00akVlDjowCbdZeXzlYqoA6ximXxkl4T6wYQA72LjWrmUlRw8xbhIkrV689I2N_c6aPJGIxNoxIMRCWws1WVHA5VV9vp_J3HAWbOG0heCLu_Lomn1sAI3uZcCr4HwC4b8ybkTJ2wXLRZQjTc"/>
+<button aria-label="Project Options" class="absolute top-2 right-2 w-10 h-10 rounded-full bg-surface-container-lowest/90 backdrop-blur-sm flex items-center justify-center text-on-surface shadow-sm border border-surface-variant/50 active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</div>
+<div class="p-3 flex flex-col gap-1 bg-surface-container-lowest z-10">
+<h3 class="font-label-md text-label-md text-on-background line-clamp-1" title="Residential Rewiring">Residential Rewiring</h3>
+<p class="font-caption text-caption text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">electrical_services</span> Electrical
+                    </p>
+</div>
+</div>
+<!-- Project Card 3 -->
+<div class="bg-surface-container-lowest rounded-xl border border-surface-variant overflow-hidden shadow-sm flex flex-col group relative">
+<div class="relative aspect-square w-full bg-surface-container">
+<img alt="Project Thumbnail" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="A sprawling, perfectly leveled concrete foundation for a new commercial building, viewed from a low angle. The freshly poured concrete reflects the stark white midday sun, creating a high-contrast scene with deep shadows in the surrounding excavated earth. Heavy machinery sits idle in the blurred background. The overall aesthetic conveys robust structural integrity, industrial strength, and monumental scale." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA8Y7j3OI8UdSffUnXHEXw-YbFdufP8tMyJQIZdNiXxmMF1LO3RxmniOuCEP_Ims3vktBS_IZitZLp2wBXUt_QS_-uvJs9mChgMFTnMM9FnTcT4nFaHJ-2TvZjmp-Vm3gZbyvlV0lq2agmgDFfLJwF17Yj2_l8Q57tg8yBpdeRvILdV8r8ZTvoQktgaBFE1NCdhLgh7q82vNrBGW7UFcd1lcX2JoPL0FX3hUBRF5TR2Tx-4hQRWyvJBlqBz1zfrKDvSyvzD_B165Yo"/>
+<button aria-label="Project Options" class="absolute top-2 right-2 w-10 h-10 rounded-full bg-surface-container-lowest/90 backdrop-blur-sm flex items-center justify-center text-on-surface shadow-sm border border-surface-variant/50 active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</div>
+<div class="p-3 flex flex-col gap-1 bg-surface-container-lowest z-10">
+<h3 class="font-label-md text-label-md text-on-background line-clamp-1" title="Commercial Foundation">Commercial Foundation</h3>
+<p class="font-caption text-caption text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">architecture</span> Masonry
+                    </p>
+</div>
+</div>
+<!-- Project Card 4 -->
+<div class="bg-surface-container-lowest rounded-xl border border-surface-variant overflow-hidden shadow-sm flex flex-col group relative">
+<div class="relative aspect-square w-full bg-surface-container">
+<img alt="Project Thumbnail" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="A pristine, newly installed copper plumbing manifold system mounted against a clean, white-painted basement wall. The interlocking pipes shine with a warm metallic gleam under harsh, direct LED work lights, emphasizing the flawless soldering joints and precise geometric layout. The mood is clinical, efficient, and highly organized, showcasing top-tier plumbing craftsmanship." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAfknUZWFXOoKOLjGX4eVLXqVOECpzDYw9_JVjdWbVQX750E08lkfUMiIqqCZRPn06w3b7QTGI2afGrFunRE5sceltQQv4EdQ0TlXDqG9sGgOjFpPdcEx4W9J-OCTN5aVk1pcn4PCAbc8UQpC9_h5-oSkz_49Ed-DNeqyBnrhbUw9aYkmAoC8jIiLrwvDomgugxmyaPVt5LCKkaOt0dz2OI8FaSfD-ruyxEUPnsiVv2ErQ71y3-0t0vjiyvb9s1ylVkVdSIJP0kXoA"/>
+<button aria-label="Project Options" class="absolute top-2 right-2 w-10 h-10 rounded-full bg-surface-container-lowest/90 backdrop-blur-sm flex items-center justify-center text-on-surface shadow-sm border border-surface-variant/50 active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</div>
+<div class="p-3 flex flex-col gap-1 bg-surface-container-lowest z-10">
+<h3 class="font-label-md text-label-md text-on-background line-clamp-1" title="Custom Pipe Manifold">Custom Pipe Manifold</h3>
+<p class="font-caption text-caption text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">plumbing</span> Plumbing
+                    </p>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Semantic Active State: Profile) -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center h-16 px-2 pb-safe bg-surface-container-lowest shadow-[0_-1px_2px_rgba(0,0,0,0.05)] z-50 md:hidden">
+<button class="flex flex-col items-center justify-center text-secondary px-3 py-1 hover:bg-surface-container-high active:scale-90 transition-transform duration-150 w-16">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-md text-label-md mt-1 text-[10px]">Home</span>
+</button>
+<button class="flex flex-col items-center justify-center text-secondary px-3 py-1 hover:bg-surface-container-high active:scale-90 transition-transform duration-150 w-16">
+<span class="material-symbols-outlined">work</span>
+<span class="font-label-md text-label-md mt-1 text-[10px]">Jobs</span>
+</button>
+<button class="flex flex-col items-center justify-center text-secondary px-3 py-1 hover:bg-surface-container-high active:scale-90 transition-transform duration-150 w-16 relative">
+<span class="material-symbols-outlined">chat</span>
+<span class="font-label-md text-label-md mt-1 text-[10px]">Messages</span>
+<!-- Notification Dot -->
+<span class="absolute top-1 right-3 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="flex flex-col items-center justify-center text-secondary px-3 py-1 hover:bg-surface-container-high active:scale-90 transition-transform duration-150 w-16">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<span class="font-label-md text-label-md mt-1 text-[10px]">Wallet</span>
+</button>
+<!-- Active Tab: Profile (Portfolio management sits under user identity) -->
+<button class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-3 py-1 active:scale-90 transition-transform duration-150 w-16">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-label-md text-label-md mt-1 text-[10px]">Profile</span>
+</button>
+</nav>
+</body></html>

@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kelmah - Browse Portfolios</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline": "#7e775f",
+                        "on-surface": "#1a1c1c",
+                        "on-error": "#ffffff",
+                        "primary-fixed": "#ffe16d",
+                        "on-tertiary-container": "#5f5f58",
+                        "on-primary-fixed": "#221b00",
+                        "inverse-primary": "#e9c400",
+                        "on-surface-variant": "#4d4732",
+                        "on-secondary-container": "#636262",
+                        "surface-container": "#eeeeee",
+                        "surface-muted": "#F3F4F6",
+                        "tertiary-fixed": "#e4e3d9",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "error-container": "#ffdad6",
+                        "on-error-container": "#93000a",
+                        "status-info": "#3B82F6",
+                        "secondary-container": "#e2dfde",
+                        "primary-fixed-dim": "#e9c400",
+                        "inverse-surface": "#2f3131",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-bright": "#f9f9f9",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#1a1c1c",
+                        "outline-variant": "#d0c6ab",
+                        "surface": "#f9f9f9",
+                        "on-primary-fixed-variant": "#544600",
+                        "on-primary-container": "#705e00",
+                        "tertiary-container": "#dcdad0",
+                        "on-secondary-fixed-variant": "#474746",
+                        "on-tertiary": "#ffffff",
+                        "surface-variant": "#e2e2e2",
+                        "surface-container-high": "#e8e8e8",
+                        "primary-container": "#ffd700",
+                        "surface-container-low": "#f3f3f4",
+                        "primary": "#705d00",
+                        "error": "#ba1a1a",
+                        "inverse-on-surface": "#f0f1f1",
+                        "text-body": "#4B5563",
+                        "tertiary-fixed-dim": "#c8c7bd",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "surface-dim": "#dadada",
+                        "on-tertiary-fixed-variant": "#474740",
+                        "secondary": "#5f5e5e",
+                        "on-tertiary-fixed": "#1b1c16",
+                        "surface-container-highest": "#e2e2e2",
+                        "background": "#f9f9f9",
+                        "status-success": "#10B981",
+                        "surface-tint": "#705d00",
+                        "tertiary": "#5f5f57",
+                        "secondary-fixed": "#e5e2e1",
+                        "on-primary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "base": "8px",
+                        "margin-mobile": "16px",
+                        "touch-target": "48px",
+                        "margin-desktop": "64px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Montserrat"],
+                        "headline-lg": ["Montserrat"],
+                        "label-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "display-lg": ["Montserrat"],
+                        "caption": ["Inter"],
+                        "headline-lg-mobile": ["Montserrat"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "caption": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "34px", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body-md antialiased pb-[80px] md:pb-0 min-h-screen flex flex-col">
+<!-- TopAppBar (Hidden on Desktop, Visible on Mobile) -->
+<header class="md:hidden bg-surface dark:bg-surface-dim w-full top-0 sticky z-40 bg-surface-container-low dark:bg-surface-container-high flat no shadows">
+<div class="flex items-center justify-between px-margin-mobile h-16 w-full">
+<button class="h-touch-target w-touch-target flex items-center justify-center text-primary dark:text-primary-fixed-dim hover:bg-surface-variant dark:hover:bg-on-surface-variant transition-colors rounded-full active:scale-95 duration-150">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">menu</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary dark:text-primary-fixed-dim">Kelmah</h1>
+<div class="h-10 w-10 rounded-full bg-surface-variant overflow-hidden border border-outline-variant">
+<img alt="User avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC9r0lv8sAAxVuv4-YqP5NAa-MjsVyUsecUZ-l_jEWTOxbQ3eWpy1Yok9u31MavkJ4QuzVMhqfF3BhLZKUVD2cOwoWpaDlZ5wB5AY8WxCq0ky1V0eGZAz1g3af1_WuRUYIWuiZKsl8mtfEfrL0a_SAZczgjtCnREqal4beDKMRXyMw-f4w4teqIOA7L_HxlnlvogpI8ynb_8Ogg8GlGowfppKnNX0RXns6VsnZgA-buKlQ-Lwno4N_3qECV2Dto63qaDU595VZ8FF4"/>
+</div>
+</div>
+</header>
+<!-- TopAppBar (Desktop - Replaces BottomNavBar) -->
+<header class="hidden md:flex bg-surface dark:bg-surface-dim w-full top-0 sticky z-40 bg-surface-container-low dark:bg-surface-container-high flat no shadows border-b border-surface-variant">
+<div class="flex items-center justify-between px-margin-desktop h-20 w-full max-w-[1280px] mx-auto">
+<div class="flex items-center gap-8">
+<h1 class="font-headline-lg text-headline-lg font-bold text-primary dark:text-primary-fixed-dim tracking-tight">Kelmah</h1>
+<nav class="flex items-center gap-2">
+<a class="font-label-md text-label-md flex items-center gap-2 px-4 py-2 rounded-lg text-on-surface-variant dark:text-secondary-fixed-dim hover:bg-surface-variant dark:hover:bg-on-surface-variant transition-colors active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined">home</span>
+                        Home
+                    </a>
+<a class="font-label-md text-label-md flex items-center gap-2 px-4 py-2 rounded-lg text-primary dark:text-primary-fixed-dim font-bold bg-primary-container/20 hover:bg-surface-variant dark:hover:bg-on-surface-variant transition-colors active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">work</span>
+                        Jobs
+                    </a>
+<a class="font-label-md text-label-md flex items-center gap-2 px-4 py-2 rounded-lg text-on-surface-variant dark:text-secondary-fixed-dim hover:bg-surface-variant dark:hover:bg-on-surface-variant transition-colors active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined">chat</span>
+                        Messages
+                    </a>
+<a class="font-label-md text-label-md flex items-center gap-2 px-4 py-2 rounded-lg text-on-surface-variant dark:text-secondary-fixed-dim hover:bg-surface-variant dark:hover:bg-on-surface-variant transition-colors active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined">payments</span>
+                        Wallet
+                    </a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="h-10 w-10 rounded-full bg-surface-variant overflow-hidden border border-outline-variant cursor-pointer hover:ring-2 hover:ring-primary-container transition-all">
+<img alt="User avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC0CHRxX6pgcaPGnS9KyF-kAXEvJz5FvohL27QMsAz1qGmZgVuqzU2-rbhXzRo7SGEOHk6hN-vKh35cOoN6zclwuiSMQu26bgdfX5_fycThEwHDqUgYpMw4acVWSadZ391X4vGRhLMiKPbcYhboOYOFMSA7C9FGlHq43Yu4HoiVvEoZRF40XA0S7x0bkBhzZ1RtSZG5CX-sfFUuGgCk5ncZ9nJkP8dnvwxGeCekTH5vbwYr53h2628lQfO0mh0D_96M-gBRwX_Qh_Q"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow w-full max-w-[1280px] mx-auto px-margin-mobile md:px-margin-desktop py-6 md:py-12 flex flex-col gap-8">
+<!-- Search & Filter Section -->
+<section class="flex flex-col md:flex-row gap-4 items-center w-full">
+<div class="relative w-full flex-grow">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full h-[56px] pl-12 pr-4 bg-surface-container-lowest border border-outline-variant rounded-xl font-body-md text-on-surface focus:outline-none focus:border-on-surface focus:ring-1 focus:ring-primary-container transition-all shadow-sm placeholder:text-on-surface-variant/70" placeholder="Search for plumbers, electricians, carpenters..." type="text"/>
+</div>
+<button class="flex items-center justify-center gap-2 h-[56px] px-6 bg-surface-container border border-outline-variant rounded-xl font-label-md text-label-md text-on-surface hover:bg-surface-variant transition-colors flex-shrink-0 w-full md:w-auto">
+<span class="material-symbols-outlined">tune</span>
+                Filters
+            </button>
+</section>
+<!-- Categories / Quick Tags (Horizontal Scroll on Mobile) -->
+<section class="w-full overflow-x-auto no-scrollbar -mx-margin-mobile px-margin-mobile md:mx-0 md:px-0">
+<div class="flex gap-3 w-max">
+<button class="h-10 px-5 rounded-full bg-on-surface text-on-primary font-label-md text-label-md whitespace-nowrap active:scale-95 transition-transform">All Trades</button>
+<button class="h-10 px-5 rounded-full bg-surface-container border border-outline-variant text-on-surface font-label-md text-label-md whitespace-nowrap hover:bg-surface-variant active:scale-95 transition-all">Plumbing</button>
+<button class="h-10 px-5 rounded-full bg-surface-container border border-outline-variant text-on-surface font-label-md text-label-md whitespace-nowrap hover:bg-surface-variant active:scale-95 transition-all">Electrical</button>
+<button class="h-10 px-5 rounded-full bg-surface-container border border-outline-variant text-on-surface font-label-md text-label-md whitespace-nowrap hover:bg-surface-variant active:scale-95 transition-all">Carpentry</button>
+<button class="h-10 px-5 rounded-full bg-surface-container border border-outline-variant text-on-surface font-label-md text-label-md whitespace-nowrap hover:bg-surface-variant active:scale-95 transition-all">Masonry</button>
+<button class="h-10 px-5 rounded-full bg-surface-container border border-outline-variant text-on-surface font-label-md text-label-md whitespace-nowrap hover:bg-surface-variant active:scale-95 transition-all">Painting</button>
+</div>
+</section>
+<!-- Top Projects Feed (Bento / Masonry feel) -->
+<section class="flex flex-col gap-6">
+<h2 class="font-headline-md text-headline-md text-on-surface md:font-headline-lg md:text-headline-lg">Top Projects</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Project Card 1 (Large Image focus) -->
+<article class="group bg-surface-container-lowest rounded-xl overflow-hidden border border-outline-variant shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col cursor-pointer">
+<div class="relative aspect-[4/3] w-full overflow-hidden bg-surface-variant">
+<img alt="" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A brightly lit, modern industrial workshop setting showcasing a master carpenter meticulously finishing a bespoke solid oak dining table. The scene is crisp and highly detailed, emphasizing the texture of the wood grain and the professional tools scattered nearby. The lighting is natural and even, creating a clean, trustworthy atmosphere consistent with a premium corporate trades platform. A subtle golden hour glow accents the craftsman's dedication." src="https://lh3.googleusercontent.com/aida-public/AB6AXuByEwE6VOgZZ_poGT0GTmLzWIFULHp_iJE2Z737285J9mk7NGv_JODmWm1FRX9Tg6L7MN5KzqLxTEfQjvl9X0C5FvhClpRDJrzC54T2quAeNwr4oxu_a2ieazKlnqlkVBXpq1zplUNUIwpZeZ-cibkAZDOFtW08RDZkN5bVOOToR1S4ZsQ-JUDbkeqq5TTt2ayqOIlVhoRPYxeB0_0lfMkFOJ7W4Gfbg5GdeQsUbxzI4xYyC76eZkAmG_xOM5EsGuB4At8KuqaWDWc"/>
+<div class="absolute top-3 left-3 bg-surface/90 backdrop-blur-sm px-3 py-1 rounded-full flex items-center gap-1 border border-outline-variant/50">
+<span class="w-2 h-2 rounded-full bg-status-success"></span>
+<span class="font-caption text-caption text-on-surface">Available Now</span>
+</div>
+</div>
+<div class="p-5 flex flex-col gap-4">
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface line-clamp-1 group-hover:text-primary transition-colors">Bespoke Oak Dining Set</h3>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2 mt-1">Custom crafted solid oak dining table with 8 matching chairs for a residential client in East Legon.</p>
+</div>
+<div class="flex items-center justify-between mt-auto pt-4 border-t border-outline-variant/30">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-surface-variant border border-outline-variant">
+<img alt="" class="w-full h-full object-cover" data-alt="Portrait of a confident, skilled male carpenter wearing a clean denim work apron over a simple white t-shirt. He has a neat beard and is looking directly at the camera with a professional, approachable expression. The background is a slightly blurred, bright modern workshop. The overall lighting is soft and flattering, projecting trust and reliability in a corporate trades aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDkV1Pusv6Rt5jZEbKSoTZqsHN0hFdDpIYddE4niGpgcJOvNkGKeLicfzMMgKmQwyAV4T9VQdRNzr8VX7FPSBnFGYPEnyjMLhrMFr9JvJodjdPKiIEItSIjGRG5DIyp3-YABcspRp1JeTpKu7nf9LRcMJJ9tL4-fBjeO3K9rjearmHy-FPaObbemZvLbPZQu3D8ecNi-QMltGoDEfwRSdCQp0Z0UUDeYZnhOkrwiaz-LzMD22g0mzri8Ecq0DPmcSb14117nc403DA"/>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Kwame Mensah</p>
+<p class="font-caption text-caption text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">verified</span>
+                                        Master Carpenter
+                                    </p>
+</div>
+</div>
+<button class="w-10 h-10 rounded-full flex items-center justify-center bg-surface-container hover:bg-primary-container hover:text-on-primary-container transition-colors border border-outline-variant">
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Project Card 2 -->
+<article class="group bg-surface-container-lowest rounded-xl overflow-hidden border border-outline-variant shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col cursor-pointer">
+<div class="relative aspect-[4/3] w-full overflow-hidden bg-surface-variant">
+<img alt="" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A pristine, newly installed modern electrical breaker panel in a high-end commercial building. The wiring is immaculately organized, demonstrating exceptional skill and precision. Bright, stark lighting highlights the clean metal textures and colorful wire insulation against a neutral background. The visual style is highly structured and functional, conveying industrial professionalism and meticulous safety standards." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDlqB5L6ROi8XSwHgiRzA7IR4XbBtN7xmSCCNkFxxnDndU-jlM35PPsyKGRsNDQlJCFxv0V8FtFIgdSo8Ge4TlUqgVut9chW1M1954WzXPznZPMAGQ-WyzNiahQrd_Fmgta-zI-NqOP_f4XkVMAlP8DTHW6clTQnlSAFDTFK8sIfaQcEGzYjyGLFy8UQdW7B98yClI73fjQN_MLpdjG06mBI-ETDzIYdELhNSScFvM_BcW99xBoJO8KouMelIQG9UU_8KYYoJb_tlA"/>
+<div class="absolute top-3 left-3 bg-surface/90 backdrop-blur-sm px-3 py-1 rounded-full flex items-center gap-1 border border-outline-variant/50">
+<span class="material-symbols-outlined text-[14px] text-primary">workspace_premium</span>
+<span class="font-caption text-caption text-on-surface">Top Rated</span>
+</div>
+</div>
+<div class="p-5 flex flex-col gap-4">
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface line-clamp-1 group-hover:text-primary transition-colors">Commercial Panel Upgrade</h3>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2 mt-1">Complete rewiring and 400A panel installation for a new boutique hotel development.</p>
+</div>
+<div class="flex items-center justify-between mt-auto pt-4 border-t border-outline-variant/30">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-surface-variant border border-outline-variant">
+<img alt="" class="w-full h-full object-cover" data-alt="Portrait of a female master electrician wearing a high-visibility vest over a crisp blue work shirt, standing confidently in front of a sleek, modern commercial building site. Her posture is professional and assuring, with natural daylight providing a clear, high-contrast look. The aesthetic reflects modern industrial capability, highlighting expertise and safety in a clean, corporate manner." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAHDE5jW800f6FNVPtPGyXZgzYYb-CLsVLRgfydi3R7rP8Wst7tFMIdSkaXjrBaodNG-4zAY0DF8VvpmiXuq5AQbFmL0azRhJF2Gh7p1687PppLzYqtM5R-A29AsgyFLu5RAIvtxX3DXaf5XSQW3ACNODOK52d2Pxyqp73oBPDXma6Wjc8FEI9exU-rLDpGZDXhZ1VB5t2B8hnsg5Va26CaZ6v-cEHXpXDbeQok87GoQlpbOEYTW6rAVEI73RSyPsKJFVpkuNAR4CE"/>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Sarah Osei</p>
+<p class="font-caption text-caption text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">bolt</span>
+                                        Lead Electrician
+                                    </p>
+</div>
+</div>
+<button class="w-10 h-10 rounded-full flex items-center justify-center bg-surface-container hover:bg-primary-container hover:text-on-primary-container transition-colors border border-outline-variant">
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Project Card 3 -->
+<article class="group bg-surface-container-lowest rounded-xl overflow-hidden border border-outline-variant shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col cursor-pointer">
+<div class="relative aspect-[4/3] w-full overflow-hidden bg-surface-variant">
+<img alt="" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A flawlessly executed modern bathroom renovation featuring large-format gray slate tiles and sleek matte black plumbing fixtures. The lighting is bright and architectural, creating sharp, clean lines and highlighting the precision of the tilework. The overall mood is upscale, hygienic, and expertly constructed, aligning perfectly with a premium functional trades platform's focus on quality." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBPGT1vDGwVXzcCZSP0HwG4nt699fNudqNUe2xwgV7FBDdaVIDleFwM3Ld7aeMrmYmKjdeFX0dN-XI-bXwqJy3QhshtYQQwH8nv8px32mEXv4X9CoL3X57uwGW9TdJ3frx2Oq9XS0p4yvn5UVt4ppoTUkDO1gAgRoT5DwGwtmiaXhdEaueWq8D6NJ7apdukWP83_xsCjBMv6PHlhUPxAWJOQuqsbfMbv81NAtE-4BncsSr0w-4bJxqgOUS_uMaOjNvWSg6KlLe_alI"/>
+</div>
+<div class="p-5 flex flex-col gap-4">
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface line-clamp-1 group-hover:text-primary transition-colors">Luxury Bath Renovation</h3>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2 mt-1">Full teardown and installation of high-end fixtures, custom drainage, and large-format tiling.</p>
+</div>
+<div class="flex items-center justify-between mt-auto pt-4 border-t border-outline-variant/30">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-surface-variant border border-outline-variant">
+<img alt="" class="w-full h-full object-cover" data-alt="Portrait of an experienced male plumber with a rugged but neat appearance, wearing a dark gray polo shirt with a subtle company logo. He stands outdoors against a clean, out-of-focus residential background under bright, natural sunlight. The image is crisp, conveying reliability, hard work, and professional competence in the trades industry." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3GGRwMVu2_XUdStEh1nOkc1EYCJNdaesDCK8VDl9RiPSizJ-4-UQcDnohSAYvNwih569b6Dg2e6LTDZsdTaKY4oEu6ZjYovTTBr2MlcklZdD3-7eNwZdESqIJ4a629RDTA8ZGSRtWIEmgnFFyJz_zoeq---GnKXgA_oNsrmazB46LL-6pLgfP_shZ6O0jiYlKyn_rhRiARoizLZ1NTI9UrpfZkJGEHYy07NE0ZF08cwYIllC-yn8DmRhu_0XN-UR5ApdrqFj0FlM"/>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">David Addo</p>
+<p class="font-caption text-caption text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">water_drop</span>
+                                        Master Plumber
+                                    </p>
+</div>
+</div>
+<button class="w-10 h-10 rounded-full flex items-center justify-center bg-surface-container hover:bg-primary-container hover:text-on-primary-container transition-colors border border-outline-variant">
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+</article>
+</div>
+</section>
+<!-- Load More Action -->
+<div class="w-full flex justify-center mt-4">
+<button class="h-12 px-8 bg-surface-container-lowest border border-on-surface text-on-surface font-label-md text-label-md rounded-xl hover:bg-surface-variant transition-colors flex items-center gap-2">
+                Load More Projects
+                <span class="material-symbols-outlined">expand_more</span>
+</button>
+</div>
+</main>
+<!-- BottomNavBar (Visible on Mobile, Hidden on Desktop) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-[80px] bg-surface dark:bg-surface-dim shadow-[0_-4px_20px_rgba(0,0,0,0.05)] border-t border-outline-variant dark:border-outline pb-safe">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-secondary-fixed-dim px-4 py-1.5 hover:bg-secondary-container dark:hover:bg-secondary-fixed-variant active:scale-90 transition-transform duration-200 rounded-xl" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-md text-[10px] mt-1">Home</span>
+</a>
+<!-- ACTIVE STATE: Jobs/Explore intent matches browsing portfolios -->
+<a class="flex flex-col items-center justify-center bg-primary-container dark:bg-primary-fixed text-on-primary-container dark:text-on-primary-fixed rounded-xl px-4 py-1.5 active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">work</span>
+<span class="font-label-md text-[10px] mt-1 font-bold">Jobs</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-secondary-fixed-dim px-4 py-1.5 hover:bg-secondary-container dark:hover:bg-secondary-fixed-variant active:scale-90 transition-transform duration-200 rounded-xl" href="#">
+<span class="material-symbols-outlined">chat</span>
+<span class="font-label-md text-[10px] mt-1">Messages</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-secondary-fixed-dim px-4 py-1.5 hover:bg-secondary-container dark:hover:bg-secondary-fixed-variant active:scale-90 transition-transform duration-200 rounded-xl" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-label-md text-[10px] mt-1">Wallet</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-secondary-fixed-dim px-4 py-1.5 hover:bg-secondary-container dark:hover:bg-secondary-fixed-variant active:scale-90 transition-transform duration-200 rounded-xl" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-md text-[10px] mt-1">Profile</span>
+</a>
+</nav>
+</body></html>

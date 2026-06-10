@@ -93,6 +93,7 @@ struct ProfileView: View {
     @State private var showSignOutAlert = false
     @State private var showSignOutAllAlert = false
     @State private var showPasswordChangedAlert = false
+    @State private var showStitchScreensCatalog = false
 
     init(
         sessionCoordinator: SessionCoordinator,
@@ -174,6 +175,29 @@ struct ProfileView: View {
                             )
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+
+                    KelmahPanel {
+                        VStack(alignment: .leading, spacing: 12) {
+                            KelmahSectionHeader(
+                                title: "Stitch screen coverage",
+                                subtitle: "Native light/dark scaffolds for missing exported mobile flows"
+                            )
+                            Text("Open the catalog to review onboarding, wallet, contract, dispute, verification, portfolio, project, and admin screens mapped from the Stitch exports.")
+                                .font(.subheadline)
+                                .foregroundStyle(KelmahTheme.textMuted)
+                            Button {
+                                showStitchScreensCatalog = true
+                            } label: {
+                                Label("Open Stitch screens", systemImage: "square.grid.2x2")
+                                    .fontWeight(.bold)
+                                    .frame(maxWidth: .infinity)
+                                    .frame(minHeight: 48)
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .tint(KelmahTheme.sun)
+                            .foregroundStyle(Color.black)
+                        }
                     }
 
                     if sessionStore.currentUser?.kelmahUserRole == .worker {
@@ -337,6 +361,18 @@ struct ProfileView: View {
             }
         } message: {
             Text("Your password changed. Sign in again with the new password.")
+        }
+        .sheet(isPresented: $showStitchScreensCatalog) {
+            NavigationStack {
+                StitchScreensCatalogView()
+                    .toolbar {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Button("Done") {
+                                showStitchScreensCatalog = false
+                            }
+                        }
+                    }
+            }
         }
     }
 }

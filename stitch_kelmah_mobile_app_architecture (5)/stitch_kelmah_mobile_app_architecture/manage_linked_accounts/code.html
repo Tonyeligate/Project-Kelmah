@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Linked Accounts Manager - Kelmah</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-fixed": "#1c1b1b",
+                    "surface-container-high": "#e8e8e8",
+                    "text-body": "#4B5563",
+                    "on-primary-fixed-variant": "#544600",
+                    "surface-muted": "#F3F4F6",
+                    "on-tertiary": "#ffffff",
+                    "surface-variant": "#e2e2e2",
+                    "inverse-surface": "#2f3131",
+                    "surface-tint": "#705d00",
+                    "on-surface-variant": "#4d4732",
+                    "surface": "#f9f9f9",
+                    "primary": "#705d00",
+                    "on-primary": "#ffffff",
+                    "status-success": "#10B981",
+                    "on-secondary-fixed-variant": "#474746",
+                    "surface-container-highest": "#e2e2e2",
+                    "on-secondary": "#ffffff",
+                    "inverse-on-surface": "#f0f1f1",
+                    "on-secondary-container": "#636262",
+                    "outline-variant": "#d0c6ab",
+                    "primary-container": "#ffd700",
+                    "on-tertiary-fixed-variant": "#474740",
+                    "on-surface": "#1a1c1c",
+                    "secondary-fixed-dim": "#c8c6c5",
+                    "on-tertiary-container": "#5f5f58",
+                    "surface-container": "#eeeeee",
+                    "tertiary-container": "#dcdad0",
+                    "surface-container-low": "#f3f3f4",
+                    "tertiary-fixed": "#e4e3d9",
+                    "secondary-container": "#e2dfde",
+                    "outline": "#7e775f",
+                    "inverse-primary": "#e9c400",
+                    "error-container": "#ffdad6",
+                    "on-primary-fixed": "#221b00",
+                    "primary-fixed": "#ffe16d",
+                    "tertiary-fixed-dim": "#c8c7bd",
+                    "tertiary": "#5f5f57",
+                    "on-tertiary-fixed": "#1b1c16",
+                    "on-primary-container": "#705e00",
+                    "error": "#ba1a1a",
+                    "primary-fixed-dim": "#e9c400",
+                    "surface-bright": "#f9f9f9",
+                    "status-info": "#3B82F6",
+                    "secondary-fixed": "#e5e2e1",
+                    "on-background": "#1a1c1c",
+                    "surface-dim": "#dadada",
+                    "surface-container-lowest": "#ffffff",
+                    "on-error": "#ffffff",
+                    "background": "#f9f9f9",
+                    "secondary": "#5f5e5e",
+                    "on-error-container": "#93000a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "touch-target": "48px",
+                    "margin-mobile": "16px",
+                    "margin-desktop": "64px",
+                    "gutter": "16px",
+                    "base": "8px"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": ["Montserrat"],
+                    "caption": ["Inter"],
+                    "body-md": ["Inter"],
+                    "headline-lg": ["Montserrat"],
+                    "label-md": ["Inter"],
+                    "headline-md": ["Montserrat"],
+                    "display-lg": ["Montserrat"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": ["28px", {"lineHeight": "34px", "fontWeight": "700"}],
+                    "caption": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+          font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Custom scrollbar for web */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background-color: #dcdad0; border-radius: 4px; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body-md text-body-md antialiased min-h-screen pb-24 md:pb-8 pt-[72px]">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface shadow-sm flex justify-between items-center px-margin-mobile h-touch-target w-full transition-colors">
+<button aria-label="Menu" class="flex items-center justify-center h-touch-target w-touch-target rounded-full hover:bg-surface-container transition-colors active:scale-95 duration-100 text-primary">
+<span class="material-symbols-outlined text-[24px]">menu</span>
+</button>
+<h1 class="font-headline-md text-headline-md font-bold text-primary truncate px-4 text-center">Kelmah</h1>
+<button aria-label="Notifications" class="flex items-center justify-center h-touch-target w-touch-target rounded-full hover:bg-surface-container transition-colors active:scale-95 duration-100 text-primary">
+<span class="material-symbols-outlined text-[24px]">notifications</span>
+</button>
+</header>
+<!-- Main Content Canvas -->
+<main class="max-w-[800px] mx-auto px-margin-mobile md:px-margin-desktop mt-4 md:mt-8 space-y-8">
+<!-- Page Header -->
+<div class="space-y-2">
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface">Payment Methods</h2>
+<p class="font-body-md text-body-md text-secondary">Manage your connected bank accounts and Mobile Money numbers for secure payouts and deposits.</p>
+</div>
+<!-- Bank Accounts Section -->
+<section class="space-y-4">
+<div class="flex items-center justify-between">
+<h3 class="font-headline-md text-headline-md text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">account_balance</span>
+                    Bank Accounts
+                </h3>
+</div>
+<div class="grid grid-cols-1 gap-4">
+<!-- Default Bank Card -->
+<div class="bg-surface-container-lowest border-2 border-primary rounded-xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-[0_4px_20px_rgba(0,0,0,0.04)] relative overflow-hidden group">
+<div class="absolute top-0 right-0 bg-primary text-on-primary font-caption text-caption px-3 py-1 rounded-bl-lg font-bold uppercase tracking-wider">
+                        Default
+                    </div>
+<div class="flex items-start gap-4">
+<div class="h-12 w-12 rounded-lg bg-surface-container flex items-center justify-center shrink-0 border border-outline-variant">
+<span class="material-symbols-outlined text-on-surface-variant text-[28px]">domain</span>
+</div>
+<div>
+<h4 class="font-label-md text-label-md text-on-surface text-lg">Ecobank Ghana</h4>
+<p class="font-body-md text-body-md text-secondary mt-1">Acct ending in •••• 4092</p>
+<p class="font-caption text-caption text-secondary mt-1">Kwame Mensah</p>
+</div>
+</div>
+<div class="flex items-center gap-2 mt-2 sm:mt-0 self-end sm:self-auto">
+<button class="h-touch-target px-4 rounded-lg border border-outline-variant text-on-surface font-label-md text-label-md hover:bg-surface-container transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+                            Edit
+                        </button>
+</div>
+</div>
+<!-- Normal Bank Card -->
+<div class="bg-surface-container-lowest border border-surface-variant rounded-xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-[0_2px_10px_rgba(0,0,0,0.02)] hover:shadow-[0_4px_20px_rgba(0,0,0,0.06)] transition-all">
+<div class="flex items-start gap-4">
+<div class="h-12 w-12 rounded-lg bg-surface-container flex items-center justify-center shrink-0 border border-surface-variant">
+<span class="material-symbols-outlined text-secondary text-[28px]">domain</span>
+</div>
+<div>
+<h4 class="font-label-md text-label-md text-on-surface text-lg">Standard Chartered</h4>
+<p class="font-body-md text-body-md text-secondary mt-1">Acct ending in •••• 8815</p>
+<p class="font-caption text-caption text-secondary mt-1">Kwame Mensah</p>
+</div>
+</div>
+<div class="flex items-center gap-2 mt-2 sm:mt-0 self-end sm:self-auto">
+<button class="h-touch-target px-4 rounded-lg bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-colors">
+                            Set as Default
+                        </button>
+<button aria-label="Remove Account" class="h-touch-target w-touch-target rounded-lg flex items-center justify-center text-error hover:bg-error-container transition-colors">
+<span class="material-symbols-outlined">delete</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Mobile Money Section -->
+<section class="space-y-4">
+<div class="flex items-center justify-between">
+<h3 class="font-headline-md text-headline-md text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">smartphone</span>
+                    Mobile Money
+                </h3>
+</div>
+<div class="grid grid-cols-1 gap-4">
+<!-- Mobile Money Card -->
+<div class="bg-surface-container-lowest border border-surface-variant rounded-xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-[0_2px_10px_rgba(0,0,0,0.02)] hover:shadow-[0_4px_20px_rgba(0,0,0,0.06)] transition-all">
+<div class="flex items-start gap-4">
+<div class="h-12 w-12 rounded-full bg-[#FFCC00]/20 flex items-center justify-center shrink-0 border border-[#FFCC00]/30">
+<!-- Using styling to mimic MTN yellow broadly, keeping within design constraints by using an icon -->
+<span class="material-symbols-outlined text-[#cca300] text-[28px]" style="font-variation-settings: 'FILL' 1;">phone_iphone</span>
+</div>
+<div>
+<h4 class="font-label-md text-label-md text-on-surface text-lg">MTN Mobile Money</h4>
+<p class="font-body-md text-body-md text-secondary mt-1">+233 24 ••• ••89</p>
+<p class="font-caption text-caption text-secondary mt-1">Registered Name: Kwame M.</p>
+</div>
+</div>
+<div class="flex items-center gap-2 mt-2 sm:mt-0 self-end sm:self-auto">
+<button class="h-touch-target px-4 rounded-lg bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-colors">
+                            Set as Default
+                        </button>
+<button aria-label="Remove Account" class="h-touch-target w-touch-target rounded-lg flex items-center justify-center text-error hover:bg-error-container transition-colors">
+<span class="material-symbols-outlined">delete</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Add New Payment Method Button -->
+<div class="pt-4">
+<button class="w-full h-14 bg-primary-container text-on-primary-container font-label-md text-label-md text-[16px] rounded-xl flex items-center justify-center gap-2 hover:bg-[#e6c200] active:scale-[0.98] transition-all shadow-sm">
+<span class="material-symbols-outlined" style="font-variation-settings: 'wght' 600;">add_circle</span>
+                Add New Payment Method
+            </button>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 w-full z-50 bg-surface-container-lowest shadow-[0_-1px_2px_rgba(0,0,0,0.05)] fixed bottom-0 left-0 w-full flex justify-around items-center h-16 px-2 pb-safe border-t-0">
+<!-- Home -->
+<button class="flex flex-col items-center justify-center text-secondary px-3 py-1 hover:bg-surface-container-high active:scale-90 transition-transform duration-150 rounded-xl">
+<span class="material-symbols-outlined mb-1">home</span>
+<span class="font-label-md text-label-md text-[10px]">Home</span>
+</button>
+<!-- Jobs -->
+<button class="flex flex-col items-center justify-center text-secondary px-3 py-1 hover:bg-surface-container-high active:scale-90 transition-transform duration-150 rounded-xl">
+<span class="material-symbols-outlined mb-1">work</span>
+<span class="font-label-md text-label-md text-[10px]">Jobs</span>
+</button>
+<!-- Messages -->
+<button class="flex flex-col items-center justify-center text-secondary px-3 py-1 hover:bg-surface-container-high active:scale-90 transition-transform duration-150 rounded-xl">
+<span class="material-symbols-outlined mb-1">chat</span>
+<span class="font-label-md text-label-md text-[10px]">Messages</span>
+</button>
+<!-- Wallet (Active State) -->
+<button class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-4 py-1 active:scale-90 transition-transform duration-150">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">account_balance_wallet</span>
+<span class="font-label-md text-label-md text-[10px] font-bold">Wallet</span>
+</button>
+<!-- Profile -->
+<button class="flex flex-col items-center justify-center text-secondary px-3 py-1 hover:bg-surface-container-high active:scale-90 transition-transform duration-150 rounded-xl">
+<span class="material-symbols-outlined mb-1">person</span>
+<span class="font-label-md text-label-md text-[10px]">Profile</span>
+</button>
+</nav>
+<!-- Interactive script for demo purposes -->
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Simple interactive feedback for buttons
+            const buttons = document.querySelectorAll('button');
+            buttons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    if (this.innerText.includes('Set as Default')) {
+                        alert('Account set as default for transactions.');
+                        // In a real app, this would visually swap the default status
+                    } else if (this.innerText.includes('Delete') || this.querySelector('span')?.innerText === 'delete') {
+                        if(confirm('Are you sure you want to remove this payment method?')) {
+                            this.closest('.flex-col').style.display = 'none';
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+</body></html>

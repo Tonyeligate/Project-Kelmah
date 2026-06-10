@@ -1,0 +1,209 @@
+const express = require("express");
+const router = express.Router();
+const { logger } = require("../utils/logger");
+
+// Service trust middleware - verify requests from API Gateway
+const { verifyGatewayRequest, optionalGatewayVerification } = require('../../../shared/middlewares/serviceTrust');
+const { validateAvailabilityPayload, authorizeRoles } = require('../middlewares/auth');
+// Rate limiter - simple implementation for user service
+// Rate limiter - use express-rate-limit or fall back to pass-through
+let createLimiter;
+try {
+  const rateLimit = require('express-rate-limit');
+  createLimiter = (preset) => {
+    const configs = {
+      admin: { windowMs: 15 * 60 * 1000, max: 50 },
+      default: { windowMs: 15 * 60 * 1000, max: 100 },
+    };
+    const cfg = configs[preset] || configs.default;
+    return rateLimit({ ...cfg, standardHeaders: true, legacyHeaders: false });
+  };
+} catch (_) {
+  createLimiter = () => (req, res, next) => next();
+}
+
+// Ownership middleware — ensures authenticated user can only mutate their own profile
+const requireOwnership = (req, res, next) => {
+  const userId = req.user?.id || req.user?.sub || req.user?.userId;
+  const targetWorkerId = req.params.workerId || req.params.id;
+  if (userId !== targetWorkerId && req.user?.role !== 'admin') {
+    return res.status(403).json({ success: false, message: 'Forbidden: you can only modify your own profile' });
+  }
+  next();
+};
+
+// Import controllers for user operations
+const {
+  getAllUsers,
+  createUser,
+  getDashboardMetrics,
+  getDashboardWorkers,
+  getDashboardAnalytics,
+  getProfileStatistics,
+  getProfileActivity,
+  getProfilePreferences,
+  getMyProfileSignals,
+  getUserAvailability,
+  getUserCredentials,
+  getUserProfile,
+  updateUserProfile,
+  toggleBookmark,
+  getEarnings,
+  getBookmarks,
+  cleanupDatabase,
+} = require("../controllers/user.controller");
+const WorkerController = require('../controllers/worker.controller');
+const workerDetailRouter = require('./worker-detail.routes');
+
+// User CRUD routes (protected — admin only)
+router.put("/bulk-update", verifyGatewayRequest, authorizeRoles('admin'), createLimiter('admin'), require("../controllers/user.controller").bulkUpdateUsers);
+router.delete("/bulk-delete", verifyGatewayRequest, authorizeRoles('admin'), createLimiter('admin'), require("../controllers/user.controller").bulkDeleteUsers);
+router.get("/", verifyGatewayRequest, authorizeRoles('admin'), getAllUsers);
+router.post("/", verifyGatewayRequest, authorizeRoles('admin'), createLimiter('admin'), createUser);
+
+// Dashboard routes - Protected with gateway authentication
+router.get("/dashboard/metrics", verifyGatewayRequest, authorizeRoles('admin'), getDashboardMetrics);
+router.get("/dashboard/workers", verifyGatewayRequest, authorizeRoles('admin'), getDashboardWorkers);
+router.get("/dashboard/analytics", verifyGatewayRequest, authorizeRoles('admin'), getDashboardAnalytics);
+
+// Database cleanup endpoint (protected — admin only)
+router.post("/database/cleanup", verifyGatewayRequest, authorizeRoles('admin'), cleanupDatabase);
+
+// 🔥 FIX: Recent jobs route MUST come BEFORE parameterized routes
+// to prevent "/workers/jobs" being matched as "/workers/:id" where id="jobs"
+router.get("/workers/jobs/recent", verifyGatewayRequest, (req, res, next) => {
+  logger.debug('✅ [USER-ROUTES] /workers/jobs/recent route hit:', {
+    query: req.query,
+    fullPath: req.originalUrl
+  });
+  next();
+}, WorkerController.getRecentJobs);
+
+// 🔥 FIX: Worker search and list routes MUST come BEFORE parameterized /:id routes
+// to prevent "/workers/search" being matched as "/workers/:id" where id="search"
+router.get('/workers/search/location', optionalGatewayVerification, (req, res, next) => {
+  if (process.env.NODE_ENV === 'development') {
+    logger.debug('✅ [USER-ROUTES] /workers/search/location route hit (alias → searchWorkers):', {
+      query: req.query,
+      fullPath: req.originalUrl
+    });
+  }
+  next();
+}, WorkerController.searchWorkers);
+
+router.get('/workers/search', optionalGatewayVerification, (req, res, next) => {
+  if (process.env.NODE_ENV === 'development') {
+    logger.debug('✅ [USER-ROUTES] /workers/search route hit:', {
+      query: req.query,
+      fullPath: req.originalUrl
+    });
+  }
+  next();
+}, WorkerController.searchWorkers);
+
+router.get('/workers/stats/trades', optionalGatewayVerification, (req, res, next) => {
+  if (process.env.NODE_ENV === 'development') {
+    logger.debug('✅ [USER-ROUTES] /workers/stats/trades route hit:', {
+      fullPath: req.originalUrl,
+    });
+  }
+  next();
+}, WorkerController.getTradeCategoryStats);
+
+router.get('/workers/alignment/audit', verifyGatewayRequest, authorizeRoles('admin'), createLimiter('admin'), (req, res, next) => {
+  if (process.env.NODE_ENV === 'development') {
+    logger.debug('✅ [USER-ROUTES] /workers/alignment/audit route hit:', {
+      query: req.query,
+      fullPath: req.originalUrl,
+    });
+  }
+  next();
+}, WorkerController.getWorkerProfileAlignmentAudit);
+
+router.get('/workers', optionalGatewayVerification, (req, res, next) => {
+  if (process.env.NODE_ENV === 'development') {
+    logger.debug('✅ [USER-ROUTES] /workers route hit:', {
+      query: req.query,
+      fullPath: req.originalUrl
+    });
+  }
+  next();
+}, WorkerController.getAllWorkers);
+
+// Worker-specific debug route (MUST be before /workers/:id)
+router.get("/workers/debug/models", verifyGatewayRequest, authorizeRoles('admin'), (req, res) => {
+  const modelsModule = require('../models');
+  return res.json({
+    success: true,
+    debug: {
+      User: !!modelsModule.User,
+      WorkerProfile: !!modelsModule.WorkerProfile,
+      Portfolio: !!modelsModule.Portfolio,
+      Availability: !!modelsModule.Availability,
+      Certificate: !!modelsModule.Certificate,
+      Bookmark: !!modelsModule.Bookmark,
+      connectionState: require('mongoose').connection.readyState,
+      connectionStates: {
+        0: 'disconnected',
+        1: 'connected',
+        2: 'connecting',
+        3: 'disconnecting'
+      }
+    }
+  });
+});
+
+router.get('/workers/:id', (req, res, next) => {
+  logger.debug('✅ [USER-ROUTES] /workers/:id route hit:', {
+    workerId: req.params.id,
+    fullPath: req.originalUrl
+  });
+  next();
+}, WorkerController.getWorkerById);
+
+// 🔥 FIX: Add PUT route for worker profile updates
+router.put('/workers/:id', verifyGatewayRequest, (req, res, next) => {
+  logger.debug('✅ [USER-ROUTES] PUT /workers/:id route hit:', {
+    workerId: req.params.id,
+    fullPath: req.originalUrl
+  });
+  next();
+}, requireOwnership, WorkerController.updateWorkerProfile);
+
+router.get("/workers/:id/availability", optionalGatewayVerification, (req, res, next) => {
+  logger.debug('✅ [USER-ROUTES] /workers/:id/availability route hit:', {
+    workerId: req.params.id,
+    fullPath: req.originalUrl
+  });
+  next();
+}, WorkerController.getWorkerAvailability);
+
+router.get("/workers/:id/completeness", optionalGatewayVerification, (req, res, next) => {
+  logger.debug('✅ [USER-ROUTES] /workers/:id/completeness route hit:', {
+    workerId: req.params.id,
+    fullPath: req.originalUrl
+  });
+  next();
+}, WorkerController.getProfileCompletion);
+
+// Worker nested resources (skills, certificates, work history, portfolio, analytics)
+router.use('/workers/:workerId', workerDetailRouter);
+
+router.post('/workers/:id/bookmark', verifyGatewayRequest, createLimiter('default'), toggleBookmark);
+router.delete('/workers/:id/bookmark', verifyGatewayRequest, createLimiter('default'), toggleBookmark);
+router.get('/workers/:workerId/earnings', verifyGatewayRequest, requireOwnership, getEarnings);
+
+// User profile routes
+router.get('/profile', verifyGatewayRequest, getUserProfile);
+router.put('/profile', verifyGatewayRequest, updateUserProfile);
+router.get('/profile/statistics', verifyGatewayRequest, getProfileStatistics);
+router.get('/profile/activity', verifyGatewayRequest, getProfileActivity);
+router.get('/profile/preferences', verifyGatewayRequest, getProfilePreferences);
+router.get('/me/profile-signals', verifyGatewayRequest, getMyProfileSignals);
+router.get("/me/availability", verifyGatewayRequest, getUserAvailability);
+router.get("/me/credentials", verifyGatewayRequest, getUserCredentials);
+
+// User bookmarks
+router.get('/bookmarks', verifyGatewayRequest, getBookmarks);
+
+module.exports = router;

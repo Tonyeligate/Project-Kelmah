@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Liveness Check - Kelmah</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-secondary-fixed": "#1c1b1b",
+                      "surface-container-high": "#e8e8e8",
+                      "text-body": "#4B5563",
+                      "on-primary-fixed-variant": "#544600",
+                      "surface-muted": "#F3F4F6",
+                      "on-tertiary": "#ffffff",
+                      "surface-variant": "#e2e2e2",
+                      "inverse-surface": "#2f3131",
+                      "surface-tint": "#705d00",
+                      "on-surface-variant": "#4d4732",
+                      "surface": "#f9f9f9",
+                      "primary": "#705d00",
+                      "on-primary": "#ffffff",
+                      "status-success": "#10B981",
+                      "on-secondary-fixed-variant": "#474746",
+                      "surface-container-highest": "#e2e2e2",
+                      "on-secondary": "#ffffff",
+                      "inverse-on-surface": "#f0f1f1",
+                      "on-secondary-container": "#636262",
+                      "outline-variant": "#d0c6ab",
+                      "primary-container": "#ffd700",
+                      "on-tertiary-fixed-variant": "#474740",
+                      "on-surface": "#1a1c1c",
+                      "secondary-fixed-dim": "#c8c6c5",
+                      "on-tertiary-container": "#5f5f58",
+                      "surface-container": "#eeeeee",
+                      "tertiary-container": "#dcdad0",
+                      "surface-container-low": "#f3f3f4",
+                      "tertiary-fixed": "#e4e3d9",
+                      "secondary-container": "#e2dfde",
+                      "outline": "#7e775f",
+                      "inverse-primary": "#e9c400",
+                      "error-container": "#ffdad6",
+                      "on-primary-fixed": "#221b00",
+                      "primary-fixed": "#ffe16d",
+                      "tertiary-fixed-dim": "#c8c7bd",
+                      "tertiary": "#5f5f57",
+                      "on-tertiary-fixed": "#1b1c16",
+                      "on-primary-container": "#705e00",
+                      "error": "#ba1a1a",
+                      "primary-fixed-dim": "#e9c400",
+                      "surface-bright": "#f9f9f9",
+                      "status-info": "#3B82F6",
+                      "secondary-fixed": "#e5e2e1",
+                      "on-background": "#1a1c1c",
+                      "surface-dim": "#dadada",
+                      "surface-container-lowest": "#ffffff",
+                      "on-error": "#ffffff",
+                      "background": "#f9f9f9",
+                      "secondary": "#5f5e5e",
+                      "on-error-container": "#93000a"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "touch-target": "48px",
+                      "margin-mobile": "16px",
+                      "margin-desktop": "64px",
+                      "gutter": "16px",
+                      "base": "8px"
+              },
+              "fontFamily": {
+                      "headline-lg-mobile": [
+                              "Montserrat"
+                      ],
+                      "caption": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Montserrat"
+                      ],
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Montserrat"
+                      ],
+                      "display-lg": [
+                              "Montserrat"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "headline-lg-mobile": [
+                              "28px",
+                              {
+                                      "lineHeight": "34px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "caption": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "label-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        .camera-overlay {
+            mask-image: radial-gradient(circle at center, transparent 35%, black 36%);
+            -webkit-mask-image: radial-gradient(circle at center, transparent 35%, black 36%);
+        }
+        .guide-lines {
+            background-image: 
+                linear-gradient(to right, transparent 49.5%, rgba(255, 215, 0, 0.5) 49.5%, rgba(255, 215, 0, 0.5) 50.5%, transparent 50.5%),
+                linear-gradient(to bottom, transparent 49.5%, rgba(255, 215, 0, 0.5) 49.5%, rgba(255, 215, 0, 0.5) 50.5%, transparent 50.5%);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface min-h-screen flex flex-col font-body-md overflow-hidden">
+<!-- Top Navigation (Simplified for transactional flow) -->
+<header class="w-full h-16 flex items-center px-margin-mobile md:px-margin-desktop bg-surface z-50">
+<button aria-label="Go back" class="h-touch-target w-touch-target flex items-center justify-center -ml-2 text-on-surface hover:bg-surface-container rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<div class="flex-1 text-center pr-touch-target">
+<h1 class="font-headline-md text-headline-md font-bold text-on-surface tracking-tight">Identity Verification</h1>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col items-center justify-center px-margin-mobile relative w-full max-w-md mx-auto">
+<!-- Header Text -->
+<div class="text-center mb-8 z-10">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg font-bold text-on-surface mb-2">Liveness Check</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Center your face in the circle and follow the prompts.</p>
+</div>
+<!-- Camera Container -->
+<div class="relative w-full aspect-square max-w-[320px] rounded-full overflow-hidden border-4 border-primary-container shadow-[0_0_30px_rgba(255,215,0,0.2)] mb-8 bg-surface-container">
+<!-- Mock Camera Feed -->
+<img alt="User face for liveness check" class="w-full h-full object-cover" data-alt="A clear, well-lit, close-up portrait of a young adult male facing directly forward. The lighting is bright and even, casting no harsh shadows on the face, suitable for facial recognition. The background is a plain, neutral light gray wall. The overall aesthetic is clean, professional, and corporate modern." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCV-QUbD316Hml1i06w7Lnv8siXpEBKKurX8nmjm5eHHcV9OBJ6fdr1k2QwuKbcp_vRhc_2BFjyHUoeUd7HuNgxJ10axP_hVYy0jyc0k7WR00aYJpS5lj9Gug0ZToO2-aP_6e7ClkX3mzbHidSJkMnEJ8uOqrrb6n_18zaXXs7_dHpxQuB_1_Lenbxses7UkaKSz2Z7Y8iqva2INI2rjRNjh1uE9CAblADy9wArMDjRkA_Uc6YYPJ4rMR7TUzkNTW7sJEJYN2uZOTY"/>
+<!-- Dark Overlay with transparent cutout -->
+<div class="absolute inset-0 bg-black/40 camera-overlay pointer-events-none"></div>
+<!-- Alignment Guide Lines -->
+<div class="absolute inset-0 guide-lines rounded-full opacity-50 pointer-events-none"></div>
+<!-- Scanning Animation Ring -->
+<div class="absolute inset-0 border-[6px] border-transparent border-t-primary-container rounded-full animate-spin pointer-events-none" style="animation-duration: 3s;"></div>
+</div>
+<!-- Status/Prompt Area -->
+<div class="w-full bg-surface-container-lowest p-6 rounded-xl border border-surface-container shadow-sm text-center z-10 flex flex-col items-center gap-4">
+<div class="h-12 w-12 bg-primary-container text-on-primary-container rounded-full flex items-center justify-center shadow-md">
+<span class="material-symbols-outlined text-[28px]" data-icon="face">face</span>
+</div>
+<div>
+<p class="font-label-md text-label-md font-bold text-primary mb-1 uppercase tracking-wider" id="instruction-status">Action Required</p>
+<p class="font-headline-md text-headline-md font-semibold text-on-surface" id="instruction-text">Please blink slowly.</p>
+</div>
+</div>
+<!-- Hidden Canvas for hypothetical capture -->
+<canvas class="hidden" id="capture-canvas"></canvas>
+</main>
+<!-- Bottom Actions (Optional/Cancel) -->
+<div class="w-full p-margin-mobile pb-safe flex justify-center">
+<button class="font-label-md text-label-md font-semibold text-on-surface hover:text-error transition-colors px-4 py-2 h-touch-target rounded-DEFAULT">
+            Cancel Verification
+        </button>
+</div>
+<script>
+        // Simple mock sequence for the liveness check prompts
+        const instructions = [
+            { text: "Please blink slowly.", icon: "face" },
+            { text: "Turn your head slightly to the left.", icon: "turn_left" },
+            { text: "Turn your head slightly to the right.", icon: "turn_right" },
+            { text: "Smile broadly.", icon: "sentiment_very_satisfied" },
+            { text: "Verification Complete.", icon: "check_circle", status: "Success", color: "text-status-success" }
+        ];
+
+        let currentIndex = 0;
+        const instructionText = document.getElementById('instruction-text');
+        const instructionStatus = document.getElementById('instruction-status');
+        const iconSpan = document.querySelector('[data-icon]');
+
+        function updateInstruction() {
+            if (currentIndex < instructions.length) {
+                const current = instructions[currentIndex];
+                
+                // Add a subtle fade effect
+                instructionText.style.opacity = 0;
+                setTimeout(() => {
+                    instructionText.textContent = current.text;
+                    iconSpan.textContent = current.icon;
+                    iconSpan.setAttribute('data-icon', current.icon);
+                    
+                    if (current.status) {
+                        instructionStatus.textContent = current.status;
+                        instructionStatus.className = `font-label-md text-label-md font-bold ${current.color} mb-1 uppercase tracking-wider`;
+                        document.querySelector('.animate-spin').style.display = 'none';
+                        document.querySelector('.camera-overlay').style.backgroundColor = 'rgba(16, 185, 129, 0.2)'; // slight green tint on success
+                    }
+                    
+                    instructionText.style.opacity = 1;
+                    currentIndex++;
+                }, 300);
+            }
+        }
+
+        // Cycle through instructions every 3.5 seconds
+        setInterval(updateInstruction, 3500);
+    </script>
+</body></html>

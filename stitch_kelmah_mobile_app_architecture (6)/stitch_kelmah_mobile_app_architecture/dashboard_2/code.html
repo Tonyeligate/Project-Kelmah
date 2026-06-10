@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kelmah - Artisan Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container": "#eeeeee",
+                        "primary-container": "#ffd700",
+                        "inverse-on-surface": "#f0f1f1",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-low": "#f3f3f4",
+                        "inverse-primary": "#e9c400",
+                        "status-info": "#3B82F6",
+                        "outline": "#7e775f",
+                        "tertiary-fixed-dim": "#c8c7bd",
+                        "primary-fixed": "#ffe16d",
+                        "secondary-fixed": "#e5e2e1",
+                        "secondary": "#5f5e5e",
+                        "surface": "#f9f9f9",
+                        "surface-dim": "#dadada",
+                        "inverse-surface": "#2f3131",
+                        "surface-container-highest": "#e2e2e2",
+                        "on-secondary-container": "#636262",
+                        "on-primary-container": "#705e00",
+                        "on-primary-fixed": "#221b00",
+                        "on-tertiary-fixed": "#1b1c16",
+                        "on-error-container": "#93000a",
+                        "primary": "#705d00",
+                        "surface-muted": "#F3F4F6",
+                        "surface-container-high": "#e8e8e8",
+                        "surface-tint": "#705d00",
+                        "on-surface": "#1a1c1c",
+                        "surface-container-lowest": "#ffffff",
+                        "text-body": "#4B5563",
+                        "secondary-container": "#e2dfde",
+                        "on-primary-fixed-variant": "#544600",
+                        "on-error": "#ffffff",
+                        "surface-variant": "#e2e2e2",
+                        "tertiary": "#5f5f57",
+                        "error-container": "#ffdad6",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "on-tertiary-fixed-variant": "#474740",
+                        "on-background": "#1a1c1c",
+                        "tertiary-container": "#dcdad0",
+                        "on-tertiary-container": "#5f5f58",
+                        "background": "#f9f9f9",
+                        "outline-variant": "#d0c6ab",
+                        "error": "#ba1a1a",
+                        "status-success": "#10B981",
+                        "on-secondary-fixed-variant": "#474746",
+                        "surface-bright": "#f9f9f9",
+                        "primary-fixed-dim": "#e9c400",
+                        "on-surface-variant": "#4d4732",
+                        "tertiary-fixed": "#e4e3d9"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-desktop": "64px",
+                        "touch-target": "48px",
+                        "gutter": "16px",
+                        "margin-mobile": "16px",
+                        "base": "8px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Montserrat"],
+                        "display-lg": ["Montserrat"],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-md": ["Montserrat"],
+                        "headline-lg-mobile": ["Montserrat"],
+                        "caption": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "34px", "fontWeight": "700" }],
+                        "caption": ["12px", { "lineHeight": "16px", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .icon-fill {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Hide scrollbar for clean horizontal scroll */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body-md text-body-md antialiased pb-24 pt-20 flex justify-center">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface flex items-center justify-between px-margin-mobile h-touch-target shadow-sm max-w-7xl">
+<button class="h-touch-target w-touch-target flex items-center justify-start text-on-surface-variant active:scale-95 transition-transform duration-200">
+<span class="material-symbols-outlined text-2xl" data-icon="construction">construction</span>
+</button>
+<h1 class="font-headline-md text-headline-md-mobile font-bold text-primary">Kelmah</h1>
+<button class="h-touch-target w-touch-target flex items-center justify-end text-on-surface-variant active:scale-95 transition-transform duration-200">
+<span class="material-symbols-outlined text-2xl" data-icon="notifications">notifications</span>
+</button>
+</header>
+<!-- Main Content Container -->
+<main class="w-full max-w-md px-margin-mobile flex flex-col gap-6">
+<!-- Wallet / Greeting Card (High Contrast) -->
+<section class="bg-inverse-surface rounded-2xl p-6 shadow-lg relative overflow-hidden text-on-tertiary">
+<!-- Subtle architectural lines background pattern -->
+<div class="absolute inset-0 opacity-10" style="background-image: repeating-linear-gradient(45deg, #ffffff 0, #ffffff 1px, transparent 1px, transparent 10px);"></div>
+<div class="relative z-10 flex flex-col gap-4">
+<div class="flex justify-between items-start">
+<div>
+<p class="font-body-md text-body-md text-surface-dim opacity-90">Good morning,</p>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-primary-container mt-1">Kwame Mensah</h2>
+</div>
+<div class="h-12 w-12 rounded-full overflow-hidden border-2 border-outline-variant bg-surface-container-high flex items-center justify-center">
+<img alt="Profile" class="w-full h-full object-cover" data-alt="A professional headshot of a confident African male tradesman in his 30s. He is wearing a clean, dark grey collared work shirt. The background is a slightly blurred, bright construction site indicating an on-site, modern industrial environment. The lighting is natural and complimentary, emphasizing trust and reliability." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAHCNP8IX8D6OhyMAw8Byz1NSlqzrsmPO0_h3QmVwRHdVb8koo6BhXDO1m-UvEueDFfZ3TsVRc1wdWTQLbKjFqZiTLAxwHEZWLSC0BadzFhecOA0mSeCqbmI8Kn87eqeaNVTxqIsREwOFZu7Ci6S0Ryp_pHUJcabSwu6LGMFE01UwKwZYy-yB4H_fUqsxLLfkVdtf6yW5EbGy36wdQ_F3nhHg8VGfPTZHv-HOYchnArjtM3PAMnSqHtrNPE3mnNkhGf558lPYQUr3I"/>
+</div>
+</div>
+<div class="mt-2">
+<p class="font-label-md text-label-md uppercase tracking-wider text-surface-dim opacity-80 mb-1">Available Balance</p>
+<div class="flex items-baseline gap-2">
+<span class="font-headline-md text-headline-md text-primary-container">GHS</span>
+<span class="font-display-lg text-display-lg tracking-tight">1,250.00</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Quick Summary Metrics -->
+<section class="flex gap-4">
+<div class="flex-1 bg-surface-container-lowest rounded-xl p-4 shadow-sm border border-outline-variant flex flex-col gap-1 items-start">
+<span class="material-symbols-outlined text-primary mb-1 icon-fill" data-icon="engineering">engineering</span>
+<span class="font-headline-md text-headline-md">2</span>
+<span class="font-label-md text-label-md text-on-surface-variant">Active Jobs</span>
+</div>
+<div class="flex-1 bg-surface-container-lowest rounded-xl p-4 shadow-sm border border-outline-variant flex flex-col gap-1 items-start">
+<span class="material-symbols-outlined text-status-info mb-1 icon-fill" data-icon="assignment_late">assignment_late</span>
+<span class="font-headline-md text-headline-md">1</span>
+<span class="font-label-md text-label-md text-on-surface-variant">Pending Quote</span>
+</div>
+</section>
+<!-- Quick Actions Bento Grid -->
+<section class="grid grid-cols-2 gap-4">
+<button class="bg-primary text-on-primary-fixed h-24 rounded-xl flex flex-col items-center justify-center gap-2 shadow-sm active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-3xl" data-icon="search">search</span>
+<span class="font-label-md text-label-md">Find Jobs</span>
+</button>
+<button class="bg-surface-container-lowest text-on-surface h-24 rounded-xl flex flex-col items-center justify-center gap-2 shadow-sm border border-outline-variant active:scale-95 transition-transform hover:bg-surface-container-high">
+<span class="material-symbols-outlined text-3xl text-primary" data-icon="account_balance_wallet">account_balance_wallet</span>
+<span class="font-label-md text-label-md">My Wallet</span>
+</button>
+<button class="bg-surface-container-lowest text-on-surface h-24 rounded-xl flex flex-col items-center justify-center gap-2 shadow-sm border border-outline-variant active:scale-95 transition-transform hover:bg-surface-container-high">
+<span class="material-symbols-outlined text-3xl text-primary" data-icon="workspace_premium">workspace_premium</span>
+<span class="font-label-md text-label-md">Certificates</span>
+</button>
+<button class="bg-surface-container-lowest text-on-surface h-24 rounded-xl flex flex-col items-center justify-center gap-2 shadow-sm border border-outline-variant active:scale-95 transition-transform hover:bg-surface-container-high">
+<span class="material-symbols-outlined text-3xl text-primary" data-icon="support_agent">support_agent</span>
+<span class="font-label-md text-label-md">Support</span>
+</button>
+</section>
+<!-- Upcoming Milestones -->
+<section class="mt-2 flex flex-col gap-3">
+<h3 class="font-headline-md text-headline-md-mobile text-on-surface">Upcoming Milestones</h3>
+<div class="bg-surface-container-lowest rounded-xl p-4 shadow-sm border-l-4 border-l-status-info flex gap-4 items-center">
+<div class="h-12 w-12 rounded-lg bg-surface-container flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined" data-icon="plumbing">plumbing</span>
+</div>
+<div class="flex-1">
+<h4 class="font-label-md text-label-md text-on-surface">Pipe Fitting - Phase 1</h4>
+<p class="font-caption text-caption text-on-surface-variant mt-0.5">East Legon Residential Site</p>
+</div>
+<div class="text-right">
+<span class="font-label-md text-label-md text-status-info block">Tomorrow</span>
+<span class="font-caption text-caption text-on-surface-variant">08:00 AM</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-4 shadow-sm border-l-4 border-l-outline-variant flex gap-4 items-center opacity-80">
+<div class="h-12 w-12 rounded-lg bg-surface-container flex items-center justify-center text-secondary shrink-0">
+<span class="material-symbols-outlined" data-icon="handyman">handyman</span>
+</div>
+<div class="flex-1">
+<h4 class="font-label-md text-label-md text-on-surface">Client Inspection</h4>
+<p class="font-caption text-caption text-on-surface-variant mt-0.5">Osu Commercial Build</p>
+</div>
+<div class="text-right">
+<span class="font-label-md text-label-md text-on-surface-variant block">Thu, 24th</span>
+<span class="font-caption text-caption text-on-surface-variant">14:00 PM</span>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 bg-surface shadow-[0_-4px_20px_rgba(0,0,0,0.05)] flex justify-around items-center h-16 max-w-7xl">
+<button class="flex flex-col items-center justify-center text-secondary px-3 py-1 h-full active:scale-90 transition-transform w-full">
+<span class="material-symbols-outlined mb-1" data-icon="home">home</span>
+<span class="font-caption text-caption">Home</span>
+</button>
+<button class="flex flex-col items-center justify-center text-secondary px-3 py-1 h-full active:scale-90 transition-transform w-full">
+<span class="material-symbols-outlined mb-1" data-icon="work">work</span>
+<span class="font-caption text-caption">Jobs</span>
+</button>
+<button class="flex flex-col items-center justify-center text-secondary px-3 py-1 h-full active:scale-90 transition-transform w-full">
+<span class="material-symbols-outlined mb-1" data-icon="mail">mail</span>
+<span class="font-caption text-caption">Messages</span>
+</button>
+<button class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-4 py-1 h-[80%] active:scale-90 transition-transform w-auto mx-1 shadow-sm">
+<span class="material-symbols-outlined mb-0.5 icon-fill" data-icon="dashboard">dashboard</span>
+<span class="font-caption text-caption font-bold">Dashboard</span>
+</button>
+<button class="flex flex-col items-center justify-center text-secondary px-3 py-1 h-full active:scale-90 transition-transform w-full">
+<span class="material-symbols-outlined mb-1" data-icon="person">person</span>
+<span class="font-caption text-caption">Profile</span>
+</button>
+</nav>
+</body></html>

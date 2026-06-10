@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kelmah | Job Progress Tracker</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-high": "#e8e8e8",
+                    "on-tertiary-fixed-variant": "#474740",
+                    "on-secondary-fixed-variant": "#474746",
+                    "primary": "#705d00",
+                    "outline": "#7e775f",
+                    "on-error-container": "#93000a",
+                    "inverse-surface": "#2f3131",
+                    "surface-tint": "#705d00",
+                    "on-surface-variant": "#4d4732",
+                    "on-secondary-fixed": "#1c1b1b",
+                    "surface-muted": "#F3F4F6",
+                    "tertiary-fixed": "#e4e3d9",
+                    "surface-bright": "#f9f9f9",
+                    "outline-variant": "#d0c6ab",
+                    "secondary-fixed": "#e5e2e1",
+                    "on-error": "#ffffff",
+                    "secondary": "#5f5e5e",
+                    "on-primary-fixed": "#221b00",
+                    "tertiary": "#5f5f57",
+                    "primary-fixed": "#ffe16d",
+                    "surface-container": "#eeeeee",
+                    "surface-container-highest": "#e2e2e2",
+                    "error-container": "#ffdad6",
+                    "primary-fixed-dim": "#e9c400",
+                    "on-secondary-container": "#636262",
+                    "secondary-fixed-dim": "#c8c6c5",
+                    "on-primary-fixed-variant": "#544600",
+                    "inverse-on-surface": "#f0f1f1",
+                    "status-info": "#3B82F6",
+                    "inverse-primary": "#e9c400",
+                    "background": "#f9f9f9",
+                    "on-tertiary-fixed": "#1b1c16",
+                    "on-tertiary": "#ffffff",
+                    "on-background": "#1a1c1c",
+                    "on-primary": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-container": "#ffd700",
+                    "tertiary-fixed-dim": "#c8c7bd",
+                    "on-primary-container": "#705e00",
+                    "text-body": "#4B5563",
+                    "status-success": "#10B981",
+                    "error": "#ba1a1a",
+                    "surface-dim": "#dadada",
+                    "surface-container-low": "#f3f3f4",
+                    "secondary-container": "#e2dfde",
+                    "surface-variant": "#e2e2e2",
+                    "tertiary-container": "#dcdad0",
+                    "on-secondary": "#ffffff",
+                    "surface": "#f9f9f9",
+                    "on-surface": "#1a1c1c",
+                    "on-tertiary-container": "#5f5f58"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "touch-target": "48px",
+                    "margin-mobile": "16px",
+                    "margin-desktop": "64px",
+                    "gutter": "16px",
+                    "base": "8px"
+            },
+            "fontFamily": {
+                    "body-md": ["Inter"],
+                    "caption": ["Inter"],
+                    "display-lg": ["Montserrat"],
+                    "headline-md": ["Montserrat"],
+                    "headline-lg": ["Montserrat"],
+                    "label-md": ["Inter"],
+                    "headline-lg-mobile": ["Montserrat"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "caption": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "34px", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .timeline-line::before {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 24px;
+            bottom: -24px;
+            width: 2px;
+            background-color: #e5e7eb;
+        }
+        .timeline-item:last-child .timeline-line::before {
+            display: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body-md">
+<!-- TopAppBar -->
+<header class="bg-primary dark:bg-primary-fixed-dim docked full-width top-0 shadow-md fixed z-50 w-full">
+<div class="flex justify-between items-center w-full px-margin-mobile h-touch-target">
+<div class="flex items-center gap-4">
+<button class="text-on-primary dark:text-on-primary-fixed hover:bg-on-primary/10 p-2 rounded-full active:scale-95 transition-transform">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-on-primary dark:text-on-primary-fixed">Kelmah</h1>
+</div>
+<div class="flex items-center gap-4">
+<span class="font-label-md text-label-md text-on-primary hidden md:block">Kwame Mensah</span>
+<img alt="User profile picture" class="w-8 h-8 rounded-full border-2 border-on-primary" data-alt="A professional headshot of a middle-aged Ghanaian man wearing a clean, modern electrical uniform. The lighting is bright and industrial, emphasizing a trustworthy and expert demeanor. The background is a blurred high-end construction site, maintaining a clean and professional corporate-modern aesthetic with a golden-yellow and dark-gray color palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCOYqoc9JklFdPLvTAq8yIWQMCua9zHldAw0HRFPYLow8WUp1GB9gJ9oUX8jr8ndNehSSqsENe7D0A8JhO097VGszoh2oY5_FHiaF0RG6v5IXKXjeNhPKpnHAWD7lLYA0MkBnTWiQzoXcpF-HhSFJlKRXX8qFM1jBM4rgNuS8KaJx8hbDc9p3IZv7PE2aSjRwXOhZmZTTDF7wlOKA9PWfom-29lHZcE3pkRg3Qzinj7R7paF4y2zaHXWNcI97OES30LzM7jNPPTcks"/>
+</div>
+</div>
+</header>
+<main class="pt-20 pb-24 px-margin-mobile max-w-screen-md mx-auto">
+<!-- Job Header & Progress Card -->
+<section class="mb-gutter">
+<div class="bg-surface-container-lowest rounded-xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.04)] border border-outline-variant">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h2 class="font-headline-md text-headline-md text-primary mb-1">Full House Wiring</h2>
+<p class="font-body-md text-secondary">Assigned to: Kwame Mensah</p>
+</div>
+<span class="bg-primary-container text-on-primary-container px-3 py-1 rounded-full font-label-md text-caption">In Progress</span>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between items-center">
+<span class="font-label-md text-label-md">Project Completion</span>
+<span class="font-label-md text-label-md text-primary">50%</span>
+</div>
+<div class="w-full bg-surface-container-high h-3 rounded-full overflow-hidden">
+<div class="bg-primary-container h-full w-1/2 transition-all duration-1000 ease-out"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Vertical Timeline -->
+<section class="space-y-0 relative">
+<h3 class="font-headline-md text-headline-md mb-6">Milestones</h3>
+<!-- Milestone 1: Completed -->
+<div class="timeline-item relative flex gap-6 pb-12 timeline-line">
+<div class="z-10 bg-status-success text-white w-10 h-10 rounded-full flex items-center justify-center shrink-0 shadow-sm">
+<span class="material-symbols-outlined">check</span>
+</div>
+<div class="flex-grow pt-1">
+<div class="flex justify-between items-baseline mb-1">
+<h4 class="font-label-md text-body-lg text-on-surface">Site Visit</h4>
+<span class="font-caption text-caption text-secondary">Oct 12, 2023</span>
+</div>
+<p class="font-body-md text-text-body">Initial assessment of the property layout and electrical load requirements completed successfully.</p>
+</div>
+</div>
+<!-- Milestone 2: Completed -->
+<div class="timeline-item relative flex gap-6 pb-12 timeline-line">
+<div class="z-10 bg-status-success text-white w-10 h-10 rounded-full flex items-center justify-center shrink-0 shadow-sm">
+<span class="material-symbols-outlined">check</span>
+</div>
+<div class="flex-grow pt-1">
+<div class="flex justify-between items-baseline mb-1">
+<h4 class="font-label-md text-body-lg text-on-surface">Materials Purchased</h4>
+<span class="font-caption text-caption text-secondary">Oct 15, 2023</span>
+</div>
+<p class="font-body-md text-text-body">All wiring, conduits, and circuit breakers have been procured and delivered to the site.</p>
+</div>
+</div>
+<!-- Milestone 3: In Progress -->
+<div class="timeline-item relative flex gap-6 pb-12 timeline-line">
+<div class="z-10 bg-primary text-on-primary w-10 h-10 rounded-full flex items-center justify-center shrink-0 shadow-md ring-4 ring-primary-container/30 animate-pulse">
+<span class="material-symbols-outlined">bolt</span>
+</div>
+<div class="flex-grow pt-1">
+<div class="flex justify-between items-baseline mb-1">
+<h4 class="font-label-md text-body-lg text-primary font-bold">First Fix Wiring</h4>
+<span class="font-caption text-caption text-primary font-semibold">Active</span>
+</div>
+<p class="font-body-md text-text-body">Installation of internal cabling and conduit boxes throughout the primary structure.</p>
+<div class="mt-3 bg-surface-container-low p-3 rounded-lg border border-outline-variant italic text-sm">
+                        "Main living room and kitchen conduits are installed. Moving to bedrooms tomorrow." — Kwame
+                    </div>
+</div>
+</div>
+<!-- Milestone 4: Pending -->
+<div class="timeline-item relative flex gap-6 pb-4">
+<div class="z-10 bg-surface-container-highest text-secondary w-10 h-10 rounded-full flex items-center justify-center shrink-0 border-2 border-dashed border-outline">
+<span class="material-symbols-outlined">pending_actions</span>
+</div>
+<div class="flex-grow pt-1 opacity-60">
+<div class="flex justify-between items-baseline mb-1">
+<h4 class="font-label-md text-body-lg text-on-surface">Final Inspection</h4>
+<span class="font-caption text-caption text-secondary">Scheduled</span>
+</div>
+<p class="font-body-md text-text-body">Safety check and certification of the complete electrical installation by a licensed inspector.</p>
+</div>
+</div>
+</section>
+<!-- Actions -->
+<section class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+<button class="flex items-center justify-center gap-2 bg-secondary text-on-secondary h-touch-target rounded-lg font-label-md hover:bg-on-surface transition-colors active:scale-95">
+<span class="material-symbols-outlined">chat</span>
+                Message Worker
+            </button>
+<button class="flex items-center justify-center gap-2 bg-surface-container-high text-secondary h-touch-target rounded-lg font-label-md cursor-not-allowed opacity-50" disabled="">
+<span class="material-symbols-outlined">payments</span>
+                Release Payment
+            </button>
+</section>
+<!-- Informational Banner -->
+<div class="mt-gutter p-4 bg-tertiary-container/30 rounded-xl border border-tertiary-container flex gap-4 items-center">
+<span class="material-symbols-outlined text-on-tertiary-container">info</span>
+<p class="font-caption text-on-tertiary-container text-caption">Payment release will be available once 'Final Inspection' is marked as completed by both parties.</p>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 flex justify-around items-center bg-surface-container-lowest dark:bg-inverse-surface py-2 px-margin-mobile shadow-[0_-4px_20px_rgba(0,0,0,0.04)] rounded-t-xl md:hidden">
+<div class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim px-4 py-1 hover:bg-surface-variant transition-colors rounded-full">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-md text-caption">Home</span>
+</div>
+<div class="flex flex-col items-center justify-center bg-primary-container dark:bg-primary text-on-primary-container dark:text-on-primary rounded-full px-4 py-1 scale-90 duration-150">
+<span class="material-symbols-outlined">work</span>
+<span class="font-label-md text-caption">Jobs</span>
+</div>
+<div class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim px-4 py-1 hover:bg-surface-variant transition-colors rounded-full">
+<span class="material-symbols-outlined">chat</span>
+<span class="font-label-md text-caption">Messages</span>
+</div>
+<div class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim px-4 py-1 hover:bg-surface-variant transition-colors rounded-full">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-md text-caption">Profile</span>
+</div>
+</nav>
+<!-- Navigation Drawer (Desktop Placeholder) -->
+<aside class="fixed inset-y-0 left-0 z-[60] flex flex-col py-gutter bg-surface dark:bg-surface-dim h-full w-80 rounded-r-xl shadow-xl -translate-x-full transition-transform lg:translate-x-0 lg:static lg:block hidden" id="nav-drawer">
+<div class="px-6 mb-8">
+<div class="flex items-center gap-4 mb-4">
+<img alt="User avatar" class="w-12 h-12 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDS2mDdM9D9KubhcULyQELSqOsiVsR0gNDBCiJRd_zj8q9UXxtlHDK0aA8yoE9HcWYXps3iTC-PeS9byDH-n5_iux6F6wm8Gv-2vcpGMMugiCKDn2xkhIad4FybMgFqHd-gz_X0aNPGQUOdfFSrPrT8wY0lYaVbjIx4pjemSIBUFEzwaEB26gzBnlQJRlInExCKWRqtvCvghwPl1X5E8PTz4nAdMru0esNhCW9USo5vZipnAHT6qK6F2DPK4EsNOeD3-coZkxx-uWU"/>
+<div>
+<h4 class="font-label-md text-primary font-bold">Kwame Mensah</h4>
+<p class="text-caption text-secondary">Accra, Ghana</p>
+</div>
+</div>
+</div>
+<nav class="flex flex-col space-y-1">
+<a class="flex items-center gap-4 text-on-surface-variant dark:text-on-surface px-4 py-3 mx-2 hover:bg-surface-container-high transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">handyman</span>
+<span class="font-body-md">Browse Trades</span>
+</a>
+<a class="flex items-center gap-4 bg-primary-container dark:bg-primary text-on-primary-container dark:text-on-primary font-bold px-4 py-3 rounded-lg mx-2 translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined">assignment</span>
+<span class="font-body-md">My Applications</span>
+</a>
+<a class="flex items-center gap-4 text-on-surface-variant dark:text-on-surface px-4 py-3 mx-2 hover:bg-surface-container-high transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">bookmark</span>
+<span class="font-body-md">Saved Jobs</span>
+</a>
+<a class="flex items-center gap-4 text-on-surface-variant dark:text-on-surface px-4 py-3 mx-2 hover:bg-surface-container-high transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-body-md">Payment History</span>
+</a>
+<div class="border-t border-outline-variant my-4 mx-4"></div>
+<a class="flex items-center gap-4 text-on-surface-variant dark:text-on-surface px-4 py-3 mx-2 hover:bg-surface-container-high transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-body-md">Settings</span>
+</a>
+<a class="flex items-center gap-4 text-on-surface-variant dark:text-on-surface px-4 py-3 mx-2 hover:bg-surface-container-high transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-body-md">Help Support</span>
+</a>
+</nav>
+</aside>
+<script>
+        // Simple micro-interaction for buttons
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('mousedown', () => {
+                if (!btn.disabled) btn.classList.add('scale-95');
+            });
+            btn.addEventListener('mouseup', () => {
+                btn.classList.remove('scale-95');
+            });
+            btn.addEventListener('mouseleave', () => {
+                btn.classList.remove('scale-95');
+            });
+        });
+    </script>
+</body></html>

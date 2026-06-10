@@ -1,0 +1,121 @@
+const express = require('express');
+const router = express.Router();
+const logger = require('../utils/logger');
+const { verifyGatewayRequest } = require('../../../shared/middlewares/serviceTrust');
+let adminLimiter = null;
+try {
+  const { createLimiter } = require('../../../shared/middlewares/rateLimiter');
+  adminLimiter = createLimiter('admin');
+} catch (_) {
+  adminLimiter = (req, res, next) => next();
+}
+
+// Import shared models
+const { Review } = require('../models');
+
+// All admin routes require gateway authentication
+router.use(verifyGatewayRequest);
+
+// All admin routes require admin role
+router.use((req, res, next) => {
+  const role = req.user?.role;
+  if (role !== 'admin' && role !== 'super_admin') {
+    return res.status(403).json({
+      success: false,
+      error: { message: 'Admin access required', code: 'FORBIDDEN' }
+    });
+  }
+  next();
+});
+
+// GET /api/admin/reviews/queue?status=pending&page=1&limit=20
+router.get('/reviews/queue', adminLimiter, async (req, res) => {
+  try {
+    const { status = 'pending', page = 1, limit = 20, category, minRating } = req.query;
+    const parsedLimit = Math.min(100, parseInt(limit) || 20);
+    const parsedPage = parseInt(page) || 1;
+    const filter = {};
+    if (status && status !== 'all') filter.status = status;
+    if (category) filter.jobCategory = category;
+    if (minRating) filter.rating = { $gte: parseInt(minRating) };
+
+    const skip = (parsedPage - 1) * parsedLimit;
+    const [reviews, total] = await Promise.all([
+      Review.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(parsedLimit)
+        .lean(),
+      Review.countDocuments(filter)
+    ]);
+
+    return res.json({
+      success: true,
+      data: {
+        reviews,
+        pagination: {
+          page: parsedPage,
+          limit: parsedLimit,
+          total,
+          pages: Math.ceil(total / parsedLimit)
+        }
+      }
+    });
+  } catch (error) {
+    logger.error('Admin reviews queue error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to fetch moderation queue' });
+  }
+});
+
+// POST /api/admin/reviews/:id/moderate { status, note }
+router.post('/reviews/:id/moderate', adminLimiter, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status, note } = req.body;
+    if (!['approved', 'rejected', 'flagged'].includes(status)) {
+      return res.status(400).json({ success: false, message: 'Invalid status' });
+    }
+    const review = await Review.findByIdAndUpdate(
+      id,
+      {
+        status,
+        $push: { moderationNotes: { note, moderatorId: req.user?.id, timestamp: new Date() } }
+      },
+      { new: true }
+    );
+    if (!review) return res.status(404).json({ success: false, message: 'Review not found' });
+    return res.json({ success: true, message: 'Review moderated', data: review });
+  } catch (error) {
+    logger.error('Admin moderate review error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to moderate review' });
+  }
+});
+
+// POST /api/admin/reviews/bulk-moderate { ids: [], status, note }
+router.post('/reviews/bulk-moderate', adminLimiter, async (req, res) => {
+  try {
+    const { ids = [], status, note } = req.body;
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ success: false, message: 'ids array is required' });
+    }
+    if (!['approved', 'rejected', 'flagged'].includes(status)) {
+      return res.status(400).json({ success: false, message: 'Invalid status' });
+    }
+    const result = await Review.updateMany(
+      { _id: { $in: ids } },
+      {
+        $set: { status },
+        $push: { moderationNotes: { note, moderatorId: req.user?.id, timestamp: new Date() } }
+      }
+    );
+    return res.json({ success: true, message: `${result.modifiedCount} reviews ${status}`, data: { modified: result.modifiedCount } });
+  } catch (error) {
+    logger.error('Admin bulk moderate error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to bulk moderate reviews' });
+  }
+});
+
+module.exports = router;
+
+
+

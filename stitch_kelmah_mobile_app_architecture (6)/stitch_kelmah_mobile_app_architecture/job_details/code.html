@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "surface-bright": "#f9f9f9",
+                        "secondary": "#5f5e5e",
+                        "primary": "#705d00",
+                        "surface-container-low": "#f3f3f4",
+                        "on-secondary-fixed-variant": "#474746",
+                        "on-secondary": "#ffffff",
+                        "on-surface": "#1a1c1c",
+                        "outline-variant": "#d0c6ab",
+                        "on-error": "#ffffff",
+                        "inverse-surface": "#2f3131",
+                        "tertiary-container": "#dcdad0",
+                        "on-error-container": "#93000a",
+                        "primary-fixed-dim": "#e9c400",
+                        "on-primary-fixed-variant": "#544600",
+                        "text-body": "#4B5563",
+                        "on-background": "#1a1c1c",
+                        "on-tertiary-container": "#5f5f58",
+                        "tertiary-fixed-dim": "#c8c7bd",
+                        "surface": "#f9f9f9",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "inverse-on-surface": "#f0f1f1",
+                        "outline": "#7e775f",
+                        "status-success": "#10B981",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#e9c400",
+                        "primary-fixed": "#ffe16d",
+                        "tertiary-fixed": "#e4e3d9",
+                        "surface-container-high": "#e8e8e8",
+                        "status-info": "#3B82F6",
+                        "secondary-container": "#e2dfde",
+                        "background": "#f9f9f9",
+                        "surface-container": "#eeeeee",
+                        "on-tertiary-fixed-variant": "#474740",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "on-primary-container": "#705e00",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary": "#5f5f57",
+                        "surface-dim": "#dadada",
+                        "on-secondary-container": "#636262",
+                        "on-primary-fixed": "#221b00",
+                        "surface-muted": "#F3F4F6",
+                        "secondary-fixed": "#e5e2e1",
+                        "on-tertiary-fixed": "#1b1c16",
+                        "surface-tint": "#705d00",
+                        "error-container": "#ffdad6",
+                        "surface-container-highest": "#e2e2e2",
+                        "on-surface-variant": "#4d4732",
+                        "primary-container": "#ffd700",
+                        "surface-variant": "#e2e2e2"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "touch-target": "48px",
+                        "gutter": "16px",
+                        "margin-desktop": "64px",
+                        "base": "8px",
+                        "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "headline-lg-mobile": ["Montserrat"],
+                        "headline-lg": ["Montserrat"],
+                        "label-md": ["Inter"],
+                        "headline-md": ["Montserrat"],
+                        "caption": ["Inter"],
+                        "body-md": ["Inter"],
+                        "display-lg": ["Montserrat"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["28px", {"lineHeight": "34px", "fontWeight": "700"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "caption": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        body {
+            background-color: #f9f9f9;
+            color: #1a1c1c;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-body-md text-body-md">
+<!-- Top App Bar -->
+<header class="fixed top-0 w-full z-50 bg-surface-container-low dark:bg-surface-container-high shadow-sm flex justify-between items-center px-margin-mobile h-touch-target">
+<div class="flex items-center gap-4">
+<button class="active:scale-95 transition-transform hover:bg-surface-variant/20 p-2 rounded-full">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed-dim">arrow_back</span>
+</button>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-container">Kelmah</h1>
+</div>
+<div class="flex items-center gap-2">
+<button class="active:scale-95 transition-transform hover:bg-surface-variant/20 p-2 rounded-full">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed-dim">share</span>
+</button>
+<button class="active:scale-95 transition-transform hover:bg-surface-variant/20 p-2 rounded-full">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed-dim">notifications</span>
+</button>
+</div>
+</header>
+<main class="pt-20 pb-32 px-margin-mobile max-w-2xl mx-auto">
+<!-- Hero Section - Job Identity -->
+<section class="mb-base">
+<div class="relative w-full h-48 rounded-xl overflow-hidden mb-6 shadow-sm border border-outline-variant/30">
+<img alt="Leaky kitchen sink" class="w-full h-full object-cover" data-alt="A detailed, close-up photograph of a metallic kitchen sink faucet with a visible, glistening water leak dripping into a clean porcelain basin. The lighting is bright and industrial, emphasizing the professional task at hand. The surrounding kitchen environment is modern and minimalist with neutral gray and white tones, creating a clean but utilitarian aesthetic consistent with home maintenance services." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAeZSBmpyuPC69DUw8eUqnACW25MjGhnNeT0AZdrwxc7GDcP7wF6jW__XswmsF7JlVCr3nDQPoyu-Drr7qaPquO9-qH7LjYjMtAwGIP_B7PqaJXeOVSuhTl59esiK3Wo9XPVJlrQ6XMtbDsjORDJETEPPoA9LKsek2QVW4LLzSpkYDxUsQswNSa09TisMsNHy5DKbvNDmzjCqBNkHoxQuKfq0tVg1YP8N6cgedOX4IT9wcK4FN4Em8BsCQCr6Vkomv8rzHsIQwL_MY"/>
+<div class="absolute top-4 right-4 bg-primary-container text-on-primary-container px-3 py-1 rounded-full font-label-md text-label-md flex items-center gap-1 shadow-md">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span>Urgent</span>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<h2 class="font-headline-md text-headline-md font-bold text-on-surface">Kitchen Sink Leak</h2>
+<div class="flex flex-wrap gap-4 items-center text-on-surface-variant font-label-md text-label-md">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-primary text-[20px]">location_on</span>
+<span>East Legon</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-primary text-[20px]">payments</span>
+<span class="font-bold text-on-surface">GH¢ 200 - 350</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-primary text-[20px]">schedule</span>
+<span>Posted 2h ago</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Hirer Profile Card -->
+<section class="my-8 p-4 bg-surface-container-lowest rounded-xl border border-outline-variant/30 shadow-[0_4px_20px_rgba(0,0,0,0.04)] flex items-center justify-between group cursor-pointer active:scale-[0.98] transition-all">
+<div class="flex items-center gap-4">
+<div class="relative">
+<img alt="Hirer Profile" class="w-12 h-12 rounded-full object-cover" data-alt="A professional and friendly portrait of a Ghanaian woman with a warm smile, styled in a business-casual manner with a corporate modern aesthetic. She is framed against a soft-focus office background with natural, warm lighting that conveys trust and reliability. The color palette is composed of professional earth tones and subtle gold accents, mirroring a high-end service platform's visual identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBBpKbBJldL1dS-zvyr3qk4MDzfB3I4p39Ii1YTYxtzErP_tmejjNeACZHHISUvXYih3x-eY6WNcf42uElcZRE0O612wnkuMKqu_dW2bb0lkliNZcrbjcsVDZhE42n6OP__4IZdUzWL2CCcGPXeb1kaJ3kYnE7ZNfGlcA02A0k5ulyo9ZYuiVjf7fKm8-2c2TSjchIcSOcZ43dR5iHAuC9YqZEvz-qKl7zFt2j4jwlW1RS6Ntt36uwr5lOm9V3OAEcqxyoBwbKXaFM"/>
+<div class="absolute -bottom-1 -right-1 bg-status-success w-4 h-4 rounded-full border-2 border-surface-container-lowest"></div>
+</div>
+<div>
+<h3 class="font-label-md text-label-md text-on-surface font-bold">Aba Smith</h3>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-primary-fixed-dim text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-md text-label-md text-on-surface-variant">4.5 <span class="text-caption font-normal">(12 reviews)</span></span>
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:translate-x-1 transition-transform">chevron_right</span>
+</section>
+<!-- Job Description -->
+<section class="mb-8">
+<h3 class="font-label-md text-label-md font-bold mb-3 text-on-surface">Description</h3>
+<p class="text-body-md font-body-md text-on-surface-variant leading-relaxed">
+                The main pipe under the kitchen sink has developed a significant leak at the joint. Water is pooling in the cabinet area. I need a qualified plumber to assess the joint, possibly replace the washer or the U-bend section, and ensure no further leaks. The kitchen is easily accessible and I have basic tools if needed, but professional-grade sealants are preferred.
+            </p>
+</section>
+<!-- Required Skills -->
+<section class="mb-8">
+<h3 class="font-label-md text-label-md font-bold mb-3 text-on-surface">Required Skills</h3>
+<div class="flex flex-wrap gap-2">
+<span class="px-4 py-2 bg-secondary-container text-on-secondary-container rounded-full font-label-md text-label-md border border-outline-variant/20">Plumbing</span>
+<span class="px-4 py-2 bg-secondary-container text-on-secondary-container rounded-full font-label-md text-label-md border border-outline-variant/20">Pipe Fitting</span>
+<span class="px-4 py-2 bg-secondary-container text-on-secondary-container rounded-full font-label-md text-label-md border border-outline-variant/20">Leak Repair</span>
+<span class="px-4 py-2 bg-secondary-container text-on-secondary-container rounded-full font-label-md text-label-md border border-outline-variant/20">Emergency Repair</span>
+</div>
+</section>
+<!-- Work Location (Map Placeholder) -->
+<section class="mb-8">
+<h3 class="font-label-md text-label-md font-bold mb-3 text-on-surface">Location</h3>
+<div class="w-full h-40 rounded-xl bg-surface-container-highest flex items-center justify-center relative overflow-hidden border border-outline-variant/30">
+<img class="w-full h-full object-cover opacity-60" data-alt="An abstract, stylized aerial map view of an urban neighborhood in Accra, Ghana, specifically East Legon. The map uses a minimalist, professional design language with high-contrast grayscale streets and subtle gold markers. The overall lighting is bright and clear, emphasizing a clean, navigable interface that prioritizes utilitarian clarity and professional service location." data-location="Accra, Ghana" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDfEK2wGPrLV2jJKONOXeBCx_MWVuPhaHYFAYIu9yvra8g63vanh4XVCDvE2H3YhDsdjo9LP_lt5cJVJPzqQA6Yo1W5gXxRX-drOhm_322YI54c8zXZ4yPCOakF2Ij3x5y5tX96TnEqTyMg9qnnhWrTDWxZbY469NKm3YAP-iyD3w7GnLzy3ftJxBmNO62UppYtPQsnaM-c_G-HnSrTvemZ_iXRqasH42OSRWOvgI58uFFbjjSVt5O9QFZbCsCjY6R0e2_YRR0yXEw"/>
+<div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+<span class="material-symbols-outlined text-primary text-[40px] drop-shadow-md" style="font-variation-settings: 'FILL' 1;">location_on</span>
+<span class="bg-white/90 px-3 py-1 rounded-full font-label-md text-label-md mt-2 shadow-sm border border-outline-variant/30">East Legon, Accra</span>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Action Bar -->
+<footer class="fixed bottom-0 w-full z-50 bg-surface-container-lowest dark:bg-surface-container-high shadow-[0_-4px_20px_rgba(0,0,0,0.04)] px-margin-mobile pt-4 pb-6 border-t border-outline-variant/20">
+<div class="max-w-2xl mx-auto flex items-center gap-4">
+<button class="flex-1 flex items-center justify-center gap-2 h-12 bg-primary-container text-on-primary-container font-headline-md text-[16px] font-bold rounded-xl active:scale-95 transition-all shadow-md">
+<span>Apply Now</span>
+<span class="material-symbols-outlined">send</span>
+</button>
+<button class="w-12 h-12 flex items-center justify-center border border-on-surface/20 rounded-xl active:scale-95 transition-all hover:bg-surface-variant/20">
+<span class="material-symbols-outlined text-on-surface">bookmark</span>
+</button>
+</div>
+</footer>
+<!-- Simple Micro-interaction Script -->
+<script>
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('touchstart', function() {
+                this.classList.add('opacity-80');
+            });
+            button.addEventListener('touchend', function() {
+                this.classList.remove('opacity-80');
+            });
+        });
+
+        // Application Feedback Logic
+        const applyBtn = document.querySelector('button.bg-primary-container');
+        applyBtn.addEventListener('click', () => {
+            const originalText = applyBtn.innerHTML;
+            applyBtn.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span>';
+            applyBtn.classList.add('pointer-events-none');
+            
+            setTimeout(() => {
+                applyBtn.innerHTML = '<span class="material-symbols-outlined">check_circle</span> <span>Application Sent</span>';
+                applyBtn.classList.remove('bg-primary-container');
+                applyBtn.classList.add('bg-status-success', 'text-white');
+            }, 1500);
+        });
+    </script>
+</body></html>

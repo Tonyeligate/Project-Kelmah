@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kelmah - Settings &amp; Security</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-container": "#5e5f5f",
+                        "tertiary": "#5d5f5f",
+                        "on-secondary-fixed-variant": "#474746",
+                        "on-surface": "#1b1c1c",
+                        "surface-dim": "#dbdad9",
+                        "surface-container-high": "#e9e8e7",
+                        "surface": "#fbf9f8",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "inverse-on-surface": "#f2f0f0",
+                        "on-error": "#ffffff",
+                        "primary": "#705d00",
+                        "tertiary-fixed": "#e2e2e2",
+                        "on-secondary-container": "#636262",
+                        "error": "#ba1a1a",
+                        "on-tertiary-fixed-variant": "#454747",
+                        "error-container": "#ffdad6",
+                        "on-primary": "#ffffff",
+                        "tertiary-fixed-dim": "#c6c6c7",
+                        "primary-fixed-dim": "#e9c400",
+                        "primary-container": "#ffd700",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary": "#5f5e5e",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed": "#e5e2e1",
+                        "outline-variant": "#d0c6ab",
+                        "on-primary-container": "#705e00",
+                        "tertiary-container": "#dadada",
+                        "on-surface-variant": "#4d4732",
+                        "surface-tint": "#705d00",
+                        "surface-container-highest": "#e4e2e2",
+                        "secondary-container": "#e2dfde",
+                        "surface-variant": "#e4e2e2",
+                        "primary-fixed": "#ffe16d",
+                        "outline": "#7e775f",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "inverse-primary": "#e9c400",
+                        "on-background": "#1b1c1c",
+                        "on-tertiary-fixed": "#1a1c1c",
+                        "surface-container-low": "#f5f3f3",
+                        "on-primary-fixed-variant": "#544600",
+                        "surface-container": "#efeded",
+                        "on-primary-fixed": "#221b00",
+                        "on-error-container": "#93000a",
+                        "background": "#fbf9f8",
+                        "surface-bright": "#fbf9f8",
+                        "inverse-surface": "#303031",
+                        "on-secondary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "columns": "12",
+                        "sidebar-width": "280px",
+                        "baseline": "8px",
+                        "gutter": "32px",
+                        "margin-desktop": "64px",
+                        "margin-tablet": "32px",
+                        "container-max-width": "1440px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Montserrat"],
+                        "body-lg": ["Montserrat"],
+                        "body-sm": ["Montserrat"],
+                        "headline-lg": ["Montserrat"],
+                        "display-xl": ["Montserrat"],
+                        "headline-md": ["Montserrat"],
+                        "label-md": ["Montserrat"],
+                        "label-lg": ["Montserrat"],
+                        "body-md": ["Montserrat"],
+                        "headline-xl": ["Montserrat"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["60px", { "lineHeight": "72px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-lg": ["36px", { "lineHeight": "44px", "fontWeight": "600" }],
+                        "display-xl": ["72px", { "lineHeight": "84px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "fontWeight": "600" }],
+                        "label-lg": ["14px", { "lineHeight": "16px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-xl": ["48px", { "lineHeight": "56px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Custom toggle switch CSS */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #ffd700;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #ffd700;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased min-h-screen flex flex-col">
+<!-- SideNavBar (Shared Component) -->
+<nav class="fixed left-0 top-0 h-screen w-[280px] bg-[#1A1A1A] border-r border-outline-variant flex flex-col h-full py-8 z-50">
+<!-- Brand/Profile Header -->
+<div class="px-6 mb-12 flex items-center gap-4">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-surface-container border border-outline-variant flex-shrink-0">
+<img alt="Artisan User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBtIckTnOUzHUeAxVDG-u3YyAdBUQbkJkd3zMF4EmIEUd9UMsI6zReyx2FLYEuMjGyhIIoigo08WkS_SKDceT4vOZz0vRLq0BDLi-a-sfitHsVNxkiGtHqlqWPleR_39C_sAU7a1e1BCrTyY2zEyL_O3GDn9WFPGlWugpu5g9S2RM65apwACguEBAuKB2oTWbHg7VhuQ9bgemQQhv2G0Rv396VECtiCDmAkRq3EPGrn7xbs_YT5zIxlazxMl3QyMiA_upIqzEMLt7Y"/>
+</div>
+<div>
+<h2 class="font-label-lg text-label-lg font-bold text-primary uppercase tracking-wider">Kelmah Artisan</h2>
+<p class="font-body-sm text-body-sm text-secondary-fixed-dim">Master Guild Member</p>
+</div>
+</div>
+<!-- CTA -->
+<div class="px-6 mb-8">
+<button class="w-full h-12 bg-primary-container text-on-primary-container font-label-lg text-label-lg uppercase tracking-wide hover:bg-primary-fixed transition-colors duration-200">
+                Post a Project
+            </button>
+</div>
+<!-- Main Navigation Tabs -->
+<ul class="flex-1 space-y-1 font-body-md text-body-md font-label-lg text-label-lg">
+<li>
+<a class="text-secondary-fixed-dim hover:text-primary pl-7 py-4 flex items-center gap-4 transition-all hover:bg-on-tertiary-fixed-variant hover:text-primary transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+                    Dashboard
+                </a>
+</li>
+<li>
+<a class="text-secondary-fixed-dim hover:text-primary pl-7 py-4 flex items-center gap-4 transition-all hover:bg-on-tertiary-fixed-variant hover:text-primary transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="storefront">storefront</span>
+                    Marketplace
+                </a>
+</li>
+<li>
+<a class="text-secondary-fixed-dim hover:text-primary pl-7 py-4 flex items-center gap-4 transition-all hover:bg-on-tertiary-fixed-variant hover:text-primary transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="construction">construction</span>
+                    Projects
+                </a>
+</li>
+<li>
+<a class="text-secondary-fixed-dim hover:text-primary pl-7 py-4 flex items-center gap-4 transition-all hover:bg-on-tertiary-fixed-variant hover:text-primary transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="mail">mail</span>
+                    Messages
+                </a>
+</li>
+<!-- Active Tab -->
+<li>
+<a class="text-primary border-l-4 border-primary bg-on-primary-fixed-variant/10 pl-6 py-4 flex items-center gap-4 transition-all scale-[0.99] transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+                    Settings
+                </a>
+</li>
+</ul>
+<!-- Footer Navigation Tabs -->
+<ul class="mt-auto space-y-1 font-body-md text-body-md font-label-lg text-label-lg">
+<li>
+<a class="text-secondary-fixed-dim hover:text-primary pl-7 py-4 flex items-center gap-4 transition-all hover:bg-on-tertiary-fixed-variant hover:text-primary transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+                    Support
+                </a>
+</li>
+<li>
+<a class="text-secondary-fixed-dim hover:text-primary pl-7 py-4 flex items-center gap-4 transition-all hover:bg-on-tertiary-fixed-variant hover:text-primary transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+                    Sign Out
+                </a>
+</li>
+</ul>
+</nav>
+<!-- TopNavBar (Shared Component) -->
+<header class="sticky top-0 z-40 w-full h-20 bg-surface dark:bg-background border-b border-secondary-container flex justify-between items-center px-margin-desktop ml-[280px] w-[calc(100%-280px)]">
+<!-- Search Bar (on_left) -->
+<div class="flex items-center w-96 relative focus-within:ring-2 focus-within:ring-primary rounded">
+<span class="material-symbols-outlined absolute left-3 text-on-surface-variant pointer-events-none" data-icon="search">search</span>
+<input class="w-full bg-surface-container-low border-none rounded py-2 pl-10 pr-4 font-body-md text-body-md text-on-surface placeholder:text-on-surface-variant focus:ring-0" placeholder="Search artisan network..." type="text"/>
+</div>
+<!-- Brand/Product Name (Center alignment logic if needed, but flex-justify space-between dictates placement) -->
+<div class="absolute left-1/2 transform -translate-x-1/2">
+<span class="font-headline-md text-headline-md font-black text-on-surface dark:text-inverse-on-surface tracking-tight">Kelmah</span>
+</div>
+<!-- Trailing Icon Actions -->
+<div class="flex items-center gap-6">
+<button class="text-on-surface-variant hover:text-primary transition-colors duration-200 flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors duration-200 flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="chat_bubble">chat_bubble</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors duration-200 flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 ml-[280px] px-margin-desktop py-12 flex flex-col">
+<!-- Page Header -->
+<div class="mb-12 border-b border-outline-variant pb-6">
+<h1 class="font-headline-xl text-headline-xl text-on-surface mb-2">Settings &amp; Security</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Manage your account preferences, security settings, and active sessions.</p>
+</div>
+<!-- Multi-pane Grid Layout -->
+<div class="grid grid-cols-12 gap-gutter flex-1 items-start">
+<!-- Left Pane: Sub-Navigation -->
+<aside class="col-span-3 border-r border-outline-variant pr-8 sticky top-28">
+<nav class="flex flex-col space-y-2">
+<a class="font-label-lg text-label-lg text-on-surface-variant py-3 px-4 rounded hover:bg-surface-container transition-colors flex items-center justify-between group" href="#">
+                        Profile
+                        <span class="material-symbols-outlined opacity-0 group-hover:opacity-100 transition-opacity text-primary" data-icon="chevron_right">chevron_right</span>
+</a>
+<!-- Active Sub-nav item -->
+<a class="font-label-lg text-label-lg text-primary bg-primary-container/10 py-3 px-4 rounded border-l-2 border-primary flex items-center justify-between" href="#">
+                        Security
+                        <span class="material-symbols-outlined text-primary" data-icon="chevron_right">chevron_right</span>
+</a>
+<a class="font-label-lg text-label-lg text-on-surface-variant py-3 px-4 rounded hover:bg-surface-container transition-colors flex items-center justify-between group" href="#">
+                        Notifications
+                        <span class="material-symbols-outlined opacity-0 group-hover:opacity-100 transition-opacity text-primary" data-icon="chevron_right">chevron_right</span>
+</a>
+<a class="font-label-lg text-label-lg text-on-surface-variant py-3 px-4 rounded hover:bg-surface-container transition-colors flex items-center justify-between group" href="#">
+                        Linked Accounts
+                        <span class="material-symbols-outlined opacity-0 group-hover:opacity-100 transition-opacity text-primary" data-icon="chevron_right">chevron_right</span>
+</a>
+</nav>
+</aside>
+<!-- Right Pane: Active Content (Security) -->
+<div class="col-span-9 pl-4 flex flex-col gap-12">
+<!-- Section 1: Two-Factor Authentication -->
+<section class="bg-surface border border-outline-variant p-8 rounded-sm">
+<div class="flex items-start justify-between mb-6">
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-2">Two-Factor Authentication (2FA)</h3>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-2xl">Add an extra layer of security to your account. Once enabled, you'll be prompted to enter a code from your authenticator app when logging in.</p>
+</div>
+<!-- Toggle Switch -->
+<div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in mt-1">
+<input class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 border-surface-container appearance-none cursor-pointer z-10 transition-transform duration-200 ease-in-out" id="toggle2fa" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-6 rounded-full bg-surface-container cursor-pointer transition-colors duration-200 ease-in-out" for="toggle2fa"></label>
+</div>
+</div>
+<div class="bg-surface-container-low p-4 rounded-sm flex items-center gap-4 text-on-surface-variant font-body-sm text-body-sm border border-outline-variant/50">
+<span class="material-symbols-outlined text-primary" data-icon="info">info</span>
+                        2FA is currently disabled. We highly recommend enabling it to protect your artisan profile and financial transactions.
+                    </div>
+</section>
+<!-- Section 2: Change Password -->
+<section class="bg-surface border border-outline-variant p-8 rounded-sm">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-6 border-b border-outline-variant pb-4">Update Password</h3>
+<form class="max-w-xl flex flex-col gap-6">
+<div class="flex flex-col gap-2">
+<label class="font-label-md text-label-md text-on-surface-variant" for="current_password">Current Password</label>
+<input class="w-full bg-transparent border-0 border-b border-outline-variant py-2 px-0 font-body-md text-body-md text-on-surface focus:ring-0 focus:border-primary transition-colors" id="current_password" placeholder="Enter current password" type="password"/>
+</div>
+<div class="flex flex-col gap-2">
+<label class="font-label-md text-label-md text-on-surface-variant" for="new_password">New Password</label>
+<input class="w-full bg-transparent border-0 border-b border-outline-variant py-2 px-0 font-body-md text-body-md text-on-surface focus:ring-0 focus:border-primary transition-colors" id="new_password" placeholder="Minimum 12 characters" type="password"/>
+</div>
+<div class="flex flex-col gap-2">
+<label class="font-label-md text-label-md text-on-surface-variant" for="confirm_password">Confirm New Password</label>
+<input class="w-full bg-transparent border-0 border-b border-outline-variant py-2 px-0 font-body-md text-body-md text-on-surface focus:ring-0 focus:border-primary transition-colors" id="confirm_password" placeholder="Repeat new password" type="password"/>
+</div>
+<div class="mt-4 flex justify-end">
+<button class="h-12 px-8 bg-primary-container text-on-primary-container font-label-lg text-label-lg uppercase tracking-wide hover:bg-primary-fixed transition-colors duration-200 inline-flex items-center justify-center" type="button">
+                                Save Password
+                            </button>
+</div>
+</form>
+</section>
+<!-- Section 3: Active Sessions -->
+<section class="bg-surface border border-outline-variant p-8 rounded-sm">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-2">Active Sessions</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-6 pb-4 border-b border-outline-variant">Review devices currently logged into your Kelmah account.</p>
+<ul class="flex flex-col gap-4">
+<!-- Session Item 1 (Current) -->
+<li class="flex items-center justify-between p-4 bg-surface-container-low border border-primary/20 rounded-sm">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded bg-surface border border-outline-variant flex items-center justify-center text-on-surface">
+<span class="material-symbols-outlined" data-icon="computer">computer</span>
+</div>
+<div>
+<p class="font-label-lg text-label-lg text-on-surface flex items-center gap-2">
+                                        MacBook Pro (macOS)
+                                        <span class="bg-primary-container/20 text-on-primary-container text-[10px] uppercase font-bold px-2 py-0.5 rounded-sm">Current</span>
+</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">San Francisco, CA, USA • Active now</p>
+<p class="font-body-sm text-body-sm text-secondary-fixed-dim text-xs mt-0.5">IP: 192.168.1.1</p>
+</div>
+</div>
+</li>
+<!-- Session Item 2 -->
+<li class="flex items-center justify-between p-4 bg-surface border border-outline-variant hover:border-primary/50 transition-colors rounded-sm group">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded bg-surface-container-low border border-outline-variant flex items-center justify-center text-on-surface">
+<span class="material-symbols-outlined" data-icon="smartphone">smartphone</span>
+</div>
+<div>
+<p class="font-label-lg text-label-lg text-on-surface">iPhone 14 Pro (iOS)</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">San Jose, CA, USA • Last active 2 hours ago</p>
+</div>
+</div>
+<button class="text-error font-label-md text-label-md uppercase tracking-wide hover:underline opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px]" data-icon="logout">logout</span>
+                                Revoke
+                            </button>
+</li>
+</ul>
+</section>
+</div>
+</div>
+</main>
+<!-- Footer (Shared Component) -->
+<footer class="w-full py-12 mt-auto bg-surface-container-low dark:bg-surface-container-lowest border-t border-outline-variant ml-[280px] w-[calc(100%-280px)] px-margin-desktop grid grid-cols-12 gap-gutter">
+<div class="col-span-12 md:col-span-6 flex flex-col gap-4">
+<span class="font-label-lg text-label-lg font-bold text-secondary">Kelmah</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                © 2024 Kelmah Artisan Marketplace. All rights reserved.
+            </p>
+</div>
+<div class="col-span-12 md:col-span-6 flex justify-end items-center gap-8">
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-all underline-offset-4 transition-opacity hover:opacity-80" href="#">Privacy Policy</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-all underline-offset-4 transition-opacity hover:opacity-80" href="#">Terms of Service</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-all underline-offset-4 transition-opacity hover:opacity-80" href="#">Artisan Support</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-all underline-offset-4 transition-opacity hover:opacity-80" href="#">Hire Guide</a>
+</div>
+</footer>
+</body></html>

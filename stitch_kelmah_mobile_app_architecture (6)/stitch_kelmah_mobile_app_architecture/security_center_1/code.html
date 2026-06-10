@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kelmah - Security Center</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "outline": "#7e775f",
+                      "on-surface": "#1a1c1c",
+                      "on-error": "#ffffff",
+                      "primary-fixed": "#ffe16d",
+                      "on-tertiary-container": "#5f5f58",
+                      "on-primary-fixed": "#221b00",
+                      "inverse-primary": "#e9c400",
+                      "on-surface-variant": "#4d4732",
+                      "on-secondary-container": "#636262",
+                      "surface-container": "#eeeeee",
+                      "surface-muted": "#F3F4F6",
+                      "tertiary-fixed": "#e4e3d9",
+                      "secondary-fixed-dim": "#c8c6c5",
+                      "error-container": "#ffdad6",
+                      "on-error-container": "#93000a",
+                      "status-info": "#3B82F6",
+                      "secondary-container": "#e2dfde",
+                      "primary-fixed-dim": "#e9c400",
+                      "inverse-surface": "#2f3131",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-bright": "#f9f9f9",
+                      "on-secondary": "#ffffff",
+                      "on-background": "#1a1c1c",
+                      "outline-variant": "#d0c6ab",
+                      "surface": "#f9f9f9",
+                      "on-primary-fixed-variant": "#544600",
+                      "on-primary-container": "#705e00",
+                      "tertiary-container": "#dcdad0",
+                      "on-secondary-fixed-variant": "#474746",
+                      "on-tertiary": "#ffffff",
+                      "surface-variant": "#e2e2e2",
+                      "surface-container-high": "#e8e8e8",
+                      "primary-container": "#ffd700",
+                      "surface-container-low": "#f3f3f4",
+                      "primary": "#705d00",
+                      "error": "#ba1a1a",
+                      "inverse-on-surface": "#f0f1f1",
+                      "text-body": "#4B5563",
+                      "tertiary-fixed-dim": "#c8c7bd",
+                      "on-secondary-fixed": "#1c1b1b",
+                      "surface-dim": "#dadada",
+                      "on-tertiary-fixed-variant": "#474740",
+                      "secondary": "#5f5e5e",
+                      "on-tertiary-fixed": "#1b1c16",
+                      "surface-container-highest": "#e2e2e2",
+                      "background": "#f9f9f9",
+                      "status-success": "#10B981",
+                      "surface-tint": "#705d00",
+                      "tertiary": "#5f5f57",
+                      "secondary-fixed": "#e5e2e1",
+                      "on-primary": "#ffffff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "gutter": "16px",
+                      "base": "8px",
+                      "margin-mobile": "16px",
+                      "touch-target": "48px",
+                      "margin-desktop": "64px"
+              },
+              "fontFamily": {
+                      "headline-md": [
+                              "Montserrat"
+                      ],
+                      "headline-lg": [
+                              "Montserrat"
+                      ],
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "display-lg": [
+                              "Montserrat"
+                      ],
+                      "caption": [
+                              "Inter"
+                      ],
+                      "headline-lg-mobile": [
+                              "Montserrat"
+                      ]
+              },
+              "fontSize": {
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "label-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "caption": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "28px",
+                              {
+                                      "lineHeight": "34px",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        body {
+            background-color: theme('colors.surface-bright');
+            color: theme('colors.on-surface');
+        }
+        /* Hide scrollbar for clean look */
+        ::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
+        }
+      </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="antialiased min-h-screen flex flex-col font-body-md text-body-md bg-surface-bright text-on-surface">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-surface-dim text-primary dark:text-primary-fixed-dim font-headline-md text-headline-md w-full top-0 sticky bg-surface-container-low dark:bg-surface-container-high flat no shadows flex items-center justify-between px-margin-mobile md:px-margin-desktop h-16 w-full z-40 transition-colors">
+<div class="flex items-center gap-4">
+<button aria-label="Menu" class="h-touch-target w-touch-target flex items-center justify-center rounded-full hover:bg-surface-variant dark:hover:bg-on-surface-variant transition-colors active:scale-95 duration-150 text-secondary dark:text-secondary-fixed-dim">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<span class="font-headline-lg text-headline-lg font-bold text-primary dark:text-primary-fixed-dim tracking-tight">Kelmah</span>
+</div>
+<div class="flex items-center gap-4">
+<div class="h-10 w-10 rounded-full bg-surface-variant flex items-center justify-center overflow-hidden border border-outline-variant">
+<span class="material-symbols-outlined text-secondary" data-icon="person">person</span>
+</div>
+</div>
+</header>
+<!-- Main Layout Grid -->
+<div class="flex-1 w-full max-w-[1280px] mx-auto grid grid-cols-4 md:grid-cols-12 gap-gutter px-margin-mobile md:px-margin-desktop py-8 mb-24 md:mb-8">
+<!-- Sidebar Navigation (Desktop Only) -->
+<aside class="hidden md:flex md:col-span-3 flex-col gap-2">
+<!-- NavigationDrawer Semantic Shell mapped to list items -->
+<nav class="flex flex-col gap-2">
+<a class="flex items-center gap-4 px-4 py-3 rounded-full text-on-surface-variant dark:text-secondary-fixed-dim hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-all duration-300 ease-in-out font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+                    Project History
+                </a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-full text-on-surface-variant dark:text-secondary-fixed-dim hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-all duration-300 ease-in-out font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined" data-icon="verified">verified</span>
+                    Certifications
+                </a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-full bg-primary-container text-on-primary-container font-semibold transition-all duration-300 ease-in-out font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined" data-icon="settings" style="font-variation-settings: 'FILL' 1;">settings</span>
+                    Settings
+                </a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-full text-on-surface-variant dark:text-secondary-fixed-dim hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-all duration-300 ease-in-out font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+                    Support
+                </a>
+</nav>
+</aside>
+<!-- Main Content Area - Security Center -->
+<main class="col-span-4 md:col-span-9 flex flex-col gap-6">
+<header class="mb-2">
+<h1 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface mb-2">Security Center</h1>
+<p class="font-body-md text-body-md text-secondary">Manage your account security, authentication methods, and active sessions.</p>
+</header>
+<!-- Bento Grid Layout for Security Controls -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- 2FA Card (High Priority) -->
+<div class="md:col-span-2 bg-surface-container-lowest border border-surface-variant rounded-xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden">
+<div class="absolute -right-10 -top-10 w-40 h-40 bg-primary-container rounded-full opacity-20 blur-2xl pointer-events-none"></div>
+<div class="flex items-start gap-4 z-10">
+<div class="w-12 h-12 rounded-full bg-primary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-on-primary-container" data-icon="shield_lock" style="font-variation-settings: 'FILL' 1;">shield_lock</span>
+</div>
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface flex items-center gap-2">
+                                Two-Factor Authentication (2FA)
+                                <span class="bg-surface-container-high text-on-surface-variant font-caption text-caption px-2 py-0.5 rounded-full uppercase tracking-wider">Off</span>
+</h2>
+<p class="font-body-md text-body-md text-secondary mt-1 max-w-xl">Add an extra layer of security to your account. When enabled, you'll need to enter a code sent to your device along with your password.</p>
+</div>
+</div>
+<div class="w-full md:w-auto flex shrink-0 z-10">
+<button class="w-full md:w-auto h-touch-target px-6 bg-[#FFD700] text-[#1A1A1A] font-headline-md text-label-md rounded-DEFAULT hover:bg-opacity-90 transition-colors flex items-center justify-center gap-2">
+                            Enable 2FA
+                        </button>
+</div>
+</div>
+<!-- Password Management Card -->
+<div class="bg-surface-container-lowest border border-surface-variant rounded-xl p-6 flex flex-col gap-4">
+<div class="flex items-center gap-3 mb-2">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="password">password</span>
+<h3 class="font-headline-md text-headline-md text-on-surface text-lg">Password</h3>
+</div>
+<div class="flex-1">
+<p class="font-body-md text-body-md text-secondary mb-1">Last changed 4 months ago</p>
+<p class="font-caption text-caption text-on-surface-variant">We recommend changing your password regularly to maintain account security.</p>
+</div>
+<button class="h-touch-target px-6 border border-[#1A1A1A] text-[#1A1A1A] font-headline-md text-label-md rounded-DEFAULT hover:bg-surface-variant transition-colors flex items-center justify-center w-full mt-2">
+                        Update Password
+                    </button>
+</div>
+<!-- Active Sessions Card -->
+<div class="bg-surface-container-lowest border border-surface-variant rounded-xl p-6 flex flex-col gap-4 row-span-2">
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-status-info" data-icon="devices">devices</span>
+<h3 class="font-headline-md text-headline-md text-on-surface text-lg">Active Sessions</h3>
+</div>
+<span class="font-caption text-caption text-secondary">2 Devices</span>
+</div>
+<p class="font-body-md text-body-md text-secondary mb-2">These are the devices currently logged into your Kelmah account.</p>
+<div class="flex flex-col gap-3">
+<!-- Current Device -->
+<div class="flex items-center justify-between p-3 bg-surface-muted rounded-lg border border-surface-variant">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="laptop_mac">laptop_mac</span>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Mac OS • Chrome</p>
+<p class="font-caption text-caption text-status-success flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-status-success inline-block"></span>
+                                        Active now • Accra, GH
+                                    </p>
+</div>
+</div>
+</div>
+<!-- Other Device -->
+<div class="flex items-center justify-between p-3 hover:bg-surface-muted rounded-lg border border-transparent hover:border-surface-variant transition-colors group">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="smartphone">smartphone</span>
+<div>
+<p class="font-label-md text-label-md text-on-surface">iPhone 13 • Safari</p>
+<p class="font-caption text-caption text-secondary">Last active 2 hours ago • Kumasi, GH</p>
+</div>
+</div>
+<button aria-label="Log out device" class="w-8 h-8 rounded-full flex items-center justify-center text-secondary hover:text-error hover:bg-error-container transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100">
+<span class="material-symbols-outlined text-sm" data-icon="logout">logout</span>
+</button>
+</div>
+</div>
+<div class="mt-auto pt-4 border-t border-surface-variant">
+<button class="w-full text-center text-status-info font-label-md text-label-md hover:underline py-2">
+                            Log out of all other sessions
+                        </button>
+</div>
+</div>
+<!-- Security Alerts Card -->
+<div class="bg-surface-container-lowest border border-surface-variant rounded-xl p-6 flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="notifications_active">notifications_active</span>
+<h3 class="font-headline-md text-headline-md text-on-surface text-lg">Security Alerts</h3>
+</div>
+<!-- Toggle Switch (Visual representation) -->
+<div class="w-10 h-6 bg-primary-container rounded-full relative cursor-pointer flex items-center px-1">
+<div class="w-4 h-4 bg-[#1A1A1A] rounded-full absolute right-1 shadow-sm"></div>
+</div>
+</div>
+<p class="font-body-md text-body-md text-secondary">Get notified instantly about new logins from unrecognized devices or major account changes.</p>
+</div>
+<!-- Danger Zone (Account Deactivation) -->
+<div class="md:col-span-2 mt-4 p-6 rounded-xl border border-error-container bg-[#fff5f5]">
+<div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+<div>
+<h3 class="font-headline-md text-headline-md text-error flex items-center gap-2 mb-1">
+<span class="material-symbols-outlined" data-icon="warning">warning</span>
+                                Danger Zone
+                            </h3>
+<p class="font-body-md text-body-md text-[#93000a] max-w-2xl">Deactivating your account will hide your profile and active jobs. Deleting your account is permanent and cannot be undone.</p>
+</div>
+<div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto shrink-0">
+<button class="h-touch-target px-6 border border-error text-error font-headline-md text-label-md rounded-DEFAULT hover:bg-error-container transition-colors flex items-center justify-center whitespace-nowrap">
+                                Deactivate Account
+                            </button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- BottomNavBar (Mobile Only) - Using intent matching for 'Settings/Profile' -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-touch-target bg-surface dark:bg-surface-dim border-t border-outline-variant dark:border-outline pb-safe shadow-md">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-secondary-fixed-dim px-4 py-1.5 hover:bg-secondary-container dark:hover:bg-secondary-fixed-variant active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-md text-label-md text-[10px] mt-0.5">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-secondary-fixed-dim px-4 py-1.5 hover:bg-secondary-container dark:hover:bg-secondary-fixed-variant active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="work">work</span>
+<span class="font-label-md text-label-md text-[10px] mt-0.5">Jobs</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-secondary-fixed-dim px-4 py-1.5 hover:bg-secondary-container dark:hover:bg-secondary-fixed-variant active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="chat">chat</span>
+<span class="font-label-md text-label-md text-[10px] mt-0.5">Messages</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-secondary-fixed-dim px-4 py-1.5 hover:bg-secondary-container dark:hover:bg-secondary-fixed-variant active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+<span class="font-label-md text-label-md text-[10px] mt-0.5">Wallet</span>
+</a>
+<!-- Active Tab for Security/Profile intent -->
+<a class="flex flex-col items-center justify-center bg-primary-container dark:bg-primary-fixed text-on-primary-container dark:text-on-primary-fixed rounded-xl px-4 py-1.5 hover:bg-secondary-container dark:hover:bg-secondary-fixed-variant active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="person" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-label-md text-label-md text-[10px] mt-0.5">Profile</span>
+</a>
+</nav>
+</body></html>

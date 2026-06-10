@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kelmah - Sign Up</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed-variant": "#474746",
+                        "surface-muted": "#F3F4F6",
+                        "outline-variant": "#d0c6ab",
+                        "inverse-surface": "#2f3131",
+                        "secondary": "#5f5e5e",
+                        "text-body": "#4B5563",
+                        "surface-container-highest": "#e2e2e2",
+                        "secondary-container": "#e2dfde",
+                        "primary-fixed": "#ffe16d",
+                        "surface-variant": "#e2e2e2",
+                        "on-background": "#1a1c1c",
+                        "inverse-primary": "#e9c400",
+                        "primary": "#705d00",
+                        "surface-container-low": "#f3f3f4",
+                        "outline": "#7e775f",
+                        "surface-container": "#eeeeee",
+                        "error": "#ba1a1a",
+                        "inverse-on-surface": "#f0f1f1",
+                        "background": "#f9f9f9",
+                        "surface": "#f9f9f9",
+                        "on-surface-variant": "#4d4732",
+                        "on-secondary": "#ffffff",
+                        "surface-dim": "#dadada",
+                        "on-error-container": "#93000a",
+                        "secondary-fixed": "#e5e2e1",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "on-primary-fixed-variant": "#544600",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-fixed-variant": "#474740",
+                        "on-secondary-container": "#636262",
+                        "status-success": "#10B981",
+                        "on-tertiary-container": "#5f5f58",
+                        "on-primary-container": "#705e00",
+                        "status-info": "#3B82F6",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "on-tertiary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "tertiary-fixed-dim": "#c8c7bd",
+                        "primary-container": "#ffd700",
+                        "on-surface": "#1a1c1c",
+                        "tertiary-container": "#dcdad0",
+                        "tertiary": "#5f5f57",
+                        "tertiary-fixed": "#e4e3d9",
+                        "on-tertiary-fixed": "#1b1c16",
+                        "primary-fixed-dim": "#e9c400",
+                        "surface-bright": "#f9f9f9",
+                        "surface-container-high": "#e8e8e8",
+                        "on-error": "#ffffff",
+                        "on-primary-fixed": "#221b00",
+                        "surface-tint": "#705d00"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "touch-target": "48px",
+                        "margin-desktop": "64px",
+                        "margin-mobile": "16px",
+                        "base": "8px"
+                    },
+                    "fontFamily": {
+                        "caption": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg": ["Montserrat"],
+                        "headline-md": ["Montserrat"],
+                        "label-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-lg-mobile": ["Montserrat"],
+                        "display-lg": ["Montserrat"]
+                    },
+                    "fontSize": {
+                        "caption": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "34px", "fontWeight": "700" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .fill-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen flex items-center justify-center p-margin-mobile md:p-margin-desktop">
+<div class="w-full max-w-md bg-surface-container-lowest rounded-xl shadow-lg border border-surface-variant overflow-hidden">
+<!-- Header -->
+<div class="p-gutter md:p-margin-mobile border-b border-surface-variant text-center bg-surface-bright">
+<h1 class="font-display-lg text-display-lg text-primary">Kelmah</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2">Create your account to get started.</p>
+</div>
+<form class="p-gutter md:p-margin-mobile space-y-6">
+<!-- Role Selection -->
+<div>
+<span class="block font-label-md text-label-md text-on-surface mb-3">I am a...</span>
+<div class="grid grid-cols-2 gap-4">
+<label class="cursor-pointer relative">
+<input checked="" class="peer sr-only" name="role" type="radio" value="artisan"/>
+<div class="flex flex-col items-center justify-center p-4 rounded-lg border-2 border-outline-variant peer-checked:border-primary peer-checked:bg-primary-container/10 transition-all">
+<span class="material-symbols-outlined text-3xl mb-2 text-on-surface-variant peer-checked:text-primary">construction</span>
+<span class="font-label-md text-label-md text-on-surface">Artisan / Worker</span>
+</div>
+</label>
+<label class="cursor-pointer relative">
+<input class="peer sr-only" name="role" type="radio" value="hirer"/>
+<div class="flex flex-col items-center justify-center p-4 rounded-lg border-2 border-outline-variant peer-checked:border-primary peer-checked:bg-primary-container/10 transition-all">
+<span class="material-symbols-outlined text-3xl mb-2 text-on-surface-variant peer-checked:text-primary">person_search</span>
+<span class="font-label-md text-label-md text-on-surface">Hirer</span>
+</div>
+</label>
+</div>
+</div>
+<!-- Input Fields -->
+<div class="space-y-4">
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-1" for="fullName">Full Name</label>
+<input class="w-full h-touch-target px-4 bg-surface rounded-DEFAULT border border-outline-variant focus:border-on-background focus:ring-1 focus:ring-primary-container transition-shadow font-body-md text-body-md outline-none" id="fullName" required="" type="text"/>
+</div>
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-1" for="email">Email Address</label>
+<input class="w-full h-touch-target px-4 bg-surface rounded-DEFAULT border border-outline-variant focus:border-on-background focus:ring-1 focus:ring-primary-container transition-shadow font-body-md text-body-md outline-none" id="email" required="" type="email"/>
+</div>
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-1" for="phone">Phone Number</label>
+<input class="w-full h-touch-target px-4 bg-surface rounded-DEFAULT border border-outline-variant focus:border-on-background focus:ring-1 focus:ring-primary-container transition-shadow font-body-md text-body-md outline-none" id="phone" required="" type="tel"/>
+</div>
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-1" for="password">Password</label>
+<div class="relative">
+<input class="w-full h-touch-target px-4 pr-12 bg-surface rounded-DEFAULT border border-outline-variant focus:border-on-background focus:ring-1 focus:ring-primary-container transition-shadow font-body-md text-body-md outline-none" id="password" required="" type="password"/>
+<button class="absolute right-0 top-0 h-full px-3 flex items-center text-on-surface-variant hover:text-on-surface" onclick="togglePassword()" type="button">
+<span class="material-symbols-outlined" id="visibilityIcon">visibility</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Primary Action -->
+<button class="w-full h-touch-target bg-primary-container text-[#1A1A1A] font-label-md text-label-md font-bold rounded-DEFAULT hover:bg-inverse-primary transition-colors active:scale-95 flex items-center justify-center gap-2" type="submit">
+<span>Sign Up</span>
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+<!-- Divider -->
+<div class="relative flex items-center py-2">
+<div class="flex-grow border-t border-surface-variant"></div>
+<span class="flex-shrink-0 mx-4 font-caption text-caption text-on-surface-variant">or continue with</span>
+<div class="flex-grow border-t border-surface-variant"></div>
+</div>
+<!-- Social Logins -->
+<div class="grid grid-cols-2 gap-4">
+<button class="h-touch-target flex items-center justify-center gap-2 border border-on-background rounded-DEFAULT bg-transparent hover:bg-surface-container-low transition-colors text-on-background font-label-md text-label-md" type="button">
+<img alt="Google" class="w-5 h-5" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPbfQ2ENBQurq2mNNjvHPbF7c07miYpF-K0nMts_EzXkrwV1-72ipaXqK_5ETnfl8htncG9934sFUc6cbhU0jcCVYlgPanwroUbIJyTVquf-vXSvbTqRos5pkUdP_0qIW8kIAMhpnQCrzas1RqNR2bSrbMS-mP-kQAUx11isaHoRFBVGB4kZHH_zm0Bx9rub-tAgy_sqRknGzdA_UfaGafAsGg_WEN1a6EVKLcWGYOn_UK_l-_G3L5cXNYhtRna0ZSTwJwMQC9APE"/>
+                    Google
+                </button>
+<button class="h-touch-target flex items-center justify-center gap-2 border border-on-background rounded-DEFAULT bg-transparent hover:bg-surface-container-low transition-colors text-on-background font-label-md text-label-md" type="button">
+<img alt="Apple" class="w-5 h-5" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD8dk4ULQJ4YvSKxFflAcazBogp0yl8c1afvjwHxZAhhFngvEUIg1pJ4L9cE2kDuoPIsgLMhKyzOuSmVsR1S0rEhXd3b5WHjy2CYklAiNvk9VdMnYxn7hAanQ5pGZLgjzZ-ijj9rzYt-4_GB1CLHSixl0pteWKH5PfrBIKlfmHl6K5TsKPy77rZEBqXWAgEXIrG5ErNWohVMcsAJn1SoXy-cGhU9HiJapv-b5Lt4NgGa5GzE2QayjvdEiqqFMFbAqdXSggUBZC3jeM"/>
+                    Apple
+                </button>
+</div>
+<!-- Login Link -->
+<p class="text-center font-body-md text-body-md text-on-surface-variant">
+                Already have an account? <a class="text-primary font-semibold hover:underline" href="#">Log In</a>
+</p>
+</form>
+</div>
+<script>
+        function togglePassword() {
+            const pwdInput = document.getElementById('password');
+            const icon = document.getElementById('visibilityIcon');
+            if (pwdInput.type === 'password') {
+                pwdInput.type = 'text';
+                icon.textContent = 'visibility_off';
+            } else {
+                pwdInput.type = 'password';
+                icon.textContent = 'visibility';
+            }
+        }
+    </script>
+</body></html>

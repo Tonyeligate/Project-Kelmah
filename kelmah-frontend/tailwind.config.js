@@ -1,4 +1,8 @@
 /* eslint-env node */
+const kelmahTokens = require('./kelmah-design-tokens.cjs');
+
+const { color, radius } = kelmahTokens;
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ['./src/**/*.{js,jsx,ts,tsx}'],
@@ -7,20 +11,39 @@ module.exports = {
     extend: {
       colors: {
         'kelmah-gold': {
-          light: '#FFD700',
-          DEFAULT: '#D4AF37',
-          dark: '#B8860B',
+          light: color.goldBright,
+          DEFAULT: color.gold,
+          dark: color.goldMuted,
         },
         'kelmah-black': {
-          light: '#2c2c2c',
-          DEFAULT: '#1a1a1a',
-          dark: '#000000',
+          light: color.darkSurfaceElevated,
+          DEFAULT: color.navyContainer,
+          dark: color.navy,
         },
         'kelmah-background': {
-          light: '#f8fafc',
-          DEFAULT: '#1a1a1a',
-          dark: '#0f0f0f',
+          light: color.background,
+          DEFAULT: color.darkSurface,
+          dark: color.darkBackground,
         },
+        'kelmah-surface': {
+          light: color.surface,
+          DEFAULT: color.darkSurface,
+          elevated: color.darkSurfaceElevated,
+          variant: color.surfaceVariant,
+        },
+        'kelmah-accent': {
+          positive: color.accentPositive,
+          warning: color.accentWarning,
+          info: color.accentInfo,
+          error: color.error,
+        },
+      },
+      borderRadius: {
+        'kelmah-xs': `${radius.xs}px`,
+        'kelmah-sm': `${radius.sm}px`,
+        'kelmah-md': `${radius.md}px`,
+        'kelmah-lg': `${radius.lg}px`,
+        'kelmah-xl': `${radius.xl}px`,
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
@@ -34,22 +57,22 @@ module.exports = {
       typography: {
         DEFAULT: {
           css: {
-            color: '#1c1c1c',
+            color: color.navy,
             a: {
-              color: '#3498db',
+              color: color.accentInfo,
               '&:hover': {
-                color: '#2980b9',
+                color: color.goldMuted,
               },
             },
           },
         },
         dark: {
           css: {
-            color: '#f4f6f7',
+            color: color.darkOnSurface,
             a: {
-              color: '#3498db',
+              color: color.accentInfo,
               '&:hover': {
-                color: '#2980b9',
+                color: color.gold,
               },
             },
           },

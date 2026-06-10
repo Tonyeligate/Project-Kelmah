@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Transaction Details | Kelmah</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "tertiary-fixed": "#e4e3d9",
+                      "inverse-primary": "#e9c400",
+                      "surface-muted": "#F3F4F6",
+                      "outline": "#7e775f",
+                      "on-primary": "#ffffff",
+                      "on-surface": "#1a1c1c",
+                      "status-success": "#10B981",
+                      "inverse-on-surface": "#f0f1f1",
+                      "primary-container": "#ffd700",
+                      "on-secondary": "#ffffff",
+                      "surface-variant": "#e2e2e2",
+                      "primary-fixed": "#ffe16d",
+                      "tertiary-fixed-dim": "#c8c7bd",
+                      "primary-fixed-dim": "#e9c400",
+                      "on-secondary-fixed": "#1c1b1b",
+                      "surface": "#f9f9f9",
+                      "secondary-fixed-dim": "#c8c6c5",
+                      "on-background": "#1a1c1c",
+                      "secondary-container": "#e2dfde",
+                      "surface-container": "#eeeeee",
+                      "error-container": "#ffdad6",
+                      "surface-dim": "#dadada",
+                      "inverse-surface": "#2f3131",
+                      "on-tertiary": "#ffffff",
+                      "surface-tint": "#705d00",
+                      "background": "#f9f9f9",
+                      "surface-container-low": "#f3f3f4",
+                      "on-tertiary-fixed": "#1b1c16",
+                      "on-primary-fixed": "#221b00",
+                      "secondary": "#5f5e5e",
+                      "on-surface-variant": "#4d4732",
+                      "primary": "#705d00",
+                      "on-tertiary-container": "#5f5f58",
+                      "surface-bright": "#f9f9f9",
+                      "on-tertiary-fixed-variant": "#474740",
+                      "on-primary-fixed-variant": "#544600",
+                      "on-error-container": "#93000a",
+                      "on-secondary-fixed-variant": "#474746",
+                      "status-info": "#3B82F6",
+                      "tertiary-container": "#dcdad0",
+                      "surface-container-highest": "#e2e2e2",
+                      "on-secondary-container": "#636262",
+                      "on-error": "#ffffff",
+                      "on-primary-container": "#705e00",
+                      "surface-container-high": "#e8e8e8",
+                      "secondary-fixed": "#e5e2e1",
+                      "error": "#ba1a1a",
+                      "text-body": "#4B5563"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "touch-target": "48px",
+                      "gutter": "16px",
+                      "margin-desktop": "64px",
+                      "margin-mobile": "16px",
+                      "base": "8px"
+              },
+              "fontFamily": {
+                      "headline-md": ["Montserrat"],
+                      "body-md": ["Inter"],
+                      "display-lg": ["Montserrat"],
+                      "body-lg": ["Inter"],
+                      "label-md": ["Inter"],
+                      "headline-lg-mobile": ["Montserrat"],
+                      "headline-lg": ["Montserrat"],
+                      "caption": ["Inter"]
+              },
+              "fontSize": {
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                      "headline-lg-mobile": ["28px", {"lineHeight": "34px", "fontWeight": "700"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                      "caption": ["12px", {"lineHeight": "16px", "fontWeight": "500"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .fill-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+        body {
+            background-color: #f9f9f9;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-body-md text-on-background">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface dark:bg-inverse-surface border-b border-outline-variant dark:border-outline flex items-center justify-between px-margin-mobile md:px-margin-desktop h-touch-target">
+<div class="flex items-center gap-4">
+<button aria-label="Go back" class="material-symbols-outlined text-primary active:scale-95 transition-transform">arrow_back</button>
+<h1 class="font-headline-md text-headline-md-mobile font-bold text-primary dark:text-primary-container">Kelmah</h1>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-on-surface-variant dark:text-surface-variant">notifications</span>
+<span class="material-symbols-outlined text-on-surface-variant dark:text-surface-variant">construction</span>
+</div>
+</header>
+<main class="pt-20 pb-24 px-margin-mobile max-w-2xl mx-auto">
+<!-- Transaction Status Header -->
+<section class="flex flex-col items-center text-center mb-10 mt-6">
+<div class="w-20 h-20 rounded-full bg-status-success/10 flex items-center justify-center mb-4">
+<span class="material-symbols-outlined text-status-success text-5xl fill-icon" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-1">Transaction Successful</h2>
+<p class="font-body-md text-on-surface-variant">May 24, 2024 • 02:45 PM</p>
+<div class="mt-4">
+<span class="font-display-lg text-display-lg text-on-surface">SAR 1,250.00</span>
+</div>
+</section>
+<!-- Transaction Details Card (Bento Style Segmented) -->
+<div class="grid grid-cols-1 gap-4">
+<!-- Details Panel -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm">
+<h3 class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider mb-6">Payment Breakdown</h3>
+<div class="space-y-4">
+<div class="flex justify-between items-center">
+<span class="font-body-md text-on-surface-variant">Gross Amount</span>
+<span class="font-label-md text-on-surface text-body-lg">SAR 1,315.79</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="font-body-md text-on-surface-variant">Platform Fee (5%)</span>
+<span class="font-label-md text-error">- SAR 65.79</span>
+</div>
+<div class="pt-4 border-t border-outline-variant flex justify-between items-center">
+<span class="font-label-md text-on-surface font-bold">Net Amount</span>
+<span class="font-headline-md text-headline-md text-primary">SAR 1,250.00</span>
+</div>
+</div>
+</div>
+<!-- Payment Method & Reference -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<div>
+<h3 class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider mb-4">Payment Method</h3>
+<div class="flex items-center gap-3">
+<div class="w-12 h-8 bg-surface-muted rounded border border-outline-variant flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant">credit_card</span>
+</div>
+<div>
+<p class="font-label-md text-on-surface">Mada Debit Card</p>
+<p class="font-caption text-on-surface-variant">Ending in •••• 4242</p>
+</div>
+</div>
+</div>
+<div>
+<h3 class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider mb-4">Transaction ID</h3>
+<div class="flex items-center gap-2 group cursor-pointer" onclick="alert('Reference copied to clipboard')">
+<span class="font-body-md text-on-surface font-mono">KLM-88234-X92</span>
+<span class="material-symbols-outlined text-on-surface-variant text-sm group-hover:text-primary">content_copy</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Related Content -->
+<div class="bg-primary-container/10 border border-primary/20 rounded-xl p-6 flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 bg-primary-container rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-container">description</span>
+</div>
+<div>
+<p class="font-label-md text-on-surface">Contract #204 - Kitchen Renovation</p>
+<p class="font-caption text-on-surface-variant">View project details and milestones</p>
+</div>
+</div>
+<button class="material-symbols-outlined text-primary hover:bg-primary/10 p-2 rounded-full transition-colors">chevron_right</button>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="mt-8 flex flex-col gap-3">
+<button class="w-full bg-primary-container text-on-primary-container font-headline-md py-4 rounded-xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform shadow-sm">
+<span class="material-symbols-outlined">download</span>
+                Download Receipt
+            </button>
+<button class="w-full bg-transparent border-2 border-on-surface text-on-surface font-headline-md py-4 rounded-xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform">
+<span class="material-symbols-outlined">support_agent</span>
+                Report an Issue
+            </button>
+</div>
+<!-- Visual Decorative Context (Atmospheric Image) -->
+<div class="mt-12 rounded-2xl overflow-hidden h-48 relative shadow-lg">
+<img alt="Modern accounting" class="w-full h-full object-cover" data-alt="A clean, industrial-themed desktop workspace featuring a sleek tablet displaying financial charts and transaction data. The lighting is bright and high-contrast, mimicking a professional office setting in Saudi Arabia. Subtle textures of concrete and polished wood are visible in the background, reinforcing the Kelmah brand's focus on construction and skilled trades. The overall mood is organized, professional, and trustworthy." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDnl-6l84ofvj0W0hGBQxjljsHNvC2q49iebERKMCptwC65-QzR0hpL1FFkCvZelJstPvQkfW04YzpvUG0LzRBN7d6Qr4ONYQ92MogvvsVpEfmsifdyOmVZuQP9EW5XzhwFy6i4pFi08Hpz823a0tSxtlTTpskg_C_1nrBuMawp5dS--xaM7Vd2h0WJVPIyZvW4w3CCpihlGM8OPGiGw5d6H8OEQLaZEUUIvqNUDVBuB7_CNc18TT1o6ZNt0ttjlpk3NUGu-v4Qnjs"/>
+<div class="absolute inset-0 bg-gradient-to-t from-on-surface/60 to-transparent flex items-end p-6">
+<p class="text-white font-label-md italic">“Trust is built on transparency and timely payments.”</p>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Hidden on desktop via design system rules, but active for this mobile view) -->
+<nav class="md:hidden fixed bottom-0 w-full z-50 bg-surface dark:bg-inverse-surface shadow-md flex justify-around items-center h-16 w-full border-t border-outline-variant dark:border-outline">
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim px-3 py-1 hover:text-primary transition-colors active:scale-90" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-md text-label-md">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim px-3 py-1 hover:text-primary transition-colors active:scale-90" href="#">
+<span class="material-symbols-outlined">work</span>
+<span class="font-label-md text-label-md">Jobs</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim px-3 py-1 hover:text-primary transition-colors active:scale-90" href="#">
+<span class="material-symbols-outlined">mail</span>
+<span class="font-label-md text-label-md">Messages</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container dark:bg-primary-fixed-dim text-on-primary-container dark:text-on-primary-fixed rounded-xl px-3 py-1 active:scale-90" href="#">
+<span class="material-symbols-outlined fill-icon" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim px-3 py-1 hover:text-primary transition-colors active:scale-90" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-md text-label-md">Profile</span>
+</a>
+</nav>
+</body></html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kelmah - Onboarding</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline": "#7e775f",
+                        "on-surface": "#1a1c1c",
+                        "on-error": "#ffffff",
+                        "primary-fixed": "#ffe16d",
+                        "on-tertiary-container": "#5f5f58",
+                        "on-primary-fixed": "#221b00",
+                        "inverse-primary": "#e9c400",
+                        "on-surface-variant": "#4d4732",
+                        "on-secondary-container": "#636262",
+                        "surface-container": "#eeeeee",
+                        "surface-muted": "#F3F4F6",
+                        "tertiary-fixed": "#e4e3d9",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "error-container": "#ffdad6",
+                        "on-error-container": "#93000a",
+                        "status-info": "#3B82F6",
+                        "secondary-container": "#e2dfde",
+                        "primary-fixed-dim": "#e9c400",
+                        "inverse-surface": "#2f3131",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-bright": "#f9f9f9",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#1a1c1c",
+                        "outline-variant": "#d0c6ab",
+                        "surface": "#f9f9f9",
+                        "on-primary-fixed-variant": "#544600",
+                        "on-primary-container": "#705e00",
+                        "tertiary-container": "#dcdad0",
+                        "on-secondary-fixed-variant": "#474746",
+                        "on-tertiary": "#ffffff",
+                        "surface-variant": "#e2e2e2",
+                        "surface-container-high": "#e8e8e8",
+                        "primary-container": "#ffd700",
+                        "surface-container-low": "#f3f3f4",
+                        "primary": "#705d00",
+                        "error": "#ba1a1a",
+                        "inverse-on-surface": "#f0f1f1",
+                        "text-body": "#4B5563",
+                        "tertiary-fixed-dim": "#c8c7bd",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "surface-dim": "#dadada",
+                        "on-tertiary-fixed-variant": "#474740",
+                        "secondary": "#5f5e5e",
+                        "on-tertiary-fixed": "#1b1c16",
+                        "surface-container-highest": "#e2e2e2",
+                        "background": "#f9f9f9",
+                        "status-success": "#10B981",
+                        "surface-tint": "#705d00",
+                        "tertiary": "#5f5f57",
+                        "secondary-fixed": "#e5e2e1",
+                        "on-primary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "base": "8px",
+                        "margin-mobile": "16px",
+                        "touch-target": "48px",
+                        "margin-desktop": "64px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Montserrat"],
+                        "headline-lg": ["Montserrat"],
+                        "label-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "display-lg": ["Montserrat"],
+                        "caption": ["Inter"],
+                        "headline-lg-mobile": ["Montserrat"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "caption": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "34px", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface h-screen flex flex-col md:flex-row font-body-md">
+<!-- Left / Top: Hero Section -->
+<div class="relative flex-1 md:flex-[0.6] bg-surface-container-high overflow-hidden">
+<div class="absolute inset-0 z-0">
+<img alt="Diverse artisans at work" class="w-full h-full object-cover opacity-90" data-alt="A high-quality, professional photograph of diverse construction workers and artisans actively collaborating on a modern building site. The lighting is bright and natural, emphasizing a professional and trustworthy atmosphere. The scene is clean and organized, aligning with a corporate modern functional aesthetic. Subtle accents of golden yellow are visible on safety gear, tying into the brand palette of deep blacks, pristine whites, and vibrant yellow." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCBBWKJBuSUPTN1IhvEmci18hJqor8REtOIjJzax_Gk1MZGP9_sa2DdA_F9OBdPuH2owh-jZpR91zj3VbEH7qD0xMe1v5miv0l2CAQ5eHFmJ8VCngk7o3VMGFcDrrQ2pTS9N7BsbMuZbZwbUHXe3I4Hkft81t7ph9BR6k9nz247KWedS1YIgjhY2os7xMODVdUC-oau8-vPf0xk9x6bQje5WVvh6Yg0asKqLB_pHlSUE10cf1DqT9xq_p4W2owftA_LZz5rhlxTwVk"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent md:bg-gradient-to-r md:from-black/60 md:via-black/20 md:to-transparent"></div>
+</div>
+<div class="relative z-10 h-full flex flex-col justify-between p-margin-mobile md:p-margin-desktop text-white">
+<div>
+<h1 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg font-bold tracking-tight text-white mb-2">Kelmah</h1>
+</div>
+<div class="pb-8 md:pb-0">
+<h2 class="font-display-lg text-display-lg font-bold mb-4 leading-tight">Reliable talent.<br/>Professional results.</h2>
+<p class="font-body-lg text-body-lg text-gray-200 max-w-md">Connect with verified artisans and skilled tradespeople for your next project. Built on trust and efficiency.</p>
+</div>
+</div>
+</div>
+<!-- Right / Bottom: Action Section -->
+<div class="flex-1 md:flex-[0.4] bg-surface flex flex-col justify-center px-margin-mobile py-8 md:p-margin-desktop rounded-t-3xl -mt-6 md:mt-0 md:rounded-none relative z-20 shadow-[0_-8px_30px_rgba(0,0,0,0.1)] md:shadow-none">
+<div class="max-w-md mx-auto w-full space-y-8">
+<div class="text-center md:text-left hidden md:block">
+<h3 class="font-headline-md text-headline-md font-bold text-on-surface mb-2">Welcome</h3>
+<p class="font-body-md text-body-md text-text-body">Join the network of professionals.</p>
+</div>
+<div class="space-y-4 pt-4">
+<button class="w-full h-touch-target bg-primary-container text-[#1A1A1A] font-headline-md text-label-md font-bold rounded-lg shadow-sm hover:bg-inverse-primary transition-colors flex items-center justify-center gap-2 active:scale-95 duration-150">
+                    Get Started
+                    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">arrow_forward</span>
+</button>
+<button class="w-full h-touch-target bg-[#1A1A1A] text-white font-headline-md text-label-md font-bold rounded-lg hover:bg-gray-800 transition-colors flex items-center justify-center gap-2 active:scale-95 duration-150">
+                    I need work
+                    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">work</span>
+</button>
+</div>
+<div class="pt-6 text-center">
+<p class="font-body-md text-body-md text-text-body">
+                    Already have an account? 
+                    <a class="font-label-md text-label-md text-[#1A1A1A] font-bold hover:underline underline-offset-4 decoration-primary-container decoration-2" href="#">Log In</a>
+</p>
+</div>
+<div class="pt-12 flex items-center justify-center gap-4 text-secondary text-sm">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+<span class="font-caption text-caption">Verified Pros</span>
+</div>
+<div class="w-1 h-1 bg-surface-variant rounded-full"></div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px]">shield</span>
+<span class="font-caption text-caption">Secure</span>
+</div>
+</div>
+</div>
+</div>
+</body></html>

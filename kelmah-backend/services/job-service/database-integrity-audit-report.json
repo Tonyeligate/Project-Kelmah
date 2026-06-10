@@ -1,0 +1,40 @@
+{
+  "auditDate": "2025-11-07T05:53:47.604Z",
+  "mode": "DRY_RUN",
+  "workersAudited": 20,
+  "jobsAudited": 6,
+  "issuesFound": {
+    "workersTradesMismatched": 0,
+    "workersInvalidWorkTypes": 0,
+    "workersMissingLocations": 0,
+    "workersRatingOutOfRange": 0,
+    "workersInvalidHourlyRate": 0,
+    "workersTestData": 0,
+    "workersNonStandardTrades": 0,
+    "workersDuplicates": 0,
+    "jobsMissingRequiredFields": 0,
+    "jobsInvalidBudget": 0,
+    "jobsMissingCity": 0,
+    "jobsApplicationCountIssues": 0,
+    "jobsDuplicates": 0,
+    "jobsInvalidStatus": 0,
+    "textIndexesMissing": 0
+  },
+  "actionsPlanned": {
+    "workersToDelete": [],
+    "workersToUpdate": [],
+    "jobsToDelete": [],
+    "jobsToUpdate": [],
+    "indexesToCreate": []
+  },
+  "testResults": {
+    "textSearchWorking": true,
+    "textSearchWorkersCount": 2,
+    "textSearchJobsCount": 1,
+    "tradeFilterWorking": true,
+    "cityFilterWorking": true,
+    "combinedFiltersWorking": true,
+    "noDuplicates": true,
+    "noTestData": false
+  }
+}

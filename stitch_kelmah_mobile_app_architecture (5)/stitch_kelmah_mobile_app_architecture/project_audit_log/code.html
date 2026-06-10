@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kelmah - Administrative Audit Trail</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline": "#7e775f",
+                        "on-surface": "#1a1c1c",
+                        "on-error": "#ffffff",
+                        "primary-fixed": "#ffe16d",
+                        "on-tertiary-container": "#5f5f58",
+                        "on-primary-fixed": "#221b00",
+                        "inverse-primary": "#e9c400",
+                        "on-surface-variant": "#4d4732",
+                        "on-secondary-container": "#636262",
+                        "surface-container": "#eeeeee",
+                        "surface-muted": "#F3F4F6",
+                        "tertiary-fixed": "#e4e3d9",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "error-container": "#ffdad6",
+                        "on-error-container": "#93000a",
+                        "status-info": "#3B82F6",
+                        "secondary-container": "#e2dfde",
+                        "primary-fixed-dim": "#e9c400",
+                        "inverse-surface": "#2f3131",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-bright": "#f9f9f9",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#1a1c1c",
+                        "outline-variant": "#d0c6ab",
+                        "surface": "#f9f9f9",
+                        "on-primary-fixed-variant": "#544600",
+                        "on-primary-container": "#705e00",
+                        "tertiary-container": "#dcdad0",
+                        "on-secondary-fixed-variant": "#474746",
+                        "on-tertiary": "#ffffff",
+                        "surface-variant": "#e2e2e2",
+                        "surface-container-high": "#e8e8e8",
+                        "primary-container": "#ffd700",
+                        "surface-container-low": "#f3f3f4",
+                        "primary": "#705d00",
+                        "error": "#ba1a1a",
+                        "inverse-on-surface": "#f0f1f1",
+                        "text-body": "#4B5563",
+                        "tertiary-fixed-dim": "#c8c7bd",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "surface-dim": "#dadada",
+                        "on-tertiary-fixed-variant": "#474740",
+                        "secondary": "#5f5e5e",
+                        "on-tertiary-fixed": "#1b1c16",
+                        "surface-container-highest": "#e2e2e2",
+                        "background": "#f9f9f9",
+                        "status-success": "#10B981",
+                        "surface-tint": "#705d00",
+                        "tertiary": "#5f5f57",
+                        "secondary-fixed": "#e5e2e1",
+                        "on-primary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "base": "8px",
+                        "margin-mobile": "16px",
+                        "touch-target": "48px",
+                        "margin-desktop": "64px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Montserrat"],
+                        "headline-lg": ["Montserrat"],
+                        "label-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "display-lg": ["Montserrat"],
+                        "caption": ["Inter"],
+                        "headline-lg-mobile": ["Montserrat"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "caption": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "34px", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: #f9f9f9; color: #1a1c1c; }
+        .timeline-line::before {
+            content: '';
+            position: absolute;
+            top: 24px;
+            bottom: -24px;
+            left: 23px;
+            width: 2px;
+            background-color: #e2e2e2;
+            z-index: 0;
+        }
+        .timeline-item:last-child .timeline-line::before {
+            display: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="antialiased font-body-md text-body-md min-h-screen flex flex-col md:flex-row">
+<!-- Mobile Nav Header -->
+<header class="md:hidden w-full top-0 sticky bg-surface dark:bg-surface-dim z-40 bg-surface-container-low dark:bg-surface-container-high flex items-center justify-between px-margin-mobile h-16 w-full">
+<button class="h-touch-target w-touch-target flex items-center justify-center text-primary dark:text-primary-fixed-dim hover:bg-surface-variant dark:hover:bg-on-surface-variant transition-colors rounded-full active:scale-95 duration-150">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<span class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim">Kelmah</span>
+<div class="h-touch-target w-touch-target"></div>
+</header>
+<!-- Navigation Drawer (Desktop) -->
+<aside class="hidden md:flex h-full w-80 fixed left-0 top-0 bg-surface dark:bg-surface-dim shadow-xl flex-col py-6 gap-2 z-50 transition-all duration-300 ease-in-out">
+<div class="px-6 mb-8 flex items-center gap-4">
+<span class="font-headline-md text-headline-md text-primary font-bold">Kelmah</span>
+</div>
+<div class="px-6 mb-6 flex flex-col gap-1">
+<span class="font-label-md text-label-md text-secondary">Admin Console</span>
+<span class="font-body-md text-body-md text-on-surface font-semibold">Audit Trail</span>
+</div>
+<nav class="flex flex-col gap-1 w-full">
+<a class="flex items-center gap-3 py-3 px-4 mx-2 text-on-surface-variant dark:text-secondary-fixed-dim hover:bg-surface-container-high dark:hover:bg-surface-container-highest rounded-full transition-colors h-touch-target min-h-[48px]" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span class="font-label-md text-label-md">Project History</span>
+</a>
+<a class="flex items-center gap-3 py-3 px-4 mx-2 text-on-surface-variant dark:text-secondary-fixed-dim hover:bg-surface-container-high dark:hover:bg-surface-container-highest rounded-full transition-colors h-touch-target min-h-[48px]" href="#">
+<span class="material-symbols-outlined" data-icon="verified">verified</span>
+<span class="font-label-md text-label-md">Certifications</span>
+</a>
+<a class="flex items-center gap-3 py-3 px-4 mx-2 bg-primary-container text-on-primary-container font-semibold rounded-full hover:bg-surface-container-high transition-colors h-touch-target min-h-[48px]" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+<a class="flex items-center gap-3 py-3 px-4 mx-2 text-on-surface-variant dark:text-secondary-fixed-dim hover:bg-surface-container-high dark:hover:bg-surface-container-highest rounded-full transition-colors h-touch-target min-h-[48px]" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span class="font-label-md text-label-md">Support</span>
+</a>
+</nav>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 md:ml-80 w-full px-margin-mobile md:px-margin-desktop py-8 pb-32 md:pb-12 bg-background min-h-screen">
+<div class="max-w-4xl mx-auto w-full">
+<!-- Page Header -->
+<div class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-surface-variant pb-6">
+<div>
+<h1 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface mb-2">Audit Trail</h1>
+<p class="font-body-lg text-body-lg text-secondary">Project ID: #KLM-8492-BX</p>
+</div>
+<div class="flex gap-3">
+<button class="h-touch-target min-h-[48px] px-6 rounded-full border border-on-surface text-on-surface font-label-md text-label-md flex items-center gap-2 hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined" data-icon="download">download</span>
+                        Export Log
+                    </button>
+</div>
+</div>
+<!-- Project Context Card -->
+<div class="bg-surface-container-lowest rounded-xl p-6 border border-surface-variant mb-10 shadow-sm flex flex-col sm:flex-row gap-6 items-start sm:items-center">
+<div class="h-16 w-16 rounded-lg bg-surface-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-3xl text-primary" data-icon="plumbing">plumbing</span>
+</div>
+<div class="flex-1">
+<h2 class="font-headline-md text-headline-md text-on-surface">Main Water Line Repair</h2>
+<p class="font-body-md text-body-md text-secondary mt-1">Hirer: Sarah Jenkins • Worker: Michael Adebayo</p>
+</div>
+<div class="shrink-0 flex items-center gap-2 px-4 py-2 bg-surface-container rounded-full">
+<span class="h-2 w-2 rounded-full bg-status-success"></span>
+<span class="font-label-md text-label-md text-on-surface">Active</span>
+</div>
+</div>
+<!-- Timeline -->
+<div class="relative bg-surface-container-lowest rounded-xl p-6 md:p-8 border border-surface-variant shadow-sm">
+<!-- Event 1 -->
+<div class="timeline-item relative flex gap-6 pb-12">
+<div class="timeline-line relative shrink-0 z-10 flex flex-col items-center">
+<div class="h-12 w-12 rounded-full bg-surface-container border-2 border-surface-container-lowest flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-primary" data-icon="payments">payments</span>
+</div>
+</div>
+<div class="flex-1 pt-1">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2">
+<h3 class="font-headline-md text-headline-md text-on-surface text-lg">Funds Released</h3>
+<span class="font-caption text-caption text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" data-icon="schedule">schedule</span>
+                                Oct 24, 2023 • 14:30 PM
+                            </span>
+</div>
+<div class="bg-surface p-4 rounded-lg border border-surface-variant flex items-center gap-3 mt-3">
+<div class="h-10 w-10 rounded-full bg-surface-container overflow-hidden shrink-0">
+<img alt="Avatar" class="h-full w-full object-cover" data-alt="A professional headshot of a confident African woman wearing glasses and a light grey business blazer. Soft natural lighting illuminates her face against a bright, minimalist office background. The overall aesthetic is corporate, reliable, and high-quality, fitting a modern light-mode application UI." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMKLUdzc-J7CjuXHJg3ygg29QBuZpemeS5xNutNcqSGGaMwxYZZ9iUfQUzv6wRlmpSJYdFgvIlJhdY7Jbg9FzlL7EF1eskT511we1hFUERzFbLm76i4TJX7hQms85KzVs2FVuF_ll2UynNc23jpBhZAr4qz4HyAW9deIJasH_DAgB8njMRm7RjCbl02CxFtQnY3wybWzqCK5bWO3ad5dIa51fvrpwHX4Ab_nrraNaaGxAI_-O3YGcue8Bg3Tt_JYh6MqE2kN9-DWc"/>
+</div>
+<div>
+<p class="font-body-md text-body-md text-on-surface"><span class="font-semibold">System Administrator</span> authorized release of $450.00 to worker.</p>
+<p class="font-caption text-caption text-secondary mt-1">Transaction ID: TXN-99382</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Event 2 -->
+<div class="timeline-item relative flex gap-6 pb-12">
+<div class="timeline-line relative shrink-0 z-10 flex flex-col items-center">
+<div class="h-12 w-12 rounded-full bg-surface-container border-2 border-surface-container-lowest flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-status-success" data-icon="check_circle">check_circle</span>
+</div>
+</div>
+<div class="flex-1 pt-1">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2">
+<h3 class="font-headline-md text-headline-md text-on-surface text-lg">Milestone Approved</h3>
+<span class="font-caption text-caption text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" data-icon="schedule">schedule</span>
+                                Oct 24, 2023 • 10:15 AM
+                            </span>
+</div>
+<div class="bg-surface p-4 rounded-lg border border-surface-variant flex items-center gap-3 mt-3">
+<div class="h-10 w-10 rounded-full bg-surface-container overflow-hidden shrink-0">
+<img alt="Avatar" class="h-full w-full object-cover" data-alt="A portrait of a cheerful Caucasian woman with shoulder-length hair, wearing a casual dark shirt. The background is a slightly blurred outdoors setting with soft, warm daylight. The lighting is flattering and natural, creating a trustworthy and approachable profile image for a consumer application." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCGDSw-YT60kO58qirA70WXDOjuTSsSPRjBu-ahzNxTJLEca7fi3NaBMWgbIE-cbrnw1hojy58HshPQRR4B7Ldtzo4FjUwCkhxf4fH3WOMcZGj16N3pRfAl0uVIveBDA3YNMTyW9LQr4u-kPffKjT4NPrYTUCxID_s9MhJpHD1f5RyOpW2Iz3r_Zyh1E_J6NSNrjr8aa74tcYCwWaHS33O6CbQ72E7eOI3KepsanCGW5OZ19gbNRpi5bUkasWO6QQGKr_Gvqp5ONLc"/>
+</div>
+<div>
+<p class="font-body-md text-body-md text-on-surface"><span class="font-semibold">Sarah Jenkins</span> (Hirer) approved "Phase 1: Excavation".</p>
+<p class="font-caption text-caption text-secondary mt-1">IP: 192.168.1.44 • Device: iOS App</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Event 3 -->
+<div class="timeline-item relative flex gap-6 pb-12">
+<div class="timeline-line relative shrink-0 z-10 flex flex-col items-center">
+<div class="h-12 w-12 rounded-full bg-surface-container border-2 border-surface-container-lowest flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-status-info" data-icon="photo_camera">photo_camera</span>
+</div>
+</div>
+<div class="flex-1 pt-1">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2">
+<h3 class="font-headline-md text-headline-md text-on-surface text-lg">Worker Uploaded Evidence</h3>
+<span class="font-caption text-caption text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" data-icon="schedule">schedule</span>
+                                Oct 23, 2023 • 16:45 PM
+                            </span>
+</div>
+<div class="bg-surface p-4 rounded-lg border border-surface-variant flex flex-col gap-3 mt-3">
+<div class="flex items-center gap-3">
+<div class="h-10 w-10 rounded-full bg-surface-container overflow-hidden shrink-0">
+<img alt="Avatar" class="h-full w-full object-cover" data-alt="A close-up portrait of a rugged Caucasian male worker with a short beard and a neutral expression. He is wearing a dark t-shirt. The background is a softly blurred industrial setting. The image is crisp, with high contrast lighting suitable for a professional skilled trade profile." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCZbIwhc8hscHMaO7FPiOCOHUdIIES-2l3X1ol0eKJFU5brxEWOKmAG7phqLCClE5rtrXBWO_BZSXcsf6NcpEmmWtyzvKLGOEm_ijOivz-X4rPqwMbpqqJYB45B21tBTqv-W1sBCxIaTNe0EFSCtxWpdFg3pzgjn7xXQ1WsvPCpdYV3Hyp_Cu99Pj7a-O6iOQejsSmdyTB08krHDEyHrwg5Gdouzc67OmgtsjZPipdj0UYDMjZQmPiTQlDF_5P5fBnwHnqqeKqal4A"/>
+</div>
+<div>
+<p class="font-body-md text-body-md text-on-surface"><span class="font-semibold">Michael Adebayo</span> (Worker) uploaded 2 photos for milestone review.</p>
+</div>
+</div>
+<div class="flex gap-2 mt-2 ml-13">
+<div class="h-20 w-20 rounded bg-surface-container border border-surface-variant flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary" data-icon="image">image</span>
+</div>
+<div class="h-20 w-20 rounded bg-surface-container border border-surface-variant flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary" data-icon="image">image</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Event 4 -->
+<div class="timeline-item relative flex gap-6 pb-4">
+<div class="timeline-line relative shrink-0 z-10 flex flex-col items-center">
+<div class="h-12 w-12 rounded-full bg-primary-container border-2 border-surface-container-lowest flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-on-primary-container" data-icon="account_balance_wallet">account_balance_wallet</span>
+</div>
+</div>
+<div class="flex-1 pt-1">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2">
+<h3 class="font-headline-md text-headline-md text-on-surface text-lg">Hirer Funded Escrow</h3>
+<span class="font-caption text-caption text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" data-icon="schedule">schedule</span>
+                                Oct 20, 2023 • 09:00 AM
+                            </span>
+</div>
+<div class="bg-surface p-4 rounded-lg border border-surface-variant flex items-center gap-3 mt-3">
+<div class="h-10 w-10 rounded-full bg-surface-container overflow-hidden shrink-0">
+<img alt="Avatar" class="h-full w-full object-cover" data-alt="A portrait of a cheerful Caucasian woman with shoulder-length hair, wearing a casual dark shirt. The background is a slightly blurred outdoors setting with soft, warm daylight. The lighting is flattering and natural, creating a trustworthy and approachable profile image for a consumer application." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBAnJfEiCCciScgG6PFj256Urxo1Y5EeP6qs4QB5v1pdJCEJu1WwSpvgbYE0OehRonnGoOs7THPmpgJCLp14oZwhRM4D-_szF6yqlHLu116kBre5MQ1E9YRCfTzhyLauHACPouOn-5mYiZtP3_Pk-_tZ9c1ZyiFIiyEsZ78Sy1Uje-SOiwqeYDrNFkKRcaAEHd2k9KruW8sUGOHOLyF4BhLFGYIAx52xMdA6fZIryXV4rZsa-um7yI5n6gbNiSRTd-vDDyBL4dBW0A"/>
+</div>
+<div>
+<p class="font-body-md text-body-md text-on-surface"><span class="font-semibold">Sarah Jenkins</span> deposited $900.00 into project escrow.</p>
+<p class="font-caption text-caption text-secondary mt-1">Payment Method: Visa ending in •••• 4242</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

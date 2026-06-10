@@ -409,7 +409,7 @@ private fun WorkerProfileSignalsContent(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(18.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            border = BorderStroke(1.dp, Color(0xFFFFD34D).copy(alpha = 0.45f)),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f)),
         ) {
             Column(
                 modifier = Modifier.padding(16.dp),
@@ -420,14 +420,14 @@ private fun WorkerProfileSignalsContent(
                     Box(
                         modifier = Modifier
                             .size(72.dp)
-                            .border(2.dp, Color(0xFFFFD34D), CircleShape)
+                            .border(2.dp, MaterialTheme.colorScheme.primaryContainer, CircleShape)
                             .padding(3.dp)
-                            .background(Color(0xFF101116), CircleShape),
+                            .background(MaterialTheme.colorScheme.onSurface, CircleShape),
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(
                             text = "${profile.firstName.firstOrNull() ?: 'W'}${profile.lastName.firstOrNull() ?: 'K'}",
-                            color = Color(0xFFFFD34D),
+                            color = MaterialTheme.colorScheme.primaryContainer,
                             fontWeight = FontWeight.Bold,
                             style = MaterialTheme.typography.titleLarge
                         )
@@ -439,7 +439,7 @@ private fun WorkerProfileSignalsContent(
                         Text(
                             text = profile.displayName,
                             style = MaterialTheme.typography.titleLarge,
-                            color = Color(0xFFFFD34D),
+                            color = MaterialTheme.colorScheme.primaryContainer,
                             fontWeight = FontWeight.Bold,
                         )
                         Text(
@@ -455,7 +455,7 @@ private fun WorkerProfileSignalsContent(
                         Text(
                             text = String.format(java.util.Locale.US, "%.1f %s (%d+ Reviews)", ratingVal, stars, countVal),
                             style = MaterialTheme.typography.bodySmall,
-                            color = Color(0xFFFFD34D),
+                            color = MaterialTheme.colorScheme.primaryContainer,
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -471,12 +471,12 @@ private fun WorkerProfileSignalsContent(
                                 text = skill,
                                 modifier = Modifier
                                     .background(
-                                        color = Color(0xFFFFD34D),
+                                        color = MaterialTheme.colorScheme.primaryContainer,
                                         shape = RoundedCornerShape(100.dp),
                                     )
                                     .padding(horizontal = 14.dp, vertical = 6.dp),
                                 style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                                color = Color(0xFF101116)
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
                         }
                     }
@@ -489,13 +489,13 @@ private fun WorkerProfileSignalsContent(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            border = BorderStroke(1.dp, Color(0xFFFFD34D).copy(alpha = 0.25f)),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f)),
         ) {
             Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
                     text = stringResource(id = R.string.profile_about_me),
                     style = MaterialTheme.typography.titleMedium,
-                    color = Color(0xFFFFD34D),
+                    color = MaterialTheme.colorScheme.primaryContainer,
                     fontWeight = FontWeight.Bold,
                 )
                 Text(
@@ -507,8 +507,8 @@ private fun WorkerProfileSignalsContent(
                     Button(
                         onClick = { showFullBio = !showFullBio },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFFFFD34D),
-                            contentColor = Color(0xFF101116)
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                         ),
                         shape = RoundedCornerShape(100.dp),
                         modifier = Modifier.align(Alignment.End)
@@ -531,13 +531,13 @@ private fun WorkerProfileSignalsContent(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            border = BorderStroke(1.dp, Color(0xFFFFD34D).copy(alpha = 0.25f)),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f)),
         ) {
             Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text(
                     text = stringResource(id = R.string.profile_portfolio),
                     style = MaterialTheme.typography.titleMedium,
-                    color = Color(0xFFFFD34D),
+                    color = MaterialTheme.colorScheme.primaryContainer,
                     fontWeight = FontWeight.Bold,
                 )
                 if (snapshot.portfolio.items.isEmpty()) {
@@ -557,7 +557,7 @@ private fun WorkerProfileSignalsContent(
                                 modifier = Modifier.size(width = 160.dp, height = 115.dp),
                                 shape = RoundedCornerShape(12.dp),
                                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-                                border = BorderStroke(1.dp, Color(0xFFFFD34D).copy(alpha = 0.5f)),
+                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)),
                             ) {
                                 Box(modifier = Modifier.fillMaxSize()) {
                                     coil.compose.AsyncImage(
@@ -598,13 +598,13 @@ private fun WorkerProfileSignalsContent(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            border = BorderStroke(1.dp, Color(0xFFFFD34D).copy(alpha = 0.25f)),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f)),
         ) {
             Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
                     text = stringResource(id = R.string.profile_reviews),
                     style = MaterialTheme.typography.titleMedium,
-                    color = Color(0xFFFFD34D),
+                    color = MaterialTheme.colorScheme.primaryContainer,
                     fontWeight = FontWeight.Bold,
                 )
                 Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -618,13 +618,13 @@ private fun WorkerProfileSignalsContent(
                             Box(
                                 modifier = Modifier
                                     .size(40.dp)
-                                    .border(1.dp, Color(0xFFFFD34D), CircleShape)
-                                    .background(Color(0xFF222530), CircleShape),
+                                    .border(1.dp, MaterialTheme.colorScheme.primaryContainer, CircleShape)
+                                    .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
                                     text = review.clientName.firstOrNull()?.toString() ?: "C",
-                                    color = Color(0xFFFFD34D),
+                                    color = MaterialTheme.colorScheme.primaryContainer,
                                     style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
                                 )
                             }
@@ -634,12 +634,12 @@ private fun WorkerProfileSignalsContent(
                                     Text(
                                         text = review.clientName,
                                         style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
-                                        color = Color.White
+                                        color = MaterialTheme.colorScheme.onSurface
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Text(
                                         text = starsText,
-                                        color = Color(0xFFFFD34D),
+                                        color = MaterialTheme.colorScheme.primaryContainer,
                                         style = MaterialTheme.typography.bodySmall
                                     )
                                 }
@@ -669,8 +669,8 @@ private fun WorkerProfileSignalsContent(
                     .fillMaxWidth()
                     .heightIn(min = KelmahPrimaryActionMinHeight),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFFFD34D),
-                    contentColor = Color(0xFF101116),
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                 ),
                 shape = RoundedCornerShape(24.dp)
             ) {
@@ -687,9 +687,9 @@ private fun WorkerProfileSignalsContent(
                     .fillMaxWidth()
                     .heightIn(min = KelmahPrimaryActionMinHeight),
                 colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = Color(0xFFFFD34D)
+                    contentColor = MaterialTheme.colorScheme.primaryContainer
                 ),
-                border = BorderStroke(1.dp, Color(0xFFFFD34D)),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primaryContainer),
                 shape = RoundedCornerShape(24.dp)
             ) {
                 Text(

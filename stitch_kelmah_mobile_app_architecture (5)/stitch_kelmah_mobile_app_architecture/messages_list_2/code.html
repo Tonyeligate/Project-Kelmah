@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kelmah - Messages</title>
+<!-- Google Fonts: Montserrat & Inter -->
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-container-high": "#e8e8e8",
+                      "on-tertiary-fixed-variant": "#474740",
+                      "primary": "#705d00",
+                      "on-secondary-fixed-variant": "#474746",
+                      "inverse-surface": "#2f3131",
+                      "on-error-container": "#93000a",
+                      "outline": "#7e775f",
+                      "surface-bright": "#f9f9f9",
+                      "tertiary-fixed": "#e4e3d9",
+                      "on-secondary-fixed": "#1c1b1b",
+                      "surface-muted": "#F3F4F6",
+                      "surface-tint": "#705d00",
+                      "on-surface-variant": "#4d4732",
+                      "secondary-fixed": "#e5e2e1",
+                      "outline-variant": "#d0c6ab",
+                      "on-error": "#ffffff",
+                      "error-container": "#ffdad6",
+                      "surface-container-highest": "#e2e2e2",
+                      "surface-container": "#eeeeee",
+                      "secondary": "#5f5e5e",
+                      "on-primary-fixed": "#221b00",
+                      "tertiary": "#5f5f57",
+                      "primary-fixed": "#ffe16d",
+                      "inverse-on-surface": "#f0f1f1",
+                      "secondary-fixed-dim": "#c8c6c5",
+                      "on-primary-fixed-variant": "#544600",
+                      "primary-fixed-dim": "#e9c400",
+                      "on-secondary-container": "#636262",
+                      "on-tertiary-fixed": "#1b1c16",
+                      "background": "#f9f9f9",
+                      "status-info": "#3B82F6",
+                      "inverse-primary": "#e9c400",
+                      "on-primary-container": "#705e00",
+                      "tertiary-fixed-dim": "#c8c7bd",
+                      "surface-container-lowest": "#ffffff",
+                      "primary-container": "#ffd700",
+                      "on-tertiary": "#ffffff",
+                      "on-background": "#1a1c1c",
+                      "on-primary": "#ffffff",
+                      "surface-dim": "#dadada",
+                      "surface-container-low": "#f3f3f4",
+                      "status-success": "#10B981",
+                      "error": "#ba1a1a",
+                      "text-body": "#4B5563",
+                      "surface-variant": "#e2e2e2",
+                      "secondary-container": "#e2dfde",
+                      "surface": "#f9f9f9",
+                      "on-surface": "#1a1c1c",
+                      "on-tertiary-container": "#5f5f58",
+                      "tertiary-container": "#dcdad0",
+                      "on-secondary": "#ffffff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "touch-target": "48px",
+                      "margin-mobile": "16px",
+                      "base": "8px",
+                      "margin-desktop": "64px",
+                      "gutter": "16px"
+              },
+              "fontFamily": {
+                      "body-md": ["Inter"],
+                      "caption": ["Inter"],
+                      "headline-md": ["Montserrat"],
+                      "headline-lg": ["Montserrat"],
+                      "display-lg": ["Montserrat"],
+                      "label-md": ["Inter"],
+                      "headline-lg-mobile": ["Montserrat"],
+                      "body-lg": ["Inter"]
+              },
+              "fontSize": {
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "caption": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                      "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                      "headline-lg-mobile": ["28px", {"lineHeight": "34px", "fontWeight": "700"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        body {
+            background-color: #f9f9f9;
+            color: #1a1c1c;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .message-row:active {
+            background-color: #f3f3f4;
+        }
+        /* Custom scrollbar for a cleaner mobile look if viewed on desktop */
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="min-h-screen flex flex-col font-body-md text-body-md">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center px-margin-mobile w-full z-50 sticky top-0 bg-surface dark:bg-inverse-surface shadow-sm h-16">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary dark:text-inverse-primary" data-icon="construction">construction</span>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim">Kelmah</h1>
+</div>
+<div class="flex items-center gap-2">
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:opacity-80 transition-opacity active:scale-95">
+<span class="material-symbols-outlined text-on-surface-variant">filter_list</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:opacity-80 transition-opacity active:scale-95">
+<span class="material-symbols-outlined text-on-surface-variant">edit_square</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow pb-24">
+<!-- Search Section -->
+<section class="px-margin-mobile pt-6 pb-2">
+<div class="relative w-full">
+<div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-on-surface-variant">search</span>
+</div>
+<input class="w-full h-12 pl-12 pr-4 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary-container font-label-md text-label-md transition-all shadow-sm" placeholder="Search conversations..." type="text"/>
+</div>
+</section>
+<!-- Active Chats Title (Bento Style Sub-header) -->
+<section class="px-margin-mobile py-4 flex items-center justify-between">
+<h2 class="font-headline-md text-headline-md text-on-surface">Recent Messages</h2>
+<span class="text-caption font-caption bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full">4 New</span>
+</section>
+<!-- Conversation List -->
+<section class="flex flex-col">
+<!-- Item 1: Unread -->
+<div class="message-row flex items-center px-margin-mobile py-4 cursor-pointer transition-colors border-b border-surface-container-high mx-2 rounded-2xl">
+<div class="relative flex-shrink-0">
+<div class="w-14 h-14 rounded-full overflow-hidden bg-surface-container-highest">
+<img alt="Avatar" class="w-full h-full object-cover" data-alt="A professional-looking male carpenter wearing a rugged work shirt and a baseball cap, set against a blurred workshop background with soft natural lighting. The style is crisp and corporate modern, reflecting trustworthiness and skilled craftsmanship in a light-themed aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBaiZT4oz3p8bXHgHdZHYDr3dkczGNdnX6HaU8qJEVIRYQ54jACT0QSBaAS1wpJJG68-JZMln1NzJuCJxvM7O5QYbfwh_Sa6a0dutIOuc_U5qpQVJ6dXgilwEqbjXg3lTrz0hdw3MQg51k0-rlzg5BSwmAHF8Z3UzDTncWFLvZuajhGuIOlzugUlDNpGbEBRgMMVfESHRgBr0l5sWfzzskHrCARJ17LX4vKeHOI2rZkn-Pg_8sVmOTpMH1Ir5xe1ws2gcYZ_tQDl9M"/>
+</div>
+<div class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-status-success rounded-full border-2 border-surface"></div>
+</div>
+<div class="ml-4 flex-grow min-w-0">
+<div class="flex justify-between items-baseline">
+<h3 class="font-label-md text-label-md text-on-surface truncate pr-2">Ahmed Al-Farsi</h3>
+<span class="text-caption font-caption text-primary font-bold">14:20</span>
+</div>
+<div class="flex justify-between items-center mt-1">
+<p class="font-body-md text-[14px] text-on-surface font-semibold truncate leading-tight">When can you start the kitchen plumbing repair?</p>
+<div class="flex-shrink-0 bg-primary text-on-primary text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full ml-2">2</div>
+</div>
+</div>
+</div>
+<!-- Item 2: Unread -->
+<div class="message-row flex items-center px-margin-mobile py-4 cursor-pointer transition-colors border-b border-surface-container-high mx-2 rounded-2xl">
+<div class="relative flex-shrink-0">
+<div class="w-14 h-14 rounded-full overflow-hidden bg-surface-container-highest">
+<img alt="Avatar" class="w-full h-full object-cover" data-alt="A middle-aged professional female architect in a clean, modern office environment. She is smiling confidently, wearing professional attire. The lighting is bright and even, highlighting a clean, high-contrast, industrial professionalism style consistent with a modern corporate identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhQ4lM_GcJspO-cwYwwH-7xi6TwxsX0MRSzwJZZAVAyvfpAL5nZT33X1qo9I5fEggmEUz8E1av-XaIJ9oRZoO1bbaybvW3V0yOn6SwOWVpCYIuyNquuCJvxbGyMd3QFsmbVyrZ03IQsPOxh-P93STWwglj4sFaMXQDW2-VFwaNXpAH75xEYVHWdgEY1FkNrEQZr1st026WiH9sT3k6-cJCuUZjDtx7fqznb82VfLaU6ySmwi7fegprNaCcLjKPT6T9mRQdfDc-3bE"/>
+</div>
+</div>
+<div class="ml-4 flex-grow min-w-0">
+<div class="flex justify-between items-baseline">
+<h3 class="font-label-md text-label-md text-on-surface truncate pr-2">Sarah Construction Ltd.</h3>
+<span class="text-caption font-caption text-primary font-bold">11:05</span>
+</div>
+<div class="flex justify-between items-center mt-1">
+<p class="font-body-md text-[14px] text-on-surface font-semibold truncate leading-tight">I've sent the updated site plans for review.</p>
+<div class="flex-shrink-0 bg-primary text-on-primary text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full ml-2">1</div>
+</div>
+</div>
+</div>
+<!-- Item 3: Read -->
+<div class="message-row flex items-center px-margin-mobile py-4 cursor-pointer transition-colors border-b border-surface-container-high mx-2 rounded-2xl">
+<div class="relative flex-shrink-0">
+<div class="w-14 h-14 rounded-full overflow-hidden bg-surface-container-highest opacity-90">
+<img alt="Avatar" class="w-full h-full object-cover" data-alt="A smiling man in a high-visibility vest standing on a sunny construction site, looking friendly and approachable. The scene is bright and professional, emphasizing reliability and on-site readiness. The colors are vibrant yet grounded, fitting the utilitarian clarity of a high-end service platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDQT3EjIl3001l7tO5juNx8p4Mp-D2aWiXH_aPMZR3IK7eZP3jZBY6_VK0wImjMYdQKJsv-lv-kHkcH8Xdd6L0OkgEClcVjf4D4EzgiYkB-Mv8xfkLK6pfbTaWcjfyhRhXH1vWA0oibZOYenq1-nePb-QWXlqfcGhxQIhyYn5uSuQR5i7odz1QYKATIy3dnB6Zuz84lhY0TGtZ7Za0t-P3Mc-yPvD9MbDkZy9B144hl4y971mLsnjFsPHEXj2jhuYjqeAaJyJyrA5E"/>
+</div>
+</div>
+<div class="ml-4 flex-grow min-w-0">
+<div class="flex justify-between items-baseline">
+<h3 class="font-label-md text-label-md text-on-surface-variant truncate pr-2">Khalid Electricity</h3>
+<span class="text-caption font-caption text-on-surface-variant">Yesterday</span>
+</div>
+<div class="flex justify-between items-center mt-1">
+<p class="font-body-md text-[14px] text-on-surface-variant truncate leading-tight">Thank you! The payment has been received successfully.</p>
+<span class="material-symbols-outlined text-[16px] text-status-success">done_all</span>
+</div>
+</div>
+</div>
+<!-- Item 4: Read -->
+<div class="message-row flex items-center px-margin-mobile py-4 cursor-pointer transition-colors border-b border-surface-container-high mx-2 rounded-2xl">
+<div class="relative flex-shrink-0">
+<div class="w-14 h-14 rounded-full overflow-hidden bg-surface-container-highest opacity-90">
+<img alt="Avatar" class="w-full h-full object-cover" data-alt="A focused female engineer working with technical equipment in a brightly lit industrial setting. She is wearing protective gear and looking professional. The image composition is structured and stable, with a high-contrast corporate aesthetic that evokes trust and precision." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCRauIzazCnLWRsET4W7O_HvFe2vIQT2kP7I_8Ps1eQ-uftXzN5SGLYR40zTQA7R2HATWt_prIJGJofefKh4NqUl4RS1GqGcBLlRzFWrv6CldGNl4iVINTZrc0drdabMi9ueRqNLwWdB8ID2je-X8ZLPq8IIgGOxbzlLLQHyDP2o7StUk35P3Les0XQdXOEHBEk9uIEjiK8JLgEYQjrI1pLTd2HdZipBKtGUzQGiJHo86nuzLNsuJoyIvkHT7VHtZjlbf-eRK8xREs"/>
+</div>
+</div>
+<div class="ml-4 flex-grow min-w-0">
+<div class="flex justify-between items-baseline">
+<h3 class="font-label-md text-label-md text-on-surface-variant truncate pr-2">Noura (Design)</h3>
+<span class="text-caption font-caption text-on-surface-variant">Monday</span>
+</div>
+<div class="flex justify-between items-center mt-1">
+<p class="font-body-md text-[14px] text-on-surface-variant truncate leading-tight">Will send the quote by end of today.</p>
+</div>
+</div>
+</div>
+<!-- Item 5: Read -->
+<div class="message-row flex items-center px-margin-mobile py-4 cursor-pointer transition-colors border-b border-surface-container-high mx-2 rounded-2xl">
+<div class="relative flex-shrink-0">
+<div class="w-14 h-14 rounded-full overflow-hidden bg-surface-container-highest opacity-90">
+<img alt="Avatar" class="w-full h-full object-cover" data-alt="A young man in casual work attire standing in a modern, sunlit interior space. The setting is clean and minimalist, conveying a professional yet approachable tone. The lighting is soft and natural, perfectly aligning with a light-mode user interface designed for efficiency and stability." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBXcfuIIhARxiP40LNW91rdLT8Lm8ZlLjl1Oi6DZ521m-rSUiShhxFZKC4PtQ2vFd5Ndm9HE9RIdzmcYTlhXq6-8HI2jhLseACro48N1Z1YpM3sCP4b_9XCMzf7hgLEWUl40QnVPAoIe-vdR09x2KuFNBamyMeYGA6d3i7uNnsKhUhjQj_ovrQRIvpP66sSz-ghdCtVpIO59ScWVykbGrsct_3-xXLZin6pGUyOviSLoCiBCjJAwywSOxrGvSqHrNuBwLXkAvsxDNQ"/>
+</div>
+</div>
+<div class="ml-4 flex-grow min-w-0">
+<div class="flex justify-between items-baseline">
+<h3 class="font-label-md text-label-md text-on-surface-variant truncate pr-2">Omar Al-Said</h3>
+<span class="text-caption font-caption text-on-surface-variant">Last week</span>
+</div>
+<div class="flex justify-between items-center mt-1">
+<p class="font-body-md text-[14px] text-on-surface-variant truncate leading-tight">The job was completed. Please rate the service.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Empty State Suggestion (Subtle Bento element) -->
+<div class="mx-margin-mobile my-8 p-6 bg-surface-container-low rounded-2xl border border-outline-variant flex flex-col items-center text-center">
+<span class="material-symbols-outlined text-[40px] text-primary mb-3">chat_bubble_outline</span>
+<h4 class="font-label-md text-label-md text-on-surface mb-1">Looking for a specific trade?</h4>
+<p class="text-caption font-caption text-on-surface-variant mb-4">Start a new conversation with our verified artisans.</p>
+<button class="px-6 h- touch-target bg-primary-container text-on-primary-container font-headline-md text-label-md rounded-xl active:scale-95 transition-transform">
+                Find Professionals
+            </button>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 flex justify-around items-center px-2 py-2 bg-surface dark:bg-inverse-surface shadow-[0px_-4px_20px_rgba(0,0,0,0.04)] rounded-t-xl">
+<!-- Home -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant px-3 py-1 hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-md text-label-md mt-1">Home</span>
+</a>
+<!-- Jobs -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant px-3 py-1 hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="work">work</span>
+<span class="font-label-md text-label-md mt-1">Jobs</span>
+</a>
+<!-- Messages (Active) -->
+<a class="flex flex-col items-center justify-center bg-primary-container dark:bg-primary text-on-primary-container dark:text-on-primary rounded-xl px-3 py-1 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="chat_bubble" style="font-variation-settings: 'FILL' 1;">chat_bubble</span>
+<span class="font-label-md text-label-md mt-1">Messages</span>
+</a>
+<!-- Wallet -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant px-3 py-1 hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="account_balance_wallet">account_balance_wallet</span>
+<span class="font-label-md text-label-md mt-1">Wallet</span>
+</a>
+<!-- Profile -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant px-3 py-1 hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-md text-label-md mt-1">Profile</span>
+</a>
+</nav>
+<script>
+        // Simple search filter interaction
+        const searchInput = document.querySelector('input[type="text"]');
+        const rows = document.querySelectorAll('.message-row');
+
+        searchInput.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            rows.forEach(row => {
+                const name = row.querySelector('h3').textContent.toLowerCase();
+                const snippet = row.querySelector('p').textContent.toLowerCase();
+                if (name.includes(term) || snippet.includes(term)) {
+                    row.style.display = 'flex';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+
+        // Feedback on click for message rows
+        rows.forEach(row => {
+            row.addEventListener('click', () => {
+                row.classList.add('bg-surface-container-high');
+                setTimeout(() => {
+                    row.classList.remove('bg-surface-container-high');
+                }, 150);
+            });
+        });
+    </script>
+</body></html>

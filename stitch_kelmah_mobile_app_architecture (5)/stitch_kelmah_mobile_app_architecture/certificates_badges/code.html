@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kelmah - Skill Wallet &amp; Badges</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Hide scrollbar for horizontal scrolling elements */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-low": "#f3f3f4",
+                    "on-secondary-fixed-variant": "#474746",
+                    "secondary": "#5f5e5e",
+                    "primary": "#705d00",
+                    "on-surface": "#1a1c1c",
+                    "on-secondary": "#ffffff",
+                    "on-tertiary": "#ffffff",
+                    "surface-bright": "#f9f9f9",
+                    "error": "#ba1a1a",
+                    "on-background": "#1a1c1c",
+                    "text-body": "#4B5563",
+                    "on-tertiary-container": "#5f5f58",
+                    "on-error": "#ffffff",
+                    "outline-variant": "#d0c6ab",
+                    "primary-fixed-dim": "#e9c400",
+                    "on-primary-fixed-variant": "#544600",
+                    "tertiary-container": "#dcdad0",
+                    "on-error-container": "#93000a",
+                    "inverse-surface": "#2f3131",
+                    "on-secondary-fixed": "#1c1b1b",
+                    "inverse-on-surface": "#f0f1f1",
+                    "tertiary-fixed-dim": "#c8c7bd",
+                    "surface": "#f9f9f9",
+                    "on-primary": "#ffffff",
+                    "inverse-primary": "#e9c400",
+                    "outline": "#7e775f",
+                    "status-success": "#10B981",
+                    "primary-fixed": "#ffe16d",
+                    "status-info": "#3B82F6",
+                    "tertiary-fixed": "#e4e3d9",
+                    "surface-container-high": "#e8e8e8",
+                    "on-tertiary-fixed-variant": "#474740",
+                    "surface-container": "#eeeeee",
+                    "secondary-container": "#e2dfde",
+                    "background": "#f9f9f9",
+                    "surface-muted": "#F3F4F6",
+                    "tertiary": "#5f5f57",
+                    "surface-dim": "#dadada",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary-container": "#705e00",
+                    "secondary-fixed-dim": "#c8c6c5",
+                    "on-primary-fixed": "#221b00",
+                    "on-secondary-container": "#636262",
+                    "primary-container": "#ffd700",
+                    "surface-variant": "#e2e2e2",
+                    "surface-tint": "#705d00",
+                    "error-container": "#ffdad6",
+                    "on-tertiary-fixed": "#1b1c16",
+                    "secondary-fixed": "#e5e2e1",
+                    "on-surface-variant": "#4d4732",
+                    "surface-container-highest": "#e2e2e2"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "touch-target": "48px",
+                    "gutter": "16px",
+                    "margin-desktop": "64px",
+                    "base": "8px",
+                    "margin-mobile": "16px"
+            },
+            "fontFamily": {
+                    "display-lg": ["Montserrat"],
+                    "label-md": ["Inter"],
+                    "headline-md": ["Montserrat"],
+                    "caption": ["Inter"],
+                    "body-md": ["Inter"],
+                    "headline-lg": ["Montserrat"],
+                    "headline-lg-mobile": ["Montserrat"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "caption": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "34px", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface antialiased min-h-screen pb-20 md:pb-0 font-body-md text-body-md selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar from JSON -->
+<header class="w-full top-0 sticky bg-surface border-b border-outline-variant flex justify-between items-center px-gutter h-touch-target z-50">
+<button aria-label="Menu" class="h-touch-target w-touch-target flex items-center justify-center text-primary hover:bg-surface-container transition-colors duration-200 active:opacity-70 rounded-full">
+<span class="material-symbols-outlined text-primary">menu</span>
+</button>
+<div class="font-display-lg text-headline-md font-bold text-primary">Kelmah</div>
+<button aria-label="Notifications" class="h-touch-target w-touch-target flex items-center justify-center text-primary hover:bg-surface-container transition-colors duration-200 active:opacity-70 rounded-full">
+<span class="material-symbols-outlined text-primary">notifications</span>
+</button>
+</header>
+<main class="max-w-[1280px] mx-auto px-margin-mobile md:px-margin-desktop py-8">
+<!-- Page Header & Action -->
+<section class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+<div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-on-surface mb-2">Skill Wallet</h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-xl">Manage your professional credentials, verify your expertise, and build trust with clients across the network.</p>
+</div>
+<button class="bg-primary-container text-on-primary-container font-label-md text-label-md px-6 py-0 h-touch-target rounded-DEFAULT flex items-center justify-center gap-2 hover:bg-primary-fixed-dim transition-colors shadow-sm active:scale-[0.98] w-full md:w-auto shrink-0">
+<span class="material-symbols-outlined">add_task</span>
+                Take New Test
+            </button>
+</section>
+<!-- Stats Bento Row -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-5 flex flex-col justify-between shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
+<span class="material-symbols-outlined text-primary mb-2">verified</span>
+<div>
+<div class="font-headline-md text-headline-md text-on-surface">12</div>
+<div class="font-caption text-caption text-on-surface-variant">Verified Badges</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-5 flex flex-col justify-between shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
+<span class="material-symbols-outlined text-status-info mb-2">pending_actions</span>
+<div>
+<div class="font-headline-md text-headline-md text-on-surface">2</div>
+<div class="font-caption text-caption text-on-surface-variant">Active Assessments</div>
+</div>
+</div>
+<div class="col-span-2 bg-inverse-surface text-inverse-on-surface rounded-lg p-5 flex items-center justify-between shadow-lg relative overflow-hidden">
+<div class="absolute right-0 top-0 opacity-10 pointer-events-none">
+<span class="material-symbols-outlined" style="font-size: 120px;">military_tech</span>
+</div>
+<div class="z-10 relative">
+<div class="font-caption text-caption text-surface-variant mb-1 uppercase tracking-wider">Trust Score</div>
+<div class="font-headline-lg-mobile text-headline-lg-mobile text-inverse-primary flex items-baseline gap-1">
+                        98<span class="font-label-md text-label-md text-surface-variant">/100</span>
+</div>
+</div>
+<button class="bg-inverse-primary text-on-primary-fixed-variant font-label-md text-label-md px-4 py-2 rounded-DEFAULT z-10 hover:opacity-90 transition-opacity">
+                    View Details
+                </button>
+</div>
+</div>
+<!-- Verified Badges Grid -->
+<section class="mb-16">
+<div class="flex items-center justify-between mb-6">
+<h2 class="font-headline-md text-headline-md text-on-surface">Verified Badges</h2>
+<button class="text-primary font-label-md text-label-md hover:underline flex items-center gap-1">
+                    Filter <span class="material-symbols-outlined" style="font-size: 18px;">filter_list</span>
+</button>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Badge 1 -->
+<article class="bg-surface-container-lowest border border-outline-variant rounded-lg p-6 flex flex-col relative shadow-[0_4px_20px_rgba(0,0,0,0.04)] hover:shadow-md transition-shadow group">
+<div class="absolute top-4 right-4 bg-status-success/10 text-status-success font-caption text-caption px-2 py-1 rounded-full flex items-center gap-1 border border-status-success/20">
+<span class="material-symbols-outlined" style="font-size: 14px; font-variation-settings: 'FILL' 1;">verified</span>
+                        Active
+                    </div>
+<div class="w-16 h-16 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined" style="font-size: 32px; font-variation-settings: 'FILL' 1;">plumbing</span>
+</div>
+<h3 class="font-label-md text-label-md text-on-surface mb-1 text-lg">Master Plumber</h3>
+<p class="font-caption text-caption text-on-surface-variant mb-4 flex-grow">Certified in advanced pipe fitting, diagnostics, and commercial systems.</p>
+<div class="border-t border-outline-variant pt-4 flex justify-between items-center mt-auto">
+<span class="font-caption text-caption text-on-surface-variant">Issued: Oct 2023</span>
+<button class="text-on-surface font-label-md text-label-md hover:text-primary transition-colors flex items-center gap-1">
+                            Share <span class="material-symbols-outlined" style="font-size: 16px;">share</span>
+</button>
+</div>
+</article>
+<!-- Badge 2 -->
+<article class="bg-surface-container-lowest border border-outline-variant rounded-lg p-6 flex flex-col relative shadow-[0_4px_20px_rgba(0,0,0,0.04)] hover:shadow-md transition-shadow group">
+<div class="absolute top-4 right-4 bg-status-success/10 text-status-success font-caption text-caption px-2 py-1 rounded-full flex items-center gap-1 border border-status-success/20">
+<span class="material-symbols-outlined" style="font-size: 14px; font-variation-settings: 'FILL' 1;">verified</span>
+                        Active
+                    </div>
+<div class="w-16 h-16 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined" style="font-size: 32px; font-variation-settings: 'FILL' 1;">health_and_safety</span>
+</div>
+<h3 class="font-label-md text-label-md text-on-surface mb-1 text-lg">Safety First - Level 2</h3>
+<p class="font-caption text-caption text-on-surface-variant mb-4 flex-grow">OSHA compliant site safety, hazard recognition, and emergency protocols.</p>
+<div class="border-t border-outline-variant pt-4 flex justify-between items-center mt-auto">
+<span class="font-caption text-caption text-on-surface-variant">Issued: Jan 2024</span>
+<button class="text-on-surface font-label-md text-label-md hover:text-primary transition-colors flex items-center gap-1">
+                            Share <span class="material-symbols-outlined" style="font-size: 16px;">share</span>
+</button>
+</div>
+</article>
+<!-- Badge 3 -->
+<article class="bg-surface-container-lowest border border-outline-variant rounded-lg p-6 flex flex-col relative shadow-[0_4px_20px_rgba(0,0,0,0.04)] hover:shadow-md transition-shadow group">
+<div class="absolute top-4 right-4 bg-status-success/10 text-status-success font-caption text-caption px-2 py-1 rounded-full flex items-center gap-1 border border-status-success/20">
+<span class="material-symbols-outlined" style="font-size: 14px; font-variation-settings: 'FILL' 1;">verified</span>
+                        Active
+                    </div>
+<div class="w-16 h-16 rounded-full bg-surface-variant text-on-surface-variant flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined" style="font-size: 32px; font-variation-settings: 'FILL' 1;">handshake</span>
+</div>
+<h3 class="font-label-md text-label-md text-on-surface mb-1 text-lg">Top Rated Contractor</h3>
+<p class="font-caption text-caption text-on-surface-variant mb-4 flex-grow">Awarded for maintaining a 4.9+ rating over 50 completed jobs.</p>
+<div class="border-t border-outline-variant pt-4 flex justify-between items-center mt-auto">
+<span class="font-caption text-caption text-on-surface-variant">Issued: Mar 2024</span>
+<button class="text-on-surface font-label-md text-label-md hover:text-primary transition-colors flex items-center gap-1">
+                            Share <span class="material-symbols-outlined" style="font-size: 16px;">share</span>
+</button>
+</div>
+</article>
+</div>
+</section>
+<!-- Active Assessments List -->
+<section>
+<h2 class="font-headline-md text-headline-md text-on-surface mb-6">Active Assessments</h2>
+<div class="flex flex-col gap-4">
+<!-- Assessment Item 1 -->
+<div class="bg-surface-container border border-outline-variant rounded-lg p-5 flex flex-col md:flex-row md:items-center justify-between gap-6">
+<div class="flex items-start gap-4 flex-1">
+<div class="w-12 h-12 rounded-full bg-surface-container-lowest border border-outline-variant flex items-center justify-center shrink-0 text-on-surface-variant">
+<span class="material-symbols-outlined">electrical_services</span>
+</div>
+<div class="flex-1 w-full">
+<div class="flex justify-between items-center mb-1">
+<h3 class="font-label-md text-label-md text-on-surface">Advanced Electrical Diagnostics</h3>
+<span class="font-caption text-caption text-on-surface-variant">45%</span>
+</div>
+<div class="w-full bg-surface-variant rounded-full h-2 mb-2 overflow-hidden">
+<div class="bg-primary h-full rounded-full transition-all duration-500" style="width: 45%"></div>
+</div>
+<p class="font-caption text-caption text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined" style="font-size: 14px;">schedule</span> Est. 30 mins remaining
+                            </p>
+</div>
+</div>
+<button class="border-2 border-on-surface text-on-surface font-label-md text-label-md px-6 py-0 h-touch-target rounded-DEFAULT hover:bg-on-surface hover:text-surface-container-lowest transition-colors whitespace-nowrap w-full md:w-auto">
+                        Resume Test
+                    </button>
+</div>
+<!-- Assessment Item 2 -->
+<div class="bg-surface-container border border-outline-variant rounded-lg p-5 flex flex-col md:flex-row md:items-center justify-between gap-6">
+<div class="flex items-start gap-4 flex-1">
+<div class="w-12 h-12 rounded-full bg-surface-container-lowest border border-outline-variant flex items-center justify-center shrink-0 text-on-surface-variant">
+<span class="material-symbols-outlined">architecture</span>
+</div>
+<div class="flex-1 w-full">
+<div class="flex justify-between items-center mb-1">
+<h3 class="font-label-md text-label-md text-on-surface">Blueprint Reading &amp; Estimation</h3>
+<span class="font-caption text-caption text-on-surface-variant">10%</span>
+</div>
+<div class="w-full bg-surface-variant rounded-full h-2 mb-2 overflow-hidden">
+<div class="bg-primary h-full rounded-full transition-all duration-500" style="width: 10%"></div>
+</div>
+<p class="font-caption text-caption text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined" style="font-size: 14px;">schedule</span> Est. 45 mins remaining
+                            </p>
+</div>
+</div>
+<button class="border-2 border-on-surface text-on-surface font-label-md text-label-md px-6 py-0 h-touch-target rounded-DEFAULT hover:bg-on-surface hover:text-surface-container-lowest transition-colors whitespace-nowrap w-full md:w-auto">
+                        Resume Test
+                    </button>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar from JSON (Mobile Only, Profile Active) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full flex justify-around items-center px-4 py-2 bg-surface-container-lowest shadow-[0_-4px_20px_rgba(0,0,0,0.04)] z-50 rounded-t-xl border-t border-outline-variant/30">
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-all duration-300 active:scale-95 py-1 px-2 rounded-lg min-w-[64px]" href="#">
+<span class="material-symbols-outlined mb-1">home</span>
+<span class="font-label-md text-[10px] font-semibold leading-none">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-all duration-300 active:scale-95 py-1 px-2 rounded-lg min-w-[64px]" href="#">
+<span class="material-symbols-outlined mb-1">work</span>
+<span class="font-label-md text-[10px] font-semibold leading-none">Jobs</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-all duration-300 active:scale-95 py-1 px-2 rounded-lg min-w-[64px]" href="#">
+<span class="material-symbols-outlined mb-1">chat</span>
+<span class="font-label-md text-[10px] font-semibold leading-none">Messages</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-all duration-300 active:scale-95 py-1 px-2 rounded-lg min-w-[64px]" href="#">
+<span class="material-symbols-outlined mb-1">account_balance_wallet</span>
+<span class="font-label-md text-[10px] font-semibold leading-none">Wallet</span>
+</a>
+<!-- ACTIVE TAB: Profile -->
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1 transition-all duration-300 active:scale-95 min-w-[64px]" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-label-md text-[10px] font-semibold leading-none mt-1">Profile</span>
+</a>
+</nav>
+</body></html>

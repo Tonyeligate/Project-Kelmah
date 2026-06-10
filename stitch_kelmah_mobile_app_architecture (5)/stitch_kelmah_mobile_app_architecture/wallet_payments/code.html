@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Wallet &amp; Payments | Kelmah</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 48;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9f9f9;
+        }
+        .headline-font { font-family: 'Montserrat', sans-serif; }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary": "#5f5f57",
+                    "outline-variant": "#d0c6ab",
+                    "on-tertiary": "#ffffff",
+                    "tertiary-fixed-dim": "#c8c7bd",
+                    "on-tertiary-container": "#5f5f58",
+                    "secondary": "#5f5e5e",
+                    "surface-variant": "#e2e2e2",
+                    "on-surface": "#1a1c1c",
+                    "surface-bright": "#f9f9f9",
+                    "surface-container-low": "#f3f3f4",
+                    "error-container": "#ffdad6",
+                    "error": "#ba1a1a",
+                    "on-secondary-fixed": "#1c1b1b",
+                    "on-primary-fixed-variant": "#544600",
+                    "on-primary": "#ffffff",
+                    "inverse-surface": "#2f3131",
+                    "surface-dim": "#dadada",
+                    "on-secondary": "#ffffff",
+                    "surface-muted": "#F3F4F6",
+                    "surface-tint": "#705d00",
+                    "surface-container": "#eeeeee",
+                    "on-tertiary-fixed": "#1b1c16",
+                    "on-primary-fixed": "#221b00",
+                    "surface-container-high": "#e8e8e8",
+                    "inverse-primary": "#e9c400",
+                    "surface-container-highest": "#e2e2e2",
+                    "surface": "#f9f9f9",
+                    "secondary-fixed": "#e5e2e1",
+                    "on-secondary-fixed-variant": "#474746",
+                    "primary-fixed": "#ffe16d",
+                    "secondary-fixed-dim": "#c8c6c5",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary-container": "#e2dfde",
+                    "status-info": "#3B82F6",
+                    "tertiary-fixed": "#e4e3d9",
+                    "on-tertiary-fixed-variant": "#474740",
+                    "primary-fixed-dim": "#e9c400",
+                    "on-surface-variant": "#4d4732",
+                    "background": "#f9f9f9",
+                    "tertiary-container": "#dcdad0",
+                    "status-success": "#10B981",
+                    "on-error": "#ffffff",
+                    "on-secondary-container": "#636262",
+                    "inverse-on-surface": "#f0f1f1",
+                    "text-body": "#4B5563",
+                    "on-background": "#1a1c1c",
+                    "on-primary-container": "#705e00",
+                    "on-error-container": "#93000a",
+                    "outline": "#7e775f",
+                    "primary": "#705d00",
+                    "primary-container": "#ffd700"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter": "16px",
+                    "base": "8px",
+                    "margin-desktop": "64px",
+                    "touch-target": "48px",
+                    "margin-mobile": "16px"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": ["Montserrat"],
+                    "label-md": ["Inter"],
+                    "caption": ["Inter"],
+                    "headline-md": ["Montserrat"],
+                    "display-lg": ["Montserrat"],
+                    "body-md": ["Inter"],
+                    "headline-lg": ["Montserrat"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": ["28px", {"lineHeight": "34px", "fontWeight": "700"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                    "caption": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface">
+<!-- Top Navigation Anchor -->
+<header class="w-full top-0 sticky bg-surface z-50 flex items-center justify-between px-margin-mobile h-touch-target">
+<div class="flex items-center gap-4">
+<button class="active:scale-95 transition-transform duration-100 hover:bg-surface-container transition-colors p-2 rounded-full">
+<span class="material-symbols-outlined text-primary">menu</span>
+</button>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Kelmah</h1>
+</div>
+<div class="flex items-center gap-2">
+<button class="active:scale-95 transition-transform duration-100 hover:bg-surface-container transition-colors p-2 rounded-full">
+<span class="material-symbols-outlined text-on-surface-variant">notifications</span>
+</button>
+</div>
+</header>
+<main class="max-w-[1280px] mx-auto px-margin-mobile md:px-margin-desktop py-8 mb-24">
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+<!-- Balance Card (Large Anchor) -->
+<section class="md:col-span-7 lg:col-span-8 bg-inverse-surface text-on-primary rounded-xl p-8 relative overflow-hidden shadow-md">
+<div class="absolute -right-16 -top-16 w-64 h-64 bg-primary rounded-full opacity-10"></div>
+<div class="relative z-10">
+<p class="font-label-md text-label-md text-surface-variant mb-2">Available Balance</p>
+<div class="flex items-baseline gap-2 mb-8">
+<span class="font-display-lg text-[32px] md:text-display-lg">GH₵</span>
+<span class="font-display-lg text-[48px] md:text-display-lg">4,250.00</span>
+</div>
+<div class="flex flex-wrap gap-4">
+<button class="bg-primary-container text-on-primary-container font-headline-md text-label-md px-6 py-3 rounded-lg flex items-center gap-2 hover:bg-primary transition-all active:scale-95">
+<span class="material-symbols-outlined">add_circle</span>
+                            Top Up
+                        </button>
+<button class="bg-surface text-on-surface font-headline-md text-label-md px-6 py-3 rounded-lg flex items-center gap-2 hover:bg-surface-variant transition-all active:scale-95">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+                            Withdraw
+                        </button>
+</div>
+</div>
+</section>
+<!-- Quick Payment Methods -->
+<section class="md:col-span-5 lg:col-span-4 bg-surface-container-low rounded-xl p-6 border border-outline-variant/30 flex flex-col justify-between">
+<div>
+<h2 class="font-headline-md text-label-md mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined">payments</span>
+                        Payment Methods
+                    </h2>
+<div class="space-y-3">
+<div class="flex items-center justify-between p-3 bg-white rounded-lg border border-outline-variant/20">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-md bg-[#FFCC00] flex items-center justify-center font-bold text-black text-[10px]">MTN</div>
+<div>
+<p class="font-label-md text-label-md">024 •••• 567</p>
+<p class="text-caption font-caption text-on-surface-variant">Default Momo</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-status-success" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div class="flex items-center justify-between p-3 bg-white/50 rounded-lg border border-outline-variant/10">
+<div class="flex items-center gap-3 opacity-60">
+<div class="w-10 h-10 rounded-md bg-[#E60000] flex items-center justify-center font-bold text-white text-[10px]">VODA</div>
+<div>
+<p class="font-label-md text-label-md">020 •••• 891</p>
+<p class="text-caption font-caption text-on-surface-variant">Vodafone Cash</p>
+</div>
+</div>
+<button class="text-primary font-label-md text-label-md">Edit</button>
+</div>
+</div>
+</div>
+<button class="w-full mt-4 py-3 border border-outline text-on-surface font-label-md text-label-md rounded-lg hover:bg-surface-container-high transition-colors">
+                    + Add New Method
+                </button>
+</section>
+<!-- Escrow Explanation Card -->
+<section class="md:col-span-5 lg:col-span-4 bg-primary-container/20 border-2 border-dashed border-primary/30 rounded-xl p-6">
+<div class="flex items-start gap-4">
+<div class="bg-primary-container p-3 rounded-full">
+<span class="material-symbols-outlined text-on-primary-container" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+</div>
+<div>
+<h3 class="font-headline-md text-label-md text-on-primary-container mb-2">Secure Escrow System</h3>
+<p class="font-body-md text-caption text-on-surface-variant leading-relaxed">
+                            Kelmah holds payments in a secure vault. Funds are only released once you confirm the work is completed to your satisfaction. Your money is protected.
+                        </p>
+<a class="mt-4 inline-block font-label-md text-label-md text-primary underline" href="#">Learn how it works</a>
+</div>
+</div>
+</section>
+<!-- Transaction History -->
+<section class="md:col-span-7 lg:col-span-8 bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/30 shadow-sm">
+<div class="flex items-center justify-between mb-6">
+<h2 class="font-headline-md text-headline-md">Transaction History</h2>
+<button class="text-primary font-label-md text-label-md flex items-center gap-1">
+                        Filter
+                        <span class="material-symbols-outlined text-[18px]">filter_list</span>
+</button>
+</div>
+<div class="space-y-4">
+<!-- Transaction Item -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-surface rounded-lg hover:bg-surface-container transition-colors group">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 bg-surface-container-high rounded-full flex items-center justify-center text-primary group-hover:bg-primary-container transition-colors">
+<span class="material-symbols-outlined">construction</span>
+</div>
+<div>
+<h4 class="font-label-md text-label-md">Wiring - Accra Mall Annex</h4>
+<p class="text-caption font-caption text-on-surface-variant">Oct 24, 2023 • Inv #8821</p>
+</div>
+</div>
+<div class="mt-4 sm:mt-0 flex items-center justify-between sm:justify-end gap-6">
+<div class="text-right">
+<p class="font-headline-md text-label-md">GH₵ 1,200.00</p>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-status-success/10 text-status-success">
+                                    Released
+                                </span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant">chevron_right</span>
+</div>
+</div>
+<!-- Transaction Item -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-surface rounded-lg hover:bg-surface-container transition-colors group">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 bg-surface-container-high rounded-full flex items-center justify-center text-primary group-hover:bg-primary-container transition-colors">
+<span class="material-symbols-outlined">plumbing</span>
+</div>
+<div>
+<h4 class="font-label-md text-label-md">Pipe Repair - East Legon</h4>
+<p class="text-caption font-caption text-on-surface-variant">Oct 22, 2023 • Inv #8790</p>
+</div>
+</div>
+<div class="mt-4 sm:mt-0 flex items-center justify-between sm:justify-end gap-6">
+<div class="text-right">
+<p class="font-headline-md text-label-md">GH₵ 450.00</p>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-status-info/10 text-status-info">
+                                    Escrow
+                                </span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant">chevron_right</span>
+</div>
+</div>
+<!-- Transaction Item -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-surface rounded-lg hover:bg-surface-container transition-colors group">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 bg-surface-container-high rounded-full flex items-center justify-center text-primary group-hover:bg-primary-container transition-colors">
+<span class="material-symbols-outlined">add_circle</span>
+</div>
+<div>
+<h4 class="font-label-md text-label-md">Wallet Top-Up</h4>
+<p class="text-caption font-caption text-on-surface-variant">Oct 20, 2023 • Momo Transfer</p>
+</div>
+</div>
+<div class="mt-4 sm:mt-0 flex items-center justify-between sm:justify-end gap-6">
+<div class="text-right">
+<p class="font-headline-md text-label-md text-status-success">+ GH₵ 2,000.00</p>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-surface-variant text-on-surface-variant">
+                                    Pending
+                                </span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant">chevron_right</span>
+</div>
+</div>
+</div>
+<button class="w-full mt-8 py-3 text-primary font-label-md text-label-md hover:underline">
+                    View All Activity
+                </button>
+</section>
+</div>
+</main>
+<!-- Bottom Navigation Bar (Mandatory Shell) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2 bg-surface shadow-[0px_-4px_20px_rgba(0,0,0,0.04)] rounded-t-xl md:hidden">
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-surface-variant transition-all active:scale-90" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-md text-[10px]">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-surface-variant transition-all active:scale-90" href="#">
+<span class="material-symbols-outlined">work</span>
+<span class="font-label-md text-[10px]">Jobs</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-surface-variant transition-all active:scale-90" href="#">
+<span class="material-symbols-outlined">mail</span>
+<span class="font-label-md text-[10px]">Messages</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1 active:scale-90 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">account_balance_wallet</span>
+<span class="font-label-md text-[10px]">Wallet</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-surface-variant transition-all active:scale-90" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-md text-[10px]">Profile</span>
+</a>
+</nav>
+<!-- Mobile Support Overlay (Simulated) -->
+<div class="fixed bottom-24 left-1/2 -translate-x-1/2 z-[60] bg-inverse-surface text-on-primary px-6 py-3 rounded-full flex items-center gap-3 opacity-0 translate-y-10 transition-all duration-300 pointer-events-none" id="toast">
+<span class="material-symbols-outlined text-primary">security</span>
+<span class="text-label-md">Payment session secured by 256-bit encryption</span>
+</div>
+<script>
+        // Micro-interaction for the toast
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const toast = document.getElementById('toast');
+                toast.classList.remove('opacity-0', 'translate-y-10');
+                toast.classList.add('opacity-100', 'translate-y-0');
+                
+                setTimeout(() => {
+                    toast.classList.add('opacity-0', 'translate-y-10');
+                }, 4000);
+            }, 1000);
+        });
+
+        // Hover effects on cards
+        document.querySelectorAll('section').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                if(!card.classList.contains('bg-inverse-surface')) {
+                    card.classList.add('shadow-md');
+                    card.style.transform = 'translateY(-2px)';
+                }
+            });
+            card.addEventListener('mouseleave', () => {
+                card.classList.remove('shadow-md');
+                card.style.transform = 'translateY(0px)';
+            });
+            card.style.transition = 'all 0.3s ease';
+        });
+    </script>
+</body></html>

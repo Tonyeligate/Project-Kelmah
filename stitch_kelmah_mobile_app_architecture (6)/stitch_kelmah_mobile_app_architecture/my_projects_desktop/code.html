@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>My Projects - Kelmah Artisan</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-container": "#5e5f5f",
+                        "tertiary": "#5d5f5f",
+                        "on-secondary-fixed-variant": "#474746",
+                        "on-surface": "#1b1c1c",
+                        "surface-dim": "#dbdad9",
+                        "surface-container-high": "#e9e8e7",
+                        "surface": "#fbf9f8",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "inverse-on-surface": "#f2f0f0",
+                        "on-error": "#ffffff",
+                        "primary": "#705d00",
+                        "tertiary-fixed": "#e2e2e2",
+                        "on-secondary-container": "#636262",
+                        "error": "#ba1a1a",
+                        "on-tertiary-fixed-variant": "#454747",
+                        "error-container": "#ffdad6",
+                        "on-primary": "#ffffff",
+                        "tertiary-fixed-dim": "#c6c6c7",
+                        "primary-fixed-dim": "#e9c400",
+                        "primary-container": "#ffd700",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary": "#5f5e5e",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed": "#e5e2e1",
+                        "outline-variant": "#d0c6ab",
+                        "on-primary-container": "#705e00",
+                        "tertiary-container": "#dadada",
+                        "on-surface-variant": "#4d4732",
+                        "surface-tint": "#705d00",
+                        "surface-container-highest": "#e4e2e2",
+                        "secondary-container": "#e2dfde",
+                        "surface-variant": "#e4e2e2",
+                        "primary-fixed": "#ffe16d",
+                        "outline": "#7e775f",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "inverse-primary": "#e9c400",
+                        "on-background": "#1b1c1c",
+                        "on-tertiary-fixed": "#1a1c1c",
+                        "surface-container-low": "#f5f3f3",
+                        "on-primary-fixed-variant": "#544600",
+                        "surface-container": "#efeded",
+                        "on-primary-fixed": "#221b00",
+                        "on-error-container": "#93000a",
+                        "background": "#fbf9f8",
+                        "surface-bright": "#fbf9f8",
+                        "inverse-surface": "#303031",
+                        "on-secondary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "columns": "12",
+                        "sidebar-width": "280px",
+                        "baseline": "8px",
+                        "gutter": "32px",
+                        "margin-desktop": "64px",
+                        "margin-tablet": "32px",
+                        "container-max-width": "1440px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Montserrat"],
+                        "body-lg": ["Montserrat"],
+                        "body-sm": ["Montserrat"],
+                        "headline-lg": ["Montserrat"],
+                        "display-xl": ["Montserrat"],
+                        "headline-md": ["Montserrat"],
+                        "label-md": ["Montserrat"],
+                        "label-lg": ["Montserrat"],
+                        "body-md": ["Montserrat"],
+                        "headline-xl": ["Montserrat"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["60px", { "lineHeight": "72px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-lg": ["36px", { "lineHeight": "44px", "fontWeight": "600" }],
+                        "display-xl": ["72px", { "lineHeight": "84px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "fontWeight": "600" }],
+                        "label-lg": ["14px", { "lineHeight": "16px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-xl": ["48px", { "lineHeight": "56px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: #fbf9f8; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex">
+<!-- SideNavBar -->
+<nav class="bg-[#1A1A1A] text-primary font-body-md text-body-md font-label-lg text-label-lg fixed left-0 top-0 h-screen w-[280px] border-r border-outline-variant flex flex-col h-full py-8 z-50">
+<!-- Header -->
+<div class="px-7 mb-8">
+<div class="flex items-center gap-4 mb-6">
+<div class="w-12 h-12 rounded-full bg-surface-container-highest overflow-hidden">
+<img alt="Artisan User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdg29VmKKQYGI1TH04Ij0AMkcjrNo--EwpPz9F__tscjTMgDRqBFPNkyC8WU2BecsY_4Te4ohv3NEyqi-YP-CdwCtPuGjRG7IncWf9_DEbbQ3OCoed5LU1ZMWkGnL7m7nkfYixi0iq1AVp6DWPcAKs-NSx5LRPJ71xQ5XWoUW6P_oHdkgFmVrQPeIGfYkkoujP-LXw_b0qt0nSIawNM8oO-bvVR31CIgnUWMkgc7vTQMb5dkTeATMBwds5HFJCd4QhmkGV0onMYWA"/>
+</div>
+<div>
+<h2 class="font-headline-md text-headline-md font-bold text-primary uppercase tracking-wider text-sm">Kelmah Artisan</h2>
+<p class="font-body-sm text-body-sm text-secondary-fixed-dim">Master Guild Member</p>
+</div>
+</div>
+<button class="w-full h-12 bg-[#FFD700] text-[#1A1A1A] font-label-lg text-label-lg uppercase rounded flex items-center justify-center gap-2 hover:bg-[#e6c200] transition-colors">
+<span class="material-symbols-outlined">add</span>
+                Post a Project
+            </button>
+</div>
+<!-- Main Tabs -->
+<div class="flex-1 flex flex-col gap-2">
+<a class="text-secondary-fixed-dim hover:text-primary pl-7 py-4 flex items-center gap-4 transition-all hover:bg-on-tertiary-fixed-variant hover:text-primary transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+                Dashboard
+            </a>
+<a class="text-secondary-fixed-dim hover:text-primary pl-7 py-4 flex items-center gap-4 transition-all hover:bg-on-tertiary-fixed-variant hover:text-primary transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">storefront</span>
+                Marketplace
+            </a>
+<a class="text-primary border-l-4 border-primary bg-on-primary-fixed-variant/10 pl-6 py-4 flex items-center gap-4 transition-all active:scale-[0.99] transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">construction</span>
+                Projects
+            </a>
+<a class="text-secondary-fixed-dim hover:text-primary pl-7 py-4 flex items-center gap-4 transition-all hover:bg-on-tertiary-fixed-variant hover:text-primary transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">mail</span>
+                Messages
+            </a>
+<a class="text-secondary-fixed-dim hover:text-primary pl-7 py-4 flex items-center gap-4 transition-all hover:bg-on-tertiary-fixed-variant hover:text-primary transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">settings</span>
+                Settings
+            </a>
+</div>
+<!-- Footer Tabs -->
+<div class="mt-auto flex flex-col gap-2">
+<a class="text-secondary-fixed-dim hover:text-primary pl-7 py-4 flex items-center gap-4 transition-all hover:bg-on-tertiary-fixed-variant hover:text-primary transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">help_outline</span>
+                Support
+            </a>
+<a class="text-secondary-fixed-dim hover:text-primary pl-7 py-4 flex items-center gap-4 transition-all hover:bg-on-tertiary-fixed-variant hover:text-primary transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">logout</span>
+                Sign Out
+            </a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="ml-[280px] w-full flex flex-col min-h-screen">
+<!-- TopNavBar -->
+<header class="bg-surface text-primary font-body-md text-body-md sticky top-0 z-40 w-full h-20 border-b border-secondary-container flex justify-between items-center px-margin-desktop">
+<div class="flex items-center gap-4">
+<span class="font-headline-md text-headline-md font-black text-on-surface">Kelmah</span>
+</div>
+<div class="flex items-center gap-6">
+<!-- Search -->
+<div class="relative focus-within:ring-2 focus-within:ring-primary rounded-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container-high border-none rounded-full text-on-surface focus:outline-none w-64 placeholder-on-surface-variant font-body-sm text-body-sm" placeholder="Search projects..." type="text"/>
+</div>
+<!-- Actions -->
+<button class="text-on-surface-variant hover:text-primary transition-colors duration-200">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors duration-200">
+<span class="material-symbols-outlined">chat_bubble</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors duration-200">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Two-Pane Layout -->
+<main class="flex-1 flex overflow-hidden">
+<!-- Pane 1: Project List -->
+<div class="w-[400px] border-r border-outline-variant bg-surface flex flex-col overflow-y-auto">
+<div class="p-6 border-b border-outline-variant flex justify-between items-center bg-surface sticky top-0 z-10">
+<h1 class="font-headline-md text-headline-md text-on-surface">Active Projects</h1>
+<span class="bg-primary-container text-on-primary-container font-label-md text-label-md px-2 py-1 rounded">3 Active</span>
+</div>
+<div class="flex flex-col">
+<!-- Project Item: Active -->
+<div class="p-6 border-b border-outline-variant bg-surface-container-high cursor-pointer border-l-4 border-l-primary">
+<div class="flex justify-between items-start mb-2">
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface">Luxury Bath Renovation</h3>
+<span class="material-symbols-outlined text-primary">more_horiz</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-4">Client: Sarah Jenkins • Est. Completion: Oct 15</p>
+<div class="flex items-center gap-2 text-primary mb-2">
+<span class="material-symbols-outlined text-sm">schedule</span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider">In Progress - Phase 2</span>
+</div>
+<div class="w-full bg-surface-variant rounded-full h-1.5 mb-1">
+<div class="bg-primary h-1.5 rounded-full" style="width: 45%"></div>
+</div>
+<div class="flex justify-between text-on-surface-variant font-label-sm text-label-sm">
+<span>45% Complete</span>
+<span>2/5 Milestones</span>
+</div>
+</div>
+<!-- Project Item: Inactive -->
+<div class="p-6 border-b border-outline-variant bg-surface cursor-pointer hover:bg-surface-container transition-colors">
+<div class="flex justify-between items-start mb-2">
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface">Master Cabinetry Install</h3>
+<span class="material-symbols-outlined text-on-surface-variant">more_horiz</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-4">Client: The Harrison Estate • Est. Completion: Nov 02</p>
+<div class="flex items-center gap-2 text-on-surface-variant mb-2">
+<span class="material-symbols-outlined text-sm">pause_circle</span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider">Awaiting Materials</span>
+</div>
+<div class="w-full bg-surface-variant rounded-full h-1.5 mb-1">
+<div class="bg-on-surface-variant h-1.5 rounded-full" style="width: 15%"></div>
+</div>
+<div class="flex justify-between text-on-surface-variant font-label-sm text-label-sm">
+<span>15% Complete</span>
+<span>1/4 Milestones</span>
+</div>
+</div>
+<!-- Project Item: Inactive -->
+<div class="p-6 border-b border-outline-variant bg-surface cursor-pointer hover:bg-surface-container transition-colors">
+<div class="flex justify-between items-start mb-2">
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface">Bespoke Dining Table</h3>
+<span class="material-symbols-outlined text-on-surface-variant">more_horiz</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-4">Client: Marcus Thorne • Est. Completion: Dec 20</p>
+<div class="flex items-center gap-2 text-on-surface-variant mb-2">
+<span class="material-symbols-outlined text-sm">check_circle</span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider">Design Approved</span>
+</div>
+<div class="w-full bg-surface-variant rounded-full h-1.5 mb-1">
+<div class="bg-on-surface-variant h-1.5 rounded-full" style="width: 5%"></div>
+</div>
+<div class="flex justify-between text-on-surface-variant font-label-sm text-label-sm">
+<span>5% Complete</span>
+<span>0/3 Milestones</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Pane 2: Project Detail View -->
+<div class="flex-1 bg-surface-container-low overflow-y-auto p-margin-desktop">
+<!-- Detail Header -->
+<div class="flex justify-between items-start mb-12">
+<div>
+<div class="flex items-center gap-3 mb-2">
+<span class="bg-primary-container text-on-primary-container font-label-md text-label-md px-3 py-1 rounded-full uppercase tracking-wider">Active Project</span>
+<span class="text-on-surface-variant font-body-sm text-body-sm">ID: #KLM-8492</span>
+</div>
+<h2 class="font-display-lg text-display-lg text-on-surface mb-2">Luxury Bath Renovation</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined">location_on</span>
+                            1245 Highland Ave, Uptown District
+                        </p>
+</div>
+<div class="flex gap-4">
+<button class="h-12 px-6 border-2 border-on-surface text-on-surface font-label-lg text-label-lg uppercase rounded hover:bg-surface-container-high transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined">edit</span>
+                            Edit Details
+                        </button>
+<button class="h-12 px-6 bg-primary text-on-primary-fixed font-label-lg text-label-lg uppercase rounded hover:bg-primary-fixed-dim transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined">chat</span>
+                            Message Client
+                        </button>
+</div>
+</div>
+<!-- Bento Grid Layout for Details -->
+<div class="grid grid-cols-12 gap-8">
+<!-- Progress Tracker Widget (Span 8) -->
+<div class="col-span-8 bg-surface border border-outline-variant rounded p-8">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-6 border-b border-outline-variant pb-4">Milestone Tracker</h3>
+<div class="relative">
+<!-- Vertical Line -->
+<div class="absolute left-4 top-4 bottom-4 w-px bg-outline-variant"></div>
+<!-- Milestones -->
+<div class="flex flex-col gap-8">
+<!-- Completed -->
+<div class="relative flex gap-6 z-10">
+<div class="w-8 h-8 rounded-full bg-on-surface flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-surface text-sm">check</span>
+</div>
+<div>
+<h4 class="font-headline-sm text-headline-sm font-bold text-on-surface">Demolition &amp; Prep</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-2">Completed on Sep 12</p>
+<div class="flex gap-2">
+<span class="inline-flex items-center gap-1 bg-surface-container px-2 py-1 rounded text-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px]">image</span> 4 Photos
+                                            </span>
+</div>
+</div>
+</div>
+<!-- In Progress -->
+<div class="relative flex gap-6 z-10">
+<div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0 border-4 border-surface">
+<div class="w-2 h-2 rounded-full bg-on-primary-fixed"></div>
+</div>
+<div class="flex-1 bg-surface-container-low border border-outline-variant p-4 rounded">
+<div class="flex justify-between items-start mb-2">
+<h4 class="font-headline-sm text-headline-sm font-bold text-on-surface">Plumbing Rough-in</h4>
+<span class="bg-primary/20 text-on-primary-fixed font-label-md text-label-md px-2 py-1 rounded">In Progress</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-4">Awaiting municipal inspection before closing walls.</p>
+<div class="flex gap-4">
+<button class="text-sm font-bold text-on-surface underline hover:text-primary transition-colors">Upload Inspection Report</button>
+<button class="text-sm font-bold text-on-surface underline hover:text-primary transition-colors">Mark Complete</button>
+</div>
+</div>
+</div>
+<!-- Upcoming -->
+<div class="relative flex gap-6 z-10 opacity-60">
+<div class="w-8 h-8 rounded-full bg-surface border-2 border-outline-variant flex items-center justify-center shrink-0">
+<span class="text-outline-variant font-bold text-sm">3</span>
+</div>
+<div>
+<h4 class="font-headline-sm text-headline-sm font-bold text-on-surface">Tile Installation</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Est. Start: Sep 28</p>
+</div>
+</div>
+<!-- Upcoming -->
+<div class="relative flex gap-6 z-10 opacity-60">
+<div class="w-8 h-8 rounded-full bg-surface border-2 border-outline-variant flex items-center justify-center shrink-0">
+<span class="text-outline-variant font-bold text-sm">4</span>
+</div>
+<div>
+<h4 class="font-headline-sm text-headline-sm font-bold text-on-surface">Fixtures &amp; Finishing</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Est. Start: Oct 10</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Side Panel Widgets (Span 4) -->
+<div class="col-span-4 flex flex-col gap-8">
+<!-- Client Info Widget -->
+<div class="bg-surface border border-outline-variant rounded p-6">
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-4 font-bold">Client Overview</h3>
+<div class="flex items-center gap-4 mb-6">
+<div class="w-12 h-12 rounded-full bg-surface-container-highest overflow-hidden shrink-0">
+<img alt="Client Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDh3xsEnXrmKuZfGPP9Thfu7MC7u26O1cprmEr_09QX82R21EYntWFD32wyRY0u2xa43gHU4MCWqNmMB_Fgiy3krGwcXh0w-pLTj0wQQwcUaZlN6pc63Qe1wCmzgoDsU0XxECxUSI4IsWT7QWkiJT-fNJEYEIfOPkQmIePOelz6XUPAXnu5rVHQb63_gw_UcvEgmzbncHkcEHIJx8gZxDqkafkPujzUD6fU0gOTa7VRPpUfqxrPa3eOsNbSb2T_iStKywK9YZu-XO4"/>
+</div>
+<div>
+<p class="font-bold text-on-surface">Sarah Jenkins</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Premium Member</p>
+</div>
+</div>
+<div class="space-y-3 font-body-sm text-body-sm">
+<div class="flex justify-between">
+<span class="text-on-surface-variant">Phone</span>
+<span class="text-on-surface font-medium">(555) 123-4567</span>
+</div>
+<div class="flex justify-between">
+<span class="text-on-surface-variant">Email</span>
+<span class="text-on-surface font-medium">s.jenkins@email.com</span>
+</div>
+</div>
+</div>
+<!-- Documents Widget -->
+<div class="bg-surface border border-outline-variant rounded p-6">
+<div class="flex justify-between items-center mb-4">
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">Project Files</h3>
+<button class="text-primary hover:text-primary-fixed-dim"><span class="material-symbols-outlined">add_circle</span></button>
+</div>
+<ul class="space-y-3">
+<li class="flex items-center gap-3 p-2 hover:bg-surface-container rounded cursor-pointer transition-colors group">
+<span class="material-symbols-outlined text-outline-variant group-hover:text-primary">description</span>
+<div class="flex-1">
+<p class="font-label-md text-label-md text-on-surface">Contract_Signed.pdf</p>
+<p class="text-xs text-on-surface-variant">2.4 MB • Sep 01</p>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant text-sm opacity-0 group-hover:opacity-100 transition-opacity">download</span>
+</li>
+<li class="flex items-center gap-3 p-2 hover:bg-surface-container rounded cursor-pointer transition-colors group">
+<span class="material-symbols-outlined text-outline-variant group-hover:text-primary">architecture</span>
+<div class="flex-1">
+<p class="font-label-md text-label-md text-on-surface">Floorplan_V2.dwg</p>
+<p class="text-xs text-on-surface-variant">14 MB • Sep 05</p>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant text-sm opacity-0 group-hover:opacity-100 transition-opacity">download</span>
+</li>
+<li class="flex items-center gap-3 p-2 hover:bg-surface-container rounded cursor-pointer transition-colors group">
+<span class="material-symbols-outlined text-outline-variant group-hover:text-primary">receipt_long</span>
+<div class="flex-1">
+<p class="font-label-md text-label-md text-on-surface">Initial_Deposit.pdf</p>
+<p class="text-xs text-on-surface-variant">1.1 MB • Sep 02</p>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant text-sm opacity-0 group-hover:opacity-100 transition-opacity">download</span>
+</li>
+</ul>
+</div>
+<!-- Financial Quick View -->
+<div class="bg-on-surface text-surface border border-outline-variant rounded p-6">
+<h3 class="font-headline-sm text-headline-sm mb-4 font-bold text-primary">Financial Summary</h3>
+<div class="space-y-4">
+<div>
+<p class="text-surface-variant text-sm mb-1">Total Contract Value</p>
+<p class="font-headline-md text-headline-md">$24,500.00</p>
+</div>
+<div class="w-full bg-surface-variant/30 rounded-full h-2 mb-1">
+<div class="bg-primary h-2 rounded-full" style="width: 30%"></div>
+</div>
+<div class="flex justify-between text-sm text-surface-variant">
+<span>Collected: $7,350</span>
+<span>Remaining: $17,150</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kelmah - Received Proposals</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-container": "#5f5f58",
+                        "surface-variant": "#e2e2e2",
+                        "surface-container-highest": "#e2e2e2",
+                        "primary-fixed-dim": "#e9c400",
+                        "on-tertiary-fixed": "#1b1c16",
+                        "on-error": "#ffffff",
+                        "on-secondary-container": "#636262",
+                        "tertiary-fixed": "#e4e3d9",
+                        "outline-variant": "#d0c6ab",
+                        "on-primary-container": "#705e00",
+                        "secondary-fixed": "#e5e2e1",
+                        "error": "#ba1a1a",
+                        "tertiary": "#5f5f57",
+                        "on-primary-fixed-variant": "#544600",
+                        "on-primary": "#ffffff",
+                        "surface": "#f9f9f9",
+                        "background": "#f9f9f9",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary": "#5f5e5e",
+                        "surface-tint": "#705d00",
+                        "surface-muted": "#F3F4F6",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "on-surface-variant": "#4d4732",
+                        "tertiary-fixed-dim": "#c8c7bd",
+                        "surface-dim": "#dadada",
+                        "secondary-container": "#e2dfde",
+                        "tertiary-container": "#dcdad0",
+                        "status-success": "#10B981",
+                        "primary": "#705d00",
+                        "primary-container": "#ffd700",
+                        "outline": "#7e775f",
+                        "inverse-primary": "#e9c400",
+                        "on-secondary": "#ffffff",
+                        "surface-bright": "#f9f9f9",
+                        "on-tertiary-fixed-variant": "#474740",
+                        "surface-container-high": "#e8e8e8",
+                        "on-surface": "#1a1c1c",
+                        "status-info": "#3B82F6",
+                        "text-body": "#4B5563",
+                        "surface-container": "#eeeeee",
+                        "on-primary-fixed": "#221b00",
+                        "on-tertiary": "#ffffff",
+                        "inverse-surface": "#2f3131",
+                        "on-secondary-fixed-variant": "#474746",
+                        "on-error-container": "#93000a",
+                        "surface-container-low": "#f3f3f4",
+                        "primary-fixed": "#ffe16d",
+                        "inverse-on-surface": "#f0f1f1",
+                        "error-container": "#ffdad6",
+                        "on-background": "#1a1c1c"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "touch-target": "48px",
+                        "margin-mobile": "16px",
+                        "base": "8px",
+                        "margin-desktop": "64px",
+                        "gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Montserrat"],
+                        "caption": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-lg": ["Montserrat"],
+                        "body-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-md": ["Montserrat"],
+                        "headline-lg-mobile": ["Montserrat"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "caption": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["28px", {"lineHeight": "34px", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .proposals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 24px;
+        }
+        @media (max-width: 640px) {
+            .proposals-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body-md text-body-md antialiased min-h-screen pb-24">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky z-50 bg-surface-container-low flex items-center justify-between px-margin-mobile h-touch-target shadow-sm">
+<div class="flex items-center gap-4">
+<button class="p-2 active:opacity-80 transition-all text-primary">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h1 class="font-headline-md text-headline-md font-bold text-on-surface">Received Proposals</h1>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 active:opacity-80 transition-all text-primary">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</div>
+</header>
+<main class="max-w-[1280px] mx-auto px-margin-mobile md:px-margin-desktop py-8">
+<!-- Context Header & Filters -->
+<section class="mb-10">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+<div>
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface mb-2">Kitchen Renovation</h2>
+<p class="text-secondary flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">location_on</span> Accra, Ghana • 12 Proposals Received
+                    </p>
+</div>
+<!-- Sorting Chips -->
+<div class="flex flex-wrap gap-3 overflow-x-auto pb-2 md:pb-0">
+<button class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary-container text-on-primary-container font-label-md text-label-md hover:bg-surface-variant transition-colors border border-outline-variant">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+                        Best Match
+                    </button>
+<button class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-surface-container-lowest text-secondary font-label-md text-label-md hover:bg-surface-variant transition-colors border border-outline-variant">
+<span class="material-symbols-outlined text-[18px]">payments</span>
+                        Lowest Bid
+                    </button>
+<button class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-surface-container-lowest text-secondary font-label-md text-label-md hover:bg-surface-variant transition-colors border border-outline-variant">
+<span class="material-symbols-outlined text-[18px]">star</span>
+                        Top Rated
+                    </button>
+</div>
+</div>
+<!-- Bento/Grid Layout for Proposals -->
+<div class="proposals-grid">
+<!-- Card 1: Kofi Mensah (Best Match) -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant p-6 shadow-[0px_4px_20px_rgba(0,0,0,0.04)] hover:shadow-lg transition-all group relative overflow-hidden">
+<div class="absolute top-0 right-0 p-3">
+<span class="bg-status-success/10 text-status-success px-3 py-1 rounded-full text-caption font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">check_circle</span> VERIFIED
+                        </span>
+</div>
+<div class="flex items-start gap-4 mb-4">
+<div class="relative">
+<img alt="Kofi Mensah Profile" class="w-16 h-16 rounded-full object-cover border-2 border-primary-container" data-alt="A professional portrait of a skilled African artisan, Kofi Mensah, smiling confidently in his workshop. He is wearing a clean industrial apron and standing against a background of high-quality carpentry tools and wood slabs. The lighting is bright and natural, emphasizing a mood of trustworthiness and master craftsmanship. The overall aesthetic is professional, modern, and warm." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAcY8i7W7W-jzBZqR2nGS9utLYrVaWMpRKOpcQArCiF5HC_n78q_NBuHnZVFLxTQKVWpLW3HwUo0F-c9U_5SWmTX-uaDxSoAWf5B5MWAki-Xu3pN94vqpq9d3F-6qSq-9zpB42tThwkaeUJh1diF5ug-hajBiUVvZLoSmZ1yHF3c_H3hfobW-dx8WNY7Jg1105NpK3lGNGjg72ytbw2e4luPHx7xXEa6MZZQ9LajzvK8mKUySiXcEXHT25bzYucTRTUhnaQzss7rJA"/>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface">Kofi Mensah</h3>
+<div class="flex items-center gap-1 text-primary">
+<span class="material-symbols-outlined fill text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-md text-label-md">4.8</span>
+<span class="text-secondary font-caption text-caption ml-1">(124 reviews)</span>
+</div>
+</div>
+</div>
+<div class="mb-6">
+<p class="text-secondary line-clamp-3 mb-4">
+                            "I have over 10 years of experience in high-end kitchen fitting. I can complete this renovation with custom cabinetry and plumbing in 2 weeks..."
+                        </p>
+<div class="flex flex-wrap gap-2">
+<span class="px-2 py-1 rounded bg-surface-container text-on-surface-variant text-caption">Cabinetry</span>
+<span class="px-2 py-1 rounded bg-surface-container text-on-surface-variant text-caption">Plumbing</span>
+</div>
+</div>
+<div class="flex items-center justify-between border-t border-outline-variant pt-4">
+<div>
+<p class="text-caption text-secondary uppercase tracking-wider">Bidding Amount</p>
+<p class="font-headline-md text-headline-md text-on-surface font-bold">GHS 2,500</p>
+</div>
+<button class="bg-primary-container text-on-primary-container px-6 py-3 rounded-lg font-label-md text-label-md hover:bg-primary transition-all active:scale-95 shadow-sm">
+                            View Details
+                        </button>
+</div>
+</div>
+<!-- Card 2: Ama Serwaa -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant p-6 shadow-[0px_4px_20px_rgba(0,0,0,0.04)] hover:shadow-lg transition-all group relative">
+<div class="flex items-start gap-4 mb-4">
+<div class="relative">
+<img alt="Ama Serwaa Profile" class="w-16 h-16 rounded-full object-cover border-2 border-surface-variant" data-alt="A professional and focused African woman, Ama Serwaa, presenting a architectural layout. She is in a bright, modern office space with large windows and industrial design elements. The lighting is crisp and even, creating a high-contrast corporate modern look. She wears smart business-casual attire, conveying stability and professional expertise in home design and renovation." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCh-t83jLEJWDe6Rj-cmJ5VUP6j-BmvAsv6B5ZOxUJxzX-q7cr18J1m0hb4yvoLd_ovRNuYHTuL6zQVXDetCML3q2EunKFFB7jBm7bS0lnHeoGbBWoxGBK1801RWjRYop0-2ypaxRp4D6-Lm2J5pvEVDBGBJjGnIBz6VmwfhpDk3NroH2NEuePHpCdRkMakmq8SaDchdbvDgWB0uYA-aTGLS4Fo2Xs6KUS_ySS9mFq7MtUba9XQCYbXTOtEU4OvL9ZTHoEZ-O98E4k"/>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface">Ama Serwaa</h3>
+<div class="flex items-center gap-1 text-primary">
+<span class="material-symbols-outlined fill text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-md text-label-md">4.9</span>
+<span class="text-secondary font-caption text-caption ml-1">(89 reviews)</span>
+</div>
+</div>
+</div>
+<div class="mb-6">
+<p class="text-secondary line-clamp-3 mb-4">
+                            "Specialized in modern, minimalist kitchen designs. I use sustainable materials and ensure high-precision finishing for every project..."
+                        </p>
+<div class="flex flex-wrap gap-2">
+<span class="px-2 py-1 rounded bg-surface-container text-on-surface-variant text-caption">Design</span>
+<span class="px-2 py-1 rounded bg-surface-container text-on-surface-variant text-caption">Eco-friendly</span>
+</div>
+</div>
+<div class="flex items-center justify-between border-t border-outline-variant pt-4">
+<div>
+<p class="text-caption text-secondary uppercase tracking-wider">Bidding Amount</p>
+<p class="font-headline-md text-headline-md text-on-surface font-bold">GHS 3,100</p>
+</div>
+<button class="bg-on-surface text-surface px-6 py-3 rounded-lg font-label-md text-label-md hover:bg-secondary transition-all active:scale-95 shadow-sm">
+                            View Details
+                        </button>
+</div>
+</div>
+<!-- Card 3: David Osei -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant p-6 shadow-[0px_4px_20px_rgba(0,0,0,0.04)] hover:shadow-lg transition-all group relative">
+<div class="absolute top-0 right-0 p-3">
+<span class="bg-primary-container text-on-primary-container px-3 py-1 rounded-full text-caption font-bold">
+                            LOW BID
+                        </span>
+</div>
+<div class="flex items-start gap-4 mb-4">
+<div class="relative">
+<img alt="David Osei Profile" class="w-16 h-16 rounded-full object-cover border-2 border-surface-variant" data-alt="A portrait of David Osei, a friendly and experienced contractor, wearing a yellow safety vest and hard hat. He is standing outdoors on a bright day near a construction site with structural scaffolding in the distance. The lighting is warm and sunny, creating an atmosphere of reliability and outdoor industrial work. The style is utilitarian, sharp, and highly actionable." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAqVK2hpKGh0CnzWP3YAR5Wh-xkCFOhIs8kRMUxKo5Qkown61nSDOK3F_CNx7KKJEMCKILIwuqkuu3TYYqv1dPRdW8R-_kXwkBDJpwI0kLenfz-podtnVGi_TeU3DVAosoFsHrW9-sr2kI0r1sonaxLd9qxBg4hBxBoFXFrciGJCDsXpNRmkQg8xI8_-55fHuVZxefrhIyLzGZT-G1258FpJe3oodq8UQyJ5dMvsuOpwOTB6VQFNa-Ufj-ACZb_fsPIzDZeiA91QEw"/>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface">David Osei</h3>
+<div class="flex items-center gap-1 text-primary">
+<span class="material-symbols-outlined fill text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-md text-label-md">4.5</span>
+<span class="text-secondary font-caption text-caption ml-1">(210 reviews)</span>
+</div>
+</div>
+</div>
+<div class="mb-6">
+<p class="text-secondary line-clamp-3 mb-4">
+                            "Quick turnaround and budget-friendly solutions. I have handled many kitchen upgrades in this neighborhood recently. Happy to help!"
+                        </p>
+<div class="flex flex-wrap gap-2">
+<span class="px-2 py-1 rounded bg-surface-container text-on-surface-variant text-caption">Fast Service</span>
+<span class="px-2 py-1 rounded bg-surface-container text-on-surface-variant text-caption">Tiling</span>
+</div>
+</div>
+<div class="flex items-center justify-between border-t border-outline-variant pt-4">
+<div>
+<p class="text-caption text-secondary uppercase tracking-wider">Bidding Amount</p>
+<p class="font-headline-md text-headline-md text-on-surface font-bold">GHS 1,850</p>
+</div>
+<button class="bg-on-surface text-surface px-6 py-3 rounded-lg font-label-md text-label-md hover:bg-secondary transition-all active:scale-95 shadow-sm">
+                            View Details
+                        </button>
+</div>
+</div>
+<!-- Card 4: Kwame Baah -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant p-6 shadow-[0px_4px_20px_rgba(0,0,0,0.04)] hover:shadow-lg transition-all group relative">
+<div class="flex items-start gap-4 mb-4">
+<div class="relative">
+<img alt="Kwame Baah Profile" class="w-16 h-16 rounded-full object-cover border-2 border-surface-variant" data-alt="A close-up portrait of Kwame Baah, a seasoned artisan with a professional and focused expression. He is wearing a dark polo shirt in a clean, modern workshop environment with wooden accents and soft lighting. The scene is calm and focused, with a sophisticated palette of deep greys and warm wood tones. The aesthetic is corporate yet approachable, emphasizing precision and artisan quality." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCCbFkZ-ya6bBoohlb8QrjrJK0IAm9xZi-wY9Ephecwo6uaFC7MpJBPXO3G7Ng5-Wqp5xH9tHs2YkYOsDWOF5ef6N9y3i8DI_uK9tCFSgj3JwPd0RbtMet9zwgmEBONFB-Ibt3t7Fc8ayQCGa7sC8ZPz96GGOlGKtTF8G6qM9PFiHLCxdYVR1O1JZA9TmgAeMTxWiHc9FSm8fi3rlqpAFi1ARqfLEeXKCEPyS2WKlXbkta4UnshMzXWokVQpnaYOCxhsLnv911jtFY"/>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface">Kwame Baah</h3>
+<div class="flex items-center gap-1 text-primary">
+<span class="material-symbols-outlined fill text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-md text-label-md">4.7</span>
+<span class="text-secondary font-caption text-caption ml-1">(45 reviews)</span>
+</div>
+</div>
+</div>
+<div class="mb-6">
+<p class="text-secondary line-clamp-3 mb-4">
+                            "Specialist in lighting and island installations. I provide a 1-year guarantee on all labor. Ready to start as early as Monday."
+                        </p>
+<div class="flex flex-wrap gap-2">
+<span class="px-2 py-1 rounded bg-surface-container text-on-surface-variant text-caption">Electrical</span>
+<span class="px-2 py-1 rounded bg-surface-container text-on-surface-variant text-caption">Guarantee</span>
+</div>
+</div>
+<div class="flex items-center justify-between border-t border-outline-variant pt-4">
+<div>
+<p class="text-caption text-secondary uppercase tracking-wider">Bidding Amount</p>
+<p class="font-headline-md text-headline-md text-on-surface font-bold">GHS 2,200</p>
+</div>
+<button class="bg-on-surface text-surface px-6 py-3 rounded-lg font-label-md text-label-md hover:bg-secondary transition-all active:scale-95 shadow-sm">
+                            View Details
+                        </button>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-margin-mobile py-2 bg-surface shadow-[0px_-4px_20px_rgba(0,0,0,0.04)] rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-secondary px-4 py-1 hover:text-primary transition-transform duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-md text-label-md">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-4 py-1 transition-transform duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined">work</span>
+<span class="font-label-md text-label-md">Jobs</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary px-4 py-1 hover:text-primary transition-transform duration-200 active:scale-95 relative" href="#">
+<span class="material-symbols-outlined">mail</span>
+<span class="font-label-md text-label-md">Messages</span>
+<span class="absolute top-1 right-3 w-2 h-2 bg-error rounded-full"></span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary px-4 py-1 hover:text-primary transition-transform duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary px-4 py-1 hover:text-primary transition-transform duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-md text-label-md">Profile</span>
+</a>
+</nav>
+<script>
+        // Simple Interaction for sorting chips
+        const chips = document.querySelectorAll('.overflow-x-auto button');
+        chips.forEach(chip => {
+            chip.addEventListener('click', () => {
+                chips.forEach(c => {
+                    c.classList.remove('bg-primary-container', 'text-on-primary-container');
+                    c.classList.add('bg-surface-container-lowest', 'text-secondary');
+                });
+                chip.classList.add('bg-primary-container', 'text-on-primary-container');
+                chip.classList.remove('bg-surface-container-lowest', 'text-secondary');
+            });
+        });
+    </script>
+</body></html>

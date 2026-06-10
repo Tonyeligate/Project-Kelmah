@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Provide Feedback - Kelmah</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "outline": "#7e775f",
+                        "on-surface": "#1a1c1c",
+                        "on-error": "#ffffff",
+                        "primary-fixed": "#ffe16d",
+                        "on-tertiary-container": "#5f5f58",
+                        "on-primary-fixed": "#221b00",
+                        "inverse-primary": "#e9c400",
+                        "on-surface-variant": "#4d4732",
+                        "on-secondary-container": "#636262",
+                        "surface-container": "#eeeeee",
+                        "surface-muted": "#F3F4F6",
+                        "tertiary-fixed": "#e4e3d9",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "error-container": "#ffdad6",
+                        "on-error-container": "#93000a",
+                        "status-info": "#3B82F6",
+                        "secondary-container": "#e2dfde",
+                        "primary-fixed-dim": "#e9c400",
+                        "inverse-surface": "#2f3131",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-bright": "#f9f9f9",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#1a1c1c",
+                        "outline-variant": "#d0c6ab",
+                        "surface": "#f9f9f9",
+                        "on-primary-fixed-variant": "#544600",
+                        "on-primary-container": "#705e00",
+                        "tertiary-container": "#dcdad0",
+                        "on-secondary-fixed-variant": "#474746",
+                        "on-tertiary": "#ffffff",
+                        "surface-variant": "#e2e2e2",
+                        "surface-container-high": "#e8e8e8",
+                        "primary-container": "#ffd700",
+                        "surface-container-low": "#f3f3f4",
+                        "primary": "#705d00",
+                        "error": "#ba1a1a",
+                        "inverse-on-surface": "#f0f1f1",
+                        "text-body": "#4B5563",
+                        "tertiary-fixed-dim": "#c8c7bd",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "surface-dim": "#dadada",
+                        "on-tertiary-fixed-variant": "#474740",
+                        "secondary": "#5f5e5e",
+                        "on-tertiary-fixed": "#1b1c16",
+                        "surface-container-highest": "#e2e2e2",
+                        "background": "#f9f9f9",
+                        "status-success": "#10B981",
+                        "surface-tint": "#705d00",
+                        "tertiary": "#5f5f57",
+                        "secondary-fixed": "#e5e2e1",
+                        "on-primary": "#ffffff"
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.25rem",
+                        lg: "0.5rem",
+                        xl: "0.75rem",
+                        full: "9999px"
+                    },
+                    spacing: {
+                        gutter: "16px",
+                        base: "8px",
+                        "margin-mobile": "16px",
+                        "touch-target": "48px",
+                        "margin-desktop": "64px"
+                    },
+                    fontFamily: {
+                        "headline-md": ["Montserrat"],
+                        "headline-lg": ["Montserrat"],
+                        "label-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "display-lg": ["Montserrat"],
+                        "caption": ["Inter"],
+                        "headline-lg-mobile": ["Montserrat"]
+                    },
+                    fontSize: {
+                        "headline-md": ["24px", { lineHeight: "32px", fontWeight: "600" }],
+                        "headline-lg": ["32px", { lineHeight: "40px", fontWeight: "700" }],
+                        "label-md": ["14px", { lineHeight: "20px", fontWeight: "600" }],
+                        "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+                        "body-lg": ["18px", { lineHeight: "28px", fontWeight: "400" }],
+                        "display-lg": ["48px", { lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700" }],
+                        "caption": ["12px", { lineHeight: "16px", fontWeight: "500" }],
+                        "headline-lg-mobile": ["28px", { lineHeight: "34px", fontWeight: "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .no-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+        
+        .star-rating .material-symbols-outlined {
+            cursor: pointer;
+            transition: color 0.2s ease-in-out;
+        }
+        .star-rating.active .material-symbols-outlined {
+            color: #ffd700;
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface antialiased min-h-screen flex flex-col font-body-md">
+<!-- TopAppBar -->
+<header class="bg-surface w-full top-0 sticky bg-surface-container-low flex items-center justify-between px-margin-mobile md:px-margin-desktop h-16 w-full z-40">
+<div class="flex items-center gap-4">
+<button aria-label="Go back" class="h-touch-target w-touch-target flex items-center justify-center text-primary active:scale-95 duration-150 rounded-full hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+<h1 class="font-headline-md text-headline-md text-primary font-bold">Feedback</h1>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow px-margin-mobile md:px-margin-desktop py-8 max-w-3xl mx-auto w-full pb-32">
+<!-- Project Context Card -->
+<div class="bg-surface-container-lowest border border-surface-variant rounded-xl p-6 mb-8 shadow-sm">
+<div class="flex items-start gap-4">
+<div class="w-16 h-16 rounded-full bg-surface-container-high overflow-hidden shrink-0">
+<img alt="Artisan Profile" class="w-full h-full object-cover" data-alt="Close up portrait of a confident male construction worker wearing a yellow hard hat and safety vest, set against an active construction site background with bright, clear daytime lighting conveying professionalism and trust within the Kelmah brand aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDufkaKvS2Tm63_JanLPDKCGQvrfVaU-I48Io0DfV2Itfcy_WyvDRAokIo1PHR4MUp49tBP5BYZEn2en5BaWO95J2E6QZCImqKnzkbncvEaatgKh0km4DDMxhMLjda6X0Au3eUEg0zn3v6-m5SC8rQ3PUOdnPmFvXDqZHxCyqLUxEFNGWXHfUpSmT-ifkXCrFmDLnoDDklFWgtrfdvxXbgdXOnzSXVzNICw6H3lHxikuLtfHlk3M39WPBDADx8gV2lwSozwJRyQ6bw"/>
+</div>
+<div>
+<h2 class="font-headline-md text-headline-md mb-1 text-on-surface">Kwame Mensah</h2>
+<p class="font-body-md text-body-md text-secondary mb-2">Master Electrician</p>
+<div class="inline-flex items-center bg-surface-container-high px-3 py-1 rounded-full text-caption font-caption text-on-surface-variant">
+<span class="material-symbols-outlined mr-1" style="font-size: 16px;">work</span>
+                        Complete House Rewiring
+                    </div>
+</div>
+</div>
+</div>
+<!-- Rating Section -->
+<section class="mb-10">
+<h3 class="font-headline-md text-headline-md mb-2 text-on-surface">Rate your experience</h3>
+<p class="font-body-md text-body-md text-secondary mb-6">How was the overall quality of service?</p>
+<div class="flex justify-center gap-4 star-rating text-surface-variant" id="mainRating">
+<span class="material-symbols-outlined text-[48px]" data-icon="star" data-value="1">star</span>
+<span class="material-symbols-outlined text-[48px]" data-icon="star" data-value="2">star</span>
+<span class="material-symbols-outlined text-[48px]" data-icon="star" data-value="3">star</span>
+<span class="material-symbols-outlined text-[48px]" data-icon="star" data-value="4">star</span>
+<span class="material-symbols-outlined text-[48px]" data-icon="star" data-value="5">star</span>
+</div>
+</section>
+<!-- Granular Tags -->
+<section class="mb-10">
+<h3 class="font-headline-md text-headline-md mb-4 text-on-surface">What stood out?</h3>
+<div class="flex flex-wrap gap-3">
+<button class="tag-btn border border-outline-variant rounded-full px-5 py-2 font-label-md text-label-md text-on-surface-variant hover:bg-surface-variant transition-colors bg-surface-container-lowest">Professionalism</button>
+<button class="tag-btn border border-outline-variant rounded-full px-5 py-2 font-label-md text-label-md text-on-surface-variant hover:bg-surface-variant transition-colors bg-surface-container-lowest">Punctuality</button>
+<button class="tag-btn border border-outline-variant rounded-full px-5 py-2 font-label-md text-label-md text-on-surface-variant hover:bg-surface-variant transition-colors bg-surface-container-lowest">Quality of Work</button>
+<button class="tag-btn border border-outline-variant rounded-full px-5 py-2 font-label-md text-label-md text-on-surface-variant hover:bg-surface-variant transition-colors bg-surface-container-lowest">Communication</button>
+<button class="tag-btn border border-outline-variant rounded-full px-5 py-2 font-label-md text-label-md text-on-surface-variant hover:bg-surface-variant transition-colors bg-surface-container-lowest">Cleanliness</button>
+<button class="tag-btn border border-outline-variant rounded-full px-5 py-2 font-label-md text-label-md text-on-surface-variant hover:bg-surface-variant transition-colors bg-surface-container-lowest">Value for Money</button>
+</div>
+</section>
+<!-- Text Review -->
+<section class="mb-8">
+<label class="font-headline-md text-headline-md mb-2 block text-on-surface" for="reviewText">Write a Review</label>
+<p class="font-body-md text-body-md text-secondary mb-4">Share more details about your project to help others.</p>
+<textarea class="w-full bg-surface-container-lowest border border-on-surface rounded-lg p-4 font-body-md text-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-transparent transition-all" id="reviewText" placeholder="Tell us about the work done..." rows="5"></textarea>
+</section>
+</main>
+<!-- Bottom Action Bar with Progress -->
+<div class="fixed bottom-0 left-0 w-full bg-surface shadow-[0_-4px_20px_rgba(0,0,0,0.05)] border-t border-surface-variant z-50">
+<!-- Progress Bar -->
+<div class="w-full h-1 bg-surface-container-high">
+<div class="h-full bg-primary-container w-3/4 transition-all duration-300" id="progressBar"></div>
+</div>
+<div class="px-margin-mobile md:px-margin-desktop py-4 flex justify-between items-center max-w-3xl mx-auto w-full pb-safe">
+<button class="h-touch-target px-6 font-label-md text-label-md text-on-surface bg-transparent border border-on-surface rounded-lg hover:bg-surface-variant transition-colors">Skip</button>
+<button class="h-touch-target px-8 font-label-md text-label-md text-on-primary-fixed bg-primary-container rounded-lg font-bold hover:bg-inverse-primary transition-colors active:scale-95">Submit Feedback</button>
+</div>
+</div>
+<script>
+        // Star Rating Logic
+        const stars = document.querySelectorAll('#mainRating span');
+        let currentRating = 0;
+
+        stars.forEach(star => {
+            star.addEventListener('click', (e) => {
+                const value = parseInt(e.target.dataset.value);
+                currentRating = value;
+                updateStars();
+                updateProgress();
+            });
+
+            star.addEventListener('mouseenter', (e) => {
+                const value = parseInt(e.target.dataset.value);
+                highlightStars(value);
+            });
+
+            star.addEventListener('mouseleave', () => {
+                updateStars();
+            });
+        });
+
+        function highlightStars(value) {
+            stars.forEach(s => {
+                const sValue = parseInt(s.dataset.value);
+                if (sValue <= value) {
+                    s.style.color = '#ffd700';
+                    s.style.fontVariationSettings = "'FILL' 1";
+                } else {
+                    s.style.color = '';
+                    s.style.fontVariationSettings = "'FILL' 0";
+                }
+            });
+        }
+
+        function updateStars() {
+            stars.forEach(s => {
+                const sValue = parseInt(s.dataset.value);
+                if (sValue <= currentRating) {
+                    s.style.color = '#ffd700';
+                    s.style.fontVariationSettings = "'FILL' 1";
+                } else {
+                    s.style.color = '';
+                    s.style.fontVariationSettings = "'FILL' 0";
+                }
+            });
+        }
+
+        // Tag Toggle Logic
+        const tags = document.querySelectorAll('.tag-btn');
+        let selectedTags = 0;
+
+        tags.forEach(tag => {
+            tag.addEventListener('click', () => {
+                tag.classList.toggle('bg-primary-container');
+                tag.classList.toggle('text-on-primary-fixed');
+                tag.classList.toggle('border-primary-container');
+                
+                tag.classList.toggle('bg-surface-container-lowest');
+                tag.classList.toggle('text-on-surface-variant');
+                tag.classList.toggle('border-outline-variant');
+
+                if (tag.classList.contains('bg-primary-container')) {
+                    selectedTags++;
+                } else {
+                    selectedTags--;
+                }
+                updateProgress();
+            });
+        });
+
+        // Textarea Logic
+        const textarea = document.getElementById('reviewText');
+        textarea.addEventListener('input', updateProgress);
+
+        // Progress Bar Logic
+        function updateProgress() {
+            let progress = 0;
+            if (currentRating > 0) progress += 33;
+            if (selectedTags > 0) progress += 33;
+            if (textarea.value.trim().length > 10) progress += 34;
+
+            document.getElementById('progressBar').style.width = `${progress}%`;
+        }
+        
+        // Initial setup
+        updateProgress();
+    </script>
+</body></html>

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Manage Applications - Kelmah</title>
+<!-- Google Fonts: Montserrat & Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-low": "#f3f3f4",
+                    "on-secondary-fixed-variant": "#474746",
+                    "secondary": "#5f5e5e",
+                    "primary": "#705d00",
+                    "on-surface": "#1a1c1c",
+                    "on-secondary": "#ffffff",
+                    "on-tertiary": "#ffffff",
+                    "surface-bright": "#f9f9f9",
+                    "error": "#ba1a1a",
+                    "on-background": "#1a1c1c",
+                    "text-body": "#4B5563",
+                    "on-tertiary-container": "#5f5f58",
+                    "on-error": "#ffffff",
+                    "outline-variant": "#d0c6ab",
+                    "primary-fixed-dim": "#e9c400",
+                    "on-primary-fixed-variant": "#544600",
+                    "tertiary-container": "#dcdad0",
+                    "on-error-container": "#93000a",
+                    "inverse-surface": "#2f3131",
+                    "on-secondary-fixed": "#1c1b1b",
+                    "inverse-on-surface": "#f0f1f1",
+                    "tertiary-fixed-dim": "#c8c7bd",
+                    "surface": "#f9f9f9",
+                    "on-primary": "#ffffff",
+                    "inverse-primary": "#e9c400",
+                    "outline": "#7e775f",
+                    "status-success": "#10B981",
+                    "primary-fixed": "#ffe16d",
+                    "status-info": "#3B82F6",
+                    "tertiary-fixed": "#e4e3d9",
+                    "surface-container-high": "#e8e8e8",
+                    "on-tertiary-fixed-variant": "#474740",
+                    "surface-container": "#eeeeee",
+                    "secondary-container": "#e2dfde",
+                    "background": "#f9f9f9",
+                    "surface-muted": "#F3F4F6",
+                    "tertiary": "#5f5f57",
+                    "surface-dim": "#dadada",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary-container": "#705e00",
+                    "secondary-fixed-dim": "#c8c6c5",
+                    "on-primary-fixed": "#221b00",
+                    "on-secondary-container": "#636262",
+                    "primary-container": "#ffd700",
+                    "surface-variant": "#e2e2e2",
+                    "surface-tint": "#705d00",
+                    "error-container": "#ffdad6",
+                    "on-tertiary-fixed": "#1b1c16",
+                    "secondary-fixed": "#e5e2e1",
+                    "on-surface-variant": "#4d4732",
+                    "surface-container-highest": "#e2e2e2"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "touch-target": "48px",
+                    "gutter": "16px",
+                    "margin-desktop": "64px",
+                    "base": "8px",
+                    "margin-mobile": "16px"
+            },
+            "fontFamily": {
+                    "display-lg": ["Montserrat"],
+                    "label-md": ["Inter"],
+                    "headline-md": ["Montserrat"],
+                    "caption": ["Inter"],
+                    "body-md": ["Inter"],
+                    "headline-lg": ["Montserrat"],
+                    "headline-lg-mobile": ["Montserrat"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                    "label-md": ["14px", { "lineHeight": "20px", "fontWeight": "600" }],
+                    "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                    "caption": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                    "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                    "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                    "headline-lg-mobile": ["28px", { "lineHeight": "34px", "fontWeight": "700" }],
+                    "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface antialiased min-h-screen pb-24 md:pb-0">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky bg-surface border-b border-outline-variant z-50">
+<div class="flex justify-between items-center px-gutter h-touch-target w-full">
+<button aria-label="Menu" class="text-on-surface-variant hover:bg-surface-container transition-colors duration-200 active:opacity-70 h-touch-target w-touch-target flex items-center justify-center rounded-full">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<h1 class="font-display-lg text-headline-md font-bold text-primary tracking-tight">Kelmah</h1>
+<button aria-label="Notifications" class="text-on-surface-variant hover:bg-surface-container transition-colors duration-200 active:opacity-70 h-touch-target w-touch-target flex items-center justify-center rounded-full">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="w-full max-w-[1280px] mx-auto px-margin-mobile md:px-margin-desktop py-8 md:py-12">
+<!-- Page Header -->
+<div class="mb-8 md:mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<div class="flex items-center gap-2 text-on-surface-variant mb-2">
+<span class="material-symbols-outlined text-[18px]">work</span>
+<span class="font-label-md text-label-md uppercase tracking-wider text-xs">Active Listing</span>
+</div>
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface">Senior Master Electrician</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Downtown Commercial Build • 4 Applicants</p>
+</div>
+<!-- Quick Filters -->
+<div class="flex gap-2 bg-surface-container-low p-1 rounded-lg self-start">
+<button class="px-4 py-2 rounded-md bg-surface-container-lowest shadow-sm font-label-md text-label-md text-on-surface transition-all">All (4)</button>
+<button class="px-4 py-2 rounded-md font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-all">New (2)</button>
+<button class="px-4 py-2 rounded-md font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-all">Reviewed (2)</button>
+</div>
+</div>
+<!-- Applicant Grid (Bento-inspired structural layout) -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Card 1: New Applicant (High Priority Styling) -->
+<article class="bg-surface-container-lowest rounded-xl border-t-[4px] border-t-primary-container border-x border-b border-outline-variant p-6 flex flex-col gap-5 shadow-[0_4px_20px_rgba(0,0,0,0.04)] relative overflow-hidden group">
+<div class="absolute top-0 right-0 w-24 h-24 bg-primary-container/10 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
+<div class="flex justify-between items-start">
+<div class="flex gap-4">
+<img alt="Applicant Avatar" class="w-14 h-14 rounded-full object-cover border-2 border-surface" data-alt="A professional headshot of a rugged, middle-aged male tradesman wearing a safety vest and hardhat, looking confidently into the camera. The setting is a bright, modern construction site with soft daylight. The image has a clean, high-contrast corporate aesthetic suitable for a professional talent platform, prioritizing crisp details and realistic textures." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKbz3oSOsx_6XA3db68IB_zF1TYzAAie5CNgDah6Hk4TXwGWLEt_ekHEBgwSDXm0uIwUsuQyaz_Wr_jrv4M9hJs8U5eZZQ1j1yoM-9NbJn6u-KsXpkK69GmniRQfFYPkhDVB-wR-PYk8UpPWhX8wthLghiXFskRu5RLOWLN1K5QCxBW1Tv2BNDjS5F_Su-bgKUVh_tlKr3g_ccmxhRTekd3Dh7DemLNXA-6SxSpxN5xJf7rwbT_G4_iAg1edTme_mROIDtidzxZ6I"/>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface text-[20px] leading-tight">Marcus Thorne</h3>
+<p class="font-body-md text-body-md text-on-surface-variant text-[14px]">Master Electrician • 12 yrs</p>
+<div class="flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-primary-fixed-dim text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-md text-label-md text-on-surface text-[12px]">4.9 (42 jobs)</span>
+</div>
+</div>
+</div>
+<span class="bg-primary-container text-on-surface px-3 py-1 rounded-full font-label-md text-label-md text-[12px]">New</span>
+</div>
+<div class="bg-surface-container-low p-3 rounded-lg border border-outline-variant/50">
+<p class="font-body-md text-body-md text-on-surface-variant text-[14px] line-clamp-2">"I have extensive experience with large-scale commercial wiring and am fully licensed in this state. Available to start immediately."</p>
+</div>
+<div class="flex gap-3 mt-auto pt-2">
+<button class="flex-1 bg-primary-container hover:bg-primary-fixed text-on-surface h-touch-target rounded-lg font-label-md text-label-md transition-colors flex items-center justify-center shadow-sm">
+                        Review Application
+                    </button>
+<button aria-label="Decline" class="w-touch-target h-touch-target border border-on-surface text-on-surface hover:bg-surface-container rounded-lg flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+</article>
+<!-- Card 2: New Applicant -->
+<article class="bg-surface-container-lowest rounded-xl border border-outline-variant p-6 flex flex-col gap-5 shadow-[0_4px_20px_rgba(0,0,0,0.04)] relative overflow-hidden group">
+<div class="flex justify-between items-start">
+<div class="flex gap-4">
+<div class="w-14 h-14 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container font-headline-md text-[20px]">
+                            DJ
+                        </div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface text-[20px] leading-tight">David Jenkins</h3>
+<p class="font-body-md text-body-md text-on-surface-variant text-[14px]">Journeyman • 5 yrs</p>
+<div class="flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-primary-fixed-dim text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-md text-label-md text-on-surface text-[12px]">4.7 (18 jobs)</span>
+</div>
+</div>
+</div>
+<span class="bg-primary-container text-on-surface px-3 py-1 rounded-full font-label-md text-label-md text-[12px]">New</span>
+</div>
+<div class="bg-surface-container-low p-3 rounded-lg border border-outline-variant/50">
+<p class="font-body-md text-body-md text-on-surface-variant text-[14px] line-clamp-2">"Recently finished a similar project in the North district. Solid references available upon request."</p>
+</div>
+<div class="flex gap-3 mt-auto pt-2">
+<button class="flex-1 bg-primary-container hover:bg-primary-fixed text-on-surface h-touch-target rounded-lg font-label-md text-label-md transition-colors flex items-center justify-center shadow-sm">
+                        Review Application
+                    </button>
+<button aria-label="Decline" class="w-touch-target h-touch-target border border-on-surface text-on-surface hover:bg-surface-container rounded-lg flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+</article>
+<!-- Card 3: Under Review -->
+<article class="bg-surface rounded-xl border border-outline-variant p-6 flex flex-col gap-5 shadow-sm opacity-90 relative overflow-hidden group">
+<div class="flex justify-between items-start">
+<div class="flex gap-4">
+<img alt="Applicant Avatar" class="w-14 h-14 rounded-full object-cover border border-outline-variant" data-alt="A clean, brightly lit portrait of a female tradesperson with a focused, professional expression. She is wearing functional dark workwear against an industrial grey background. The lighting is soft and even, highlighting a sense of reliability and competence in a modern corporate style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDHlF1Zdi9w0xEFTPtix1F99DiBY0O2zTMAWEGyiOrxdqFah-THOA0ee5dcgknBSqKWDYgqgVKFbB2xgYGsHiKKxJMCPJqet_witjVh7X2CedwfnVzMc8jwdPydvgj3m8_dNr6LtSrAI31Ap4GL1qo9z2XLeiZEQRaNKOJSInRfV_r-lifCEYSR9QX_YP-QMaET-5caa5WhkG2GJvJTIXmYYkKntfGqih4VhLUQ-znWUbf5vH5L8yZ_bbqIZiWT4kQN9ldGeOG3API"/>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface text-[20px] leading-tight">Sarah Chen</h3>
+<p class="font-body-md text-body-md text-on-surface-variant text-[14px]">Commercial Sparky • 8 yrs</p>
+<div class="flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-primary-fixed-dim text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-md text-label-md text-on-surface text-[12px]">5.0 (60+ jobs)</span>
+</div>
+</div>
+</div>
+<span class="bg-surface-container-high text-on-surface-variant px-3 py-1 rounded-full font-label-md text-label-md text-[12px] border border-outline-variant">Under Review</span>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant mt-2 mb-4">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+<span class="font-caption text-caption">Interviewed yesterday</span>
+</div>
+<div class="flex gap-3 mt-auto pt-2">
+<button class="flex-1 bg-on-surface text-surface h-touch-target rounded-lg font-label-md text-label-md hover:bg-inverse-surface transition-colors flex items-center justify-center">
+                        Continue Review
+                    </button>
+</div>
+</article>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 w-full z-50 rounded-t-xl bg-surface-container-lowest shadow-[0_-4px_20px_rgba(0,0,0,0.04)]">
+<div class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 py-2 bg-surface-container-lowest z-50 pb-safe">
+<!-- Home: Inactive -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-all duration-300 active:scale-95 w-16 h-14 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-md text-[10px] mt-1">Home</span>
+</a>
+<!-- Jobs: Active -->
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1 transition-all duration-300 active:scale-95 h-14" href="#">
+<span class="material-symbols-outlined" data-icon="work" style="font-variation-settings: 'FILL' 1;">work</span>
+<span class="font-label-md text-[10px] mt-1 font-bold">Jobs</span>
+</a>
+<!-- Messages: Inactive -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-all duration-300 active:scale-95 w-16 h-14 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="chat">chat</span>
+<span class="font-label-md text-[10px] mt-1">Messages</span>
+</a>
+<!-- Wallet: Inactive -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-all duration-300 active:scale-95 w-16 h-14 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="account_balance_wallet">account_balance_wallet</span>
+<span class="font-label-md text-[10px] mt-1">Wallet</span>
+</a>
+<!-- Profile: Inactive -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-all duration-300 active:scale-95 w-16 h-14 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-md text-[10px] mt-1">Profile</span>
+</a>
+</div>
+</nav>
+</body></html>

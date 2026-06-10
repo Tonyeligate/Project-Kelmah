@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Project Completion Report</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed": "#1c1b1b",
+                        "surface-container-high": "#e8e8e8",
+                        "text-body": "#4B5563",
+                        "on-primary-fixed-variant": "#544600",
+                        "surface-muted": "#F3F4F6",
+                        "on-tertiary": "#ffffff",
+                        "surface-variant": "#e2e2e2",
+                        "inverse-surface": "#2f3131",
+                        "surface-tint": "#705d00",
+                        "on-surface-variant": "#4d4732",
+                        "surface": "#f9f9f9",
+                        "primary": "#705d00",
+                        "on-primary": "#ffffff",
+                        "status-success": "#10B981",
+                        "on-secondary-fixed-variant": "#474746",
+                        "surface-container-highest": "#e2e2e2",
+                        "on-secondary": "#ffffff",
+                        "inverse-on-surface": "#f0f1f1",
+                        "on-secondary-container": "#636262",
+                        "outline-variant": "#d0c6ab",
+                        "primary-container": "#ffd700",
+                        "on-tertiary-fixed-variant": "#474740",
+                        "on-surface": "#1a1c1c",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "on-tertiary-container": "#5f5f58",
+                        "surface-container": "#eeeeee",
+                        "tertiary-container": "#dcdad0",
+                        "surface-container-low": "#f3f3f4",
+                        "tertiary-fixed": "#e4e3d9",
+                        "secondary-container": "#e2dfde",
+                        "outline": "#7e775f",
+                        "inverse-primary": "#e9c400",
+                        "error-container": "#ffdad6",
+                        "on-primary-fixed": "#221b00",
+                        "primary-fixed": "#ffe16d",
+                        "tertiary-fixed-dim": "#c8c7bd",
+                        "tertiary": "#5f5f57",
+                        "on-tertiary-fixed": "#1b1c16",
+                        "on-primary-container": "#705e00",
+                        "error": "#ba1a1a",
+                        "primary-fixed-dim": "#e9c400",
+                        "surface-bright": "#f9f9f9",
+                        "status-info": "#3B82F6",
+                        "secondary-fixed": "#e5e2e1",
+                        "on-background": "#1a1c1c",
+                        "surface-dim": "#dadada",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error": "#ffffff",
+                        "background": "#f9f9f9",
+                        "secondary": "#5f5e5e",
+                        "on-error-container": "#93000a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "touch-target": "48px",
+                        "margin-mobile": "16px",
+                        "margin-desktop": "64px",
+                        "gutter": "16px",
+                        "base": "8px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Montserrat"],
+                        "caption": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg": ["Montserrat"],
+                        "label-md": ["Inter"],
+                        "headline-md": ["Montserrat"],
+                        "display-lg": ["Montserrat"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["28px", { "lineHeight": "34px", "fontWeight": "700" }],
+                        "caption": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { -webkit-tap-highlight-color: transparent; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .icon-fill { font-variation-settings: 'FILL' 1; }
+        
+        /* Subtle entry animations for cards */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-up { animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface antialiased min-h-screen flex flex-col">
+<!-- Transactional Header (Suppressed standard shell, focused layout) -->
+<header class="w-full flex items-center justify-between px-margin-mobile md:px-margin-desktop h-[72px] bg-surface-container-lowest border-b border-surface-variant sticky top-0 z-50">
+<div class="flex items-center gap-base">
+<span class="material-symbols-outlined text-status-success text-[28px] icon-fill" data-icon="task_alt">task_alt</span>
+<h1 class="font-headline-md text-headline-md text-on-surface">Contract Closed</h1>
+</div>
+<button class="h-touch-target px-4 flex items-center justify-center font-label-md text-label-md text-secondary hover:bg-surface-container rounded-lg transition-colors">
+<span class="material-symbols-outlined mr-2" data-icon="download">download</span>
+            Receipt
+        </button>
+</header>
+<main class="flex-1 w-full max-w-[1280px] mx-auto px-margin-mobile md:px-margin-desktop py-8 md:py-12 pb-32">
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-gutter md:gap-8">
+<!-- Hero Stats Panel (Full Width on Mobile, 8 Cols Desktop) -->
+<section class="md:col-span-8 animate-fade-up bg-primary-container rounded-xl p-6 md:p-10 shadow-sm relative overflow-hidden flex flex-col justify-center">
+<!-- Subtle background pattern -->
+<div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at 2px 2px, black 1px, transparent 0); background-size: 24px 24px;"></div>
+<div class="relative z-10">
+<p class="font-label-md text-label-md text-on-primary-container uppercase tracking-wider mb-2 opacity-80">Final Project Cost</p>
+<h2 class="font-display-lg text-display-lg text-on-primary-container mb-6">$4,250.00</h2>
+<div class="grid grid-cols-2 gap-4 border-t border-on-primary-container/20 pt-6">
+<div>
+<p class="font-caption text-caption text-on-primary-container/70 mb-1">Total Duration</p>
+<p class="font-headline-md text-headline-md text-on-primary-container">14 Days</p>
+</div>
+<div>
+<p class="font-caption text-caption text-on-primary-container/70 mb-1">Original Quote</p>
+<p class="font-body-lg text-body-lg text-on-primary-container line-through opacity-70">$4,500.00</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Project Info Panel (Full Width Mobile, 4 Cols Desktop) -->
+<section class="md:col-span-4 animate-fade-up delay-100 bg-surface-container-lowest rounded-xl p-6 border border-surface-variant shadow-[0px_4px_20px_rgba(0,0,0,0.04)] flex flex-col">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-6">Kitchen Plumbing Overhaul</h3>
+<div class="flex items-center gap-4 mb-6 pb-6 border-b border-surface-variant">
+<div class="w-16 h-16 rounded-full bg-surface-container overflow-hidden shrink-0 border-2 border-primary-container">
+<img alt="Artisan Profile" class="w-full h-full object-cover" data-alt="A professional headshot of a confident, skilled tradesman in his late 30s wearing a clean, dark industrial work shirt. He has a slight, reassuring smile and is standing against a neutral, softly lit gray background. The lighting is studio-quality, emphasizing reliability and corporate professionalism typical of a high-end service platform. The mood is trustworthy and competent." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDguofp2y8xa-Qt9ubKLyXoNxmzEDi3tL0Xh0qgbBEVid4fr56Lh8idFTUgxAnxPnRMbg6wEcgR_kPzFVbk_KMc9K35Ioo1KaqddEfvIzjFRlWzG6gMxz9h32Yif1p9Fn42NCdQn4o7W29tjFs5dHhTgEmIJ_W4Gnfiq7auVExmV70_z9B6DwpYPrbdToaWhvZHG0H3-8ao7J5NELX-qlAkRedWqKYeT-gdgFrgRvNpwNiWhXrwRmCm2duG2Pfrm3jLmUQeEiRMDP4"/>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Marcus Jenkins</p>
+<p class="font-caption text-caption text-secondary">Master Plumber • Verified</p>
+</div>
+</div>
+<div class="mt-auto space-y-3">
+<div class="flex justify-between items-center">
+<span class="font-body-md text-body-md text-secondary">Location</span>
+<span class="font-label-md text-label-md text-on-surface">Accra, GH</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="font-body-md text-body-md text-secondary">Contract ID</span>
+<span class="font-label-md text-label-md text-on-surface">#KLM-8892A</span>
+</div>
+</div>
+</section>
+<!-- Milestone History (6 Cols Desktop) -->
+<section class="md:col-span-6 animate-fade-up delay-200 bg-surface-container-lowest rounded-xl p-6 md:p-8 border border-surface-variant shadow-[0px_4px_20px_rgba(0,0,0,0.04)]">
+<div class="flex items-center gap-2 mb-8">
+<span class="material-symbols-outlined text-secondary" data-icon="timeline">timeline</span>
+<h3 class="font-headline-md text-headline-md text-on-surface">Milestone Recap</h3>
+</div>
+<div class="relative border-l-2 border-surface-container ml-3 space-y-8">
+<!-- Milestone 1 -->
+<div class="relative pl-6">
+<div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-surface-container-lowest border-2 border-status-success"></div>
+<div class="flex justify-between items-start mb-1">
+<h4 class="font-label-md text-label-md text-on-surface">Site Inspection &amp; Deposit</h4>
+<span class="font-caption text-caption text-secondary">Oct 12</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant bg-surface-muted p-3 rounded-lg mt-2">$850.00 Released</p>
+</div>
+<!-- Milestone 2 -->
+<div class="relative pl-6">
+<div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-surface-container-lowest border-2 border-status-success"></div>
+<div class="flex justify-between items-start mb-1">
+<h4 class="font-label-md text-label-md text-on-surface">Rough-in Plumbing</h4>
+<span class="font-caption text-caption text-secondary">Oct 18</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant bg-surface-muted p-3 rounded-lg mt-2">$1,700.00 Released</p>
+</div>
+<!-- Milestone 3 -->
+<div class="relative pl-6">
+<div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-primary-container border-2 border-primary-container shadow-[0_0_0_4px_rgba(255,215,0,0.2)]"></div>
+<div class="flex justify-between items-start mb-1">
+<h4 class="font-label-md text-label-md text-on-surface">Final Fix &amp; Sign-off</h4>
+<span class="font-caption text-caption text-secondary">Oct 26</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant bg-surface-muted p-3 rounded-lg mt-2 border border-primary-container/30">$1,700.00 Released</p>
+</div>
+</div>
+</section>
+<!-- Bidirectional Reviews (6 Cols Desktop) -->
+<section class="md:col-span-6 animate-fade-up delay-300 bg-surface-container-lowest rounded-xl p-6 md:p-8 border border-surface-variant shadow-[0px_4px_20px_rgba(0,0,0,0.04)] flex flex-col gap-6">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-secondary" data-icon="thumbs_up_down">thumbs_up_down</span>
+<h3 class="font-headline-md text-headline-md text-on-surface">Feedback Exchanged</h3>
+</div>
+<!-- Your Review -->
+<div class="bg-surface rounded-lg p-5 border border-surface-variant">
+<div class="flex justify-between items-center mb-3">
+<span class="font-label-md text-label-md text-on-surface">Your Rating for Marcus</span>
+<div class="flex text-primary-container">
+<span class="material-symbols-outlined icon-fill text-[18px]" data-icon="star">star</span>
+<span class="material-symbols-outlined icon-fill text-[18px]" data-icon="star">star</span>
+<span class="material-symbols-outlined icon-fill text-[18px]" data-icon="star">star</span>
+<span class="material-symbols-outlined icon-fill text-[18px]" data-icon="star">star</span>
+<span class="material-symbols-outlined icon-fill text-[18px]" data-icon="star">star</span>
+</div>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant italic">"Marcus was incredibly professional. Completed the kitchen plumbing ahead of schedule and left the site spotless. Highly recommend."</p>
+</div>
+<!-- Their Review -->
+<div class="bg-surface-muted rounded-lg p-5 border border-outline-variant/30">
+<div class="flex justify-between items-center mb-3">
+<span class="font-label-md text-label-md text-on-surface">Marcus's Rating for You</span>
+<div class="flex text-primary-container">
+<span class="material-symbols-outlined icon-fill text-[18px]" data-icon="star">star</span>
+<span class="material-symbols-outlined icon-fill text-[18px]" data-icon="star">star</span>
+<span class="material-symbols-outlined icon-fill text-[18px]" data-icon="star">star</span>
+<span class="material-symbols-outlined icon-fill text-[18px]" data-icon="star">star</span>
+<span class="material-symbols-outlined icon-fill text-[18px]" data-icon="star">star</span>
+</div>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant italic">"Great client. Clear communication regarding requirements and prompt with milestone approvals."</p>
+</div>
+</section>
+</div>
+</main>
+<!-- Fixed Bottom Action Bar -->
+<div class="fixed bottom-0 left-0 w-full bg-surface-container-lowest border-t border-surface-variant p-margin-mobile md:px-margin-desktop md:py-6 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] z-50">
+<div class="max-w-[1280px] mx-auto flex gap-4">
+<button class="flex-1 h-touch-target bg-on-surface text-on-tertiary font-headline-md text-headline-md text-[16px] rounded-lg flex items-center justify-center hover:bg-surface-tint transition-colors">
+                Return to Dashboard
+            </button>
+</div>
+</div>
+</body></html>

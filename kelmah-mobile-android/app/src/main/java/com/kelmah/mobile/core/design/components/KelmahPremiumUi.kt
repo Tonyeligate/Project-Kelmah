@@ -75,17 +75,17 @@ fun KelmahScreenBackground(
     val baseGradient = if (isDark) {
         Brush.linearGradient(
             colors = listOf(
-                Color(0xFF101116),
-                Color(0xFF1A1D26),
-                Color(0xFF222530),
+                MaterialTheme.colorScheme.background,
+                MaterialTheme.colorScheme.surface,
+                MaterialTheme.colorScheme.surfaceVariant,
             ),
         )
     } else {
         Brush.linearGradient(
             colors = listOf(
-                Color(0xFFF9F7ED),
-                Color(0xFFF7F3E3),
-                Color(0xFFEDE6D2),
+                MaterialTheme.colorScheme.background,
+                MaterialTheme.colorScheme.surface,
+                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
             ),
         )
     }
@@ -93,7 +93,7 @@ fun KelmahScreenBackground(
     val glowGradient = if (isDark) {
         Brush.radialGradient(
             colors = listOf(
-                Color(0x33FFD34D),
+                MaterialTheme.colorScheme.primary.copy(alpha = 0.20f),
                 Color.Transparent,
             ),
             center = Offset(170f, 120f),
@@ -102,7 +102,7 @@ fun KelmahScreenBackground(
     } else {
         Brush.radialGradient(
             colors = listOf(
-                Color(0x26B8860B),
+                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.22f),
                 Color.Transparent,
             ),
             center = Offset(180f, 120f),
@@ -113,7 +113,7 @@ fun KelmahScreenBackground(
     val coolGradient = if (isDark) {
         Brush.radialGradient(
             colors = listOf(
-                Color(0x1A5DA8FF),
+                MaterialTheme.colorScheme.tertiary.copy(alpha = 0.12f),
                 Color.Transparent,
             ),
             center = Offset(980f, 170f),
@@ -122,7 +122,7 @@ fun KelmahScreenBackground(
     } else {
         Brush.radialGradient(
             colors = listOf(
-                Color(0x145DA8FF),
+                MaterialTheme.colorScheme.tertiary.copy(alpha = 0.08f),
                 Color.Transparent,
             ),
             center = Offset(980f, 170f),
@@ -168,7 +168,7 @@ fun kelmahMutedPanelColors(): CardColors {
 @Composable
 fun kelmahPanelBorder(): BorderStroke {
     val borderColor = if (isSystemInDarkTheme()) {
-        Color(0x40FFD34D)
+        MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)
     } else {
         MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)
     }
@@ -218,9 +218,9 @@ fun KelmahCommandDeck(
     val deckGradient = if (isDark) {
         Brush.linearGradient(
             colors = listOf(
-                Color(0xD9101116),
-                Color(0xC6151722),
-                Color(0xCC0D0F14),
+                MaterialTheme.colorScheme.surface.copy(alpha = 0.96f),
+                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.88f),
+                MaterialTheme.colorScheme.surface.copy(alpha = 0.94f),
             ),
             start = Offset.Zero,
             end = Offset(900f, 900f),
@@ -228,9 +228,9 @@ fun KelmahCommandDeck(
     } else {
         Brush.linearGradient(
             colors = listOf(
-                Color(0xF5FFFDF4),
-                Color(0xF5F9F2DA),
-                Color(0xF5EEE4C8),
+                MaterialTheme.colorScheme.surface,
+                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.18f),
+                MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.72f),
             ),
             start = Offset.Zero,
             end = Offset(900f, 900f),
@@ -244,9 +244,9 @@ fun KelmahCommandDeck(
                 stiffness = 600f,
             ),
         ),
-        shape = RoundedCornerShape(28.dp),
+        shape = MaterialTheme.shapes.extraLarge,
         colors = CardDefaults.cardColors(containerColor = Color.Transparent),
-        border = BorderStroke(1.dp, if (isDark) Color(0x52FFD34D) else Color(0x260F172A)),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = if (isDark) 0.52f else 0.32f)),
         elevation = CardDefaults.cardElevation(defaultElevation = if (isDark) 14.dp else 6.dp),
     ) {
         Column(
@@ -275,12 +275,12 @@ fun KelmahCommandDeck(
                     },
                     colors = AssistChipDefaults.assistChipColors(
                         disabledContainerColor = if (isDark) {
-                            Color(0x3DFFD34D)
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.22f)
                         } else {
-                            Color(0x1EB8860B)
+                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
                         },
                         disabledLabelColor = if (isDark) {
-                            Color(0xFFFFEAAE)
+                            MaterialTheme.colorScheme.primary
                         } else {
                             MaterialTheme.colorScheme.onSurface
                         },
@@ -306,11 +306,11 @@ fun KelmahCommandDeck(
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(14.dp),
                             color = if (isDark) {
-                                Color(0x2D0A0B10)
+                                MaterialTheme.colorScheme.surface.copy(alpha = 0.45f)
                             } else {
-                                Color(0x66FFFFFF)
+                                MaterialTheme.colorScheme.surface.copy(alpha = 0.88f)
                             },
-                            border = BorderStroke(1.dp, if (isDark) Color(0x26FFD34D) else Color(0x1A111111)),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = if (isDark) 0.26f else 0.22f)),
                         ) {
                             Column(
                                 modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),

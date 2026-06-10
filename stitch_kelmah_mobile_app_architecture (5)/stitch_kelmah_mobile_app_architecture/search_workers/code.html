@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kelmah - Find Skilled Workers</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "surface-bright": "#f9f9f9",
+                        "secondary": "#5f5e5e",
+                        "primary": "#705d00",
+                        "surface-container-low": "#f3f3f4",
+                        "on-secondary-fixed-variant": "#474746",
+                        "on-secondary": "#ffffff",
+                        "on-surface": "#1a1c1c",
+                        "outline-variant": "#d0c6ab",
+                        "on-error": "#ffffff",
+                        "inverse-surface": "#2f3131",
+                        "tertiary-container": "#dcdad0",
+                        "on-error-container": "#93000a",
+                        "primary-fixed-dim": "#e9c400",
+                        "on-primary-fixed-variant": "#544600",
+                        "text-body": "#4B5563",
+                        "on-background": "#1a1c1c",
+                        "on-tertiary-container": "#5f5f58",
+                        "tertiary-fixed-dim": "#c8c7bd",
+                        "surface": "#f9f9f9",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "inverse-on-surface": "#f0f1f1",
+                        "outline": "#7e775f",
+                        "status-success": "#10B981",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#e9c400",
+                        "primary-fixed": "#ffe16d",
+                        "tertiary-fixed": "#e4e3d9",
+                        "surface-container-high": "#e8e8e8",
+                        "status-info": "#3B82F6",
+                        "secondary-container": "#e2dfde",
+                        "background": "#f9f9f9",
+                        "surface-container": "#eeeeee",
+                        "on-tertiary-fixed-variant": "#474740",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "on-primary-container": "#705e00",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary": "#5f5f57",
+                        "surface-dim": "#dadada",
+                        "on-secondary-container": "#636262",
+                        "on-primary-fixed": "#221b00",
+                        "surface-muted": "#F3F4F6",
+                        "secondary-fixed": "#e5e2e1",
+                        "on-tertiary-fixed": "#1b1c16",
+                        "surface-tint": "#705d00",
+                        "error-container": "#ffdad6",
+                        "surface-container-highest": "#e2e2e2",
+                        "on-surface-variant": "#4d4732",
+                        "primary-container": "#ffd700",
+                        "surface-variant": "#e2e2e2"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "touch-target": "48px",
+                        "gutter": "16px",
+                        "margin-desktop": "64px",
+                        "base": "8px",
+                        "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "headline-lg-mobile": ["Montserrat"],
+                        "headline-lg": ["Montserrat"],
+                        "label-md": ["Inter"],
+                        "headline-md": ["Montserrat"],
+                        "caption": ["Inter"],
+                        "body-md": ["Inter"],
+                        "display-lg": ["Montserrat"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["28px", {"lineHeight": "34px", "fontWeight": "700"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "caption": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #d0c6ab; border-radius: 10px; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body-md selection:bg-primary-container">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface-container-low dark:bg-surface-container-high shadow-sm flex justify-between items-center px-margin-mobile h-touch-target">
+<div class="flex items-center gap-4">
+<button class="active:scale-95 transition-transform hover:bg-surface-variant/20 p-2 rounded-full">
+<span class="material-symbols-outlined text-primary" data-icon="menu">menu</span>
+</button>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Kelmah</h1>
+</div>
+<div class="flex items-center gap-2">
+<button class="active:scale-95 transition-transform hover:bg-surface-variant/20 p-2 rounded-full">
+<span class="material-symbols-outlined text-primary" data-icon="notifications">notifications</span>
+</button>
+</div>
+</header>
+<main class="pt-20 pb-24 px-margin-mobile max-w-5xl mx-auto">
+<!-- Search & Filter Bar -->
+<section class="mb-8">
+<div class="flex gap-3 items-center">
+<div class="relative flex-1 group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors" data-icon="search">search</span>
+<input class="w-full h-touch-target pl-12 pr-4 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary-container focus:border-primary outline-none font-body-md transition-all" placeholder="Search for plumbers, carpenters..." type="text"/>
+</div>
+<button class="h-touch-target px-4 bg-primary text-on-primary rounded-xl font-label-md flex items-center gap-2 active:scale-95 transition-transform" id="filterToggle">
+<span class="material-symbols-outlined" data-icon="tune">tune</span>
+<span class="hidden sm:inline">Filters</span>
+</button>
+</div>
+</section>
+<!-- Categories Horizontal Scroll -->
+<section class="mb-10">
+<h2 class="font-headline-md text-headline-md mb-4 text-on-surface">Browse by Trade</h2>
+<div class="flex gap-4 overflow-x-auto hide-scrollbar pb-2">
+<!-- Category Item -->
+<button class="flex flex-col items-center gap-2 group min-w-[80px]">
+<div class="w-16 h-16 rounded-2xl bg-primary-container flex items-center justify-center group-hover:bg-primary transition-colors group-active:scale-90 duration-200">
+<span class="material-symbols-outlined text-on-primary-container group-hover:text-on-primary text-3xl" data-icon="handyman">handyman</span>
+</div>
+<span class="font-label-md text-caption text-on-surface-variant">Carpentry</span>
+</button>
+<button class="flex flex-col items-center gap-2 group min-w-[80px]">
+<div class="w-16 h-16 rounded-2xl bg-surface-container-highest flex items-center justify-center group-hover:bg-primary transition-colors group-active:scale-90 duration-200">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-on-primary text-3xl" data-icon="plumbing">plumbing</span>
+</div>
+<span class="font-label-md text-caption text-on-surface-variant">Plumbing</span>
+</button>
+<button class="flex flex-col items-center gap-2 group min-w-[80px]">
+<div class="w-16 h-16 rounded-2xl bg-surface-container-highest flex items-center justify-center group-hover:bg-primary transition-colors group-active:scale-90 duration-200">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-on-primary text-3xl" data-icon="bolt">bolt</span>
+</div>
+<span class="font-label-md text-caption text-on-surface-variant">Electrical</span>
+</button>
+<button class="flex flex-col items-center gap-2 group min-w-[80px]">
+<div class="w-16 h-16 rounded-2xl bg-surface-container-highest flex items-center justify-center group-hover:bg-primary transition-colors group-active:scale-90 duration-200">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-on-primary text-3xl" data-icon="format_paint">format_paint</span>
+</div>
+<span class="font-label-md text-caption text-on-surface-variant">Painting</span>
+</button>
+<button class="flex flex-col items-center gap-2 group min-w-[80px]">
+<div class="w-16 h-16 rounded-2xl bg-surface-container-highest flex items-center justify-center group-hover:bg-primary transition-colors group-active:scale-90 duration-200">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-on-primary text-3xl" data-icon="grid_view">grid_view</span>
+</div>
+<span class="font-label-md text-caption text-on-surface-variant">Tiling</span>
+</button>
+<button class="flex flex-col items-center gap-2 group min-w-[80px]">
+<div class="w-16 h-16 rounded-2xl bg-surface-container-highest flex items-center justify-center group-hover:bg-primary transition-colors group-active:scale-90 duration-200">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-on-primary text-3xl" data-icon="roofing">roofing</span>
+</div>
+<span class="font-label-md text-caption text-on-surface-variant">Roofing</span>
+</button>
+</div>
+</section>
+<!-- Recommended Workers List -->
+<section>
+<div class="flex justify-between items-center mb-6">
+<h2 class="font-headline-md text-headline-md text-on-surface">Recommended Professionals</h2>
+<span class="font-label-md text-primary hover:underline cursor-pointer">View Map</span>
+</div>
+<!-- List of Cards -->
+<div class="grid grid-cols-1 gap-4">
+<!-- Worker Card 1 -->
+<article class="bg-surface-container-lowest p-4 rounded-xl flex gap-4 items-center border border-outline-variant hover:shadow-md transition-shadow group cursor-pointer">
+<div class="relative">
+<img class="w-20 h-20 rounded-lg object-cover bg-surface-container" data-alt="A professional male artisan wearing a denim work shirt and a yellow tool belt, standing confidently in a bright, modern workshop setting. The lighting is warm and industrial, highlighting his friendly expression. The overall color palette features golden yellows, clean greys, and warm wood tones, reflecting a trustworthy and expert craftsmanship aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCg_hnsFsx6YXGJYapZLfqTEMLqZGkZnxk7ps1HneJ1PAaCGwVRYndX0seECO-Tfn2mCr6o8zVKbqTrFA7H01bWwuj5Py9uPeQe4PawCZC3sOL8x25XmNEV9QiUyt6PiF76glgVWxAATZNJd6ZHOKci6HkcpAmuY4Ol8po7w3CWIOznn7_qX1zR-fvAdsVD7pkyE7mftwoJugGPZxqmihSP0MKlg2zED0Ad-OeBc-yDajETYOcm3GveMgpH1k8cVQ4mr0pOOMgpuu0"/>
+<div class="absolute -bottom-1 -right-1 bg-status-success w-4 h-4 rounded-full border-2 border-surface-container-lowest"></div>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="font-label-md text-headline-md text-on-surface leading-tight">Kwame Appiah</h3>
+<p class="font-label-md text-on-surface-variant text-caption flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" data-icon="verified" style="font-variation-settings: 'FILL' 1;">verified</span>
+                                    Master Carpenter
+                                </p>
+</div>
+<div class="bg-tertiary-container px-2 py-1 rounded text-on-tertiary-container text-caption font-bold">
+                                GH₵ 45/hr
+                            </div>
+</div>
+<div class="mt-2 flex items-center gap-4">
+<div class="flex items-center gap-1 text-on-surface font-label-md">
+<span class="material-symbols-outlined text-primary text-[18px]" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+                                4.9 <span class="text-outline text-caption font-normal">(124)</span>
+</div>
+<div class="flex items-center gap-1 text-on-surface-variant font-label-md">
+<span class="material-symbols-outlined text-outline text-[18px]" data-icon="location_on">location_on</span>
+                                2.4 km
+                            </div>
+</div>
+</div>
+<button class="bg-primary-container text-on-primary-container p-3 rounded-full hover:bg-primary hover:text-on-primary transition-colors active:scale-90">
+<span class="material-symbols-outlined" data-icon="chevron_right">chevron_right</span>
+</button>
+</article>
+<!-- Worker Card 2 -->
+<article class="bg-surface-container-lowest p-4 rounded-xl flex gap-4 items-center border border-outline-variant hover:shadow-md transition-shadow group cursor-pointer">
+<div class="relative">
+<img class="w-20 h-20 rounded-lg object-cover bg-surface-container" data-alt="A focused female electrician with protective goggles and professional gear working on a complex circuit board. The environment is a clean, contemporary industrial space with soft natural light. The color scheme emphasizes professional blues, steel greys, and sharp yellow accents, creating a mood of precision, reliability, and modern technical expertise." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBEiiVZHg_JS0Vi23SC7w4t6ONqYWuviUOqB15W9q3ZmWf92xk585Zifl5NS4NSTdnMA8H-BYqZF7Qu8K5bvxA6SyiZ_eKzVzo_413_z1Awtb4ylzI5sqC3DSv3QQdlEDBeeihtwrTqkPrqmnK3bPMrCIP8ZOVe1R1s5pAuwhy7QmpO2LpmKEtn9cgytNJ6Z5by32dXg88tct5KhEvzuO1r1ZIPp62Ux0NXFatezTnsiZ8mtWBpVkOLho953e44CnxQi-dadeFPFg0"/>
+<div class="absolute -bottom-1 -right-1 bg-status-success w-4 h-4 rounded-full border-2 border-surface-container-lowest"></div>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="font-label-md text-headline-md text-on-surface leading-tight">Sarah Mensah</h3>
+<p class="font-label-md text-on-surface-variant text-caption flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" data-icon="verified" style="font-variation-settings: 'FILL' 1;">verified</span>
+                                    Senior Electrician
+                                </p>
+</div>
+<div class="bg-tertiary-container px-2 py-1 rounded text-on-tertiary-container text-caption font-bold">
+                                GH₵ 60/hr
+                            </div>
+</div>
+<div class="mt-2 flex items-center gap-4">
+<div class="flex items-center gap-1 text-on-surface font-label-md">
+<span class="material-symbols-outlined text-primary text-[18px]" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+                                5.0 <span class="text-outline text-caption font-normal">(89)</span>
+</div>
+<div class="flex items-center gap-1 text-on-surface-variant font-label-md">
+<span class="material-symbols-outlined text-outline text-[18px]" data-icon="location_on">location_on</span>
+                                0.8 km
+                            </div>
+</div>
+</div>
+<button class="bg-primary-container text-on-primary-container p-3 rounded-full hover:bg-primary hover:text-on-primary transition-colors active:scale-90">
+<span class="material-symbols-outlined" data-icon="chevron_right">chevron_right</span>
+</button>
+</article>
+<!-- Worker Card 3 -->
+<article class="bg-surface-container-lowest p-4 rounded-xl flex gap-4 items-center border border-outline-variant hover:shadow-md transition-shadow group cursor-pointer">
+<div class="relative">
+<img class="w-20 h-20 rounded-lg object-cover bg-surface-container" data-alt="A male plumbing specialist in a clean uniform inspecting pipes under a luxury kitchen sink. The setting is bright and upscale with marble countertops and modern fixtures. The lighting is crisp and professional, with a focus on cleanliness and detail. The color palette is composed of high-contrast blacks, whites, and metallic silver tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDQ6XWHdIJWla5xfqhqTzllj8X-CWjnnO6YiVNeHO-Yhj8XXi6FZAEEtNwyHKDtB-Tjx34ZYkkBg92-JFZuq-dcdN_qn51JpjBtjdJYI-GPGn4jhi2TGEgjnx3sRu-YiEBghC46tS3j7kajGQWyka0ZZZzOajfjJM4W6prpF1GeA_ZGQ4jyOQ9kDPWTaSe4u_jRrIcklo3ZK1zr1RBpZluSwynKYBMEBO5AtB13j3GFp-fWx9yCHw256mXqvYSWyrWxZY7Mps6WJjw"/>
+<div class="absolute -bottom-1 -right-1 bg-surface-muted w-4 h-4 rounded-full border-2 border-surface-container-lowest"></div>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="font-label-md text-headline-md text-on-surface leading-tight">Isaac Boateng</h3>
+<p class="font-label-md text-on-surface-variant text-caption flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" data-icon="verified" style="font-variation-settings: 'FILL' 1;">verified</span>
+                                    24/7 Plumber
+                                </p>
+</div>
+<div class="bg-tertiary-container px-2 py-1 rounded text-on-tertiary-container text-caption font-bold">
+                                GH₵ 50/hr
+                            </div>
+</div>
+<div class="mt-2 flex items-center gap-4">
+<div class="flex items-center gap-1 text-on-surface font-label-md">
+<span class="material-symbols-outlined text-primary text-[18px]" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+                                4.7 <span class="text-outline text-caption font-normal">(210)</span>
+</div>
+<div class="flex items-center gap-1 text-on-surface-variant font-label-md">
+<span class="material-symbols-outlined text-outline text-[18px]" data-icon="location_on">location_on</span>
+                                3.1 km
+                            </div>
+</div>
+</div>
+<button class="bg-primary-container text-on-primary-container p-3 rounded-full hover:bg-primary hover:text-on-primary transition-colors active:scale-90">
+<span class="material-symbols-outlined" data-icon="chevron_right">chevron_right</span>
+</button>
+</article>
+<!-- Worker Card 4 -->
+<article class="bg-surface-container-lowest p-4 rounded-xl flex gap-4 items-center border border-outline-variant hover:shadow-md transition-shadow group cursor-pointer">
+<div class="relative">
+<img class="w-20 h-20 rounded-lg object-cover bg-surface-container" data-alt="A professional painter applying a smooth coat of neutral paint to a modern living room wall. The worker is wearing clean white overalls and focused on their work. The room is filled with bright, natural sunlight, creating an airy and efficient atmosphere. The color palette revolves around clean whites, soft beiges, and the primary brand yellow of the tool equipment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBxMRArR6gdBfBYz9PCtz6E68Uy7T-WoJVaOwFLyzpKv_sBOT_LlmC46uPlempsb9HRSM9azHo70epBSxhMEE9VqZALE0unFm-C0S0VdPnPTIx4p82b9XJRxEs2tgWsC6ww8WtIv-gdBUu0VGUryhVXPbSONAi6b-2bENj9LQbETEnf1tK59yoMd5vFqVHVbxawX8awVWs64WVDFnKT2dKah-q-_UWNVhrs0IPyvUf4gl5scvJ9dnYq73wdhUfEwch5StQk4XmVLvE"/>
+<div class="absolute -bottom-1 -right-1 bg-status-success w-4 h-4 rounded-full border-2 border-surface-container-lowest"></div>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="font-label-md text-headline-md text-on-surface leading-tight">Ama Serwaa</h3>
+<p class="font-label-md text-on-surface-variant text-caption flex items-center gap-1">
+                                    Interior Specialist
+                                </p>
+</div>
+<div class="bg-tertiary-container px-2 py-1 rounded text-on-tertiary-container text-caption font-bold">
+                                GH₵ 35/hr
+                            </div>
+</div>
+<div class="mt-2 flex items-center gap-4">
+<div class="flex items-center gap-1 text-on-surface font-label-md">
+<span class="material-symbols-outlined text-primary text-[18px]" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+                                4.8 <span class="text-outline text-caption font-normal">(45)</span>
+</div>
+<div class="flex items-center gap-1 text-on-surface-variant font-label-md">
+<span class="material-symbols-outlined text-outline text-[18px]" data-icon="location_on">location_on</span>
+                                5.6 km
+                            </div>
+</div>
+</div>
+<button class="bg-primary-container text-on-primary-container p-3 rounded-full hover:bg-primary hover:text-on-primary transition-colors active:scale-90">
+<span class="material-symbols-outlined" data-icon="chevron_right">chevron_right</span>
+</button>
+</article>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 rounded-t-xl bg-surface-container-lowest dark:bg-surface-container-high shadow-[0_-4px_20px_rgba(0,0,0,0.04)] flex justify-around items-center h-16 pb-safe px-gutter">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant hover:text-primary transition-all active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-md text-label-md">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container dark:bg-primary-fixed dark:text-on-primary-fixed rounded-full px-4 py-1 active:scale-90 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="work" style="font-variation-settings: 'FILL' 1;">work</span>
+<span class="font-label-md text-label-md">Jobs</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant hover:text-primary transition-all active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="mail">mail</span>
+<span class="font-label-md text-label-md">Messages</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant hover:text-primary transition-all active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="account_balance_wallet">account_balance_wallet</span>
+<span class="font-label-md text-label-md">Wallet</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant hover:text-primary transition-all active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-md text-label-md">Profile</span>
+</a>
+</nav>
+<!-- Filter Modal (Simplified Backdrop) -->
+<div class="fixed inset-0 z-[100] bg-on-background/40 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-4" id="filterModal">
+<div class="bg-surface w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl animate-in slide-in-from-bottom duration-300">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-headline-md text-headline-md">Advanced Filters</h3>
+<button class="p-2 hover:bg-surface-variant/20 rounded-full transition-colors" id="closeFilter">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+</div>
+<div class="space-y-6">
+<div>
+<label class="font-label-md text-on-surface-variant block mb-2">Distance</label>
+<input class="w-full h-2 bg-outline-variant rounded-lg appearance-none cursor-pointer accent-primary" type="range"/>
+<div class="flex justify-between text-caption text-outline mt-1">
+<span>1km</span>
+<span>50km</span>
+</div>
+</div>
+<div>
+<label class="font-label-md text-on-surface-variant block mb-3">Rating</label>
+<div class="flex gap-2">
+<button class="flex-1 py-2 border border-outline-variant rounded-lg font-label-md hover:bg-primary-container transition-colors">3.5+</button>
+<button class="flex-1 py-2 border border-outline-variant rounded-lg font-label-md hover:bg-primary-container transition-colors">4.0+</button>
+<button class="flex-1 py-2 border border-primary bg-primary-container text-on-primary-container rounded-lg font-label-md">4.5+</button>
+</div>
+</div>
+<div>
+<label class="font-label-md text-on-surface-variant block mb-3">Availability</label>
+<div class="flex flex-wrap gap-2">
+<button class="px-4 py-2 bg-surface-container-highest rounded-full text-caption font-label-md border border-transparent">Immediate</button>
+<button class="px-4 py-2 bg-primary text-on-primary rounded-full text-caption font-label-md border border-transparent">This Weekend</button>
+<button class="px-4 py-2 bg-surface-container-highest rounded-full text-caption font-label-md border border-transparent">Custom</button>
+</div>
+</div>
+<button class="w-full bg-primary text-on-primary font-headline-md h-touch-target rounded-xl mt-4 active:scale-95 transition-transform">
+                    Apply Results
+                </button>
+</div>
+</div>
+</div>
+<script>
+        const filterToggle = document.getElementById('filterToggle');
+        const filterModal = document.getElementById('filterModal');
+        const closeFilter = document.getElementById('closeFilter');
+
+        filterToggle.addEventListener('click', () => {
+            filterModal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        });
+
+        closeFilter.addEventListener('click', () => {
+            filterModal.classList.add('hidden');
+            document.body.style.overflow = '';
+        });
+
+        // Close on clicking backdrop
+        filterModal.addEventListener('click', (e) => {
+            if (e.target === filterModal) {
+                filterModal.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
+        });
+    </script>
+</body></html>

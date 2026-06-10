@@ -1,0 +1,68 @@
+const express = require('express');
+const router = express.Router();
+const reviewController = require('../controllers/review.controller');
+const ratingController = require('../controllers/rating.controller');
+const analyticsController = require('../controllers/analytics.controller');
+const { verifyGatewayRequest } = require('../../../shared/middlewares/serviceTrust');
+
+const requireAdmin = (req, res, next) => {
+	const role = req.user?.role;
+	if (role !== 'admin' && role !== 'super_admin') {
+		return res.status(403).json({
+			success: false,
+			error: { message: 'Admin access required', code: 'FORBIDDEN' }
+		});
+	}
+	next();
+};
+
+// ==================== REVIEW ROUTES ====================
+
+// Submit a new review (authenticated)
+router.post('/', verifyGatewayRequest, reviewController.submitReview);
+
+// Check review eligibility for a worker (authenticated) — must be before /worker/:workerId
+router.get('/worker/:workerId/eligibility', verifyGatewayRequest, reviewController.checkEligibility);
+
+// Get review candidates for the authenticated hirer (authenticated)
+router.get('/hirer/review-candidates', verifyGatewayRequest, reviewController.getHirerReviewCandidates);
+
+// Get reviews for a specific worker (public)
+router.get('/worker/:workerId', reviewController.getWorkerReviews);
+
+// Get reviews for a specific job (public)
+router.get('/job/:jobId', reviewController.getJobReviews);
+
+// Get reviews authored by a specific user (public)
+router.get('/user/:userId', reviewController.getUserReviews);
+
+// Get review analytics (admin only)
+router.get('/analytics', verifyGatewayRequest, requireAdmin, analyticsController.getReviewAnalytics);
+
+// ==================== RATING ROUTES ====================
+// (MUST be before /:reviewId to prevent shadowing by the param route)
+
+// Get worker rating summary (public)
+router.get('/ratings/worker/:workerId', ratingController.getWorkerRating);
+
+// Lightweight ranking signals endpoint (public, for search service)
+router.get('/ratings/worker/:workerId/signals', ratingController.getWorkerRankSignals);
+
+// ==================== PARAM ROUTES (/:reviewId) ====================
+
+// Get specific review details (public)
+router.get('/:reviewId', reviewController.getReview);
+
+// Worker response to a review (authenticated)
+router.put('/:reviewId/response', verifyGatewayRequest, reviewController.addReviewResponse);
+
+// Vote review as helpful (authenticated)
+router.post('/:reviewId/helpful', verifyGatewayRequest, reviewController.voteHelpful);
+
+// Report review (authenticated)
+router.post('/:reviewId/report', verifyGatewayRequest, reviewController.reportReview);
+
+// Admin: Moderate review
+router.put('/:reviewId/moderate', verifyGatewayRequest, requireAdmin, analyticsController.moderateReview);
+
+module.exports = router;

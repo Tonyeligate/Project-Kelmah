@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kelmah - Refer and Earn</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "outline": "#7e775f",
+                        "on-surface": "#1a1c1c",
+                        "on-error": "#ffffff",
+                        "primary-fixed": "#ffe16d",
+                        "on-tertiary-container": "#5f5f58",
+                        "on-primary-fixed": "#221b00",
+                        "inverse-primary": "#e9c400",
+                        "on-surface-variant": "#4d4732",
+                        "on-secondary-container": "#636262",
+                        "surface-container": "#eeeeee",
+                        "surface-muted": "#F3F4F6",
+                        "tertiary-fixed": "#e4e3d9",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "error-container": "#ffdad6",
+                        "on-error-container": "#93000a",
+                        "status-info": "#3B82F6",
+                        "secondary-container": "#e2dfde",
+                        "primary-fixed-dim": "#e9c400",
+                        "inverse-surface": "#2f3131",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-bright": "#f9f9f9",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#1a1c1c",
+                        "outline-variant": "#d0c6ab",
+                        "surface": "#f9f9f9",
+                        "on-primary-fixed-variant": "#544600",
+                        "on-primary-container": "#705e00",
+                        "tertiary-container": "#dcdad0",
+                        "on-secondary-fixed-variant": "#474746",
+                        "on-tertiary": "#ffffff",
+                        "surface-variant": "#e2e2e2",
+                        "surface-container-high": "#e8e8e8",
+                        "primary-container": "#ffd700",
+                        "surface-container-low": "#f3f3f4",
+                        "primary": "#705d00",
+                        "error": "#ba1a1a",
+                        "inverse-on-surface": "#f0f1f1",
+                        "text-body": "#4B5563",
+                        "tertiary-fixed-dim": "#c8c7bd",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "surface-dim": "#dadada",
+                        "on-tertiary-fixed-variant": "#474740",
+                        "secondary": "#5f5e5e",
+                        "on-tertiary-fixed": "#1b1c16",
+                        "surface-container-highest": "#e2e2e2",
+                        "background": "#f9f9f9",
+                        "status-success": "#10B981",
+                        "surface-tint": "#705d00",
+                        "tertiary": "#5f5f57",
+                        "secondary-fixed": "#e5e2e1",
+                        "on-primary": "#ffffff"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "gutter": "16px",
+                        "base": "8px",
+                        "margin-mobile": "16px",
+                        "touch-target": "48px",
+                        "margin-desktop": "64px",
+                        "safe": "env(safe-area-inset-bottom)"
+                    },
+                    fontFamily: {
+                        "headline-md": ["Montserrat"],
+                        "headline-lg": ["Montserrat"],
+                        "label-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "display-lg": ["Montserrat"],
+                        "caption": ["Inter"],
+                        "headline-lg-mobile": ["Montserrat"]
+                    },
+                    fontSize: {
+                        "headline-md": ["24px", { lineHeight: "32px", fontWeight: "600" }],
+                        "headline-lg": ["32px", { lineHeight: "40px", fontWeight: "700" }],
+                        "label-md": ["14px", { lineHeight: "20px", fontWeight: "600" }],
+                        "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+                        "body-lg": ["18px", { lineHeight: "28px", fontWeight: "400" }],
+                        "display-lg": ["48px", { lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700" }],
+                        "caption": ["12px", { lineHeight: "16px", fontWeight: "500" }],
+                        "headline-lg-mobile": ["28px", { lineHeight: "34px", fontWeight: "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill-icon {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface antialiased pb-24 md:pb-8">
+<!-- Toast Notification (Hidden by default) -->
+<div class="fixed top-20 left-1/2 transform -translate-x-1/2 bg-inverse-surface text-inverse-on-surface px-6 py-3 rounded-full font-label-md text-label-md shadow-lg opacity-0 transition-opacity duration-300 z-[100] pointer-events-none flex items-center gap-2" id="toast">
+<span class="material-symbols-outlined fill-icon text-status-success">check_circle</span>
+        Copied to clipboard!
+    </div>
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky bg-surface dark:bg-surface-dim z-40">
+<div class="flex items-center justify-between px-margin-mobile md:px-margin-desktop h-16 w-full">
+<button aria-label="Menu" class="w-touch-target h-touch-target flex items-center justify-center text-primary dark:text-primary-fixed-dim hover:bg-surface-variant dark:hover:bg-on-surface-variant transition-colors rounded-full active:scale-95 duration-150">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h1 class="font-headline-lg text-headline-lg font-bold text-primary dark:text-primary-fixed-dim text-center flex-1">Kelmah</h1>
+<button aria-label="User profile" class="w-touch-target h-touch-target flex items-center justify-center rounded-full overflow-hidden hover:bg-surface-variant dark:hover:bg-on-surface-variant transition-colors active:scale-95 duration-150">
+<img alt="User profile" class="w-8 h-8 rounded-full object-cover" data-alt="A close-up studio portrait of a professional tradesperson with a confident, friendly expression. The lighting is bright, soft, and modern, casting subtle shadows that highlight their features. They are wearing a neat, dark industrial work shirt against a pristine white background. The overall aesthetic conveys trust, reliability, and high-quality craftsmanship, fitting a corporate modern industrial app." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCBwKTO28mUcVGhQ5CacbLSdp1CdTOblNcfq5WiO2wdBwTaBEkJOAVDJf89YfOhGtr5VuRAV0yLKUbIdi3g5e8osIg1TOG1aXAOcd-njPbwd8gz9EidyTT4zbqGSVK5QgGMsWISFP2LT6RFI4aW4ChtZ9IScpkHg2bRI2wTQ5AhqFoKFHirO1lGKZhuoMS4wZnZBWm9yq2lgnNxfmQslzEBCS-qszByrB78R807ikpmeL5yKY6MJtx_lZoE-R0xdAM2S8GQayI1YtY"/>
+</button>
+</div>
+<div class="w-full h-px bg-surface-container-low dark:bg-surface-container-high"></div>
+</header>
+<!-- Main Content Canvas -->
+<main class="w-full max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop pt-6 pb-safe space-y-gutter">
+<!-- Header Section -->
+<div class="text-center space-y-2 mb-8">
+<h2 class="font-headline-md text-headline-md text-on-surface">Refer &amp; Earn</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Build the network. Earn rewards for every successful hire.</p>
+</div>
+<!-- High-Impact Bento Grid Top Section -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-gutter">
+<!-- Earnings Summary Card -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm flex flex-col justify-between relative overflow-hidden">
+<!-- Decorative background element -->
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary-container opacity-20 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
+<div>
+<div class="flex items-center gap-2 text-on-surface-variant mb-1">
+<span class="material-symbols-outlined text-primary">account_balance_wallet</span>
+<span class="font-label-md text-label-md">Total Earned</span>
+</div>
+<div class="font-display-lg text-display-lg text-on-surface tracking-tight mt-2">
+                        $450<span class="text-headline-md text-on-surface-variant">.00</span>
+</div>
+</div>
+<div class="mt-6 flex items-center justify-between border-t border-surface-container-high pt-4">
+<div class="flex flex-col">
+<span class="font-caption text-caption text-on-surface-variant">Active Referrals</span>
+<span class="font-headline-md text-headline-md text-on-surface">3</span>
+</div>
+<div class="flex flex-col text-right">
+<span class="font-caption text-caption text-on-surface-variant">Pending Bonus</span>
+<span class="font-label-md text-label-md text-status-success">+$150</span>
+</div>
+</div>
+</div>
+<!-- Gamification Progress Card -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm flex flex-col justify-center">
+<div class="flex justify-between items-end mb-4">
+<div>
+<div class="font-caption text-caption text-primary font-bold uppercase tracking-wider mb-1">Current Tier</div>
+<h3 class="font-headline-md text-headline-md text-on-surface flex items-center gap-2">
+                            Silver Master <span class="material-symbols-outlined fill-icon text-secondary-fixed-dim">workspace_premium</span>
+</h3>
+</div>
+<div class="text-right">
+<div class="font-caption text-caption text-on-surface-variant">Next: Gold</div>
+<div class="font-label-md text-label-md text-on-surface">2/5 Referrals</div>
+</div>
+</div>
+<!-- Progress Bar -->
+<div class="relative w-full h-3 bg-surface-container-high rounded-full overflow-hidden mb-2">
+<div class="absolute top-0 left-0 h-full bg-primary-container transition-all duration-1000 ease-out" style="width: 40%;"></div>
+</div>
+<p class="font-caption text-caption text-on-surface-variant text-center">3 more successful referrals to unlock a $500 bonus!</p>
+</div>
+</div>
+<!-- Action Card: Share Code -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm mt-gutter">
+<h3 class="font-label-md text-label-md text-on-surface mb-4">Your Unique Referral Link</h3>
+<div class="flex flex-col sm:flex-row gap-4 items-stretch">
+<!-- Code Display -->
+<div class="flex-1 flex items-center justify-between bg-surface-container border border-outline-variant rounded-lg px-4 py-3">
+<code class="font-body-md text-body-md text-on-surface tracking-wide select-all" id="referral-code">kelmah.app/ref/WORKHARD88</code>
+<button aria-label="Copy code" class="w-touch-target h-touch-target -mr-3 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors" onclick="copyCode()">
+<span class="material-symbols-outlined">content_copy</span>
+</button>
+</div>
+<!-- Share Button -->
+<button class="bg-primary-container text-on-primary-container font-label-md text-label-md py-3 px-6 rounded-lg flex items-center justify-center gap-2 hover:bg-inverse-primary transition-colors active:scale-95 duration-150 min-w-[140px]">
+<span class="material-symbols-outlined fill-icon">share</span>
+                    Share Link
+                </button>
+</div>
+</div>
+<!-- Successful Referrals List -->
+<div class="mt-8">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-4">Recent Referrals</h3>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+<ul class="divide-y divide-surface-container-high">
+<!-- List Item 1: Completed -->
+<li class="p-4 flex items-center gap-4 hover:bg-surface-bright transition-colors">
+<div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center text-primary font-bold font-headline-md shrink-0 overflow-hidden">
+<img alt="Marcus T." class="w-full h-full object-cover" data-alt="A modern headshot of a confident male contractor in a well-lit studio environment. He wears a clean, gray industrial uniform shirt. The background is a stark, pure white, emphasizing his professionalism. The lighting is crisp and even, creating a high-contrast, clean corporate aesthetic suitable for a modern trades app." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDdYaXvs660EVNBd47KkXqc4WSefY2zGNaLKCiIbjIZ7h3CwbL-2bpoy4T7e4PkQcwwooNxoWBr32oHzj28IDMbONofNqITuy9r4OHGO41duz3Az41bmIoy7-yPWdhMV4EkdMmnO_hY-YMwB_Kgj8uyp0c5fWxBB8sznxmdeQdPQePx25643Gy7c8kc2fwbQ-Ajcc8oW9A5ODgeFn0nfT3CxJSgndVD7epWoF-ZFNqh0GGD5IcXiCYSwZzf01qO-pJHSrcgclNiwkw"/>
+</div>
+<div class="flex-1 min-w-0">
+<p class="font-label-md text-label-md text-on-surface truncate">Marcus T. (Electrician)</p>
+<p class="font-caption text-caption text-on-surface-variant">Joined Oct 12, 2023</p>
+</div>
+<div class="flex flex-col items-end">
+<span class="bg-status-success/10 text-status-success border border-status-success/20 px-2.5 py-1 rounded-full font-caption text-caption whitespace-nowrap">Completed First Job</span>
+<span class="font-label-md text-label-md text-on-surface mt-1">+$150</span>
+</div>
+</li>
+<!-- List Item 2: Pending -->
+<li class="p-4 flex items-center gap-4 hover:bg-surface-bright transition-colors">
+<div class="w-12 h-12 rounded-full bg-tertiary-container flex items-center justify-center text-on-tertiary-container font-bold font-headline-md shrink-0">
+                            SJ
+                        </div>
+<div class="flex-1 min-w-0">
+<p class="font-label-md text-label-md text-on-surface truncate">Sarah J. (Plumber)</p>
+<p class="font-caption text-caption text-on-surface-variant">Joined Oct 28, 2023</p>
+</div>
+<div class="flex flex-col items-end">
+<span class="bg-surface-container-highest text-on-surface-variant px-2.5 py-1 rounded-full font-caption text-caption whitespace-nowrap">Profile Pending</span>
+<span class="font-label-md text-label-md text-on-surface-variant mt-1">--</span>
+</div>
+</li>
+<!-- List Item 3: Completed -->
+<li class="p-4 flex items-center gap-4 hover:bg-surface-bright transition-colors">
+<div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center text-primary font-bold font-headline-md shrink-0 overflow-hidden">
+<img alt="David W." class="w-full h-full object-cover" data-alt="A portrait of a male construction worker wearing a high-visibility yellow vest over a dark shirt. The setting is abstracted to a bright, clean, soft-focus gray background, keeping the focus entirely on the worker. His expression is experienced and reliable. The overall tone is industrial, professional, and trustworthy, matching a clean modern interface design." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAy6SDhGIrkaY2Fu2NgPOaRCov2rSeXoT1SCq00ogZG7nsffQ-DWy2jVz2Me7S2CRUFZJqN6Q8gouMfhL08_p3xQt7tb1YdFrSOfDMTZ3109xJNp1ouQnc7Vs96h8xwVEiRL3_eljLHTe7D0UEGoKl4SaDEmy_WVERgGKa3GlmGIHGH1gk3jY36hDPOJ9TpPJoAOIxc14O90wHSPClYZbrjCmd3twp_w9H0iWvIhDyi_2GfTpk6sbuDayP3JzV2tACZ5wIN_nPItYk"/>
+</div>
+<div class="flex-1 min-w-0">
+<p class="font-label-md text-label-md text-on-surface truncate">David W. (Carpenter)</p>
+<p class="font-caption text-caption text-on-surface-variant">Joined Sep 05, 2023</p>
+</div>
+<div class="flex flex-col items-end">
+<span class="bg-status-success/10 text-status-success border border-status-success/20 px-2.5 py-1 rounded-full font-caption text-caption whitespace-nowrap">Completed First Job</span>
+<span class="font-label-md text-label-md text-on-surface mt-1">+$150</span>
+</div>
+</li>
+</ul>
+<div class="p-3 bg-surface-container-low border-t border-surface-container-high text-center">
+<button class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors p-2">View All History</button>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-touch-target bg-surface dark:bg-surface-dim border-t border-outline-variant dark:border-outline pb-safe pt-2">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-secondary-fixed-dim px-4 py-1.5 hover:bg-secondary-container dark:hover:bg-secondary-fixed-variant active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-md text-label-md text-[10px]">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-secondary-fixed-dim px-4 py-1.5 hover:bg-secondary-container dark:hover:bg-secondary-fixed-variant active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">work</span>
+<span class="font-label-md text-label-md text-[10px]">Jobs</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-secondary-fixed-dim px-4 py-1.5 hover:bg-secondary-container dark:hover:bg-secondary-fixed-variant active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">chat</span>
+<span class="font-label-md text-label-md text-[10px]">Messages</span>
+</a>
+<!-- Active Nav Item (Wallet maps best to Earnings/Referrals) -->
+<a class="flex flex-col items-center justify-center bg-primary-container dark:bg-primary-fixed text-on-primary-container dark:text-on-primary-fixed rounded-xl px-4 py-1.5 active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined fill-icon">payments</span>
+<span class="font-label-md text-label-md text-[10px] font-bold">Wallet</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-secondary-fixed-dim px-4 py-1.5 hover:bg-secondary-container dark:hover:bg-secondary-fixed-variant active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-md text-label-md text-[10px]">Profile</span>
+</a>
+</nav>
+<script>
+        function copyCode() {
+            // Simulated copy action
+            const codeText = document.getElementById('referral-code').innerText;
+            navigator.clipboard.writeText(codeText).then(() => {
+                const toast = document.getElementById('toast');
+                toast.classList.remove('opacity-0');
+                setTimeout(() => {
+                    toast.classList.add('opacity-0');
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        }
+    </script>
+</body></html>

@@ -1,0 +1,44 @@
+/**
+ * Job Service Models Index
+ * Uses shared models for cross-service entities, local models for service-specific
+ */
+
+// Import shared models (truly cross-service)
+// These use mongoose.model() which auto-binds to the default connection
+const { Job, Application, User, QuickJob, WorkerProfile } = require('../../../shared/models');
+
+// Import LOCAL service-specific models
+const SavedJob = require('./SavedJob');  // ✅ Local (only job-service)
+const Bid = require('./Bid');
+const UserPerformance = require('./UserPerformance');
+const Category = require('./Category');
+const Contract = require('./Contract');
+const ContractDispute = require('./ContractDispute');
+const ContractTemplate = require('./ContractTemplate');
+const CalendarEvent = require('./CalendarEvent');
+
+// Cross-service model used for availability-aware recommendation scoring
+const Availability = require('../../user-service/models/Availability');
+
+// Export models
+module.exports = {
+  // Shared models
+  Job,         // ✅ Shared (used by job, review, payment)
+  Application, // ✅ Shared (used by job, review, payment)
+  User,        // ✅ Shared (used by all services)
+  QuickJob,    // ✅ Shared (Protected Quick-Hire system)
+  WorkerProfile,
+
+  // Local service-specific models
+  SavedJob,
+  Bid,
+  UserPerformance,
+  Category,
+  Contract,
+  ContractDispute,
+  ContractTemplate,
+  CalendarEvent,
+
+  // Cross-service
+  Availability,
+};

@@ -21,6 +21,7 @@ import com.kelmah.mobile.features.notifications.data.actionTarget
 import com.kelmah.mobile.features.notifications.presentation.NotificationsViewModel
 import com.kelmah.mobile.features.notifications.presentation.NotificationsScreen
 import com.kelmah.mobile.features.profile.presentation.ProfileScreen
+import com.kelmah.mobile.features.stitch.presentation.stitchPlaceholderRoutes
 
 private val NAVIGATION_OBJECT_ID_REGEX = Regex("^[0-9a-fA-F]{24}$")
 
@@ -136,6 +137,7 @@ fun KelmahNavHost(
                 onMessageWorker = { navController.navigate(KelmahDestination.Messages.route) },
             )
         }
+        stitchPlaceholderRoutes(navController)
     }
 }
 

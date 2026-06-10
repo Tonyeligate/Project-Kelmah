@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Security Center - Kelmah</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-secondary-fixed": "#1c1b1b",
+                      "surface-container-high": "#e8e8e8",
+                      "text-body": "#4B5563",
+                      "on-primary-fixed-variant": "#544600",
+                      "surface-muted": "#F3F4F6",
+                      "on-tertiary": "#ffffff",
+                      "surface-variant": "#e2e2e2",
+                      "inverse-surface": "#2f3131",
+                      "surface-tint": "#705d00",
+                      "on-surface-variant": "#4d4732",
+                      "surface": "#f9f9f9",
+                      "primary": "#705d00",
+                      "on-primary": "#ffffff",
+                      "status-success": "#10B981",
+                      "on-secondary-fixed-variant": "#474746",
+                      "surface-container-highest": "#e2e2e2",
+                      "on-secondary": "#ffffff",
+                      "inverse-on-surface": "#f0f1f1",
+                      "on-secondary-container": "#636262",
+                      "outline-variant": "#d0c6ab",
+                      "primary-container": "#ffd700",
+                      "on-tertiary-fixed-variant": "#474740",
+                      "on-surface": "#1a1c1c",
+                      "secondary-fixed-dim": "#c8c6c5",
+                      "on-tertiary-container": "#5f5f58",
+                      "surface-container": "#eeeeee",
+                      "tertiary-container": "#dcdad0",
+                      "surface-container-low": "#f3f3f4",
+                      "tertiary-fixed": "#e4e3d9",
+                      "secondary-container": "#e2dfde",
+                      "outline": "#7e775f",
+                      "inverse-primary": "#e9c400",
+                      "error-container": "#ffdad6",
+                      "on-primary-fixed": "#221b00",
+                      "primary-fixed": "#ffe16d",
+                      "tertiary-fixed-dim": "#c8c7bd",
+                      "tertiary": "#5f5f57",
+                      "on-tertiary-fixed": "#1b1c16",
+                      "on-primary-container": "#705e00",
+                      "error": "#ba1a1a",
+                      "primary-fixed-dim": "#e9c400",
+                      "surface-bright": "#f9f9f9",
+                      "status-info": "#3B82F6",
+                      "secondary-fixed": "#e5e2e1",
+                      "on-background": "#1a1c1c",
+                      "surface-dim": "#dadada",
+                      "surface-container-lowest": "#ffffff",
+                      "on-error": "#ffffff",
+                      "background": "#f9f9f9",
+                      "secondary": "#5f5e5e",
+                      "on-error-container": "#93000a"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "touch-target": "48px",
+                      "margin-mobile": "16px",
+                      "margin-desktop": "64px",
+                      "gutter": "16px",
+                      "base": "8px"
+              },
+              "fontFamily": {
+                      "headline-lg-mobile": ["Montserrat"],
+                      "caption": ["Inter"],
+                      "body-md": ["Inter"],
+                      "headline-lg": ["Montserrat"],
+                      "label-md": ["Inter"],
+                      "headline-md": ["Montserrat"],
+                      "display-lg": ["Montserrat"],
+                      "body-lg": ["Inter"]
+              },
+              "fontSize": {
+                      "headline-lg-mobile": ["28px", { "lineHeight": "34px", "fontWeight": "700" }],
+                      "caption": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                      "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                      "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                      "label-md": ["14px", { "lineHeight": "20px", "fontWeight": "600" }],
+                      "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                      "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                      "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined[data-weight="fill"] {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background antialiased min-h-screen pb-safe">
+<!-- Sub-page Header (Navigation shell suppressed as per logic for task-focused page) -->
+<header class="sticky top-0 z-50 w-full bg-surface shadow-sm flex items-center px-margin-mobile h-touch-target">
+<button aria-label="Go back" class="flex items-center justify-center w-touch-target h-touch-target -ml-2 text-on-surface hover:bg-surface-container rounded-full transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="ml-2 font-headline-md text-headline-md text-on-surface tracking-tight">Security Center</h1>
+</header>
+<main class="max-w-3xl mx-auto p-margin-mobile md:px-margin-desktop md:py-8 flex flex-col gap-8">
+<!-- Authentication Settings -->
+<section class="flex flex-col gap-4">
+<h2 class="font-label-md text-label-md text-secondary uppercase tracking-wider">Authentication</h2>
+<div class="bg-surface-container-lowest rounded-xl shadow-sm border border-surface-variant overflow-hidden">
+<!-- Change Password -->
+<a class="flex items-center justify-between p-4 border-b border-surface-variant hover:bg-surface-container-low transition-colors min-h-[48px]" href="#">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">lock</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Change Password</p>
+<p class="font-caption text-caption text-secondary">Update your login credentials</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-secondary">chevron_right</span>
+</a>
+<!-- Two-Factor Authentication -->
+<div class="flex items-center justify-between p-4 min-h-[48px]">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined" data-weight="fill">shield</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Two-Factor Authentication</p>
+<p class="font-caption text-caption text-secondary">Add an extra layer of security</p>
+</div>
+</div>
+<!-- Tailwind Toggle Switch -->
+<label class="relative inline-flex items-center cursor-pointer ml-4 shrink-0">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-surface-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+</section>
+<!-- Active Sessions -->
+<section class="flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<h2 class="font-label-md text-label-md text-secondary uppercase tracking-wider">Active Sessions</h2>
+<button class="font-label-md text-label-md text-primary hover:underline">Log out all</button>
+</div>
+<div class="flex flex-col gap-3">
+<!-- Current Session -->
+<div class="bg-surface-container-lowest rounded-xl p-4 shadow-sm border border-primary-fixed flex items-start justify-between">
+<div class="flex items-start gap-4">
+<span class="material-symbols-outlined text-primary mt-1">smartphone</span>
+<div class="flex flex-col gap-1">
+<p class="font-label-md text-label-md text-on-surface flex items-center gap-2">
+                                iPhone 14 Pro
+                                <span class="bg-primary-container text-on-primary-container font-caption text-caption px-2 py-0.5 rounded-full">Current</span>
+</p>
+<p class="font-caption text-caption text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">location_on</span> Accra, Ghana
+                            </p>
+<p class="font-caption text-caption text-secondary">Kelmah App • Active now</p>
+</div>
+</div>
+</div>
+<!-- Other Session -->
+<div class="bg-surface-container-lowest rounded-xl p-4 shadow-sm border border-surface-variant flex items-start justify-between">
+<div class="flex items-start gap-4">
+<span class="material-symbols-outlined text-secondary mt-1">laptop_mac</span>
+<div class="flex flex-col gap-1">
+<p class="font-label-md text-label-md text-on-surface">MacBook Pro (Chrome)</p>
+<p class="font-caption text-caption text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">location_on</span> Kumasi, Ghana
+                            </p>
+<p class="font-caption text-caption text-secondary">Last active: 2 hours ago</p>
+</div>
+</div>
+<button aria-label="Revoke session" class="p-2 text-secondary hover:text-error hover:bg-error-container rounded-lg transition-colors">
+<span class="material-symbols-outlined">logout</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Danger Zone -->
+<section class="mt-8 pt-8 border-t border-surface-variant flex flex-col gap-4">
+<div class="flex flex-col gap-2">
+<h2 class="font-headline-md text-headline-md text-error">Danger Zone</h2>
+<p class="font-body-md text-body-md text-secondary">Once you delete your account, there is no going back. Please be certain.</p>
+</div>
+<button class="h-touch-target w-full bg-error text-on-error rounded-lg font-label-md text-label-md flex items-center justify-center gap-2 hover:bg-[#93000a] transition-colors shadow-sm active:scale-95">
+<span class="material-symbols-outlined" data-weight="fill">warning</span>
+                Delete Account
+            </button>
+</section>
+</main>
+</body></html>

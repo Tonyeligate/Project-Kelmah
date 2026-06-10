@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Login - Kelmah</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container": "#eeeeee",
+                        "primary-container": "#ffd700",
+                        "inverse-on-surface": "#f0f1f1",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-low": "#f3f3f4",
+                        "inverse-primary": "#e9c400",
+                        "status-info": "#3B82F6",
+                        "outline": "#7e775f",
+                        "tertiary-fixed-dim": "#c8c7bd",
+                        "primary-fixed": "#ffe16d",
+                        "secondary-fixed": "#e5e2e1",
+                        "secondary": "#5f5e5e",
+                        "surface": "#f9f9f9",
+                        "surface-dim": "#dadada",
+                        "inverse-surface": "#2f3131",
+                        "surface-container-highest": "#e2e2e2",
+                        "on-secondary-container": "#636262",
+                        "on-primary-container": "#705e00",
+                        "on-primary-fixed": "#221b00",
+                        "on-tertiary-fixed": "#1b1c16",
+                        "on-error-container": "#93000a",
+                        "primary": "#705d00",
+                        "surface-muted": "#F3F4F6",
+                        "surface-container-high": "#e8e8e8",
+                        "surface-tint": "#705d00",
+                        "on-surface": "#1a1c1c",
+                        "surface-container-lowest": "#ffffff",
+                        "text-body": "#4B5563",
+                        "secondary-container": "#e2dfde",
+                        "on-primary-fixed-variant": "#544600",
+                        "on-error": "#ffffff",
+                        "surface-variant": "#e2e2e2",
+                        "tertiary": "#5f5f57",
+                        "error-container": "#ffdad6",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "on-tertiary-fixed-variant": "#474740",
+                        "on-background": "#1a1c1c",
+                        "tertiary-container": "#dcdad0",
+                        "on-tertiary-container": "#5f5f58",
+                        "background": "#f9f9f9",
+                        "outline-variant": "#d0c6ab",
+                        "error": "#ba1a1a",
+                        "status-success": "#10B981",
+                        "on-secondary-fixed-variant": "#474746",
+                        "surface-bright": "#f9f9f9",
+                        "primary-fixed-dim": "#e9c400",
+                        "on-surface-variant": "#4d4732",
+                        "tertiary-fixed": "#e4e3d9"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-desktop": "64px",
+                        "touch-target": "48px",
+                        "gutter": "16px",
+                        "margin-mobile": "16px",
+                        "base": "8px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Montserrat"],
+                        "display-lg": ["Montserrat"],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-md": ["Montserrat"],
+                        "headline-lg-mobile": ["Montserrat"],
+                        "caption": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "34px", "fontWeight": "700" }],
+                        "caption": ["12px", { "lineHeight": "16px", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen flex flex-col antialiased">
+<!-- Suppressed TopAppBar & BottomNavBar as per Semantic Shell Mandate for Linear/Transactional screens (Login) -->
+<main class="flex-grow flex items-center justify-center p-margin-mobile md:p-margin-desktop relative overflow-hidden">
+<!-- Abstract Background Accent (Industrial Theme) -->
+<div class="absolute inset-0 pointer-events-none z-0 overflow-hidden flex justify-center items-center opacity-10">
+<svg aria-hidden="true" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%] max-w-none text-on-surface" viewbox="0 0 1024 1024">
+<defs>
+<pattern height="64" id="grid-pattern" patternunits="userSpaceOnUse" width="64">
+<path d="M 64 0 L 0 0 0 64" fill="none" stroke="currentColor" stroke-dasharray="4 4" stroke-width="1"></path>
+</pattern>
+</defs>
+<rect fill="url(#grid-pattern)" height="100%" width="100%"></rect>
+</svg>
+</div>
+<div class="w-full max-w-md z-10">
+<!-- Header Area -->
+<div class="text-center mb-10 flex flex-col items-center">
+<div class="w-16 h-16 bg-primary-container rounded-lg flex items-center justify-center shadow-sm mb-4">
+<span class="material-symbols-outlined text-4xl text-on-primary-container" style="font-variation-settings: 'FILL' 1;">construction</span>
+</div>
+<h1 class="font-display-lg text-display-lg text-on-background">Kelmah</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2">Professional Trades, Trusted Connections.</p>
+</div>
+<!-- Login Card -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant p-8 relative overflow-hidden">
+<!-- Subtle Top Border Accent -->
+<div class="absolute top-0 left-0 right-0 h-1 bg-primary-container"></div>
+<h2 class="font-headline-md text-headline-md mb-6">Welcome Back</h2>
+<form action="#" class="space-y-5" method="POST">
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-2" for="email">Email Address</label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-on-surface-variant">mail</span>
+</div>
+<input class="block w-full pl-10 pr-3 py-3 font-body-md text-body-md border border-on-background bg-surface-container-lowest text-on-surface rounded-DEFAULT focus:ring-2 focus:ring-primary-container focus:border-primary-container transition-shadow outline-none min-h-[48px]" id="email" name="email" placeholder="you@example.com" required="" type="email"/>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-center mb-2">
+<label class="block font-label-md text-label-md text-on-surface" for="password">Password</label>
+<a class="font-label-md text-label-md text-primary hover:underline" href="#">Forgot Password?</a>
+</div>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-on-surface-variant">lock</span>
+</div>
+<input class="block w-full pl-10 pr-12 py-3 font-body-md text-body-md border border-on-background bg-surface-container-lowest text-on-surface rounded-DEFAULT focus:ring-2 focus:ring-primary-container focus:border-primary-container transition-shadow outline-none min-h-[48px]" id="password" name="password" placeholder="Enter your password" required="" type="password"/>
+<button class="absolute inset-y-0 right-0 pr-3 flex items-center text-on-surface-variant hover:text-on-surface focus:outline-none min-w-[48px] justify-end" id="togglePassword" type="button">
+<span class="material-symbols-outlined" id="toggleIcon">visibility</span>
+</button>
+</div>
+</div>
+<div class="pt-2">
+<button class="w-full flex justify-center py-3 px-4 border border-transparent rounded-DEFAULT font-headline-md text-label-md bg-primary-container text-[#1A1A1A] hover:bg-primary-fixed shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-container active:scale-95 transition-all duration-200 min-h-[48px] items-center" type="submit">
+                            Log In
+                        </button>
+</div>
+</form>
+<!-- Divider -->
+<div class="mt-8">
+<div class="relative">
+<div class="absolute inset-0 flex items-center">
+<div class="w-full border-t border-outline-variant"></div>
+</div>
+<div class="relative flex justify-center text-sm">
+<span class="px-2 bg-surface-container-lowest font-body-md text-caption text-on-surface-variant">Or continue with</span>
+</div>
+</div>
+<!-- Social Logins -->
+<div class="mt-6 grid grid-cols-2 gap-3">
+<button class="w-full flex justify-center items-center py-2 px-4 border border-on-background rounded-DEFAULT bg-transparent text-on-surface hover:bg-surface-container-low focus:outline-none min-h-[48px] transition-colors" type="button">
+<!-- Generic SVG for Google placeholder -->
+<svg class="h-5 w-5 mr-2" fill="currentColor" viewbox="0 0 24 24">
+<path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path>
+<path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path>
+<path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"></path>
+<path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"></path>
+</svg>
+<span class="font-label-md text-label-md">Google</span>
+</button>
+<button class="w-full flex justify-center items-center py-2 px-4 border border-on-background rounded-DEFAULT bg-transparent text-on-surface hover:bg-surface-container-low focus:outline-none min-h-[48px] transition-colors" type="button">
+<span class="material-symbols-outlined mr-2">ios</span>
+<span class="font-label-md text-label-md">Apple</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Create Account Link -->
+<div class="mt-8 text-center">
+<p class="font-body-md text-body-md text-on-surface-variant">
+                    Don't have an account? 
+                    <a class="font-label-md text-label-md text-on-background underline hover:text-primary transition-colors" href="#">Create Account</a>
+</p>
+</div>
+</div>
+</main>
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const togglePassword = document.getElementById('togglePassword');
+            const passwordInput = document.getElementById('password');
+            const toggleIcon = document.getElementById('toggleIcon');
+
+            togglePassword.addEventListener('click', function (e) {
+                // toggle the type attribute
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                
+                // toggle the eye icon
+                toggleIcon.textContent = type === 'password' ? 'visibility' : 'visibility_off';
+            });
+        });
+    </script>
+</body></html>

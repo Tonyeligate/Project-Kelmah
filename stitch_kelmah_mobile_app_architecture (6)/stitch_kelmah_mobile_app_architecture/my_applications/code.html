@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kelmah - My Applications</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "outline": "#7e775f",
+                      "on-surface": "#1a1c1c",
+                      "on-error": "#ffffff",
+                      "primary-fixed": "#ffe16d",
+                      "on-tertiary-container": "#5f5f58",
+                      "on-primary-fixed": "#221b00",
+                      "inverse-primary": "#e9c400",
+                      "on-surface-variant": "#4d4732",
+                      "on-secondary-container": "#636262",
+                      "surface-container": "#eeeeee",
+                      "surface-muted": "#F3F4F6",
+                      "tertiary-fixed": "#e4e3d9",
+                      "secondary-fixed-dim": "#c8c6c5",
+                      "error-container": "#ffdad6",
+                      "on-error-container": "#93000a",
+                      "status-info": "#3B82F6",
+                      "secondary-container": "#e2dfde",
+                      "primary-fixed-dim": "#e9c400",
+                      "inverse-surface": "#2f3131",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-bright": "#f9f9f9",
+                      "on-secondary": "#ffffff",
+                      "on-background": "#1a1c1c",
+                      "outline-variant": "#d0c6ab",
+                      "surface": "#f9f9f9",
+                      "on-primary-fixed-variant": "#544600",
+                      "on-primary-container": "#705e00",
+                      "tertiary-container": "#dcdad0",
+                      "on-secondary-fixed-variant": "#474746",
+                      "on-tertiary": "#ffffff",
+                      "surface-variant": "#e2e2e2",
+                      "surface-container-high": "#e8e8e8",
+                      "primary-container": "#ffd700",
+                      "surface-container-low": "#f3f3f4",
+                      "primary": "#705d00",
+                      "error": "#ba1a1a",
+                      "inverse-on-surface": "#f0f1f1",
+                      "text-body": "#4B5563",
+                      "tertiary-fixed-dim": "#c8c7bd",
+                      "on-secondary-fixed": "#1c1b1b",
+                      "surface-dim": "#dadada",
+                      "on-tertiary-fixed-variant": "#474740",
+                      "secondary": "#5f5e5e",
+                      "on-tertiary-fixed": "#1b1c16",
+                      "surface-container-highest": "#e2e2e2",
+                      "background": "#f9f9f9",
+                      "status-success": "#10B981",
+                      "surface-tint": "#705d00",
+                      "tertiary": "#5f5f57",
+                      "secondary-fixed": "#e5e2e1",
+                      "on-primary": "#ffffff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "gutter": "16px",
+                      "base": "8px",
+                      "margin-mobile": "16px",
+                      "touch-target": "48px",
+                      "margin-desktop": "64px"
+              },
+              "fontFamily": {
+                      "headline-md": ["Montserrat"],
+                      "headline-lg": ["Montserrat"],
+                      "label-md": ["Inter"],
+                      "body-md": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "display-lg": ["Montserrat"],
+                      "caption": ["Inter"],
+                      "headline-lg-mobile": ["Montserrat"]
+              },
+              "fontSize": {
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                      "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "caption": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                      "headline-lg-mobile": ["28px", {"lineHeight": "34px", "fontWeight": "700"}]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+          font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .icon-filled {
+          font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        /* Hide scrollbar for clean horizontal scrolls */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body-md antialiased min-h-screen pb-24 md:pb-0 flex flex-col">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky bg-surface dark:bg-surface-dim flex items-center justify-between px-margin-mobile md:px-margin-desktop h-16 w-full z-40">
+<div class="flex items-center gap-4">
+<button class="hover:bg-surface-variant dark:hover:bg-on-surface-variant transition-colors active:scale-95 duration-150 p-2 rounded-full hidden md:block">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed-dim" data-icon="menu">menu</span>
+</button>
+<h1 class="font-headline-lg-mobile md:font-headline-lg font-bold text-primary dark:text-primary-fixed-dim tracking-tight">Kelmah</h1>
+</div>
+<!-- Desktop Nav Cluster -->
+<nav class="hidden md:flex items-center gap-8">
+<a class="font-label-md text-label-md text-secondary dark:text-secondary-fixed-dim hover:text-primary transition-colors" href="#">Home</a>
+<a class="font-label-md text-label-md text-primary dark:text-primary-fixed-dim font-bold border-b-2 border-primary pb-1" href="#">Jobs</a>
+<a class="font-label-md text-label-md text-secondary dark:text-secondary-fixed-dim hover:text-primary transition-colors" href="#">Messages</a>
+<a class="font-label-md text-label-md text-secondary dark:text-secondary-fixed-dim hover:text-primary transition-colors" href="#">Wallet</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="hover:bg-surface-variant dark:hover:bg-on-surface-variant transition-colors active:scale-95 duration-150 p-2 rounded-full">
+<span class="material-symbols-outlined text-secondary" data-icon="notifications">notifications</span>
+</button>
+<div class="w-10 h-10 rounded-full bg-surface-variant border border-outline-variant overflow-hidden cursor-pointer">
+<img alt="User Avatar" class="w-full h-full object-cover" data-alt="A close-up portrait of a professional tradesman wearing a safety helmet and high-visibility vest. The lighting is bright and modern, suggesting an active construction site. The mood is confident and reliable, fitting the corporate modern aesthetic of the Kelmah platform with its high-contrast and industrial professionalism." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCUbtFF0uQDEtqv-622_2AVH3o34Ksgcpjn-ZDWwdo7UgNZabtrNZ2fbzB4qS9m5BiRZ62eS62sG8Wu7VBMqP-xNxmCtLhcS-dis8gXD0k2TreCH7tYN8C8kmI2w32PYSQ1F7KqpR2gQmGDhtnHpbeoGlw0LR8OcxodntChKKMuY3iJhJAiTnv5JofuslWgY-f2gg41Qg5OCgnryB1wYbRZ2aBGmYo6GqG4F1Kvg5Kj-IvxvF2tdv4rj0XRld8lI35XZsLlqtq6YNQ"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow w-full max-w-[1280px] mx-auto px-margin-mobile md:px-margin-desktop py-8 flex flex-col gap-8">
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface font-semibold mb-2">My Applications</h2>
+<p class="font-body-md text-body-md text-secondary">Track the status of your submitted job proposals.</p>
+</div>
+<!-- Filter Tabs -->
+<div class="flex gap-2 overflow-x-auto no-scrollbar pb-2 md:pb-0">
+<button class="px-4 py-2 rounded-full bg-primary text-on-primary font-label-md text-label-md whitespace-nowrap">All (3)</button>
+<button class="px-4 py-2 rounded-full bg-surface-container border border-outline-variant text-on-surface-variant hover:bg-surface-variant transition-colors font-label-md text-label-md whitespace-nowrap">Reviewing (1)</button>
+<button class="px-4 py-2 rounded-full bg-surface-container border border-outline-variant text-on-surface-variant hover:bg-surface-variant transition-colors font-label-md text-label-md whitespace-nowrap">Shortlisted (1)</button>
+<button class="px-4 py-2 rounded-full bg-surface-container border border-outline-variant text-on-surface-variant hover:bg-surface-variant transition-colors font-label-md text-label-md whitespace-nowrap">Rejected (1)</button>
+</div>
+</div>
+<!-- Application Grid (Bento style focus for desktop, stack for mobile) -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Card 1: Reviewing -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 flex flex-col gap-4 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+<!-- Top Status Bar -->
+<div class="flex justify-between items-start">
+<div class="flex flex-col gap-1">
+<span class="font-label-md text-label-md text-secondary uppercase tracking-wider text-xs">Applied 2 days ago</span>
+<h3 class="font-headline-md text-headline-md text-on-surface leading-tight text-xl">Senior Electrician</h3>
+</div>
+<div class="bg-surface-container-low border border-outline-variant text-on-surface-variant px-3 py-1 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" data-icon="pending">pending</span>
+<span class="font-label-md text-[12px] font-semibold">Reviewing</span>
+</div>
+</div>
+<div class="flex items-center gap-2 text-secondary font-body-md text-body-md text-sm mb-2">
+<span class="material-symbols-outlined text-[18px]" data-icon="location_on">location_on</span>
+<span>Downtown Commercial Site, Accra</span>
+</div>
+<div class="flex flex-col gap-2 bg-surface-muted p-4 rounded-lg">
+<div class="flex justify-between items-center border-b border-outline-variant pb-2">
+<span class="text-secondary font-body-md text-sm">Contractor</span>
+<span class="font-label-md text-on-surface">BuildCorp Gh</span>
+</div>
+<div class="flex justify-between items-center border-b border-outline-variant pb-2">
+<span class="text-secondary font-body-md text-sm">Est. Duration</span>
+<span class="font-label-md text-on-surface">3 Weeks</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-secondary font-body-md text-sm">Your Bid</span>
+<span class="font-label-md text-on-surface font-bold">₵4,500</span>
+</div>
+</div>
+<div class="mt-auto pt-4 flex gap-3">
+<a class="flex-1 flex items-center justify-center gap-2 border border-on-surface text-on-surface font-label-md text-label-md py-3 rounded-lg hover:bg-surface-variant transition-colors min-h-touch-target" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="open_in_new">open_in_new</span>
+                        View Original Post
+                    </a>
+</div>
+</div>
+<!-- Card 2: Shortlisted -->
+<div class="bg-surface-container-lowest border border-primary rounded-xl p-6 flex flex-col gap-4 shadow-md relative overflow-hidden">
+<!-- Highlight Indicator -->
+<div class="absolute top-0 left-0 w-full h-1 bg-primary"></div>
+<!-- Top Status Bar -->
+<div class="flex justify-between items-start">
+<div class="flex flex-col gap-1">
+<span class="font-label-md text-label-md text-secondary uppercase tracking-wider text-xs">Applied 5 days ago</span>
+<h3 class="font-headline-md text-headline-md text-on-surface leading-tight text-xl">Master Plumber</h3>
+</div>
+<div class="bg-primary-container text-on-primary-container px-3 py-1 rounded-full flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-[16px] icon-filled" data-icon="star">star</span>
+<span class="font-label-md text-[12px] font-bold">Shortlisted</span>
+</div>
+</div>
+<div class="flex items-center gap-2 text-secondary font-body-md text-body-md text-sm mb-2">
+<span class="material-symbols-outlined text-[18px]" data-icon="location_on">location_on</span>
+<span>Residential Complex, Tema</span>
+</div>
+<div class="flex flex-col gap-2 bg-surface-muted p-4 rounded-lg">
+<div class="flex justify-between items-center border-b border-outline-variant pb-2">
+<span class="text-secondary font-body-md text-sm">Contractor</span>
+<span class="font-label-md text-on-surface flex items-center gap-1">
+                            HomePro Builders 
+                            <span class="material-symbols-outlined text-status-info text-[14px] icon-filled" data-icon="verified">verified</span>
+</span>
+</div>
+<div class="flex justify-between items-center border-b border-outline-variant pb-2">
+<span class="text-secondary font-body-md text-sm">Est. Duration</span>
+<span class="font-label-md text-on-surface">1 Week</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-secondary font-body-md text-sm">Your Bid</span>
+<span class="font-label-md text-on-surface font-bold">₵1,200</span>
+</div>
+</div>
+<div class="mt-auto pt-4 flex gap-3 flex-col sm:flex-row">
+<button class="flex-1 bg-on-surface text-on-secondary font-label-md text-label-md py-3 rounded-lg hover:bg-inverse-surface transition-colors min-h-touch-target flex items-center justify-center gap-2">
+<span class="material-symbols-outlined" data-icon="chat">chat</span>
+                        Message Client
+                    </button>
+<a class="flex-1 flex items-center justify-center gap-2 border border-outline text-secondary font-label-md text-label-md py-3 rounded-lg hover:bg-surface-variant transition-colors min-h-touch-target" href="#">
+                        View Post
+                    </a>
+</div>
+</div>
+<!-- Card 3: Rejected -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 flex flex-col gap-4 shadow-sm opacity-80 relative overflow-hidden filter grayscale-[0.3]">
+<!-- Top Status Bar -->
+<div class="flex justify-between items-start">
+<div class="flex flex-col gap-1">
+<span class="font-label-md text-label-md text-secondary uppercase tracking-wider text-xs">Applied 2 weeks ago</span>
+<h3 class="font-headline-md text-headline-md text-secondary leading-tight text-xl">HVAC Technician</h3>
+</div>
+<div class="bg-error-container text-on-error-container px-3 py-1 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" data-icon="cancel">cancel</span>
+<span class="font-label-md text-[12px] font-semibold">Not Selected</span>
+</div>
+</div>
+<div class="flex items-center gap-2 text-secondary font-body-md text-body-md text-sm mb-2">
+<span class="material-symbols-outlined text-[18px]" data-icon="location_on">location_on</span>
+<span>Office Park, Osu</span>
+</div>
+<div class="flex flex-col gap-2 bg-surface-container p-4 rounded-lg">
+<p class="font-body-md text-sm text-secondary italic">"Position has been filled internally. Thank you for your interest."</p>
+</div>
+<div class="mt-auto pt-4 flex gap-3">
+<button class="flex-1 flex items-center justify-center gap-2 border border-outline-variant text-secondary font-label-md text-label-md py-3 rounded-lg hover:bg-surface-variant transition-colors min-h-touch-target">
+                        Archive Application
+                    </button>
+</div>
+</div>
+<!-- Placeholder Card (Find More Jobs) -->
+<div class="bg-surface-container border border-dashed border-outline-variant rounded-xl p-6 flex flex-col items-center justify-center gap-4 text-center min-h-[320px]">
+<div class="w-16 h-16 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center mb-2">
+<span class="material-symbols-outlined text-[32px] icon-filled" data-icon="work">work</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface">Keep Building</h3>
+<p class="font-body-md text-secondary text-sm max-w-[200px]">Don't stop now. There are 45+ new jobs matching your skills.</p>
+<button class="mt-4 bg-primary text-on-primary-fixed font-label-md font-bold text-label-md py-3 px-6 rounded-lg hover:bg-primary-fixed-dim transition-colors min-h-touch-target">
+                    Find New Jobs
+                </button>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-touch-target bg-surface dark:bg-surface-dim border-t border-outline-variant dark:border-outline pb-safe md:hidden h-20">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-secondary-fixed-dim px-4 py-1.5 hover:bg-secondary-container dark:hover:bg-secondary-fixed-variant active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-md text-[10px] mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container dark:bg-primary-fixed text-on-primary-container dark:text-on-primary-fixed rounded-xl px-4 py-1.5 active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined icon-filled" data-icon="work">work</span>
+<span class="font-label-md text-[10px] mt-1 font-bold">Jobs</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-secondary-fixed-dim px-4 py-1.5 hover:bg-secondary-container dark:hover:bg-secondary-fixed-variant active:scale-90 transition-transform duration-200 relative" href="#">
+<span class="material-symbols-outlined" data-icon="chat">chat</span>
+<span class="font-label-md text-[10px] mt-1">Messages</span>
+<span class="absolute top-1 right-3 w-2 h-2 bg-error rounded-full"></span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-secondary-fixed-dim px-4 py-1.5 hover:bg-secondary-container dark:hover:bg-secondary-fixed-variant active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+<span class="font-label-md text-[10px] mt-1">Wallet</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-secondary-fixed-dim px-4 py-1.5 hover:bg-secondary-container dark:hover:bg-secondary-fixed-variant active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-md text-[10px] mt-1">Profile</span>
+</a>
+</nav>
+</body></html>

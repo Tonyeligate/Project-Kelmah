@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Transaction Receipt - Kelmah</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-surface-variant": "#4d4732",
+                      "secondary-container": "#e2dfde",
+                      "error": "#ba1a1a",
+                      "tertiary": "#5f5f57",
+                      "surface-container-highest": "#e2e2e2",
+                      "tertiary-fixed-dim": "#c8c7bd",
+                      "surface-container": "#eeeeee",
+                      "secondary-fixed": "#e5e2e1",
+                      "on-surface": "#1a1c1c",
+                      "surface-container-low": "#f3f3f4",
+                      "on-primary": "#ffffff",
+                      "outline-variant": "#d0c6ab",
+                      "on-secondary": "#ffffff",
+                      "surface-container-lowest": "#ffffff",
+                      "on-error": "#ffffff",
+                      "secondary-fixed-dim": "#c8c6c5",
+                      "status-info": "#3B82F6",
+                      "primary-fixed": "#ffe16d",
+                      "on-secondary-container": "#636262",
+                      "tertiary-fixed": "#e4e3d9",
+                      "primary-fixed-dim": "#e9c400",
+                      "status-success": "#10B981",
+                      "error-container": "#ffdad6",
+                      "on-tertiary-fixed": "#1b1c16",
+                      "background": "#f9f9f9",
+                      "surface-dim": "#dadada",
+                      "surface-variant": "#e2e2e2",
+                      "primary": "#705d00",
+                      "inverse-on-surface": "#f0f1f1",
+                      "primary-container": "#ffd700",
+                      "on-primary-container": "#705e00",
+                      "inverse-primary": "#e9c400",
+                      "on-primary-fixed": "#221b00",
+                      "on-tertiary-fixed-variant": "#474740",
+                      "secondary": "#5f5e5e",
+                      "outline": "#7e775f",
+                      "text-body": "#4B5563",
+                      "on-secondary-fixed": "#1c1b1b",
+                      "on-tertiary-container": "#5f5f58",
+                      "surface-bright": "#f9f9f9",
+                      "surface": "#f9f9f9",
+                      "on-error-container": "#93000a",
+                      "surface-container-high": "#e8e8e8",
+                      "surface-muted": "#F3F4F6",
+                      "tertiary-container": "#dcdad0",
+                      "on-background": "#1a1c1c",
+                      "on-tertiary": "#ffffff",
+                      "surface-tint": "#705d00",
+                      "on-secondary-fixed-variant": "#474746",
+                      "on-primary-fixed-variant": "#544600",
+                      "inverse-surface": "#2f3131"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin-desktop": "64px",
+                      "touch-target": "48px",
+                      "margin-mobile": "16px",
+                      "base": "8px",
+                      "gutter": "16px"
+              },
+              "fontFamily": {
+                      "headline-lg-mobile": [
+                              "Montserrat"
+                      ],
+                      "display-lg": [
+                              "Montserrat"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Montserrat"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Montserrat"
+                      ],
+                      "caption": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "headline-lg-mobile": [
+                              "28px",
+                              {
+                                      "lineHeight": "34px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "caption": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "500"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        .ticket-edge {
+            background-image: radial-gradient(circle at 10px 0, transparent 10px, white 11px);
+            background-size: 24px 24px;
+            background-position: -2px -12px;
+            background-repeat: repeat-x;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md text-body-md antialiased min-h-screen flex flex-col items-center">
+<!-- TopAppBar JSON Component -->
+<header class="w-full top-0 sticky bg-surface border-b border-outline-variant flex justify-between items-center px-gutter h-touch-target z-50">
+<button class="flex items-center justify-center w-touch-target h-touch-target transition-colors duration-200 active:opacity-70 hover:bg-surface-container text-primary rounded-full">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">menu</span>
+</button>
+<div class="font-headline-lg-mobile text-headline-lg-mobile font-display-lg text-primary tracking-tight">
+            Kelmah
+        </div>
+<button class="flex items-center justify-center w-touch-target h-touch-target transition-colors duration-200 active:opacity-70 hover:bg-surface-container text-primary rounded-full">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">notifications</span>
+</button>
+</header>
+<!-- Main Canvas -->
+<main class="w-full max-w-[600px] flex-grow px-margin-mobile py-8 flex flex-col items-center">
+<!-- Contextual Header -->
+<div class="w-full flex justify-center mb-6">
+<h1 class="font-headline-md text-headline-md text-on-surface">Transaction Detail</h1>
+</div>
+<!-- Receipt Card -->
+<article class="w-full bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.04)] overflow-hidden border border-surface-container-high relative">
+<!-- Amount Section (Yellow Accent) -->
+<div class="w-full bg-primary-container p-8 flex flex-col items-center justify-center text-center relative z-10">
+<span class="material-symbols-outlined text-[48px] text-on-primary-container mb-4" data-weight="fill" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<div class="font-body-md text-body-md text-on-primary-container opacity-80 mb-1">Amount Paid</div>
+<div class="font-display-lg text-display-lg text-on-primary-container font-bold tracking-tight">
+<span class="text-3xl mr-1">GHS</span>450.00
+                </div>
+<div class="mt-4 px-4 py-1.5 bg-surface-container-lowest text-status-success font-label-md text-label-md rounded-full shadow-sm flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-status-success block"></span>
+                    Success
+                </div>
+</div>
+<!-- Perforated Edge Effect -->
+<div class="w-full h-6 ticket-edge bg-primary-container relative z-0 -mt-3 rotate-180"></div>
+<!-- Details Section -->
+<div class="p-6 flex flex-col gap-5 pt-4">
+<div class="flex justify-between items-center border-b border-surface-container pb-4">
+<span class="font-body-md text-body-md text-on-surface-variant">Date &amp; Time</span>
+<span class="font-label-md text-label-md text-on-surface">Oct 26, 2023 • 14:30</span>
+</div>
+<div class="flex justify-between items-center border-b border-surface-container pb-4">
+<span class="font-body-md text-body-md text-on-surface-variant">Transaction ID</span>
+<span class="font-label-md text-label-md text-on-surface font-mono">TRX-987654321</span>
+</div>
+<div class="flex justify-between items-center border-b border-surface-container pb-4">
+<span class="font-body-md text-body-md text-on-surface-variant">Recipient</span>
+<span class="font-label-md text-label-md text-on-surface">Kwame's Plumbing Solutions</span>
+</div>
+<div class="flex justify-between items-center pb-2">
+<span class="font-body-md text-body-md text-on-surface-variant">Service Type</span>
+<span class="font-label-md text-label-md text-on-surface">Pipe Repair &amp; Assessment</span>
+</div>
+</div>
+</article>
+<!-- Actions -->
+<div class="w-full flex flex-col gap-4 mt-8">
+<button class="w-full h-touch-target bg-primary-container text-on-primary-container font-label-md text-label-md rounded-lg flex justify-center items-center gap-2 hover:bg-primary-fixed-dim active:scale-95 transition-all duration-200 shadow-sm font-bold">
+<span class="material-symbols-outlined text-[20px]">download</span>
+                Download Receipt
+            </button>
+<button class="w-full h-touch-target border border-on-surface text-on-surface font-label-md text-label-md rounded-lg flex justify-center items-center gap-2 hover:bg-surface-container active:scale-95 transition-all duration-200">
+<span class="material-symbols-outlined text-[20px]">flag</span>
+                Report Issue
+            </button>
+</div>
+</main>
+<!-- Navigation Suppressed: Linear/Transactional/Task-Focused sub-page rule applied. -->
+</body></html>

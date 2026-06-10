@@ -11,6 +11,7 @@ private enum RootTab: Hashable {
 
 struct RootTabView: View {
     @EnvironmentObject private var environment: AppEnvironment
+    @StateObject private var navigator = Navigator()
     @State private var selectedTab: RootTab = .home
     @State private var pendingConversationId: String?
     @State private var pendingJobId: String?
@@ -18,11 +19,11 @@ struct RootTabView: View {
     init() {
         let appearance = UITabBarAppearance()
         appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = UIColor(red: 10 / 255, green: 16 / 255, blue: 28 / 255, alpha: 0.98)
-        appearance.shadowColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.26)
+        appearance.backgroundColor = UIColor(KelmahTheme.stitchSurface.opacity(0.99))
+        appearance.shadowColor = UIColor(KelmahTheme.stitchOutline.opacity(0.18))
 
-        let normalItemColor = UIColor(red: 186 / 255, green: 183 / 255, blue: 171 / 255, alpha: 0.92)
-        let selectedItemColor = UIColor(red: 255 / 255, green: 209 / 255, blue: 102 / 255, alpha: 1.0)
+        let normalItemColor = UIColor(KelmahTheme.stitchOnSurfaceVariant.opacity(0.82))
+        let selectedItemColor = UIColor(KelmahTheme.stitchPrimary)
         let normalAttributes: [NSAttributedString.Key: Any] = [
             .foregroundColor: normalItemColor,
             .font: UIFont.systemFont(ofSize: 11, weight: .semibold),
@@ -79,7 +80,8 @@ struct RootTabView: View {
             if environment.sessionStore.phase == .checking {
                 ProgressView("Securing your Kelmah session...")
             } else if environment.sessionStore.isSessionUsable {
-                TabView(selection: $selectedTab) {
+                KelmahNavigationStack(navigator: navigator) {
+                    TabView(selection: $selectedTab) {
                     HomeView(
                         currentUser: environment.sessionStore.currentUser,
                         jobsViewModel: environment.jobsViewModel,
@@ -155,9 +157,10 @@ struct RootTabView: View {
                     )
                         .tag(RootTab.profile)
                         .tabItem { Label("Profile", systemImage: "person") }
+                    }
+                    .tint(KelmahTheme.sun)
+                    .background(KelmahTheme.background.ignoresSafeArea())
                 }
-                .tint(KelmahTheme.sun)
-                .background(KelmahTheme.background.ignoresSafeArea())
             } else if case let .recoverableFailure(message) = environment.sessionStore.phase {
                 SessionRecoveryView(
                     userName: environment.sessionStore.currentUser?.displayName,
@@ -174,6 +177,9 @@ struct RootTabView: View {
                     LoginView(authRepository: environment.authRepository)
                 }
             }
+        }
+        .onOpenURL { url in
+            navigator.handleDeepLink(url)
         }
         .task(id: sessionTaskKey) {
             await environment.sessionCoordinator.bootstrapSession(force: true)

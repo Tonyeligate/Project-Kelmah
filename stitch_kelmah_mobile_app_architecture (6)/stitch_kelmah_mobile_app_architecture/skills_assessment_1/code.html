@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Skills Assessment | Kelmah</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .radio-checked:checked + label {
+            border-color: #705d00;
+            background-color: #ffd700;
+            color: #221b00;
+        }
+        .progress-glow {
+            box-shadow: 0 0 12px rgba(255, 215, 0, 0.4);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed": "#e4e3d9",
+                        "inverse-primary": "#e9c400",
+                        "surface-muted": "#F3F4F6",
+                        "outline": "#7e775f",
+                        "on-primary": "#ffffff",
+                        "on-surface": "#1a1c1c",
+                        "status-success": "#10B981",
+                        "inverse-on-surface": "#f0f1f1",
+                        "primary-container": "#ffd700",
+                        "on-secondary": "#ffffff",
+                        "surface-variant": "#e2e2e2",
+                        "primary-fixed": "#ffe16d",
+                        "tertiary-fixed-dim": "#c8c7bd",
+                        "primary-fixed-dim": "#e9c400",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "surface": "#f9f9f9",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "on-background": "#1a1c1c",
+                        "secondary-container": "#e2dfde",
+                        "surface-container": "#eeeeee",
+                        "error-container": "#ffdad6",
+                        "surface-dim": "#dadada",
+                        "inverse-surface": "#2f3131",
+                        "on-tertiary": "#ffffff",
+                        "surface-tint": "#705d00",
+                        "background": "#f9f9f9",
+                        "surface-container-low": "#f3f3f4",
+                        "on-tertiary-fixed": "#1b1c16",
+                        "on-primary-fixed": "#221b00",
+                        "secondary": "#5f5e5e",
+                        "on-surface-variant": "#4d4732",
+                        "primary": "#705d00",
+                        "on-tertiary-container": "#5f5f58",
+                        "surface-bright": "#f9f9f9",
+                        "on-tertiary-fixed-variant": "#474740",
+                        "on-primary-fixed-variant": "#544600",
+                        "on-error-container": "#93000a",
+                        "on-secondary-fixed-variant": "#474746",
+                        "status-info": "#3B82F6",
+                        "tertiary-container": "#dcdad0",
+                        "surface-container-highest": "#e2e2e2",
+                        "on-secondary-container": "#636262",
+                        "on-error": "#ffffff",
+                        "on-primary-container": "#705e00",
+                        "surface-container-high": "#e8e8e8",
+                        "secondary-fixed": "#e5e2e1",
+                        "error": "#ba1a1a",
+                        "text-body": "#4B5563"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "touch-target": "48px",
+                        "gutter": "16px",
+                        "margin-desktop": "64px",
+                        "margin-mobile": "16px",
+                        "base": "8px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Montserrat"],
+                        "body-md": ["Inter"],
+                        "display-lg": ["Montserrat"],
+                        "body-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-lg-mobile": ["Montserrat"],
+                        "headline-lg": ["Montserrat"],
+                        "caption": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["28px", {"lineHeight": "34px", "fontWeight": "700"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                        "caption": ["12px", {"lineHeight": "16px", "fontWeight": "500"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body-md min-h-screen pb-20">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 flex items-center justify-between px-margin-mobile h-touch-target bg-surface border-b border-outline-variant">
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-primary hover:bg-surface-container-high transition-colors p-2 rounded-full" onclick="history.back()">arrow_back</button>
+<h1 class="font-headline-md text-headline-md-mobile font-bold text-primary">Kelmah</h1>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-label-md text-label-md text-secondary">Expertise: Electrical</span>
+<span class="material-symbols-outlined text-primary" data-icon="construction">construction</span>
+</div>
+</header>
+<main class="pt-20 px-margin-mobile max-w-3xl mx-auto">
+<!-- Progress Section -->
+<section class="mb-10">
+<div class="flex justify-between items-end mb-3">
+<div>
+<h2 class="font-headline-md text-headline-md-mobile text-on-surface">Skill Verification</h2>
+<p class="font-body-md text-body-md text-secondary">Question 4 of 12</p>
+</div>
+<div class="text-right">
+<span class="font-label-md text-label-md text-primary">35% Complete</span>
+</div>
+</div>
+<div class="w-full bg-surface-container-high h-3 rounded-full overflow-hidden border border-outline-variant">
+<div class="bg-primary-container h-full w-[35%] transition-all duration-700 ease-out progress-glow"></div>
+</div>
+</section>
+<!-- Assessment Card -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+<div class="p-6 md:p-10">
+<div class="mb-8">
+<span class="inline-flex items-center px-3 py-1 rounded-full bg-tertiary-container text-on-tertiary-container font-label-md text-caption mb-4">
+<span class="material-symbols-outlined text-[16px] mr-1" data-icon="bolt">bolt</span>
+                        TECHNICAL: CIRCUIT THEORY
+                    </span>
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-on-surface leading-tight">
+                        Which tool is primarily used to measure the electrical potential difference between two points in an active circuit?
+                    </h3>
+</div>
+<!-- Reference Image (Optional/Contextual) -->
+<div class="mb-8 rounded-lg overflow-hidden border border-outline-variant">
+<img alt="Electrical testing equipment" class="w-full h-48 md:h-64 object-cover" data-alt="A professional electrician using a modern digital multimeter to test a complex industrial control panel. The scene is brightly lit with high-contrast, clean lines reflecting a professional corporate engineering environment. The color palette emphasizes technical grays, bright safety yellows, and crisp whites. The focus is sharp on the multimeter screen showing a digital readout." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDlhDEt1_XTXRF26LUx5RMJwFYs3r1Y2d99JgZvhMPIJ6UfdN671BpRiuCZt_GwFh-y2KukuKMXihXncCid2AmNuZboGfareaNT3IBePbf25oeJg6HoSQF8nUWkBvBaRRW9h6qLJV4k93tIzgtjdPA279HXDy3ZKZ8byzbJ1EJSpSCe0lFQaL7cxyZDp9s5mVGkO1v9dgWhVA4PmVtpwW9-ddQnV_h0IUeO0-U_NvqcgrhqVS2RVeQ9VetER2xcCLNHeInFspaIb8I"/>
+</div>
+<!-- Multiple Choice Options -->
+<form class="space-y-4" id="assessmentForm">
+<div class="relative">
+<input class="sr-only radio-checked" id="opt1" name="assessment" type="radio" value="ammeter"/>
+<label class="flex items-center p-4 rounded-xl border-2 border-outline-variant cursor-pointer hover:bg-surface-container-low transition-all min-h-touch-target" for="opt1">
+<span class="w-6 h-6 rounded-full border-2 border-primary mr-4 flex-shrink-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px] opacity-0 transition-opacity">check</span>
+</span>
+<span class="font-body-md text-body-md">Digital Ammeter</span>
+</label>
+</div>
+<div class="relative">
+<input class="sr-only radio-checked" id="opt2" name="assessment" type="radio" value="voltmeter"/>
+<label class="flex items-center p-4 rounded-xl border-2 border-outline-variant cursor-pointer hover:bg-surface-container-low transition-all min-h-touch-target" for="opt2">
+<span class="w-6 h-6 rounded-full border-2 border-primary mr-4 flex-shrink-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px] opacity-0 transition-opacity">check</span>
+</span>
+<span class="font-body-md text-body-md">Voltmeter</span>
+</label>
+</div>
+<div class="relative">
+<input class="sr-only radio-checked" id="opt3" name="assessment" type="radio" value="ohmmeter"/>
+<label class="flex items-center p-4 rounded-xl border-2 border-outline-variant cursor-pointer hover:bg-surface-container-low transition-all min-h-touch-target" for="opt3">
+<span class="w-6 h-6 rounded-full border-2 border-primary mr-4 flex-shrink-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px] opacity-0 transition-opacity">check</span>
+</span>
+<span class="font-body-md text-body-md">Ohmmeter</span>
+</label>
+</div>
+<div class="relative">
+<input class="sr-only radio-checked" id="opt4" name="assessment" type="radio" value="oscilloscope"/>
+<label class="flex items-center p-4 rounded-xl border-2 border-outline-variant cursor-pointer hover:bg-surface-container-low transition-all min-h-touch-target" for="opt4">
+<span class="w-6 h-6 rounded-full border-2 border-primary mr-4 flex-shrink-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px] opacity-0 transition-opacity">check</span>
+</span>
+<span class="font-body-md text-body-md">Oscilloscope</span>
+</label>
+</div>
+</form>
+</div>
+<!-- Footer Action -->
+<div class="p-6 bg-surface-container-low border-t border-outline-variant flex flex-col md:flex-row gap-4 items-center justify-between">
+<button class="w-full md:w-auto px-8 h-touch-target font-headline-md font-bold text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-xl border border-outline-variant">
+                    Skip for now
+                </button>
+<button class="w-full md:w-auto px-10 h-touch-target bg-primary-container text-on-primary-fixed font-headline-md font-bold rounded-xl shadow-md hover:brightness-95 active:scale-95 transition-all flex items-center justify-center gap-2" onclick="handleNext()">
+                    Next Question
+                    <span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Help/Instruction -->
+<div class="mt-8 flex items-start gap-4 p-4 bg-tertiary-fixed/30 rounded-lg">
+<span class="material-symbols-outlined text-primary" data-icon="info">info</span>
+<p class="font-caption text-caption text-on-surface-variant">
+                Tip: Technical assessments are timed to ensure expertise. You have 45 seconds remaining for this question. Your score will determine your "Verified Pro" badge status.
+            </p>
+</div>
+</main>
+<!-- Navigation Drawer (SideNav for Desktop Context) -->
+<aside class="fixed left-0 top-0 h-full w-80 bg-surface-container-lowest border-r border-outline-variant z-[60] -translate-x-full transition-transform duration-300 md:hidden" id="drawer">
+<div class="flex flex-col p-6 space-y-4">
+<div class="flex items-center gap-4 mb-6">
+<img alt="Artisan Profile" class="w-16 h-16 rounded-full object-cover border-2 border-primary" data-alt="A portrait of a confident Middle Eastern artisan in his 40s wearing professional work clothes and a slight smile. The background is a clean, modern workshop with tools neatly organized on a pegboard. The lighting is bright and industrial, using a neutral color palette with warm wood accents. The image conveys trust and high-level skill." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA0LSB_lBRMNOIXo7LtHz7klCb7YNLLP-G7AUUqZdliEpiKD7gy1zG87UJ1Zjwb538-2elGqiqL91m3wU1uOmGoiFs6-w4yzrJ_wgOxp8tLdi_y41RCTTeoQzW7Rn_APU6LGcccF6Y3L6pl-yI6JWtuo4pTmgvAG0jJjYMiSTHdvvxZ9uFw9SUJjGBjXVu-w7fNgLbtRtMMFCcSlnMRup96LcQ-fZaDjW6TzqflXbvZrKErrkyJSUzUn0rb-5wMB541OGOyDnK2tDo"/>
+<div>
+<h4 class="font-headline-md text-primary">Artisan Name</h4>
+<p class="font-body-md text-secondary">Verified Professional</p>
+<p class="font-caption text-secondary">Riyadh, SA</p>
+</div>
+</div>
+<nav class="space-y-2">
+<a class="flex items-center gap-3 p-3 rounded-lg font-body-md text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span> Account Settings
+                </a>
+<a class="flex items-center gap-3 p-3 rounded-lg font-body-md text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="account_balance_wallet">account_balance_wallet</span> Wallet
+                </a>
+<a class="flex items-center gap-3 p-3 rounded-lg font-body-md text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span> Terms of Service
+                </a>
+<hr class="border-outline-variant my-4"/>
+<a class="flex items-center gap-3 p-3 rounded-lg font-body-md text-error hover:bg-error-container transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span> Logout
+                </a>
+</nav>
+</div>
+</aside>
+<!-- Overlay for Drawer -->
+<div class="fixed inset-0 bg-black/50 z-[55] hidden opacity-0 transition-opacity duration-300" id="overlay" onclick="toggleDrawer()"></div>
+<script>
+        function handleNext() {
+            const selected = document.querySelector('input[name="assessment"]:checked');
+            if (!selected) {
+                alert('Please select an option to proceed.');
+                return;
+            }
+            
+            // Visual feedback for interaction
+            const btn = event.currentTarget;
+            btn.innerHTML = '<span class="material-symbols-outlined animate-spin" data-icon="progress_activity">progress_activity</span> Validating...';
+            
+            setTimeout(() => {
+                alert('Answer recorded! Loading next question...');
+                btn.innerHTML = 'Next Question <span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>';
+            }, 800);
+        }
+
+        function toggleDrawer() {
+            const drawer = document.getElementById('drawer');
+            const overlay = document.getElementById('overlay');
+            const isOpen = !drawer.classList.contains('-translate-x-full');
+            
+            if (isOpen) {
+                drawer.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+                overlay.classList.remove('opacity-100');
+            } else {
+                drawer.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+                setTimeout(() => overlay.classList.add('opacity-100'), 10);
+            }
+        }
+
+        // Add event listeners to radio buttons for checked state checkmark opacity
+        document.querySelectorAll('.radio-checked').forEach(radio => {
+            radio.addEventListener('change', () => {
+                document.querySelectorAll('.material-symbols-outlined.opacity-100').forEach(icon => icon.classList.replace('opacity-100', 'opacity-0'));
+                const icon = radio.nextElementSibling.querySelector('.material-symbols-outlined');
+                icon.classList.replace('opacity-0', 'opacity-100');
+                
+                // Add highlight ring to label
+                document.querySelectorAll('label').forEach(l => l.classList.remove('ring-4', 'ring-primary-container/30', 'border-primary'));
+                radio.nextElementSibling.classList.add('ring-4', 'ring-primary-container/30', 'border-primary');
+            });
+        });
+    </script>
+</body></html>

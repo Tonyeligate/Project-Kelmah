@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Earnings Analytics - Kelmah</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline": "#7e775f",
+                        "on-surface": "#1a1c1c",
+                        "on-error": "#ffffff",
+                        "primary-fixed": "#ffe16d",
+                        "on-tertiary-container": "#5f5f58",
+                        "on-primary-fixed": "#221b00",
+                        "inverse-primary": "#e9c400",
+                        "on-surface-variant": "#4d4732",
+                        "on-secondary-container": "#636262",
+                        "surface-container": "#eeeeee",
+                        "surface-muted": "#F3F4F6",
+                        "tertiary-fixed": "#e4e3d9",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "error-container": "#ffdad6",
+                        "on-error-container": "#93000a",
+                        "status-info": "#3B82F6",
+                        "secondary-container": "#e2dfde",
+                        "primary-fixed-dim": "#e9c400",
+                        "inverse-surface": "#2f3131",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-bright": "#f9f9f9",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#1a1c1c",
+                        "outline-variant": "#d0c6ab",
+                        "surface": "#f9f9f9",
+                        "on-primary-fixed-variant": "#544600",
+                        "on-primary-container": "#705e00",
+                        "tertiary-container": "#dcdad0",
+                        "on-secondary-fixed-variant": "#474746",
+                        "on-tertiary": "#ffffff",
+                        "surface-variant": "#e2e2e2",
+                        "surface-container-high": "#e8e8e8",
+                        "primary-container": "#ffd700",
+                        "surface-container-low": "#f3f3f4",
+                        "primary": "#705d00",
+                        "error": "#ba1a1a",
+                        "inverse-on-surface": "#f0f1f1",
+                        "text-body": "#4B5563",
+                        "tertiary-fixed-dim": "#c8c7bd",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "surface-dim": "#dadada",
+                        "on-tertiary-fixed-variant": "#474740",
+                        "secondary": "#5f5e5e",
+                        "on-tertiary-fixed": "#1b1c16",
+                        "surface-container-highest": "#e2e2e2",
+                        "background": "#f9f9f9",
+                        "status-success": "#10B981",
+                        "surface-tint": "#705d00",
+                        "tertiary": "#5f5f57",
+                        "secondary-fixed": "#e5e2e1",
+                        "on-primary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "base": "8px",
+                        "margin-mobile": "16px",
+                        "touch-target": "48px",
+                        "margin-desktop": "64px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Montserrat"],
+                        "headline-lg": ["Montserrat"],
+                        "label-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "display-lg": ["Montserrat"],
+                        "caption": ["Inter"],
+                        "headline-lg-mobile": ["Montserrat"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "caption": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "34px", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface antialiased min-h-screen flex flex-col md:flex-row">
+<!-- Navigation Drawer (Desktop) -->
+<nav class="hidden md:flex h-full w-80 fixed left-0 top-0 bg-surface shadow-xl flex-col py-6 gap-2 z-40 transition-all duration-300 ease-in-out">
+<div class="px-6 mb-8 flex flex-col items-start gap-4">
+<span class="font-headline-md text-headline-md text-primary font-bold">Kelmah</span>
+<div class="flex items-center gap-4 mt-4">
+<img alt="Professional Profile" class="w-12 h-12 rounded-full object-cover border-2 border-surface-container-high" data-alt="A close-up portrait of a professional male artisan looking confidently into the camera. The lighting is bright and natural, casting a soft glow that highlights his focused expression. The overall aesthetic is clean and modern, matching a trustworthy and reliable corporate visual style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuApZBLh31ZdtHoIEhWG-EVMv1khZ7XBiw1kqQd7tKfZ8rn_RBQdFT7wn-fryY3TOvnL1QpNB2ndt1YVwoGtsWDu29PBoxw2tSCniim1hBOsJQFtbsP01-NhGEJ5ODyUaZU0L41Zh1QRIutE61cniqegSjTIYdwgTZQ5zgvumCEFcEx_M4Jf3XSrqYTTCM9VQbbwdDDeZc12HNxw3IbgdGFyciZnBsRACLJecCz3cv7XpMpf1XZn9E-WKa6xnnH0ONO2DDItMdhd_Co"/>
+<div>
+<h3 class="font-label-md text-label-md text-on-surface">Professional Profile</h3>
+<p class="font-caption text-caption text-secondary">Verified Artisan</p>
+<p class="font-caption text-caption text-secondary">Accra, Ghana</p>
+</div>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto">
+<ul class="flex flex-col gap-1">
+<li>
+<a class="flex items-center gap-3 px-4 py-3 mx-2 text-on-surface-variant hover:bg-surface-container-high rounded-full font-body-md text-body-md transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+                        Project History
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 mx-2 text-on-surface-variant hover:bg-surface-container-high rounded-full font-body-md text-body-md transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="verified">verified</span>
+                        Certifications
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 mx-2 bg-primary-container text-on-primary-container font-semibold rounded-full hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+                        Wallet
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 mx-2 text-on-surface-variant hover:bg-surface-container-high rounded-full font-body-md text-body-md transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+                        Settings
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 mx-2 text-on-surface-variant hover:bg-surface-container-high rounded-full font-body-md text-body-md transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+                        Support
+                    </a>
+</li>
+</ul>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 md:ml-80 pb-safe md:pb-0">
+<!-- Top App Bar (Mobile) -->
+<header class="md:hidden flex items-center justify-between px-margin-mobile h-16 w-full top-0 sticky bg-surface bg-surface-container-low z-30">
+<button class="w-12 h-12 flex items-center justify-center text-primary active:scale-95 duration-150 hover:bg-surface-variant rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<span class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary">Kelmah</span>
+<div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center overflow-hidden border border-outline-variant">
+<img alt="User avatar" class="w-full h-full object-cover" data-alt="A close-up portrait of a professional male artisan looking confidently into the camera. The lighting is bright and natural, casting a soft glow that highlights his focused expression. The overall aesthetic is clean and modern, matching a trustworthy and reliable corporate visual style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD0-ZBvG2VlHiuZOdmvPF3hRfXmHoUiGbJUbbEl7r8fq-Z-pjuWnVFYPbLXG-87TeRQMVqGSJu5dfawemDk-vJfemkXk026-Bqq-V0WgOs01WJ9LgSv-QVDepM1decVFpVdxDiKI5qgbP-7uNIxEuZHLfAfV5VEHrxiPQoIAFWkO6xTHtkhcu4X30Xvk8KT_GjS_OadkLlLHdt1SIBjKYrG1KWwTWTst1noBpdF63xQEc3yUtvZ8JaZWZJhptynNn9DW3VQGFnNG3Y"/>
+</div>
+</header>
+<!-- Top App Bar (Desktop Context - Minimal) -->
+<header class="hidden md:flex items-center justify-between px-margin-desktop h-24 w-full bg-surface">
+<h1 class="font-headline-lg text-headline-lg text-on-surface">Earnings Analytics</h1>
+<div class="flex items-center gap-4">
+<button class="bg-primary-container text-on-primary-container font-label-md text-label-md px-6 py-3 rounded-full hover:bg-primary-fixed transition-colors shadow-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="download">download</span>
+                     Export Report
+                 </button>
+</div>
+</header>
+<main class="px-margin-mobile md:px-margin-desktop py-8 md:py-0 max-w-7xl mx-auto space-y-8">
+<div class="md:hidden mb-6">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Earnings</h1>
+</div>
+<!-- Key Metrics Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+<!-- Total Earned -->
+<div class="bg-on-surface text-on-primary p-6 rounded-xl shadow-md flex flex-col justify-between relative overflow-hidden">
+<div class="absolute top-0 right-0 w-32 h-32 bg-surface-tint opacity-10 rounded-bl-full -mr-8 -mt-8 pointer-events-none"></div>
+<div class="flex items-center justify-between mb-4 z-10">
+<span class="font-label-md text-label-md text-surface-muted">This Month</span>
+<span class="material-symbols-outlined text-surface-tint" data-icon="account_balance_wallet">account_balance_wallet</span>
+</div>
+<div class="z-10">
+<h2 class="font-display-lg text-display-lg text-primary-container mb-1">$3,240.50</h2>
+<div class="flex items-center gap-2 text-status-success font-caption text-caption bg-surface-muted/10 w-fit px-2 py-1 rounded-full">
+<span class="material-symbols-outlined text-[14px]" data-icon="trending_up">trending_up</span>
+<span>+12.5% vs last month</span>
+</div>
+</div>
+</div>
+<!-- Escrow Balance -->
+<div class="bg-surface-container-lowest border border-outline-variant p-6 rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between mb-4">
+<span class="font-label-md text-label-md text-secondary">Pending in Escrow</span>
+<span class="material-symbols-outlined text-secondary" data-icon="lock_clock">lock_clock</span>
+</div>
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-1">$850.00</h2>
+<p class="font-caption text-caption text-secondary">Funds secure. Awaiting client sign-off.</p>
+</div>
+</div>
+<!-- Jobs Completed -->
+<div class="bg-surface-container-lowest border border-outline-variant p-6 rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between mb-4">
+<span class="font-label-md text-label-md text-secondary">Jobs Completed (Month)</span>
+<span class="material-symbols-outlined text-secondary" data-icon="task_alt">task_alt</span>
+</div>
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-1">14</h2>
+<p class="font-caption text-caption text-secondary">Avg. Rating: 4.9 <span class="text-primary-fixed-dim">★</span></p>
+</div>
+</div>
+</div>
+<!-- Chart Section -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm p-4 md:p-6">
+<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
+<h3 class="font-headline-md text-headline-md text-on-surface">Revenue Over Time</h3>
+<div class="flex items-center gap-2 bg-surface-container p-1 rounded-lg">
+<button class="font-caption text-caption px-3 py-1.5 rounded-md text-secondary hover:bg-surface-variant transition-colors">Weekly</button>
+<button class="font-caption text-caption px-3 py-1.5 rounded-md bg-surface-container-lowest shadow-sm text-on-surface font-semibold">Monthly</button>
+<button class="font-caption text-caption px-3 py-1.5 rounded-md text-secondary hover:bg-surface-variant transition-colors">Yearly</button>
+</div>
+</div>
+<div class="relative h-64 md:h-80 w-full">
+<canvas id="earningsChart"></canvas>
+</div>
+</div>
+<!-- Recent Payouts -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden mb-24 md:mb-8">
+<div class="p-4 md:p-6 border-b border-outline-variant flex items-center justify-between">
+<h3 class="font-headline-md text-headline-md text-on-surface">Recent Transactions</h3>
+<button class="font-label-md text-label-md text-on-surface bg-transparent border border-on-surface px-4 py-2 rounded-full hover:bg-surface-container-high transition-colors flex items-center gap-2 touch-target">
+                        View All
+                        <span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+<div class="flex flex-col">
+<!-- Transaction Item -->
+<div class="flex items-center justify-between p-4 md:px-6 hover:bg-surface-bright transition-colors border-b border-surface-container-high last:border-0">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant shrink-0">
+<span class="material-symbols-outlined" data-icon="plumbing">plumbing</span>
+</div>
+<div>
+<h4 class="font-label-md text-label-md text-on-surface">Emergency Pipe Repair</h4>
+<p class="font-caption text-caption text-secondary">Oct 24, 2023 • Client: Sarah J.</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-label-md text-label-md text-on-surface">+$240.00</p>
+<p class="font-caption text-caption text-status-success flex items-center gap-1 justify-end">
+<span class="material-symbols-outlined text-[12px]" data-icon="check_circle">check_circle</span> Cleared
+                            </p>
+</div>
+</div>
+<!-- Transaction Item -->
+<div class="flex items-center justify-between p-4 md:px-6 hover:bg-surface-bright transition-colors border-b border-surface-container-high last:border-0">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant shrink-0">
+<span class="material-symbols-outlined" data-icon="electrical_services">electrical_services</span>
+</div>
+<div>
+<h4 class="font-label-md text-label-md text-on-surface">Rewiring Project - Kitchen</h4>
+<p class="font-caption text-caption text-secondary">Oct 21, 2023 • Client: Marcus T.</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-label-md text-label-md text-on-surface">+$850.00</p>
+<p class="font-caption text-caption text-secondary flex items-center gap-1 justify-end">
+<span class="material-symbols-outlined text-[12px]" data-icon="schedule">schedule</span> Escrow
+                            </p>
+</div>
+</div>
+<!-- Transaction Item -->
+<div class="flex items-center justify-between p-4 md:px-6 hover:bg-surface-bright transition-colors border-b border-surface-container-high last:border-0">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant shrink-0">
+<span class="material-symbols-outlined" data-icon="carpenter">carpenter</span>
+</div>
+<div>
+<h4 class="font-label-md text-label-md text-on-surface">Custom Cabinet Build</h4>
+<p class="font-caption text-caption text-secondary">Oct 18, 2023 • Client: Elena V.</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-label-md text-label-md text-on-surface">+$1,200.00</p>
+<p class="font-caption text-caption text-status-success flex items-center gap-1 justify-end">
+<span class="material-symbols-outlined text-[12px]" data-icon="check_circle">check_circle</span> Cleared
+                            </p>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Bottom Nav Bar (Mobile) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-touch-target bg-surface pb-safe border-t-0 shadow-[0_-4px_20px_rgba(0,0,0,0.04)]">
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1.5 active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-md text-label-md hidden">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1.5 active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="work">work</span>
+<span class="font-label-md text-label-md hidden">Jobs</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1.5 active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="chat">chat</span>
+<span class="font-label-md text-label-md hidden">Messages</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-4 py-1.5 active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="payments" data-weight="fill">payments</span>
+<span class="font-label-md text-label-md hidden">Wallet</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1.5 active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-md text-label-md hidden">Profile</span>
+</a>
+</nav>
+<script>
+        // Chart Initialization
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('earningsChart').getContext('2d');
+            
+            // Gradient for line
+            let gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(255, 215, 0, 0.5)'); // primary-container color
+            gradient.addColorStop(1, 'rgba(255, 215, 0, 0.0)');
+
+            const data = {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'],
+                datasets: [{
+                    label: 'Earnings ($)',
+                    data: [1200, 1900, 1500, 2200, 2800, 2400, 3100, 2900, 3500, 3240],
+                    borderColor: '#705d00', // primary color
+                    backgroundColor: gradient,
+                    borderWidth: 3,
+                    pointBackgroundColor: '#1a1c1c', // on-surface
+                    pointBorderColor: '#ffd700', // primary-container
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    fill: true,
+                    tension: 0.4 // Smooth curves
+                }]
+            };
+
+            const config = {
+                type: 'line',
+                data: data,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: '#1a1c1c',
+                            titleFont: { family: 'Inter', size: 12 },
+                            bodyFont: { family: 'Inter', size: 14, weight: 'bold' },
+                            padding: 12,
+                            displayColors: false,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(context.parsed.y);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false,
+                                drawBorder: false
+                            },
+                            ticks: {
+                                font: { family: 'Inter', size: 12 },
+                                color: '#5f5e5e' // secondary
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: '#e8e8e8', // surface-container-high
+                                drawBorder: false,
+                                borderDash: [5, 5]
+                            },
+                            ticks: {
+                                font: { family: 'Inter', size: 12 },
+                                color: '#5f5e5e', // secondary
+                                callback: function(value, index, values) {
+                                    return '$' + value;
+                                }
+                            },
+                            beginAtZero: true
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index',
+                    },
+                }
+            };
+
+            new Chart(ctx, config);
+        });
+    </script>
+</body></html>

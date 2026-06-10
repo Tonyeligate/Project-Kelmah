@@ -1,54 +1,57 @@
 import { createTheme } from '@mui/material/styles';
+import kelmahTokens from '../../kelmah-design-tokens.cjs';
 
-// Professional color palette for Kelmah job system
+const { color, radius, spacing: baseSpacing, typography: tokenTypography } = kelmahTokens;
+
+// Professional Kelmah palette sourced from shared design tokens.
 const colors = {
   primary: {
-    main: '#D4AF37', // Gold
-    light: '#FFD34D',
-    dark: '#B8941F',
+    main: color.gold,
+    light: color.goldBright,
+    dark: color.goldMuted,
     contrastText: '#000000',
   },
   secondary: {
-    main: '#1a1a1a', // Black
-    light: '#2d2d2d',
-    dark: '#0a0a0a',
-    contrastText: '#ffffff',
+    main: color.navyContainer,
+    light: color.darkSurfaceElevated,
+    dark: color.navy,
+    contrastText: color.darkOnSurface,
   },
   background: {
-    default: '#0a0a0a',
-    paper: 'rgba(255,255,255,0.05)',
-    elevated: 'rgba(255,255,255,0.08)',
+    default: color.darkBackground,
+    paper: 'rgba(26, 29, 38, 0.82)',
+    elevated: 'rgba(34, 37, 48, 0.90)',
   },
   text: {
-    primary: '#ffffff',
-    secondary: 'rgba(255,255,255,0.84)',
-    disabled: 'rgba(255,255,255,0.68)',
+    primary: color.darkOnSurface,
+    secondary: 'rgba(247, 243, 227, 0.84)',
+    disabled: color.darkOnSurfaceMuted,
   },
   success: {
-    main: '#4CAF50',
-    light: '#81C784',
-    dark: '#388E3C',
+    main: color.accentPositive,
+    light: '#67DCA6',
+    dark: '#1C8F5C',
   },
   warning: {
-    main: '#FF9800',
-    light: '#FFB74D',
-    dark: '#F57C00',
+    main: color.accentWarning,
+    light: '#FFC56D',
+    dark: '#C77912',
   },
   error: {
-    main: '#F44336',
-    light: '#EF5350',
-    dark: '#D32F2F',
+    main: color.error,
+    light: '#FF9B9B',
+    dark: '#C94444',
   },
   info: {
-    main: '#2196F3',
-    light: '#64B5F6',
-    dark: '#1976D2',
+    main: color.accentInfo,
+    light: '#8CC3FF',
+    dark: '#2F75C9',
   },
 };
 
 // Typography scale optimized for Ghana's mobile market
 const typography = {
-  fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+  fontFamily: tokenTypography.fontFamily,
   h1: {
     fontSize: '2.5rem',
     fontWeight: 700,
@@ -101,7 +104,7 @@ const typography = {
 };
 
 // Spacing system (8px base unit)
-const spacing = 8;
+const spacing = baseSpacing;
 
 // Breakpoints optimized for Ghana's device landscape
 const breakpoints = {
@@ -128,7 +131,7 @@ const components = {
         'a, button, [role="button"], input, textarea, select': {
           outlineWidth: '2px',
           outlineStyle: 'solid',
-          outlineColor: '#FFD34D',
+          outlineColor: color.gold,
           outlineOffset: '2px',
         },
       },
@@ -144,27 +147,27 @@ const components = {
         textTransform: 'none',
         transition: 'all 0.2s ease-in-out',
         '&:focus-visible': {
-          outline: '3px solid rgba(255, 211, 77, 0.9)',
+          outline: `3px solid ${color.gold}`,
           outlineOffset: 2,
         },
         '&:hover': {
           transform: 'translateY(-1px)',
-          boxShadow: '0 4px 12px rgba(212,175,55,0.3)',
+          boxShadow: '0 4px 12px rgba(255, 211, 77, 0.25)',
         },
       },
       contained: {
-        background: 'linear-gradient(45deg, #D4AF37 30%, #FFD34D 90%)',
+        background: `linear-gradient(45deg, ${color.goldMuted} 0%, ${color.gold} 55%, ${color.goldBright} 100%)`,
         color: '#000000',
         '&:hover': {
-          background: 'linear-gradient(45deg, #B8941F 30%, #D4AF37 90%)',
+          background: `linear-gradient(45deg, ${color.goldMuted} 0%, ${color.gold} 100%)`,
         },
       },
       outlined: {
-        borderColor: '#D4AF37',
-        color: '#D4AF37',
+        borderColor: color.gold,
+        color: color.gold,
         '&:hover': {
-          backgroundColor: 'rgba(212,175,55,0.1)',
-          borderColor: '#FFD34D',
+          backgroundColor: 'rgba(255, 211, 77, 0.10)',
+          borderColor: color.goldBright,
         },
       },
     },
@@ -172,13 +175,13 @@ const components = {
   MuiCard: {
     styleOverrides: {
       root: {
-        backgroundColor: 'rgba(255,255,255,0.05)',
-        border: '1px solid rgba(212,175,55,0.2)',
-        borderRadius: 12,
+        backgroundColor: 'rgba(26, 29, 38, 0.72)',
+        border: `1px solid ${color.darkOutline}`,
+        borderRadius: radius.sm,
         backdropFilter: 'blur(10px)',
         '&:hover': {
-          border: '1px solid #D4AF37',
-          boxShadow: '0 8px 32px rgba(212,175,55,0.3)',
+          border: `1px solid ${color.gold}`,
+          boxShadow: '0 8px 32px rgba(255, 211, 77, 0.20)',
         },
       },
     },
@@ -187,22 +190,22 @@ const components = {
     styleOverrides: {
       root: {
         '& .MuiOutlinedInput-root': {
-          backgroundColor: 'rgba(255,255,255,0.1)',
-          borderRadius: 8,
+          backgroundColor: 'rgba(34, 37, 48, 0.72)',
+          borderRadius: radius.xs,
           '& fieldset': {
-            borderColor: 'rgba(212,175,55,0.3)',
+            borderColor: color.darkOutline,
           },
           '&:hover fieldset': {
-            borderColor: '#D4AF37',
+            borderColor: color.gold,
           },
           '&.Mui-focused fieldset': {
-            borderColor: '#D4AF37',
+            borderColor: color.gold,
           },
         },
         '& .MuiInputLabel-root': {
-          color: 'rgba(255,255,255,0.7)',
+          color: color.darkOnSurfaceMuted,
           '&.Mui-focused': {
-            color: '#D4AF37',
+            color: color.gold,
           },
         },
       },
@@ -211,11 +214,11 @@ const components = {
   MuiChip: {
     styleOverrides: {
       root: {
-        backgroundColor: 'rgba(212,175,55,0.2)',
-        color: '#D4AF37',
-        border: '1px solid rgba(212,175,55,0.3)',
+        backgroundColor: 'rgba(255, 211, 77, 0.16)',
+        color: color.gold,
+        border: `1px solid ${color.darkOutline}`,
         '&:hover': {
-          backgroundColor: 'rgba(212,175,55,0.3)',
+          backgroundColor: 'rgba(255, 211, 77, 0.24)',
         },
       },
     },
@@ -223,46 +226,46 @@ const components = {
   MuiPaper: {
     styleOverrides: {
       root: {
-        backgroundColor: 'rgba(255,255,255,0.05)',
+        backgroundColor: 'rgba(26, 29, 38, 0.72)',
         backdropFilter: 'blur(10px)',
-        border: '1px solid rgba(212,175,55,0.1)',
+        border: '1px solid rgba(255, 211, 77, 0.12)',
       },
     },
   },
   MuiAppBar: {
     styleOverrides: {
       root: {
-        backgroundColor: 'rgba(26, 26, 26, 0.95)',
+        backgroundColor: 'rgba(16, 17, 22, 0.95)',
         backdropFilter: 'blur(10px)',
-        borderBottom: '1px solid rgba(212,175,55,0.2)',
+        borderBottom: `1px solid ${color.darkOutline}`,
       },
     },
   },
   MuiDrawer: {
     styleOverrides: {
       paper: {
-        backgroundColor: 'rgba(26, 26, 26, 0.95)',
+        backgroundColor: 'rgba(16, 17, 22, 0.95)',
         backdropFilter: 'blur(10px)',
-        borderRight: '1px solid rgba(212,175,55,0.2)',
+        borderRight: `1px solid ${color.darkOutline}`,
       },
     },
   },
   MuiDialog: {
     styleOverrides: {
       paper: {
-        backgroundColor: 'rgba(26, 26, 26, 0.95)',
+        backgroundColor: 'rgba(26, 29, 38, 0.95)',
         backdropFilter: 'blur(10px)',
-        border: '1px solid rgba(212,175,55,0.2)',
-        borderRadius: 16,
+        border: `1px solid ${color.darkOutline}`,
+        borderRadius: radius.md,
       },
     },
   },
   MuiTooltip: {
     styleOverrides: {
       tooltip: {
-        backgroundColor: 'rgba(26, 26, 26, 0.9)',
-        color: '#ffffff',
-        border: '1px solid rgba(212,175,55,0.3)',
+        backgroundColor: 'rgba(16, 17, 22, 0.92)',
+        color: color.darkOnSurface,
+        border: `1px solid ${color.darkOutline}`,
         fontSize: '0.75rem',
       },
     },
@@ -273,7 +276,7 @@ const components = {
         minWidth: 44,
         minHeight: 44,
         '&:focus-visible': {
-          outline: '3px solid rgba(255, 211, 77, 0.9)',
+          outline: `3px solid ${color.gold}`,
           outlineOffset: 2,
         },
       },
@@ -283,7 +286,7 @@ const components = {
     styleOverrides: {
       root: {
         '&:focus-visible': {
-          outline: '2px solid rgba(255, 211, 77, 0.9)',
+          outline: `2px solid ${color.gold}`,
           outlineOffset: 2,
           borderRadius: 2,
         },
@@ -300,7 +303,7 @@ const jobSystemTheme = createTheme({
   breakpoints,
   components,
   shape: {
-    borderRadius: 8,
+    borderRadius: radius.xs,
   },
   shadows: [
     'none',

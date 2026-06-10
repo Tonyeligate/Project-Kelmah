@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Worker Tracking - Kelmah</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .pulse-marker {
+            box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 15px rgba(255, 215, 0, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-high": "#e8e8e8",
+                        "on-tertiary-fixed-variant": "#474740",
+                        "on-secondary-fixed-variant": "#474746",
+                        "primary": "#705d00",
+                        "outline": "#7e775f",
+                        "on-error-container": "#93000a",
+                        "inverse-surface": "#2f3131",
+                        "surface-tint": "#705d00",
+                        "on-surface-variant": "#4d4732",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "surface-muted": "#F3F4F6",
+                        "tertiary-fixed": "#e4e3d9",
+                        "surface-bright": "#f9f9f9",
+                        "outline-variant": "#d0c6ab",
+                        "secondary-fixed": "#e5e2e1",
+                        "on-error": "#ffffff",
+                        "secondary": "#5f5e5e",
+                        "on-primary-fixed": "#221b00",
+                        "tertiary": "#5f5f57",
+                        "primary-fixed": "#ffe16d",
+                        "surface-container": "#eeeeee",
+                        "surface-container-highest": "#e2e2e2",
+                        "error-container": "#ffdad6",
+                        "primary-fixed-dim": "#e9c400",
+                        "on-secondary-container": "#636262",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "on-primary-fixed-variant": "#544600",
+                        "inverse-on-surface": "#f0f1f1",
+                        "status-info": "#3B82F6",
+                        "inverse-primary": "#e9c400",
+                        "background": "#f9f9f9",
+                        "on-tertiary-fixed": "#1b1c16",
+                        "on-tertiary": "#ffffff",
+                        "on-background": "#1a1c1c",
+                        "on-primary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-container": "#ffd700",
+                        "tertiary-fixed-dim": "#c8c7bd",
+                        "on-primary-container": "#705e00",
+                        "text-body": "#4B5563",
+                        "status-success": "#10B981",
+                        "error": "#ba1a1a",
+                        "surface-dim": "#dadada",
+                        "surface-container-low": "#f3f3f4",
+                        "secondary-container": "#e2dfde",
+                        "surface-variant": "#e2e2e2",
+                        "tertiary-container": "#dcdad0",
+                        "on-secondary": "#ffffff",
+                        "surface": "#f9f9f9",
+                        "on-surface": "#1a1c1c",
+                        "on-tertiary-container": "#5f5f58"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "touch-target": "48px",
+                        "margin-mobile": "16px",
+                        "margin-desktop": "64px",
+                        "gutter": "16px",
+                        "base": "8px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "caption": ["Inter"],
+                        "display-lg": ["Montserrat"],
+                        "headline-md": ["Montserrat"],
+                        "headline-lg": ["Montserrat"],
+                        "label-md": ["Inter"],
+                        "headline-lg-mobile": ["Montserrat"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "caption": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["28px", {"lineHeight": "34px", "fontWeight": "700"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md overflow-hidden">
+<!-- Top Navigation Bar -->
+<header class="bg-primary shadow-md docked full-width top-0 flex justify-between items-center w-full px-margin-mobile h-touch-target fixed z-50">
+<div class="flex items-center gap-4">
+<button aria-label="Go back" class="p-2 text-on-primary hover:bg-on-primary/10 rounded-full transition-transform active:scale-95">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-on-primary">Kelmah</h1>
+</div>
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container overflow-hidden border-2 border-primary-container">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="A professional headshot of a middle-aged man with a friendly expression, set against a blurred corporate office background. The lighting is soft and natural, emphasizing a clean, high-contrast modern UI aesthetic with professional clarity and warmth, fitting a trust-based services platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB5PbhqV_zjdLjMMsZTKXpYYGKcawcBr8B_U5Pp-PcyJJECt5PPFTW9PDsbOKNa-PWsgfPu__InLxPKEWt9j8F1s1LuzQyNG5IIp3PMKhAjEJA-61G42ZO2Pif7j2iEPI3kIdp_LX1Rmo68IwWN6KMYoLC35l371Ifz_9c16HIQsd5ZbSMHqx7crylKnANcJFt2yVstZMsokRXdWs9a39riUU66ww4qQOEEusGJAG90WwHzVGl9tP6KRHGem1SY31PBv8JYaZ5G5RQ"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas (Map View) -->
+<main class="relative h-screen w-full pt-touch-target">
+<!-- Map Background -->
+<div class="absolute inset-0 z-0">
+<img class="w-full h-screen object-cover grayscale opacity-80" data-alt="A high-altitude, top-down satellite view of a bustling city grid in Accra, Ghana, showing detailed street networks, residential blocks, and green patches. The image is stylized with a professional architectural overlay, subtle grayscale tones with high contrast to serve as a functional UI background for a worker tracking map." data-location="Accra" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCks1Qk1Tgc5B70czAjleZswWPtf6B7U0u4VRwXNo2EFU1Ud1reVzoodj1dHNWqEqebL_POhyjdPC3BoWtqJAZeUDSU7I0yQki58GmW9DzeszR3C_WzPWTSFPAzYsssqgYPU2CoMNYtxDPrjvrtrfhDYzPT_IJq09VduE7jTHnyMpM6Yxx1Q0BeHV2POaMdt6e9a6Nttn3FVxArQgySDYhwMtmuBvjfhvPm1ApdrbxLkcVxXxldS6oZNiby5Lbn4bpNO_UmIVc3VMI"/>
+<!-- Map Overlay Gradients for Readability -->
+<div class="absolute inset-0 bg-gradient-to-t from-background/40 to-transparent"></div>
+</div>
+<!-- Real-time Markers -->
+<div class="absolute inset-0 pointer-events-none flex items-center justify-center">
+<!-- Worker Marker -->
+<div class="absolute top-[40%] left-[35%] pointer-events-auto flex flex-col items-center group">
+<div class="bg-white px-3 py-1.5 rounded-xl shadow-lg mb-2 flex items-center gap-2 border border-outline-variant">
+<span class="w-2 h-2 rounded-full bg-status-success animate-pulse"></span>
+<span class="font-label-md text-label-md text-on-surface">Emmanuel</span>
+</div>
+<div class="relative">
+<div class="w-12 h-12 bg-primary rounded-full pulse-marker flex items-center justify-center shadow-xl border-4 border-white">
+<span class="material-symbols-outlined text-white" data-icon="electric_bolt">electric_bolt</span>
+</div>
+<div class="absolute -bottom-1 -right-1 bg-status-success w-4 h-4 rounded-full border-2 border-white"></div>
+</div>
+</div>
+<!-- Hirer (Current Location) Marker -->
+<div class="absolute top-[60%] right-[40%] pointer-events-auto flex flex-col items-center">
+<div class="w-10 h-10 bg-secondary rounded-full flex items-center justify-center shadow-lg border-4 border-white">
+<span class="material-symbols-outlined text-white" data-icon="home">home</span>
+</div>
+<div class="bg-surface-container-lowest px-2 py-0.5 rounded shadow-sm mt-1 border border-outline-variant">
+<span class="text-[10px] font-bold uppercase tracking-wider text-secondary">You</span>
+</div>
+</div>
+<!-- Path Line (SVG) -->
+<svg class="absolute inset-0 w-full h-full opacity-40" viewbox="0 0 400 800">
+<path class="animate-[dash_2s_linear_infinite]" d="M 140 320 Q 200 400 240 480" fill="none" stroke="#705d00" stroke-dasharray="8 8" stroke-width="4"></path>
+<style>
+                    @keyframes dash { to { stroke-dashoffset: -16; } }
+                </style>
+</svg>
+</div>
+<!-- Float Controls -->
+<div class="absolute top-24 right-4 flex flex-col gap-2 z-10">
+<button class="w-12 h-12 bg-white rounded-xl shadow-md flex items-center justify-center text-on-surface hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined" data-icon="my_location">my_location</span>
+</button>
+<button class="w-12 h-12 bg-white rounded-xl shadow-md flex items-center justify-center text-on-surface hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined" data-icon="layers">layers</span>
+</button>
+</div>
+<!-- Bottom ETA Card -->
+<div class="fixed bottom-margin-mobile left-margin-mobile right-margin-mobile z-50">
+<div class="bg-surface-container-lowest rounded-xl shadow-[0_-4px_30px_rgba(0,0,0,0.1)] border border-outline-variant overflow-hidden max-w-2xl mx-auto">
+<!-- Status Header -->
+<div class="bg-primary-container px-6 py-3 flex justify-between items-center">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-on-primary-container" data-icon="local_shipping">local_shipping</span>
+<span class="font-label-md text-label-md text-on-primary-container uppercase tracking-widest">On my way</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="text-headline-md font-headline-md text-on-primary-container">15</span>
+<span class="font-label-md text-label-md text-on-primary-container opacity-80">mins</span>
+</div>
+</div>
+<div class="p-6">
+<div class="flex items-center gap-4 mb-6">
+<div class="relative">
+<img alt="Emmanuel Tetteh" class="w-16 h-16 rounded-full object-cover border-2 border-primary" data-alt="A portrait of a skilled Ghanaian artisan electrician, wearing professional work gear, with a confident and trustworthy smile. The background is a clean industrial setting with soft daylight filtering through. High contrast and premium photography style reflecting corporate modern aesthetics." src="https://lh3.googleusercontent.com/aida-public/AB6AXuABiRmTs1vkbNPpNkQOBG9R2BdcU_C0aq_y212gVeDL9W6mTm2d3cDrdRnMlXlxq4VSQqbRvguKykmIwpVPRMR37ts1d5ZKFZWmStIc7f0mbYXKGsADb0dJfw9ndPjc-f4Vjjn5Nj6JknpRCnEL9Kdo_wrpV0kbLq8rp4jUHOkP_LwBApwyB17mEryyotJCDHXyhnvvfz0NAjQ4zqn2-BCYl1JdrvOyVVSgdcQoV7uIFIoNMLicRL8BFyPNzXbntw9TVipiinpaz88"/>
+<div class="absolute bottom-0 right-0 w-5 h-5 bg-status-success border-2 border-white rounded-full"></div>
+</div>
+<div class="flex-1">
+<h3 class="font-headline-md text-headline-md text-on-surface">Emmanuel Tetteh</h3>
+<p class="font-body-md text-on-surface-variant flex items-center gap-1">
+                                Professional Electrician • <span class="text-status-success font-bold flex items-center"><span class="material-symbols-outlined text-[16px]" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span> 4.9</span>
+</p>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="grid grid-cols-2 gap-4">
+<button class="flex items-center justify-center gap-2 h-touch-target bg-secondary text-white rounded-xl font-bold Montserrat active:scale-95 transition-transform hover:bg-inverse-surface shadow-sm">
+<span class="material-symbols-outlined" data-icon="call">call</span>
+<span>Call</span>
+</button>
+<button class="flex items-center justify-center gap-2 h-touch-target bg-primary-container text-on-primary-container rounded-xl font-bold Montserrat active:scale-95 transition-transform hover:brightness-95 shadow-sm">
+<span class="material-symbols-outlined" data-icon="chat">chat</span>
+<span>Chat</span>
+</button>
+</div>
+<!-- Job Mini-Detail -->
+<div class="mt-4 pt-4 border-t border-outline-variant flex justify-between items-center text-on-surface-variant">
+<div class="flex flex-col">
+<span class="text-caption font-caption uppercase tracking-tighter opacity-70">Job Request</span>
+<span class="font-label-md text-label-md text-on-surface">Main Panel Repair</span>
+</div>
+<button class="text-primary font-label-md text-label-md hover:underline">
+                            View Details
+                        </button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Nav Shell (Suppressed contextually but defined in shared for structure) -->
+<!-- Not visible as this is a Task-Focused sub-page (Tracking) -->
+<script>
+        // Micro-interaction for the map marker
+        const workerMarker = document.querySelector('.pulse-marker').parentElement;
+        
+        // Simulating subtle movement
+        let angle = 0;
+        setInterval(() => {
+            angle += 0.05;
+            const offsetX = Math.sin(angle) * 5;
+            const offsetY = Math.cos(angle) * 3;
+            workerMarker.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+        }, 50);
+
+        // Interaction for Call/Chat buttons
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const label = this.innerText.trim();
+                if(label === 'Call') {
+                    console.log('Initiating call to Emmanuel...');
+                } else if(label === 'Chat') {
+                    console.log('Opening chat session...');
+                }
+            });
+        });
+    </script>
+</body></html>

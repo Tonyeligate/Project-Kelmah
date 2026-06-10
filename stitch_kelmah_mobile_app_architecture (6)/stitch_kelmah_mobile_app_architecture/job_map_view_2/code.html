@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kelmah | Discover Jobs</title>
+<!-- Google Fonts: Montserrat (Headline) & Inter (Body) -->
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed": "#e4e3d9",
+                        "inverse-primary": "#e9c400",
+                        "surface-muted": "#F3F4F6",
+                        "outline": "#7e775f",
+                        "on-primary": "#ffffff",
+                        "on-surface": "#1a1c1c",
+                        "status-success": "#10B981",
+                        "inverse-on-surface": "#f0f1f1",
+                        "primary-container": "#ffd700",
+                        "on-secondary": "#ffffff",
+                        "surface-variant": "#e2e2e2",
+                        "primary-fixed": "#ffe16d",
+                        "tertiary-fixed-dim": "#c8c7bd",
+                        "primary-fixed-dim": "#e9c400",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "surface": "#f9f9f9",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "on-background": "#1a1c1c",
+                        "secondary-container": "#e2dfde",
+                        "surface-container": "#eeeeee",
+                        "error-container": "#ffdad6",
+                        "surface-dim": "#dadada",
+                        "inverse-surface": "#2f3131",
+                        "on-tertiary": "#ffffff",
+                        "surface-tint": "#705d00",
+                        "background": "#f9f9f9",
+                        "surface-container-low": "#f3f3f4",
+                        "on-tertiary-fixed": "#1b1c16",
+                        "on-primary-fixed": "#221b00",
+                        "secondary": "#5f5e5e",
+                        "on-surface-variant": "#4d4732",
+                        "primary": "#705d00",
+                        "on-tertiary-container": "#5f5f58",
+                        "surface-bright": "#f9f9f9",
+                        "on-tertiary-fixed-variant": "#474740",
+                        "on-primary-fixed-variant": "#544600",
+                        "on-error-container": "#93000a",
+                        "on-secondary-fixed-variant": "#474746",
+                        "status-info": "#3B82F6",
+                        "tertiary-container": "#dcdad0",
+                        "surface-container-highest": "#e2e2e2",
+                        "on-secondary-container": "#636262",
+                        "on-error": "#ffffff",
+                        "on-primary-container": "#705e00",
+                        "surface-container-high": "#e8e8e8",
+                        "secondary-fixed": "#e5e2e1",
+                        "error": "#ba1a1a",
+                        "text-body": "#4B5563"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "touch-target": "48px",
+                        "gutter": "16px",
+                        "margin-desktop": "64px",
+                        "margin-mobile": "16px",
+                        "base": "8px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Montserrat"],
+                        "body-md": ["Inter"],
+                        "display-lg": ["Montserrat"],
+                        "body-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-lg-mobile": ["Montserrat"],
+                        "headline-lg": ["Montserrat"],
+                        "caption": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["28px", {"lineHeight": "34px", "fontWeight": "700"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                        "caption": ["12px", {"lineHeight": "16px", "fontWeight": "500"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Custom scrollbar for horizontal card discovery */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Map Marker Animation */
+        @keyframes pulse-marker {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        .active-marker { animation: pulse-marker 2s infinite ease-in-out; }
+
+        /* Draggable Bottom Sheet Transition */
+        #bottom-sheet {
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface font-body-md text-on-surface overflow-hidden h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface dark:bg-inverse-surface border-b border-outline-variant dark:border-outline flex items-center justify-between px-margin-mobile h-touch-target">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary dark:text-inverse-primary" data-icon="construction">construction</span>
+<h1 class="font-headline-md text-headline-md-mobile font-bold text-primary dark:text-primary-container">Kelmah</h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high p-2 rounded-full transition-colors active:scale-95 duration-200" data-icon="notifications">notifications</button>
+</div>
+</header>
+<!-- Map Interface Container -->
+<main class="flex-1 relative mt-touch-target mb-16 overflow-hidden">
+<!-- Interactive Map Placeholder -->
+<div class="absolute inset-0 z-0 bg-surface-container">
+<img class="w-full h-full object-cover grayscale-[0.2] opacity-80" data-alt="A detailed, modern architectural map of Riyadh city with a minimalist light-mode aesthetic. The map uses a clean palette of light grays and whites with primary gold accents highlighting major districts. The visual style is high-contrast and professional, suitable for a corporate industrial service application. Soft lighting creates a flat, utilitarian feel focused on clarity and stability." data-location="Riyadh, Saudi Arabia" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAB8V-HZAfsFkz3JlIpmimiwNAYsKmSEhyM_WGocA4jrBEC9bgHVZaonIqo93afPVz7hsKmE604R5riYLRTd9fjOKCLfOgNnPtdNy2B-XWyMpdH0AXVBwJoqoQdmBttI9oWIn41knyksuUT7sIc7G-S8VPCGyFuWwD9vxnrO7ATY-7HQFs7fTiMUUnapdlFc8rsCFqbeQWNjBJfPH_KdC-re-88DIvZyeNZTEEIaymHyq1tI2Cxk5OFXCR7ncGrKZeMnAVxqFFT6Bc"/>
+<!-- Custom Markers Overlay -->
+<div class="absolute inset-0">
+<!-- Marker 1: Active Selection -->
+<button class="absolute top-[35%] left-[45%] flex flex-col items-center group" onclick="selectJob(1)">
+<div class="bg-primary text-on-primary px-3 py-1 rounded-full font-bold shadow-md active-marker text-label-md">
+                        SAR 450
+                    </div>
+<div class="w-3 h-3 bg-primary rounded-full border-2 border-white -mt-1 shadow-sm"></div>
+</button>
+<!-- Marker 2 -->
+<button class="absolute top-[55%] left-[25%] flex flex-col items-center group" onclick="selectJob(2)">
+<div class="bg-surface border-2 border-primary text-primary px-3 py-1 rounded-full font-bold shadow-sm text-label-md hover:bg-primary-container transition-colors">
+                        SAR 280
+                    </div>
+<div class="w-3 h-3 bg-primary rounded-full border-2 border-white -mt-1"></div>
+</button>
+<!-- Marker 3 -->
+<button class="absolute top-[42%] left-[70%] flex flex-col items-center group" onclick="selectJob(3)">
+<div class="bg-surface border-2 border-primary text-primary px-3 py-1 rounded-full font-bold shadow-sm text-label-md hover:bg-primary-container transition-colors">
+                        SAR 600
+                    </div>
+<div class="w-3 h-3 bg-primary rounded-full border-2 border-white -mt-1"></div>
+</button>
+</div>
+</div>
+<!-- Over-Map Controls: Search & List Toggle -->
+<div class="absolute top-4 left-0 right-0 px-4 z-20 flex flex-col gap-3">
+<div class="flex items-center gap-2 bg-surface rounded-xl shadow-lg border border-outline-variant p-2">
+<span class="material-symbols-outlined text-secondary ml-2" data-icon="search">search</span>
+<input class="flex-1 bg-transparent border-none focus:ring-0 text-body-md font-body-md py-2" placeholder="Search trades or locations..." type="text"/>
+<button class="bg-secondary-container text-on-secondary-container rounded-lg px-3 py-1.5 flex items-center gap-1 hover:bg-outline-variant transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="filter_list">filter_list</span>
+<span class="font-label-md text-label-md">Filters</span>
+</button>
+</div>
+<div class="flex justify-center">
+<div class="bg-surface border border-outline-variant rounded-full p-1 flex shadow-md">
+<button class="bg-primary text-on-primary px-4 py-1.5 rounded-full font-label-md text-label-md flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]" data-icon="map">map</span>
+                        Map
+                    </button>
+<button class="text-secondary px-4 py-1.5 rounded-full font-label-md text-label-md flex items-center gap-2 hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[18px]" data-icon="format_list_bulleted">format_list_bulleted</span>
+                        List View
+                    </button>
+</div>
+</div>
+</div>
+<!-- Floating FAB - Only for Home/Explore Screens -->
+<button class="absolute right-4 bottom-48 z-30 w-14 h-14 bg-primary text-on-primary rounded-full shadow-xl flex items-center justify-center active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-[28px]" data-icon="add" style="font-variation-settings: 'FILL' 1;">add</span>
+</button>
+<!-- Bottom Sheet / Carousel -->
+<div class="absolute bottom-0 left-0 right-0 z-40 bg-surface rounded-t-3xl shadow-[0_-8px_30px_rgb(0,0,0,0.12)] border-t border-outline-variant max-h-[400px]" id="bottom-sheet">
+<div class="flex flex-col h-full">
+<!-- Handle -->
+<div class="w-12 h-1 bg-outline-variant rounded-full mx-auto my-3 cursor-pointer" onclick="toggleSheet()"></div>
+<div class="px-gutter pb-2 flex justify-between items-center">
+<h2 class="font-headline-md text-[18px] text-on-surface">Available Jobs Nearby</h2>
+<span class="text-caption font-caption text-secondary">12 Results</span>
+</div>
+<!-- Job Horizontal Carousel -->
+<div class="flex overflow-x-auto no-scrollbar gap-4 px-gutter pb-6 pt-2">
+<!-- Job Card 1 -->
+<div class="min-w-[300px] bg-surface-container-lowest border border-outline-variant rounded-xl p-4 flex flex-col shadow-sm">
+<div class="flex justify-between items-start mb-3">
+<div>
+<span class="bg-primary-container text-on-primary-container px-2 py-0.5 rounded text-caption font-bold uppercase tracking-wider">HVAC Specialist</span>
+<h3 class="font-headline-md text-[18px] mt-1">AC Repair &amp; Maintenance</h3>
+</div>
+<span class="text-primary font-bold">SAR 450</span>
+</div>
+<div class="flex items-center gap-2 text-secondary mb-4">
+<span class="material-symbols-outlined text-[18px]" data-icon="location_on">location_on</span>
+<span class="text-label-md font-label-md">Al Olaya, Riyadh</span>
+</div>
+<div class="mt-auto flex items-center justify-between">
+<div class="flex -space-x-2">
+<img class="w-8 h-8 rounded-full border-2 border-surface" data-alt="Close-up professional portrait of a skilled electrician in a clean blue uniform, smiling confidently with a bright industrial workplace background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBPrzW4Gz6ym0ZhNMSfQkx_aloLCwEDPrLgZS7BCHVHRYPdlH1By-3FqvDJk3ZGfE4amwtOVbUA-jJST_Dil2GagqGdu3axiiTYjCLMkOM71MTDZCkD5r0W-HnQmm5IejTTn_nnhZBDq7cgU5ZOMugAO00YPCoWJPKfKEKX9ZPc90xjOTGytn014agHANb68j1PgwFe58AOxs5FHzZbn-jM5G5BdxGERzULm9bR9VDiA633XXOYHxSWZLqsxPYTwsCKdFAPJU1Ykz8"/>
+<div class="w-8 h-8 rounded-full border-2 border-surface bg-tertiary-fixed flex items-center justify-center text-[10px] font-bold">+5</div>
+</div>
+<button class="bg-primary text-on-primary px-4 py-2 rounded-lg font-label-md text-label-md hover:opacity-90 active:scale-95 transition-all">
+                                View Details
+                            </button>
+</div>
+</div>
+<!-- Job Card 2 -->
+<div class="min-w-[300px] bg-surface-container-lowest border border-outline-variant rounded-xl p-4 flex flex-col shadow-sm">
+<div class="flex justify-between items-start mb-3">
+<div>
+<span class="bg-tertiary-container text-on-tertiary-container px-2 py-0.5 rounded text-caption font-bold uppercase tracking-wider">Plumbing</span>
+<h3 class="font-headline-md text-[18px] mt-1">Industrial Pipe Leak</h3>
+</div>
+<span class="text-primary font-bold">SAR 280</span>
+</div>
+<div class="flex items-center gap-2 text-secondary mb-4">
+<span class="material-symbols-outlined text-[18px]" data-icon="location_on">location_on</span>
+<span class="text-label-md font-label-md">Diriyah, Riyadh</span>
+</div>
+<div class="mt-auto flex items-center justify-between">
+<span class="bg-status-success/10 text-status-success px-2 py-1 rounded-full text-caption font-bold flex items-center gap-1">
+<span class="w-1.5 h-1.5 bg-status-success rounded-full"></span> Urgent
+                            </span>
+<button class="bg-primary text-on-primary px-4 py-2 rounded-lg font-label-md text-label-md hover:opacity-90 active:scale-95 transition-all">
+                                View Details
+                            </button>
+</div>
+</div>
+<!-- Job Card 3 -->
+<div class="min-w-[300px] bg-surface-container-lowest border border-outline-variant rounded-xl p-4 flex flex-col shadow-sm">
+<div class="flex justify-between items-start mb-3">
+<div>
+<span class="bg-primary-container text-on-primary-container px-2 py-0.5 rounded text-caption font-bold uppercase tracking-wider">Masonry</span>
+<h3 class="font-headline-md text-[18px] mt-1">Foundation Repair</h3>
+</div>
+<span class="text-primary font-bold">SAR 600</span>
+</div>
+<div class="flex items-center gap-2 text-secondary mb-4">
+<span class="material-symbols-outlined text-[18px]" data-icon="location_on">location_on</span>
+<span class="text-label-md font-label-md">Al Malqa, Riyadh</span>
+</div>
+<div class="mt-auto flex items-center justify-between">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-primary text-[18px]" data-icon="verified" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="text-caption font-bold">Verified</span>
+</div>
+<button class="bg-primary text-on-primary px-4 py-2 rounded-lg font-label-md text-label-md hover:opacity-90 active:scale-95 transition-all">
+                                View Details
+                            </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 bg-surface dark:bg-inverse-surface shadow-md flex justify-around items-center h-16 w-full border-t border-outline-variant dark:border-outline">
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim px-3 py-1 hover:text-primary dark:hover:text-primary-fixed transition-colors active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-md text-label-md">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container dark:bg-primary-fixed-dim text-on-primary-container dark:text-on-primary-fixed rounded-xl px-3 py-1 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="work" style="font-variation-settings: 'FILL' 1;">work</span>
+<span class="font-label-md text-label-md">Jobs</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim px-3 py-1 hover:text-primary dark:hover:text-primary-fixed transition-colors active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="mail">mail</span>
+<span class="font-label-md text-label-md">Messages</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim px-3 py-1 hover:text-primary dark:hover:text-primary-fixed transition-colors active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim px-3 py-1 hover:text-primary dark:hover:text-primary-fixed transition-colors active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-md text-label-md">Profile</span>
+</a>
+</nav>
+<script>
+        let isSheetCollapsed = false;
+        const bottomSheet = document.getElementById('bottom-sheet');
+
+        function toggleSheet() {
+            if (isSheetCollapsed) {
+                bottomSheet.style.transform = 'translateY(0)';
+            } else {
+                bottomSheet.style.transform = 'translateY(280px)';
+            }
+            isSheetCollapsed = !isSheetCollapsed;
+        }
+
+        function selectJob(id) {
+            // Logic to scroll to the specific card in carousel
+            const carousel = bottomSheet.querySelector('.flex.overflow-x-auto');
+            const cardWidth = 316; // width + gap
+            carousel.scrollTo({
+                left: (id - 1) * cardWidth,
+                behavior: 'smooth'
+            });
+            
+            // Expand sheet if it's collapsed
+            if (isSheetCollapsed) toggleSheet();
+        }
+
+        // Initialize with sheet slightly up
+        window.onload = () => {
+             bottomSheet.style.transform = 'translateY(0)';
+        };
+    </script>
+</body></html>

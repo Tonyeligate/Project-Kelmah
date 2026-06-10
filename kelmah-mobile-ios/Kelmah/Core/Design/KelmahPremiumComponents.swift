@@ -1,7 +1,7 @@
 import SwiftUI
 
 private enum KelmahRhythm {
-    static let panelCornerRadius: CGFloat = 24
+    static let panelCornerRadius: CGFloat = 16
     static let panelPadding: CGFloat = 16
     static let controlHeight: CGFloat = 48
 }
@@ -32,7 +32,7 @@ struct KelmahPremiumBackground<Content: View>: View {
                 colors: [
                     KelmahTheme.background,
                     KelmahTheme.backgroundRaised,
-                    KelmahTheme.background,
+                    KelmahTheme.stitchSurfaceVariant.opacity(0.42),
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
@@ -76,16 +76,13 @@ struct KelmahPanel<Content: View>: View {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: KelmahRhythm.panelCornerRadius, style: .continuous)
-                    .stroke(
-                        elevated ? KelmahTheme.borderStrong : KelmahTheme.borderSoft,
-                        lineWidth: 1
-                    )
+                    .stroke(elevated ? KelmahTheme.borderStrong : KelmahTheme.borderSoft, lineWidth: 1)
             )
             .shadow(
-                color: elevated ? Color.black.opacity(0.34) : Color.black.opacity(0.2),
-                radius: elevated ? 20 : 10,
+                color: Color.black.opacity(elevated ? 0.13 : 0.07),
+                radius: elevated ? 16 : 8,
                 x: 0,
-                y: elevated ? 10 : 4
+                y: elevated ? 8 : 3
             )
     }
 }

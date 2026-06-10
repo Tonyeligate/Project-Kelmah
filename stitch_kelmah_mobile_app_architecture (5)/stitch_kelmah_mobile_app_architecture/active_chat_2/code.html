@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-high": "#e8e8e8",
+                    "on-tertiary-fixed-variant": "#474740",
+                    "primary": "#705d00",
+                    "on-secondary-fixed-variant": "#474746",
+                    "inverse-surface": "#2f3131",
+                    "on-error-container": "#93000a",
+                    "outline": "#7e775f",
+                    "surface-bright": "#f9f9f9",
+                    "tertiary-fixed": "#e4e3d9",
+                    "on-secondary-fixed": "#1c1b1b",
+                    "surface-muted": "#F3F4F6",
+                    "surface-tint": "#705d00",
+                    "on-surface-variant": "#4d4732",
+                    "secondary-fixed": "#e5e2e1",
+                    "outline-variant": "#d0c6ab",
+                    "on-error": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "surface-container-highest": "#e2e2e2",
+                    "surface-container": "#eeeeee",
+                    "secondary": "#5f5e5e",
+                    "on-primary-fixed": "#221b00",
+                    "tertiary": "#5f5f57",
+                    "primary-fixed": "#ffe16d",
+                    "inverse-on-surface": "#f0f1f1",
+                    "secondary-fixed-dim": "#c8c6c5",
+                    "on-primary-fixed-variant": "#544600",
+                    "primary-fixed-dim": "#e9c400",
+                    "on-secondary-container": "#636262",
+                    "on-tertiary-fixed": "#1b1c16",
+                    "background": "#f9f9f9",
+                    "status-info": "#3B82F6",
+                    "inverse-primary": "#e9c400",
+                    "on-primary-container": "#705e00",
+                    "tertiary-fixed-dim": "#c8c7bd",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-container": "#ffd700",
+                    "on-tertiary": "#ffffff",
+                    "on-background": "#1a1c1c",
+                    "on-primary": "#ffffff",
+                    "surface-dim": "#dadada",
+                    "surface-container-low": "#f3f3f4",
+                    "status-success": "#10B981",
+                    "error": "#ba1a1a",
+                    "text-body": "#4B5563",
+                    "surface-variant": "#e2e2e2",
+                    "secondary-container": "#e2dfde",
+                    "surface": "#f9f9f9",
+                    "on-surface": "#1a1c1c",
+                    "on-tertiary-container": "#5f5f58",
+                    "tertiary-container": "#dcdad0",
+                    "on-secondary": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "touch-target": "48px",
+                    "margin-mobile": "16px",
+                    "base": "8px",
+                    "margin-desktop": "64px",
+                    "gutter": "16px"
+            },
+            "fontFamily": {
+                    "body-md": ["Inter"],
+                    "caption": ["Inter"],
+                    "headline-md": ["Montserrat"],
+                    "headline-lg": ["Montserrat"],
+                    "display-lg": ["Montserrat"],
+                    "label-md": ["Inter"],
+                    "headline-lg-mobile": ["Montserrat"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "caption": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "34px", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #f9f9f9;
+            color: #1a1c1c;
+            font-family: 'Inter', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .message-bubble-in {
+            border-radius: 20px 20px 20px 4px;
+        }
+        .message-bubble-out {
+            border-radius: 20px 20px 4px 20px;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #e2e2e2;
+            border-radius: 10px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="min-h-screen flex flex-col max-w-[1280px] mx-auto bg-surface overflow-hidden">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-inverse-surface shadow-sm flex justify-between items-center px-margin-mobile w-full z-50 sticky top-0 h-16">
+<div class="flex items-center gap-3">
+<button class="w-touch-target h-touch-target flex items-center justify-center hover:opacity-80 transition-opacity active:scale-95 transition-transform text-on-surface-variant dark:text-surface-variant">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<div class="flex items-center gap-2">
+<div class="relative">
+<img alt="Kojo Mensah" class="w-10 h-10 rounded-full object-cover border-2 border-primary-container" data-alt="A professional headshot of a middle-aged Ghanaian craftsman with a friendly smile, wearing a neat navy blue work shirt. The lighting is warm and natural, suggesting a professional yet approachable personality. The background is a blurred workshop environment with soft industrial lighting, maintaining a clean and modern corporate aesthetic consistent with the Kelmah brand." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBCq5sSD7zvfxCTDs4GPR1Ke8fS6yjHIhIRnSJjBnEPiZGSNBYJp_6miae_2HVtAaC71hhRnwcfyzalX2i_B_ylUBjMxoFDL2s0jaLywgn0bHo_ven-FJ4k1nEfIsbiZAxNezCaALvTwviLUZmUX92sqKhyTtCCeWKggxxssmWijFHgu5KzeDpuDxTUXntOKpjYZzwznSno2eBUx-J3zm5uoxfVjuym9A7HILhoz8eSOMYaZMbz3Lo5aMhNrFf-iR517IGNnKGtLrc"/>
+<span class="absolute bottom-0 right-0 w-3 h-3 bg-status-success border-2 border-surface rounded-full"></span>
+</div>
+<div>
+<h1 class="font-headline-md text-[18px] leading-tight text-on-surface">Kojo Mensah</h1>
+<p class="font-caption text-caption text-on-surface-variant">Expert Electrician • Online</p>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-1">
+<button class="w-touch-target h-touch-target flex items-center justify-center hover:opacity-80 transition-opacity active:scale-95 transition-transform text-on-surface-variant">
+<span class="material-symbols-outlined">call</span>
+</button>
+<button class="w-touch-target h-touch-target flex items-center justify-center hover:opacity-80 transition-opacity active:scale-95 transition-transform text-on-surface-variant">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</header>
+<!-- Message List Canvas -->
+<main class="flex-1 overflow-y-auto px-margin-mobile py-6 flex flex-col gap-6 custom-scrollbar">
+<!-- Date Separator -->
+<div class="flex justify-center">
+<span class="px-4 py-1 bg-surface-container rounded-full font-label-md text-caption text-on-surface-variant">Today</span>
+</div>
+<!-- Receiver Message -->
+<div class="flex flex-col items-start max-w-[85%] md:max-w-[60%]">
+<div class="message-bubble-in bg-surface-container-high text-on-surface p-4 shadow-sm">
+<p class="font-body-md text-body-md">Hello! I've reviewed the photos of the electrical panel you sent over. It looks like we need to upgrade the main breaker for safety.</p>
+</div>
+<div class="flex items-center gap-2 mt-1 ml-1">
+<span class="font-caption text-caption text-on-surface-variant">09:42 AM</span>
+</div>
+</div>
+<!-- Sender Message -->
+<div class="flex flex-col items-end self-end max-w-[85%] md:max-w-[60%]">
+<div class="message-bubble-out bg-primary-container text-on-primary-container p-4 shadow-sm">
+<p class="font-body-md text-body-md">Thanks for the quick feedback, Kojo. How long do you think the installation will take?</p>
+</div>
+<div class="flex items-center gap-1 mt-1 mr-1">
+<span class="font-caption text-caption text-on-surface-variant">09:45 AM</span>
+<span class="material-symbols-outlined text-[16px] text-primary" style="font-variation-settings: 'FILL' 1;">done_all</span>
+</div>
+</div>
+<!-- Job Card Context (Industrial Design System Pattern) -->
+<div class="flex justify-center my-2">
+<div class="bg-surface-container-lowest border border-outline-variant p-4 rounded-xl w-full max-w-md flex items-center gap-4">
+<div class="w-12 h-12 bg-primary-container rounded-lg flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">electrical_services</span>
+</div>
+<div class="flex-1">
+<h3 class="font-label-md text-on-surface">Electrical Panel Upgrade</h3>
+<p class="font-caption text-on-surface-variant">Status: <span class="text-status-info font-semibold">Quote Pending</span></p>
+</div>
+<button class="bg-on-background text-surface px-4 py-2 rounded-lg font-label-md hover:opacity-90 transition-opacity active:scale-95">View</button>
+</div>
+</div>
+<!-- Receiver Message -->
+<div class="flex flex-col items-start max-w-[85%] md:max-w-[60%]">
+<div class="message-bubble-in bg-surface-container-high text-on-surface p-4 shadow-sm">
+<p class="font-body-md text-body-md">It should take about 3 to 4 hours. I'll need to turn off the power temporarily. Does Thursday morning at 8:00 AM work for you?</p>
+</div>
+<div class="flex items-center gap-2 mt-1 ml-1">
+<span class="font-caption text-caption text-on-surface-variant">09:48 AM</span>
+</div>
+</div>
+<!-- Attachment Example -->
+<div class="flex flex-col items-end self-end max-w-[85%] md:max-w-[60%]">
+<div class="message-bubble-out bg-primary-container overflow-hidden shadow-sm">
+<img alt="Schedule screenshot" class="w-full h-48 object-cover" data-alt="A clean, minimalist digital calendar interface displayed on a high-resolution smartphone screen. The Thursday slot is highlighted with a soft yellow accent. The overall aesthetic is professional, using a white background with thin grey grid lines, embodying an organized and efficient professional workflow consistent with the Kelmah branding." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBmyw93NdzTMgrYsqyLsfOxm_df8b4E5WOoUuNPMrl1TVUXAYJVOWaXq5qbRisWZLRxUTgBLrABYbBTdnFfmWTqBkt33tgnLrDY7uDjBwogdqQkJglcJpNFqoL9PNuvj_o_-J23WpuGKY4HJjKZv_7MsLk7yDtlinbTAMp5asORfUV5y_vfpYFJaBtYtxJU131HZep1voRg4UDLTXuihxzUYFnJ9dIShuqNDRXit-3fCtJ2EMEbvayRBP1PvBuH-gI0RXSn70zwqK8"/>
+<div class="p-3">
+<p class="font-body-md text-body-md text-on-primary-container">Thursday morning works perfectly. I've blocked it off on my side.</p>
+</div>
+</div>
+<div class="flex items-center gap-1 mt-1 mr-1">
+<span class="font-caption text-caption text-on-surface-variant">09:52 AM</span>
+<span class="material-symbols-outlined text-[16px] text-primary" style="font-variation-settings: 'FILL' 1;">done_all</span>
+</div>
+</div>
+<div id="anchor"></div>
+</main>
+<!-- Message Input Area -->
+<footer class="bg-surface-container-lowest p-margin-mobile md:px-margin-desktop shadow-[0px_-4px_20px_rgba(0,0,0,0.04)] z-50">
+<div class="flex items-center gap-2 md:gap-4 max-w-4xl mx-auto">
+<button class="w-touch-target h-touch-target flex items-center justify-center bg-surface-container text-on-surface-variant rounded-full hover:bg-surface-container-high transition-colors active:scale-95">
+<span class="material-symbols-outlined">add</span>
+</button>
+<div class="flex-1 relative flex items-center">
+<textarea class="w-full bg-surface-container-low border-none focus:ring-2 focus:ring-primary-container rounded-2xl py-3 px-4 pr-12 resize-none font-body-md text-on-surface placeholder:text-on-surface-variant" placeholder="Type a message..." rows="1"></textarea>
+<button class="absolute right-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">mood</span>
+</button>
+</div>
+<button class="w-touch-target h-touch-target flex items-center justify-center bg-primary-container text-on-primary-container rounded-full shadow-sm hover:opacity-90 active:scale-90 transition-all">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">send</span>
+</button>
+</div>
+<!-- Safety/Professionalism Note -->
+<div class="mt-4 flex justify-center">
+<p class="font-caption text-caption text-on-tertiary-fixed-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">verified_user</span>
+                All messages and payments are secured via Kelmah
+            </p>
+</div>
+</footer>
+<script>
+        // Auto-expand textarea
+        const tx = document.getElementsByTagName("textarea");
+        for (let i = 0; i < tx.length; i++) {
+            tx[i].setAttribute("style", "height:" + (tx[i].scrollHeight) + "px;overflow-y:hidden;");
+            tx[i].addEventListener("input", OnInput, false);
+        }
+
+        function OnInput() {
+            this.style.height = 0;
+            this.style.height = (this.scrollHeight) + "px";
+        }
+
+        // Scroll to bottom on load
+        window.onload = () => {
+            const container = document.querySelector('main');
+            container.scrollTop = container.scrollHeight;
+        };
+    </script>
+</body></html>
