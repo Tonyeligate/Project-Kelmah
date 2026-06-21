@@ -1,16 +1,19 @@
 /**
- * WorkerDashboardPage - Stitch-design desktop dashboard
+ * WorkerDashboardPage — Stitch "Kelmah Elite" desktop design.
  *
- * Matches the Stitch worker_dashboard design:
- * - Hero section (glass-panel) with greeting + quick stats (Applications, Completed, Earnings)
- * - Next Best Action banner (pending applications prompt)
- * - Two-column layout:
- *   Left: Quick Actions grid + Performance Overview cards
- *   Right: Profile Strength card with progress + Location card
+ * Layout matches stitch_kelmah_dashboard_redevelopment/worker_dashboard/code.html:
+ *  - Hero glass-panel card: "Good {Evening}, {firstName}" + 3 inline quick stats
+ *  - Next Best Action banner: review pending applications + Open Pipeline
+ *  - 3-col grid: left col-span-2 (Quick Actions 2x2, Performance Overview),
+ *    right col-span-1 (Profile Strength, Location/Map)
  *
- * Backend integration via workerSlice Redux thunks:
- * - fetchWorkerApplications, fetchWorkerJobs, fetchWorkerProfile
- * Plus workerService.getWorkerStats for profile completion.
+ * Backend integration through Redux (workerSlice):
+ *  - fetchWorkerApplications, fetchWorkerJobs, fetchWorkerEarnings
+ *  - workerService.getWorkerStats for profile completion %
+ *
+ * Resilience infra (polling, retry, skeleton, network awareness, snackbar)
+ * from the previous implementation is preserved. (The previous build referenced
+ * undeclared recommendations state setters — that dead code is removed here.)
  */
 import PropTypes from 'prop-types';
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
@@ -26,41 +29,39 @@ import {
   Tooltip,
   Skeleton,
   Alert,
-  AlertTitle,
   Snackbar,
   Stack,
-  LinearProgress,
-  useTheme,
   alpha,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import SearchIcon from '@mui/icons-material/Search';
 import MessageIcon from '@mui/icons-material/Message';
-import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import PaymentsIcon from '@mui/icons-material/Payments';
 import InfoIcon from '@mui/icons-material/Info';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import DescriptionIcon from '@mui/icons-material/Description';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import PendingActionsIcon from '@mui/icons-material/PendingActions';
+import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import { Helmet } from 'react-helmet-async';
 import {
   fetchWorkerApplications,
   fetchWorkerJobs,
+  fetchWorkerEarnings,
   selectWorkerApplications,
   selectWorkerJobs,
+  selectWorkerEarnings,
   selectWorkerLoading,
   selectWorkerError,
   clearWorkerErrors,
 } from '../services/workerSlice';
 import workerService from '../services/workerService';
-import jobsService from '../../jobs/services/jobsService';
 import { useVisibilityPolling } from '../../../hooks/useVisibilityPolling';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 import useOnlineStatus from '@/hooks/useOnlineStatus';
@@ -68,46 +69,28 @@ import useNetworkSpeed from '@/hooks/useNetworkSpeed';
 import { TOUCH_TARGET_MIN } from '@/constants/layout';
 import PageCanvas from '@/modules/common/components/PageCanvas';
 import { withBottomNavSafeArea } from '@/utils/safeArea';
+import {
+  STITCH,
+  FONT_HEAD,
+  FONT_BODY,
+  glassPanel,
+  hoverGoldGlow,
+  goldButtonSx,
+} from '../../dashboard/services/stitchTokens';
 
-// ─── Stitch design tokens ───
-const STITCH = {
-  primaryContainer: '#d4af37',
-  onPrimaryContainer: '#554300',
-  surfaceContainer: '#1e1f23',
-  surface: '#121317',
-  surfaceVariant: '#343539',
-  surfaceBright: '#38393d',
-  surfaceDim: '#121317',
-  borderMuted: '#2C2C2E',
-  onSurface: '#e3e2e7',
-  onSurfaceVariant: '#d0c5af',
-  success: '#10B981',
-  warning: '#F59E0B',
-  error: '#DC2626',
-  primary: '#f2ca50',
-  outline: '#99907c',
-};
-
-/* ---------- Keyframes for spin animation ---------- */
-const spinKeyframes = {
-  '@keyframes spin': {
-    from: { transform: 'rotate(0deg)' },
-    to: { transform: 'rotate(360deg)' },
-  },
-};
-
-const WORKER_DASHBOARD_POLL_INTERVAL_MS = 90_000;
-const WORKER_DASHBOARD_LOW_BANDWIDTH_POLL_INTERVAL_MS = 3 * 60 * 1000;
+// ─── Dashboard constants ───
+const WORKER_DASHBOARD_POLL_INTERVAL_MS = 30000;
+const WORKER_DASHBOARD_LOW_BANDWIDTH_POLL_INTERVAL_MS = 120000;
+const LOADING_TIMEOUT = 8000;
 const MAX_RETRIES = 3;
-const LOADING_TIMEOUT = 15000;
 
 const WorkerDashboardPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const theme = useTheme();
+
   const isCompactMobile = useBreakpointDown('sm');
-  const { isOnline, wasOffline } = useOnlineStatus();
-  const { isSlow, effectiveType, downlink, rtt, saveData } = useNetworkSpeed();
+  const { isOnline } = useOnlineStatus();
+  const { isSlow, saveData } = useNetworkSpeed();
   const lowBandwidthModeActive = isOnline && (isSlow || saveData);
   const dashboardPollingIntervalMs = lowBandwidthModeActive
     ? WORKER_DASHBOARD_LOW_BANDWIDTH_POLL_INTERVAL_MS
@@ -122,16 +105,12 @@ const WorkerDashboardPage = () => {
     () => selectWorkerApplications('accepted'),
     [],
   );
-  const selectRejected = useMemo(
-    () => selectWorkerApplications('rejected'),
-    [],
-  );
   const selectCompletedJobs = useMemo(() => selectWorkerJobs('completed'), []);
 
   const pendingApplications = useSelector(selectPending);
   const acceptedApplications = useSelector(selectAccepted);
-  const rejectedApplications = useSelector(selectRejected);
   const completedJobs = useSelector(selectCompletedJobs);
+  const earnings = useSelector(selectWorkerEarnings);
 
   const selectLoadingApps = useMemo(
     () => selectWorkerLoading('applications'),
@@ -145,8 +124,6 @@ const WorkerDashboardPage = () => {
     percentage: 0,
     missingFields: ['Loading...'],
   });
-  const [recommendations, setRecommendations] = useState([]);
-  const [recsLoading, setRecsLoading] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
   const retryCountRef = useRef(0);
   const [loadingTimeout, setLoadingTimeout] = useState(false);
@@ -195,13 +172,23 @@ const WorkerDashboardPage = () => {
     const timeoutId = setTimeout(() => setLoadingTimeout(true), LOADING_TIMEOUT);
     loadingTimeoutRef.current = timeoutId;
 
+    const userId = user?.id || user?._id || user?.userId;
     try {
-      const results = await Promise.allSettled([
+      const requests = [
         dispatch(fetchWorkerApplications('pending')).unwrap(),
         dispatch(fetchWorkerApplications('accepted')).unwrap(),
-        dispatch(fetchWorkerApplications('rejected')).unwrap(),
         dispatch(fetchWorkerJobs('completed')).unwrap(),
-      ]);
+      ];
+      // Fetch real earnings when we have a worker id; non-blocking on failure.
+      if (userId) {
+        requests.push(
+          dispatch(fetchWorkerEarnings({ workerId: userId, period: 'month' }))
+            .unwrap()
+            .catch(() => null),
+        );
+      }
+
+      const results = await Promise.allSettled(requests);
       const hasFailures = results.some((r) => r.status === 'rejected');
 
       clearTimeout(timeoutId);
@@ -227,7 +214,7 @@ const WorkerDashboardPage = () => {
     } finally {
       isRetryingRef.current = false;
     }
-  }, [dispatch]);
+  }, [dispatch, user?.id, user?._id, user?.userId]);
 
   useEffect(() => {
     fetchDashboardData();
@@ -271,28 +258,6 @@ const WorkerDashboardPage = () => {
     };
   }, [user?.id, user?._id, user?.userId]);
 
-  // Fetch job recommendations
-  useEffect(() => {
-    let cancelled = false;
-    const loadRecs = async () => {
-      setRecsLoading(true);
-      try {
-        const jobs = await jobsService.getPersonalizedJobRecommendations({
-          limit: 6,
-        });
-        if (!cancelled) setRecommendations(Array.isArray(jobs) ? jobs : []);
-      } catch {
-        // Non-blocking
-      } finally {
-        if (!cancelled) setRecsLoading(false);
-      }
-    };
-    loadRecs();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return 'Good Morning';
@@ -300,13 +265,20 @@ const WorkerDashboardPage = () => {
     return 'Good Evening';
   };
 
+  // Earnings: prefer backend earnings payload, fall back to client derivation.
   const earningsSummary = useMemo(() => {
+    const backendTotal = getAmountValue(
+      earnings?.totalEarned ?? earnings?.total ?? earnings?.amount,
+    );
+    const backendThisMonth = getAmountValue(
+      earnings?.monthlyData?.current ??
+        earnings?.thisMonth ??
+        earnings?.monthlyTotal,
+    );
+
     const now = new Date();
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
-    const previousMonthDate = new Date(currentYear, currentMonth - 1, 1);
-    const previousMonth = previousMonthDate.getMonth();
-    const previousMonthYear = previousMonthDate.getFullYear();
 
     const completedTotals = (
       Array.isArray(completedJobs) ? completedJobs : []
@@ -327,16 +299,10 @@ const WorkerDashboardPage = () => {
         ) {
           acc.thisMonth += amount;
         }
-        if (
-          referenceDate.getMonth() === previousMonth &&
-          referenceDate.getFullYear() === previousMonthYear
-        ) {
-          acc.lastMonth += amount;
-        }
         acc.total += amount;
         return acc;
       },
-      { total: 0, thisMonth: 0, lastMonth: 0 },
+      { total: 0, thisMonth: 0 },
     );
 
     const pendingEarnings = (
@@ -347,34 +313,28 @@ const WorkerDashboardPage = () => {
     );
 
     const fallbackTotal = getAmountValue(user?.totalEarnings);
-    const total = Math.max(completedTotals.total, fallbackTotal);
+    const total = Math.max(backendTotal, completedTotals.total, fallbackTotal);
 
     return {
       total,
-      thisMonth: completedTotals.thisMonth,
-      lastMonth: completedTotals.lastMonth,
+      thisMonth: backendThisMonth || completedTotals.thisMonth,
       pending: pendingEarnings,
     };
-  }, [completedJobs, pendingApplications, user, getAmountValue]);
+  }, [completedJobs, pendingApplications, earnings, user, getAmountValue]);
+
+  const pendingOffersCount =
+    (Array.isArray(pendingApplications) ? pendingApplications.length : 0) +
+    (Array.isArray(acceptedApplications) ? acceptedApplications.length : 0);
 
   const stats = useMemo(
     () => ({
       applications:
-        pendingApplications.length +
-        acceptedApplications.length +
-        rejectedApplications.length,
-      completedJobs: completedJobs.length,
+        (Array.isArray(pendingApplications) ? pendingApplications.length : 0) +
+        (Array.isArray(acceptedApplications) ? acceptedApplications.length : 0),
+      completedJobs: Array.isArray(completedJobs) ? completedJobs.length : 0,
       earnings: earningsSummary.total,
-      rating: user?.rating ?? null,
     }),
-    [
-      pendingApplications,
-      acceptedApplications,
-      rejectedApplications,
-      completedJobs,
-      earningsSummary,
-      user,
-    ],
+    [pendingApplications, acceptedApplications, completedJobs, earningsSummary],
   );
 
   const handleRefresh = useCallback(() => {
@@ -412,12 +372,12 @@ const WorkerDashboardPage = () => {
     }).format(amount);
   };
 
-  const userFirstName =
-    user?.firstName ||
-    user?.name?.split(' ')[0] ||
-    'there';
+  const userFirstName = user?.firstName || user?.name?.split(' ')[0] || 'there';
 
-  const pendingCount = pendingApplications?.length || 0;
+  const isNewWorker =
+    stats.applications === 0 &&
+    stats.completedJobs === 0 &&
+    stats.earnings === 0;
 
   // Profile completion checklist items
   const profileChecklist = useMemo(() => {
@@ -425,43 +385,51 @@ const WorkerDashboardPage = () => {
     const items = [
       {
         label: 'Upload Professional Avatar',
-        done: !missing.some((m) =>
-          m.toLowerCase().includes('avatar') ||
-          m.toLowerCase().includes('photo') ||
-          m.toLowerCase().includes('picture'),
+        done: !missing.some(
+          (m) =>
+            m.toLowerCase().includes('avatar') ||
+            m.toLowerCase().includes('photo') ||
+            m.toLowerCase().includes('picture'),
         ),
       },
       {
         label: 'Verify Identity',
-        done: !missing.some((m) =>
-          m.toLowerCase().includes('identity') ||
-          m.toLowerCase().includes('verification') ||
-          m.toLowerCase().includes('document'),
+        done: !missing.some(
+          (m) =>
+            m.toLowerCase().includes('identity') ||
+            m.toLowerCase().includes('verification') ||
+            m.toLowerCase().includes('document'),
         ),
       },
       {
         label: 'Add Skills & Expertise',
-        done: !missing.some((m) =>
-          m.toLowerCase().includes('skill') ||
-          m.toLowerCase().includes('expertise') ||
-          m.toLowerCase().includes('specialization'),
+        done: !missing.some(
+          (m) =>
+            m.toLowerCase().includes('skill') ||
+            m.toLowerCase().includes('expertise') ||
+            m.toLowerCase().includes('specialization'),
         ),
       },
       {
         label: 'Upload Portfolio Pieces',
-        done: !missing.some((m) =>
-          m.toLowerCase().includes('portfolio') ||
-          m.toLowerCase().includes('work sample'),
+        done: !missing.some(
+          (m) =>
+            m.toLowerCase().includes('portfolio') ||
+            m.toLowerCase().includes('work sample'),
         ),
         actionable: true,
       },
     ];
-    // If profile is 100%, mark all done
     if (profileCompletion.percentage >= 100) {
       return items.map((i) => ({ ...i, done: true }));
     }
     return items;
   }, [profileCompletion]);
+
+  const profilePct = Math.max(
+    0,
+    Math.min(100, Math.round(profileCompletion.percentage || 0)),
+  );
 
   const isInitialLoading = isLoading && !pendingApplications && !completedJobs;
 
@@ -473,24 +441,16 @@ const WorkerDashboardPage = () => {
           <title>Worker Dashboard | Kelmah</title>
         </Helmet>
         <Box sx={{ p: { xs: 2, md: 4 }, maxWidth: 1280, mx: 'auto' }}>
-          <Skeleton
-            variant="rounded"
-            height={280}
-            sx={{ mb: 3, borderRadius: 2 }}
-          />
-          <Skeleton
-            variant="rounded"
-            height={100}
-            sx={{ mb: 3, borderRadius: 2 }}
-          />
+          <Skeleton variant="rounded" height={280} sx={{ mb: 3, borderRadius: 2 }} />
+          <Skeleton variant="rounded" height={120} sx={{ mb: 3, borderRadius: 2 }} />
           <Grid container spacing={3}>
-            <Grid item xs={12} lg={8}>
-              <Skeleton variant="rounded" height={200} sx={{ mb: 3 }} />
-              <Skeleton variant="rounded" height={200} />
+            <Grid item xs={12} md={8}>
+              <Skeleton variant="rounded" height={180} sx={{ mb: 3, borderRadius: 2 }} />
+              <Skeleton variant="rounded" height={140} sx={{ borderRadius: 2 }} />
             </Grid>
-            <Grid item xs={12} lg={4}>
-              <Skeleton variant="rounded" height={300} sx={{ mb: 3 }} />
-              <Skeleton variant="rounded" height={192} />
+            <Grid item xs={12} md={4}>
+              <Skeleton variant="rounded" height={260} sx={{ mb: 3, borderRadius: 2 }} />
+              <Skeleton variant="rounded" height={192} sx={{ borderRadius: 2 }} />
             </Grid>
           </Grid>
         </Box>
@@ -510,14 +470,14 @@ const WorkerDashboardPage = () => {
           mx: 'auto',
           px: { xs: 2, md: 4 },
           py: { xs: 2, md: 4 },
-          fontFamily: '"Montserrat", "Roboto Flex", sans-serif',
+          fontFamily: FONT_BODY,
+          color: STITCH.onSurface,
         }}
       >
-        {/* ─── Error display ─── */}
-        {error && retryCount >= MAX_RETRIES && (
+        {/* ─── Error banner ─── */}
+        {error && (
           <Alert
-            severity="error"
-            icon={<ErrorOutlineIcon />}
+            severity="warning"
             sx={{ mb: 3, borderRadius: 2 }}
             action={
               <Button
@@ -525,138 +485,91 @@ const WorkerDashboardPage = () => {
                 size="small"
                 onClick={handleRefresh}
                 disabled={isLoading}
-                startIcon={
-                  isLoading ? (
-                    <RefreshIcon
-                      sx={{ animation: 'spin 1s linear infinite' }}
-                    />
-                  ) : (
-                    <RefreshIcon />
-                  )
-                }
+                startIcon={<RefreshIcon />}
                 sx={{ minHeight: TOUCH_TARGET_MIN }}
               >
                 Retry
               </Button>
             }
           >
-            <AlertTitle>Dashboard Error</AlertTitle>
             {error}
           </Alert>
         )}
-
         {loadingTimeout && !error && (
-          <Alert severity="warning" sx={{ mb: 3, borderRadius: 2 }}>
-            Loading is taking longer than expected. Please wait or tap refresh.
+          <Alert severity="info" sx={{ mb: 3, borderRadius: 2 }}>
+            Loading is taking longer than expected. Retrying…
           </Alert>
         )}
 
-        {/* ─── Hero Section (glass-panel, rounded-2xl) ─── */}
+        {/* ─── Hero glass-panel card ─── */}
         <Paper
           elevation={0}
           sx={{
             position: 'relative',
-            borderRadius: 3,
             overflow: 'hidden',
-            bgcolor: STITCH.surfaceContainer,
-            border: `1px solid ${STITCH.borderMuted}`,
-            mt: { xs: 1, md: 2 },
+            borderRadius: '16px',
+            p: { xs: 3, md: 6 },
             mb: 3,
-            p: { xs: 3, md: 5 },
-            background: `rgba(26, 26, 26, 0.6)`,
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-            '&:hover': {
-              boxShadow: '0 0 15px rgba(212, 175, 55, 0.15)',
-            },
+            ...glassPanel,
+            ...hoverGoldGlow,
           }}
         >
-          {/* Decorative glow */}
+          {/* Decorative gold blur blob */}
           <Box
             sx={{
               position: 'absolute',
-              top: 0,
-              right: 0,
+              top: -80,
+              right: -80,
               width: 256,
               height: 256,
-              bgcolor: alpha(STITCH.primaryContainer, 0.05),
               borderRadius: '50%',
-              filter: 'blur(80px)',
-              transform: 'translateY(-50%) translateX(25%)',
+              background: alpha(STITCH.primaryContainer, 0.05),
+              filter: 'blur(64px)',
               pointerEvents: 'none',
             }}
           />
           <Box sx={{ position: 'relative', zIndex: 1 }}>
             <Typography
               sx={{
-                fontFamily: '"Montserrat", sans-serif',
+                fontFamily: FONT_HEAD,
+                fontSize: { xs: '1.9rem', md: '3.5rem' },
                 fontWeight: 700,
-                color: STITCH.onSurface,
-                fontSize: { xs: '1.75rem', md: '3.5rem' },
                 lineHeight: 1.1,
                 letterSpacing: '-0.02em',
-                mb: 1,
+                color: STITCH.onSurface,
+                mb: 1.5,
               }}
             >
               {getGreeting()},{' '}
-              <Box component="span" sx={{ color: STITCH.primary }}>
+              <Box component="span" sx={{ color: STITCH.primaryContainer }}>
                 {userFirstName}
               </Box>
-              .
             </Typography>
             <Typography
               sx={{
-                fontFamily: '"Roboto Flex", sans-serif',
-                fontSize: { xs: '1rem', md: '1.125rem' },
-                lineHeight: 1.6,
+                fontFamily: FONT_BODY,
+                fontSize: { xs: '0.95rem', md: '1.125rem' },
+                lineHeight: 1.55,
                 color: STITCH.onSurfaceVariant,
                 maxWidth: 640,
+                mb: 4,
               }}
             >
               Your talent cockpit. Review your performance, manage active
               contracts, and discover new premium opportunities.
             </Typography>
 
-            {/* Quick Stats inside Hero */}
-            <Grid container spacing={3} sx={{ mt: 4 }}>
+            {/* Inline quick stats */}
+            <Grid container spacing={3}>
               <Grid item xs={12} md={4}>
                 <Box
                   sx={{
-                    bgcolor: alpha(STITCH.surfaceDim, 0.5),
-                    borderRadius: 2,
+                    backgroundColor: alpha(STITCH.surfaceDim, 0.5),
+                    borderRadius: '12px',
                     p: 3,
                     border: `1px solid ${alpha(STITCH.borderMuted, 0.5)}`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
                   }}
                 >
-                  <Box>
-                    <Typography
-                      sx={{
-                        fontFamily: '"Montserrat", sans-serif',
-                        fontSize: '0.75rem',
-                        color: STITCH.onSurfaceVariant,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em',
-                        fontWeight: 500,
-                        mb: 0.5,
-                      }}
-                    >
-                      Applications
-                    </Typography>
-                    <Typography
-                      sx={{
-                        fontFamily: '"Montserrat", sans-serif',
-                        fontSize: '2rem',
-                        fontWeight: 600,
-                        color: STITCH.onSurface,
-                        lineHeight: 1.2,
-                      }}
-                    >
-                      {stats.applications}
-                    </Typography>
-                  </Box>
                   <Box
                     sx={{
                       width: 48,
@@ -666,51 +579,46 @@ const WorkerDashboardPage = () => {
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      color: STITCH.primary,
+                      color: STITCH.primaryContainer,
+                      mb: 2,
                     }}
                   >
                     <AssignmentIcon />
                   </Box>
+                  <Typography
+                    sx={{
+                      fontFamily: FONT_HEAD,
+                      fontSize: '0.7rem',
+                      fontWeight: 600,
+                      letterSpacing: '0.1em',
+                      textTransform: 'uppercase',
+                      color: STITCH.onSurfaceVariant,
+                      mb: 0.5,
+                    }}
+                  >
+                    Applications
+                  </Typography>
+                  <Typography
+                    sx={{
+                      fontFamily: FONT_HEAD,
+                      fontSize: '1.75rem',
+                      fontWeight: 700,
+                      color: STITCH.onSurface,
+                    }}
+                  >
+                    {stats.applications}
+                  </Typography>
                 </Box>
               </Grid>
               <Grid item xs={12} md={4}>
                 <Box
                   sx={{
-                    bgcolor: alpha(STITCH.surfaceDim, 0.5),
-                    borderRadius: 2,
+                    backgroundColor: alpha(STITCH.surfaceDim, 0.5),
+                    borderRadius: '12px',
                     p: 3,
                     border: `1px solid ${alpha(STITCH.borderMuted, 0.5)}`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
                   }}
                 >
-                  <Box>
-                    <Typography
-                      sx={{
-                        fontFamily: '"Montserrat", sans-serif',
-                        fontSize: '0.75rem',
-                        color: STITCH.onSurfaceVariant,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em',
-                        fontWeight: 500,
-                        mb: 0.5,
-                      }}
-                    >
-                      Completed
-                    </Typography>
-                    <Typography
-                      sx={{
-                        fontFamily: '"Montserrat", sans-serif',
-                        fontSize: '2rem',
-                        fontWeight: 600,
-                        color: STITCH.onSurface,
-                        lineHeight: 1.2,
-                      }}
-                    >
-                      {stats.completedJobs}
-                    </Typography>
-                  </Box>
                   <Box
                     sx={{
                       width: 48,
@@ -720,51 +628,46 @@ const WorkerDashboardPage = () => {
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      color: STITCH.primary,
+                      color: STITCH.primaryContainer,
+                      mb: 2,
                     }}
                   >
                     <TaskAltIcon />
                   </Box>
+                  <Typography
+                    sx={{
+                      fontFamily: FONT_HEAD,
+                      fontSize: '0.7rem',
+                      fontWeight: 600,
+                      letterSpacing: '0.1em',
+                      textTransform: 'uppercase',
+                      color: STITCH.onSurfaceVariant,
+                      mb: 0.5,
+                    }}
+                  >
+                    Completed
+                  </Typography>
+                  <Typography
+                    sx={{
+                      fontFamily: FONT_HEAD,
+                      fontSize: '1.75rem',
+                      fontWeight: 700,
+                      color: STITCH.onSurface,
+                    }}
+                  >
+                    {stats.completedJobs}
+                  </Typography>
                 </Box>
               </Grid>
               <Grid item xs={12} md={4}>
                 <Box
                   sx={{
-                    bgcolor: alpha(STITCH.surfaceDim, 0.5),
-                    borderRadius: 2,
+                    backgroundColor: alpha(STITCH.surfaceDim, 0.5),
+                    borderRadius: '12px',
                     p: 3,
                     border: `1px solid ${alpha(STITCH.borderMuted, 0.5)}`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
                   }}
                 >
-                  <Box>
-                    <Typography
-                      sx={{
-                        fontFamily: '"Montserrat", sans-serif',
-                        fontSize: '0.75rem',
-                        color: STITCH.onSurfaceVariant,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em',
-                        fontWeight: 500,
-                        mb: 0.5,
-                      }}
-                    >
-                      Earnings
-                    </Typography>
-                    <Typography
-                      sx={{
-                        fontFamily: '"Montserrat", sans-serif',
-                        fontSize: '2rem',
-                        fontWeight: 600,
-                        color: STITCH.primary,
-                        lineHeight: 1.2,
-                      }}
-                    >
-                      {formatGhanaCurrencyLabel(stats.earnings)}
-                    </Typography>
-                  </Box>
                   <Box
                     sx={{
                       width: 48,
@@ -774,340 +677,340 @@ const WorkerDashboardPage = () => {
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      color: STITCH.primary,
+                      color: STITCH.primaryContainer,
+                      mb: 2,
                     }}
                   >
                     <PaymentsIcon />
                   </Box>
+                  <Typography
+                    sx={{
+                      fontFamily: FONT_HEAD,
+                      fontSize: '0.7rem',
+                      fontWeight: 600,
+                      letterSpacing: '0.1em',
+                      textTransform: 'uppercase',
+                      color: STITCH.onSurfaceVariant,
+                      mb: 0.5,
+                    }}
+                  >
+                    Earnings
+                  </Typography>
+                  <Typography
+                    sx={{
+                      fontFamily: FONT_HEAD,
+                      fontSize: '1.75rem',
+                      fontWeight: 700,
+                      color: STITCH.primaryContainer,
+                    }}
+                  >
+                    {formatGhanaCurrencyLabel(stats.earnings)}
+                  </Typography>
                 </Box>
               </Grid>
             </Grid>
           </Box>
         </Paper>
 
-        {/* ─── Next Best Action Banner ─── */}
-        {pendingCount > 0 && (
-          <Paper
-            elevation={0}
+        {/* ─── Next Best Action banner ─── */}
+        <Box
+          sx={{
+            backgroundColor: alpha(STITCH.surfaceVariant, 0.3),
+            border: `1px solid ${alpha(STITCH.primaryContainer, 0.3)}`,
+            borderRadius: '12px',
+            p: 3,
+            mb: 4,
+            display: 'flex',
+            flexDirection: { xs: 'column', sm: 'row' },
+            alignItems: { xs: 'flex-start', sm: 'center' },
+            gap: 2.5,
+            transition: 'border-color 0.3s ease',
+            '&:hover': { borderColor: alpha(STITCH.primaryContainer, 0.6) },
+          }}
+        >
+          <Box
             sx={{
-              bgcolor: alpha(STITCH.surfaceVariant, 0.3),
-              border: `1px solid ${alpha(STITCH.primaryContainer, 0.3)}`,
-              borderRadius: 2,
-              p: 3,
-              mb: 3,
+              width: 48,
+              height: 48,
+              borderRadius: '50%',
+              bgcolor: alpha(STITCH.primaryContainer, 0.2),
               display: 'flex',
-              flexDirection: { xs: 'column', md: 'row' },
               alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: 2,
-              '&:hover': {
-                boxShadow: '0 0 15px rgba(212, 175, 55, 0.15)',
-              },
+              justifyContent: 'center',
+              color: STITCH.primaryContainer,
+              flexShrink: 0,
             }}
           >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Box
-                sx={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: '50%',
-                  bgcolor: alpha(STITCH.primaryContainer, 0.2),
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: STITCH.primary,
-                  flexShrink: 0,
-                }}
-              >
-                <InfoIcon />
-              </Box>
-              <Box>
-                <Typography
-                  sx={{
-                    fontFamily: '"Montserrat", sans-serif',
-                    fontWeight: 600,
-                    fontSize: '1.125rem',
-                    color: STITCH.onSurface,
-                  }}
-                >
-                  Review pending applications
-                </Typography>
-                <Typography
-                  sx={{
-                    fontFamily: '"Roboto Flex", sans-serif',
-                    fontSize: '0.875rem',
-                    color: STITCH.onSurfaceVariant,
-                    mt: 0.5,
-                  }}
-                >
-                  You have {pendingCount} offer
-                  {pendingCount !== 1 ? 's' : ''} awaiting your response.
-                  Securing these can boost your pipeline.
-                </Typography>
-              </Box>
-            </Box>
-            <Button
-              variant="contained"
-              endIcon={<ArrowForwardIcon />}
-              onClick={() => navigate('/worker/applications')}
+            <InfoIcon />
+          </Box>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography
               sx={{
-                bgcolor: STITCH.primary,
-                color: STITCH.onPrimaryContainer,
-                borderRadius: '8px',
-                px: 3,
-                py: 1.5,
+                fontFamily: FONT_HEAD,
+                fontSize: '1.125rem',
                 fontWeight: 600,
-                textTransform: 'none',
-                fontFamily: '"Montserrat", sans-serif',
-                flexShrink: 0,
-                boxShadow: '0 0 15px rgba(212,175,55,0.3)',
-                '&:hover': { filter: 'brightness(1.1)' },
+                color: STITCH.onSurface,
+                mb: 0.5,
               }}
             >
-              Open Pipeline
-            </Button>
-          </Paper>
-        )}
+              Review pending applications
+            </Typography>
+            <Typography
+              sx={{
+                fontFamily: FONT_BODY,
+                fontSize: '0.9rem',
+                color: STITCH.onSurfaceVariant,
+              }}
+            >
+              You have {pendingOffersCount} offer
+              {pendingOffersCount === 1 ? '' : 's'} awaiting your response.
+              Securing these can boost your pipeline.
+            </Typography>
+          </Box>
+          <Button
+            onClick={() => navigate('/worker/applications')}
+            endIcon={<ArrowForwardIcon />}
+            sx={{
+              ...goldButtonSx,
+              px: 3,
+              py: 1.5,
+              boxShadow: '0 0 15px rgba(212,175,55,0.3)',
+              flexShrink: 0,
+            }}
+          >
+            Open Pipeline
+          </Button>
+        </Box>
 
-        {/* ─── Two-Column Layout ─── */}
-        <Grid container spacing={3}>
-          {/* ── Left Column (lg:col-span-2) ── */}
-          <Grid item xs={12} lg={8}>
-            <Stack spacing={3}>
-              {/* Quick Actions Grid (2x2) */}
+        {/* ─── Two-column layout ─── */}
+        <Grid container spacing={4}>
+          {/* Left column (span 2) */}
+          <Grid item xs={12} md={8}>
+            <Stack spacing={4}>
+              {/* Quick Actions */}
               <Box>
                 <Typography
                   sx={{
-                    fontFamily: '"Montserrat", sans-serif',
-                    fontWeight: 600,
+                    fontFamily: FONT_HEAD,
                     fontSize: '1.5rem',
+                    fontWeight: 600,
                     color: STITCH.onSurface,
-                    mb: 2,
+                    mb: 2.5,
                   }}
                 >
                   Quick Actions
                 </Typography>
                 <Grid container spacing={2}>
+                  {/* Find Work — solid gold */}
                   <Grid item xs={6} sm={3}>
-                    <Button
-                      fullWidth
-                      onClick={() => navigate('/worker/jobs')}
+                    <Paper
+                      elevation={0}
+                      onClick={() => navigate('/worker/find-work')}
                       sx={{
-                        bgcolor: STITCH.primary,
-                        color: STITCH.onPrimaryContainer,
-                        borderRadius: 2,
+                        bgcolor: STITCH.primaryContainer,
+                        color: STITCH.onPrimary,
+                        borderRadius: '12px',
                         p: 3,
+                        aspectRatio: '1 / 1',
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
                         justifyContent: 'center',
                         gap: 1.5,
-                        textTransform: 'none',
-                        fontFamily: '"Montserrat", sans-serif',
-                        fontWeight: 600,
-                        aspectRatio: '1',
+                        cursor: 'pointer',
+                        textAlign: 'center',
+                        transition: 'filter 0.2s ease, transform 0.15s ease',
                         boxShadow: '0 0 20px rgba(212,175,55,0.2)',
-                        '&:hover': { filter: 'brightness(1.1)' },
+                        '&:hover': { filter: 'brightness(1.05)' },
+                        '&:active': { transform: 'scale(0.97)' },
                       }}
                     >
                       <SearchIcon sx={{ fontSize: 30 }} />
-                      Find Work
-                    </Button>
+                      <Typography
+                        sx={{
+                          fontFamily: FONT_HEAD,
+                          fontSize: '0.85rem',
+                          fontWeight: 600,
+                        }}
+                      >
+                        Find Work
+                      </Typography>
+                    </Paper>
                   </Grid>
+                  {/* Applications — glass */}
                   <Grid item xs={6} sm={3}>
-                    <Button
-                      fullWidth
+                    <Paper
+                      elevation={0}
                       onClick={() => navigate('/worker/applications')}
                       sx={{
-                        bgcolor: 'rgba(26, 26, 26, 0.6)',
-                        backdropFilter: 'blur(20px)',
-                        border: `1px solid ${STITCH.borderMuted}`,
-                        color: STITCH.onSurface,
-                        borderRadius: 2,
+                        ...glassPanel,
+                        borderRadius: '12px',
                         p: 3,
+                        aspectRatio: '1 / 1',
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
                         justifyContent: 'center',
                         gap: 1.5,
-                        textTransform: 'none',
-                        fontFamily: '"Montserrat", sans-serif',
-                        fontWeight: 600,
-                        aspectRatio: '1',
-                        '&:hover': {
-                          borderColor: STITCH.outline,
-                          color: STITCH.primary,
-                        },
+                        cursor: 'pointer',
+                        textAlign: 'center',
+                        color: STITCH.onSurface,
+                        transition: 'border-color 0.3s ease',
+                        '&:hover': { borderColor: STITCH.outlineVariant },
                       }}
                     >
                       <DescriptionIcon
                         sx={{ fontSize: 30, color: STITCH.onSurfaceVariant }}
                       />
-                      Applications
-                    </Button>
+                      <Typography
+                        sx={{
+                          fontFamily: FONT_HEAD,
+                          fontSize: '0.85rem',
+                          fontWeight: 600,
+                        }}
+                      >
+                        Applications
+                      </Typography>
+                    </Paper>
                   </Grid>
+                  {/* Messages — glass with dot */}
                   <Grid item xs={6} sm={3}>
-                    <Button
-                      fullWidth
+                    <Paper
+                      elevation={0}
                       onClick={() => navigate('/messages')}
                       sx={{
-                        bgcolor: 'rgba(26, 26, 26, 0.6)',
-                        backdropFilter: 'blur(20px)',
-                        border: `1px solid ${STITCH.borderMuted}`,
-                        color: STITCH.onSurface,
-                        borderRadius: 2,
+                        ...glassPanel,
+                        borderRadius: '12px',
                         p: 3,
+                        aspectRatio: '1 / 1',
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
                         justifyContent: 'center',
                         gap: 1.5,
-                        textTransform: 'none',
-                        fontFamily: '"Montserrat", sans-serif',
-                        fontWeight: 600,
-                        aspectRatio: '1',
+                        cursor: 'pointer',
+                        textAlign: 'center',
+                        color: STITCH.onSurface,
                         position: 'relative',
-                        '&:hover': {
-                          borderColor: STITCH.outline,
-                          color: STITCH.primary,
-                        },
+                        transition: 'border-color 0.3s ease',
+                        '&:hover': { borderColor: STITCH.outlineVariant },
                       }}
                     >
-                      <MessageIcon
-                        sx={{ fontSize: 30, color: STITCH.onSurfaceVariant }}
-                      />
-                      Messages
-                      <Box
-                        sx={{
-                          position: 'absolute',
-                          top: 16,
-                          right: 16,
-                          width: 12,
-                          height: 12,
-                          bgcolor: STITCH.primary,
-                          borderRadius: '50%',
-                        }}
-                      />
-                    </Button>
-                  </Grid>
-                  <Grid item xs={6} sm={3}>
-                    <Button
-                      fullWidth
-                      onClick={handleRefresh}
-                      disabled={isLoading}
-                      sx={{
-                        bgcolor: 'rgba(26, 26, 26, 0.6)',
-                        backdropFilter: 'blur(20px)',
-                        border: `1px solid ${STITCH.borderMuted}`,
-                        color: STITCH.onSurface,
-                        borderRadius: 2,
-                        p: 3,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: 1.5,
-                        textTransform: 'none',
-                        fontFamily: '"Montserrat", sans-serif',
-                        fontWeight: 600,
-                        aspectRatio: '1',
-                        '&:hover': {
-                          borderColor: STITCH.outline,
-                          color: STITCH.primary,
-                        },
-                      }}
-                    >
-                      {isLoading ? (
-                        <RefreshIcon
+                      {pendingOffersCount > 0 && (
+                        <Box
                           sx={{
-                            fontSize: 30,
-                            color: STITCH.onSurfaceVariant,
-                            animation: 'spin 1s linear infinite',
-                          }}
-                        />
-                      ) : (
-                        <RefreshIcon
-                          sx={{
-                            fontSize: 30,
-                            color: STITCH.onSurfaceVariant,
+                            position: 'absolute',
+                            top: 16,
+                            right: 16,
+                            width: 12,
+                            height: 12,
+                            borderRadius: '50%',
+                            bgcolor: STITCH.primaryContainer,
                           }}
                         />
                       )}
-                      Refresh
-                    </Button>
+                      <MessageIcon
+                        sx={{ fontSize: 30, color: STITCH.onSurfaceVariant }}
+                      />
+                      <Typography
+                        sx={{
+                          fontFamily: FONT_HEAD,
+                          fontSize: '0.85rem',
+                          fontWeight: 600,
+                        }}
+                      >
+                        Messages
+                      </Typography>
+                    </Paper>
+                  </Grid>
+                  {/* Refresh — glass */}
+                  <Grid item xs={6} sm={3}>
+                    <Paper
+                      elevation={0}
+                      onClick={handleRefresh}
+                      sx={{
+                        ...glassPanel,
+                        borderRadius: '12px',
+                        p: 3,
+                        aspectRatio: '1 / 1',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 1.5,
+                        cursor: 'pointer',
+                        textAlign: 'center',
+                        color: STITCH.onSurface,
+                        transition: 'border-color 0.3s ease',
+                        '&:hover': { borderColor: STITCH.outlineVariant },
+                      }}
+                    >
+                      <RefreshIcon
+                        sx={{
+                          fontSize: 30,
+                          color: STITCH.onSurfaceVariant,
+                          ...(isLoading && {
+                            animation: 'spin 1s linear infinite',
+                          }),
+                        }}
+                      />
+                      <Typography
+                        sx={{
+                          fontFamily: FONT_HEAD,
+                          fontSize: '0.85rem',
+                          fontWeight: 600,
+                        }}
+                      >
+                        Refresh
+                      </Typography>
+                    </Paper>
                   </Grid>
                 </Grid>
               </Box>
 
               {/* Performance Overview */}
               <Box>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1,
-                    mb: 2,
-                  }}
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  alignItems="center"
+                  sx={{ mb: 2.5 }}
                 >
                   <Typography
                     sx={{
-                      fontFamily: '"Montserrat", sans-serif',
-                      fontWeight: 600,
+                      fontFamily: FONT_HEAD,
                       fontSize: '1.5rem',
+                      fontWeight: 600,
                       color: STITCH.onSurface,
                     }}
                   >
                     Performance Overview
                   </Typography>
-                  <TrendingUpIcon
-                    sx={{ fontSize: 18, color: STITCH.onSurfaceVariant }}
-                  />
-                </Box>
-                <Grid container spacing={3}>
+                  <TrendingUpIcon sx={{ color: STITCH.primaryContainer }} />
+                </Stack>
+                <Grid container spacing={2}>
                   <Grid item xs={12} sm={4}>
-                    <Paper
-                      elevation={0}
+                    <Box
                       sx={{
-                        bgcolor: 'rgba(26, 26, 26, 0.6)',
-                        backdropFilter: 'blur(20px)',
-                        border: `1px solid ${STITCH.borderMuted}`,
-                        borderTop: `2px solid ${STITCH.borderMuted}`,
-                        borderRadius: 2,
+                        ...glassPanel,
+                        borderRadius: '12px',
                         p: 3,
-                        transition: 'border-color 0.3s',
-                        '&:hover': { borderTopColor: STITCH.primary },
+                        borderTop: `2px solid ${STITCH.borderMuted}`,
+                        height: '100%',
+                        transition: 'border-color 0.3s ease',
+                        '&:hover': { borderTopColor: STITCH.primaryContainer },
                       }}
                     >
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'flex-start',
-                          mb: 2,
-                        }}
-                      >
-                        <AttachMoneyIcon
-                          sx={{ color: STITCH.onSurfaceVariant }}
-                        />
-                        <Typography
-                          sx={{
-                            fontSize: '0.75rem',
-                            fontWeight: 600,
-                            bgcolor: STITCH.surfaceVariant,
-                            color: STITCH.onSurface,
-                            px: 1,
-                            py: 0.5,
-                            borderRadius: '4px',
-                            fontFamily: '"Montserrat", sans-serif',
-                          }}
-                        >
-                          This Month
-                        </Typography>
-                      </Box>
+                      <AccountBalanceIcon
+                        sx={{ color: STITCH.onSurfaceVariant, mb: 1.5 }}
+                      />
                       <Typography
                         sx={{
-                          fontFamily: '"Roboto Flex", sans-serif',
-                          fontSize: '0.875rem',
+                          fontFamily: FONT_HEAD,
+                          fontSize: '0.7rem',
+                          fontWeight: 600,
+                          letterSpacing: '0.08em',
+                          textTransform: 'uppercase',
                           color: STITCH.onSurfaceVariant,
                           mb: 0.5,
                         }}
@@ -1116,47 +1019,54 @@ const WorkerDashboardPage = () => {
                       </Typography>
                       <Typography
                         sx={{
-                          fontFamily: '"Montserrat", sans-serif',
-                          fontSize: '2rem',
-                          fontWeight: 600,
-                          color: STITCH.primary,
-                          lineHeight: 1.2,
+                          fontFamily: FONT_HEAD,
+                          fontSize: '1.5rem',
+                          fontWeight: 700,
+                          color: STITCH.primaryContainer,
+                          mb: 1,
                         }}
                       >
                         {formatGhanaCurrencyLabel(earningsSummary.thisMonth)}
                       </Typography>
-                    </Paper>
-                  </Grid>
-                  <Grid item xs={12} sm={4}>
-                    <Paper
-                      elevation={0}
-                      sx={{
-                        bgcolor: 'rgba(26, 26, 26, 0.6)',
-                        backdropFilter: 'blur(20px)',
-                        border: `1px solid ${STITCH.borderMuted}`,
-                        borderTop: `2px solid ${STITCH.borderMuted}`,
-                        borderRadius: 2,
-                        p: 3,
-                        transition: 'border-color 0.3s',
-                        '&:hover': { borderTopColor: STITCH.primary },
-                      }}
-                    >
                       <Box
+                        component="span"
                         sx={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'flex-start',
-                          mb: 2,
+                          display: 'inline-block',
+                          bgcolor: STITCH.surfaceVariant,
+                          color: STITCH.onSurface,
+                          fontSize: '0.7rem',
+                          fontWeight: 600,
+                          px: 1,
+                          py: 0.25,
+                          borderRadius: '4px',
                         }}
                       >
-                        <AssignmentIcon
-                          sx={{ color: STITCH.onSurfaceVariant }}
-                        />
+                        This Month
                       </Box>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={12} sm={4}>
+                    <Box
+                      sx={{
+                        ...glassPanel,
+                        borderRadius: '12px',
+                        p: 3,
+                        borderTop: `2px solid ${STITCH.borderMuted}`,
+                        height: '100%',
+                        transition: 'border-color 0.3s ease',
+                        '&:hover': { borderTopColor: STITCH.primaryContainer },
+                      }}
+                    >
+                      <PendingActionsIcon
+                        sx={{ color: STITCH.onSurfaceVariant, mb: 1.5 }}
+                      />
                       <Typography
                         sx={{
-                          fontFamily: '"Roboto Flex", sans-serif',
-                          fontSize: '0.875rem',
+                          fontFamily: FONT_HEAD,
+                          fontSize: '0.7rem',
+                          fontWeight: 600,
+                          letterSpacing: '0.08em',
+                          textTransform: 'uppercase',
                           color: STITCH.onSurfaceVariant,
                           mb: 0.5,
                         }}
@@ -1165,47 +1075,38 @@ const WorkerDashboardPage = () => {
                       </Typography>
                       <Typography
                         sx={{
-                          fontFamily: '"Montserrat", sans-serif',
-                          fontSize: '2rem',
-                          fontWeight: 600,
+                          fontFamily: FONT_HEAD,
+                          fontSize: '1.5rem',
+                          fontWeight: 700,
                           color: STITCH.onSurface,
-                          lineHeight: 1.2,
                         }}
                       >
-                        {pendingCount}
+                        {pendingOffersCount}
                       </Typography>
-                    </Paper>
+                    </Box>
                   </Grid>
                   <Grid item xs={12} sm={4}>
-                    <Paper
-                      elevation={0}
+                    <Box
                       sx={{
-                        bgcolor: 'rgba(26, 26, 26, 0.6)',
-                        backdropFilter: 'blur(20px)',
-                        border: `1px solid ${STITCH.borderMuted}`,
-                        borderTop: `2px solid ${STITCH.borderMuted}`,
-                        borderRadius: 2,
+                        ...glassPanel,
+                        borderRadius: '12px',
                         p: 3,
-                        transition: 'border-color 0.3s',
-                        '&:hover': { borderTopColor: STITCH.primary },
+                        borderTop: `2px solid ${STITCH.borderMuted}`,
+                        height: '100%',
+                        transition: 'border-color 0.3s ease',
+                        '&:hover': { borderTopColor: STITCH.primaryContainer },
                       }}
                     >
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'flex-start',
-                          mb: 2,
-                        }}
-                      >
-                        <CheckCircleIcon
-                          sx={{ color: STITCH.onSurfaceVariant }}
-                        />
-                      </Box>
+                      <CheckCircleIcon
+                        sx={{ color: STITCH.onSurfaceVariant, mb: 1.5 }}
+                      />
                       <Typography
                         sx={{
-                          fontFamily: '"Roboto Flex", sans-serif',
-                          fontSize: '0.875rem',
+                          fontFamily: FONT_HEAD,
+                          fontSize: '0.7rem',
+                          fontWeight: 600,
+                          letterSpacing: '0.08em',
+                          textTransform: 'uppercase',
                           color: STITCH.onSurfaceVariant,
                           mb: 0.5,
                         }}
@@ -1214,191 +1115,186 @@ const WorkerDashboardPage = () => {
                       </Typography>
                       <Typography
                         sx={{
-                          fontFamily: '"Montserrat", sans-serif',
-                          fontSize: '2rem',
-                          fontWeight: 600,
+                          fontFamily: FONT_HEAD,
+                          fontSize: '1.5rem',
+                          fontWeight: 700,
                           color: STITCH.onSurface,
-                          lineHeight: 1.2,
                         }}
                       >
                         {stats.completedJobs}
                       </Typography>
-                    </Paper>
+                    </Box>
                   </Grid>
                 </Grid>
               </Box>
             </Stack>
           </Grid>
 
-          {/* ── Right Column (Sidebar) ── */}
-          <Grid item xs={12} lg={4}>
-            <Stack spacing={3}>
-              {/* Profile Strength Card */}
+          {/* Right column (span 1) */}
+          <Grid item xs={12} md={4}>
+            <Stack spacing={4}>
+              {/* Profile Strength */}
               <Paper
                 elevation={0}
                 sx={{
-                  bgcolor: 'rgba(26, 26, 26, 0.6)',
-                  backdropFilter: 'blur(20px)',
-                  border: `1px solid ${STITCH.borderMuted}`,
-                  borderRadius: 2,
-                  p: 3,
                   position: 'relative',
                   overflow: 'hidden',
-                  '&:hover': {
-                    boxShadow: '0 0 15px rgba(212, 175, 55, 0.15)',
-                  },
+                  borderRadius: '12px',
+                  p: 3,
+                  ...glassPanel,
+                  ...hoverGoldGlow,
                 }}
               >
-                {/* Decorative bg */}
                 <Box
                   sx={{
                     position: 'absolute',
-                    right: -40,
                     top: -40,
-                    width: 128,
-                    height: 128,
-                    bgcolor: alpha(STITCH.primaryContainer, 0.05),
+                    right: -40,
+                    width: 160,
+                    height: 160,
                     borderRadius: '50%',
+                    background: alpha(STITCH.primaryContainer, 0.05),
                     filter: 'blur(40px)',
                     pointerEvents: 'none',
                   }}
                 />
-                <Box
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    mb: 3,
-                    position: 'relative',
-                    zIndex: 1,
-                  }}
-                >
-                  <Typography
-                    sx={{
-                      fontFamily: '"Montserrat", sans-serif',
-                      fontWeight: 600,
-                      fontSize: '1.125rem',
-                      color: STITCH.onSurface,
-                    }}
+                <Box sx={{ position: 'relative', zIndex: 1 }}>
+                  <Stack
+                    direction="row"
+                    justifyContent="space-between"
+                    alignItems="center"
+                    sx={{ mb: 2 }}
                   >
-                    Profile Strength
-                  </Typography>
-                  <Typography
-                    sx={{
-                      fontFamily: '"Montserrat", sans-serif',
-                      fontWeight: 700,
-                      fontSize: '0.875rem',
-                      color: STITCH.primary,
-                    }}
-                  >
-                    {profileCompletion.percentage}%
-                  </Typography>
-                </Box>
-                {/* Progress Bar */}
-                <Box
-                  sx={{
-                    width: '100%',
-                    bgcolor: STITCH.surfaceVariant,
-                    borderRadius: '50px',
-                    height: 8,
-                    mb: 3,
-                    position: 'relative',
-                    zIndex: 1,
-                  }}
-                >
-                  <Box
-                    sx={{
-                      bgcolor: STITCH.primary,
-                      height: '100%',
-                      borderRadius: '50px',
-                      width: `${profileCompletion.percentage}%`,
-                      position: 'relative',
-                      transition: 'width 0.5s ease',
-                    }}
-                  >
-                    <Box
+                    <Typography
                       sx={{
-                        position: 'absolute',
-                        right: 0,
-                        top: 0,
-                        bottom: 0,
-                        width: 16,
-                        bgcolor: 'rgba(255, 255, 255, 0.3)',
-                        borderRadius: '50px',
-                        filter: 'blur(2px)',
-                      }}
-                    />
-                  </Box>
-                </Box>
-                <Typography
-                  sx={{
-                    fontFamily: '"Roboto Flex", sans-serif',
-                    fontSize: '0.875rem',
-                    color: STITCH.onSurfaceVariant,
-                    mb: 2,
-                    position: 'relative',
-                    zIndex: 1,
-                  }}
-                >
-                  Complete these steps to reach 100% and improve your visibility
-                  to premium clients.
-                </Typography>
-                {/* Checklist */}
-                <Stack spacing={1.5} sx={{ position: 'relative', zIndex: 1 }}>
-                  {profileChecklist.map((item) => (
-                    <Box
-                      key={item.label}
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'flex-start',
-                        gap: 1.5,
-                        opacity: item.done ? 0.5 : 1,
+                        fontFamily: FONT_HEAD,
+                        fontSize: '1.125rem',
+                        fontWeight: 600,
+                        color: STITCH.onSurface,
                       }}
                     >
-                      {item.done ? (
-                        <CheckCircleIcon
+                      Profile Strength
+                    </Typography>
+                    <Typography
+                      sx={{
+                        fontFamily: FONT_HEAD,
+                        fontSize: '1.5rem',
+                        fontWeight: 700,
+                        color: STITCH.primaryContainer,
+                      }}
+                    >
+                      {profilePct}%
+                    </Typography>
+                  </Stack>
+
+                  {/* Progress bar */}
+                  <Box
+                    sx={{
+                      width: '100%',
+                      height: 8,
+                      bgcolor: STITCH.surfaceVariant,
+                      borderRadius: 5,
+                      overflow: 'hidden',
+                      position: 'relative',
+                      mb: 2.5,
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        width: `${profilePct}%`,
+                        height: '100%',
+                        bgcolor: STITCH.primaryContainer,
+                        borderRadius: 5,
+                        position: 'relative',
+                        transition: 'width 0.6s ease',
+                      }}
+                    >
+                      {/* White glow highlight at the end */}
+                      {profilePct > 0 && (
+                        <Box
                           sx={{
-                            color: STITCH.success,
-                            fontSize: 20,
-                            mt: 0.5,
-                          }}
-                        />
-                      ) : (
-                        <RadioButtonUncheckedIcon
-                          sx={{
-                            color: STITCH.outline,
-                            fontSize: 20,
-                            mt: 0.5,
+                            position: 'absolute',
+                            right: 0,
+                            top: 0,
+                            width: 16,
+                            height: '100%',
+                            bgcolor: alpha('#ffffff', 0.3),
+                            borderRadius: 5,
+                            filter: 'blur(2px)',
                           }}
                         />
                       )}
-                      <Box sx={{ flex: 1 }}>
+                    </Box>
+                  </Box>
+
+                  <Typography
+                    sx={{
+                      fontFamily: FONT_BODY,
+                      fontSize: '0.8rem',
+                      color: STITCH.onSurfaceVariant,
+                      mb: 2,
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    Complete these steps to reach 100% and improve your
+                    visibility to premium clients.
+                  </Typography>
+
+                  {/* Checklist */}
+                  <Stack spacing={1.5}>
+                    {profileChecklist.map((item) => (
+                      <Stack
+                        key={item.label}
+                        direction="row"
+                        spacing={1.5}
+                        alignItems="center"
+                      >
+                        {item.done ? (
+                          <CheckCircleIcon
+                            sx={{
+                              fontSize: 20,
+                              color: STITCH.success,
+                              flexShrink: 0,
+                            }}
+                          />
+                        ) : (
+                          <RadioButtonUncheckedIcon
+                            sx={{
+                              fontSize: 20,
+                              color: STITCH.outline,
+                              flexShrink: 0,
+                            }}
+                          />
+                        )}
                         <Typography
                           sx={{
-                            fontFamily: '"Roboto Flex", sans-serif',
-                            fontSize: '0.875rem',
+                            fontFamily: FONT_BODY,
+                            fontSize: '0.85rem',
+                            flex: 1,
                             color: item.done
-                              ? STITCH.onSurface
+                              ? STITCH.onSurfaceVariant
                               : STITCH.onSurface,
-                            fontWeight: item.done ? 400 : 500,
-                            textDecoration: item.done ? 'line-through' : 'none',
+                            textDecoration: item.done
+                              ? 'line-through'
+                              : 'none',
+                            opacity: item.done ? 0.6 : 1,
                           }}
                         >
                           {item.label}
                         </Typography>
-                        {item.actionable && !item.done && (
+                        {!item.done && item.actionable && (
                           <Button
                             size="small"
-                            onClick={() => navigate('/worker/profile')}
+                            onClick={() => navigate('/worker/portfolio')}
                             sx={{
-                              color: STITCH.primary,
+                              color: STITCH.primaryContainer,
+                              fontFamily: FONT_HEAD,
+                              fontSize: '0.7rem',
+                              fontWeight: 600,
                               textTransform: 'none',
-                              fontSize: '0.75rem',
-                              p: 0,
-                              minWidth: 'auto',
-                              mt: 0.5,
+                              minWidth: 0,
                               '&:hover': {
-                                bgcolor: 'transparent',
+                                backgroundColor: 'transparent',
                                 textDecoration: 'underline',
                               },
                             }}
@@ -1406,114 +1302,205 @@ const WorkerDashboardPage = () => {
                             Add Portfolio +
                           </Button>
                         )}
-                      </Box>
-                    </Box>
-                  ))}
-                </Stack>
+                      </Stack>
+                    ))}
+                  </Stack>
+                </Box>
               </Paper>
 
-              {/* Location Card */}
+              {/* Location / Map card */}
               <Paper
                 elevation={0}
                 sx={{
-                  bgcolor: 'rgba(26, 26, 26, 0.6)',
-                  backdropFilter: 'blur(20px)',
-                  border: `1px solid ${STITCH.borderMuted}`,
-                  borderRadius: 2,
-                  overflow: 'hidden',
                   position: 'relative',
+                  overflow: 'hidden',
+                  borderRadius: '12px',
                   height: 192,
-                  '&:hover': {
-                    '& .location-bg': { opacity: 0.8 },
-                  },
+                  border: `1px solid ${STITCH.borderMuted}`,
+                  // Ambient dark "map" — no external image dependency.
+                  backgroundImage: `
+                    linear-gradient(180deg, ${alpha(STITCH.surface, 0)} 0%, ${STITCH.surface} 100%),
+                    linear-gradient(120deg, ${STITCH.surfaceContainer} 0%, ${STITCH.surfaceDim} 100%),
+                    radial-gradient(circle at 30% 40%, ${alpha(STITCH.primaryContainer, 0.08)}, transparent 40%)
+                  `,
+                  backgroundColor: STITCH.surfaceDim,
                 }}
               >
-                <Box
-                  className="location-bg"
-                  sx={{
-                    position: 'absolute',
-                    inset: 0,
-                    background:
-                      'radial-gradient(circle at 50% 50%, rgba(212,175,55,0.08) 0%, transparent 50%), linear-gradient(135deg, #0d0e12 0%, #1e1f23 100%)',
-                    opacity: 0.6,
-                    transition: 'opacity 0.5s',
-                  }}
-                />
+                {/* Grid lines evoking a minimalist street map */}
                 <Box
                   sx={{
                     position: 'absolute',
                     inset: 0,
-                    background:
-                      'linear-gradient(to top, rgba(18,19,23,1) 0%, rgba(18,19,23,0.2) 40%, transparent 100%)',
+                    backgroundImage: `
+                      linear-gradient(${alpha(STITCH.onSurface, 0.05)} 1px, transparent 1px),
+                      linear-gradient(90deg, ${alpha(STITCH.onSurface, 0.05)} 1px, transparent 1px)
+                    `,
+                    backgroundSize: '32px 32px',
+                    opacity: 0.7,
                   }}
                 />
-                <Box
+                {/* Bottom-left label */}
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  alignItems="center"
                   sx={{
                     position: 'absolute',
                     bottom: 16,
                     left: 16,
-                    right: 16,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
+                    zIndex: 1,
                   }}
                 >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <LocationOnIcon
-                      sx={{ color: STITCH.primary, fontSize: 18 }}
-                    />
-                    <Typography
-                      sx={{
-                        fontFamily: '"Montserrat", sans-serif',
-                        fontSize: '0.75rem',
-                        fontWeight: 500,
-                        color: STITCH.onSurface,
-                        letterSpacing: '0.05em',
-                      }}
-                    >
-                      ACCRA REGION
-                    </Typography>
-                  </Box>
-                  <Tooltip title="You are online and available">
-                    <Box
-                      sx={{
-                        width: 8,
-                        height: 8,
-                        borderRadius: '50%',
-                        bgcolor: STITCH.success,
-                        animation: 'pulse 2s infinite',
-                        boxShadow: '0 0 8px #10B981',
-                        '@keyframes pulse': {
-                          '0%, 100%': { opacity: 1 },
-                          '50%': { opacity: 0.5 },
-                        },
-                      }}
-                    />
-                  </Tooltip>
-                </Box>
+                  <LocationOnIcon
+                    sx={{
+                      color: STITCH.primaryContainer,
+                      fontSize: 20,
+                      filter: 'drop-shadow(0 0 4px rgba(212,175,55,0.4))',
+                    }}
+                  />
+                  <Typography
+                    sx={{
+                      fontFamily: FONT_HEAD,
+                      fontSize: '0.75rem',
+                      fontWeight: 600,
+                      letterSpacing: '0.12em',
+                      color: STITCH.onSurface,
+                    }}
+                  >
+                    ACCRA REGION
+                  </Typography>
+                </Stack>
+                {/* Pulsing green status dot */}
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    bottom: 20,
+                    right: 20,
+                    width: 12,
+                    height: 12,
+                    borderRadius: '50%',
+                    bgcolor: STITCH.success,
+                    boxShadow: '0 0 8px #10B981',
+                    animation: 'pulse 2s ease-in-out infinite',
+                    '@keyframes pulse': {
+                      '0%, 100%': { opacity: 1, transform: 'scale(1)' },
+                      '50%': { opacity: 0.5, transform: 'scale(1.3)' },
+                    },
+                  }}
+                />
               </Paper>
             </Stack>
           </Grid>
         </Grid>
 
-        {/* ─── Snackbar ─── */}
-        <Snackbar
-          open={snackbarOpen}
-          autoHideDuration={4000}
-          onClose={() => setSnackbarOpen(false)}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-        >
-          <Alert
-            onClose={() => setSnackbarOpen(false)}
-            severity={snackbarSeverity}
-            sx={{ borderRadius: 2 }}
+        {/* ─── New worker welcome ─── */}
+        {isNewWorker && (
+          <Paper
+            elevation={0}
+            sx={{
+              mt: 4,
+              p: 3,
+              borderRadius: '12px',
+              backgroundColor: alpha(STITCH.primaryContainer, 0.08),
+              border: `1px solid ${alpha(STITCH.primaryContainer, 0.35)}`,
+            }}
           >
-            {snackbarMessage}
-          </Alert>
-        </Snackbar>
+            <Typography
+              sx={{
+                fontFamily: FONT_HEAD,
+                fontSize: '1.125rem',
+                fontWeight: 600,
+                color: STITCH.onSurface,
+                mb: 0.5,
+              }}
+            >
+              Welcome to Kelmah! 🎉
+            </Typography>
+            <Typography
+              sx={{
+                fontFamily: FONT_BODY,
+                fontSize: '0.9rem',
+                color: STITCH.onSurfaceVariant,
+                mb: 2,
+              }}
+            >
+              Start by finding work that matches your skills and building your
+              profile to attract premium clients.
+            </Typography>
+            <Button
+              variant="contained"
+              startIcon={<SearchIcon />}
+              onClick={() => navigate('/worker/find-work')}
+              sx={goldButtonSx}
+            >
+              Find Your First Job
+            </Button>
+          </Paper>
+        )}
+
+        {/* ─── Refresh footer ─── */}
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: 1,
+            mt: 4,
+            color: STITCH.onSurfaceVariant,
+          }}
+        >
+          <Tooltip title="Refresh dashboard data">
+            <IconButton
+              onClick={handleRefresh}
+              disabled={isLoading}
+              size="small"
+              aria-label="Refresh dashboard data"
+              sx={{ color: STITCH.onSurfaceVariant }}
+            >
+              {isLoading ? (
+                <RefreshIcon sx={{ animation: 'spin 1s linear infinite' }} />
+              ) : (
+                <RefreshIcon />
+              )}
+            </IconButton>
+          </Tooltip>
+          <Typography
+            sx={{
+              fontFamily: FONT_BODY,
+              fontSize: '0.75rem',
+              color: STITCH.onSurfaceVariant,
+            }}
+          >
+            Last updated{' '}
+            {new Date().toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
+          </Typography>
+        </Box>
       </Box>
+
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setSnackbarOpen(false)}
+          severity={snackbarSeverity}
+          sx={{ width: '100%' }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </PageCanvas>
   );
+};
+
+WorkerDashboardPage.propTypes = {
+  // No props — page is route-mounted. Placeholder keeps the PropTypes import
+  // meaningful for future extension.
 };
 
 export default WorkerDashboardPage;

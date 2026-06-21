@@ -21,7 +21,8 @@ const REFRESH_TOKEN_TTL = 7 * 24 * 60 * 60 * 1000;
 const AUTH_STORAGE_KEYS = ['auth_token', 'refresh_token', 'user_data'];
 const AUTH_SYNC_STORAGE_KEY = 'kelmah_auth_sync';
 const SHOULD_START_CLEANUP_INTERVAL =
-  typeof process === 'undefined' || process.env.NODE_ENV !== 'test';
+  typeof globalThis !== 'undefined' &&
+  (globalThis.process === undefined || globalThis.process?.env?.NODE_ENV !== 'test');
 
 const generateSessionSuffix = () => {
   if (
@@ -436,8 +437,8 @@ class SecureStorage {
     try {
       localStorage.setItem(AUTH_SYNC_STORAGE_KEY, JSON.stringify(payload));
       localStorage.removeItem(AUTH_SYNC_STORAGE_KEY);
-    } catch (_) {
-      // localStorage can be blocked in private mode or hardened browsers.
+    } catch (_unused) {
+      // Storage can throw in private mode or hardened browsers.
     }
   }
 

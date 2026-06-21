@@ -6,6 +6,7 @@ import notificationsReducer from '../modules/notifications/services/notification
 import calendarReducer from '../modules/calendar/services/calendarSlice';
 import workerReducer from '../modules/worker/services/workerSlice';
 import hirerReducer from '../modules/hirer/services/hirerSlice';
+import hirerDashboardReducer from '../modules/dashboard/services/hirerDashboardSlice';
 import contractReducer from '../modules/contracts/services/contractSlice';
 import appReducer from '../modules/common/services/appSlice';
 import reviewsReducer from '../modules/reviews/services/reviewsSlice';
@@ -22,6 +23,7 @@ const store = configureStore({
     calendar: calendarReducer,
     worker: workerReducer,
     hirer: hirerReducer,
+    hirerDashboard: hirerDashboardReducer,
     contract: contractReducer,
     app: appReducer,
     reviews: reviewsReducer,

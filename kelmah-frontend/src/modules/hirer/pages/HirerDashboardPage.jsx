@@ -1,13 +1,17 @@
 /**
- * HirerDashboardPage - Stitch-design desktop dashboard
+ * HirerDashboardPage — Stitch "Kelmah Elite" desktop design.
  *
- * Matches the Stitch hirer_dashboard design:
- * - Hero section with greeting + action buttons
- * - Bento grid: Financial overview (escrow + balance), Active Projects
- * - Right column: Quick Actions, Top Rated Applicants
+ * Layout matches stitch_kelmah_dashboard_redevelopment/hirer_dashboard/code.html:
+ *  - Hero: "OVERVIEW" eyebrow + "Welcome back, {firstName}." + Search Workers / Post a New Job
+ *  - Bento grid (12-col): left col-span-8 (Financial Overview, Active Projects),
+ *    right col-span-4 (Quick Actions, Top Rated Applicants)
  *
- * Backend integration via hirerSlice Redux thunks:
- * - fetchHirerProfile, fetchHirerJobs, fetchJobApplications, fetchPaymentSummary
+ * Backend integration through Redux:
+ *  - hirerSlice (profile, jobs, applications, payments) — primary data source
+ *  - hirerDashboardSlice (metrics, analytics, activeJobs, featuredWorkers) — enrichment
+ *
+ * All resilience infra (polling, retry, partial-load warnings, network awareness,
+ * skeletons, safe-area) from the previous implementation is preserved.
  */
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import {
@@ -19,33 +23,24 @@ import {
   Alert,
   IconButton,
   Tooltip,
-  Chip,
-  Stack,
   Avatar,
   AvatarGroup,
-  LinearProgress,
   Skeleton,
-  useTheme,
+  Stack,
   alpha,
 } from '@mui/material';
 import {
-  Work as WorkIcon,
-  Payment as PaymentIcon,
   Refresh as RefreshIcon,
-  Add as AddIcon,
-  CheckCircle as CheckCircleIcon,
   People as PeopleIcon,
   Message as MessageIcon,
   PostAdd as PostAddIcon,
-  Assignment as ProposalIcon,
   Search as SearchIcon,
   Lock as LockIcon,
   AccountBalance as AccountBalanceIcon,
   Description as DescriptionIcon,
   Star as StarIcon,
   ChevronRight as ChevronRightIcon,
-  TrendingUp as TrendingUpIcon,
-  Warning as WarningIcon,
+  ArrowForward as ArrowForwardIcon,
   ErrorOutline as ErrorOutlineIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
@@ -61,6 +56,11 @@ import {
   selectHirerPendingProposalCount,
   selectHirerError,
 } from '../services/hirerSlice';
+import {
+  fetchHirerDashboardData,
+  fetchHirerMetrics,
+} from '../../dashboard/services/hirerDashboardSlice';
+import { useMessages } from '../../messaging/contexts/MessageContext';
 import { useVisibilityPolling } from '../../../hooks/useVisibilityPolling';
 import useOnlineStatus from '../../../hooks/useOnlineStatus';
 import useNetworkSpeed from '../../../hooks/useNetworkSpeed';
@@ -69,6 +69,13 @@ import { formatGhanaCurrency } from '@/utils/formatters';
 import PageCanvas from '@/modules/common/components/PageCanvas';
 import { withBottomNavSafeArea } from '@/utils/safeArea';
 import { TOUCH_TARGET_MIN } from '../../../constants/layout';
+import {
+  STITCH,
+  FONT_HEAD,
+  FONT_BODY,
+  hoverGoldGlow,
+  goldButtonSx,
+} from '../../dashboard/services/stitchTokens';
 
 const DASHBOARD_LOADING_TIMEOUT_MS = 10000;
 const APPLICATION_REFRESH_TTL_MS = 2 * 60 * 1000;
@@ -79,63 +86,52 @@ const MAX_APPLICATION_HYDRATE_PER_CYCLE = 2;
 const isGatewayPressureStatus = (status) =>
   [429, 502, 503, 504].includes(status);
 
-// ─── Stitch design tokens ───
-const STITCH = {
-  primaryContainer: '#d4af37',
-  onPrimaryContainer: '#554300',
-  surfaceContainer: '#1e1f23',
-  surface: '#121317',
-  surfaceVariant: '#343539',
-  surfaceBright: '#38393d',
-  surfaceDim: '#121317',
-  borderMuted: '#2C2C2E',
-  onSurface: '#e3e2e7',
-  onSurfaceVariant: '#d0c5af',
-  success: '#10B981',
-  warning: '#F59E0B',
-  error: '#DC2626',
-  primary: '#f2ca50',
-};
-
-const toValidTimestamp = (value) => {
-  if (!value) return null;
-  const parsed = new Date(value).getTime();
-  return Number.isFinite(parsed) ? parsed : null;
-};
-
-const extractActiveJobDeadline = (job = {}) => {
-  const candidate =
-    job?.deadline ||
-    job?.dueDate ||
-    job?.expectedCompletionDate ||
-    job?.timeline?.deadline ||
-    job?.timeline?.endDate ||
-    null;
-  return toValidTimestamp(candidate);
-};
-
-const getJobStatusBadge = (job) => {
+// Status → Stitch badge styling (matches Sourcing / In Progress pills in design).
+const getStatusBadge = (job) => {
   const status = String(job?.status || 'open').toLowerCase();
   if (status === 'in-progress' || status === 'in_progress') {
-    return { label: 'In Progress', color: STITCH.success };
+    return {
+      label: 'In Progress',
+      color: STITCH.success,
+      bg: alpha(STITCH.success, 0.1),
+      border: alpha(STITCH.success, 0.25),
+    };
   }
   if (status === 'completed') {
-    return { label: 'Completed', color: STITCH.success };
+    return {
+      label: 'Completed',
+      color: STITCH.success,
+      bg: alpha(STITCH.success, 0.1),
+      border: alpha(STITCH.success, 0.25),
+    };
   }
-  if (status === 'sourcing' || status === 'open') {
-    return { label: 'Sourcing', color: STITCH.warning };
+  // open / sourcing / draft — default "Sourcing"
+  return {
+    label: 'Sourcing',
+    color: STITCH.warning,
+    bg: alpha(STITCH.warning, 0.1),
+    border: alpha(STITCH.warning, 0.25),
+  };
+};
+
+const getJobProgress = (job) => {
+  const explicit = Number(job?.progress);
+  if (Number.isFinite(explicit) && explicit > 0 && explicit <= 100) {
+    return Math.round(explicit);
   }
-  if (status === 'draft') {
-    return { label: 'Draft', color: STITCH.onSurfaceVariant };
+  const milestones = Array.isArray(job?.milestones) ? job.milestones : [];
+  if (milestones.length > 0) {
+    const completed = milestones.filter(
+      (m) => m?.status === 'completed' || m?.status === 'released',
+    ).length;
+    return Math.round((completed / milestones.length) * 100);
   }
-  if (status === 'cancelled' || status === 'closed') {
-    return { label: 'Closed', color: STITCH.error };
-  }
-  return { label: 'Active', color: STITCH.primary };
+  const status = String(job?.status || '').toLowerCase();
+  if (status === 'in-progress' || status === 'in_progress') return 50;
+  return 0;
 };
 
 const HirerDashboardPage = () => {
-  const theme = useTheme();
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -156,7 +152,7 @@ const HirerDashboardPage = () => {
   const selectActive = useMemo(() => selectHirerJobs('active'), []);
   const selectCompleted = useMemo(() => selectHirerJobs('completed'), []);
 
-  // Redux state
+  // ─── Redux state ───
   const user = useSelector((state) => state.auth.user);
   const hirerProfile = useSelector((state) => state.hirer.profile);
   const activeJobs = useSelector(selectActive);
@@ -166,10 +162,13 @@ const HirerDashboardPage = () => {
   const payments = useSelector((state) => state.hirer.payments);
   const storeError = useSelector(selectHirerError('profile'));
   const jobsError = useSelector(selectHirerError('jobs'));
+  // Enrichment from the dedicated dashboard slice (metrics + featured workers).
+  const dashboardData = useSelector((state) => state.hirerDashboard?.data);
 
+  const { unreadCount: unreadMessages } = useMessages();
   const isMobile = useBreakpointDown('md');
-  const { isOnline, wasOffline } = useOnlineStatus();
-  const { isSlow, effectiveType, downlink, rtt, saveData } = useNetworkSpeed();
+  const { isOnline } = useOnlineStatus();
+  const { isSlow, saveData } = useNetworkSpeed();
 
   const clearLoadingTimeout = useCallback(() => {
     if (timeoutRef.current) {
@@ -264,6 +263,13 @@ const HirerDashboardPage = () => {
         await runDashboardRequest('payments', () =>
           dispatch(fetchPaymentSummary()).unwrap(),
         );
+        // Enrichment: dashboard metrics (counts) + featured workers (Top Rated).
+        await runDashboardRequest('dashboard metrics', () =>
+          dispatch(fetchHirerMetrics('30d')).unwrap(),
+        );
+        await runDashboardRequest('dashboard data', () =>
+          dispatch(fetchHirerDashboardData()).unwrap(),
+        );
 
         fetchPromiseRef.current = null;
         if (!isMountedRef.current) return;
@@ -301,9 +307,7 @@ const HirerDashboardPage = () => {
         }
 
         const partialFailureList = Array.from(failedModules);
-        const hasAnySnapshot = Boolean(
-          profilePayload || activePayload,
-        );
+        const hasAnySnapshot = Boolean(profilePayload || activePayload);
         if (partialFailureList.length > 0 && hasAnySnapshot) {
           setPartialLoadWarning(
             `Some sections are showing last available data (${partialFailureList.slice(0, 3).join(', ')}).`,
@@ -387,22 +391,20 @@ const HirerDashboardPage = () => {
     return () => clearInterval(interval);
   }, [lastRefreshed]);
 
-  // Summary data from Redux
+  // ─── Derived summary ───
   const summaryData = {
     activeJobs: activeJobs?.length || 0,
     pendingProposals: totalPendingProposals,
     completedJobs: completedJobs?.length || 0,
+    // Prefer backend metrics when available, fall back to client counts.
+    totalApplications:
+      dashboardData?.metrics?.totalApplications ??
+      dashboardData?.metrics?.newApplications ??
+      totalPendingProposals,
     totalSpent: payments?.totalPaid || hirerProfile?.totalSpent || 0,
-    pendingPayments: payments?.pending?.length || 0,
     escrowBalance: payments?.escrowBalance || 0,
-    availableBalance: payments?.wallet?.balance || 0,
-  };
-
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Good Morning';
-    if (hour < 17) return 'Good Afternoon';
-    return 'Good Evening';
+    availableBalance:
+      payments?.wallet?.balance ?? payments?.wallet?.availableBalance ?? 0,
   };
 
   const userFirstName =
@@ -433,9 +435,28 @@ const HirerDashboardPage = () => {
     },
   });
 
-  // Featured workers / top applicants from dashboard data
+  // Top Rated Applicants: prefer featuredWorkers from the dashboard endpoint,
+  // fall back to applicants derived from application records.
   const topApplicants = useMemo(() => {
-    // Derive from application records — collect unique applicants across jobs
+    const featured = Array.isArray(dashboardData?.featuredWorkers)
+      ? dashboardData.featuredWorkers
+      : [];
+    const mapped = featured.map((w) => ({
+      id: w?.id || w?._id || w?.userId,
+      name:
+        w?.name ||
+        [w?.firstName, w?.lastName].filter(Boolean).join(' ') ||
+        'Applicant',
+      title: w?.profession || w?.title || w?.skill || 'Professional',
+      rating: Number(w?.rating || w?.averageRating || 0),
+      avatar: w?.profilePicture || w?.avatar,
+      online: Boolean(w?.isOnline),
+    }));
+    if (mapped.length > 0) {
+      return mapped.sort((a, b) => b.rating - a.rating).slice(0, 3);
+    }
+
+    // Fallback: derive from hydrated application buckets.
     const records = applicationRecords || {};
     const applicantsMap = new Map();
     Object.values(records).forEach((record) => {
@@ -469,8 +490,26 @@ const HirerDashboardPage = () => {
     });
     return Array.from(applicantsMap.values())
       .sort((a, b) => b.rating - a.rating)
-      .slice(0, 4);
-  }, [applicationRecords]);
+      .slice(0, 3);
+  }, [dashboardData, applicationRecords]);
+
+  // Applicant avatars per active job (for the Active Projects stacked avatar row).
+  const getApplicantsForJob = useCallback(
+    (jobId) => {
+      if (!jobId) return [];
+      const record = (applicationRecords || {})[jobId];
+      if (!record) return [];
+      const buckets = record?.buckets || {};
+      const all = [];
+      Object.values(buckets).forEach((bucket) => {
+        if (Array.isArray(bucket)) all.push(...bucket);
+      });
+      return all.slice(0, 4);
+    },
+    [applicationRecords],
+  );
+
+  const messagesBadge = unreadMessages > 0 ? unreadMessages : null;
 
   const isLoading = isHydrating && !activeJobs?.length && !hirerProfile;
 
@@ -481,10 +520,20 @@ const HirerDashboardPage = () => {
         <Helmet>
           <title>Hirer Dashboard | Kelmah</title>
         </Helmet>
-        <Box sx={{ p: { xs: 2, md: 4 } }}>
-          <Skeleton variant="text" width={200} height={40} sx={{ mb: 1 }} />
-          <Skeleton variant="text" width={300} height={56} sx={{ mb: 3 }} />
-          <Skeleton variant="text" width={400} height={24} sx={{ mb: 4 }} />
+        <Box sx={{ p: { xs: 2, md: 4 }, maxWidth: 1280, mx: 'auto' }}>
+          <Skeleton variant="text" width={120} height={24} sx={{ mb: 1 }} />
+          <Skeleton
+            variant="text"
+            width={{ xs: 260, md: 420 }}
+            height={56}
+            sx={{ mb: 1 }}
+          />
+          <Skeleton
+            variant="text"
+            width={{ xs: 300, md: 520 }}
+            height={24}
+            sx={{ mb: 4 }}
+          />
           <Grid container spacing={3}>
             <Grid item xs={12} md={8}>
               <Grid container spacing={3}>
@@ -495,7 +544,7 @@ const HirerDashboardPage = () => {
                   <Skeleton variant="rounded" height={180} />
                 </Grid>
                 <Grid item xs={12}>
-                  <Skeleton variant="rounded" height={320} />
+                  <Skeleton variant="rounded" height={340} />
                 </Grid>
               </Grid>
             </Grid>
@@ -521,10 +570,11 @@ const HirerDashboardPage = () => {
           mx: 'auto',
           px: { xs: 2, md: 4 },
           py: { xs: 2, md: 4 },
-          fontFamily: '"Montserrat", "Roboto Flex", sans-serif',
+          fontFamily: FONT_BODY,
+          color: STITCH.onSurface,
         }}
       >
-        {/* ─── Error / Warning Banners ─── */}
+        {/* ─── Error / Warning banners ─── */}
         {error && (
           <Alert
             severity="warning"
@@ -542,9 +592,7 @@ const HirerDashboardPage = () => {
                 disabled={refreshing}
                 startIcon={
                   refreshing ? (
-                    <RefreshIcon
-                      sx={{ animation: 'spin 1s linear infinite' }}
-                    />
+                    <RefreshIcon sx={{ animation: 'spin 1s linear infinite' }} />
                   ) : (
                     <RefreshIcon />
                   )
@@ -564,58 +612,58 @@ const HirerDashboardPage = () => {
           </Alert>
         )}
 
-        {/* ─── Hero Section ─── */}
+        {/* ─── Hero ─── */}
         <Box
           sx={{
+            mt: { xs: 2, md: 4 },
+            mb: { xs: 4, md: 6 },
             display: 'flex',
             flexDirection: { xs: 'column', md: 'row' },
             justifyContent: 'space-between',
             alignItems: { xs: 'flex-start', md: 'flex-end' },
             gap: 3,
-            mt: { xs: 1, md: 2 },
-            mb: { xs: 4, md: 6 },
           }}
         >
           <Box>
             <Typography
-              variant="overline"
               sx={{
-                color: STITCH.primary,
-                letterSpacing: '0.15em',
+                fontFamily: FONT_HEAD,
+                fontSize: '0.875rem',
                 fontWeight: 600,
+                letterSpacing: '0.18em',
+                textTransform: 'uppercase',
+                color: STITCH.primaryContainer,
                 mb: 1,
-                display: 'block',
               }}
             >
               Overview
             </Typography>
             <Typography
-              variant="h3"
               sx={{
-                fontFamily: '"Montserrat", sans-serif',
+                fontFamily: FONT_HEAD,
+                fontSize: { xs: '1.9rem', md: '3rem' },
                 fontWeight: 700,
-                color: STITCH.onSurface,
-                fontSize: { xs: '1.75rem', md: '3rem' },
                 lineHeight: 1.15,
                 letterSpacing: '-0.02em',
+                color: STITCH.onSurface,
               }}
             >
               Welcome back, {userFirstName}.
             </Typography>
             <Typography
               sx={{
-                color: STITCH.onSurfaceVariant,
+                fontFamily: FONT_BODY,
                 fontSize: { xs: '1rem', md: '1.125rem' },
-                lineHeight: 1.6,
+                lineHeight: 1.5,
+                color: STITCH.onSurfaceVariant,
                 mt: 1,
-                maxWidth: 600,
-                fontFamily: '"Roboto Flex", sans-serif',
+                maxWidth: 640,
               }}
             >
               You have {summaryData.activeJobs} active project
-              {summaryData.activeJobs !== 1 ? 's' : ''} and{' '}
-              {summaryData.pendingProposals} new applicant
-              {summaryData.pendingProposals !== 1 ? 's' : ''} awaiting your
+              {summaryData.activeJobs === 1 ? '' : 's'} and{' '}
+              {summaryData.totalApplications} new applicant
+              {summaryData.totalApplications === 1 ? '' : 's'} awaiting your
               review.
             </Typography>
           </Box>
@@ -630,13 +678,13 @@ const HirerDashboardPage = () => {
                 borderRadius: '4px',
                 px: 3,
                 py: 1.5,
+                fontFamily: FONT_HEAD,
                 fontWeight: 600,
                 textTransform: 'none',
-                fontFamily: '"Montserrat", sans-serif',
                 '&:hover': {
                   borderColor: STITCH.primaryContainer,
                   color: STITCH.primary,
-                  bgcolor: 'transparent',
+                  backgroundColor: 'transparent',
                 },
               }}
             >
@@ -646,30 +694,16 @@ const HirerDashboardPage = () => {
               variant="contained"
               startIcon={<PostAddIcon />}
               onClick={() => navigate('/hirer/jobs/post')}
-              sx={{
-                bgcolor: STITCH.primaryContainer,
-                color: STITCH.onPrimaryContainer,
-                borderRadius: '4px',
-                px: 3,
-                py: 1.5,
-                fontWeight: 600,
-                textTransform: 'none',
-                fontFamily: '"Montserrat", sans-serif',
-                boxShadow: '0 4px 14px rgba(212,175,55,0.25)',
-                '&:hover': {
-                  bgcolor: STITCH.primary,
-                  boxShadow: '0 6px 20px rgba(212,175,55,0.4)',
-                },
-              }}
+              sx={{ ...goldButtonSx, py: 1.5, px: 3 }}
             >
               Post a New Job
             </Button>
           </Stack>
         </Box>
 
-        {/* ─── Bento Grid Layout ─── */}
+        {/* ─── Bento grid ─── */}
         <Grid container spacing={3}>
-          {/* ── Left Column (span 8) ── */}
+          {/* ── Left column (span 8) ── */}
           <Grid item xs={12} md={8}>
             <Stack spacing={3}>
               {/* Financial Overview */}
@@ -680,19 +714,13 @@ const HirerDashboardPage = () => {
                     sx={{
                       bgcolor: STITCH.surfaceContainer,
                       border: `1px solid ${STITCH.borderMuted}`,
-                      borderRadius: '8px',
+                      borderRadius: '4px',
                       p: 3,
+                      height: '100%',
                       display: 'flex',
                       flexDirection: 'column',
                       justifyContent: 'space-between',
-                      minHeight: 180,
-                      transition: 'all 0.3s ease',
-                      '&:hover': {
-                        borderColor: STITCH.primaryContainer,
-                        boxShadow:
-                          'inset 0 0 20px rgba(212,175,55,0.05), 0 4px 20px rgba(0,0,0,0.5)',
-                        transform: 'translateY(-2px)',
-                      },
+                      ...hoverGoldGlow,
                     }}
                   >
                     <Box
@@ -712,44 +740,46 @@ const HirerDashboardPage = () => {
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          color: STITCH.primary,
+                          color: STITCH.primaryContainer,
                         }}
                       >
                         <LockIcon />
                       </Box>
-                      <Chip
-                        label="Secured"
-                        size="small"
+                      <Box
                         sx={{
-                          bgcolor: STITCH.surfaceVariant,
-                          color: STITCH.onSurfaceVariant,
                           fontSize: '0.625rem',
                           fontWeight: 700,
+                          letterSpacing: '0.08em',
                           textTransform: 'uppercase',
-                          letterSpacing: '0.05em',
-                          height: 24,
+                          bgcolor: STITCH.surfaceVariant,
+                          color: STITCH.onSurfaceVariant,
+                          px: 1,
+                          py: 0.5,
+                          borderRadius: '4px',
                         }}
-                      />
+                      >
+                        Secured
+                      </Box>
                     </Box>
                     <Box>
                       <Typography
                         sx={{
-                          color: STITCH.onSurfaceVariant,
+                          fontFamily: FONT_HEAD,
                           fontSize: '0.75rem',
                           fontWeight: 500,
+                          letterSpacing: '0.03em',
+                          color: STITCH.onSurfaceVariant,
                           mb: 0.5,
-                          fontFamily: '"Montserrat", sans-serif',
                         }}
                       >
                         Funds in Escrow
                       </Typography>
                       <Typography
                         sx={{
-                          fontFamily: '"Montserrat", sans-serif',
+                          fontFamily: FONT_HEAD,
+                          fontSize: { xs: '1.5rem', md: '1.75rem' },
                           fontWeight: 700,
                           color: STITCH.onSurface,
-                          fontSize: '2rem',
-                          lineHeight: 1.2,
                         }}
                       >
                         {formatGhanaCurrency(summaryData.escrowBalance)}
@@ -763,19 +793,13 @@ const HirerDashboardPage = () => {
                     sx={{
                       bgcolor: STITCH.surfaceContainer,
                       border: `1px solid ${STITCH.borderMuted}`,
-                      borderRadius: '8px',
+                      borderRadius: '4px',
                       p: 3,
+                      height: '100%',
                       display: 'flex',
                       flexDirection: 'column',
                       justifyContent: 'space-between',
-                      minHeight: 180,
-                      transition: 'all 0.3s ease',
-                      '&:hover': {
-                        borderColor: STITCH.primaryContainer,
-                        boxShadow:
-                          'inset 0 0 20px rgba(212,175,55,0.05), 0 4px 20px rgba(0,0,0,0.5)',
-                        transform: 'translateY(-2px)',
-                      },
+                      ...hoverGoldGlow,
                     }}
                   >
                     <Box
@@ -795,47 +819,49 @@ const HirerDashboardPage = () => {
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          color: STITCH.primary,
+                          color: STITCH.primaryContainer,
                         }}
                       >
                         <AccountBalanceIcon />
                       </Box>
                       <Button
                         size="small"
-                        endIcon={<ChevronRightIcon sx={{ fontSize: 16 }} />}
                         onClick={() => navigate('/hirer/wallet')}
                         sx={{
-                          color: STITCH.primary,
-                          textTransform: 'none',
-                          fontWeight: 500,
+                          color: STITCH.primaryContainer,
+                          fontFamily: FONT_HEAD,
                           fontSize: '0.75rem',
-                          fontFamily: '"Montserrat", sans-serif',
-                          minWidth: 'auto',
-                          '&:hover': { bgcolor: 'transparent' },
+                          fontWeight: 500,
+                          textTransform: 'none',
+                          minWidth: 0,
+                          '&:hover': {
+                            backgroundColor: 'transparent',
+                            color: STITCH.primaryFixed,
+                          },
                         }}
                       >
-                        Top Up
+                        Top Up <ArrowForwardIcon sx={{ fontSize: 14, ml: 0.5 }} />
                       </Button>
                     </Box>
                     <Box>
                       <Typography
                         sx={{
-                          color: STITCH.onSurfaceVariant,
+                          fontFamily: FONT_HEAD,
                           fontSize: '0.75rem',
                           fontWeight: 500,
+                          letterSpacing: '0.03em',
+                          color: STITCH.onSurfaceVariant,
                           mb: 0.5,
-                          fontFamily: '"Montserrat", sans-serif',
                         }}
                       >
                         Available Balance
                       </Typography>
                       <Typography
                         sx={{
-                          fontFamily: '"Montserrat", sans-serif',
+                          fontFamily: FONT_HEAD,
+                          fontSize: { xs: '1.5rem', md: '1.75rem' },
                           fontWeight: 700,
                           color: STITCH.onSurface,
-                          fontSize: '2rem',
-                          lineHeight: 1.2,
                         }}
                       >
                         {formatGhanaCurrency(summaryData.availableBalance)}
@@ -851,8 +877,10 @@ const HirerDashboardPage = () => {
                 sx={{
                   bgcolor: STITCH.surfaceContainer,
                   border: `1px solid ${STITCH.borderMuted}`,
-                  borderRadius: '8px',
+                  borderRadius: '4px',
                   overflow: 'hidden',
+                  display: 'flex',
+                  flexDirection: 'column',
                 }}
               >
                 <Box
@@ -862,14 +890,13 @@ const HirerDashboardPage = () => {
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    bgcolor: alpha(STITCH.surfaceContainer, 0.5),
                   }}
                 >
                   <Typography
                     sx={{
-                      fontFamily: '"Montserrat", sans-serif',
-                      fontWeight: 600,
+                      fontFamily: FONT_HEAD,
                       fontSize: '1.5rem',
+                      fontWeight: 600,
                       color: STITCH.onSurface,
                     }}
                   >
@@ -877,115 +904,125 @@ const HirerDashboardPage = () => {
                   </Typography>
                   <Button
                     size="small"
-                    onClick={() => navigate('/hirer/jobs?status=active')}
+                    onClick={() => navigate('/hirer/jobs')}
                     sx={{
                       color: STITCH.onSurfaceVariant,
-                      textTransform: 'none',
-                      fontWeight: 500,
+                      fontFamily: FONT_HEAD,
                       fontSize: '0.75rem',
-                      '&:hover': { color: STITCH.primary, bgcolor: 'transparent' },
+                      fontWeight: 500,
+                      textTransform: 'none',
+                      minWidth: 0,
+                      '&:hover': {
+                        backgroundColor: 'transparent',
+                        color: STITCH.primaryContainer,
+                      },
                     }}
                   >
                     View All
                   </Button>
                 </Box>
-                <Box>
-                  {activeJobs && activeJobs.length > 0 ? (
-                    activeJobs.slice(0, 5).map((job, index) => {
-                      const badge = getJobStatusBadge(job);
+
+                {activeJobs && activeJobs.length > 0 ? (
+                  <Box>
+                    {activeJobs.slice(0, 5).map((job, idx) => {
                       const jobId = job?.id || job?._id;
-                      const jobApps = applicationRecords?.[jobId];
-                      const appCount =
-                        jobApps?.total ||
-                        Object.values(jobApps?.buckets || {}).reduce(
-                          (sum, b) => sum + (Array.isArray(b) ? b.length : 0),
-                          0,
-                        ) ||
-                        job?.applicationCount ||
-                        0;
-                      const budget =
-                        job?.budget ||
-                        job?.paymentAmount ||
-                        job?.compensation?.amount ||
-                        0;
+                      const badge = getStatusBadge(job);
+                      const progress = getJobProgress(job);
+                      const isInProgress =
+                        badge.label === 'In Progress' || progress > 0;
+                      const applicants = getApplicantsForJob(jobId);
+                      const budget = job?.budget;
+                      const budgetLabel = (() => {
+                        if (budget && typeof budget === 'object') {
+                          const val =
+                            budget.min ?? budget.max ?? budget.amount;
+                          return val ? formatGhanaCurrency(val) : null;
+                        }
+                        return budget ? formatGhanaCurrency(budget) : null;
+                      })();
                       const location =
-                        job?.location?.address ||
                         job?.location?.city ||
+                        job?.location?.address ||
                         job?.location ||
-                        'Location not specified';
+                        '';
+                      const subtitle =
+                        [
+                          location,
+                          budgetLabel && `${budgetLabel} Budget`,
+                        ]
+                          .filter(Boolean)
+                          .join(' • ') || 'Details on review';
+
                       return (
                         <Box
-                          key={jobId || index}
-                          onClick={() => navigate(`/hirer/jobs/${jobId}/applicants`)}
+                          key={jobId || idx}
+                          onClick={() => navigate(`/hirer/jobs/${jobId}`)}
                           sx={{
                             p: 3,
                             borderBottom:
-                              index < Math.min(activeJobs.length, 5) - 1
+                              idx < Math.min(activeJobs.length, 5) - 1
                                 ? `1px solid ${STITCH.borderMuted}`
                                 : 'none',
+                            cursor: 'pointer',
                             display: 'flex',
                             flexDirection: { xs: 'column', sm: 'row' },
                             justifyContent: 'space-between',
-                            alignItems: {
-                              xs: 'flex-start',
-                              sm: 'center',
-                            },
+                            alignItems: { xs: 'flex-start', sm: 'center' },
                             gap: 2,
-                            cursor: 'pointer',
-                            transition: 'background-color 0.2s',
+                            transition: 'background-color 0.2s ease',
                             '&:hover': {
-                              bgcolor: alpha(STITCH.surfaceVariant, 0.3),
+                              backgroundColor: alpha(STITCH.surfaceVariant, 0.3),
                             },
                           }}
                         >
-                          <Box>
-                            <Box
-                              sx={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 1.5,
-                                mb: 1,
-                              }}
+                          <Box sx={{ minWidth: 0, flex: 1 }}>
+                            <Stack
+                              direction="row"
+                              spacing={1.5}
+                              alignItems="center"
+                              sx={{ mb: 1 }}
                             >
                               <Typography
                                 sx={{
-                                  fontFamily: '"Montserrat", sans-serif',
-                                  fontWeight: 600,
+                                  fontFamily: FONT_HEAD,
                                   fontSize: '1rem',
+                                  fontWeight: 600,
                                   color: STITCH.onSurface,
                                 }}
+                                noWrap
                               >
                                 {job?.title || 'Untitled Project'}
                               </Typography>
-                              <Chip
-                                label={badge.label}
-                                size="small"
+                              <Box
+                                component="span"
                                 sx={{
-                                  bgcolor: alpha(badge.color, 0.1),
-                                  color: badge.color,
-                                  border: `1px solid ${alpha(badge.color, 0.2)}`,
                                   fontSize: '0.625rem',
                                   fontWeight: 700,
+                                  letterSpacing: '0.06em',
                                   textTransform: 'uppercase',
-                                  letterSpacing: '0.05em',
-                                  height: 20,
+                                  color: badge.color,
+                                  bgcolor: badge.bg,
+                                  border: `1px solid ${badge.border}`,
+                                  px: 1,
+                                  py: 0.25,
+                                  borderRadius: '4px',
+                                  whiteSpace: 'nowrap',
                                 }}
-                              />
-                            </Box>
+                              >
+                                {badge.label}
+                              </Box>
+                            </Stack>
                             <Typography
                               sx={{
-                                fontFamily: '"Roboto Flex", sans-serif',
+                                fontFamily: FONT_BODY,
                                 fontSize: '0.875rem',
                                 color: STITCH.onSurfaceVariant,
                               }}
                             >
-                              {typeof location === 'string'
-                                ? location
-                                : 'Ghana'}
-                              {budget > 0 &&
-                                ` • ${formatGhanaCurrency(budget)} Budget`}
+                              {subtitle}
                             </Typography>
                           </Box>
+
                           <Box
                             sx={{
                               display: 'flex',
@@ -998,7 +1035,45 @@ const HirerDashboardPage = () => {
                               },
                             }}
                           >
-                            {appCount > 0 && (
+                            {isInProgress ? (
+                              <Box
+                                sx={{
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  alignItems: 'flex-end',
+                                  gap: 0.75,
+                                  minWidth: 128,
+                                }}
+                              >
+                                <Box
+                                  sx={{
+                                    width: { xs: 120, sm: 128 },
+                                    height: 8,
+                                    bgcolor: STITCH.surfaceVariant,
+                                    borderRadius: 5,
+                                    overflow: 'hidden',
+                                  }}
+                                >
+                                  <Box
+                                    sx={{
+                                      width: `${progress}%`,
+                                      height: '100%',
+                                      bgcolor: STITCH.primaryContainer,
+                                      borderRadius: 5,
+                                    }}
+                                  />
+                                </Box>
+                                <Typography
+                                  sx={{
+                                    fontFamily: FONT_HEAD,
+                                    fontSize: '0.75rem',
+                                    color: STITCH.onSurfaceVariant,
+                                  }}
+                                >
+                                  {progress}% Complete
+                                </Typography>
+                              </Box>
+                            ) : (
                               <AvatarGroup
                                 max={4}
                                 sx={{
@@ -1008,177 +1083,202 @@ const HirerDashboardPage = () => {
                                     fontSize: '0.75rem',
                                     border: `2px solid ${STITCH.surfaceContainer}`,
                                     bgcolor: STITCH.surfaceVariant,
+                                    color: STITCH.onSurfaceVariant,
                                   },
                                 }}
                               >
-                                {Array.from({ length: Math.min(appCount, 3) }).map(
-                                  (_, i) => (
-                                    <Avatar key={i}>
-                                      {String.fromCharCode(65 + i)}
+                                {applicants.length > 0 ? (
+                                  applicants.map((app, i) => (
+                                    <Avatar
+                                      key={i}
+                                      src={
+                                        app?.worker?.profilePicture ||
+                                        app?.worker?.avatar
+                                      }
+                                    >
+                                      {(
+                                        app?.worker?.firstName ||
+                                        app?.applicantName ||
+                                        'A'
+                                      ).charAt(0)}
                                     </Avatar>
-                                  ),
-                                )}
-                                {appCount > 3 && (
-                                  <Avatar
-                                    sx={{
-                                      bgcolor: STITCH.surfaceVariant,
-                                      color: STITCH.onSurfaceVariant,
-                                      fontSize: '0.75rem',
-                                    }}
-                                  >
-                                    +{appCount - 3}
+                                  ))
+                                ) : (
+                                  <Avatar>
+                                    <PeopleIcon sx={{ fontSize: 18 }} />
                                   </Avatar>
                                 )}
                               </AvatarGroup>
                             )}
-                            <Button
-                              size="small"
-                              endIcon={<ChevronRightIcon sx={{ fontSize: 16 }} />}
+
+                            <Stack
+                              direction="row"
+                              spacing={0.5}
+                              alignItems="center"
                               sx={{
-                                color: STITCH.primary,
-                                textTransform: 'none',
-                                fontWeight: 600,
+                                color: STITCH.primaryContainer,
+                                opacity: { xs: 1, sm: 0 },
+                                transition: 'opacity 0.2s ease',
+                                '.MuiBox-root:hover &': { opacity: 1 },
+                                fontFamily: FONT_HEAD,
                                 fontSize: '0.875rem',
-                                fontFamily: '"Montserrat", sans-serif',
-                                minWidth: 'auto',
-                                '&:hover': { bgcolor: 'transparent' },
+                                fontWeight: 600,
                               }}
                             >
                               Review
-                            </Button>
+                              <ChevronRightIcon sx={{ fontSize: 18 }} />
+                            </Stack>
                           </Box>
                         </Box>
                       );
-                    })
-                  ) : (
-                    <Box sx={{ p: 4, textAlign: 'center' }}>
-                      <WorkIcon
-                        sx={{ fontSize: 48, color: STITCH.onSurfaceVariant, mb: 1 }}
-                      />
-                      <Typography
-                        sx={{ color: STITCH.onSurfaceVariant, mb: 2 }}
-                      >
-                        No active projects yet
-                      </Typography>
-                      <Button
-                        variant="contained"
-                        startIcon={<AddIcon />}
-                        onClick={() => navigate('/hirer/jobs/post')}
-                        sx={{
-                          bgcolor: STITCH.primaryContainer,
-                          color: STITCH.onPrimaryContainer,
-                          textTransform: 'none',
-                          '&:hover': { bgcolor: STITCH.primary },
-                        }}
-                      >
-                        Post Your First Job
-                      </Button>
-                    </Box>
-                  )}
-                </Box>
+                    })}
+                  </Box>
+                ) : (
+                  <Box sx={{ p: 4, textAlign: 'center' }}>
+                    <Typography
+                      sx={{
+                        fontFamily: FONT_BODY,
+                        color: STITCH.onSurfaceVariant,
+                        fontSize: '0.9rem',
+                        mb: 2,
+                      }}
+                    >
+                      No active projects yet. Post your first job to get started.
+                    </Typography>
+                    <Button
+                      variant="contained"
+                      startIcon={<PostAddIcon />}
+                      onClick={() => navigate('/hirer/jobs/post')}
+                      sx={goldButtonSx}
+                    >
+                      Post a New Job
+                    </Button>
+                  </Box>
+                )}
               </Paper>
             </Stack>
           </Grid>
 
-          {/* ── Right Column (span 4) ── */}
+          {/* ── Right column (span 4) ── */}
           <Grid item xs={12} md={4}>
-            <Stack spacing={3}>
+            <Stack spacing={3} sx={{ height: '100%' }}>
               {/* Quick Actions */}
               <Paper
                 elevation={0}
                 sx={{
                   bgcolor: STITCH.surfaceContainer,
                   border: `1px solid ${STITCH.borderMuted}`,
-                  borderRadius: '8px',
+                  borderRadius: '4px',
                   p: 3,
                 }}
               >
                 <Typography
                   sx={{
-                    fontFamily: '"Montserrat", sans-serif',
-                    fontWeight: 600,
+                    fontFamily: FONT_HEAD,
                     fontSize: '0.875rem',
-                    color: STITCH.onSurface,
+                    fontWeight: 600,
+                    letterSpacing: '0.18em',
                     textTransform: 'uppercase',
-                    letterSpacing: '0.1em',
+                    color: STITCH.onSurface,
                     mb: 2,
                   }}
                 >
                   Quick Actions
                 </Typography>
                 <Stack spacing={1.5}>
-                  <Button
-                    fullWidth
-                    onClick={() => navigate('/hirer/contracts')}
+                  <Paper
+                    elevation={0}
+                    onClick={() => navigate('/hirer/jobs')}
                     sx={{
                       bgcolor: STITCH.surface,
                       border: `1px solid ${STITCH.borderMuted}`,
-                      color: STITCH.onSurface,
                       borderRadius: '4px',
-                      py: 1.5,
-                      px: 2,
+                      p: 1.75,
+                      display: 'flex',
+                      alignItems: 'center',
                       justifyContent: 'space-between',
-                      textTransform: 'none',
-                      fontWeight: 600,
-                      fontFamily: '"Montserrat", sans-serif',
-                      '&:hover': {
-                        borderColor: STITCH.primaryContainer,
-                        bgcolor: STITCH.surface,
-                      },
+                      cursor: 'pointer',
+                      transition: 'border-color 0.2s ease',
+                      '&:hover': { borderColor: STITCH.primaryContainer },
                     }}
                   >
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                      <DescriptionIcon
-                        sx={{ color: STITCH.onSurfaceVariant }}
-                      />
-                      Manage Contracts
-                    </Box>
-                    <ChevronRightIcon
+                    <Stack
+                      direction="row"
+                      spacing={1.5}
+                      alignItems="center"
+                      sx={{ color: STITCH.onSurface }}
+                    >
+                      <DescriptionIcon sx={{ color: STITCH.onSurfaceVariant }} />
+                      <Typography
+                        sx={{
+                          fontFamily: FONT_HEAD,
+                          fontSize: '0.875rem',
+                          fontWeight: 600,
+                        }}
+                      >
+                        Manage Contracts
+                      </Typography>
+                    </Stack>
+                    <ArrowForwardIcon
                       sx={{ color: STITCH.onSurfaceVariant, fontSize: 18 }}
                     />
-                  </Button>
-                  <Button
-                    fullWidth
+                  </Paper>
+                  <Paper
+                    elevation={0}
                     onClick={() => navigate('/messages')}
                     sx={{
                       bgcolor: STITCH.surface,
                       border: `1px solid ${STITCH.borderMuted}`,
-                      color: STITCH.onSurface,
                       borderRadius: '4px',
-                      py: 1.5,
-                      px: 2,
+                      p: 1.75,
+                      display: 'flex',
+                      alignItems: 'center',
                       justifyContent: 'space-between',
-                      textTransform: 'none',
-                      fontWeight: 600,
-                      fontFamily: '"Montserrat", sans-serif',
-                      '&:hover': {
-                        borderColor: STITCH.primaryContainer,
-                        bgcolor: STITCH.surface,
-                      },
+                      cursor: 'pointer',
+                      transition: 'border-color 0.2s ease',
+                      '&:hover': { borderColor: STITCH.primaryContainer },
                     }}
                   >
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Stack
+                      direction="row"
+                      spacing={1.5}
+                      alignItems="center"
+                      sx={{ color: STITCH.onSurface }}
+                    >
                       <MessageIcon sx={{ color: STITCH.onSurfaceVariant }} />
-                      View Messages
-                      {summaryData.pendingProposals > 0 && (
-                        <Chip
-                          label={summaryData.pendingProposals}
-                          size="small"
+                      <Typography
+                        sx={{
+                          fontFamily: FONT_HEAD,
+                          fontSize: '0.875rem',
+                          fontWeight: 600,
+                        }}
+                      >
+                        View Messages
+                      </Typography>
+                      {messagesBadge && (
+                        <Box
+                          component="span"
                           sx={{
                             bgcolor: STITCH.primaryContainer,
-                            color: STITCH.onPrimaryContainer,
+                            color: STITCH.onPrimary,
                             fontSize: '0.625rem',
                             fontWeight: 700,
-                            height: 18,
+                            px: 1,
+                            py: 0.25,
+                            borderRadius: 5,
+                            ml: 0.5,
                             minWidth: 18,
+                            textAlign: 'center',
                           }}
-                        />
+                        >
+                          {messagesBadge}
+                        </Box>
                       )}
-                    </Box>
-                    <ChevronRightIcon
+                    </Stack>
+                    <ArrowForwardIcon
                       sx={{ color: STITCH.onSurfaceVariant, fontSize: 18 }}
                     />
-                  </Button>
+                  </Paper>
                 </Stack>
               </Paper>
 
@@ -1188,74 +1288,66 @@ const HirerDashboardPage = () => {
                 sx={{
                   bgcolor: STITCH.surfaceContainer,
                   border: `1px solid ${STITCH.borderMuted}`,
-                  borderRadius: '8px',
+                  borderRadius: '4px',
                   display: 'flex',
                   flexDirection: 'column',
                   flex: 1,
                 }}
               >
                 <Box
-                  sx={{
-                    p: 3,
-                    borderBottom: `1px solid ${STITCH.borderMuted}`,
-                  }}
+                  sx={{ p: 3, borderBottom: `1px solid ${STITCH.borderMuted}` }}
                 >
                   <Typography
                     sx={{
-                      fontFamily: '"Montserrat", sans-serif',
-                      fontWeight: 600,
+                      fontFamily: FONT_HEAD,
                       fontSize: '0.875rem',
-                      color: STITCH.onSurface,
+                      fontWeight: 600,
+                      letterSpacing: '0.18em',
                       textTransform: 'uppercase',
-                      letterSpacing: '0.1em',
+                      color: STITCH.onSurface,
                     }}
                   >
                     Top Rated Applicants
                   </Typography>
                 </Box>
+
                 <Box sx={{ p: 1 }}>
                   {topApplicants.length > 0 ? (
-                    topApplicants.map((applicant) => (
-                      <Box
-                        key={applicant.id}
-                        onClick={() => navigate(`/workers/${applicant.id}`)}
-                        sx={{
-                          p: 2,
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 2,
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          transition: 'background-color 0.2s',
-                          '&:hover': {
-                            bgcolor: alpha(STITCH.surfaceVariant, 0.5),
-                          },
-                        }}
-                      >
-                        <Box sx={{ position: 'relative' }}>
-                          {applicant.avatar ? (
+                    topApplicants.map((applicant) => {
+                      const statusColor = applicant.online
+                        ? STITCH.success
+                        : STITCH.surfaceVariant;
+                      return (
+                        <Box
+                          key={applicant.id}
+                          onClick={() => navigate(`/workers/${applicant.id}`)}
+                          sx={{
+                            p: 2,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 2,
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            transition: 'background-color 0.2s ease',
+                            '&:hover': {
+                              backgroundColor: alpha(STITCH.surfaceVariant, 0.5),
+                            },
+                          }}
+                        >
+                          <Box sx={{ position: 'relative' }}>
                             <Avatar
                               src={applicant.avatar}
                               sx={{
                                 width: 48,
                                 height: 48,
-                                border: `1px solid ${STITCH.borderMuted}`,
-                              }}
-                            />
-                          ) : (
-                            <Avatar
-                              sx={{
-                                width: 48,
-                                height: 48,
                                 bgcolor: STITCH.surfaceVariant,
                                 color: STITCH.onSurface,
+                                fontWeight: 600,
                                 border: `1px solid ${STITCH.borderMuted}`,
                               }}
                             >
-                              {applicant.name?.charAt(0) || 'A'}
+                              {applicant.name.charAt(0).toUpperCase()}
                             </Avatar>
-                          )}
-                          {applicant.online && (
                             <Box
                               sx={{
                                 position: 'absolute',
@@ -1263,102 +1355,111 @@ const HirerDashboardPage = () => {
                                 right: -2,
                                 width: 14,
                                 height: 14,
-                                bgcolor: STITCH.success,
+                                bgcolor: statusColor,
                                 border: `2px solid ${STITCH.surfaceContainer}`,
                                 borderRadius: '50%',
                               }}
                             />
-                          )}
-                        </Box>
-                        <Box sx={{ flex: 1, minWidth: 0 }}>
-                          <Typography
-                            noWrap
-                            sx={{
-                              fontFamily: '"Montserrat", sans-serif',
-                              fontWeight: 600,
-                              fontSize: '0.875rem',
-                              color: STITCH.onSurface,
-                            }}
-                          >
-                            {applicant.name}
-                          </Typography>
-                          <Typography
-                            noWrap
-                            sx={{
-                              fontFamily: '"Montserrat", sans-serif',
-                              fontSize: '0.75rem',
-                              color: STITCH.onSurfaceVariant,
-                            }}
-                          >
-                            {applicant.title}
-                          </Typography>
-                        </Box>
-                        {applicant.rating > 0 && (
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 0.5,
-                              color: STITCH.primary,
-                            }}
-                          >
-                            <StarIcon
-                              sx={{ fontSize: 16 }}
-                              fontSize="small"
-                            />
+                          </Box>
+                          <Box sx={{ flex: 1, minWidth: 0 }}>
                             <Typography
                               sx={{
-                                fontFamily: '"Montserrat", sans-serif',
-                                fontWeight: 600,
+                                fontFamily: FONT_HEAD,
                                 fontSize: '0.875rem',
+                                fontWeight: 600,
+                                color: STITCH.onSurface,
                               }}
+                              noWrap
                             >
-                              {applicant.rating.toFixed(1)}
+                              {applicant.name}
+                            </Typography>
+                            <Typography
+                              sx={{
+                                fontFamily: FONT_HEAD,
+                                fontSize: '0.75rem',
+                                color: STITCH.onSurfaceVariant,
+                              }}
+                              noWrap
+                            >
+                              {applicant.title}
                             </Typography>
                           </Box>
-                        )}
-                      </Box>
-                    ))
+                          {applicant.rating > 0 && (
+                            <Stack
+                              direction="row"
+                              spacing={0.5}
+                              alignItems="center"
+                              sx={{ color: STITCH.primaryContainer }}
+                            >
+                              <StarIcon sx={{ fontSize: 16 }} />
+                              <Typography
+                                sx={{
+                                  fontFamily: FONT_HEAD,
+                                  fontSize: '0.875rem',
+                                  fontWeight: 600,
+                                }}
+                              >
+                                {applicant.rating.toFixed(1)}
+                              </Typography>
+                            </Stack>
+                          )}
+                        </Box>
+                      );
+                    })
                   ) : (
                     <Box sx={{ p: 3, textAlign: 'center' }}>
-                      <PeopleIcon
-                        sx={{ fontSize: 40, color: STITCH.onSurfaceVariant, mb: 1 }}
-                      />
                       <Typography
                         sx={{
+                          fontFamily: FONT_BODY,
+                          fontSize: '0.85rem',
                           color: STITCH.onSurfaceVariant,
-                          fontSize: '0.875rem',
+                          mb: 1.5,
                         }}
                       >
-                        No applicants yet
+                        Featured applicants will appear here once your jobs
+                        receive proposals.
                       </Typography>
+                      <Button
+                        onClick={() => navigate('/workers')}
+                        sx={{
+                          color: STITCH.primaryContainer,
+                          fontFamily: FONT_HEAD,
+                          fontSize: '0.8rem',
+                          fontWeight: 600,
+                          textTransform: 'none',
+                        }}
+                      >
+                        Browse Workers →
+                      </Button>
                     </Box>
                   )}
                 </Box>
-                {topApplicants.length > 0 && (
-                  <Box
+
+                <Box
+                  sx={{
+                    p: 2,
+                    mt: 'auto',
+                    borderTop: `1px solid ${STITCH.borderMuted}`,
+                  }}
+                >
+                  <Button
+                    fullWidth
+                    onClick={() => navigate('/hirer/applications')}
                     sx={{
-                      p: 2,
-                      mt: 'auto',
-                      borderTop: `1px solid ${STITCH.borderMuted}`,
+                      color: STITCH.primaryContainer,
+                      fontFamily: FONT_HEAD,
+                      fontSize: '0.75rem',
+                      fontWeight: 500,
+                      textTransform: 'none',
+                      '&:hover': {
+                        backgroundColor: 'transparent',
+                        color: STITCH.primaryFixed,
+                      },
                     }}
                   >
-                    <Button
-                      fullWidth
-                      onClick={() => navigate('/hirer/applications')}
-                      sx={{
-                        color: STITCH.primary,
-                        textTransform: 'none',
-                        fontWeight: 500,
-                        fontSize: '0.75rem',
-                        fontFamily: '"Montserrat", sans-serif',
-                        '&:hover': { bgcolor: 'transparent' },
-                      }}
-                    >
-                      View All Applicants
-                    </Button>
-                  </Box>
-                )}
+                    View All Applicants
+                  </Button>
+                </Box>
               </Paper>
             </Stack>
           </Grid>
@@ -1384,17 +1485,18 @@ const HirerDashboardPage = () => {
               sx={{ color: STITCH.onSurfaceVariant }}
             >
               {refreshing ? (
-                <RefreshIcon
-                  sx={{ animation: 'spin 1s linear infinite' }}
-                />
+                <RefreshIcon sx={{ animation: 'spin 1s linear infinite' }} />
               ) : (
                 <RefreshIcon />
               )}
             </IconButton>
           </Tooltip>
           <Typography
-            variant="caption"
-            sx={{ color: STITCH.onSurfaceVariant }}
+            sx={{
+              fontFamily: FONT_BODY,
+              fontSize: '0.75rem',
+              color: STITCH.onSurfaceVariant,
+            }}
           >
             Last updated {timeSinceRefresh}
           </Typography>

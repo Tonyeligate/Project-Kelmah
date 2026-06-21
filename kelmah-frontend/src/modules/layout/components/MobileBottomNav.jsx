@@ -272,29 +272,30 @@ const MobileBottomNav = () => {
           path: '/hirer/dashboard',
         },
         {
-          label: 'Post Job',
-          value: 'postJob',
-          icon: <PostJobIcon />,
-          path: '/hirer/jobs/post',
-        },
-        {
-          label: 'Find Talent',
+          label: 'Search',
           value: 'findTalent',
           icon: <SearchIcon />,
           path: '/hirer/find-talents',
         },
         {
-          label: 'Applications',
-          value: 'applications',
-          icon: <ApplicationsIcon />,
-          path: '/hirer/applications',
+          label: '',
+          value: 'postJob',
+          icon: <PostJobIcon />,
+          path: '/hirer/jobs/post',
+          isFab: true, // Center FAB for posting jobs
         },
         {
-          label: 'Messages',
+          label: 'Chat',
           value: 'messages',
           icon: <MessagesIcon />,
           path: '/messages',
           badge: unreadCount > 0 ? unreadCount : null,
+        },
+        {
+          label: 'Profile',
+          value: 'profile',
+          icon: <ProfileIcon />,
+          path: '/hirer/profile',
         },
       ];
     }
