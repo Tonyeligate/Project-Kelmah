@@ -1785,6 +1785,18 @@ const Register = () => {
                   >
                     Save and continue later
                   </Button>
+                  <Button
+                    variant="text"
+                    component={RouterLink}
+                    to="/"
+                    sx={{
+                      color: formPanelMuted,
+                      fontWeight: 700,
+                      textTransform: 'none',
+                    }}
+                  >
+                    Skip and browse
+                  </Button>
 
                   <Stack direction="row" spacing={1.5}>
                     <Button
